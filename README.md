@@ -12,6 +12,8 @@ The four Python files in this repository belong to a simple protoype for marketp
 To run that code, install Anaconda and run the following commands to install required packages:
 ```console
 conda install -c pytorch torchvision
+```
+```console
 conda install -c conda-forge gym
 ```
 If you have a Nvidia GPU, consider to install cuda to get better training performance:
