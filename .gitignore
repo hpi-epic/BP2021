@@ -1,7 +1,8 @@
 # from https://github.com/github/gitignore
 
 # To exclude marketplace files created by training the agent
-args.env-best_*[0-9].*[0-9]_marketplace.dat
+# args.env-best_*[0-9].*[0-9]_marketplace.dat
+trainedModels/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

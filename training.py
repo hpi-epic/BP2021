@@ -2,6 +2,7 @@
 import time
 import numpy as np
 import collections
+import os
 
 import torch
 import torch.nn as nn
@@ -180,8 +181,12 @@ while True:
 				  frame_idx, len(total_rewards), m_reward, m_compet_reward, epsilon,
 				  speed
 			  ))
+
+		if not os.path.isdir("trainedModels"):
+			os.mkdir("trainedModels")
+
 		if (best_m_reward is None or best_m_reward < m_reward) and frame_idx > 1.2*EPSILON_DECAY_LAST_FRAME:
-			torch.save(net.state_dict(), "args.env" +
+			torch.save(net.state_dict(), "./trainedModels/" + "args.env" +
 					   "-best_%.2f_marketplace.dat" % m_reward)
 			if best_m_reward is not None:
 				print("Best reward updated %.3f -> %.3f" % (
