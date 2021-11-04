@@ -4,7 +4,7 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - cudatoolkit
+#  - cudatoolkit
   - numpy
   - pip
   - python=3.8
