@@ -57,4 +57,11 @@ jobs:
         # Activate the base environment
         C:\Miniconda\condabin\conda.bat activate base
         C:\Miniconda\condabin\conda.bat install pytest
+        python -m pytest
+    - name: Test with pytest (verbose)
+      if: failure()
+      run: |
+        # Activate the base environment
+        C:\Miniconda\condabin\conda.bat activate base
+        C:\Miniconda\condabin\conda.bat install pytest
         python -v -m pytest
