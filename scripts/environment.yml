@@ -1,15 +1,11 @@
 name: base
 channels:
-  - pytorch
-  - conda-forge
   - defaults
 dependencies:
-#  - cudatoolkit
   - numpy
   - pip
   - python=3.8
   - pytorch
-  - wheel
   - flake8
   - pytest
   - pip:

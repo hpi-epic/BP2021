@@ -1,11 +1,15 @@
-name: CI-Linux
+name: CI Unix
 
 on: [push, pull_request]
 
 jobs:
-  build-linux:
-    runs-on: ubuntu-latest
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, macos-latest ]
 
+    name: CI on ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python 3.8
@@ -27,4 +31,4 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with pytest
       run: |
-        -v pytest
+        python -v -m pytest
