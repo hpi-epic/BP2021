@@ -4,15 +4,11 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - cudatoolkit=11.3.1=h59b6b97_2
-  - numpy=1.21.2=py38hfca59bb_0
-  - numpy-base=1.21.2=py38h0829f74_0
-  - pip=21.0.1=py38haa95532_0
-  - python=3.8.12=h6244533_0
-  - pytorch=1.10.0=py3.8_cuda11.3_cudnn8_0
-  - pytorch-mutex=1.0=cuda
-  - torchaudio=0.10.0=py38_cu113
-  - torchvision=0.11.1=py38_cu113
-  - wheel=0.37.0=pyhd3eb1b0_1
+  - cudatoolkit
+  - numpy
+  - pip
+  - python=3.8
+  - pytorch
+  - wheel
   - pip:
-    - gym==0.21.0
+    - gym
