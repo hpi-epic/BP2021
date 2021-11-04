@@ -1,0 +1,6 @@
+name: base
+dependencies:
+  - python=3.8
+  - gym
+  - torch
+  - numpy
