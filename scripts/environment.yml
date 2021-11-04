@@ -10,5 +10,7 @@ dependencies:
   - python=3.8
   - pytorch
   - wheel
+  - flake8
+  - pytest
   - pip:
     - gym
