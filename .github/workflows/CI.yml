@@ -76,10 +76,8 @@ jobs:
       - name: Setup Miniconda
         uses: conda-incubator/setup-miniconda@v2
         with:
-          auto-activate-base: true
           auto-update-conda: true
           environment-file: scripts/environment.yml
-          python-version: "3.8"
       - name: Pytest
         run: |
           python -m pytest
