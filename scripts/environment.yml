@@ -8,5 +8,6 @@ dependencies:
   - pytorch
   - flake8
   - pytest
-  - pip:
-    - -r requirements.txt
+  - gym
+#  - pip:
+#    - -r requirements.txt
