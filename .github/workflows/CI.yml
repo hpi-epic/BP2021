@@ -7,7 +7,8 @@ jobs:
     runs-on: ubuntu-latest
     name: CI on Ubuntu
     steps:
-    - uses: actions/checkout@v2
+    - name: Checkout
+      uses: actions/checkout@v2
     - name: Set up Python 3.8
       uses: actions/setup-python@v2
       with:
@@ -38,7 +39,8 @@ jobs:
     runs-on: windows-latest
     name: CI on Windows
     steps:
-    - uses: actions/checkout@v2
+    - name: Checkout
+      uses: actions/checkout@v2
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
@@ -63,4 +65,35 @@ jobs:
       if: failure()
       run: |
         C:\Miniconda\condabin\conda.bat activate base
+        python -v -m pytest
+
+  build-macOS:
+    runs-on: macOS-latest
+    name: CI on MacOS
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+    - name: Add conda to system path
+      run: |
+        # $CONDA is an environment variable pointing to the root of the miniconda directory
+        echo $CONDA/bin >> $GITHUB_PATH
+    - name: Install dependencies
+      run: |
+        conda env update --file scripts/environment.yml --name base
+    - name: Lint with flake8
+      run: |
+        # stop the build if there are Python syntax errors or undefined names
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+    - name: Test with pytest
+      run: |
+        python -m pytest
+    - name: "OnError: Test with pytest (verbose)"
+      if: failure()
+      run: |
         python -v -m pytest
