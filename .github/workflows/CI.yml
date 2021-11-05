@@ -2,6 +2,8 @@ name: CI
 
 on: [push, pull_request]
 
+# using setup-miniconda from https://github.com/conda-incubator/setup-miniconda
+
 jobs:
   build:
     runs-on: ${{ matrix.os }}
