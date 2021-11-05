@@ -1,4 +1,4 @@
-name: base
+name: BP2021
 channels:
   - defaults
   - conda-forge
