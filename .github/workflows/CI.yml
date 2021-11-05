@@ -79,15 +79,10 @@ jobs:
           auto-activate-base: true
           auto-update-conda: true
           environment-file: scripts/environment.yml
-      - name: Conda info
-        shell: bash -l {0}
-        run: conda info
       - name: Pytest
         shell: bash -l {0}
         run: pytest
-      - name: Pytest
+      - name: "OnError: Test with pytest (verbose)"
+        if: failure()
         shell: bash -l {0}
-        run: -m pytest
-      - name: Pytest
-        shell: bash -l {0}
-        run: python -m pytest
+        run: -v pytest
