@@ -4,11 +4,8 @@ channels:
   - conda-forge
 dependencies:
   - numpy
-  - pip
   - python=3.8
   - pytorch
   - flake8
   - pytest
   - gym
-#  - pip:
-#    - -r requirements.txt
