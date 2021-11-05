@@ -1,6 +1,7 @@
+import random
+
 import gym
 import numpy as np
-import random
 
 # An offer is a Market State that contains both prices and both qualities
 
@@ -25,25 +26,32 @@ def buy_object(offers):
 
 
 class SimMarket(gym.Env):
-
     def __init__(self, maxprice=30.0, maxquality=100.0):
         self.maxprice = maxprice
         self.maxquality = maxquality
         # cell 0: agent's price, cell 1: agent's quality, cell 2: competitor's price, cell 3: competitor's quality
         self.observation_space = gym.spaces.Box(
-            np.array([0.0, 0.0, 0.0, 0.0]), np.array([self.maxprice, self.maxquality, self.maxprice, self.maxquality]), dtype=np.float64)
+            np.array([0.0, 0.0, 0.0, 0.0]),
+            np.array([self.maxprice, self.maxquality, self.maxprice, self.maxquality]),
+            dtype=np.float64,
+        )
         # 0: Decrease the price by 1, 1: keep the price constant, 2: decrease the price by 1
         self.action_space = gym.spaces.Discrete(3)
 
     def give_competitors_action(self):
-        ratio = (self.state[1] / self.state[0]) / \
-            (self.state[3] / self.state[2])
+        ratio = (self.state[1] / self.state[0]) / (self.state[3] / self.state[2])
         if random.random() < 0.29:
             return random.randint(1, 2)
-        elif self.state[2] < self.production_price or (ratio < 0.95 and self.state[2] < self.maxprice - 5):
+        elif self.state[2] < self.production_price or (
+            ratio < 0.95 and self.state[2] < self.maxprice - 5
+        ):
             # print("I increase with state ", self.state[2])
             return 2
-        elif self.state[2] > self.production_price + 1 and ratio > 1.1 or self.state[2] > self.maxprice - 5:
+        elif (
+            self.state[2] > self.production_price + 1
+            and ratio > 1.1
+            or self.state[2] > self.maxprice - 5
+        ):
             return 0
         else:
             return 1
@@ -57,10 +65,20 @@ class SimMarket(gym.Env):
         # The production price is initially set to maxprice / 3 for simplicity reasons
         self.production_price = int(self.maxprice / 3)
         # The agent's quality is set to fixed maxquality / 2
-        if randomstart == False:
+        if not randomstart:
             randomstart = random.random() < 0.5
         self.state = np.array(
-            [int(self.production_price + np.random.normal() * 3 + 3)if randomstart else 10, self.shuffle_quality(), int(self.production_price + np.random.normal() * 3 + 3)if randomstart else 10, self.shuffle_quality()])
+            [
+                int(self.production_price + np.random.normal() * 3 + 3)
+                if randomstart
+                else 10,
+                self.shuffle_quality(),
+                int(self.production_price + np.random.normal() * 3 + 3)
+                if randomstart
+                else 10,
+                self.shuffle_quality(),
+            ]
+        )
         print("I initiate with ", self.state)
         return self.state
 
