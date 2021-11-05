@@ -4,13 +4,8 @@ on: [push, pull_request]
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
-    name: CI with (${{ matrix.python-version }} on ${{ matrix.os }})
-    strategy:
-      fail-fast: false
-      matrix:
-        os: ["ubuntu-latest", "macos-latest", "windows-latest"]
-        python-version: ["3.8"]
+    runs-on: macos.latest
+    name: CI with MacOS
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -20,10 +15,7 @@ jobs:
           activate-environment: base
           auto-update-conda: true
           environment-file: scripts/environment.yml
-          python-version: ${{ matrix.python-version }}
-      - name: Activate Conda venv
-        run: |
-          conda activate base
+          python-version: "3.8"
       - name: Pytest
         run: |
           python -m pytest

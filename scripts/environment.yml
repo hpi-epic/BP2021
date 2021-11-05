@@ -9,4 +9,4 @@ dependencies:
   - flake8
   - pytest
   - pip:
-    - gym
+    - -r requirements.txt
