@@ -79,9 +79,6 @@ jobs:
           auto-update-conda: true
           environment-file: scripts/environment.yml
           python-version: "3.8"
-      - name: Activate base env
-        run: |
-          conda activate base
       - name: Pytest
         run: |
           python -m pytest
