@@ -36,17 +36,23 @@ class SimMarket(gym.Env):
         self.action_space = gym.spaces.Discrete(3)
 
     def give_competitors_action(self):
-        ratio = (self.state[1] / self.state[0]) / \
-            (self.state[3] / self.state[2])
+        agent_price = self.state[0]
+        comp_price = self.state[2]
+        agent_quality = self.state[1]
+        comp_quality = self.state[3]
+
+        ratio = (agent_quality / agent_price) / \
+            (comp_quality / comp_price)
         if random.random() < 0.29:
             return random.randint(1, 2)
-        elif self.state[2] < self.production_price or (ratio < 0.95 and self.state[2] < self.maxprice - 5):
+        elif comp_price < self.production_price or (ratio < 0.95 and comp_price < self.maxprice - 5):
             # print("I increase with state ", self.state[2])
-            return 2
-        elif self.state[2] > self.production_price + 1 and ratio > 1.1 or self.state[2] > self.maxprice - 5:
-            return 0
-        else:
-            return 1
+            return agent_price + 1
+        elif comp_price > self.production_price + 1 and ratio > 1.1 or comp_price > self.maxprice - 5:
+            return agent_price - 1
+        elif comp_quality > agent_quality:
+            return agent_price + 1
+            
 
     def shuffle_quality(self):
         return min(max(int(np.random.normal(50, 20)), 1), self.maxquality)
