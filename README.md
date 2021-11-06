@@ -9,11 +9,15 @@ The simulation should cover the interaction between customers and particularly c
 # First Protoype for Marketplace Simulation and Deep Q-Learning
 The four Python files in this repository belong to a simple protoype for marketplace simulation. It is build to simulate a simple market with two vendors trying to maximize their profit. One vendor is part of the environment as a rule based competitor, the other one in a simulated agent. The customer behaviour depends on the price and the quality of the product. Furthermore, some random events make the customers less predictable.
 
-To run that code, install Anaconda and run the following command to install the required packages:
+If you have not yet done so, install Anaconda and run the following command to create an environment and install the required packages:
 ```console
-conda env create -f full/path/to/environment.yml -n your_venv_name
+conda env create -f scripts/environment.yml -n your_venv_name
 ```
-To activate your created Venv use:
+To activate your created environment use:
 ```console
 conda activate your_venv_name
+```
+To update an existing environment with the needed packages run the following command:
+```console
+conda env update --name your_venv_name --file scripts/environment.yml
 ```
