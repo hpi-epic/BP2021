@@ -3,11 +3,11 @@ import torch.nn as nn
 from first_prototype import SimMarket
 
 model = nn.Sequential(
-	nn.Linear(4, 128),
+	nn.Linear(3, 128),
 	nn.ReLU(),
 	nn.Linear(128, 128),
 	nn.ReLU(),
-	nn.Linear(128, 3)).to('cpu')
+	nn.Linear(128, 28)).to('cpu')
 model.load_state_dict(torch.load(
 	"best_marketplace.dat", map_location=torch.device('cpu')))
 
@@ -24,5 +24,4 @@ while not is_done:
 	print("The agents profit this round is " + str(reward))
 	our_profit += reward
 print("In total the agent earned " + str(our_profit) + " with a profit/quality of: " + str(round(our_profit/state[1],3)) + 
-      " and his competitor " + str(env.comp_profit) + " with a profit/quality of: " + str(round(env.comp_profit/state[3], 3)))
-print("The value of the net is estimated as: " + str(our_profit/(state[3] - state[1] + 100)))
+      " and his competitor " + str(env.comp_profit) + " with a profit/quality of: " + str(round(env.comp_profit/state[2], 3)))

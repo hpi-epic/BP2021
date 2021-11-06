@@ -33,7 +33,7 @@ class SimMarket(gym.Env):
         self.observation_space = gym.spaces.Box(
             np.array([0.0, 0.0, 0.0, 0.0]), np.array([self.maxprice, self.maxquality, self.maxprice, self.maxquality]), dtype=np.float64)
         # 0: Decrease the price by 1, 1: keep the price constant, 2: decrease the price by 1
-        self.action_space = gym.spaces.Discrete(3)
+        self.action_space = gym.spaces.Discrete(28)
 
     def give_competitors_action(self):
         agent_price = self.state[0]
@@ -68,7 +68,7 @@ class SimMarket(gym.Env):
         self.state = np.array(
             [int(self.production_price + np.random.normal() * 3 + 3)if randomstart else 10, self.shuffle_quality(), int(self.production_price + np.random.normal() * 3 + 3)if randomstart else 10, self.shuffle_quality()])
         print("I initiate with ", self.state)
-        return self.state
+        return self.state[1:4]
 
     def step(self, action):
         err_msg = "%r (%s) invalid" % (action, type(action))
@@ -81,10 +81,7 @@ class SimMarket(gym.Env):
         elif competitors_action == 2:
             self.state[2] += 1
 
-        if action == 0:
-            self.state[0] -= 1
-        elif action == 2:
-            self.state[0] += 1
+        self.state[0] = action + 1
 
         self.state[0] = max(1, self.state[0])
         self.state[2] = max(1, self.state[2])
@@ -108,7 +105,7 @@ class SimMarket(gym.Env):
 
         # print("You sold " + str(agent_sales) +
         #       " and your competitor " + str(comp_sales))
-        return self.state, profit_agent, self.counter >= 50, {}
+        return self.state[1:4], profit_agent, self.counter >= 50, {}
 
 
 # env = SimMarket()
