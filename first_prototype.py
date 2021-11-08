@@ -79,11 +79,11 @@ class SimMarket(gym.Env):
                 self.shuffle_quality(),
             ]
         )
-        print("I initiate with ", self.state)
+        print('I initiate with ', self.state)
         return self.state
 
     def step(self, action):
-        err_msg = "%r (%s) invalid" % (action, type(action))
+        err_msg = '%r (%s) invalid' % (action, type(action))
         assert self.action_space.contains(action), err_msg
 
         self.counter += 1

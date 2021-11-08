@@ -41,7 +41,7 @@ EPSILON_FINAL = 0.1
 
 
 Experience = collections.namedtuple(
-    "Experience", field_names=["state", "action", "reward", "done", "new_state"]
+    'Experience', field_names=['state', 'action', 'reward', 'done', 'new_state']
 )
 
 
@@ -80,7 +80,7 @@ class Agent:
         self.total_reward = 0.0
 
     @torch.no_grad()
-    def play_step(self, net, epsilon=0.0, device="cpu"):
+    def play_step(self, net, epsilon=0.0, device='cpu'):
         done_reward = None
         compet_reward = None
 
@@ -107,7 +107,7 @@ class Agent:
         return done_reward, compet_reward
 
 
-def calc_loss(batch, net, tgt_net, device="cpu"):
+def calc_loss(batch, net, tgt_net, device='cpu'):
     states, actions, rewards, dones, next_states = batch
 
     states_v = torch.tensor(np.single(states)).to(device)
@@ -127,15 +127,15 @@ def calc_loss(batch, net, tgt_net, device="cpu"):
     return nn.MSELoss()(state_action_values, expected_state_action_values)
 
 
-device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
-print("Using {} device".format(device))
+device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+print('Using {} device'.format(device))
 
 env = SimMarket()
 
 observations = env.observation_space.shape[0]
 
-print("Observation Space: " + str(observations) + str(type(observations)))
-print("Action Space: " + str(env.action_space.n))
+print('Observation Space: ' + str(observations) + str(type(observations)))
+print('Action Space: ' + str(env.action_space.n))
 
 net = model(device)
 tgt_net = model(device)
@@ -161,13 +161,13 @@ while True:
     reward, compet_reward = agent.play_step(net, epsilon, device=device)
     if reward is not None:
         print(
-            "My profit is "
+            'My profit is '
             + str(reward)
-            + ", my competitor has "
+            + ', my competitor has '
             + str(reward)
-            + ". The quality values were "
+            + '. The quality values were '
             + str(env.state[1])
-            + " and "
+            + ' and '
             + str(env.state[3])
         )
         total_rewards.append(reward)
@@ -180,21 +180,21 @@ while True:
         m_reward = np.mean(total_rewards[-100:])
         m_compet_reward = np.mean(compet_rewards[-100:])
         print(
-            "%d: done %d games, reward %.3f, compet reward %.3f "
-            "eps %.2f, speed %.2f f/s"
+            '%d: done %d games, reward %.3f, compet reward %.3f '
+            'eps %.2f, speed %.2f f/s'
             % (frame_idx, len(total_rewards), m_reward, m_compet_reward, epsilon, speed)
         )
         if (
             best_m_reward is None or best_m_reward < m_reward
         ) and frame_idx > 1.2 * EPSILON_DECAY_LAST_FRAME:
             torch.save(
-                net.state_dict(), "args.env" + "-best_%.2f_marketplace.dat" % m_reward
+                net.state_dict(), 'args.env' + '-best_%.2f_marketplace.dat' % m_reward
             )
             if best_m_reward is not None:
-                print("Best reward updated %.3f -> %.3f" % (best_m_reward, m_reward))
+                print('Best reward updated %.3f -> %.3f' % (best_m_reward, m_reward))
             best_m_reward = m_reward
         if m_reward > MEAN_REWARD_BOUND:
-            print("Solved in %d frames!" % frame_idx)
+            print('Solved in %d frames!' % frame_idx)
             break
 
     if len(buffer) < REPLAY_START_SIZE:
