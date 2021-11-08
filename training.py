@@ -154,12 +154,11 @@ while True:
 
 	reward, compet_reward = agent.play_step(net, epsilon, device=device)
 	if reward is not None:
-		print("My profit is " + str(reward) + ", my competitor has " + str(reward) +
-			  ". The quality values were " + str(env.state[1]) + " and " + str(env.state[3]))
+		print("My profit is:", str(reward), "\t my competitor has", reward,
+				"\tThe quality values were", env.state[1], "\tand", env.state[3])
 		total_rewards.append(reward)
 		compet_rewards.append(compet_reward)
-		speed = (frame_idx - ts_frame) / \
-			((time.time() - ts) if (time.time() - ts) > 0 else 1)
+		speed = (frame_idx - ts_frame) / ((time.time() - ts) if (time.time() - ts) > 0 else 1)
 		ts_frame = frame_idx
 		ts = time.time()
 		m_reward = np.mean(total_rewards[-100:])
