@@ -7,7 +7,8 @@ import os
 import torch
 import torch.nn as nn
 import torch.optim as optim
-
+from  torch.utils.tensorboard import SummaryWriter
+import datetime
 from first_prototype import SimMarket
 
 
@@ -155,8 +156,11 @@ ts_frame = 0
 ts = time.time()
 best_m_reward = None
 
+# tensorboard init 
+writer = SummaryWriter()
+
 while True:
-	frame_idx += 1
+	frame_idx += 1 # counts the steps
 	epsilon = max(EPSILON_FINAL, EPSILON_START -
 				  frame_idx / EPSILON_DECAY_LAST_FRAME)
 
@@ -171,6 +175,8 @@ while True:
 		ts = time.time()
 		m_reward = np.mean(total_rewards[-100:])
 		m_comp_reward = np.mean(comp_rewards[-100:])
+		writer.add_scalar('Profit_mean/agent', m_reward, frame_idx / 50)
+		writer.add_scalar('Profit_mean/comp', m_comp_reward, frame_idx / 50)
 		print("%d: done %d games, reward %.3f, comp reward %.3f "
 			  "eps %.2f, speed %.2f f/s" % (
 				  frame_idx, len(total_rewards), m_reward, m_comp_reward, epsilon,
@@ -200,5 +206,6 @@ while True:
 	optimizer.zero_grad()
 	batch = buffer.sample(BATCH_SIZE)
 	loss_t = calc_loss(batch, net, tgt_net, device=device)
+	writer.add_scalar('Loss/MSE', float(loss_t), frame_idx)
 	loss_t.backward()
 	optimizer.step()
