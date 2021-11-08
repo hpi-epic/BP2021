@@ -7,6 +7,7 @@ import os
 import torch
 import torch.nn as nn
 import torch.optim as optim
+
 from first_prototype import SimMarket
 
 
@@ -179,7 +180,7 @@ while True:
 		if not os.path.isdir("trainedModels"):
 			os.mkdir("trainedModels")
 
-		if (best_m_reward is None or best_m_reward < m_reward) and frame_idx > 1.2*EPSILON_DECAY_LAST_FRAME:
+		if (best_m_reward is None or best_m_reward < m_reward) and frame_idx > 1.2 * EPSILON_DECAY_LAST_FRAME:
 			torch.save(net.state_dict(), "./trainedModels/" + "args.env" +
 					   "-best_%.2f_marketplace.dat" % m_reward)
 			if best_m_reward is not None:
