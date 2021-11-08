@@ -49,12 +49,13 @@ class SimMarket(gym.Env):
         # The agent's quality is set to fixed maxquality / 2
         if random_start == False:
             random_start = random.random() < 0.5
-
+        
         agent_price = int(self.production_price +
                           np.random.normal() * 3 + 3)if random_start else 10
         agent_quality = self.shuffle_quality()
-        comp_price = self.competitor.get_initial_price(random_start)
-        comp_quality = self.competitor.quality
+
+        comp_price, comp_quality = self.competitor.reset(random_start)
+        
         self.state = np.array(
             [agent_price, agent_quality, comp_price, comp_quality])
         print("I initiate with ", self.state)

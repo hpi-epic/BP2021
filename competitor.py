@@ -15,6 +15,11 @@ class Competitor():
         else:
             return utils.PRODUCTION_PRICE
 
+    def reset(self, random_start):
+        self.quality = utils.shuffle_quality()
+        return self.get_initial_price(random_start), self.quality
+        
+
     def give_competitors_price(self, state):
         agent_price = state[0]
         comp_price = state[2]
