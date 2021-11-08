@@ -105,6 +105,6 @@ class SimMarket(gym.Env):
 
         # print("You sold " + str(agent_sales) +
         #       " and your competitor " + str(comp_sales))
-        print('comp profit this round is', comp_profit)
+        # print('comp profit this round is', comp_profit)
         is_done = self.counter >= self.STEPS_PER_ROUND
         return self.state[0:4], profit_agent, is_done, {}
