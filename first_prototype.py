@@ -5,6 +5,7 @@ from competitor import Competitor
 
 # An offer is a Market State that contains both prices and both qualities
 
+
 def buy_object(offers):
     if random.random() < 0.17:
         return random.randint(1, 2)
@@ -36,7 +37,6 @@ class SimMarket(gym.Env):
             np.array([0.0, 0.0, 0.0, 0.0]), np.array([self.maxprice, self.maxquality, self.maxprice, self.maxquality]), dtype=np.float64)
         # 0: Decrease the price by 1, 1: keep the price constant, 2: decrease the price by 1
         self.action_space = gym.spaces.Discrete(28)
-            
 
     def shuffle_quality(self):
         return min(max(int(np.random.normal(50, 20)), 1), self.maxquality)
@@ -49,17 +49,19 @@ class SimMarket(gym.Env):
         # The agent's quality is set to fixed maxquality / 2
         if random_start == False:
             random_start = random.random() < 0.5
-            
-        agent_price = int(self.production_price + np.random.normal() * 3 + 3)if random_start else 10
+
+        agent_price = int(self.production_price +
+                          np.random.normal() * 3 + 3)if random_start else 10
         agent_quality = self.shuffle_quality()
         comp_price = self.competitor.get_initial_price(random_start)
         comp_quality = self.competitor.quality
-        self.state = np.array([agent_price,agent_quality, comp_price, comp_quality])
+        self.state = np.array(
+            [agent_price, agent_quality, comp_price, comp_quality])
         print("I initiate with ", self.state)
         return self.state[0:4]
 
     def step(self, action):
-        
+
         err_msg = "%r (%s) invalid" % (action, type(action))
         assert self.action_space.contains(action), err_msg
 
@@ -88,7 +90,7 @@ class SimMarket(gym.Env):
                 self.comp_profit_overall += comp_profit
                 comp_sales += 1
 
-        self.state[2] = self.competitor.give_competitors_price(self.state)       
+        self.state[2] = self.competitor.give_competitors_price(self.state)
         self.state[2] = max(1, self.state[2])
 
         for _ in range(10):
@@ -100,33 +102,9 @@ class SimMarket(gym.Env):
                 comp_profit += self.state[2] - self.production_price
                 self.comp_profit_overall += comp_profit
                 comp_sales += 1
-                
 
         # print("You sold " + str(agent_sales) +
         #       " and your competitor " + str(comp_sales))
         print('comp profit this round is', comp_profit)
         is_done = self.counter >= self.STEPS_PER_ROUND
         return self.state[0:4], profit_agent, is_done, {}
-
-
-env = SimMarket()
-our_profit = 0
-is_done = False
-state = env.reset()
-
-print('The production price is', str(env.production_price))
-while not is_done:
-    agent_price = state[0]
-    comp_price = state[2]
-    agent_quality = state[1]
-    comp_quality = state[3]
-    print('agent_price:', agent_price, 'agent_quality', agent_quality, 
-        'comp_price:', comp_price, 'comp_quality', comp_quality)
-    action = input('What do you want to do? ')
-    if action == '':
-        action = agent_price
-    state, reward, is_done, _ = env.step(int(action))
-    print('Your profit this round is', reward)
-    our_profit += reward
-print('Your total earnings:', str(our_profit), 
-    'total comp earnings:', env.comp_profit)
