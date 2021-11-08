@@ -50,7 +50,7 @@ class Agent:
 	@torch.no_grad()
 	def play_step(self, net, epsilon=0.0, device="cpu"):
 		done_reward = None
-		compet_reward = None
+		comp_reward = None
 
 		if np.random.random() < epsilon:
 			action = self.env.action_space.sample()
@@ -71,9 +71,9 @@ class Agent:
 		self.state = new_state
 		if is_done:
 			done_reward = self.total_reward
-			compet_reward = self.env.comp_profit_overall
+			comp_reward = self.env.comp_profit_overall
 			self._reset()
-		return done_reward, compet_reward
+		return done_reward, comp_reward
 
 class ExperienceBuffer:
 	def __init__(self, capacity):
@@ -141,7 +141,7 @@ epsilon = EPSILON_START
 
 optimizer = optim.Adam(net.parameters(), lr=LEARNING_RATE)
 total_rewards = []
-compet_rewards = []
+comp_rewards = []
 frame_idx = 0
 ts_frame = 0
 ts = time.time()
@@ -152,20 +152,20 @@ while True:
 	epsilon = max(EPSILON_FINAL, EPSILON_START -
 				  frame_idx / EPSILON_DECAY_LAST_FRAME)
 
-	reward, compet_reward = agent.play_step(net, epsilon, device=device)
+	reward, comp_reward = agent.play_step(net, epsilon, device=device)
 	if reward is not None:
-		print("My profit is:", str(reward), "\t my competitor has", reward,
+		print("My profit is:", reward, "\t my competitor has", comp_reward,
 				"\tThe quality values were", env.state[1], "\tand", env.state[3])
 		total_rewards.append(reward)
-		compet_rewards.append(compet_reward)
+		comp_rewards.append(comp_reward)
 		speed = (frame_idx - ts_frame) / ((time.time() - ts) if (time.time() - ts) > 0 else 1)
 		ts_frame = frame_idx
 		ts = time.time()
 		m_reward = np.mean(total_rewards[-100:])
-		m_compet_reward = np.mean(compet_rewards[-100:])
-		print("%d: done %d games, reward %.3f, compet reward %.3f "
+		m_comp_reward = np.mean(comp_rewards[-100:])
+		print("%d: done %d games, reward %.3f, comp reward %.3f "
 			  "eps %.2f, speed %.2f f/s" % (
-				  frame_idx, len(total_rewards), m_reward, m_compet_reward, epsilon,
+				  frame_idx, len(total_rewards), m_reward, m_comp_reward, epsilon,
 				  speed
 			  ))
 
