@@ -88,7 +88,7 @@ class SimMarket(gym.Env):
                 agent_sales += 1
             elif customer_action == 2:
                 comp_profit += self.state[2] - self.production_price
-                self.comp_profit_overall += comp_profit
+                # self.comp_profit_overall = comp_profit
                 comp_sales += 1
 
         self.state[2] = self.competitor.give_competitors_price(self.state)
@@ -101,11 +101,14 @@ class SimMarket(gym.Env):
                 agent_sales += 1
             elif customer_action == 2:
                 comp_profit += self.state[2] - self.production_price
-                self.comp_profit_overall += comp_profit
+                # self.comp_profit_overall = comp_profit
                 comp_sales += 1
 
         # print("You sold " + str(agent_sales) +
         #       " and your competitor " + str(comp_sales))
         # print('comp profit this round is', comp_profit)
+        output_dict = {
+            'comp_profit': comp_profit
+        }
         is_done = self.counter >= self.STEPS_PER_ROUND
-        return self.state[0:4], profit_agent, is_done, {}
+        return self.state[0:4], profit_agent, is_done, output_dict

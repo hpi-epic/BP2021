@@ -11,7 +11,7 @@ while not is_done:
     comp_price = state[2]
     agent_quality = state[1]
     comp_quality = state[3]
-    print('agent_price:', agent_price, 'agent_quality', agent_quality, 
+    print('agent_price:', agent_price, 'agent_quality', agent_quality,
         'comp_price:', comp_price, 'comp_quality', comp_quality)
     action = input('What do you want to do? ')
     if action == '':
@@ -19,5 +19,5 @@ while not is_done:
     state, reward, is_done, _ = env.step(int(action))
     print('Your profit this round is', reward)
     our_profit += reward
-print('Your total earnings:', str(our_profit), 
+print('Your total earnings:', str(our_profit),
     'total comp earnings:', env.comp_profit)

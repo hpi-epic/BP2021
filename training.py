@@ -46,6 +46,9 @@ class Agent:
 	def _reset(self):
 		self.state = self.env.reset(False)
 		self.total_reward = 0.0
+		self.total_comp_reward = 0.0
+
+
 
 	@torch.no_grad()
 	def play_step(self, net, epsilon=0.0, device="cpu"):
@@ -62,18 +65,22 @@ class Agent:
 			action = int(act_v.item())
 
 		# do step in the environment
-		new_state, reward, is_done, _ = self.env.step(action)
-		self.total_reward += reward
+		new_state, reward, is_done, output_dict = self.env.step(action)
 
+		self.total_reward += reward
+		self.total_comp_reward += output_dict['comp_profit']
+		
 		exp = Experience(self.state, action, reward,
 						 is_done, new_state)
 		self.exp_buffer.append(exp)
 		self.state = new_state
 		if is_done:
 			done_reward = self.total_reward
-			comp_reward = self.env.comp_profit_overall
+			comp_reward = self.total_comp_reward
 			self._reset()
 		return done_reward, comp_reward
+
+
 
 class ExperienceBuffer:
 	def __init__(self, capacity):
