@@ -48,9 +48,9 @@ If you get the following error:
 Git: Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from Settings > Manage App Execution Aliases
 ```
 
-while trying to commit, the cause is most likely `pre-commit` trying to access a Python version not in you venv.
+while trying to commit, the cause is most likely `pre-commit` trying to access a Python version not in your venv.
 
-Solution: Check the App execution Aliases, and if no Python verison is present, install it from the Microsoft Store. You do not need to disable the alias.
+Solution: Check the App execution Aliases, and if no Python version is present, install it from the Microsoft Store. You do not need to disable the alias.
 
 ---
 
