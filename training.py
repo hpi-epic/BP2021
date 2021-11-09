@@ -151,6 +151,7 @@ epsilon = EPSILON_START
 optimizer = optim.Adam(net.parameters(), lr=LEARNING_RATE)
 total_rewards = []
 comp_rewards = []
+losses = []
 frame_idx = 0
 ts_frame = 0
 ts = time.time()
@@ -206,6 +207,7 @@ while True:
 	optimizer.zero_grad()
 	batch = buffer.sample(BATCH_SIZE)
 	loss_t = calc_loss(batch, net, tgt_net, device=device)
-	writer.add_scalar('Loss/MSE', float(loss_t), frame_idx)
+	losses.append(loss_t.item())
+	writer.add_scalar('Loss/MSE', np.mean(losses[-1000:]), frame_idx)
 	loss_t.backward()
 	optimizer.step()
