@@ -10,6 +10,7 @@ import torch.optim as optim
 from  torch.utils.tensorboard import SummaryWriter
 import datetime
 from first_prototype import SimMarket
+import utils
 
 
 def model(device):
@@ -21,7 +22,7 @@ def model(device):
 		nn.Linear(128, 28)).to(device)
 
 
-MEAN_REWARD_BOUND = 50 * 100 * 20
+MEAN_REWARD_BOUND = utils.STEPS_PER_ROUND * utils.MAX_PRICE * 20
 
 GAMMA = 0.99
 BATCH_SIZE = 32
@@ -178,8 +179,8 @@ while True:
 		ts = time.time()
 		m_reward = np.mean(total_rewards[-100:])
 		m_comp_reward = np.mean(comp_rewards[-100:])
-		writer.add_scalar('Profit_mean/agent', m_reward, frame_idx / 50)
-		writer.add_scalar('Profit_mean/comp', m_comp_reward, frame_idx / 50)
+		writer.add_scalar('Profit_mean/agent', m_reward, frame_idx / utils.STEPS_PER_ROUND)
+		writer.add_scalar('Profit_mean/comp', m_comp_reward, frame_idx / utils.STEPS_PER_ROUND)
 		print("%d: done %d games, reward %.3f, comp reward %.3f "
 			  "eps %.2f, speed %.2f f/s" % (
 				  frame_idx, len(total_rewards), m_reward, m_comp_reward, epsilon,
