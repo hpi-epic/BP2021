@@ -9,5 +9,4 @@ dependencies:
   - flake8
   - pytest
   - gym
-  - pip
   - pre-commit
