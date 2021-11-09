@@ -125,7 +125,7 @@ def calc_loss(batch, net, tgt_net, device="cpu"):
 		next_state_values = next_state_values.detach()
 
 	expected_state_action_values = next_state_values * GAMMA + rewards_v
-	return nn.MSELoss()(state_action_values, expected_state_action_values)
+	return nn.MSELoss()(state_action_values, expected_state_action_values), state_action_values.mean()
 
 
 device = torch.device(
@@ -152,6 +152,8 @@ optimizer = optim.Adam(net.parameters(), lr=LEARNING_RATE)
 total_rewards = []
 comp_rewards = []
 losses = []
+rmse_losses = []
+selected_q_vals = []
 frame_idx = 0
 ts_frame = 0
 ts = time.time()
@@ -206,8 +208,12 @@ while True:
 
 	optimizer.zero_grad()
 	batch = buffer.sample(BATCH_SIZE)
-	loss_t = calc_loss(batch, net, tgt_net, device=device)
+	loss_t, selected_q_val_mean = calc_loss(batch, net, tgt_net, device=device)
 	losses.append(loss_t.item())
+	rmse_losses.append(torch.sqrt(loss_t).item())
+	selected_q_vals.append(selected_q_val_mean.item())
 	writer.add_scalar('Loss/MSE', np.mean(losses[-1000:]), frame_idx)
+	writer.add_scalar('Loss/RMSE', np.mean(rmse_losses[-1000:]), frame_idx)
+	writer.add_scalar('Loss/selected_q_vals', np.mean(selected_q_vals[-1000:]), frame_idx)
 	loss_t.backward()
 	optimizer.step()

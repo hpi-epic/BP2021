@@ -2,6 +2,7 @@
 
 # To exclude marketplace files created by training the agent
 # args.env-best_*[0-9].*[0-9]_marketplace.dat
+*.dat
 trainedModels/
 runs/
 # to exclude some notes
