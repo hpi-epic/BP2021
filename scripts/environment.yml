@@ -1,0 +1,11 @@
+name: BP2021
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - numpy
+  - python=3.8
+  - pytorch
+  - flake8
+  - pytest
+  - gym
