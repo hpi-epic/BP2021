@@ -17,6 +17,12 @@ To activate your created environment use:
 ```console
 conda activate your_venv_name
 ```
+
+If you have a Nvidia GPU, consider installing cuda to get better training performance:
+```console
+conda install -c anaconda cudatoolkit
+```
+
 To update an existing environment with the needed packages run the following command:
 ```console
 conda env update --name your_venv_name --file scripts/environment.yml
