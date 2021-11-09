@@ -1,3 +1,4 @@
+from gym.spaces.space import Space
 from first_prototype import SimMarket
 import utils
 
@@ -5,6 +6,7 @@ env = SimMarket()
 our_profit = 0
 is_done = False
 state = env.reset()
+
 
 print('The production price is', utils.PRODUCTION_PRICE)
 while not is_done:

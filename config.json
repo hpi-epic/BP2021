@@ -1,5 +1,6 @@
 {
-    "episodes": -10,
+    "episode_size": 50,
+    "learning_rate": 1e-5,
     "max_price": 20,
     "max_quality": 50,
     "production_price": 0
