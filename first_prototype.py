@@ -5,7 +5,8 @@ import numpy as np
 
 # An offer is a Market State that contains both prices and both qualities
 
-class Customer():
+
+class Customer:
     def buy_object(offers):
         if random.random() < 0.17:
             return random.randint(1, 2)
