@@ -221,5 +221,6 @@ while True:
                       np.mean(selected_q_vals[-1000:]), frame_idx)
     writer.add_scalar('Loss/loss_val_ratio',
                       np.mean(loss_val_ratio[-1000:]), frame_idx)
+    writer.add_scalar('epsilon', epsilon, frame_idx)
     loss_t.backward()
     optimizer.step()
