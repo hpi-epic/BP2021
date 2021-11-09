@@ -6,6 +6,7 @@
 *.csv
 trainedModels/
 runs/
+test.py
 # to exclude some notes
 *.txt
 # Byte-compiled / optimized / DLL files

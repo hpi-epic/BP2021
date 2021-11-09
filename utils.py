@@ -5,6 +5,7 @@ MAX_PRICE = None
 PRODUCTION_PRICE = None
 STEPS_PER_ROUND = None
 MEAN_REWARD_BOUND = None 
+NUMBER_OF_CUSTOMERS = None
 
 GAMMA = 0.99
 BATCH_SIZE = 32
@@ -18,35 +19,38 @@ EPSILON_START = 1.0
 EPSILON_FINAL = 0.1
 
 def setup():
-        global STEPS_PER_ROUND, MAX_QUALITY, MAX_PRICE, PRODUCTION_PRICE, MEAN_REWARD_BOUND, LEARNING_RATE
-        config = {}
-        
-        with open('config.json') as config_file:
-                config = json.load(config_file)
-        
-        assert('episode_size' in config)
-        assert('max_quality' in config)
-        assert('max_price' in config)
-        assert('production_price' in config)
-        assert('learning_rate' in config)
+	global STEPS_PER_ROUND, MAX_QUALITY, MAX_PRICE, PRODUCTION_PRICE, \
+		MEAN_REWARD_BOUND, LEARNING_RATE, NUMBER_OF_CUSTOMERS
+	config = {}
+	
+	with open('config.json') as config_file:
+		config = json.load(config_file)
+	
+	assert('episode_size' in config)
+	assert('max_quality' in config)
+	assert('max_price' in config)
+	assert('production_price' in config)
+	assert('learning_rate' in config)
+	assert('number_of_customers' in config)
 
-        STEPS_PER_ROUND = int(config['episode_size'])
-        MAX_QUALITY = int(config['max_quality'])
-        MAX_PRICE = int(config['max_price'])
-        LEARNING_RATE = float(config['learning_rate'])
+	STEPS_PER_ROUND = int(config['episode_size'])
+	MAX_QUALITY = int(config['max_quality'])
+	MAX_PRICE = int(config['max_price'])
+	LEARNING_RATE = float(config['learning_rate'])
+	NUMBER_OF_CUSTOMERS = int(config['number_of_customers'])
+	PRODUCTION_PRICE = int(config['production_price'])
 
-        if config['production_price'] == 0:
-                PRODUCTION_PRICE = int(MAX_PRICE / 3)
-        else:
-                PRODUCTION_PRICE = int(config['production_price'])
-        MEAN_REWARD_BOUND = STEPS_PER_ROUND * MAX_PRICE * 20
-        assert(LEARNING_RATE > 0 and LEARNING_RATE < 1)
-        assert(PRODUCTION_PRICE <= MAX_PRICE and PRODUCTION_PRICE > 0)
-        assert(MAX_QUALITY > 0)
-        assert(MAX_PRICE > 0)
-        assert(STEPS_PER_ROUND > 0)
-        
+	
+	assert(NUMBER_OF_CUSTOMERS > 0 and NUMBER_OF_CUSTOMERS % 2 == 0)
+	assert(LEARNING_RATE > 0 and LEARNING_RATE < 1)
+	assert(PRODUCTION_PRICE <= MAX_PRICE and PRODUCTION_PRICE > 0)
+	assert(MAX_QUALITY > 0)
+	assert(MAX_PRICE > 0)
+	assert(STEPS_PER_ROUND > 0)
+
+	MEAN_REWARD_BOUND = STEPS_PER_ROUND * MAX_PRICE * 20
+	
 
 def shuffle_quality():
-        return min(max(int(np.random.normal(50, 20)), 1), MAX_QUALITY)
+	return min(max(int(np.random.normal(50, 20)), 1), MAX_QUALITY)
 

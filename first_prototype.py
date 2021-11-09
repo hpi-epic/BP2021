@@ -78,26 +78,32 @@ class SimMarket(gym.Env):
         comp_profit = 0
         agent_sales = 0
         comp_sales = 0
-        for _ in range(10):
-            customer_action = buy_object(self.state)
-            if customer_action == 1:
-                profit_agent += self.state[0] - utils.PRODUCTION_PRICE
-                agent_sales += 1
-            elif customer_action == 2:
-                comp_profit += self.state[2] - utils.PRODUCTION_PRICE
-                comp_sales += 1
+        # for _ in range(utils.NUMBER_OF_CUSTOMERS/2):
+        #     customer_action = buy_object(self.state)
+        #     if customer_action == 1:
+        #         profit_agent += self.state[0] - utils.PRODUCTION_PRICE
+        #         agent_sales += 1
+        #     elif customer_action == 2:
+        #         comp_profit += self.state[2] - utils.PRODUCTION_PRICE
+        #         comp_sales += 1
 
-        self.state[2] = self.competitor.give_competitors_price(self.state)
-        self.state[2] = max(1, self.state[2])
+        #self.state[2] = self.competitor.give_competitors_price(self.state)
+        #self.state[2] = max(1, self.state[2])
 
-        for _ in range(10):
-            customer_action = buy_object(self.state)
-            if customer_action == 1:
-                profit_agent += self.state[0] - utils.PRODUCTION_PRICE
-                agent_sales += 1
-            elif customer_action == 2:
-                comp_profit += self.state[2] - utils.PRODUCTION_PRICE
-                comp_sales += 1
+        for iter in range(2):
+
+            for _ in range(utils.NUMBER_OF_CUSTOMERS/2):
+                customer_action = buy_object(self.state)
+                if customer_action == 1:
+                    profit_agent += self.state[0] - utils.PRODUCTION_PRICE
+                    agent_sales += 1
+                elif customer_action == 2:
+                    comp_profit += self.state[2] - utils.PRODUCTION_PRICE
+                    comp_sales += 1
+			# calculate the new price of the competitor
+            if iter == 0:
+                self.state[2] = max(1, self.competitor.give_competitors_price(self.state))
+			
 
         # print("You sold " + str(agent_sales) +
         #       " and your competitor " + str(comp_sales))
