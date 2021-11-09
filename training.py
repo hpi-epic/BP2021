@@ -215,5 +215,6 @@ while True:
 	writer.add_scalar('Loss/MSE', np.mean(losses[-1000:]), frame_idx)
 	writer.add_scalar('Loss/RMSE', np.mean(rmse_losses[-1000:]), frame_idx)
 	writer.add_scalar('Loss/selected_q_vals', np.mean(selected_q_vals[-1000:]), frame_idx)
+	writer.add_scalar('epsilon', epsilon, frame_idx)
 	loss_t.backward()
 	optimizer.step()
