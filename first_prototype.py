@@ -110,7 +110,7 @@ class SimMarket(gym.Env):
         agent_sales = 0
         comp_sales = 0
         for i in range(20):
-            cact = buy_object(self.state)
+            cact = Customer.buy_object(self.state)
             if cact == 1:
                 profit_agent += self.state[0] - self.production_price
                 agent_sales += 1
