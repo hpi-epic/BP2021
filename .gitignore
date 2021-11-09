@@ -2,12 +2,14 @@
 
 # To exclude marketplace files created by training the agent
 # args.env-best_*[0-9].*[0-9]_marketplace.dat
+
 *.dat
 *.csv
 trainedModels/
 runs/
 # to exclude some notes
 *.txt
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
