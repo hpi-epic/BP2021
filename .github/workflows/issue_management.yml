@@ -1,0 +1,34 @@
+name: Manage new Issues and PR's
+
+# uses https://github.com/srggrs/assign-one-project-github-action
+# and https://github.com/Naturalclar/issue-action
+
+on:
+  issues:
+    types: [opened]
+  pull_request:
+    types: [opened]
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+  assign_new_label:
+    runs-on: [self-hosted, ubuntu-20.04]
+    steps:
+      - uses: Naturalclar/issue-action@v2.0.2
+        with:
+          title-or-body: "both"
+          parameters: '[ {"keywords": [""], "labels": ["new"]} ]'
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+          
+  assign_BP2021:
+    runs-on: [self-hosted, ubuntu-20.04]
+    name: Assign to BP2021-project
+    steps:
+    - name: Assign issues and pull requests to BP2021
+      uses: srggrs/assign-one-project-github-action@1.2.1
+      if: github.event.action == 'opened'
+      with:
+        project: 'https://github.com/hpi-epic/BP2021/projects/1'
+        column_name: 'Backlog'
+   
