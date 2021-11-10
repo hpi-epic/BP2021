@@ -1,6 +1,11 @@
+#!/usr/bin/env python3
+
+# rl
 from gym.spaces.space import Space
 from first_prototype import SimMarket
-import utils
+
+# own files
+import utils as ut
 
 env = SimMarket()
 our_profit = 0
@@ -8,7 +13,7 @@ is_done = False
 state = env.reset()
 
 
-print('The production price is', utils.PRODUCTION_PRICE)
+print('The production price is', ut.PRODUCTION_PRICE)
 while not is_done:
     agent_price = state[0]
     comp_price = state[2]

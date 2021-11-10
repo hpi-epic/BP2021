@@ -1,6 +1,13 @@
-import gym
+#!/usr/bin/env python3
+
+# helper
 import numpy as np
 import random
+
+# rl
+import gym
+
+# own files
 import utils
 from competitor import Competitor
 from customer import Customer
@@ -35,7 +42,7 @@ class SimMarket(gym.Env):
         
         self.state = np.array(
             [agent_price, agent_quality, comp_price, comp_quality])
-        print('I initiate with ', self.state)
+        print('I initiate with', self.state)
         return self.state[0:4]
 
     def step(self, action):

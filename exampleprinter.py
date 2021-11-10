@@ -1,6 +1,11 @@
+#!/usr/bin/env python3
+
+# rl
 import torch
 import torch.nn as nn
 import tensorboard
+
+# own files
 from sim_market import SimMarket
 
 # this file is broken, if you do not have 'best_marketplace.dat'

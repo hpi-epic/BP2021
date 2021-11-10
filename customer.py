@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+
+# helper
 import random
 import numpy as np
 

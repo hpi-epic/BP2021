@@ -1,22 +1,26 @@
+#!/usr/bin/env python3
+
+# helper
 import random
-import utils
 import numpy as np
 
+# own files
+import utils as ut
 
 class Competitor():   
     def __init__(self):
-        self.maxprice = utils.MAX_PRICE
-        self.maxquality = utils.MAX_QUALITY
-        self.quality = utils.shuffle_quality()
+        self.maxprice = ut.MAX_PRICE
+        self.maxquality = ut.MAX_QUALITY
+        self.quality = ut.shuffle_quality()
         
     def get_initial_price(self, random_start):
         if random_start:
-            return max(int(utils.PRODUCTION_PRICE + np.random.normal() * 3 + 3), utils.PRODUCTION_PRICE + 1)
+            return max(int(ut.PRODUCTION_PRICE + np.random.normal() * 3 + 3), ut.PRODUCTION_PRICE + 1)
         else:
-            return utils.PRODUCTION_PRICE
+            return ut.PRODUCTION_PRICE
 
     def reset(self, random_start):
-        self.quality = utils.shuffle_quality()
+        self.quality = ut.shuffle_quality()
         return self.get_initial_price(random_start), self.quality
         
 
@@ -35,11 +39,11 @@ class Competitor():
             (comp_quality / comp_price)
         if random.random() < 0.1:
             return comp_price + random.randint(-1, 1)
-        elif comp_price < utils.PRODUCTION_PRICE or (ratio < 0.95 and comp_price < utils.MAX_PRICE - 5):
+        elif comp_price < ut.PRODUCTION_PRICE or (ratio < 0.95 and comp_price < ut.MAX_PRICE - 5):
             return agent_price + 1
-        elif agent_price > utils.PRODUCTION_PRICE + 1 and ratio > 1.05 or comp_price > utils.MAX_PRICE - 5:
+        elif agent_price > ut.PRODUCTION_PRICE + 1 and ratio > 1.05 or comp_price > ut.MAX_PRICE - 5:
             return agent_price - 1
-        elif agent_price > utils.PRODUCTION_PRICE + 1 and comp_quality > agent_quality:
+        elif agent_price > ut.PRODUCTION_PRICE + 1 and comp_quality > agent_quality:
             return agent_price + 1
         else:
             return comp_price
@@ -68,8 +72,8 @@ class Competitor():
         elif comp_quality == agent_quality:
             # same quality
             new_price = comp_price
-        if new_price < utils.PRODUCTION_PRICE:
-            new_price = utils.PRODUCTION_PRICE + 1
+        if new_price < ut.PRODUCTION_PRICE:
+            new_price = ut.PRODUCTION_PRICE + 1
         elif new_price > self.maxprice:
             new_price = self.maxprice
         return new_price
