@@ -9,5 +9,4 @@ from first_prototype import SimMarket
 from training import Experience
 
 class Agent:
-    pass
-
+	pass

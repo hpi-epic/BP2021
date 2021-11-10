@@ -16,6 +16,7 @@ To run that code, install Anaconda and run the following commands to install req
 ```console
 conda install -c pytorch torchvision
 ```
+
 ```console
 conda install -c conda-forge gym
 ```
@@ -31,6 +32,7 @@ If you run Windows, you must run these commands using Anaconda Prompt.
 ## Tests
 
 We are using the `Pytest` framework for testing. Install it using the following command:
+
 ```console
 conda install -c anaconda pytest
-``` 
+```
