@@ -21,10 +21,6 @@ def model(device):
 		nn.ReLU(),
 		nn.Linear(128, ut.MAX_PRICE - 2)).to(device)
 
-
-
-
-
 Experience = collections.namedtuple(
 	'Experience', field_names=['state', 'action', 'reward',
 							   'done', 'new_state'])

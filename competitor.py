@@ -21,33 +21,16 @@ class Competitor():
         
 
     def give_competitors_price(self, state):
+        return self.comp_strategy1(state)
+        
+
+    def comp_strategy1(self, state):
+        # this stratgy is based on a price quality ratio
         agent_price = state[0]
         comp_price = state[2]
         agent_quality = state[1]
         comp_quality = state[3]
 
-        new_price = 0
-
-        # if comp_quality > agent_quality + 15:
-        #     # significantly better quality
-        #     new_price =  agent_price + 2
-        # elif comp_quality > agent_quality:
-        #     # slightly better quality
-        #     new_price = agent_price + 1
-        # elif comp_quality < agent_quality and comp_quality > agent_quality - 15:    
-        #     # slightly worse quality
-        #     new_price = agent_price - 1
-        # elif comp_quality < agent_quality:
-        #     # significantly worse quality
-        #     new_price = agent_price - 2
-        # elif comp_quality == agent_quality:
-        #     # same quality
-        #     new_price = comp_price
-        # if new_price < utils.PRODUCTION_PRICE:
-        #     new_price = utils.PRODUCTION_PRICE + 1
-        # elif new_price > self.maxprice:
-        #     new_price = self.maxprice
-        # return new_price
         ratio = (agent_quality / agent_price) / \
             (comp_quality / comp_price)
         if random.random() < 0.1:
@@ -60,3 +43,33 @@ class Competitor():
             return agent_price + 1
         else:
             return comp_price
+
+    def comp_strategy2(self, state):
+        # this competitor is based on quality and agents actions
+        agent_price = state[0]
+        comp_price = state[2]
+        agent_quality = state[1]
+        comp_quality = state[3]
+
+        new_price = 0
+
+        if comp_quality > agent_quality + 15:
+            # significantly better quality
+            new_price =  agent_price + 2
+        elif comp_quality > agent_quality:
+            # slightly better quality
+            new_price = agent_price + 1
+        elif comp_quality < agent_quality and comp_quality > agent_quality - 15:    
+            # slightly worse quality
+            new_price = agent_price - 1
+        elif comp_quality < agent_quality:
+            # significantly worse quality
+            new_price = agent_price - 2
+        elif comp_quality == agent_quality:
+            # same quality
+            new_price = comp_price
+        if new_price < utils.PRODUCTION_PRICE:
+            new_price = utils.PRODUCTION_PRICE + 1
+        elif new_price > self.maxprice:
+            new_price = self.maxprice
+        return new_price

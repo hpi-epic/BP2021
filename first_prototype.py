@@ -48,7 +48,7 @@ class SimMarket(gym.Env):
             random_start = random.random() < 0.5
         
         agent_price = int(utils.PRODUCTION_PRICE +
-                          np.random.normal(3,3))if random_start else utils.PRODUCTION_PRICE
+                          np.random.normal(3,3)) if random_start else utils.PRODUCTION_PRICE
         agent_quality = self.shuffle_quality()
 
         comp_price, comp_quality = self.competitor.reset(random_start)
