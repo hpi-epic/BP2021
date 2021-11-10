@@ -8,7 +8,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.tensorboard import SummaryWriter
-import datetime
+import policyevaluator
 from first_prototype import SimMarket
 
 
@@ -23,7 +23,7 @@ def model(device):
 
 MEAN_REWARD_BOUND = 50 * 100 * 20
 
-GAMMA = 0.99
+GAMMA = 1
 BATCH_SIZE = 32
 REPLAY_SIZE = 50000
 LEARNING_RATE = 1e-5
@@ -160,6 +160,9 @@ best_m_reward = None
 
 # tensorboard init
 writer = SummaryWriter()
+print("Now I evaluate the reward of an optimal policy")
+optimal_value = policyevaluator.evaluate_policy()
+print("With an optimal policy I would receive ", optimal_value)
 
 while True:
     frame_idx += 1  # counts the steps
@@ -179,8 +182,17 @@ while True:
         m_reward = np.mean(total_rewards[-100:])
         m_comp_reward = np.mean(comp_rewards[-100:])
         writer.add_scalar('Profit_mean/agent', m_reward, frame_idx / 50)
+        writer.add_scalar('Profit_mean/agent_normalized', m_reward / optimal_value, frame_idx / 50)
         writer.add_scalar('Profit_mean/comp', m_comp_reward, frame_idx / 50)
-        writer.add_scalars('Profit_mean/direct_comparison', {'agent': m_reward, 'competitor': m_comp_reward}, frame_idx / 50)
+        writer.add_scalars('Profit_mean/direct_comparison',
+                           {'agent': m_reward, 'competitor': m_comp_reward}, frame_idx / 50)
+        writer.add_scalar('Loss/MSE', np.mean(losses[-1000:]), frame_idx / 50)
+        writer.add_scalar('Loss/RMSE', np.mean(rmse_losses[-1000:]), frame_idx / 50)
+        writer.add_scalar('Loss/selected_q_vals',
+                          np.mean(selected_q_vals[-1000:]), frame_idx / 50)
+        writer.add_scalar('Loss/loss_val_ratio',
+                          np.mean(loss_val_ratio[-1000:]), frame_idx / 50)
+        writer.add_scalar('epsilon', epsilon, frame_idx / 50)
         print("%d: done %d games, reward %.3f, comp reward %.3f "
               "eps %.2f, speed %.2f f/s" % (
                   frame_idx, len(
@@ -215,12 +227,5 @@ while True:
     rmse_losses.append(torch.sqrt(loss_t).item())
     selected_q_vals.append(selected_q_val_mean.item())
     loss_val_ratio.append(torch.sqrt(loss_t).item()/selected_q_val_mean.item())
-    writer.add_scalar('Loss/MSE', np.mean(losses[-1000:]), frame_idx)
-    writer.add_scalar('Loss/RMSE', np.mean(rmse_losses[-1000:]), frame_idx)
-    writer.add_scalar('Loss/selected_q_vals',
-                      np.mean(selected_q_vals[-1000:]), frame_idx)
-    writer.add_scalar('Loss/loss_val_ratio',
-                      np.mean(loss_val_ratio[-1000:]), frame_idx)
-    writer.add_scalar('epsilon', epsilon, frame_idx)
     loss_t.backward()
     optimizer.step()

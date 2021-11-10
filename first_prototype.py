@@ -1,12 +1,14 @@
 import gym
+import math
 import numpy as np
 import random
 from competitor import Competitor
+import utils
 
 # An offer is a Market State that contains both prices and both qualities
 
 
-def buy_object(offers):
+def buy_object_old(offers):
     if random.random() < 0.17:
         return random.randint(1, 2)
     value_agent = max(offers[1] / offers[0] + np.random.normal() / 2, 0.1)
@@ -24,11 +26,30 @@ def buy_object(offers):
     else:
         return 2  # Buy competitor's
 
+def softmax(priorities):
+    exp_priorities = np.exp(priorities)
+    return exp_priorities / sum(exp_priorities)
+
+def probabilities(offers):
+    value_agent = (offers[1] + 20) / offers[0] - math.exp(offers[0] - 25)
+    value_compet = (offers[3] + 20) / offers[2] - math.exp(offers[2] - 25)
+    buy_nothing = max(0, min(offers[1], offers[2]) - 23) + 1
+    return softmax([value_agent, value_compet, buy_nothing])
+
+def buy_object(offers):
+    probs = probabilities(offers)
+    myrand = random.random()
+    if myrand < probs[0]:
+        return 1
+    elif myrand < probs[0] + probs[1]:
+        return 2
+    else:
+        return 0
 
 class SimMarket(gym.Env):
     STEPS_PER_ROUND = 50
 
-    def __init__(self, maxprice=30.0, maxquality=100.0):
+    def __init__(self, maxprice=30.0, maxquality=10.0):
         self.maxprice = maxprice
         self.maxquality = maxquality
         self.competitor = Competitor()
@@ -37,9 +58,6 @@ class SimMarket(gym.Env):
             np.array([0.0, 0.0, 0.0, 0.0]), np.array([self.maxprice, self.maxquality, self.maxprice, self.maxquality]), dtype=np.float64)
         # 0: Decrease the price by 1, 1: keep the price constant, 2: decrease the price by 1
         self.action_space = gym.spaces.Discrete(28)
-
-    def shuffle_quality(self):
-        return min(max(int(np.random.normal(50, 20)), 1), self.maxquality)
 
     def reset(self, random_start=True):
         self.counter = 0
@@ -52,7 +70,7 @@ class SimMarket(gym.Env):
         
         agent_price = int(self.production_price +
                           np.random.normal() * 3 + 3)if random_start else 10
-        agent_quality = self.shuffle_quality()
+        agent_quality = utils.shuffle_quality()
 
         comp_price, comp_quality = self.competitor.reset(random_start)
         
