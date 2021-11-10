@@ -7,7 +7,7 @@ import os
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from  torch.utils.tensorboard import SummaryWriter
+from torch.utils.tensorboard import SummaryWriter
 import datetime
 from first_prototype import SimMarket
 import utils as ut
@@ -22,100 +22,98 @@ def model(device):
 		nn.Linear(128, ut.MAX_PRICE - 2)).to(device)
 
 Experience = collections.namedtuple(
-	'Experience', field_names=['state', 'action', 'reward',
-							   'done', 'new_state'])
+    'Experience', field_names=['state', 'action', 'reward',
+                               'done', 'new_state'])
+
 
 class Agent:
-	def __init__(self, env, exp_buffer):
-		self.env = env
-		self.exp_buffer = exp_buffer
-		self._reset()
+    def __init__(self, env, exp_buffer):
+        self.env = env
+        self.exp_buffer = exp_buffer
+        self._reset()
 
-	def _reset(self):
-		self.state = self.env.reset(False)
-		self.total_reward = 0.0
-		self.total_comp_reward = 0.0
+    def _reset(self):
+        self.state = self.env.reset(False)
+        self.total_reward = 0.0
+        self.total_comp_reward = 0.0
 
+    @torch.no_grad()
+    def play_step(self, net, epsilon=0.0, device="cpu"):
+        done_reward = None
+        comp_reward = None
 
+        if np.random.random() < epsilon:
+            action = self.env.action_space.sample()
+        else:
+            state_a = np.single([self.state])
+            state_v = torch.tensor(state_a).to(device)
+            q_vals_v = net(state_v)
+            _, act_v = torch.max(q_vals_v, dim=1)
+            action = int(act_v.item())
 
-	@torch.no_grad()
-	def play_step(self, net, epsilon=0.0, device="cpu"):
-		done_reward = None
-		comp_reward = None
+        # do step in the environment
+        new_state, reward, is_done, output_dict = self.env.step(action)
 
-		if np.random.random() < epsilon:
-			action = self.env.action_space.sample()
-		else:
-			state_a = np.single([self.state])
-			state_v = torch.tensor(state_a).to(device)
-			q_vals_v = net(state_v)
-			_, act_v = torch.max(q_vals_v, dim=1)
-			action = int(act_v.item())
+        self.total_reward += reward
+        self.total_comp_reward += output_dict['comp_profit']
 
-		# do step in the environment
-		new_state, reward, is_done, output_dict = self.env.step(action)
-
-		self.total_reward += reward
-		self.total_comp_reward += output_dict['comp_profit']
-		
-		exp = Experience(self.state, action, reward,
-						 is_done, new_state)
-		self.exp_buffer.append(exp)
-		self.state = new_state
-		if is_done:
-			done_reward = self.total_reward
-			comp_reward = self.total_comp_reward
-			self._reset()
-		return done_reward, comp_reward
-
+        exp = Experience(self.state, action, reward,
+                         is_done, new_state)
+        self.exp_buffer.append(exp)
+        self.state = new_state
+        if is_done:
+            done_reward = self.total_reward
+            comp_reward = self.total_comp_reward
+            self._reset()
+        return done_reward, comp_reward
 
 
 class ExperienceBuffer:
-	def __init__(self, capacity):
-		self.buffer = collections.deque(maxlen=capacity)
+    def __init__(self, capacity):
+        self.buffer = collections.deque(maxlen=capacity)
 
-	def __len__(self):
-		return len(self.buffer)
+    def __len__(self):
+        return len(self.buffer)
 
-	def append(self, experience):
-		self.buffer.append(experience)
+    def append(self, experience):
+        self.buffer.append(experience)
 
-	def sample(self, batch_size):
-		indices = np.random.choice(len(self.buffer), batch_size,
-								   replace=False)
-		states, actions, rewards, dones, next_states = \
-			zip(*[self.buffer[idx] for idx in indices])
-		return np.array(states), np.array(actions, dtype=np.int64), \
-			np.array(rewards, dtype=np.float32), \
-			np.array(dones, dtype=np.uint8), \
-			np.array(next_states)
+    def sample(self, batch_size):
+        indices = np.random.choice(len(self.buffer), batch_size,
+                                   replace=False)
+        states, actions, rewards, dones, next_states = \
+            zip(*[self.buffer[idx] for idx in indices])
+        return np.array(states), np.array(actions, dtype=np.int64), \
+            np.array(rewards, dtype=np.float32), \
+            np.array(dones, dtype=np.uint8), \
+            np.array(next_states)
 
 
 def calc_loss(batch, net, tgt_net, device="cpu"):
-	states, actions, rewards, dones, next_states = batch
+    states, actions, rewards, dones, next_states = batch
 
-	states_v = torch.tensor(np.single(
-		states)).to(device)
-	next_states_v = torch.tensor(np.single(
-		next_states)).to(device)
-	actions_v = torch.tensor(actions).to(device)
-	rewards_v = torch.tensor(rewards).to(device)
-	done_mask = torch.BoolTensor(dones).to(device)
+    states_v = torch.tensor(np.single(
+        states)).to(device)
+    next_states_v = torch.tensor(np.single(
+        next_states)).to(device)
+    actions_v = torch.tensor(actions).to(device)
+    rewards_v = torch.tensor(rewards).to(device)
+    done_mask = torch.BoolTensor(dones).to(device)
 
-	state_action_values = net(states_v).gather(
-		1, actions_v.unsqueeze(-1)).squeeze(-1)
+    state_action_values = net(states_v).gather(
+        1, actions_v.unsqueeze(-1)).squeeze(-1)
 
-	with torch.no_grad():
-		next_state_values = tgt_net(next_states_v).max(1)[0]
-		next_state_values[done_mask] = 0.0
-		next_state_values = next_state_values.detach()
+    with torch.no_grad():
+        next_state_values = tgt_net(next_states_v).max(1)[0]
+        next_state_values[done_mask] = 0.0
+        next_state_values = next_state_values.detach()
 
 	expected_state_action_values = next_state_values * ut.GAMMA + rewards_v
 	return nn.MSELoss()(state_action_values, expected_state_action_values), state_action_values.mean()
 
 
 device = torch.device(
-	"cuda") if torch.cuda.is_available() else torch.device("cpu")
+    "cuda") if torch.cuda.is_available() else torch.device("cpu")
 print("Using {} device".format(device))
 
 env = SimMarket()
@@ -140,12 +138,13 @@ comp_rewards = []
 losses = []
 rmse_losses = []
 selected_q_vals = []
+loss_val_ratio = []
 frame_idx = 0
 ts_frame = 0
 ts = time.time()
 best_m_reward = None
 
-# tensorboard init 
+# tensorboard init
 writer = SummaryWriter()
 
 while True:
