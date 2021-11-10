@@ -1,17 +1,20 @@
 #!/usr/bin/env python3
+# helper
 import time
 import numpy as np
-import collections
 import os
 
+# rl
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.tensorboard import SummaryWriter
-from first_prototype import SimMarket
+
+# own files
+from sim_market import SimMarket
 import utils as ut
 from agent import Agent
-from experiencebuffer import ExperienceBuffer
+from experience_buffer import ExperienceBuffer
 
 
 def model(device):
@@ -22,7 +25,7 @@ def model(device):
 		nn.ReLU(),
 		nn.Linear(128, ut.MAX_PRICE - 2)).to(device)
 
-def calc_loss(batch, net, tgt_net, device="cpu"):
+def calc_loss(batch, net, tgt_net, device='cpu'):
     states, actions, rewards, dones, next_states = batch
 
     states_v = torch.tensor(np.single(
@@ -46,15 +49,15 @@ def calc_loss(batch, net, tgt_net, device="cpu"):
 
 
 device = torch.device(
-    "cuda") if torch.cuda.is_available() else torch.device("cpu")
-print("Using {} device".format(device))
+    'cuda') if torch.cuda.is_available() else torch.device('cpu')
+print('Using {} device'.format(device))
 
 env = SimMarket()
 
 observations = env.observation_space.shape[0]
 
-print("Observation Space: " + str(observations) + str(type(observations)))
-print("Action Space: " + str(env.action_space.n))
+print('Observation Space:', observations, type(observations))
+print('Action Space: ', env.action_space.n)
 
 net = model(device)
 tgt_net = model(device)
@@ -87,8 +90,8 @@ while True:
 
 	reward, comp_reward = agent.play_step(net, epsilon, device=device)
 	if reward is not None:
-		print("My profit is:", reward, "\t my competitor has", comp_reward,
-				"\tThe quality values were", env.state[1], "\tand", env.state[3])
+		print('My profit is:', reward, '\t my competitor has', comp_reward,
+				'\tThe quality values were', env.state[1], '\tand', env.state[3])
 		total_rewards.append(reward)
 		comp_rewards.append(comp_reward)
 		speed = (frame_idx - ts_frame) / ((time.time() - ts) if (time.time() - ts) > 0 else 1)
@@ -98,24 +101,24 @@ while True:
 		m_comp_reward = np.mean(comp_rewards[-100:])
 		writer.add_scalar('Profit_mean/agent', m_reward, frame_idx / ut.STEPS_PER_ROUND)
 		writer.add_scalar('Profit_mean/comp', m_comp_reward, frame_idx / ut.STEPS_PER_ROUND)
-		print("%d: done %d games, reward %.3f, comp reward %.3f "
-			  "eps %.2f, speed %.2f f/s" % (
+		print('%d: done %d games, reward %.3f, comp reward %.3f '
+			  'eps %.2f, speed %.2f f/s' % (
 				  frame_idx, len(total_rewards), m_reward, m_comp_reward, epsilon,
 				  speed
 			  ))
 
-		if not os.path.isdir("trainedModels"):
-			os.mkdir("trainedModels")
+		if not os.path.isdir('trainedModels'):
+			os.mkdir('trainedModels')
 
 		if (best_m_reward is None or best_m_reward < m_reward) and frame_idx > 1.2 * ut.EPSILON_DECAY_LAST_FRAME:
-			torch.save(net.state_dict(), "./trainedModels/" + "args.env" +
-					   "-best_%.2f_marketplace.dat" % m_reward)
+			torch.save(net.state_dict(), './trainedModels/' + 'args.env' +
+					   '-best_%.2f_marketplace.dat' % m_reward)
 			if best_m_reward is not None:
-				print("Best reward updated %.3f -> %.3f" % (
+				print('Best reward updated %.3f -> %.3f' % (
 					best_m_reward, m_reward))
 			best_m_reward = m_reward
 		if m_reward > ut.MEAN_REWARD_BOUND:
-			print("Solved in %d frames!" % frame_idx)
+			print('Solved in %d frames!' % frame_idx)
 			break
 
 	if len(buffer) < ut.REPLAY_START_SIZE:

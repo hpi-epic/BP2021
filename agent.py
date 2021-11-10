@@ -19,7 +19,7 @@ class Agent:
         self.total_comp_reward = 0.0
 
     @torch.no_grad()
-    def play_step(self, net, epsilon=0.0, device="cpu"):
+    def play_step(self, net, epsilon=0.0, device='cpu'):
         done_reward = None
         comp_reward = None
 
