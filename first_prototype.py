@@ -84,7 +84,7 @@ class SimMarket(gym.Env):
         comp_sales = 0
 
         for _ in range(10):
-            customer_action = buy_object(self.state)
+            customer_action = Customer.buy_object(self.state)
             if customer_action == 1:
                 profit_agent += self.state[0] - self.production_price
                 agent_sales += 1
@@ -97,7 +97,7 @@ class SimMarket(gym.Env):
         self.state[2] = max(1, self.state[2])
 
         for _ in range(10):
-            customer_action = buy_object(self.state)
+            customer_action = Customer.buy_object(self.state)
             if customer_action == 1:
 
                 profit_agent += self.state[0] - self.production_price
