@@ -43,7 +43,7 @@ def setup():
 	
 	assert(NUMBER_OF_CUSTOMERS > 0 and NUMBER_OF_CUSTOMERS % 2 == 0)
 	assert(LEARNING_RATE > 0 and LEARNING_RATE < 1)
-	assert(PRODUCTION_PRICE <= MAX_PRICE and PRODUCTION_PRICE > 0)
+	assert(PRODUCTION_PRICE <= MAX_PRICE and PRODUCTION_PRICE >= 0)
 	assert(MAX_QUALITY > 0)
 	assert(MAX_PRICE > 0)
 	assert(STEPS_PER_ROUND > 0)
