@@ -91,7 +91,8 @@ class SimMarket(gym.Env):
         #self.state[2] = max(1, self.state[2])
 
         for iter in range(2):
-            for _ in range(int(utils.NUMBER_OF_CUSTOMERS / 2)):
+
+            for _ in range(utils.NUMBER_OF_CUSTOMERS/2):
                 customer_action = buy_object(self.state)
                 if customer_action == 1:
                     profit_agent += self.state[0] - utils.PRODUCTION_PRICE

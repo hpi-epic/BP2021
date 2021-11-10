@@ -39,14 +39,14 @@ def setup():
 	LEARNING_RATE = float(config['learning_rate'])
 	NUMBER_OF_CUSTOMERS = int(config['number_of_customers'])
 	PRODUCTION_PRICE = int(config['production_price'])
-	NUMBER_OF_CUSTOMERS = int(config['number_of_customers'])
+
 	
-	assert(NUMBER_OF_CUSTOMERS is not None and NUMBER_OF_CUSTOMERS > 0 and NUMBER_OF_CUSTOMERS % 2 == 0)
-	assert( LEARNING_RATE is not None and LEARNING_RATE > 0 and LEARNING_RATE < 1)
-	assert(PRODUCTION_PRICE is not None and PRODUCTION_PRICE <= MAX_PRICE and PRODUCTION_PRICE > 0)
-	assert(MAX_QUALITY is not None and MAX_QUALITY > 0)
-	assert(MAX_PRICE is not None and MAX_PRICE > 0)
-	assert(STEPS_PER_ROUND is not None and STEPS_PER_ROUND > 0)
+	assert(NUMBER_OF_CUSTOMERS > 0 and NUMBER_OF_CUSTOMERS % 2 == 0)
+	assert(LEARNING_RATE > 0 and LEARNING_RATE < 1)
+	assert(PRODUCTION_PRICE <= MAX_PRICE and PRODUCTION_PRICE > 0)
+	assert(MAX_QUALITY > 0)
+	assert(MAX_PRICE > 0)
+	assert(STEPS_PER_ROUND > 0)
 
 	MEAN_REWARD_BOUND = STEPS_PER_ROUND * MAX_PRICE * 20
 	
