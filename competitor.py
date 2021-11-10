@@ -21,10 +21,11 @@ class Competitor():
         
 
     def give_competitors_price(self, state):
-        return self.comp_strategy2(state)
+        return self.comp_strategy1(state)
         
-    def comp_strategy2(self, state): 
-        # this competitor is based on a quality price ratio   
+
+    def comp_strategy1(self, state):
+        # this stratgy is based on a price quality ratio
         agent_price = state[0]
         comp_price = state[2]
         agent_quality = state[1]
@@ -43,8 +44,8 @@ class Competitor():
         else:
             return comp_price
 
-    def comp_strategy1(self, state):
-        # this competitor is based on agent's quality and price
+    def comp_strategy2(self, state):
+        # this competitor is based on quality and agents actions
         agent_price = state[0]
         comp_price = state[2]
         agent_quality = state[1]

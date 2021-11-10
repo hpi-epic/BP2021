@@ -7,6 +7,7 @@
 *.csv
 trainedModels/
 runs/
+test.py
 # to exclude some notes
 notes.txt
 

@@ -1,11 +1,14 @@
+from gym.spaces.space import Space
 from first_prototype import SimMarket
+import utils
 
 env = SimMarket()
 our_profit = 0
 is_done = False
 state = env.reset()
 
-print('The production price is', str(env.production_price))
+
+print('The production price is', utils.PRODUCTION_PRICE)
 while not is_done:
     agent_price = state[0]
     comp_price = state[2]
@@ -19,5 +22,4 @@ while not is_done:
     state, reward, is_done, _ = env.step(int(action))
     print('Your profit this round is', reward)
     our_profit += reward
-print('Your total earnings:', str(our_profit),
-    'total comp earnings:', env.comp_profit)
+print('Your total earnings:', our_profit)
