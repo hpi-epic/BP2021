@@ -8,7 +8,7 @@
 trainedModels/
 runs/
 # to exclude some notes
-*.txt
+notes.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
