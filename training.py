@@ -11,6 +11,7 @@ from torch.utils.tensorboard import SummaryWriter
 from first_prototype import SimMarket
 import utils as ut
 from agent import Agent
+from experiencebuffer import ExperienceBuffer
 
 
 def model(device):
@@ -20,27 +21,6 @@ def model(device):
 		nn.Linear(128, 128),
 		nn.ReLU(),
 		nn.Linear(128, ut.MAX_PRICE - 2)).to(device)
-
-class ExperienceBuffer:
-    def __init__(self, capacity):
-        self.buffer = collections.deque(maxlen=capacity)
-
-    def __len__(self):
-        return len(self.buffer)
-
-    def append(self, experience):
-        self.buffer.append(experience)
-
-    def sample(self, batch_size):
-        indices = np.random.choice(len(self.buffer), batch_size,
-                                   replace=False)
-        states, actions, rewards, dones, next_states = \
-            zip(*[self.buffer[idx] for idx in indices])
-        return np.array(states), np.array(actions, dtype=np.int64), \
-            np.array(rewards, dtype=np.float32), \
-            np.array(dones, dtype=np.uint8), \
-            np.array(next_states)
-
 
 def calc_loss(batch, net, tgt_net, device="cpu"):
     states, actions, rewards, dones, next_states = batch
