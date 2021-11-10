@@ -20,8 +20,8 @@ jobs:
           title-or-body: "both"
           parameters: '[ {"keywords": [""], "labels": ["new"]} ]'
           github-token: "${{ secrets.GITHUB_TOKEN }}"
-          
-  assign_BP2021:
+
+  assign_BP2021_project:
     runs-on: [self-hosted, ubuntu-20.04]
     name: Assign to BP2021-project
     steps:
@@ -30,5 +30,3 @@ jobs:
       if: github.event.action == 'opened'
       with:
         project: 'https://github.com/hpi-epic/BP2021/projects/1'
-        column_name: 'Backlog'
-   
