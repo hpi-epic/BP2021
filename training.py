@@ -27,30 +27,30 @@ def model(device):
 		nn.Linear(128, ut.MAX_PRICE - 2)).to(device)
 
 def calc_loss(batch, net, tgt_net, device='cpu'):
-    states, actions, rewards, dones, next_states = batch
+	states, actions, rewards, dones, next_states = batch
 
-    states_v = torch.tensor(np.single(
-        states)).to(device)
-    next_states_v = torch.tensor(np.single(
-        next_states)).to(device)
-    actions_v = torch.tensor(actions).to(device)
-    rewards_v = torch.tensor(rewards).to(device)
-    done_mask = torch.BoolTensor(dones).to(device)
+	states_v = torch.tensor(np.single(
+		states)).to(device)
+	next_states_v = torch.tensor(np.single(
+		next_states)).to(device)
+	actions_v = torch.tensor(actions).to(device)
+	rewards_v = torch.tensor(rewards).to(device)
+	done_mask = torch.BoolTensor(dones).to(device)
 
-    state_action_values = net(states_v).gather(
-        1, actions_v.unsqueeze(-1)).squeeze(-1)
+	state_action_values = net(states_v).gather(
+		1, actions_v.unsqueeze(-1)).squeeze(-1)
 
-    with torch.no_grad():
-        next_state_values = tgt_net(next_states_v).max(1)[0]
-        next_state_values[done_mask] = 0.0
-        next_state_values = next_state_values.detach()
+	with torch.no_grad():
+		next_state_values = tgt_net(next_states_v).max(1)[0]
+		next_state_values[done_mask] = 0.0
+		next_state_values = next_state_values.detach()
 
-    expected_state_action_values = next_state_values * ut.GAMMA + rewards_v
-    return nn.MSELoss()(state_action_values, expected_state_action_values), state_action_values.mean()
+	expected_state_action_values = next_state_values * ut.GAMMA + rewards_v
+	return nn.MSELoss()(state_action_values, expected_state_action_values), state_action_values.mean()
 
 
 device = torch.device(
-    'cuda') if torch.cuda.is_available() else torch.device('cpu')
+	'cuda') if torch.cuda.is_available() else torch.device('cpu')
 print('Using {} device'.format(device))
 
 env = SimMarket()
