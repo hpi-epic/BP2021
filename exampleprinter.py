@@ -32,4 +32,4 @@ state, reward, is_done, _ = env.step(action)
 print('The agents profit this round is', reward)
 our_profit += reward
 print('In total the agent earned', our_profit, 'with a profit/quality of:', round(our_profit/state[1],3), 
-      ' and his competitor', env.comp_profit, 'with a profit/quality of:', round(env.comp_profit/state[2], 3))
+	  ' and his competitor', env.comp_profit, 'with a profit/quality of:', round(env.comp_profit/state[2], 3))

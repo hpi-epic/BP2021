@@ -9,7 +9,7 @@ import utils as ut
 
 class Competitor():   
 	def __init__(self):
-    		self.maxprice = ut.MAX_PRICE
+		self.maxprice = ut.MAX_PRICE
 		self.maxquality = ut.MAX_QUALITY
 		self.quality = ut.shuffle_quality()
 		
@@ -58,7 +58,7 @@ class Competitor():
 		new_price = 0
 
 		if comp_quality > agent_quality + 15:
-    			# significantly better quality
+				# significantly better quality
 			new_price =  agent_price + 2
 		elif comp_quality > agent_quality:
 			# slightly better quality

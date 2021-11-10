@@ -1,5 +1,9 @@
+#!/usr/bin/env python3
+
+# helper
 import numpy as np
 import json
+
 MAX_QUALITY = None
 MAX_PRICE = None
 PRODUCTION_PRICE = None

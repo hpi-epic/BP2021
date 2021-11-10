@@ -17,7 +17,6 @@ import utils as ut
 from agent import Agent
 from experience_buffer import ExperienceBuffer
 
-
 def model(device):
 	return nn.Sequential(
 		nn.Linear(4, 128),
