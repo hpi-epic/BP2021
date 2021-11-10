@@ -7,36 +7,14 @@ from customer import Customer
 
 # An offer is a Market State that contains both prices and both qualities
 
-# class Customer():
-
-#     def buy_object(offers):
-#         if random.random() < 0.17:
-#             return random.randint(1, 2)
-#         value_agent = max(offers[1] / offers[0] + np.random.normal() / 2, 0.1)
-#         value_compet = max(offers[3] / offers[2] + np.random.normal() / 2, 0.1)
-#         maxprice = np.random.normal() * 3 + 25
-#         if offers[0] > maxprice:
-#             value_agent = 0
-#         if offers[2] > maxprice:
-#             value_compet = 0
-
-#         if value_agent == 0 and value_compet == 0:
-#             return 0  # Don't buy anything
-#         elif value_agent > value_compet:
-#             return 1  # Buy agent's
-#         else:
-#             return 2  # Buy competitor's
-
-
 class SimMarket(gym.Env):
 
     def __init__(self):
-        utils.setup()
-
         self.competitor = Competitor()
         # cell 0: agent's price, cell 1: agent's quality, cell 2: competitor's price, cell 3: competitor's quality
         self.observation_space = gym.spaces.Box(
             np.array([0.0, 0.0, 0.0, 0.0]), np.array([utils.MAX_PRICE, utils.MAX_QUALITY, utils.MAX_PRICE, utils.MAX_QUALITY]), dtype=np.float64)
+        
         # one action for every price possible - 2 for 0 and MAX_PRICE
         self.action_space = gym.spaces.Discrete(utils.MAX_PRICE - 2 )
 
