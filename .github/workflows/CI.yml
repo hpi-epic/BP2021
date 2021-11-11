@@ -6,7 +6,7 @@ on: [push, pull_request]
 
 jobs:
   build:
-    runs-on: [self-hosted, ubuntu-20.04.2]
+    runs-on: [self-hosted, ubuntu-latest]
     name: CI on Ubuntu
     steps:
       - name: Checkout
