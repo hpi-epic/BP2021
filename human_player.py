@@ -2,7 +2,7 @@
 
 # rl
 from gym.spaces.space import Space
-from first_prototype import SimMarket
+from sim_market import SimMarket
 
 # own files
 import utils as ut
