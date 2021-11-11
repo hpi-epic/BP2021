@@ -1,4 +1,4 @@
-from ..first_prototype import Customer
+from ..customer import Customer
 
 ident_state = [15, 20, 15, 20]
 
