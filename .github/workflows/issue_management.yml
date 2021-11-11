@@ -1,7 +1,7 @@
 name: Manage new Issues
 
-# uses https://github.com/srggrs/assign-one-project-github-action
-# and https://github.com/Naturalclar/issue-action
+# uses https://github.com/Naturalclar/issue-action
+# and https://github.com/qmacro/action-add-issue-to-project-column/
 
 on:
   issues:
@@ -20,12 +20,15 @@ jobs:
           parameters: '[ {"keywords": [""], "labels": ["new"]} ]'
           github-token: "${{ secrets.GITHUB_TOKEN }}"
       - name: Create new project card with issue
+        id: list
         uses: qmacro/action-add-issue-to-project-column@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           project: 'BP2021'
           column: 'Backlog'
 
+
+# https://github.com/srggrs/assign-one-project-github-action
       # - name: Assign issues and pull requests to BP2021
       #   uses: srggrs/assign-one-project-github-action@1.2.1
       #   if: github.event.action == 'opened'
