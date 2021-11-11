@@ -1,4 +1,4 @@
-name: Manage new Issues and PR's
+name: Manage new Issues
 
 # uses https://github.com/srggrs/assign-one-project-github-action
 # and https://github.com/Naturalclar/issue-action
@@ -13,7 +13,7 @@ jobs:
   assign_new_label:
     runs-on: [self-hosted, ubuntu-20.04]
     steps:
-      - name: Assign new issues and pull requests the 'new' label
+      - name: Assign new issues the 'new' label
         uses: Naturalclar/issue-action@v2.0.2
         with:
           title-or-body: "both"
