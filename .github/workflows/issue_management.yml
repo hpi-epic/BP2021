@@ -15,18 +15,21 @@ jobs:
   assign_new_label:
     runs-on: [self-hosted, ubuntu-20.04]
     steps:
-      - uses: Naturalclar/issue-action@v2.0.2
+      - name: Assign new issues and pull requests the 'new' label
+        uses: Naturalclar/issue-action@v2.0.2
         with:
           title-or-body: "both"
           parameters: '[ {"keywords": [""], "labels": ["new"]} ]'
           github-token: "${{ secrets.GITHUB_TOKEN }}"
+      - name: Create new project card with issue
+        uses: qmacro/action-add-issue-to-project-column@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          project: 'BP2021'
+          column: 'Backlog'
 
-  assign_BP2021_project:
-    runs-on: [self-hosted, ubuntu-20.04]
-    name: Assign to BP2021-project
-    steps:
-    - name: Assign issues and pull requests to BP2021
-      uses: srggrs/assign-one-project-github-action@1.2.1
-      if: github.event.action == 'opened'
-      with:
-        project: 'https://github.com/hpi-epic/BP2021/projects/1'
+      # - name: Assign issues and pull requests to BP2021
+      #   uses: srggrs/assign-one-project-github-action@1.2.1
+      #   if: github.event.action == 'opened'
+      #   with:
+      #     project: 'https://github.com/hpi-epic/BP2021/projects/1'
