@@ -6,8 +6,6 @@ name: Manage new Issues and PR's
 on:
   issues:
     types: [opened]
-  pull_request:
-    types: [opened]
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
