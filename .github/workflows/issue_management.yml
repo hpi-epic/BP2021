@@ -27,7 +27,6 @@ jobs:
           project: 'BP2021'
           column: 'Backlog'
 
-
 # https://github.com/srggrs/assign-one-project-github-action
       # - name: Assign issues and pull requests to BP2021
       #   uses: srggrs/assign-one-project-github-action@1.2.1
