@@ -11,28 +11,54 @@ The simulation should cover the interaction between customers and particularly c
 
 The four Python files in this repository belong to a simple protoype for marketplace simulation. It is build to simulate a simple market with two vendors trying to maximize their profit. One vendor is part of the environment as a rule based competitor, the other one in a simulated agent. The customer behaviour depends on the price and the quality of the product. Furthermore, some random events make the customers less predictable.
 
-To run that code, install Anaconda and run the following commands to install required packages:
+## Installing dependencies 
 
+If you have not yet done so, install Anaconda and run the following command to create an environment and install the required packages:
 ```console
-conda install -c pytorch torchvision
+conda env create -f scripts/environment.yml -n your_venv_name
+```
+To activate your created environment use:
+```console
+conda activate your_venv_name
 ```
 
-```console
-conda install -c conda-forge gym
-```
-
-If you have a Nvidia GPU, consider to install cuda to get better training performance:
-
+If you have a Nvidia GPU, consider installing cuda to get better training performance:
 ```console
 conda install -c anaconda cudatoolkit
 ```
 
-If you run Windows, you must run these commands using Anaconda Prompt.
+To update an existing environment with the needed packages run the following command:
+```console
+conda env update --name your_venv_name --file scripts/environment.yml
+```
 
-## Tests
+## Installing Pre-commit
+We are using `pre-commit` to lint our files before committing. Pre-commit itself should already have been installed through the `environment.yml`. Initialize pre-commit using
+```console
+pre-commit install
+```
+To circumvent possible errors caused later on, run pre-commit with the following command:
+```console
+pre-commit run --all-files
+```
+which will install the environment needed.
 
-We are using the `Pytest` framework for testing. Install it using the following command:
+### Pre-commit Troubleshooting
+If you get the following error:
 
 ```console
-conda install -c anaconda pytest
+Git: Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from Settings > Manage App Execution Aliases
+```
+
+while trying to commit, the cause is most likely `pre-commit` trying to access a Python version not in your venv.
+
+Solution: Check the App execution Aliases, and if no Python version is present, install it from the Microsoft Store. You do not need to disable the alias.
+
+---
+
+If you get an error saying that the `_sqlite3`-module is missing, you are missing the `sqlite3.dll` and `sqlite3.def` files.
+
+Solution: Go to https://www.sqlite.org/download.html to download the `sqlite3.dll` and `sqlite3.def` files and drop them into the following folder:
+```console
+C:\Users\your_username\anaconda3\envs\your_venv_name\DLLs
 ```

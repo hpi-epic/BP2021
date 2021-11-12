@@ -2,8 +2,8 @@
 
 # helper
 import os
-import re
 import os.path
+import re
 
 pattern = '^args\.env-best_-?[0-9]+\.[0-9]+_marketplace\.dat$'
 for root, dirs, files in os.walk(os.getcwd()):
