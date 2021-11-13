@@ -14,7 +14,7 @@ from customer import Customer
 
 class SimMarket(gym.Env):
     def __init__(self):
-        self.competitor = comp.CompetitorStrategy2()
+        self.competitors = [comp.CompetitorLinearRatio1()]
         # The agent's price does not belong to the observation_space any more because an agent should not depend on it
         # cell 0: agent's quality, cell 1: competitor's price, cell 2: competitor's quality
         self.observation_space = gym.spaces.Box(
@@ -34,9 +34,13 @@ class SimMarket(gym.Env):
 
         agent_quality = utils.shuffle_quality()
 
-        comp_price, comp_quality = self.competitor.reset(random_start)
+        tmpstate = [agent_quality]
+        for c in self.competitors:
+            comp_price, comp_quality = c.reset(random_start)
+            tmpstate.append(comp_price)
+            tmpstate.append(comp_quality)
 
-        self.state = np.array([agent_quality, comp_price, comp_quality])
+        self.state = np.array(tmpstate)
         print('I initiate with', self.state)
         return self.state
 
@@ -60,22 +64,35 @@ class SimMarket(gym.Env):
 
         self.counter += 1
 
-        profits = [0, 0]
+        profits = [0, 0]  # [0] * (len(self.competitors) + 1)
         mycustomer = Customer()
-        self.simulate_customers(
-            profits,
-            self.full_view(action),
-            int(utils.NUMBER_OF_CUSTOMERS / 2),
-            mycustomer,
-        )
-        self.state[1] = self.competitor.give_competitors_price(self.full_view(action))
-        self.simulate_customers(
-            profits,
-            self.full_view(action),
-            int(utils.NUMBER_OF_CUSTOMERS / 2),
-            mycustomer,
-        )
 
-        output_dict = {'comp_profit': profits[1]}
+        # self.simulate_customers(
+        #     profits,
+        #     self.full_view(action),
+        #     int(utils.NUMBER_OF_CUSTOMERS / 2),
+        #     mycustomer,
+        # )
+        # self.state[1] = self.competitors[0].give_competitors_price(self.full_view(action), 1)
+        # self.simulate_customers(
+        #     profits,
+        #     self.full_view(action),
+        #     int(utils.NUMBER_OF_CUSTOMERS / 2),
+        #     mycustomer,
+        # )
+
+        for i in range(len(self.competitors) + 1):
+            self.simulate_customers(
+                profits,
+                self.full_view(action),
+                int(utils.NUMBER_OF_CUSTOMERS / 2),
+                mycustomer,
+            )
+            if i < len(self.competitors):
+                self.state[2 * (i + 1) - 1] = self.competitors[
+                    i
+                ].give_competitors_price(self.full_view(action), 1)
+
+        output_dict = {'comp_profit': profits[1], 'all_profits': profits}
         is_done = self.counter >= utils.EPISODE_LENGTH
         return self.state, profits[0], is_done, output_dict
