@@ -53,7 +53,7 @@ class SimMarket(gym.Env):
                 )
 
     def full_view(self, action):
-        np.concatenate((np.array([action + 1.0]), self.state), dtype=np.float64)
+        return np.concatenate((np.array([action + 1.0]), self.state), dtype=np.float64)
 
     def step(self, action):
         # The action is the new price of the agent
