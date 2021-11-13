@@ -3,3 +3,6 @@
 # E501: Line too long good bye
 # W503: Line break occurred before a binary operator
 ignore = W503,E203,E501, W605
+# F401: module imported but unused
+per-file-ignores =
+    src/tests/context.py:F401
