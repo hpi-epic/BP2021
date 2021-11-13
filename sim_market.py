@@ -25,8 +25,8 @@ class SimMarket(gym.Env):
 		# one action for every price possible - 2 for 0 and MAX_PRICE
 		self.action_space = gym.spaces.Discrete(utils.MAX_PRICE - 2 )
 
-	def shuffle_quality(self):
-		return min(max(int(np.random.normal(utils.MAX_QUALITY/2, utils.MAX_QUALITY/5)), 1), utils.MAX_QUALITY)
+	# def shuffle_quality(self):
+	# 	return min(max(int(np.random.normal(utils.MAX_QUALITY/2, utils.MAX_QUALITY/5)), 1), utils.MAX_QUALITY)
 
 	def reset(self, random_start=True):
 		self.counter = 0
@@ -36,7 +36,7 @@ class SimMarket(gym.Env):
 		
 		agent_price = int(utils.PRODUCTION_PRICE +
 						  np.random.normal(3,3)) if random_start else utils.PRODUCTION_PRICE
-		agent_quality = self.shuffle_quality()
+		agent_quality = utils.shuffle_quality()
 
 		comp_price, comp_quality = self.competitor.reset(random_start)
 		
