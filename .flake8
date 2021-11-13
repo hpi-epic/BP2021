@@ -3,6 +3,8 @@
 # E501: Line too long good bye
 # W503: Line break occurred before a binary operator
 ignore = W503,E203,E501, W605
+
 # F401: module imported but unused
+# E402: module level import not at top of file (sys.path append needs to happen first)
 per-file-ignores =
-    src/tests/context.py:F401
+    src/tests/context.py:F401, E402
