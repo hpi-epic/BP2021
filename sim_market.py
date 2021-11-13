@@ -27,7 +27,7 @@ class SimMarket(gym.Env):
         )
 
         # one action for every price possible - 2 for 0 and MAX_PRICE
-        self.action_space = gym.spaces.Discrete(utils.MAX_PRICE - 2)
+        self.action_space = gym.spaces.Discrete(utils.MAX_PRICE)
 
     def reset(self, random_start=True):
         self.counter = 0

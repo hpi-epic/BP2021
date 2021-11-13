@@ -13,17 +13,8 @@ from torch.utils.tensorboard import SummaryWriter
 import utils as ut
 from agent import Agent
 from experience_buffer import ExperienceBuffer
+from model import simple_network
 from sim_market import SimMarket
-
-
-def model(device):
-    return nn.Sequential(
-        nn.Linear(3, 128),
-        nn.ReLU(),
-        nn.Linear(128, 128),
-        nn.ReLU(),
-        nn.Linear(128, ut.MAX_PRICE - 2),
-    ).to(device)
 
 
 def calc_loss(batch, net, tgt_net, device='cpu'):
@@ -59,8 +50,8 @@ observations = env.observation_space.shape[0]
 print('Observation Space:', observations, type(observations))
 print('Action Space: ', env.action_space.n)
 
-net = model(device)
-tgt_net = model(device)
+net = simple_network(3, ut.MAX_PRICE).to(device)
+tgt_net = simple_network(3, ut.MAX_PRICE).to(device)
 
 print(net)
 
@@ -119,17 +110,18 @@ while True:
             {'agent': m_reward, 'competitor': m_comp_reward},
             frame_idx / ut.EPISODE_LENGTH,
         )
-        writer.add_scalar(
-            'Loss/MSE', np.mean(losses[-1000:]), frame_idx / ut.EPISODE_LENGTH
-        )
-        writer.add_scalar(
-            'Loss/RMSE', np.mean(rmse_losses[-1000:]), frame_idx / ut.EPISODE_LENGTH
-        )
-        writer.add_scalar(
-            'Loss/selected_q_vals',
-            np.mean(selected_q_vals[-1000:]),
-            frame_idx / ut.EPISODE_LENGTH,
-        )
+        if frame_idx > ut.REPLAY_START_SIZE:
+            writer.add_scalar(
+                'Loss/MSE', np.mean(losses[-1000:]), frame_idx / ut.EPISODE_LENGTH
+            )
+            writer.add_scalar(
+                'Loss/RMSE', np.mean(rmse_losses[-1000:]), frame_idx / ut.EPISODE_LENGTH
+            )
+            writer.add_scalar(
+                'Loss/selected_q_vals',
+                np.mean(selected_q_vals[-1000:]),
+                frame_idx / ut.EPISODE_LENGTH,
+            )
         writer.add_scalar('epsilon', epsilon, frame_idx / ut.EPISODE_LENGTH)
         print(
             '%d: done %d games, reward %.3f, comp reward %.3f '
