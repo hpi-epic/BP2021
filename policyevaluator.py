@@ -15,7 +15,7 @@ def softmax(priorities):
 def probabilities(offers):
     value_agent = (offers[1] + 20) / offers[0] - math.exp(offers[0] - 25)
     value_compet = (offers[3] + 20) / offers[2] - math.exp(offers[2] - 25)
-    buy_nothing = max(0, min(offers[1], offers[2]) - 23) + 1
+    buy_nothing = max(0, min(offers[0], offers[2]) - 23) + 1
     return softmax([value_agent, value_compet, buy_nothing])
 
 def expected_profit(offers):
