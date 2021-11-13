@@ -1,15 +1,12 @@
 #!/usr/bin/env python3
 
-# helper
 import random
 
-# rl
 import gym
 import numpy as np
 
-# own files
+import competitor as comp
 import utils
-from competitor import Competitor
 from customer import Customer
 
 # An offer is a Market State that contains both prices and both qualities
@@ -17,7 +14,7 @@ from customer import Customer
 
 class SimMarket(gym.Env):
     def __init__(self):
-        self.competitor = Competitor()
+        self.competitor = comp.CompetitorStrategy2()
         # The agent's price does not belong to the observation_space any more because an agent should not depend on it
         # cell 0: agent's quality, cell 1: competitor's price, cell 2: competitor's quality
         self.observation_space = gym.spaces.Box(

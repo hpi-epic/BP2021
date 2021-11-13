@@ -29,9 +29,11 @@ class Competitor:
         return self.get_initial_price(random_start), self.quality
 
     def give_competitors_price(self, state):
-        return self.comp_strategy1(state)
+        assert False, 'You must use a subclass of Competitor!'
 
-    def comp_strategy1(self, state):
+
+class CompetitorStrategy1(Competitor):
+    def give_competitors_price(self, state):
         # this stratgy is based on a price quality ratio
         agent_price = state[0]
         comp_price = state[2]
@@ -56,7 +58,9 @@ class Competitor:
         else:
             return comp_price
 
-    def comp_strategy2(self, state):
+
+class CompetitorStrategy2(Competitor):
+    def give_competitors_price(self, state):
         # this competitor is based on quality and agents actions
         agent_price = state[0]
         comp_price = state[2]
