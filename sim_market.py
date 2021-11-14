@@ -122,3 +122,7 @@ class MultiCompetitorScenario(LinearEconomy):
             comp.CompetitorRandom(),
             comp.CompetitorJust2Players(),
         ]
+
+
+class CircularEconomy:
+    pass
