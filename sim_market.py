@@ -21,7 +21,7 @@ class SimMarket(gym.Env):
             comp.CompetitorJust2Players(),
         ]
         # The agent's price does not belong to the observation_space any more because an agent should not depend on it
-        # cell 0: agent's quality, cell 1: competitor's price, cell 2: competitor's quality
+        # cell 0: agent's quality, afterwards: odd cells: competitor's price, even cells: competitor's quality
         self.observation_space = gym.spaces.Box(
             np.array([0.0] * (len(self.competitors) * 2 + 1)),
             np.array(
