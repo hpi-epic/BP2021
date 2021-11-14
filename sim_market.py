@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import math
 import random
 
 import gym
@@ -7,19 +8,26 @@ import numpy as np
 
 import competitor as comp
 import utils
-from customer import Customer
+from customer import CustomerLinear
 
 # An offer is a Market State that contains both prices and both qualities
 
 
 class SimMarket(gym.Env):
     def __init__(self):
-        self.competitors = [comp.CompetitorLinearRatio1()]
+        self.competitors = [
+            comp.CompetitorLinearRatio1(),
+            comp.CompetitorRandom(),
+            comp.CompetitorJust2Players(),
+        ]
         # The agent's price does not belong to the observation_space any more because an agent should not depend on it
         # cell 0: agent's quality, cell 1: competitor's price, cell 2: competitor's quality
         self.observation_space = gym.spaces.Box(
-            np.array([0.0, 0.0, 0.0]),
-            np.array([utils.MAX_QUALITY, utils.MAX_PRICE, utils.MAX_QUALITY]),
+            np.array([0.0] * (len(self.competitors) * 2 + 1)),
+            np.array(
+                [utils.MAX_QUALITY]
+                + [utils.MAX_PRICE, utils.MAX_QUALITY] * len(self.competitors)
+            ),
             dtype=np.float64,
         )
 
@@ -63,29 +71,16 @@ class SimMarket(gym.Env):
         assert self.action_space.contains(action), err_msg
 
         self.counter += 1
+        n_vendors = len(self.competitors) + 1
 
-        profits = [0, 0]  # [0] * (len(self.competitors) + 1)
-        mycustomer = Customer()
+        profits = [0] * n_vendors
+        mycustomer = CustomerLinear()
 
-        # self.simulate_customers(
-        #     profits,
-        #     self.full_view(action),
-        #     int(utils.NUMBER_OF_CUSTOMERS / 2),
-        #     mycustomer,
-        # )
-        # self.state[1] = self.competitors[0].give_competitors_price(self.full_view(action), 1)
-        # self.simulate_customers(
-        #     profits,
-        #     self.full_view(action),
-        #     int(utils.NUMBER_OF_CUSTOMERS / 2),
-        #     mycustomer,
-        # )
-
-        for i in range(len(self.competitors) + 1):
+        for i in range(n_vendors):
             self.simulate_customers(
                 profits,
                 self.full_view(action),
-                int(utils.NUMBER_OF_CUSTOMERS / 2),
+                math.floor(utils.NUMBER_OF_CUSTOMERS / n_vendors),
                 mycustomer,
             )
             if i < len(self.competitors):
@@ -93,6 +88,6 @@ class SimMarket(gym.Env):
                     i
                 ].give_competitors_price(self.full_view(action), 1)
 
-        output_dict = {'comp_profit': profits[1], 'all_profits': profits}
+        output_dict = {'all_profits': profits}
         is_done = self.counter >= utils.EPISODE_LENGTH
         return self.state, profits[0], is_done, output_dict

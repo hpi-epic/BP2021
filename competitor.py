@@ -48,22 +48,20 @@ class CompetitorLinearRatio1(Competitor):
         intended = 0
         if randomnumber < 0.15:
             intended = state[2 * self_idx] + random.randint(-1, 1)
-        elif randomnumber < 0.3:
-            intended = random.randint(ut.PRODUCTION_PRICE, ut.MAX_PRICE)
         else:
             intended = math.floor(max_competing_ratio * state[2 * self_idx + 1])
-        return min(max(1, intended), ut.MAX_PRICE)
+        return min(min(max(ut.PRODUCTION_PRICE + 1, intended), ut.MAX_PRICE), 23)
 
 
 class CompetitorRandom(Competitor):
-    def give_competitors_price(self, _):
-        return random.randint(ut.PRODUCTION_PRICE, ut.MAX_PRICE)
+    def give_competitors_price(self, state, _):
+        return random.randint(ut.PRODUCTION_PRICE + 1, ut.MAX_PRICE)
 
 
 class CompetitorJust2Players(Competitor):
     def give_competitors_price(self, state, _):
         # this competitor is based on quality and agents actions
-        assert len(state) == 4, "You can't use this competitor in this market!"
+        # assert len(state) == 4, "You can't use this competitor in this market!"
         agent_price = state[0]
         comp_price = state[2]
         agent_quality = state[1]
