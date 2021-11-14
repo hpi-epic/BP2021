@@ -4,8 +4,6 @@
 import math
 import random
 
-import numpy as np
-
 import utils as ut
 
 
@@ -15,18 +13,11 @@ class Competitor:
         self.maxquality = ut.MAX_QUALITY
         self.quality = ut.shuffle_quality()
 
-    def get_initial_price(self, random_start):
-        if random_start:
-            return max(
-                int(ut.PRODUCTION_PRICE + np.random.normal() * 3 + 3),
-                ut.PRODUCTION_PRICE + 1,
-            )
-        else:
-            return ut.PRODUCTION_PRICE
-
-    def reset(self, random_start):
-        self.quality = ut.shuffle_quality()
-        return self.get_initial_price(random_start), self.quality
+    def reset(self):
+        return (
+            random.randint(ut.PRODUCTION_PRICE + 1, ut.MAX_PRICE),
+            ut.shuffle_quality(),
+        )
 
     def give_competitors_price(self, state, self_idx):
         assert False, 'You must use a subclass of Competitor!'

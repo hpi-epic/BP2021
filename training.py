@@ -10,11 +10,11 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.tensorboard import SummaryWriter
 
+import sim_market as sim
 import utils as ut
 from agent import Agent
 from experience_buffer import ExperienceBuffer
 from model import simple_network
-from sim_market import SimMarket
 
 
 def calc_loss(batch, net, tgt_net, device='cpu'):
@@ -55,7 +55,7 @@ def write_tensorboard_profits(profits):
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 print('Using {} device'.format(device))
 
-env = SimMarket()
+env = sim.MultiCompetitorScenario()
 
 observations = env.observation_space.shape[0]
 
@@ -142,7 +142,7 @@ while True:
 
         if (
             best_m_reward is None or best_m_reward < m_reward
-        ) and frame_idx > 1.2 * ut.EPSILON_DECAY_LAST_FRAME:
+        ) and frame_idx > ut.EPSILON_DECAY_LAST_FRAME + 101:
             torch.save(
                 net.state_dict(),
                 './trainedModels/'
