@@ -2,6 +2,7 @@
 
 # helper
 import json
+import os
 
 import numpy as np
 
@@ -25,7 +26,7 @@ EPSILON_FINAL = 0.1
 
 config = {}
 
-with open('config.json') as config_file:
+with open('..' + os.sep + 'config.json') as config_file:
     config = json.load(config_file)
 
 assert 'episode_size' in config
