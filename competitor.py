@@ -40,7 +40,7 @@ class CompetitorLinearRatio1(Competitor):
         if randomnumber < 0.15:
             intended = state[2 * self_idx] + random.randint(-1, 1)
         else:
-            intended = math.floor(max_competing_ratio * state[2 * self_idx + 1])
+            intended = math.floor(1 / max_competing_ratio * state[2 * self_idx + 1])
         return min(min(max(ut.PRODUCTION_PRICE + 1, intended), ut.MAX_PRICE), 23)
 
 

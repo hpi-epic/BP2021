@@ -107,7 +107,7 @@ class LinearEconomy(SimMarket):
         return CustomerLinear()
 
     def ith_compet_index(self, i):
-        return 2 * (i + 1) - 1
+        return 2 * i + 1
 
 
 class ClassicScenario(LinearEconomy):
