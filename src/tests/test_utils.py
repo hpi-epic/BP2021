@@ -5,6 +5,7 @@ from unittest.mock import mock_open, patch
 from .context import utils
 
 
+# This creates a mock json file with given values (which need to be strings). Some default values are set in case exact values are unimportant
 def create_mock_json(episode_size='20', learning_rate='1e-6', max_price='15', max_quality='100', number_of_customers='30', production_price='5'):
 	return '{\n\t"episode_size": ' + episode_size + ',\n' + \
 		'\t"learning_rate": ' + learning_rate + ',\n' + \
@@ -14,8 +15,7 @@ def create_mock_json(episode_size='20', learning_rate='1e-6', max_price='15', ma
 		'\t"production_price": ' + production_price + '\n}'
 
 
-# Thank you!!11elf: https://stackoverflow.com/questions/1289894/how-do-i-mock-an-open-used-in-a-with-statement-using-the-mock-framework-in-pyth
-
+# For mock functionality see this post: https://stackoverflow.com/questions/1289894/how-do-i-mock-an-open-used-in-a-with-statement-using-the-mock-framework-in-pyth
 def test_reading_file_values():
 	with patch(
 		'builtins.open',
@@ -72,7 +72,3 @@ def test_reading_file_values():
 		assert utils.MAX_QUALITY == 80
 		assert utils.NUMBER_OF_CUSTOMERS == 20
 		assert utils.PRODUCTION_PRICE == 10
-
-
-def test_invalid_values():
-	pass
