@@ -53,7 +53,7 @@ PRODUCTION_PRICE = int(config['production_price'])
 
 
 assert NUMBER_OF_CUSTOMERS > 0 and NUMBER_OF_CUSTOMERS % 2 == 0, 'number_of_customers should be even and positive'
-assert LEARNING_RATE > 0 and LEARNING_RATE < 1, 'learning_rate should be between 0 and 1'
+assert LEARNING_RATE > 0 and LEARNING_RATE < 1, 'learning_rate should be between 0 and 1 (excluded)'
 assert PRODUCTION_PRICE <= MAX_PRICE and PRODUCTION_PRICE >= 0, 'production_price needs to smaller than max_price and positive or zero'
 assert MAX_QUALITY > 0, 'max_quality should be positive'
 assert MAX_PRICE > 0, 'max_price should be positive'

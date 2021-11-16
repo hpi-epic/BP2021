@@ -2,6 +2,8 @@ import os
 from importlib import reload
 from unittest.mock import mock_open, patch
 
+import pytest
+
 from .context import utils
 
 
@@ -51,3 +53,25 @@ def test_reading_file_values():
 		assert utils.MAX_QUALITY == 80
 		assert utils.NUMBER_OF_CUSTOMERS == 20
 		assert utils.PRODUCTION_PRICE == 10
+
+
+# These tests have invalid values in their input file, the import should throw a specific assertion
+odd_number_of_customers = (create_mock_json('50', '1e-4', '50', '80', '21', '10'), 'number_of_customers should be even and positive')
+negative_number_of_customers = (create_mock_json('50', '1e-4', '50', '80', '-10', '10'), 'number_of_customers should be even and positive')
+learning_rate_larger_one = (create_mock_json('50', '1.5', '50', '80', '20', '10'), 'learning_rate should be between 0 and 1 (excluded)')
+neg_learning_rate = (create_mock_json('50', '0', '50', '80', '20', '10'), 'learning_rate should be between 0 and 1 (excluded)')
+prod_price_higher_max_price = (create_mock_json('50', '1e-5', '10', '80', '20', '50'), 'production_price needs to smaller than max_price and positive or zero')
+neg_prod_price = (create_mock_json('50', '1e-5', '50', '80', '20', '-10'), 'production_price needs to smaller than max_price and positive or zero')
+neg_max_quality = (create_mock_json('20', '1e-6', '15', '-80', '30', '5'), 'max_quality should be positive')
+
+array_testing = [odd_number_of_customers, negative_number_of_customers, learning_rate_larger_one, neg_learning_rate, prod_price_higher_max_price, neg_prod_price, neg_max_quality]
+
+
+@pytest.mark.parametrize('json_values, expected_error_msg', array_testing)
+def test_invalid_values(json_values, expected_error_msg):
+	json = json_values
+	with patch('builtins.open', mock_open(read_data=json)) as mock_file:
+		check_mock_file(mock_file, json)
+		with pytest.raises(AssertionError) as assertion_info:
+			reload(utils)
+		assert expected_error_msg in str(assertion_info.value)
