@@ -62,8 +62,8 @@ observations = env.observation_space.shape[0]
 print('Observation Space:', observations, type(observations))
 print('Action Space: ', env.action_space.n)
 
-net = model.medium_network(observations, env.action_space.n).to(device)
-tgt_net = model.medium_network(observations, env.action_space.n).to(device)
+net = model.simple_network(observations, env.action_space.n).to(device)
+tgt_net = model.simple_network(observations, env.action_space.n).to(device)
 
 print(net)
 

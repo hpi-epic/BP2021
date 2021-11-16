@@ -161,7 +161,8 @@ class CircularEconomy(SimMarket):
         assert customer_return == 1
         # print("A customer returns a product")
         if self.state[1] >= customer_return:
-            self.state[0] += customer_return
+            if self.state[0] < self.max_storage:
+                self.state[0] += customer_return
             self.state[1] -= customer_return
 
     def complete_purchase(self, offers, profits, customer_buy):
@@ -183,4 +184,4 @@ class CircularEconomy(SimMarket):
 
     def modify_profit_by_state(self, profits):
         # print("Your storage cost is ", self.state[0])
-        profits[0] -= self.state[0]  # Storage costs per timestep
+        profits[0] -= self.state[0] / 2  # Storage costs per timestep

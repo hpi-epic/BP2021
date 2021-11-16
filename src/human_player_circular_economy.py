@@ -17,7 +17,7 @@ while not is_done:
     used_in_storage = state[0]
     in_circulation = state[1]
     print(
-        'second hand products in circulation:',
+        'second hand products in storage:',
         used_in_storage,
         ' products in circulation:',
         in_circulation
