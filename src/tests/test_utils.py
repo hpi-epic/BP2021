@@ -7,6 +7,7 @@ import pytest
 from .context import utils
 
 
+# This creates a mock json file with given values (which need to be strings). Some default values are set in case exact values are unimportant
 def create_mock_json(episode_size='20', learning_rate='1e-6', max_price='15', max_quality='100', number_of_customers='30', production_price='5'):
 	return '{\n\t"episode_size": ' + episode_size + ',\n' + \
 		'\t"learning_rate": ' + learning_rate + ',\n' + \
@@ -16,20 +17,26 @@ def create_mock_json(episode_size='20', learning_rate='1e-6', max_price='15', ma
 		'\t"production_price": ' + production_price + '\n}'
 
 
-def check_mock_file(mock_file, json=create_mock_json()):
-	path = os.path.dirname(__file__) + os.sep + '...' + os.sep + 'config.json'
-	assert (open(path).read() == json)
-	mock_file.assert_called_with(path)
-	utils.config = utils.load_config(path)
-
-
-# Thank you!!11elf: https://stackoverflow.com/questions/1289894/how-do-i-mock-an-open-used-in-a-with-statement-using-the-mock-framework-in-pyth
-
+# For mock functionality see this post: https://stackoverflow.com/questions/1289894/how-do-i-mock-an-open-used-in-a-with-statement-using-the-mock-framework-in-pyth
 def test_reading_file_values():
-	json = create_mock_json()
-	with patch('builtins.open', mock_open(read_data=json)) as mock_file:
-		check_mock_file(mock_file)
-
+	with patch(
+		'builtins.open',
+		mock_open(
+			read_data=create_mock_json()),
+	) as mock_file:
+		assert(
+			open(
+				os.path.dirname(__file__) + os.sep + '...' + os.sep + 'config.json'
+			).read()
+			== create_mock_json()
+		)
+		# check that the mock_file is read correctly when opening any file
+		mock_file.assert_called_with(
+			os.path.dirname(__file__) + os.sep + '...' + os.sep + 'config.json'
+		)
+		utils.config = utils.load_config(
+			os.path.dirname(__file__) + os.sep + '...' + os.sep + 'config.json'
+		)
 		# Include utils again to make sure the file is read again
 		reload(utils)
 
@@ -42,9 +49,23 @@ def test_reading_file_values():
 		assert utils.PRODUCTION_PRICE == 5
 
 	# Test a second time with other values to ensure, that the values are read correctly
-	json2 = create_mock_json('50', '1e-4', '50', '80', '20', '10')
-	with patch('builtins.open', mock_open(read_data=json2)) as mock_file:
-		check_mock_file(mock_file, json2)
+	with patch(
+		'builtins.open',
+		mock_open(
+			read_data=create_mock_json('50', '1e-4', '50', '80', '20', '10')
+		),
+	) as mock_file:
+		assert (
+			open(
+				os.path.dirname(__file__) + os.sep + '...' + os.sep + 'config.json'
+			).read() == create_mock_json('50', '1e-4', '50', '80', '20', '10')
+		)
+		mock_file.assert_called_with(
+			os.path.dirname(__file__) + os.sep + '...' + os.sep + 'config.json'
+		)
+		utils.config = utils.load_config(
+			os.path.dirname(__file__) + os.sep + '...' + os.sep + 'config.json'
+		)
 		reload(utils)
 
 		assert utils.EPISODE_LENGTH == 50
