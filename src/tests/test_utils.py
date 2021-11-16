@@ -7,6 +7,7 @@ import pytest
 from .context import utils
 
 
+# This is a small helper funtion, that returns a config file with the given values
 def create_mock_json(episode_size='20', learning_rate='1e-6', max_price='15', max_quality='100', number_of_customers='30', production_price='5'):
 	return '{\n\t"episode_size": ' + episode_size + ',\n' + \
 		'\t"learning_rate": ' + learning_rate + ',\n' + \
@@ -16,6 +17,15 @@ def create_mock_json(episode_size='20', learning_rate='1e-6', max_price='15', ma
 		'\t"production_price": ' + production_price + '\n}'
 
 
+def create_mock_json_with_missing_line(number, json=create_mock_json()):
+	lines = json.split('\n')
+	final_lines = lines[0:number + 1]
+	final_lines += lines[number + 2:len(lines)]
+	final_lines[-2] = final_lines[-2].replace(',', '')
+	return '\n'.join(final_lines)
+
+
+# This is a small helper function to test if the mock_file is setup correctly
 def check_mock_file(mock_file, json=create_mock_json()):
 	path = os.path.dirname(__file__) + os.sep + '...' + os.sep + 'config.json'
 	assert (open(path).read() == json)
@@ -64,7 +74,15 @@ prod_price_higher_max_price = (create_mock_json('50', '1e-5', '10', '80', '20', 
 neg_prod_price = (create_mock_json('50', '1e-5', '50', '80', '20', '-10'), 'production_price needs to smaller than max_price and positive or zero')
 neg_max_quality = (create_mock_json('20', '1e-6', '15', '-80', '30', '5'), 'max_quality should be positive')
 
-array_testing = [odd_number_of_customers, negative_number_of_customers, learning_rate_larger_one, neg_learning_rate, prod_price_higher_max_price, neg_prod_price, neg_max_quality]
+# These tests are missing a line in the config file, the import should throw a specific assertion
+missing_episode_size = (create_mock_json_with_missing_line(0), 'your config is missing episode_size')
+missing_learning_rate = (create_mock_json_with_missing_line(1), 'your config is missing learning_rate')
+missing_max_price = (create_mock_json_with_missing_line(2), 'your config is missing max_price')
+missing_max_quality = (create_mock_json_with_missing_line(3), 'your config is missing max_quality')
+missing_number_of_customers = (create_mock_json_with_missing_line(4), 'your config is missing number_of_customers')
+missing_prod_price = (create_mock_json_with_missing_line(5), 'your config is missing production_price')
+
+array_testing = [odd_number_of_customers, negative_number_of_customers, learning_rate_larger_one, neg_learning_rate, prod_price_higher_max_price, neg_prod_price, neg_max_quality, missing_episode_size, missing_learning_rate, missing_max_price, missing_max_quality, missing_number_of_customers, missing_prod_price]
 
 
 @pytest.mark.parametrize('json_values, expected_error_msg', array_testing)
