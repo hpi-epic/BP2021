@@ -57,3 +57,10 @@ class CustomerLinear(Customer):
             ratios.append(ratio)
         probabilities = softmax(np.array(ratios))
         return shuffle_from_probabilities(probabilities)
+
+
+class CustomerCircular(Customer):
+    def buy_object(self, offers):
+        ratio_new = 1 / offers[0] - math.exp(offers[0] - 8)
+        ratio_old = 0.55 / offers[1] - math.exp(offers[1] - 5)
+        return shuffle_from_probabilities(softmax(np.array([1, ratio_new, ratio_old])))
