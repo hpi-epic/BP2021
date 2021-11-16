@@ -5,7 +5,6 @@ import os
 import time
 
 import numpy as np
-
 # rl
 import torch
 import torch.nn as nn
@@ -15,7 +14,6 @@ from torch.utils.tensorboard import SummaryWriter
 import utils as ut
 from agent import Agent
 from experience_buffer import ExperienceBuffer
-
 # own files
 from sim_market import SimMarket
 

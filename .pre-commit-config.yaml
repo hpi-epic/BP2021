@@ -24,12 +24,12 @@ repos:
       hooks:
         - id: isort
           name: isort
-          args: ["--profile", "black", "--filter-files"]
-    - repo: https://github.com/python/black
-      rev: 19.3b0
-      hooks:
-        - id: black
-          args: [--safe, --skip-string-normalization]
+    #      args: ["--profile", "black", "--filter-files"]
+    # - repo: https://github.com/python/black
+    #   rev: 19.3b0
+    #   hooks:
+    #     - id: black
+    #       args: [--safe, --skip-string-normalization]
     - repo: https://gitlab.com/pycqa/flake8
       rev: 3.7.8
       hooks:
