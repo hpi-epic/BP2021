@@ -6,6 +6,7 @@ import gym
 import numpy as np
 
 import competitor as comp
+from customer import CustomerDeprecated
 import utils
 from customer import CustomerLinear
 
@@ -46,7 +47,8 @@ class SimMarket(gym.Env):
                     - utils.PRODUCTION_PRICE
                 )
 
-    def full_view(self, action):
+    def get_offers(self, action):
+        # the state does not contain the agents action by default anymore, that's why we need to add it
         return np.concatenate(
             (self.action_to_array(action), self.state), dtype=np.float64
         )
@@ -67,12 +69,13 @@ class SimMarket(gym.Env):
         for i in range(n_vendors):
             self.simulate_customers(
                 profits,
-                self.full_view(action),
+                self.get_offers(action),
                 math.floor(utils.NUMBER_OF_CUSTOMERS / n_vendors),
             )
+            # Each competitor is allowed to change its price, if it comes to its turn. The agent changes its price at time = 0
             if i < len(self.competitors):
                 act_compet_i = self.competitors[i].give_competitors_price(
-                    self.full_view(action), i + 1
+                    self.get_offers(action), i + 1
                 )
                 self.apply_compet_action(act_compet_i, i)
 
@@ -126,7 +129,7 @@ class MultiCompetitorScenario(LinearEconomy):
         return [
             comp.CompetitorLinearRatio1(),
             comp.CompetitorRandom(),
-            comp.CompetitorJust2Players(),
+            comp.CompetitorBasedOnAgent(),
         ]
 
 

@@ -50,7 +50,7 @@ class CompetitorRandom(Competitor):
         return random.randint(ut.PRODUCTION_PRICE + 1, ut.MAX_PRICE)
 
 
-class CompetitorJust2Players(Competitor):
+class CompetitorBasedOnAgent(Competitor):
     def give_competitors_price(self, state, _):
         # This competitor is based on quality and agents actions.
         # While he can act in every linear economy, you should not expect good performance in a multicompetitor setting.

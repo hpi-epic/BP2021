@@ -1,8 +1,13 @@
 {
+    "percentage_of_random_customers": 0.1,
+    "percentage_of_price_based_customers": 0.1,
+    "percentage_of_quality_based_customers": 0.1,
+    "customer_maxprice_mean": 25,
+    "customer_maxprice_std": 3,
     "episode_size": 50,
     "learning_rate": 1e-5,
     "max_price": 30,
     "max_quality": 50,
-    "number_of_customers": 20,
-    "production_price": 10
+    "production_price": 10,
+    "number_of_customers": 20
 }
