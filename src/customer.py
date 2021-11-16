@@ -23,8 +23,13 @@ def shuffle_from_probabilities(probabilities):
     return len(probabilities) - 1
 
 
+class Customer:
+    def buy_object(self, others):
+        assert False, 'This class should not be used.'
+
+
 # This customer is only useful in a two-players setup. We consider to replace it fully
-class CustomerDeprecated:
+class CustomerDeprecated(Customer):
     def buy_object(self, offers):
         if random.random() < 0.17:
             return random.randint(1, 2)
@@ -44,7 +49,7 @@ class CustomerDeprecated:
             return 2  # Buy competitor's
 
 
-class CustomerLinear:
+class CustomerLinear(Customer):
     def buy_object(self, offers, nothingpreference=1):
         ratios = [nothingpreference]
         for i in range(int(len(offers) / 2)):
