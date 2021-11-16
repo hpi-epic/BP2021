@@ -6,7 +6,6 @@ import gym
 import numpy as np
 
 import competitor as comp
-from customer import CustomerDeprecated
 import utils
 from customer import CustomerLinear
 
