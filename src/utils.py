@@ -26,10 +26,15 @@ EPSILON_FINAL = 0.1
 
 config = {}
 
-with open(
-    os.path.dirname(__file__) + os.sep + '..' + os.sep + 'config.json'
-) as config_file:
-    config = json.load(config_file)
+
+def load_config(
+    path=os.path.dirname(__file__) + os.sep + '..' + os.sep + 'config.json'
+):
+    with open(path) as config_file:
+        return json.load(config_file)
+
+
+config = load_config()
 
 assert 'episode_size' in config
 assert 'max_quality' in config
