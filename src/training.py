@@ -10,11 +10,11 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.tensorboard import SummaryWriter
 
+import model
 import sim_market as sim
 import utils as ut
 from agent import Agent
 from experience_buffer import ExperienceBuffer
-from model import simple_network
 
 
 def calc_loss(batch, net, tgt_net, device='cpu'):
@@ -55,15 +55,15 @@ def write_tensorboard_profits(profits):
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 print('Using {} device'.format(device))
 
-env = sim.MultiCompetitorScenario()
+env = sim.CircularEconomy()
 
 observations = env.observation_space.shape[0]
 
 print('Observation Space:', observations, type(observations))
 print('Action Space: ', env.action_space.n)
 
-net = simple_network(observations, ut.MAX_PRICE).to(device)
-tgt_net = simple_network(observations, ut.MAX_PRICE).to(device)
+net = model.medium_network(observations, env.action_space.n).to(device)
+tgt_net = model.medium_network(observations, env.action_space.n).to(device)
 
 print(net)
 
@@ -152,7 +152,7 @@ while True:
             if best_m_reward is not None:
                 print('Best reward updated %.3f -> %.3f' % (best_m_reward, m_reward))
             best_m_reward = m_reward
-        if m_reward > ut.MEAN_REWARD_BOUND or frame_idx >= 2500 * ut.EPISODE_LENGTH:
+        if m_reward > ut.MEAN_REWARD_BOUND or frame_idx >= ut.EPSILON_DECAY_LAST_FRAME * 4:
             print('Solved in %d frames!' % frame_idx)
             break
 
