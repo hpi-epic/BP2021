@@ -13,8 +13,8 @@ state = env.reset()
 
 print('The production price: ', ut.PRODUCTION_PRICE, ' maxprice: ', ut.MAX_PRICE)
 while not is_done:
-    comp_price = state[1]
     agent_quality = state[0]
+    comp_price = state[1]
     comp_quality = state[2]
     print(
         'agent_quality',
