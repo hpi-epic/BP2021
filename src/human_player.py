@@ -3,9 +3,9 @@
 # rl
 # own files
 import utils as ut
-from sim_market import SimMarket
+from sim_market import ClassicScenario
 
-env = SimMarket()
+env = ClassicScenario()
 our_profit = 0
 is_done = False
 state = env.reset()

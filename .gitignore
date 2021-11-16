@@ -8,6 +8,7 @@
 trainedModels/
 runs/
 test.py
+.vscode
 # to exclude some notes
 notes.txt
 
