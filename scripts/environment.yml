@@ -11,4 +11,5 @@ dependencies:
   - gym
   - pre-commit
   - tensorboard
-  - unittest.mock
+  - pip:
+    - unittest.mock
