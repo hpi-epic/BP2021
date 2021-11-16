@@ -17,7 +17,6 @@ def create_mock_json(episode_size='20', learning_rate='1e-6', max_price='15', ma
 # Thank you!!11elf: https://stackoverflow.com/questions/1289894/how-do-i-mock-an-open-used-in-a-with-statement-using-the-mock-framework-in-pyth
 
 def test_reading_file_values():
-	print(create_mock_json())
 	with patch(
 		'builtins.open',
 		mock_open(
