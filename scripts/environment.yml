@@ -11,6 +11,3 @@ dependencies:
   - gym
   - pre-commit
   - tensorboard
-  - pip
-  - pip:
-    - unittest
