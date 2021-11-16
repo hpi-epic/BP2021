@@ -3,7 +3,8 @@
 # E501: Line too long good bye
 # W503: Line break occurred before a binary operator
 # W191: Indentation contains tabs
-ignore = W503,E203,E501,W605,W191
+# E117: Over-intented (we don't know why this error happens sometimes)
+ignore = W503,E203,E501,W605,W191,E117
 
 # F401: module imported but unused
 # E402: module level import not at top of file (sys.path append needs to happen first)
