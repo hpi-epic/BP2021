@@ -5,27 +5,16 @@ import os
 import time
 
 import numpy as np
-# rl
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.tensorboard import SummaryWriter
 
+import sim_market as sim
 import utils as ut
 from agent import Agent
 from experience_buffer import ExperienceBuffer
-# own files
-from sim_market import SimMarket
-
-
-def model(device):
-    return nn.Sequential(
-        nn.Linear(4, 128),
-        nn.ReLU(),
-        nn.Linear(128, 128),
-        nn.ReLU(),
-        nn.Linear(128, ut.MAX_PRICE - 2),
-    ).to(device)
+from model import simple_network
 
 
 def calc_loss(batch, net, tgt_net, device='cpu'):
@@ -51,18 +40,30 @@ def calc_loss(batch, net, tgt_net, device='cpu'):
     )
 
 
+def write_tensorboard_profits(profits):
+    mydict = {}
+    n_vendors = len(profits[0])
+    for i in range(n_vendors):
+        last = profits[-100:]
+        # print(last)
+        matrix = np.concatenate(last).reshape(-1, n_vendors)
+        # print(matrix)
+        mydict['vendor_' + str(i)] = np.mean(matrix[:, i])
+    return mydict
+
+
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 print('Using {} device'.format(device))
 
-env = SimMarket()
+env = sim.MultiCompetitorScenario()
 
 observations = env.observation_space.shape[0]
 
 print('Observation Space:', observations, type(observations))
 print('Action Space: ', env.action_space.n)
 
-net = model(device)
-tgt_net = model(device)
+net = simple_network(observations, ut.MAX_PRICE).to(device)
+tgt_net = simple_network(observations, ut.MAX_PRICE).to(device)
 
 print(net)
 
@@ -72,7 +73,7 @@ epsilon = ut.EPSILON_START
 
 optimizer = optim.Adam(net.parameters(), lr=ut.LEARNING_RATE)
 total_rewards = []
-comp_rewards = []
+all_rewards = []
 losses = []
 rmse_losses = []
 selected_q_vals = []
@@ -91,35 +92,49 @@ while True:
         ut.EPSILON_FINAL, ut.EPSILON_START - frame_idx / ut.EPSILON_DECAY_LAST_FRAME
     )
 
-    reward, comp_reward = agent.play_step(net, epsilon, device=device)
+    reward, all_profits = agent.play_step(net, epsilon, device=device)
     if reward is not None:
         print(
             'My profit is:',
             reward,
             '\t my competitor has',
-            comp_reward,
+            all_profits[1] if len(all_profits) > 1 else 0,
             '\tThe quality values were',
-            env.state[1],
+            env.state[0],
             '\tand',
-            env.state[3],
+            env.state[2] if len(all_profits) > 1 else 0,
         )
         total_rewards.append(reward)
-        comp_rewards.append(comp_reward)
+        all_rewards.append(all_profits)
         speed = (frame_idx - ts_frame) / (
             (time.time() - ts) if (time.time() - ts) > 0 else 1
         )
         ts_frame = frame_idx
         ts = time.time()
         m_reward = np.mean(total_rewards[-100:])
-        m_comp_reward = np.mean(comp_rewards[-100:])
-        writer.add_scalar('Profit_mean/agent', m_reward, frame_idx / ut.STEPS_PER_ROUND)
-        writer.add_scalar(
-            'Profit_mean/comp', m_comp_reward, frame_idx / ut.STEPS_PER_ROUND
+        writer.add_scalar('Profit_mean/agent', m_reward, frame_idx / ut.EPISODE_LENGTH)
+        writer.add_scalars(
+            'Profit_mean/direct_comparison',
+            write_tensorboard_profits(all_rewards),
+            frame_idx / ut.EPISODE_LENGTH,
         )
+        if frame_idx > ut.REPLAY_START_SIZE:
+            writer.add_scalar(
+                'Loss/MSE', np.mean(losses[-1000:]), frame_idx / ut.EPISODE_LENGTH
+            )
+            writer.add_scalar(
+                'Loss/RMSE', np.mean(rmse_losses[-1000:]), frame_idx / ut.EPISODE_LENGTH
+            )
+            writer.add_scalar(
+                'Loss/selected_q_vals',
+                np.mean(selected_q_vals[-1000:]),
+                frame_idx / ut.EPISODE_LENGTH,
+            )
+        writer.add_scalar('epsilon', epsilon, frame_idx / ut.EPISODE_LENGTH)
         print(
             '%d: done %d games, reward %.3f, comp reward %.3f '
             'eps %.2f, speed %.2f f/s'
-            % (frame_idx, len(total_rewards), m_reward, m_comp_reward, epsilon, speed)
+            % (frame_idx, len(total_rewards), m_reward, 0, epsilon, speed)
         )
 
         if not os.path.isdir('trainedModels'):
@@ -127,7 +142,7 @@ while True:
 
         if (
             best_m_reward is None or best_m_reward < m_reward
-        ) and frame_idx > 1.2 * ut.EPSILON_DECAY_LAST_FRAME:
+        ) and frame_idx > ut.EPSILON_DECAY_LAST_FRAME + 101:
             torch.save(
                 net.state_dict(),
                 './trainedModels/'
@@ -137,7 +152,7 @@ while True:
             if best_m_reward is not None:
                 print('Best reward updated %.3f -> %.3f' % (best_m_reward, m_reward))
             best_m_reward = m_reward
-        if m_reward > ut.MEAN_REWARD_BOUND:
+        if m_reward > ut.MEAN_REWARD_BOUND or frame_idx >= 2500 * ut.EPISODE_LENGTH:
             print('Solved in %d frames!' % frame_idx)
             break
 
@@ -153,11 +168,5 @@ while True:
     losses.append(loss_t.item())
     rmse_losses.append(torch.sqrt(loss_t).item())
     selected_q_vals.append(selected_q_val_mean.item())
-    writer.add_scalar('Loss/MSE', np.mean(losses[-1000:]), frame_idx)
-    writer.add_scalar('Loss/RMSE', np.mean(rmse_losses[-1000:]), frame_idx)
-    writer.add_scalar(
-        'Loss/selected_q_vals', np.mean(selected_q_vals[-1000:]), frame_idx
-    )
-    writer.add_scalar('epsilon', epsilon, frame_idx)
     loss_t.backward()
     optimizer.step()

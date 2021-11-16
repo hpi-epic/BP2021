@@ -11,7 +11,7 @@ MAX_QUALITY = None
 MEAN_REWARD_BOUND = None
 NUMBER_OF_CUSTOMERS = None
 PRODUCTION_PRICE = None
-STEPS_PER_ROUND = None
+EPISODE_LENGTH = None
 
 GAMMA = 0.99
 BATCH_SIZE = 32
@@ -44,7 +44,7 @@ assert 'max_quality' in config
 assert 'number_of_customers' in config
 assert 'production_price' in config
 
-STEPS_PER_ROUND = int(config['episode_size'])
+EPISODE_LENGTH = int(config['episode_size'])
 LEARNING_RATE = float(config['learning_rate'])
 MAX_PRICE = int(config['max_price'])
 MAX_QUALITY = int(config['max_quality'])
@@ -57,9 +57,9 @@ assert LEARNING_RATE > 0 and LEARNING_RATE < 1
 assert PRODUCTION_PRICE <= MAX_PRICE and PRODUCTION_PRICE >= 0
 assert MAX_QUALITY > 0
 assert MAX_PRICE > 0
-assert STEPS_PER_ROUND > 0
+assert EPISODE_LENGTH > 0
 
-MEAN_REWARD_BOUND = STEPS_PER_ROUND * MAX_PRICE * 20
+MEAN_REWARD_BOUND = EPISODE_LENGTH * MAX_PRICE * 20
 
 
 def shuffle_quality():

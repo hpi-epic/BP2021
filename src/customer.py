@@ -1,13 +1,31 @@
 #!/usr/bin/env python3
 
 # helper
+import math
 import random
 
 import numpy as np
 
 
-class Customer:
-    def buy_object(offers):
+# The following methods should be library calls in the future.
+def softmax(preferences):
+    exp_preferences = np.exp(preferences)
+    return exp_preferences / sum(exp_preferences)
+
+
+def shuffle_from_probabilities(probabilities):
+    randomnumber = random.random()
+    sum = 0
+    for i, p in enumerate(probabilities):
+        sum += p
+        if randomnumber <= sum:
+            return i
+    return len(probabilities) - 1
+
+
+# This customer is only useful in a two-players setup. We consider to replace it fully
+class CustomerDeprecated:
+    def buy_object(self, offers):
         if random.random() < 0.17:
             return random.randint(1, 2)
         value_agent = max(offers[1] / offers[0] + np.random.normal() / 2, 0.1)
@@ -24,3 +42,13 @@ class Customer:
             return 1  # Buy agent's
         else:
             return 2  # Buy competitor's
+
+
+class CustomerLinear:
+    def buy_object(self, offers, nothingpreference=1):
+        ratios = [nothingpreference]
+        for i in range(int(len(offers) / 2)):
+            ratio = offers[2 * i + 1] / offers[2 * i] - math.exp(offers[2 * i] - 27)
+            ratios.append(ratio)
+        probabilities = softmax(np.array(ratios))
+        return shuffle_from_probabilities(probabilities)

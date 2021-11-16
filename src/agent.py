@@ -2,9 +2,9 @@
 
 # helper
 import collections
+import copy
 
 import numpy as np
-# rl
 import torch
 
 Experience = collections.namedtuple(
@@ -19,14 +19,14 @@ class Agent:
         self._reset()
 
     def _reset(self):
-        self.state = self.env.reset(False)
+        self.state = self.env.reset()
         self.total_reward = 0.0
-        self.total_comp_reward = 0.0
+        self.total_rewards = []
 
     @torch.no_grad()
     def play_step(self, net, epsilon=0.0, device='cpu'):
         done_reward = None
-        comp_reward = None
+        output_profits = None
 
         if np.random.random() < epsilon:
             action = self.env.action_space.sample()
@@ -38,16 +38,21 @@ class Agent:
             action = int(act_v.item())
 
         # do step in the environment
-        new_state, reward, is_done, output_dict = self.env.step(action)
+        new_state, reward, is_done, info = self.env.step(action)
 
         self.total_reward += reward
-        self.total_comp_reward += output_dict['comp_profit']
+        # Accumulate the return for all vendors by adding their values from the info-dict
+        for i, r in enumerate(info['all_profits']):
+            if len(self.total_rewards) <= i:
+                self.total_rewards.append(0)
+            self.total_rewards[i] += r
 
         exp = Experience(self.state, action, reward, is_done, new_state)
         self.exp_buffer.append(exp)
         self.state = new_state
         if is_done:
             done_reward = self.total_reward
-            comp_reward = self.total_comp_reward
+            # total_rewards will loose it's values after reset. So, having a reference to it will be unpossible to extract the values
+            output_profits = copy.deepcopy(self.total_rewards)
             self._reset()
-        return done_reward, comp_reward
+        return done_reward, output_profits

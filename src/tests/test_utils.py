@@ -39,7 +39,7 @@ def test_reading_file_values():
 		reload(utils)
 
 		# Test all imported values. Extend this test as new values get added!
-		assert utils.STEPS_PER_ROUND == 20
+		assert utils.EPISODE_LENGTH == 20
 		assert utils.LEARNING_RATE == 1e-6
 		assert utils.MAX_PRICE == 15
 		assert utils.MAX_QUALITY == 100
@@ -66,7 +66,7 @@ def test_reading_file_values():
 		)
 		reload(utils)
 
-		assert utils.STEPS_PER_ROUND == 50
+		assert utils.EPISODE_LENGTH == 50
 		assert utils.LEARNING_RATE == 1e-4
 		assert utils.MAX_PRICE == 50
 		assert utils.MAX_QUALITY == 80
