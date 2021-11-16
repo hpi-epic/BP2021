@@ -6,12 +6,12 @@ import os
 
 import numpy as np
 
-MAX_QUALITY = None
 MAX_PRICE = None
-PRODUCTION_PRICE = None
-STEPS_PER_ROUND = None
+MAX_QUALITY = None
 MEAN_REWARD_BOUND = None
 NUMBER_OF_CUSTOMERS = None
+PRODUCTION_PRICE = None
+STEPS_PER_ROUND = None
 
 GAMMA = 0.99
 BATCH_SIZE = 32
@@ -36,17 +36,18 @@ def load_config(
 
 config = load_config()
 
+# ordered alphabetically in the config.json
 assert 'episode_size' in config
-assert 'max_quality' in config
-assert 'max_price' in config
-assert 'production_price' in config
 assert 'learning_rate' in config
+assert 'max_price' in config
+assert 'max_quality' in config
 assert 'number_of_customers' in config
+assert 'production_price' in config
 
 STEPS_PER_ROUND = int(config['episode_size'])
-MAX_QUALITY = int(config['max_quality'])
-MAX_PRICE = int(config['max_price'])
 LEARNING_RATE = float(config['learning_rate'])
+MAX_PRICE = int(config['max_price'])
+MAX_QUALITY = int(config['max_quality'])
 NUMBER_OF_CUSTOMERS = int(config['number_of_customers'])
 PRODUCTION_PRICE = int(config['production_price'])
 

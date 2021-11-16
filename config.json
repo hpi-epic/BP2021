@@ -3,6 +3,6 @@
     "learning_rate": 1e-5,
     "max_price": 20,
     "max_quality": 50,
-    "production_price": 10,
-    "number_of_customers": 20
+    "number_of_customers": 20,
+    "production_price": 10
 }
