@@ -58,7 +58,9 @@ class SimMarket(gym.Env):
         assert self.action_space.contains(action), err_msg
 
         self.counter += 1
-        n_vendors = len(self.competitors) + 1
+        n_vendors = (
+            len(self.competitors) + 1
+        )  # The number of competitors plus the agent
 
         profits = [0] * n_vendors
 
@@ -69,9 +71,10 @@ class SimMarket(gym.Env):
                 math.floor(utils.NUMBER_OF_CUSTOMERS / n_vendors),
             )
             if i < len(self.competitors):
-                self.state[self.ith_compet_index(i)] = self.competitors[
-                    i
-                ].give_competitors_price(self.full_view(action), 1)
+                act_compet_i = self.competitors[i].give_competitors_price(
+                    self.full_view(action), i + 1
+                )
+                self.apply_compet_action(act_compet_i, i)
 
         output_dict = {'all_profits': profits}
         is_done = self.counter >= utils.EPISODE_LENGTH
@@ -108,6 +111,9 @@ class LinearEconomy(SimMarket):
 
     def ith_compet_index(self, i):
         return 2 * i + 1
+
+    def apply_compet_action(self, action, i):
+        self.state[self.ith_compet_index(i)] = action
 
 
 class ClassicScenario(LinearEconomy):

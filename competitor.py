@@ -15,6 +15,7 @@ class Competitor:
 
     def reset(self):
         return (
+            # 1 will be added to the price because profit is unpossible else
             random.randint(ut.PRODUCTION_PRICE + 1, ut.MAX_PRICE),
             ut.shuffle_quality(),
         )
@@ -25,11 +26,11 @@ class Competitor:
 
 class CompetitorLinearRatio1(Competitor):
     def give_competitors_price(self, state, self_idx):
-        # this stratgy is based on a price quality ratio
+        # this stratgy calculates the value per money for each competing vendor and tries to adept to it
         ratios = []
         max_competing_ratio = 0
         for i in range(math.floor(len(state) / 2)):
-            ratio = state[2 * i + 1] / state[2 * i]
+            ratio = state[2 * i + 1] / state[2 * i]  # value for money for vendor i
             ratios.append(ratio)
             if ratio > max_competing_ratio and i != self_idx:
                 max_competing_ratio = ratio
@@ -51,7 +52,8 @@ class CompetitorRandom(Competitor):
 
 class CompetitorJust2Players(Competitor):
     def give_competitors_price(self, state, _):
-        # this competitor is based on quality and agents actions
+        # This competitor is based on quality and agents actions.
+        # While he can act in every linear economy, you should not expect good performance in a multicompetitor setting.
         # assert len(state) == 4, "You can't use this competitor in this market!"
         agent_price = state[0]
         comp_price = state[2]

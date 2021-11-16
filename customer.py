@@ -7,6 +7,7 @@ import random
 import numpy as np
 
 
+# The following methods should be library calls in the future.
 def softmax(preferences):
     exp_preferences = np.exp(preferences)
     return exp_preferences / sum(exp_preferences)
@@ -22,6 +23,7 @@ def shuffle_from_probabilities(probabilities):
     return len(probabilities) - 1
 
 
+# This customer is only useful in a two-players setup. We consider to replace it fully
 class CustomerDeprecated:
     def buy_object(self, offers):
         if random.random() < 0.17:

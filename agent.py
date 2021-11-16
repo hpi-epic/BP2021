@@ -38,10 +38,11 @@ class Agent:
             action = int(act_v.item())
 
         # do step in the environment
-        new_state, reward, is_done, output_dict = self.env.step(action)
+        new_state, reward, is_done, info = self.env.step(action)
 
         self.total_reward += reward
-        for i, r in enumerate(output_dict['all_profits']):
+        # Accumulate the return for all vendors by adding their values from the info-dict
+        for i, r in enumerate(info['all_profits']):
             if len(self.total_rewards) <= i:
                 self.total_rewards.append(0)
             self.total_rewards[i] += r
@@ -51,6 +52,7 @@ class Agent:
         self.state = new_state
         if is_done:
             done_reward = self.total_reward
+            # total_rewards will loose it's values after reset. So, having a reference to it will be unpossible to extract the values
             output_profits = copy.deepcopy(self.total_rewards)
             self._reset()
         return done_reward, output_profits
