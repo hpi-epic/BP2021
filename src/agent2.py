@@ -1,5 +1,4 @@
 import collections
-import copy
 import os
 import random
 
@@ -44,12 +43,11 @@ class QLearningAgent(Agent2):
             action = random.randint(0, self.n_actions - 1)
         else:
             action = int(torch.argmax(self.net(torch.Tensor(state).to(self.device))))
-        self.buffer_for_feedback = (copy.deepcopy(state), action)
+        self.buffer_for_feedback = (state, action)
         return action
 
     def give_feedback(self, reward, is_done, new_state):
-        exp = self.Experience(*self.buffer_for_feedback, reward, is_done, copy.deepcopy(new_state))
-        # print(exp)
+        exp = self.Experience(*self.buffer_for_feedback, reward, is_done, new_state)
         self.buffer.append(exp)
         self.buffer_for_feedback = None
 

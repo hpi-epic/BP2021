@@ -35,7 +35,7 @@ class SimMarket(gym.Env):
         self.customer = self.choose_customer()
 
         print('I initiate with', self.state)
-        return self.state
+        return copy.deepcopy(self.state)
 
     def simulate_customers(self, profits, offers, n):
         for _ in range(n):

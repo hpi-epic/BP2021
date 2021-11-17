@@ -63,4 +63,4 @@ MEAN_REWARD_BOUND = EPISODE_LENGTH * MAX_PRICE * 20
 
 
 def shuffle_quality():
-    return min(max(int(np.random.normal(50, 20)), 1), MAX_QUALITY)
+    return min(max(int(np.random.normal(MAX_QUALITY / 2, 2 * MAX_QUALITY / 5)), 1), MAX_QUALITY)

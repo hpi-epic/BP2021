@@ -12,22 +12,23 @@ import agent2
 import sim_market as sim
 import utils as ut
 
-# def write_tensorboard_profits(profits):
-#     mydict = {}
-#     n_vendors = len(profits[0])
-#     for i in range(n_vendors):
-#         last = profits[-100:]
-#         matrix = np.concatenate(last).reshape(-1, n_vendors)
-#         mydict['vendor_' + str(i)] = np.mean(matrix[:, i])
-#     return mydict
+
+def profit_array_to_tb_dict(profits):
+    mydict = {}
+    n_vendors = len(profits[0])
+    for i in range(n_vendors):
+        last = profits[-100:]
+        matrix = np.concatenate(last).reshape(-1, n_vendors)
+        mydict['vendor_' + str(i)] = np.mean(matrix[:, i])
+    return mydict
 
 
-env = sim.CircularEconomy()
+env = sim.ClassicScenario()
 state = env.reset()
 agent = agent2.QLearningAgent(env.observation_space.shape[0], env.action_space.n, optim.Adam)
 
 all_agent_returns = []
-# all_vendors_reward = []
+all_vendors_reward = []
 losses = []
 rmse_losses = []
 selected_q_vals = []
@@ -36,23 +37,26 @@ ts_frame = 0
 ts = time.time()
 best_m_reward = None
 episode_return = 0
+vendors_episode_return = None
 
 # tensorboard init
 writer = SummaryWriter()
-for frame_idx in range(ut.EPSILON_DECAY_LAST_FRAME * 4):
+for frame_idx in range(2 * ut.EPSILON_DECAY_LAST_FRAME):
     epsilon = max(
         ut.EPSILON_FINAL, ut.EPSILON_START - frame_idx / ut.EPSILON_DECAY_LAST_FRAME
     )
 
     action = agent.policy(state, epsilon)
     state, reward, is_done, info = env.step(action)
-    episode_return += reward
     agent.give_feedback(reward, is_done, state)
-    print(type(reward))
+    episode_return += reward
+    if vendors_episode_return is None:
+        vendors_episode_return = np.zeros(len(info['all_profits']))
+    vendors_episode_return += np.array(info['all_profits'])
 
     if is_done:
         all_agent_returns.append(episode_return)
-        # all_vendors_reward.append(info["all_profits"])
+        all_vendors_reward.append(vendors_episode_return)
         speed = (frame_idx - ts_frame) / (
             (time.time() - ts) if (time.time() - ts) > 0 else 1
         )
@@ -60,11 +64,11 @@ for frame_idx in range(ut.EPSILON_DECAY_LAST_FRAME * 4):
         ts = time.time()
         m_reward = np.mean(all_agent_returns[-100:])
         writer.add_scalar('Profit_mean/agent', m_reward, frame_idx / ut.EPISODE_LENGTH)
-        # writer.add_scalars(
-        #     'Profit_mean/direct_comparison',
-        #     write_tensorboard_profits(all_vendors_reward),
-        #     frame_idx / ut.EPISODE_LENGTH,
-        # )
+        writer.add_scalars(
+            'Profit_mean/direct_comparison',
+            profit_array_to_tb_dict(all_vendors_reward),
+            frame_idx / ut.EPISODE_LENGTH,
+        )
         if frame_idx > ut.REPLAY_START_SIZE:
             writer.add_scalar(
                 'Loss/MSE', np.mean(losses[-1000:]), frame_idx / ut.EPISODE_LENGTH
@@ -92,6 +96,7 @@ for frame_idx in range(ut.EPSILON_DECAY_LAST_FRAME * 4):
             break
 
         episode_return = 0
+        vendors_episode_return = None
         env.reset()
 
     if len(agent.buffer) < ut.REPLAY_START_SIZE:
