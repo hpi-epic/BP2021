@@ -150,7 +150,7 @@ class CircularEconomy(SimMarket):
 
     def action_to_array(self, action):
         # cell 0: price for second-hand-product, cell 1: price for new product
-        act = [int(np.floor(action / utils.MAX_PRICE)), int(action % utils.MAX_PRICE)]
+        act = [int(np.floor(action / utils.MAX_PRICE)) + 1, int(action % utils.MAX_PRICE) + 1]
         # print("You perform ", act)
         return act
 
