@@ -35,3 +35,4 @@ class QLearningAgent(Agent2):
     def give_feedback(self, reward, is_done, new_state):
         exp = self.Experience(*self.buffer_for_feedback, reward, is_done, new_state)
         self.exp_buffer.append(exp)
+        self.buffer_for_feedback = None
