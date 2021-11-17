@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+import copy
+
 import gym
 import numpy as np
 
@@ -77,7 +79,7 @@ class SimMarket(gym.Env):
 
         output_dict = {'all_profits': profits}
         is_done = self.counter >= utils.EPISODE_LENGTH
-        return self.state, profits[0], is_done, output_dict
+        return copy.deepcopy(self.state), profits[0], is_done, output_dict
 
 
 class LinearEconomy(SimMarket):
