@@ -3,9 +3,9 @@
 # rl
 import torch
 
+import sim_market
 import utils as ut
 from model import simple_network
-from sim_market import SimMarket
 
 # this file is broken, if you do not have 'best_marketplace.dat'
 
@@ -14,7 +14,7 @@ model.load_state_dict(
     torch.load('best_marketplace.dat', map_location=torch.device('cpu'))
 )
 
-env = SimMarket()
+env = sim_market.ClassicScenario()
 our_profit = 0
 is_done = False
 state = env.reset(False)
