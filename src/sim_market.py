@@ -146,7 +146,7 @@ class CircularEconomy(SimMarket):
         return []
 
     def reset_agent_information(self):
-        return [int(np.random.rand() * self.max_storage), int(10 * np.random.rand() * self.max_storage)]
+        return [int(np.random.rand() * self.max_storage), int(5 * np.random.rand() * self.max_storage)]
 
     def action_to_array(self, action):
         # cell 0: price for second-hand-product, cell 1: price for new product
