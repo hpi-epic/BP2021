@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 
-import math
+import copy
 
 import gym
 import numpy as np
 
 import competitor as comp
+import customer
 import utils
-from customer import CustomerLinear
 
 # An offer is a Market State that contains both prices and both qualities
 
@@ -35,21 +35,26 @@ class SimMarket(gym.Env):
         self.customer = self.choose_customer()
 
         print('I initiate with', self.state)
-        return self.state
+        return copy.deepcopy(self.state)
 
-    def simulate_customers(self, profits, customer_information, n):
+    def simulate_customers(self, profits, offers, n):
         for _ in range(n):
-            customer_action = self.customer.buy_object(customer_information)
-            if customer_action != 0:
-                profits[customer_action - 1] += (
-                    customer_information[(customer_action - 1) * 2]
-                    - utils.PRODUCTION_PRICE
-                )
+            customer_buy, customer_return = self.customer.buy_object(offers)
+            if customer_return is not None:
+                self.apply_customer_return(customer_return)
+            if customer_buy != 0:
+                self.complete_purchase(offers, profits, customer_buy)
 
-    def full_view(self, action):
+    def generate_offer(self, action):
         return np.concatenate(
             (self.action_to_array(action), self.state), dtype=np.float64
         )
+
+    def modify_profit_by_state(self, profits):
+        pass
+
+    def apply_customer_return(self, customer_return):
+        assert False
 
     def step(self, action):
         # The action is the new price of the agent
@@ -67,18 +72,20 @@ class SimMarket(gym.Env):
         for i in range(n_vendors):
             self.simulate_customers(
                 profits,
-                self.full_view(action),
-                math.floor(utils.NUMBER_OF_CUSTOMERS / n_vendors),
+                self.generate_offer(action),
+                int(np.floor(utils.NUMBER_OF_CUSTOMERS / n_vendors)),
             )
             if i < len(self.competitors):
                 act_compet_i = self.competitors[i].give_competitors_price(
-                    self.full_view(action), i + 1
+                    self.generate_offer(action), i + 1
                 )
                 self.apply_compet_action(act_compet_i, i)
 
+        self.modify_profit_by_state(profits)
+
         output_dict = {'all_profits': profits}
         is_done = self.counter >= utils.EPISODE_LENGTH
-        return self.state, profits[0], is_done, output_dict
+        return copy.deepcopy(self.state), profits[0], is_done, output_dict
 
 
 class LinearEconomy(SimMarket):
@@ -107,7 +114,10 @@ class LinearEconomy(SimMarket):
         return np.array([action + 1.0])
 
     def choose_customer(self):
-        return CustomerLinear()
+        return customer.CustomerLinear()
+
+    def complete_purchase(self, offers, profits, customer_buy):
+        profits[customer_buy - 1] += (offers[(customer_buy - 1) * 2] - utils.PRODUCTION_PRICE)
 
     def ith_compet_index(self, i):
         return 2 * i + 1
@@ -118,7 +128,7 @@ class LinearEconomy(SimMarket):
 
 class ClassicScenario(LinearEconomy):
     def get_competitor_list(self):
-        return [comp.CompetitorLinearRatio1()]
+        return [comp.CompetitorJust2Players()]
 
 
 class MultiCompetitorScenario(LinearEconomy):
@@ -130,5 +140,53 @@ class MultiCompetitorScenario(LinearEconomy):
         ]
 
 
-class CircularEconomy:
-    pass
+class CircularEconomy(SimMarket):
+    def setup_act_obs_space(self):
+        # cell 0: number of products in the used storage, cell 1: number of products in circulation
+        self.max_storage = 1e2
+        self.observation_space = gym.spaces.Box(np.array([0, 0]), np.array([self.max_storage, 10 * self.max_storage]), dtype=np.float64)
+        self.action_space = gym.spaces.Discrete(utils.MAX_PRICE * utils.MAX_PRICE)  # Every pair of actions encoded in one number
+
+    def get_competitor_list(self):
+        return []
+
+    def reset_agent_information(self):
+        return [int(np.random.rand() * self.max_storage), int(5 * np.random.rand() * self.max_storage)]
+
+    def action_to_array(self, action):
+        # cell 0: price for second-hand-product, cell 1: price for new product
+        act = [int(np.floor(action / utils.MAX_PRICE)) + 1, int(action % utils.MAX_PRICE) + 1]
+        # print("You perform ", act)
+        return act
+
+    def choose_customer(self):
+        return customer.CustomerCircular()
+
+    def apply_customer_return(self, customer_return):
+        assert customer_return == 1
+        # print("A customer returns a product")
+        if self.state[1] >= customer_return:
+            if self.state[0] < self.max_storage:
+                self.state[0] += customer_return
+            self.state[1] -= customer_return
+
+    def complete_purchase(self, offers, profits, customer_buy):
+        # print("I want to buy ", customer_buy)
+        assert len(profits) == 1
+        assert 0 < customer_buy and customer_buy <= 2
+        if customer_buy == 1:
+            if self.state[0] >= 1:
+                # Increase the profit and decrease the storage
+                profits[0] += offers[0]
+                self.state[0] -= 1
+            else:
+                # Punish the agent for not having enough second-hand-products
+                profits[0] -= 2 * utils.MAX_PRICE
+        elif customer_buy == 2:
+            profits[0] += offers[1] - utils.PRODUCTION_PRICE
+            # One more product is in circulation now
+            self.state[1] = min(self.state[1] + 1, 10 * self.max_storage)
+
+    def modify_profit_by_state(self, profits):
+        # print("Your storage cost is ", self.state[0])
+        profits[0] -= self.state[0] / 2  # Storage costs per timestep
