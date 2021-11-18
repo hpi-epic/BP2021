@@ -11,7 +11,7 @@ from .context import MultiCompetitorScenario as SMulti
 def random_offer(market_scenario):
 	ins = market_scenario()
 	ins.reset()
-	return ins.full_view(random.randint(1, 29))
+	return ins.generate_offer(random.randint(1, 29))
 
 
 # mark.parametrize can be used to run the same test with different parameters
@@ -19,4 +19,6 @@ def random_offer(market_scenario):
 @pytest.mark.parametrize('offers, expectedSize', [(random_offer(SClassic), 4), (random_offer(SMulti), 8)])
 def test_linear_customer_action_range(offers, expectedSize):
 	assert len(offers) == expectedSize
-	assert 0 <= CLinear.buy_object(CLinear, offers) <= expectedSize - 1
+	buy_decisions = CLinear.buy_object(CLinear, offers)
+	assert 0 <= buy_decisions[0] <= expectedSize - 1
+	assert buy_decisions[1] is None
