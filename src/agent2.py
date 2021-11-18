@@ -18,6 +18,15 @@ class Agent2:
         pass
 
 
+class HumanPlayer(Agent2):
+    def __init__(self):
+        print('Welcome to this funny game! Now, you are the one playing the game!')
+
+    def policy(self, state, epsilon=0):
+        print('The state is ', state, 'and you have to decide what to do! Please enter your action!')
+        return int(input())
+
+
 class QLearningAgent(Agent2):
     Experience = collections.namedtuple('Experience', field_names=['state', 'action', 'reward', 'done', 'new_state'])
 

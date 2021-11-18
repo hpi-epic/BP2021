@@ -12,7 +12,7 @@ import utils as ut
 situation = 'linear'
 
 env = sim_market.CircularEconomy() if situation == 'circular' else sim_market.ClassicScenario()
-agent = agent2.QLearningAgent(env.observation_space.shape[0], env.action_space.n, load_path='trainedModels\\args.env-best_3582.39_marketplace.dat.dat')
+agent = agent2.QLearningAgent(env.observation_space.shape[0], env.action_space.n, load_path='BITTE PFAD EINGEBEN')  # agent2.HumanPlayer() if you want to play the game
 
 counter = 0
 our_profit = 0
