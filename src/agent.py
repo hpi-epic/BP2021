@@ -30,6 +30,9 @@ class HumanPlayer(Agent):
 class QLearningAgent(Agent):
     Experience = collections.namedtuple('Experience', field_names=['state', 'action', 'reward', 'done', 'new_state'])
 
+    # If you enter load_path, the model will be loaded. For example, if you want to use a pretrained net or test a given agent.
+    # If you set an optim, this means you want training.
+    # Give no optim if you don't want training.
     def __init__(self, n_observation, n_actions, optim=None, device='cpu', load_path=None):
         self.device = device
         self.n_actions = n_actions
@@ -57,7 +60,7 @@ class QLearningAgent(Agent):
             self.buffer_for_feedback = (state, action)
         return action
 
-    def give_feedback(self, reward, is_done, new_state):
+    def set_feedback(self, reward, is_done, new_state):
         exp = self.Experience(*self.buffer_for_feedback, reward, is_done, new_state)
         self.buffer.append(exp)
         self.buffer_for_feedback = None

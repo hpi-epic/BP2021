@@ -13,14 +13,15 @@ import sim_market as sim
 import utils as ut
 
 
-def profit_array_to_tb_dict(profits):
-    mydict = {}
+# Gets the profit array of all vendors and returns the necessary dict for direct comparison in tb
+def direct_comparison_dict(profits):
+    comparison_dict = {}
     n_vendors = len(profits[0])
     for i in range(n_vendors):
         last = profits[-100:]
         matrix = np.concatenate(last).reshape(-1, n_vendors)
-        mydict['vendor_' + str(i)] = np.mean(matrix[:, i])
-    return mydict
+        comparison_dict['vendor_' + str(i)] = np.mean(matrix[:, i])
+    return comparison_dict
 
 
 env = sim.MultiCompetitorScenario()
@@ -48,7 +49,7 @@ for frame_idx in range(2 * ut.EPSILON_DECAY_LAST_FRAME):
 
     action = agent.policy(state, epsilon)
     state, reward, is_done, info = env.step(action)
-    agent.give_feedback(reward, is_done, state)
+    agent.set_feedback(reward, is_done, state)
     episode_return += reward
     if vendors_episode_return is None:
         vendors_episode_return = np.zeros(len(info['all_profits']))
@@ -66,7 +67,7 @@ for frame_idx in range(2 * ut.EPSILON_DECAY_LAST_FRAME):
         writer.add_scalar('Profit_mean/agent', m_reward, frame_idx / ut.EPISODE_LENGTH)
         writer.add_scalars(
             'Profit_mean/direct_comparison',
-            profit_array_to_tb_dict(all_vendors_reward),
+            direct_comparison_dict(all_vendors_reward),
             frame_idx / ut.EPISODE_LENGTH,
         )
         if frame_idx > ut.REPLAY_START_SIZE:
