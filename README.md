@@ -36,6 +36,8 @@ conda env update --name your_venv_name --file scripts/environment.yml
 
 ## Using Pytest locally
 
+[Pytest documentation](https://docs.pytest.org/en/latest/index.html)
+
 If you want to run tests locally you can do so in a few ways:
 - Simply running all tests:
 ```console
@@ -47,6 +49,8 @@ pytest -v
 ```
 
 ### Coverage
+
+[Coverage.py Documentation](https://coverage.readthedocs.io/en/6.1.2/)
 
 If you want to know/export the current test coverage use these commands:
 - Running all tests and collecting coverage info:
@@ -62,7 +66,10 @@ coverage report
 coverage-badge -f -o ./src/tests/coverage.svg
 ```
 
-## Installing Pre-commit
+## Pre-commit
+
+[Pre-commit documentation](https://pre-commit.com/)
+
 We are using `pre-commit` to lint our files before committing. Pre-commit itself should already have been installed through the `environment.yml`. Initialize pre-commit using
 ```console
 pre-commit install
@@ -74,6 +81,7 @@ pre-commit run --all-files
 which will install the environment needed.
 
 ### Pre-commit Troubleshooting
+
 If you get the following error:
 
 ```console
