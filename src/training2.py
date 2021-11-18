@@ -23,7 +23,7 @@ def profit_array_to_tb_dict(profits):
     return mydict
 
 
-env = sim.ClassicScenario()
+env = sim.MultiCompetitorScenario()
 state = env.reset()
 agent = agent2.QLearningAgent(env.observation_space.shape[0], env.action_space.n, optim.Adam)
 

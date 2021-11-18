@@ -50,6 +50,12 @@ class SimMarket(gym.Env):
             (self.action_to_array(action), self.state), dtype=np.float64
         )
 
+    def modify_profit_by_state(self, profits):
+        pass
+
+    def apply_customer_return(self, customer_return):
+        assert False
+
     def step(self, action):
         # The action is the new price of the agent
 
@@ -119,9 +125,6 @@ class LinearEconomy(SimMarket):
     def apply_compet_action(self, action, i):
         self.state[self.ith_compet_index(i)] = action
 
-    def modify_profit_by_state(self, profits):
-        pass
-
 
 class ClassicScenario(LinearEconomy):
     def get_competitor_list(self):
@@ -170,7 +173,7 @@ class CircularEconomy(SimMarket):
     def complete_purchase(self, offers, profits, customer_buy):
         # print("I want to buy ", customer_buy)
         assert len(profits) == 1
-        assert 0 <= customer_buy and customer_buy <= 2
+        assert 0 < customer_buy and customer_buy <= 2
         if customer_buy == 1:
             if self.state[0] >= 1:
                 # Increase the profit and decrease the storage

@@ -24,26 +24,28 @@ class QLearningAgent(Agent2):
     def __init__(self, n_observation, n_actions, optim=None, device='cpu', load_path=None):
         self.device = device
         self.n_actions = n_actions
+        self.buffer_for_feedback = None
+        self.optimizer = None
         print('I initiate a QLearningAgent using {} device'.format(self.device))
         self.net = model.simple_network(n_observation, n_actions).to(self.device)
         if load_path:
-            self.net.load_state_dict(torch.load(load_path), map_location=self.device)
+            self.net.load_state_dict(torch.load(load_path, map_location=self.device))
         if optim:
             self.optimizer = optim(self.net.parameters(), lr=ut.LEARNING_RATE)
             self.tgt_net = model.simple_network(n_observation, n_actions).to(self.device)
             if load_path:
                 self.tgt_net.load_state_dict(torch.load(load_path), map_location=self.device)
             self.buffer = ExperienceBuffer(ut.REPLAY_SIZE)
-            self.buffer_for_feedback = None
 
     @torch.no_grad()
     def policy(self, state, epsilon=0):
-        assert self.buffer_for_feedback is None
+        assert self.buffer_for_feedback is None or self.optimizer is None
         if np.random.random() < epsilon:
             action = random.randint(0, self.n_actions - 1)
         else:
             action = int(torch.argmax(self.net(torch.Tensor(state).to(self.device))))
-        self.buffer_for_feedback = (state, action)
+        if self.optimizer is not None:
+            self.buffer_for_feedback = (state, action)
         return action
 
     def give_feedback(self, reward, is_done, new_state):
@@ -84,4 +86,4 @@ class QLearningAgent(Agent2):
     def save(self, path='QLearning_parameters'):
         if not os.path.isdir('trainedModels'):
             os.mkdir('trainedModels')
-        torch.save(self.net.state_dict(), './trainedModels/' + path + '-best_%.2f_marketplace''.dat')
+        torch.save(self.net.state_dict(), './trainedModels/' + path + '.dat')

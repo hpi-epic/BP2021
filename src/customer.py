@@ -52,6 +52,7 @@ class CustomerDeprecated(Customer):
 
 
 class CustomerLinear(Customer):
+    # This customer calculates the value per money for each vendor and chooses those with high value with a higher probability
     def buy_object(self, offers, nothingpreference=1):
         ratios = [nothingpreference]
         for i in range(int(len(offers) / 2)):
@@ -62,11 +63,11 @@ class CustomerLinear(Customer):
 
 
 class CustomerCircular(Customer):
+    # This customer values a second-hand-product 55% of a new product
     def buy_object(self, offers):
         assert offers[0] >= 1 and offers[1] >= 1
         ratio_old = 5.5 / offers[0] - math.exp(offers[0] - 5)
         ratio_new = 10 / offers[1] - math.exp(offers[1] - 8)
         preferences = np.array([1, ratio_old, ratio_new])
         probabilities = softmax(preferences)
-        # print("My preferences are ", preferences, " and my probabiliies are ", probabilities)
         return shuffle_from_probabilities(probabilities), 1 if np.random.rand() < 0.05 * offers[3] / 20 else None
