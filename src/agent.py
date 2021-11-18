@@ -1,58 +1,101 @@
-#!/usr/bin/env python3
-
-# helper
 import collections
-import copy
+import os
+import random
 
 import numpy as np
 import torch
 
-Experience = collections.namedtuple(
-    'Experience', field_names=['state', 'action', 'reward', 'done', 'new_state']
-)
+import model
+import utils as ut
+from experience_buffer import ExperienceBuffer
 
 
 class Agent:
-    def __init__(self, env, exp_buffer):
-        self.env = env
-        self.exp_buffer = exp_buffer
-        self._reset()
+    def __init__(self):
+        pass
 
-    def _reset(self):
-        self.state = self.env.reset()
-        self.total_reward = 0.0
-        self.total_rewards = []
+    def policy(self, state, epsilon=0):
+        assert False
+
+
+class HumanPlayer(Agent):
+    def __init__(self):
+        print('Welcome to this funny game! Now, you are the one playing the game!')
+
+    def policy(self, state, epsilon=0):
+        print('The state is ', state, 'and you have to decide what to do! Please enter your action!')
+        return int(input())
+
+
+class QLearningAgent(Agent):
+    Experience = collections.namedtuple('Experience', field_names=['state', 'action', 'reward', 'done', 'new_state'])
+
+    # If you enter load_path, the model will be loaded. For example, if you want to use a pretrained net or test a given agent.
+    # If you set an optim, this means you want training.
+    # Give no optim if you don't want training.
+    def __init__(self, n_observation, n_actions, optim=None, device='cpu', load_path=None):
+        self.device = device
+        self.n_actions = n_actions
+        self.buffer_for_feedback = None
+        self.optimizer = None
+        print('I initiate a QLearningAgent using {} device'.format(self.device))
+        self.net = model.simple_network(n_observation, n_actions).to(self.device)
+        if load_path:
+            self.net.load_state_dict(torch.load(load_path, map_location=self.device))
+        if optim:
+            self.optimizer = optim(self.net.parameters(), lr=ut.LEARNING_RATE)
+            self.tgt_net = model.simple_network(n_observation, n_actions).to(self.device)
+            if load_path:
+                self.tgt_net.load_state_dict(torch.load(load_path), map_location=self.device)
+            self.buffer = ExperienceBuffer(ut.REPLAY_SIZE)
 
     @torch.no_grad()
-    def play_step(self, net, epsilon=0.0, device='cpu'):
-        done_reward = None
-        output_profits = None
-
+    def policy(self, state, epsilon=0):
+        assert self.buffer_for_feedback is None or self.optimizer is None
         if np.random.random() < epsilon:
-            action = self.env.action_space.sample()
+            action = random.randint(0, self.n_actions - 1)
         else:
-            state_a = np.single([self.state])
-            state_v = torch.tensor(state_a).to(device)
-            q_vals_v = net(state_v)
-            _, act_v = torch.max(q_vals_v, dim=1)
-            action = int(act_v.item())
+            action = int(torch.argmax(self.net(torch.Tensor(state).to(self.device))))
+        if self.optimizer is not None:
+            self.buffer_for_feedback = (state, action)
+        return action
 
-        # do step in the environment
-        new_state, reward, is_done, info = self.env.step(action)
+    def set_feedback(self, reward, is_done, new_state):
+        exp = self.Experience(*self.buffer_for_feedback, reward, is_done, new_state)
+        self.buffer.append(exp)
+        self.buffer_for_feedback = None
 
-        self.total_reward += reward
-        # Accumulate the return for all vendors by adding their values from the info-dict
-        for i, r in enumerate(info['all_profits']):
-            if len(self.total_rewards) <= i:
-                self.total_rewards.append(0)
-            self.total_rewards[i] += r
+    def train_batch(self):
+        self.optimizer.zero_grad()
+        batch = self.buffer.sample(ut.BATCH_SIZE)
+        loss_t, selected_q_val_mean = self.calc_loss(batch)
+        loss_t.backward()
+        self.optimizer.step()
+        return loss_t.item(), selected_q_val_mean.item()
 
-        exp = Experience(self.state, action, reward, is_done, new_state)
-        self.exp_buffer.append(exp)
-        self.state = new_state
-        if is_done:
-            done_reward = self.total_reward
-            # total_rewards will loose it's values after reset. So, having a reference to it will be unpossible to extract the values
-            output_profits = copy.deepcopy(self.total_rewards)
-            self._reset()
-        return done_reward, output_profits
+    def synchronize_tgt_net(self):
+        self.tgt_net.load_state_dict(self.net.state_dict())
+
+    def calc_loss(self, batch, device='cpu'):
+        states, actions, rewards, dones, next_states = batch
+
+        states_v = torch.tensor(np.single(states)).to(device)
+        next_states_v = torch.tensor(np.single(next_states)).to(device)
+        actions_v = torch.tensor(actions).to(device)
+        rewards_v = torch.tensor(rewards).to(device)
+        done_mask = torch.BoolTensor(dones).to(device)
+
+        state_action_values = self.net(states_v).gather(1, actions_v.unsqueeze(-1)).squeeze(-1)
+
+        with torch.no_grad():
+            next_state_values = self.tgt_net(next_states_v).max(1)[0]
+            next_state_values[done_mask] = 0.0
+            next_state_values = next_state_values.detach()
+
+        expected_state_action_values = next_state_values * ut.GAMMA + rewards_v
+        return torch.nn.MSELoss()(state_action_values, expected_state_action_values), state_action_values.mean()
+
+    def save(self, path='QLearning_parameters'):
+        if not os.path.isdir('trainedModels'):
+            os.mkdir('trainedModels')
+        torch.save(self.net.state_dict(), './trainedModels/' + path + '.dat')

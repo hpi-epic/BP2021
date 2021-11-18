@@ -15,7 +15,7 @@ EPISODE_LENGTH = None
 
 GAMMA = 0.99
 BATCH_SIZE = 32
-REPLAY_SIZE = 50000
+REPLAY_SIZE = 200000
 LEARNING_RATE = None
 SYNC_TARGET_FRAMES = 1000
 REPLAY_START_SIZE = 10000
@@ -63,4 +63,4 @@ MEAN_REWARD_BOUND = EPISODE_LENGTH * MAX_PRICE * 20
 
 
 def shuffle_quality():
-    return min(max(int(np.random.normal(50, 20)), 1), MAX_QUALITY)
+    return min(max(int(np.random.normal(MAX_QUALITY / 2, 2 * MAX_QUALITY / 5)), 1), MAX_QUALITY)
