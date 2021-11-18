@@ -11,3 +11,5 @@ dependencies:
   - gym
   - pre-commit
   - tensorboard
+  - coverage
+  - coverage-badge 

@@ -19,8 +19,11 @@ jobs:
           environment-file: scripts/environment.yml
       - name: Pytest
         shell: bash -l {0}
-        run: pytest
+        run: coverage run --source=. -m pytest 
       - name: "OnError: Test with pytest (verbose)"
         if: failure()
         shell: bash -l {0}
         run: pytest -v
+      - name: Create Coverage Badge
+        shell: bash -l {0}
+        run: coverage-badge -f -o ./src/tests/coverage.svg

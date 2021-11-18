@@ -7,10 +7,13 @@
 *.csv
 trainedModels/
 runs/
-test.py
 .vscode/
-# to exclude some notes
+# to exclude some notes etc
 notes.txt
+test.py
+
+# Tests
+coverage.svg
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
