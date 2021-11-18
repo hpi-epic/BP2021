@@ -34,6 +34,34 @@ To update an existing environment with the needed packages run the following com
 conda env update --name your_venv_name --file scripts/environment.yml
 ```
 
+## Using Pytest locally
+
+If you want to run tests locally you can do so in a few ways:
+- Simply running all tests:
+```console
+pytest
+```
+- Running all tests with increased verbosity:
+```console
+pytest -v
+```
+
+### Coverage
+
+If you want to know/export the current test coverage use these commands:
+- Running all tests and collecting coverage info:
+```console
+coverage run --source=. -m pytest
+```
+- See coverage report locally:
+```console
+coverage report
+```
+- Export coverage to the `coverage.svg` in `src/tests` used in `README.md` (Do this when coverage has changed from the currently displayed badge):
+```console
+coverage-badge -f -o ./src/tests/coverage.svg
+```
+
 ## Installing Pre-commit
 We are using `pre-commit` to lint our files before committing. Pre-commit itself should already have been installed through the `environment.yml`. Initialize pre-commit using
 ```console
