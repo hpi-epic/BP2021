@@ -7,10 +7,10 @@
 *.csv
 trainedModels/
 runs/
-test.py
-.vscode
-# to exclude some notes
+.vscode/
+# to exclude some notes etc
 notes.txt
+test.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

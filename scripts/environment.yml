@@ -3,7 +3,7 @@ channels:
   - defaults
   - conda-forge
 dependencies:
-  - numpy
+  - numpy=1.21.2
   - python=3.8
   - pytorch
   - flake8
@@ -11,3 +11,5 @@ dependencies:
   - gym
   - pre-commit
   - tensorboard
+  - coverage
+  - coverage-badge 

@@ -19,7 +19,7 @@ jobs:
           environment-file: scripts/environment.yml
       - name: Pytest
         shell: bash -l {0}
-        run: pytest
+        run: pytest 
       - name: "OnError: Test with pytest (verbose)"
         if: failure()
         shell: bash -l {0}

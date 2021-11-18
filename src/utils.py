@@ -37,12 +37,12 @@ def load_config(
 config = load_config()
 
 # ordered alphabetically in the config.json
-assert 'episode_size' in config
-assert 'learning_rate' in config
-assert 'max_price' in config
-assert 'max_quality' in config
-assert 'number_of_customers' in config
-assert 'production_price' in config
+assert 'episode_size' in config, 'your config is missing episode_size'
+assert 'learning_rate' in config, 'your config is missing learning_rate'
+assert 'max_price' in config, 'your config is missing max_price'
+assert 'max_quality' in config, 'your config is missing max_quality'
+assert 'number_of_customers' in config, 'your config is missing number_of_customers'
+assert 'production_price' in config, 'your config is missing production_price'
 
 EPISODE_LENGTH = int(config['episode_size'])
 LEARNING_RATE = float(config['learning_rate'])
@@ -52,12 +52,12 @@ NUMBER_OF_CUSTOMERS = int(config['number_of_customers'])
 PRODUCTION_PRICE = int(config['production_price'])
 
 
-assert NUMBER_OF_CUSTOMERS > 0 and NUMBER_OF_CUSTOMERS % 2 == 0
-assert LEARNING_RATE > 0 and LEARNING_RATE < 1
-assert PRODUCTION_PRICE <= MAX_PRICE and PRODUCTION_PRICE >= 0
-assert MAX_QUALITY > 0
-assert MAX_PRICE > 0
-assert EPISODE_LENGTH > 0
+assert NUMBER_OF_CUSTOMERS > 0 and NUMBER_OF_CUSTOMERS % 2 == 0, 'number_of_customers should be even and positive'
+assert LEARNING_RATE > 0 and LEARNING_RATE < 1, 'learning_rate should be between 0 and 1 (excluded)'
+assert PRODUCTION_PRICE <= MAX_PRICE and PRODUCTION_PRICE >= 0, 'production_price needs to smaller than max_price and positive or zero'
+assert MAX_QUALITY > 0, 'max_quality should be positive'
+assert MAX_PRICE > 0, 'max_price should be positive'
+assert EPISODE_LENGTH > 0, 'episode_size should be positive'
 
 MEAN_REWARD_BOUND = EPISODE_LENGTH * MAX_PRICE * 20
 

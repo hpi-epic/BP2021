@@ -1,5 +1,7 @@
 # Online Marketplace Simulation: A Testbed for Self-Learning Agents
 
+![Coverage-Badge](/src/tests/coverage.svg)
+
 Working repository in context of the bachelorproject "Online Marketplace Simulation: A Testbed for Self-Learning Agents" at the research group Enterprise Platform and Integration Concepts.
 
 The goal of the project is to develop a universal simulation platform for markets with varying numbers of merchants. Being able to run various market simulations is highly relevant for many firms such as SAP and its partners. As the platform is designed as a tool to support evaluation and research, aspects like configurability and ease of use are crucial. While the technology stack is left open for now, high compatibility to common simulation APIs (such as Gym, TF-Agents) is required.
@@ -32,7 +34,42 @@ To update an existing environment with the needed packages run the following com
 conda env update --name your_venv_name --file scripts/environment.yml
 ```
 
-## Installing Pre-commit
+## Using Pytest locally
+
+[Pytest documentation](https://docs.pytest.org/en/latest/index.html)
+
+If you want to run tests locally you can do so in a few ways:
+- Simply running all tests:
+```console
+pytest
+```
+- Running all tests with increased verbosity:
+```console
+pytest -v
+```
+
+### Coverage
+
+[Coverage.py Documentation](https://coverage.readthedocs.io/en/6.1.2/)
+
+If you want to know/export the current test coverage use these commands:
+- Running all tests and collecting coverage info:
+```console
+coverage run --source=. -m pytest
+```
+- See coverage report locally:
+```console
+coverage report
+```
+- Export coverage to the `coverage.svg` in `src/tests` used in `README.md` (Do this when coverage has changed from the currently displayed badge):
+```console
+coverage-badge -f -o ./src/tests/coverage.svg
+```
+
+## Pre-commit
+
+[Pre-commit documentation](https://pre-commit.com/)
+
 We are using `pre-commit` to lint our files before committing. Pre-commit itself should already have been installed through the `environment.yml`. Initialize pre-commit using
 ```console
 pre-commit install
@@ -44,6 +81,7 @@ pre-commit run --all-files
 which will install the environment needed.
 
 ### Pre-commit Troubleshooting
+
 If you get the following error:
 
 ```console

@@ -4,39 +4,39 @@
 # isort, black, flake8 for PEP8 https://rednafi.github.io/digressions/python/2020/04/06/python-precommit.html
 
 repos:
-    - repo: https://github.com/pre-commit/pre-commit-hooks
-      rev: v2.3.0
-      hooks:
-        - id: trailing-whitespace # trims trailing whitespace
-          args: [--markdown-linebreak-ext=md]
-          types: [python]
-        - id: check-case-conflict # check for system dependent case conflicts
-          types: [python]
-        - id: check-yaml
-        - id: double-quote-string-fixer
-    - repo: https://github.com/pre-commit/pygrep-hooks
-      rev: v1.4.1
-      hooks:
-        - id: python-use-type-annotations # https://florimond.dev/en/posts/2018/07/why-i-started-using-python-type-annotations-and-why-you-should-too/
-          types: [python]
-    - repo: https://github.com/pycqa/isort
-      rev: 5.8.0
-      hooks:
-        - id: isort
-          name: isort
-    #      args: ["--profile", "black", "--filter-files"]
-    # - repo: https://github.com/python/black
-    #   rev: 19.3b0
-    #   hooks:
-    #     - id: black
-    #       args: [--safe, --skip-string-normalization]
-    - repo: https://gitlab.com/pycqa/flake8
-      rev: 3.7.8
-      hooks:
-        - id: flake8
-          types: [python]
-    - repo: https://github.com/pre-commit/pre-commit-hooks
-      rev: v2.3.0
-      hooks:
-        - id: check-ast # check whether files parse as valid python
-          types: [python]
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v2.3.0
+    hooks:
+      - id: trailing-whitespace # trims trailing whitespace
+        args: [--markdown-linebreak-ext=md]
+        types: [python]
+      - id: check-case-conflict # check for system dependent case conflicts
+        types: [python]
+      - id: check-yaml
+      - id: double-quote-string-fixer
+  - repo: https://github.com/pre-commit/pygrep-hooks
+    rev: v1.4.1
+    hooks:
+      - id: python-use-type-annotations # https://florimond.dev/en/posts/2018/07/why-i-started-using-python-type-annotations-and-why-you-should-too/
+        types: [python]
+  - repo: https://github.com/pycqa/isort
+    rev: 5.8.0
+    hooks:
+      - id: isort
+        name: isort
+  #      args: ["--profile", "black", "--filter-files"]
+  # - repo: https://github.com/python/black
+  #   rev: 19.3b0
+  #   hooks:
+  #     - id: black
+  #       args: [--safe, --skip-string-normalization]
+  - repo: https://gitlab.com/pycqa/flake8
+    rev: 3.7.8
+    hooks:
+      - id: flake8
+        types: [python]
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v2.3.0
+    hooks:
+      - id: check-ast # check whether files parse as valid python
+        types: [python]
