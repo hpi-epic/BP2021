@@ -24,7 +24,7 @@ def direct_comparison_dict(profits):
     return comparison_dict
 
 
-env = sim.MultiCompetitorScenario()
+env = sim.ClassicScenario()
 state = env.reset()
 agent = agent.QLearningAgent(env.observation_space.shape[0], env.action_space.n, optim.Adam)
 

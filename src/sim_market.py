@@ -141,6 +141,7 @@ class MultiCompetitorScenario(LinearEconomy):
 
 
 class CircularEconomy(SimMarket):
+	# currently monopoly
     def setup_act_obs_space(self):
         # cell 0: number of products in the used storage, cell 1: number of products in circulation
         self.max_storage = 1e2
