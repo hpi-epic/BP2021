@@ -16,7 +16,7 @@ jobs:
         with:
           miniconda-version: "latest"
           auto-update-conda: true
-          environment-file: scripts/environment.yml
+          environment-file: environment.yml
       - name: Pytest
         shell: bash -l {0}
         run: pytest 
