@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# helper
+# helpers
 import math
 import random
 
