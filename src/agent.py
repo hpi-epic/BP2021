@@ -7,6 +7,7 @@ import torch
 
 import model
 import utils as ut
+from customer import CustomerCircular
 from experience_buffer import ExperienceBuffer
 
 
@@ -22,9 +23,86 @@ class HumanPlayer(Agent):
     def __init__(self):
         print('Welcome to this funny game! Now, you are the one playing the game!')
 
-    def policy(self, state, epsilon=0):
+    def policy(self, state, epsilon=0) -> int:
         print('The state is ', state, 'and you have to decide what to do! Please enter your action!')
         return int(input())
+
+
+class RuleBasedCEAgent(Agent):
+
+    def __init__(self):
+        pass
+
+    def policy(self, state, epsilon=0) -> int:
+        # state[0]: products in my storage
+        # state[1]: products in circulation
+        return self.optimal_policy(state)
+
+        # self.optimal_policy(state)
+        # max_price_new = 0
+        # max_price_used = 0
+        # max_profit = 0
+        # for price_used in range(1, 10):
+        #     for price_new in range(1, 10):
+        #         # calculating the customers ratio
+        #         ratio_old = 5.5 / price_used - math.exp(price_used - 5)
+        #         ratio_new = 10 / price_new - math.exp(price_new - 8)
+        #         preferences = np.array([1, ratio_old, ratio_new])
+        #         #print('preferences', preferences)
+        #         probabilities = ut.softmax(preferences)
+        #         print('probabilities', probabilities)
+        #         # expect number of products to be sold and storage costs in the next period
+        #         expected_sold_used = probabilities[0] * 20
+        #         expected_sold_new = probabilities[1] * 20
+        #         expected_storage_costs = (state[0] - expected_sold_used) / 2
+        #         #print('prods:', expected_sold_used, expected_sold_new)
+
+        #         expected_profit = expected_sold_used * price_used + expected_sold_new * price_new - expected_storage_costs
+        #         #print('expected profit:', expected_profit, price_used, price_new)
+        #         # maximize the profit
+        #         if expected_profit > max_profit:
+        #             max_profit = expected_profit
+        #             max_price_new = price_new
+        #             max_price_used = price_used
+        # print('prices:', max_price_used, max_price_new)
+        # # return fomula combines both prices into one number
+        # return (max_price_used - 1) * 10 + (max_price_new - 1)
+
+    def optimal_policy(self, state):
+        # initialize NUMBER_OF_CUSTOMERS customer
+        customers = []
+        for _ in range(0, ut.NUMBER_OF_CUSTOMERS * 10):
+            customers += [CustomerCircular()]
+
+        max_profit = -9999999999999
+        max_price_n = 0
+        max_price_u = 0
+        for p_u in range(1, ut.MAX_PRICE):
+            for p_n in range(1, ut.MAX_PRICE):
+                storage = state[0]
+                exp_sales_new = 0
+                exp_sales_old = 0
+                exp_return_prod = 0
+                for customer in customers:
+                    c_buy, c_return = customer.buy_object([p_u, p_n, state[0], state[1]])
+                    # c_buy: decision, whether the customer buys 1 (old product) or two (new product)
+                    # c_return: decision, whether the customer returns a product
+                    if c_return is not None:
+                        exp_return_prod += 1
+                    if c_buy == 1:
+                        storage -= 1
+                        exp_sales_old += 1
+                    elif c_buy == 2:
+                        exp_sales_new += 1
+                exp_profit = (p_n * exp_sales_new + p_u * exp_sales_old) - ((storage + exp_return_prod) * 2)
+                if exp_profit > max_profit:
+                    max_profit = exp_profit
+                    max_price_n = p_n
+                    max_price_u = p_u
+        print(max_price_u, max_price_n)
+        assert max_price_n > 0 and max_price_u > 0
+        # return fomula combines both prices into one number
+        return (max_price_u) * 10 + (max_price_n)
 
 
 class QLearningAgent(Agent):
