@@ -92,7 +92,7 @@ class LinearEconomy(SimMarket):
     def setup_act_obs_space(self):
         # cell 0: agent's quality, afterwards: odd cells: competitor's price, even cells: competitor's quality
         self.observation_space = gym.spaces.Box(
-            np.array([0.0] * (len(self.competitors) * 2.0 + 1.0)),
+            np.array([0.0] * (len(self.competitors) * 2 + 1)),
             np.array(
                 [ut.MAX_QUALITY]
                 + [ut.MAX_PRICE, ut.MAX_QUALITY] * len(self.competitors)
