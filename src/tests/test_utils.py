@@ -58,7 +58,7 @@ array_testing = [
 	missing_episode_size, missing_learning_rate, missing_max_price, missing_max_quality, missing_number_of_customers, missing_prod_price
 ]
 
-# This defines how the tests are named. Usually they would be "test_invalid_values[whole_json_here]". This ensure they are named after the actual thing they are testing
+# This defines how the tests are named. Usually they would be "test_invalid_values[whole_json_here]". This ensures they are named after the actual thing they are testing
 def get_invalid_test_ids():
 	return [
 		'odd_number_of_customers', 'negative_number_of_customers', 'learning_rate_larger_one', 'neg_learning_rate', 'prod_price_higher_max_price', 'neg_prod_price', 'neg_max_quality',
