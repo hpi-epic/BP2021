@@ -1,47 +1,87 @@
+from typing import Tuple
 import numpy as np
 import sim_market as sim
 import agent
 import utils as ut
+import pandas as pd
+import matplotlib.pyplot as plt
 
+# api tbd
 situation = 'linear'
-
 marketplace = sim.CircularEconomy() if situation == 'circular' else sim.ClassicScenario()
 agent = agent.QLearningAgent(marketplace.observation_space.shape[0], marketplace.action_space.n, load_path='/Users/lion/Documents/HPI5/EPIC/BP2021/trainedModels/args.env-best_2760.77_marketplace.dat.dat')
 
-counter = 0
-our_profit = 0
-number_episodes = 10000
-is_done = False
-profits_per_episode = []
+# set up marketplace 
+number_episodes = int(input('Enter the number of episodes: '))
 
-def metrics_average(profits, number_episodes) -> np.float64:
-	return np.float64(sum(profits) / number_episodes)
+# run marketplace
+def reset_episode(reward_per_episode, is_done, marketplace) -> Tuple[np.float64, bool, np.array]:
+	reward_per_episode = 0
+	is_done = False
+	state = marketplace.reset()
 
-state = marketplace.reset()
-print('The production price is', ut.PRODUCTION_PRICE)
+	return reward_per_episode, is_done, state
 
-for episode in range(number_episodes):
-	while not is_done:
-		action = agent.policy(state)
-		print(
-			'This is the state:',
-			marketplace.state,
-			' and I will do ',
-			action
-		)
-		state, reward, is_done, dict = marketplace.step(action)
-		print('The agents profit this round is', reward)
-		our_profit += reward
-		counter += 1
-	print(
-		'The total profit of the agent per episode is',
-		our_profit
-	)
-	profits_per_episode.append(our_profit)
-	our_profit = 0
+def run_marketplace(number_episodes, marketplace, agent) -> list:
+	
+	# initialize marketplace
+	reward_per_episode = 0
+	rewards = []
 	is_done = False
 
-# for number_episode, profit in enumerate(profits_per_episode):
-	# print(f"In episode {number_episode} our profit is: " + str(profit))
+	for _ in range(number_episodes):
 
-print(f"The average reward over {number_episodes} episodes is: " + str(metrics_average(profits_per_episode, number_episodes)))
+		reward_per_episode, is_done, state = reset_episode(reward_per_episode, is_done, marketplace)
+
+		while not is_done:
+			action = agent.policy(state)
+			print(
+				'This is the state:',
+				marketplace.state,
+				' and I will do ',
+				action
+			)
+			state, reward, is_done, dict = marketplace.step(action)
+			print('The agents profit this round is', reward)
+			reward_per_episode += reward
+		print(
+			'The agents total profit of this episode is',
+			reward_per_episode
+		)
+		rewards.append(reward_per_episode)
+
+	return rewards
+
+# metrics
+def metrics_average(rewards, number_episodes) -> np.float64:
+	return np.float64(sum(rewards) / number_episodes)
+
+def metrics_median(rewards) -> np.float64:
+	return np.median(np.array(rewards))
+
+def metrics_maximum(rewards) -> np.float64:
+	return np.max(np.array(rewards))
+
+def metrics_minimum(rewards) -> np.float64:
+	return np.min(np.array(rewards))
+	
+
+
+# visialize metrics
+
+
+def main():
+	rewards = run_marketplace(number_episodes, marketplace, agent)
+
+	print(f"The average reward over {number_episodes} episodes is: " 
+		+ str(metrics_average(rewards, number_episodes)))
+	print(f"The median reward over {number_episodes} episodes is: " 
+		+ str(metrics_median(rewards)))
+	print(f"The maximum reward over {number_episodes} episodes is: " 
+		+ str(metrics_maximum(rewards)))
+	print(f"The minimum reward over {number_episodes} episodes is: " 
+		+ str(metrics_minimum(rewards)))
+
+if __name__ == "__main__":
+	main()
+	
