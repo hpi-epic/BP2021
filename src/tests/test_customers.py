@@ -1,10 +1,13 @@
 import pytest
 from numpy import random
 
-# from .context import sim_market, customer
+# sim_market
 from .context import ClassicScenario as SClassic
+
+# Customer
 from .context import CustomerLinear as CLinear
 from .context import MultiCompetitorScenario as SMulti
+from .context import customer # to test general functionality independent of a Customer
 
 
 # Helper function that creates a random offer (state that includes the agent's price) to test customer behaviour. This is dependent on the sim_market working!
@@ -27,3 +30,8 @@ def test_linear_customer_action_range(offers, expectedSize):
 	buy_decisions = CLinear.buy_object(CLinear, offers)
 	assert 0 <= buy_decisions[0] <= expectedSize - 1
 	assert buy_decisions[1] is None
+
+def test_customer_parent_class():
+	with pytest.raises(AssertionError) as assertion_info:
+		customer.Customer.buy_object(CLinear, random_offer(SClassic))
+	assert str(assertion_info.value) == 'This class should not be used.'
