@@ -26,7 +26,7 @@ class Competitor:
 
 class CompetitorLinearRatio1(Competitor):
     def give_competitors_price(self, state, self_idx):
-        # this stratgy calculates the value per money for each competing vendor and tries to adept to it
+        # this stratgy calculates the value per money for each competing vendor and tries to adapt to it
         ratios = []
         max_competing_ratio = 0
         for i in range(math.floor(len(state) / 2)):
