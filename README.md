@@ -15,9 +15,9 @@ The four Python files in this repository belong to a simple protoype for marketp
 
 ## Installing dependencies 
 
-If you have not yet done so, install Anaconda and run the following command to create an environment and install the required packages:
+If you have not yet done so, install Anaconda and run the following command to create an environment and install the required packages from the `environment.yml`:
 ```console
-conda env create -f scripts/environment.yml -n your_venv_name
+conda env create -n your_venv_name
 ```
 To activate your created environment use:
 ```console
@@ -31,8 +31,15 @@ conda install -c anaconda cudatoolkit
 
 To update an existing environment with the needed packages run the following command:
 ```console
-conda env update --name your_venv_name --file scripts/environment.yml
+conda env update -n your_venv_name
 ```
+
+If version numbers have changed in the `environment.yml` it can happen that conda finds conflicts and tries resolving them without succeeding. In this case you may need to reinstall the packages. Deactivate your environment before proceeding, otherwise conda cannot perform the commands.
+```console
+conda uninstall -n your_venv_name --all
+conda env update -n your_venv_name
+```
+This will first uninstall all packages and then re-install them from the `environment.yml`.
 
 ## Using Pytest locally
 
