@@ -28,6 +28,14 @@ class HumanPlayer(Agent):
         return int(input())
 
 
+class HardcodedAgent(Agent):
+    def __init__(self):
+        pass
+
+    def policy(self, state, epsilon=0) -> int:
+        return 93
+
+
 class RuleBasedCEAgent(Agent):
 
     def __init__(self):
@@ -36,37 +44,26 @@ class RuleBasedCEAgent(Agent):
     def policy(self, state, epsilon=0) -> int:
         # state[0]: products in my storage
         # state[1]: products in circulation
-        return self.optimal_policy(state)
-
-        # self.optimal_policy(state)
-        # max_price_new = 0
-        # max_price_used = 0
-        # max_profit = 0
-        # for price_used in range(1, 10):
-        #     for price_new in range(1, 10):
-        #         # calculating the customers ratio
-        #         ratio_old = 5.5 / price_used - math.exp(price_used - 5)
-        #         ratio_new = 10 / price_new - math.exp(price_new - 8)
-        #         preferences = np.array([1, ratio_old, ratio_new])
-        #         #print('preferences', preferences)
-        #         probabilities = ut.softmax(preferences)
-        #         print('probabilities', probabilities)
-        #         # expect number of products to be sold and storage costs in the next period
-        #         expected_sold_used = probabilities[0] * 20
-        #         expected_sold_new = probabilities[1] * 20
-        #         expected_storage_costs = (state[0] - expected_sold_used) / 2
-        #         #print('prods:', expected_sold_used, expected_sold_new)
-
-        #         expected_profit = expected_sold_used * price_used + expected_sold_new * price_new - expected_storage_costs
-        #         #print('expected profit:', expected_profit, price_used, price_new)
-        #         # maximize the profit
-        #         if expected_profit > max_profit:
-        #             max_profit = expected_profit
-        #             max_price_new = price_new
-        #             max_price_used = price_used
-        # print('prices:', max_price_used, max_price_new)
-        # # return fomula combines both prices into one number
-        # return (max_price_used - 1) * 10 + (max_price_new - 1)
+        # return self.optimal_policy(state)
+        products_in_storage = state[0]
+        # products_in_circulation = state[1]
+        # price_old = 0
+        # price_new = ut.PRODUCTION_PRICE
+        if products_in_storage < ut.MAX_STORAGE / 3:
+            # less than 1/3 of storage filled
+            # price_old = int(ut.MAX_PRICE / 2)
+            # price_new = int(ut.MAX_PRICE * 2 / 3)
+            return 42
+        elif products_in_storage < ut.MAX_STORAGE / 2:
+            # less than 1/2 of storage filled
+            # price_old = int(ut.MAX_PRICE / 2)
+            # price_new = int(ut.MAX_PRICE * 2 / 3)
+            return 46
+        elif products_in_storage < ut.MAX_STORAGE * 2 / 3:
+            return 55
+        else:
+            # storage too full, we need to get rid of some refurbished products
+            return 28
 
     def optimal_policy(self, state):
         # initialize NUMBER_OF_CUSTOMERS customer
@@ -74,7 +71,7 @@ class RuleBasedCEAgent(Agent):
         for _ in range(0, ut.NUMBER_OF_CUSTOMERS * 10):
             customers += [CustomerCircular()]
 
-        max_profit = -9999999999999
+        max_profit = -9999999999999  # we have not found a better solution yet
         max_price_n = 0
         max_price_u = 0
         for p_u in range(1, ut.MAX_PRICE):

@@ -7,7 +7,7 @@ import random
 
 import numpy as np
 
-MAX_STORAGE = 1000
+MAX_STORAGE = 100
 MAX_PRICE = None
 MAX_QUALITY = None
 MEAN_REWARD_BOUND = None
