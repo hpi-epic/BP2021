@@ -26,7 +26,8 @@ def direct_comparison_dict(profits):
 
 
 def train_QLearning_agent(environment=sim.MultiCompetitorScenario(), maxsteps=2 * ut.EPSILON_DECAY_LAST_FRAME):
-    torch.set_num_threads(1)
+    # torch.set_num_threads(1)
+    print(torch.get_num_threads())
     state = environment.reset()
     RL_agent = agent.QLearningAgent(environment.observation_space.shape[0], environment.action_space.n, optim.Adam)
 
