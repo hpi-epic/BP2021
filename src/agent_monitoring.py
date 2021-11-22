@@ -1,17 +1,19 @@
 from typing import Tuple
-import numpy as np
-import sim_market as sim
-import agent
-import utils as ut
-import pandas as pd
+
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+
+import agent
+import sim_market as sim
+import utils as ut
 
 # api tbd
 situation = 'linear'
 marketplace = sim.CircularEconomy() if situation == 'circular' else sim.ClassicScenario()
 agent = agent.QLearningAgent(marketplace.observation_space.shape[0], marketplace.action_space.n, load_path='/Users/lion/Documents/HPI5/EPIC/BP2021/trainedModels/args.env-best_2760.77_marketplace.dat.dat')
 
-# set up marketplace 
+# set up marketplace
 number_episodes = int(input('Enter the number of episodes: '))
 
 # run marketplace
@@ -23,7 +25,7 @@ def reset_episode(reward_per_episode, is_done, marketplace) -> Tuple[np.float64,
 	return reward_per_episode, is_done, state
 
 def run_marketplace(number_episodes, marketplace, agent) -> list:
-	
+
 	# initialize marketplace
 	reward_per_episode = 0
 	rewards = []
@@ -64,7 +66,7 @@ def metrics_maximum(rewards) -> np.float64:
 
 def metrics_minimum(rewards) -> np.float64:
 	return np.min(np.array(rewards))
-	
+
 
 
 # visialize metrics
@@ -73,15 +75,14 @@ def metrics_minimum(rewards) -> np.float64:
 def main():
 	rewards = run_marketplace(number_episodes, marketplace, agent)
 
-	print(f"The average reward over {number_episodes} episodes is: " 
+	print(f'The average reward over {number_episodes} episodes is: '
 		+ str(metrics_average(rewards, number_episodes)))
-	print(f"The median reward over {number_episodes} episodes is: " 
+	print(f'The median reward over {number_episodes} episodes is: '
 		+ str(metrics_median(rewards)))
-	print(f"The maximum reward over {number_episodes} episodes is: " 
+	print(f'The maximum reward over {number_episodes} episodes is: '
 		+ str(metrics_maximum(rewards)))
-	print(f"The minimum reward over {number_episodes} episodes is: " 
+	print(f'The minimum reward over {number_episodes} episodes is: '
 		+ str(metrics_minimum(rewards)))
 
-if __name__ == "__main__":
+if __name__ == '__main__':
 	main()
-	

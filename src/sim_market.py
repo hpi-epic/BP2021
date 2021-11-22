@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 
 import copy
+from typing import Tuple
 
 import gym
 import numpy as np
 
 import competitor as comp
 import customer
-from customer import Customer
 import utils as ut
-from typing import Tuple
+from customer import Customer
 
 # An offer is a Market State that contains both prices and both qualities
 
@@ -170,7 +170,7 @@ class CircularEconomy(SimMarket):
     def apply_customer_return(self, customer_return) -> None:
         assert customer_return == 1
         # print("A customer returns a product")
-		
+
 		# check if number of products in circulation > 0
         if self.state[1] >= customer_return:
 			# check if storage is full
