@@ -1,8 +1,8 @@
 {
-    "episode_size": 1000,
+    "episode_size": 100,
     "learning_rate": 1e-5,
     "max_price": 10,
     "max_quality": 50,
     "number_of_customers": 20,
-    "production_price": 2
+    "production_price": 4
 }

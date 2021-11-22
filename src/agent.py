@@ -45,27 +45,35 @@ class RuleBasedCEAgent(Agent):
         # state[0]: products in my storage
         # state[1]: products in circulation
         # return self.optimal_policy(state)
+        return self.storage_evaluation(state)
+
+    def storage_evaluation(self, state) -> int:
         products_in_storage = state[0]
-        # products_in_circulation = state[1]
-        # price_old = 0
-        # price_new = ut.PRODUCTION_PRICE
-        if products_in_storage < ut.MAX_STORAGE / 3:
-            # less than 1/3 of storage filled
-            # price_old = int(ut.MAX_PRICE / 2)
-            # price_new = int(ut.MAX_PRICE * 2 / 3)
-            return 42
+        price_old = 0
+        price_new = ut.PRODUCTION_PRICE
+        if products_in_storage < ut.MAX_STORAGE / 4:
+            # less than 1/4 of storage filled
+            price_old = int(ut.MAX_PRICE / 2 + 0.1 * ut.MAX_PRICE)
+            price_new += int(ut.MAX_PRICE / 2 + 0.1 * ut.MAX_PRICE)
+
         elif products_in_storage < ut.MAX_STORAGE / 2:
             # less than 1/2 of storage filled
-            # price_old = int(ut.MAX_PRICE / 2)
-            # price_new = int(ut.MAX_PRICE * 2 / 3)
-            return 46
-        elif products_in_storage < ut.MAX_STORAGE * 2 / 3:
-            return 55
+            price_old = int(ut.MAX_PRICE / 2)
+            price_new += int(ut.MAX_PRICE / 2)
+
+        elif products_in_storage < ut.MAX_STORAGE * 3 / 4:
+            # less than 3/4 but more than 1/2 of storage filled
+            price_old = int(ut.MAX_PRICE / 2 - 0.1 * ut.MAX_PRICE)
+            price_new += int(ut.MAX_PRICE / 2 - 0.1 * ut.MAX_PRICE)
         else:
             # storage too full, we need to get rid of some refurbished products
-            return 28
+            price_old = int(ut.MAX_PRICE / 4)
+            price_new += int(ut.MAX_PRICE * 3 / 4)
+        price_new = min(9, price_new)
+        assert price_old <= price_new
+        return price_old * 10 + price_new
 
-    def optimal_policy(self, state):
+    def greedy_policy(self, state):
         # initialize NUMBER_OF_CUSTOMERS customer
         customers = []
         for _ in range(0, ut.NUMBER_OF_CUSTOMERS * 10):
