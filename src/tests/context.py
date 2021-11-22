@@ -10,3 +10,4 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 # or: from .context import ClassicScenario
 from customer import *
 from sim_market import *
+from utils import *
