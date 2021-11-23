@@ -8,6 +8,7 @@
 trainedModels/
 runs/
 .vscode/
+.DS_Store
 # to exclude some notes etc
 notes.txt
 test.py
