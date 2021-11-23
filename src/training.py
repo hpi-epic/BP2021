@@ -11,6 +11,7 @@ from torch.utils.tensorboard import SummaryWriter
 import agent
 import sim_market as sim
 import utils as ut
+import utils_rl as utrl
 
 
 # Gets the profit array of all vendors and returns the necessary dict for direct comparison in tb
@@ -42,9 +43,9 @@ vendors_episode_return = None
 
 # tensorboard init
 writer = SummaryWriter()
-for frame_idx in range(2 * ut.EPSILON_DECAY_LAST_FRAME):
+for frame_idx in range(2 * utrl.EPSILON_DECAY_LAST_FRAME):
     epsilon = max(
-        ut.EPSILON_FINAL, ut.EPSILON_START - frame_idx / ut.EPSILON_DECAY_LAST_FRAME
+        utrl.EPSILON_FINAL, utrl.EPSILON_START - frame_idx / utrl.EPSILON_DECAY_LAST_FRAME
     )
 
     action = agent.policy(state, epsilon)
@@ -70,7 +71,7 @@ for frame_idx in range(2 * ut.EPSILON_DECAY_LAST_FRAME):
             direct_comparison_dict(all_vendors_reward),
             frame_idx / ut.EPISODE_LENGTH,
         )
-        if frame_idx > ut.REPLAY_START_SIZE:
+        if frame_idx > utrl.REPLAY_START_SIZE:
             writer.add_scalar(
                 'Loss/MSE', np.mean(losses[-1000:]), frame_idx / ut.EPISODE_LENGTH
             )
@@ -87,7 +88,7 @@ for frame_idx in range(2 * ut.EPSILON_DECAY_LAST_FRAME):
 
         if (
             best_m_reward is None or best_m_reward < m_reward
-        ) and frame_idx > ut.EPSILON_DECAY_LAST_FRAME + 101:
+        ) and frame_idx > utrl.EPSILON_DECAY_LAST_FRAME + 101:
             agent.save('args.env-best_%.2f_marketplace.dat' % m_reward)
             if best_m_reward is not None:
                 print('Best reward updated %.3f -> %.3f' % (best_m_reward, m_reward))
@@ -100,7 +101,7 @@ for frame_idx in range(2 * ut.EPSILON_DECAY_LAST_FRAME):
         vendors_episode_return = None
         env.reset()
 
-    if len(agent.buffer) < ut.REPLAY_START_SIZE:
+    if len(agent.buffer) < utrl.REPLAY_START_SIZE:
         continue
 
     if frame_idx % ut.SYNC_TARGET_FRAMES == 0:
