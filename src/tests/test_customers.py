@@ -28,11 +28,13 @@ def get_customer_action_range_ids():
 	]
 
 
-array_customer_action_range = [(CLinear, random_offer(SClassic), 4), (CLinear, random_offer(SMulti), 8), (CCircular, random_offer(SClassic), 4), (CCircular, random_offer(SMulti), 8)]
+array_customer_action_range = [
+	(CLinear, random_offer(SClassic), 4), (CLinear, random_offer(SMulti), 8), (CCircular, random_offer(SClassic), 4), (CCircular, random_offer(SMulti), 8)
+]
 
 
 # mark.parametrize can be used to run the same test with different parameters
-# Test the LinearCustomer in the different Market Scenarios
+# Test the different Customers in the different Market Scenarios
 @pytest.mark.parametrize('customer, offers, expectedSize', array_customer_action_range, ids=get_customer_action_range_ids())
 def test_customer_action_range(customer, offers, expectedSize):
 	assert len(offers) == expectedSize

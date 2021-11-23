@@ -17,3 +17,4 @@ import utils
 from customer import *
 from sim_market import *
 from utils import *
+from competitor import *
