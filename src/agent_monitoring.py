@@ -14,9 +14,14 @@ marketplace = sim.CircularEconomy() if situation == 'circular' else sim.ClassicS
 agent = agent.QLearningAgent(marketplace.observation_space.shape[0], marketplace.action_space.n, load_path='/Users/lion/Documents/HPI5/EPIC/BP2021/trainedModels/args.env-best_2760.77_marketplace.dat.dat')
 
 # set up marketplace
-number_episodes = int(input('Enter the number of episodes: '))
+number_episodes = 1000
 
-# run marketplace
+# helper functions
+def round_up(number, decimals=0):
+    multiplier = 10 ** decimals
+    return np.ceil(number * multiplier) / multiplier
+
+# corri environmente
 def reset_episode(reward_per_episode, is_done, marketplace) -> Tuple[np.float64, bool, np.array]:
 	reward_per_episode = 0
 	is_done = False
@@ -69,7 +74,7 @@ def metrics_minimum(rewards) -> np.float64:
 
 
 
-# visialize metrics
+# visialize metrics tbd
 
 
 def main():
@@ -83,6 +88,18 @@ def main():
 		+ str(metrics_maximum(rewards)))
 	print(f'The minimum reward over {number_episodes} episodes is: '
 		+ str(metrics_minimum(rewards)))
+
+	dataframe = {
+		'data': rewards,
+		'episode_number': [episode for episode in range(number_episodes)]
+	}
+
+	df = pd.DataFrame(dataframe)
+	print(df)
+	plt.xlabel('Reward', fontsize='18')
+	plt.ylabel('Episodes', fontsize='18')
+	plt.hist(rewards, bins=10, color='#6e9bd1', align='mid' ,edgecolor='purple', range=(0, round_up(int(metrics_maximum(rewards)), -3)))
+	plt.show()
 
 if __name__ == '__main__':
 	main()
