@@ -58,6 +58,7 @@ array_testing = [
 	missing_episode_size, missing_learning_rate, missing_max_price, missing_max_quality, missing_number_of_customers, missing_prod_price
 ]
 
+
 # This defines how the tests are named. Usually they would be "test_invalid_values[whole_json_here]". This ensures they are named after the actual thing they are testing
 def get_invalid_test_ids():
 	return [
@@ -67,7 +68,7 @@ def get_invalid_test_ids():
 
 
 # Test that checks that an invalid/broken config.json gets detected correctly
-@pytest.mark.parametrize('json_values, expected_error_msg', array_testing, ids = get_invalid_test_ids())
+@pytest.mark.parametrize('json_values, expected_error_msg', array_testing, ids=get_invalid_test_ids())
 def test_invalid_values(json_values, expected_error_msg):
 	json = json_values
 	with patch('builtins.open', mock_open(read_data=json)) as mock_file:
