@@ -53,7 +53,7 @@ missing_number_of_customers = (create_mock_json_with_missing_line(4), 'your conf
 missing_prod_price = (create_mock_json_with_missing_line(5), 'your config is missing production_price')
 
 # All pairs concerning themselves with invalid config.json values should be added to this array to get tested in test_invalid_values
-array_testing = [
+array_invalid_values = [
 	odd_number_of_customers, negative_number_of_customers, learning_rate_larger_one, neg_learning_rate, prod_price_higher_max_price, neg_prod_price, neg_max_quality,
 	missing_episode_size, missing_learning_rate, missing_max_price, missing_max_quality, missing_number_of_customers, missing_prod_price
 ]
@@ -68,7 +68,7 @@ def get_invalid_test_ids():
 
 
 # Test that checks that an invalid/broken config.json gets detected correctly
-@pytest.mark.parametrize('json_values, expected_error_msg', array_testing, ids=get_invalid_test_ids())
+@pytest.mark.parametrize('json_values, expected_error_msg', array_invalid_values, ids=get_invalid_test_ids())
 def test_invalid_values(json_values, expected_error_msg):
 	json = json_values
 	with patch('builtins.open', mock_open(read_data=json)) as mock_file:
