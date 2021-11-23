@@ -33,7 +33,9 @@ class HardcodedAgent(Agent):
         pass
 
     def policy(self, state, epsilon=0) -> int:
-        return 93
+        with open('myfile.txt') as f:
+            first_line = f.readline()
+        return int(first_line)
 
 
 class RuleBasedCEAgent(Agent):
@@ -41,10 +43,37 @@ class RuleBasedCEAgent(Agent):
     def __init__(self):
         pass
 
+    def action_to_array(self, action):
+        return [int(np.floor(action / ut.MAX_PRICE)), int(action % ut.MAX_PRICE)]
+
+    def array_to_action(self, array):
+        return array[0] * 10 + array[1]
+
     def policy(self, state, epsilon=0) -> int:
         # state[0]: products in my storage
         # state[1]: products in circulation
         # return self.optimal_policy(state)
+        # storage_cost_indicator /  is -1 if storage costs are low
+        # storage_cost_indicator is 0 if storage costs are normal
+        # storage_cost_indicator is 1 if storage costs are high
+        storage_cost_indicator = 0
+        production_cost_indicator = 0
+
+        # check if storage costs can be considered normal
+        if ut.STORAGE_COST_PER_PRODUCT < 0.5:
+            storage_cost_indicator = -1
+        elif ut.STORAGE_COST_PER_PRODUCT > 1:
+            storage_cost_indicator = 1
+
+        # check if production costs can be considered normal
+        if ut.PRODUCTION_PRICE < 0.2 * ut.MAX_PRICE:
+            production_cost_indicator = -1
+        elif ut.PRODUCTION_PRICE > 0.3 * ut.MAX_PRICE:
+            production_cost_indicator = 1
+
+        if production_cost_indicator == 1 and storage_cost_indicator == 1:
+            return 00
+
         return self.storage_evaluation(state)
 
     def storage_evaluation(self, state) -> int:
@@ -53,25 +82,26 @@ class RuleBasedCEAgent(Agent):
         price_new = ut.PRODUCTION_PRICE
         if products_in_storage < ut.MAX_STORAGE / 4:
             # less than 1/4 of storage filled
-            price_old = int(ut.MAX_PRICE / 2 + 0.1 * ut.MAX_PRICE)
-            price_new += int(ut.MAX_PRICE / 2 + 0.1 * ut.MAX_PRICE)
+            price_old = int(ut.MAX_PRICE * 6 / 10)
+            price_new += int(ut.MAX_PRICE * 6 / 10)
 
         elif products_in_storage < ut.MAX_STORAGE / 2:
             # less than 1/2 of storage filled
-            price_old = int(ut.MAX_PRICE / 2)
-            price_new += int(ut.MAX_PRICE / 2)
+            price_old = int(ut.MAX_PRICE * 5 / 10)
+            price_new += int(ut.MAX_PRICE * 5 / 10)
 
         elif products_in_storage < ut.MAX_STORAGE * 3 / 4:
             # less than 3/4 but more than 1/2 of storage filled
-            price_old = int(ut.MAX_PRICE / 2 - 0.1 * ut.MAX_PRICE)
-            price_new += int(ut.MAX_PRICE / 2 - 0.1 * ut.MAX_PRICE)
+            price_old = int(ut.MAX_PRICE * 4 / 10)
+            price_new += int(ut.MAX_PRICE * 4 / 10)
         else:
             # storage too full, we need to get rid of some refurbished products
-            price_old = int(ut.MAX_PRICE / 4)
-            price_new += int(ut.MAX_PRICE * 3 / 4)
+            price_old = int(ut.MAX_PRICE * 2 / 10)
+            price_new += int(ut.MAX_PRICE * 7 / 10)
+
         price_new = min(9, price_new)
         assert price_old <= price_new
-        return price_old * 10 + price_new
+        return self.array_to_action([price_old, price_new])
 
     def greedy_policy(self, state):
         # initialize NUMBER_OF_CUSTOMERS customer

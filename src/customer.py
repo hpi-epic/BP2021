@@ -58,7 +58,7 @@ class CustomerCircular(Customer):
 
         assert offers[0] >= 1 and offers[1] >= 1
 
-        ratio_old = 7.5 / offers[0] - math.exp(offers[0] - 5)
+        ratio_old = 5.5 / offers[0] - math.exp(offers[0] - 5)
         ratio_new = 10 / offers[1] - math.exp(offers[1] - 8)
         preferences = np.array([1, ratio_old, ratio_new])
         probabilities = ut.softmax(preferences)
