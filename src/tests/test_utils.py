@@ -4,7 +4,7 @@ from unittest.mock import mock_open, patch
 
 import pytest
 
-from .context import utils
+from .context import utils as ut
 
 
 # Helper function that returns a mock config.json file/string with the given values
@@ -31,7 +31,7 @@ def check_mock_file(mock_file, json=create_mock_json()):
 	path = os.path.dirname(__file__) + os.sep + '...' + os.sep + 'config.json'
 	assert (open(path).read() == json)
 	mock_file.assert_called_with(path)
-	utils.config = utils.load_config(path)
+	ut.config = ut.load_config(path)
 
 
 # The following variables are input mock-json strings for the test_invalid_values test
@@ -74,7 +74,7 @@ def test_invalid_values(json_values, expected_error_msg):
 	with patch('builtins.open', mock_open(read_data=json)) as mock_file:
 		check_mock_file(mock_file, json)
 		with pytest.raises(AssertionError) as assertion_info:
-			reload(utils)
+			reload(ut)
 		assert expected_error_msg in str(assertion_info.value)
 
 
@@ -86,25 +86,25 @@ def test_reading_file_values():
 		check_mock_file(mock_file)
 
 		# Include utils again to make sure the file is read again
-		reload(utils)
+		reload(ut)
 
 		# Test all imported values. Extend this test as new values get added!
-		assert utils.EPISODE_LENGTH == 20
-		assert utils.LEARNING_RATE == 1e-6
-		assert utils.MAX_PRICE == 15
-		assert utils.MAX_QUALITY == 100
-		assert utils.NUMBER_OF_CUSTOMERS == 30
-		assert utils.PRODUCTION_PRICE == 5
+		assert ut.EPISODE_LENGTH == 20
+		assert ut.LEARNING_RATE == 1e-6
+		assert ut.MAX_PRICE == 15
+		assert ut.MAX_QUALITY == 100
+		assert ut.NUMBER_OF_CUSTOMERS == 30
+		assert ut.PRODUCTION_PRICE == 5
 
 	# Test a second time with other values to ensure, that the values are read correctly
 	json2 = create_mock_json('50', '1e-4', '50', '80', '20', '10')
 	with patch('builtins.open', mock_open(read_data=json2)) as mock_file:
 		check_mock_file(mock_file, json2)
-		reload(utils)
+		reload(ut)
 
-		assert utils.EPISODE_LENGTH == 50
-		assert utils.LEARNING_RATE == 1e-4
-		assert utils.MAX_PRICE == 50
-		assert utils.MAX_QUALITY == 80
-		assert utils.NUMBER_OF_CUSTOMERS == 20
-		assert utils.PRODUCTION_PRICE == 10
+		assert ut.EPISODE_LENGTH == 50
+		assert ut.LEARNING_RATE == 1e-4
+		assert ut.MAX_PRICE == 50
+		assert ut.MAX_QUALITY == 80
+		assert ut.NUMBER_OF_CUSTOMERS == 20
+		assert ut.PRODUCTION_PRICE == 10
