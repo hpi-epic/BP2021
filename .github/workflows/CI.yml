@@ -19,7 +19,10 @@ jobs:
           environment-file: environment.yml
       - name: Pytest
         shell: bash -l {0}
-        run: pytest 
+        run: coverage run --source=./src -m pytest
+      - name: Report Coverage
+        shell: bash -l {0}
+        run: coverage report
       - name: "OnError: Test with pytest (verbose)"
         if: failure()
         shell: bash -l {0}
