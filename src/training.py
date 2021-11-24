@@ -104,7 +104,7 @@ for frame_idx in range(2 * utrl.EPSILON_DECAY_LAST_FRAME):
     if len(agent.buffer) < utrl.REPLAY_START_SIZE:
         continue
 
-    if frame_idx % ut.SYNC_TARGET_FRAMES == 0:
+    if frame_idx % utrl.SYNC_TARGET_FRAMES == 0:
         agent.synchronize_tgt_net()
 
     loss, selected_q_val_mean = agent.train_batch()

@@ -14,8 +14,7 @@ PRODUCTION_PRICE = None
 EPISODE_LENGTH = None
 
 
-config_sim_market = {}
-config_rl = {}
+config = {}
 
 
 def load_config(
@@ -25,21 +24,21 @@ def load_config(
         return json.load(config_file)
 
 
-config_sm = load_config()
+config = load_config()
 
 # ordered alphabetically in the config_sim_market.json
-assert 'episode_size' in config_sm, 'your config is missing episode_size'
-assert 'max_price' in config_sm, 'your config is missing max_price'
-assert 'max_quality' in config_sm, 'your config is missing max_quality'
-assert 'number_of_customers' in config_sm, 'your config is missing number_of_customers'
-assert 'production_price' in config_sm, 'your config is missing production_price'
+assert 'episode_size' in config, 'your config is missing episode_size'
+assert 'max_price' in config, 'your config is missing max_price'
+assert 'max_quality' in config, 'your config is missing max_quality'
+assert 'number_of_customers' in config, 'your config is missing number_of_customers'
+assert 'production_price' in config, 'your config is missing production_price'
 
-EPISODE_LENGTH = int(config_sm['episode_size'])
+EPISODE_LENGTH = int(config['episode_size'])
 
-MAX_PRICE = int(config_sm['max_price'])
-MAX_QUALITY = int(config_sm['max_quality'])
-NUMBER_OF_CUSTOMERS = int(config_sm['number_of_customers'])
-PRODUCTION_PRICE = int(config_sm['production_price'])
+MAX_PRICE = int(config['max_price'])
+MAX_QUALITY = int(config['max_quality'])
+NUMBER_OF_CUSTOMERS = int(config['number_of_customers'])
+PRODUCTION_PRICE = int(config['production_price'])
 
 
 assert NUMBER_OF_CUSTOMERS > 0 and NUMBER_OF_CUSTOMERS % 2 == 0, 'number_of_customers should be even and positive'

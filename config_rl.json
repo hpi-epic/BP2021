@@ -5,7 +5,6 @@
 	"learning_rate" : 1e-5,
 	"sync_target_frames" : 1000,
 	"replay_start_size" : 10000,
-
 	"epsilon_decay_last_frame" : 75000,
 	"epsilon_start" : 1.0,
 	"epsilon_final" : 0.1
