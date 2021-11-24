@@ -24,7 +24,6 @@ def test_customer_parent_class():
 
 def get_customer_action_range_ids():
 	return [
-		'Linear/ClassicScenario', 'Linear/MultiCompetitorScenario', 'Circular/ClassicScenario', 'Circular/MultiCompetitorScenario'
 	]
 
 

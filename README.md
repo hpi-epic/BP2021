@@ -54,6 +54,32 @@ pytest
 ```console
 pytest -v
 ```
+- Running all tests with increased verbosity:
+```console
+pytest -v
+```
+
+### Coverage
+
+[Coverage.py Documentation](https://coverage.readthedocs.io/en/6.1.2/)
+
+If you want to know/export the current test coverage use these commands:
+- Running all tests and collecting coverage info:
+```console
+coverage run --source=. -m pytest
+```
+- See coverage report locally:
+```console
+coverage report
+```
+- Export coverage to the `coverage.svg` in `src/tests` used in `README.md` (Do this when coverage has changed from the currently displayed badge):
+```console
+coverage-badge -f -o ./src/tests/coverage.svg
+```
+
+## Pre-commit
+
+[Pre-commit documentation](https://pre-commit.com/)
 
 ### Coverage
 
