@@ -4,8 +4,7 @@ from unittest.mock import mock_open, patch
 
 import pytest
 
-from .context import utils
-
+from .context import utils as ut
 
 # Helper function that returns a mock config.json file/string with the given values
 def create_mock_json(episode_size='20', max_price='15', max_quality='100', number_of_customers='30', production_price='5'):
@@ -31,7 +30,7 @@ def check_mock_file(mock_file, json=create_mock_json()):
 	path = os.path.dirname(__file__) + os.sep + '...' + os.sep + 'config_sim_market.json'
 	assert (open(path).read() == json)
 	mock_file.assert_called_with(path)
-	utils.config = utils.load_config(path)
+	ut.config = ut.load_config(path)
 
 
 # mock format taken from: https://stackoverflow.com/questions/1289894/how-do-i-mock-an-open-used-in-a-with-statement-using-the-mock-framework-in-pyth
@@ -42,28 +41,28 @@ def test_reading_file_values():
 		check_mock_file(mock_file)
 
 		# Include utils again to make sure the file is read again
-		reload(utils)
+		reload(ut)
 
 		# Test all imported values. Extend this test as new values get added!
-		assert utils.EPISODE_LENGTH == 20
-		# assert utils.LEARNING_RATE == 1e-6
-		assert utils.MAX_PRICE == 15
-		assert utils.MAX_QUALITY == 100
-		assert utils.NUMBER_OF_CUSTOMERS == 30
-		assert utils.PRODUCTION_PRICE == 5
+		assert ut.EPISODE_LENGTH == 20
+		# assert ut.LEARNING_RATE == 1e-6
+		assert ut.MAX_PRICE == 15
+		assert ut.MAX_QUALITY == 100
+		assert ut.NUMBER_OF_CUSTOMERS == 30
+		assert ut.PRODUCTION_PRICE == 5
 
 	# Test a second time with other values to ensure, that the values are read correctly
 	json2 = create_mock_json('50', '50', '80', '20', '10')
 	with patch('builtins.open', mock_open(read_data=json2)) as mock_file:
 		check_mock_file(mock_file, json2)
-		reload(utils)
+		reload(ut)
 
-		assert utils.EPISODE_LENGTH == 50
-		# assert utils.LEARNING_RATE == 1e-4
-		assert utils.MAX_PRICE == 50
-		assert utils.MAX_QUALITY == 80
-		assert utils.NUMBER_OF_CUSTOMERS == 20
-		assert utils.PRODUCTION_PRICE == 10
+		assert ut.EPISODE_LENGTH == 50
+		# assert ut.LEARNING_RATE == 1e-4
+		assert ut.MAX_PRICE == 50
+		assert ut.MAX_QUALITY == 80
+		assert ut.NUMBER_OF_CUSTOMERS == 20
+		assert ut.PRODUCTION_PRICE == 10
 
 
 # The following variables are input mock-json strings for the test_invalid_values test
@@ -86,18 +85,26 @@ missing_prod_price = (create_mock_json_with_missing_line(4), 'your config is mis
 
 # All pairs concerning themselves with invalid config.json values should be added to this array to get tested in test_invalid_values
 # johann stole learning_rate, learning_rate_larger_one, neg_learning_rate test
-array_testing = [
+array_invalid_values = [
 	odd_number_of_customers, negative_number_of_customers, prod_price_higher_max_price, neg_prod_price, neg_max_quality,
 	missing_episode_size, missing_max_price, missing_max_quality, missing_number_of_customers, missing_prod_price
 ]
 
 
+# This defines how the tests are named. Usually they would be "test_invalid_values[whole_json_here]". This ensures they are named after the actual thing they are testing
+def get_invalid_test_ids():
+	return [
+		'odd_number_of_customers', 'negative_number_of_customers', 'prod_price_higher_max_price', 'neg_prod_price', 'neg_max_quality',
+		'missing_episode_size', 'missing_max_price', 'missing_max_quality', 'missing_number_of_customers', 'missing_prod_price'
+	]
+
+
 # Test that checks that an invalid/broken config.json gets detected correctly
-@pytest.mark.parametrize('json_values, expected_error_msg', array_testing)
+@pytest.mark.parametrize('json_values, expected_error_msg', array_invalid_values, ids=get_invalid_test_ids())
 def test_invalid_values(json_values, expected_error_msg):
 	json = json_values
 	with patch('builtins.open', mock_open(read_data=json)) as mock_file:
 		check_mock_file(mock_file, json)
 		with pytest.raises(AssertionError) as assertion_info:
-			reload(utils)
+			reload(ut)
 		assert expected_error_msg in str(assertion_info.value)
