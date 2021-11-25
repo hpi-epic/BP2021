@@ -12,6 +12,7 @@ from torch.utils.tensorboard import SummaryWriter
 import agent
 import sim_market as sim
 import utils as ut
+import utils_rl as utrl
 
 
 # Gets the profit array of all vendors and returns the necessary dict for direct comparison in tb
@@ -25,7 +26,7 @@ def direct_comparison_dict(profits):
 	return comparison_dict
 
 
-def train_QLearning_agent(environment=sim.MultiCompetitorScenario(), maxsteps=2 * ut.EPSILON_DECAY_LAST_FRAME):
+def train_QLearning_agent(environment=sim.MultiCompetitorScenario(), maxsteps=2 * utrl.EPSILON_DECAY_LAST_FRAME):
 	# torch.set_num_threads(1)
 	# print(torch.get_num_threads())
 	state = environment.reset()
@@ -48,7 +49,7 @@ def train_QLearning_agent(environment=sim.MultiCompetitorScenario(), maxsteps=2 
 	writer = SummaryWriter()
 	for frame_idx in range(maxsteps):
 		epsilon = max(
-			ut.EPSILON_FINAL, ut.EPSILON_START - frame_idx / ut.EPSILON_DECAY_LAST_FRAME
+			utrl.EPSILON_FINAL, utrl.EPSILON_START - frame_idx / utrl.EPSILON_DECAY_LAST_FRAME
 		)
 
 		action = RL_agent.policy(state, epsilon)
@@ -74,7 +75,7 @@ def train_QLearning_agent(environment=sim.MultiCompetitorScenario(), maxsteps=2 
 				direct_comparison_dict(all_vendors_reward),
 				frame_idx / ut.EPISODE_LENGTH,
 			)
-			if frame_idx > ut.REPLAY_START_SIZE:
+			if frame_idx > utrl.REPLAY_START_SIZE:
 				writer.add_scalar(
 					'Loss/MSE', np.mean(losses[-1000:]), frame_idx / ut.EPISODE_LENGTH
 				)
@@ -91,7 +92,7 @@ def train_QLearning_agent(environment=sim.MultiCompetitorScenario(), maxsteps=2 
 
 			if (
 				best_m_reward is None or best_m_reward < m_reward
-			) and frame_idx > ut.EPSILON_DECAY_LAST_FRAME + 101:
+			) and frame_idx > utrl.EPSILON_DECAY_LAST_FRAME + 101:
 				RL_agent.save('args.env-best_%.2f_marketplace.dat' % m_reward)
 				if best_m_reward is not None:
 					print('Best reward updated %.3f -> %.3f' % (best_m_reward, m_reward))
@@ -104,10 +105,10 @@ def train_QLearning_agent(environment=sim.MultiCompetitorScenario(), maxsteps=2 
 			vendors_episode_return = None
 			environment.reset()
 
-		if len(RL_agent.buffer) < ut.REPLAY_START_SIZE:
+		if len(RL_agent.buffer) < utrl.REPLAY_START_SIZE:
 			continue
 
-		if frame_idx % ut.SYNC_TARGET_FRAMES == 0:
+		if frame_idx % utrl.SYNC_TARGET_FRAMES == 0:
 			RL_agent.synchronize_tgt_net()
 
 		loss, selected_q_val_mean = RL_agent.train_batch()

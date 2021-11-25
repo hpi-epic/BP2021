@@ -1,18 +1,17 @@
 import pytest
-import numpy as np
 from numpy import random
 
 # from .context import Competitor
-from .context import competitor
+from .context import CompetitorJust2Players as C2Players
 from .context import CompetitorLinearRatio1 as CLinear1
 from .context import CompetitorRandom as CRandom
-from .context import CompetitorJust2Players as C2Players
+from .context import competitor
 from .context import utils as ut
 
 
 # Helper function that creates a random offer (state that includes the agent's price) to test customer behaviour. This is dependent on the sim_market working!
 def random_offer():
-    return [random.randint(1, ut.MAX_PRICE), random.randint(1, ut.MAX_QUALITY), random.randint(1, ut.MAX_PRICE), random.randint(1, ut.MAX_QUALITY)]
+	return [random.randint(1, ut.MAX_PRICE), random.randint(1, ut.MAX_QUALITY), random.randint(1, ut.MAX_PRICE), random.randint(1, ut.MAX_QUALITY)]
 
 
 # Test the Competitor parent class, i.e. make sure it cannot be used
