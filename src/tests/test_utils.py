@@ -6,6 +6,7 @@ import pytest
 
 from .context import utils as ut
 
+
 # Helper function that returns a mock config.json file/string with the given values
 def create_mock_json(episode_size='20', max_price='15', max_quality='100', number_of_customers='30', production_price='5'):
 	return '{\n\t"episode_size": ' + episode_size + ',\n' + \
