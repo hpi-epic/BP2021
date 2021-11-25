@@ -8,7 +8,7 @@ from .context import utils_rl
 
 
 # Helper function that returns a mock config.json file/string with the given values
-def create_mock_json(gamma='0.99', batch_size='32', replay_size='100000', learning_rate='1e-6', sync_target_frames='1000', replay_start_size='10000', epsilon_start='1.0', epsilon_final='0.1', epsilon_decay_last_frame='75000'):
+def create_mock_json(gamma='0.99', batch_size='32', replay_size='100000', learning_rate='1e-6', sync_target_frames='1000', replay_start_size='10000', epsilon_decay_last_frame='75000', epsilon_start='1.0', epsilon_final='0.1'):
 	return '{\n\t"gamma" : ' + gamma + ',\n' + \
 		'\t"batch_size" : ' + batch_size + ',\n' + \
 		'\t"replay_size" : ' + replay_size + ',\n' + \
@@ -17,7 +17,7 @@ def create_mock_json(gamma='0.99', batch_size='32', replay_size='100000', learni
 		'\t"replay_start_size" : ' + replay_start_size + ',\n' + \
 		'\t"epsilon_decay_last_frame" : ' + epsilon_decay_last_frame + ',\n' + \
 		'\t"epsilon_start" : ' + epsilon_start + ',\n' + \
-		'\t"epsilon_final" : ' + epsilon_final + ',\n' + \
+		'\t"epsilon_final" : ' + epsilon_final + '\n' + \
 		'}'
 
 
@@ -44,10 +44,8 @@ def test_reading_file_values():
 	json = create_mock_json()
 	with patch('builtins.open', mock_open(read_data=json)) as mock_file:
 		check_mock_file(mock_file)
-
 		# Include utils_rl again to make sure the file is read again
 		reload(utils_rl)
-
 		# Test all imported values. Extend this test as new values get added!
 		assert utils_rl.GAMMA == 0.99
 		assert utils_rl.BATCH_SIZE == 32
@@ -60,7 +58,7 @@ def test_reading_file_values():
 		assert utils_rl.EPSILON_FINAL == 0.1
 
 	# Test a second time with other values to ensure, that the values are read correctly
-	json2 = create_mock_json(learning_rate=1e-4)
+	json2 = create_mock_json(learning_rate='1e-4')
 	with patch('builtins.open', mock_open(read_data=json2)) as mock_file:
 		check_mock_file(mock_file, json2)
 		reload(utils_rl)
@@ -71,19 +69,19 @@ def test_reading_file_values():
 # The following variables are input mock-json strings for the test_invalid_values test
 # These tests have invalid values in their input file, the import should throw a specific error message
 
-learning_rate_larger_one = (create_mock_json('1.5'), 'learning_rate should be between 0 and 1 (excluded)')
-neg_learning_rate = (create_mock_json('0'), 'learning_rate should be between 0 and 1 (excluded)')
+learning_rate_larger_one = (create_mock_json(learning_rate='1.5'), 'learning_rate should be between 0 and 1 (excluded)')
+neg_learning_rate = (create_mock_json(learning_rate='0'), 'learning_rate should be between 0 and 1 (excluded)')
 
 # These tests are missing a line in the config file, the import should throw a specific error message
-missing_gamma = (create_mock_json_with_missing_line(1), 'your config_rl is missing gamma')
-missing_batch_size = (create_mock_json_with_missing_line(2), 'your config_rl is missing batch_size')
-missing_replay_size = (create_mock_json_with_missing_line(3), 'your config_rl is missing replay_size')
-missing_learning_rate = (create_mock_json_with_missing_line(4), 'your config_rl is missing learning_rate')
-missing_sync_target_frames = (create_mock_json_with_missing_line(5), 'your config_rl is missing sync_target_frames')
-missing_replay_start_size = (create_mock_json_with_missing_line(6), 'your config_rl is missing replay_start_size')
-missing_epsilon_decay_last_frame = (create_mock_json_with_missing_line(7), 'your config_rl is missing epsilon_decay_last_frame')
-missing_epsilon_start = (create_mock_json_with_missing_line(8), 'your config_rl is missing epsilon_start')
-missing_epsilon_final = (create_mock_json_with_missing_line(9), 'your config_rl is missing epsilon_final')
+missing_gamma = (create_mock_json_with_missing_line(0), 'your config_rl is missing gamma')
+missing_batch_size = (create_mock_json_with_missing_line(1), 'your config_rl is missing batch_size')
+missing_replay_size = (create_mock_json_with_missing_line(2), 'your config_rl is missing replay_size')
+missing_learning_rate = (create_mock_json_with_missing_line(3), 'your config_rl is missing learning_rate')
+missing_sync_target_frames = (create_mock_json_with_missing_line(4), 'your config_rl is missing sync_target_frames')
+missing_replay_start_size = (create_mock_json_with_missing_line(5), 'your config_rl is missing replay_start_size')
+missing_epsilon_decay_last_frame = (create_mock_json_with_missing_line(6), 'your config_rl is missing epsilon_decay_last_frame')
+missing_epsilon_start = (create_mock_json_with_missing_line(7), 'your config_rl is missing epsilon_start')
+missing_epsilon_final = (create_mock_json_with_missing_line(8), 'your config_rl is missing epsilon_final')
 
 
 # All pairs concerning themselves with invalid config.json values should be added to this array to get tested in test_invalid_values

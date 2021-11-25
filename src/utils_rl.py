@@ -25,16 +25,16 @@ def load_config(path_rl=os.path.dirname(__file__) + os.sep + '..' + os.sep + 'co
 
 config = load_config()
 
-# ordered alphabetically in the config_rl.json
-assert 'learning_rate' in config, 'your config is missing learning_rate'
-assert 'gamma' in config, 'your config is missing gamma'
-assert 'batch_size' in config, 'your config is missing batch_size'
-assert 'replay_size' in config, 'your config is missing replay_size'
-assert 'sync_target_frames' in config, 'your config is missing sync_target_frames'
-assert 'replay_start_size' in config, 'your config is missing replay_start_size'
-assert 'epsilon_decay_last_frame' in config, 'your config is missing epsilon_decay_last_frame'
-assert 'epsilon_start' in config, 'your config is missing epsilon_start'
-assert 'epsilon_final' in config, 'your config is missing epsilon_final'
+# ordered like in the config_rl.json
+assert 'gamma' in config, 'your config_rl is missing gamma'
+assert 'batch_size' in config, 'your config_rl is missing batch_size'
+assert 'replay_size' in config, 'your config_rl is missing replay_size'
+assert 'learning_rate' in config, 'your config_rl is missing learning_rate'
+assert 'sync_target_frames' in config, 'your config_rl is missing sync_target_frames'
+assert 'replay_start_size' in config, 'your config_rl is missing replay_start_size'
+assert 'epsilon_decay_last_frame' in config, 'your config_rl is missing epsilon_decay_last_frame'
+assert 'epsilon_start' in config, 'your config_rl is missing epsilon_start'
+assert 'epsilon_final' in config, 'your config_rl is missing epsilon_final'
 
 
 GAMMA = float(config['gamma'])
