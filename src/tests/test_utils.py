@@ -6,13 +6,25 @@ from .context import utils
 
 
 def create_mock_json(episode_size='20', learning_rate='1e-6', max_price='15', max_quality='100', number_of_customers='30', production_price='5'):
-	return '{\n\t"episode_size": ' + episode_size + ',\n' + \
+	return '\n\t{"percentage_of_random_customers": 0.1,\n' + \
+		'\t"percentage_of_price_based_customers": 0.1,\n' + \
+		'\t"percentage_of_quality_based_customers": 0.1,\n' + \
+		'\t"customer_maxprice_mean": 15,\n' + \
+		'\t"customer_maxprice_std": 3,' + \
+		'\t"episode_size": ' + episode_size + ',\n' + \
 		'\t"learning_rate": ' + learning_rate + ',\n' + \
 		'\t"max_price": ' + max_price + ',\n' + \
 		'\t"max_quality": ' + max_quality + ',\n' + \
 		'\t"number_of_customers": ' + number_of_customers + ',\n' + \
 		'\t"production_price": ' + production_price + '\n}'
 
+
+# assert 'percentage_of_random_customers' in config
+# assert 'percentage_of_price_based_customers' in config
+# assert 'percentage_of_quality_based_customers' in config
+
+# assert 'customer_maxprice_mean' in config
+# assert 'customer_maxprice_std' in config
 
 # Thank you!!11elf: https://stackoverflow.com/questions/1289894/how-do-i-mock-an-open-used-in-a-with-statement-using-the-mock-framework-in-pyth
 
