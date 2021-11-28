@@ -16,31 +16,38 @@ agent = agent.QLearningAgent(marketplace.observation_space.shape[0], marketplace
 NUMBER_OF_EPISODES = 500
 HISTOGRAM_PLOT_INTERVAL = int(NUMBER_OF_EPISODES / 10)
 
+
 # helper functions
 def round_up(number, decimals=0):
-    multiplier = 10 ** decimals
-    return np.ceil(number * multiplier) / multiplier
+	multiplier = 10 ** decimals
+	return np.ceil(number * multiplier) / multiplier
+
 
 # metrics
 def metrics_average(rewards) -> np.float64:
 	return np.mean(np.array(rewards))
 
+
 def metrics_median(rewards) -> np.float64:
 	return np.median(np.array(rewards))
+
 
 def metrics_maximum(rewards) -> np.float64:
 	return np.max(np.array(rewards))
 
+
 def metrics_minimum(rewards) -> np.float64:
 	return np.min(np.array(rewards))
+
 
 # visualize metrics
 def create_histogram(rewards) -> None:
 	plt.xlabel('Reward', fontsize='18')
 	plt.ylabel('Episodes', fontsize='18')
-	plt.hist(rewards, bins=10, color='#6e9bd1', align='mid' ,edgecolor='purple', range=(0, round_up(int(metrics_maximum(rewards)), -3)))
+	plt.hist(rewards, bins=10, color='#6e9bd1', align='mid', edgecolor='purple', range=(0, round_up(int(metrics_maximum(rewards)), -3)))
 	plt.draw()
 	plt.pause(0.001)
+
 
 # run simulation
 def reset_episode(reward_per_episode, is_done, marketplace) -> Tuple[np.float64, bool, np.array]:
@@ -50,8 +57,8 @@ def reset_episode(reward_per_episode, is_done, marketplace) -> Tuple[np.float64,
 
 	return reward_per_episode, is_done, state
 
-def run_marketplace(number_episodes, marketplace, agent) -> list:
 
+def run_marketplace(number_episodes, marketplace, agent) -> list:
 	# initialize marketplace
 	reward_per_episode = 0
 	rewards = []
@@ -85,14 +92,10 @@ def main():
 
 	print(f'Finished!\nRunning marketplace for {NUMBER_OF_EPISODES} episodes took {time.time() - start_time} seconds\n')
 
-	print(f'The average reward over {NUMBER_OF_EPISODES} episodes is: '
-		+ str(metrics_average(rewards)))
-	print(f'The median reward over {NUMBER_OF_EPISODES} episodes is: '
-		+ str(metrics_median(rewards)))
-	print(f'The maximum reward over {NUMBER_OF_EPISODES} episodes is: '
-		+ str(metrics_maximum(rewards)))
-	print(f'The minimum reward over {NUMBER_OF_EPISODES} episodes is: '
-		+ str(metrics_minimum(rewards)))
+	print(f'The average reward over {NUMBER_OF_EPISODES} episodes is: ' + str(metrics_average(rewards)))
+	print(f'The median reward over {NUMBER_OF_EPISODES} episodes is: ' + str(metrics_median(rewards)))
+	print(f'The maximum reward over {NUMBER_OF_EPISODES} episodes is: ' + str(metrics_maximum(rewards)))
+	print(f'The minimum reward over {NUMBER_OF_EPISODES} episodes is: ' + str(metrics_minimum(rewards)))
 
 	# show last histogram
 	plt.draw()
