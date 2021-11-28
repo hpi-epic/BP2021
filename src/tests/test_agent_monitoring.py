@@ -22,11 +22,5 @@ def test_metrics_minimum():
 	assert 1 == am.metrics_minimum(mock_rewards)
 
 
-def test_run_marketplace():
-	# am.reset_episode(...)
-	# ;)
-	assert True
-
-
 def test_round_up():
 	assert am.round_up(999, -3) == 1000

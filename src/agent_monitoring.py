@@ -91,7 +91,6 @@ def main():
 	rewards = run_marketplace(NUMBER_OF_EPISODES, marketplace, agent)
 
 	print(f'Finished!\nRunning marketplace for {NUMBER_OF_EPISODES} episodes took {time.time() - start_time} seconds\n')
-
 	print(f'The average reward over {NUMBER_OF_EPISODES} episodes is: ' + str(metrics_average(rewards)))
 	print(f'The median reward over {NUMBER_OF_EPISODES} episodes is: ' + str(metrics_median(rewards)))
 	print(f'The maximum reward over {NUMBER_OF_EPISODES} episodes is: ' + str(metrics_maximum(rewards)))

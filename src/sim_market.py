@@ -18,7 +18,7 @@ class SimMarket(gym.Env):
 	def __init__(self) -> None:
 		self.competitors = self.get_competitor_list()
 		# The agent's price does not belong to the observation_space any more because an agent should not depend on it
-		self.setup_act_obs_space()
+		self.setup_action_observation_space()
 
 		# TODO: Better testing for the observation and action space
 		assert (
@@ -83,7 +83,7 @@ class SimMarket(gym.Env):
 				action_competitor_i = self.competitors[i].give_competitors_price(
 					self.generate_offer(action), i + 1
 				)
-				self.apply_compet_action(action_competitor_i, i)
+				self.apply_competitor_action(action_competitor_i, i)
 
 		self.modify_profit_by_state(profits)
 
@@ -93,7 +93,7 @@ class SimMarket(gym.Env):
 
 
 class LinearEconomy(SimMarket):
-	def setup_act_obs_space(self) -> None:
+	def setup_action_observation_space(self) -> None:
 		# cell 0: agent's quality, afterwards: odd cells: competitor's price, even cells: competitor's quality
 		self.observation_space = gym.spaces.Box(
 			np.array([0.0] * (len(self.competitors) * 2 + 1)),
@@ -123,11 +123,11 @@ class LinearEconomy(SimMarket):
 	def complete_purchase(self, offers, profits, customer_buy) -> None:
 		profits[customer_buy - 1] += (offers[(customer_buy - 1) * 2] - ut.PRODUCTION_PRICE)
 
-	def ith_compet_index(self, i) -> int:
+	def ith_competitor_index(self, i) -> int:
 		return 2 * i + 1
 
-	def apply_compet_action(self, action, i) -> None:
-		self.state[self.ith_compet_index(i)] = action
+	def apply_competitor_action(self, action, i) -> None:
+		self.state[self.ith_competitor_index(i)] = action
 
 
 class ClassicScenario(LinearEconomy):
@@ -146,7 +146,7 @@ class MultiCompetitorScenario(LinearEconomy):
 
 class CircularEconomy(SimMarket):
 	# currently monopoly
-	def setup_act_obs_space(self) -> None:
+	def setup_action_observation_space(self) -> None:
 		# cell 0: number of products in the used storage, cell 1: number of products in circulation
 		self.max_storage = 1e2
 		self.observation_space = gym.spaces.Box(np.array([0, 0]), np.array([self.max_storage, 10 * self.max_storage]), dtype=np.float64)
