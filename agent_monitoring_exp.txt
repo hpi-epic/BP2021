@@ -1,0 +1,100 @@
+Episodes = 10k
+
+Classic Scenario: 192s
+
+CircularEconomy:
+10000 took 232.74645280838013 s computation time
+The average reward over 10000 episodes is: 868.73875
+The median reward over 10000 episodes is: 605.0
+The maximum reward over 10000 episodes is: 2515.0
+The minimum reward over 10000 episodes is: 248.5
+        data  episode_number
+0      482.5               0
+1      765.0               1
+2      508.0               2
+3     1607.5               3
+4      656.5               4
+...      ...             ...
+9995   635.5            9995
+9996   719.5            9996
+9997   572.5            9997
+9998   859.0            9998
+9999  2240.5            9999
+
+MultiComp:
+10000 took 244.75453686714172 s computation time
+The average reward over 10000 episodes is: 901.6757
+The median reward over 10000 episodes is: 336.5
+The maximum reward over 10000 episodes is: 7696.0
+The minimum reward over 10000 episodes is: 0.0
+        data  episode_number
+0      525.0               0
+1      402.0               1
+2       49.0               2
+3      567.0               3
+4      112.0               4
+...      ...             ...
+9995    48.0            9995
+9996   306.0            9996
+9997  1440.0            9997
+9998   343.0            9998
+9999   816.0            9999
+
+Episodes: 1k
+
+Classic:
+1000 took 20.152829885482788 s computation time
+The average reward over 1000 episodes is: 3325.29
+The median reward over 1000 episodes is: 2972.0
+The maximum reward over 1000 episodes is: 7856.0
+The minimum reward over 1000 episodes is: 0.0
+       data  episode_number
+0    3432.0               0
+1    4424.0               1
+2    3168.0               2
+3     102.0               3
+4     438.0               4
+..      ...             ...
+995  2472.0             995
+996  7536.0             996
+997    36.0             997
+998  2768.0             998
+999  1278.0             999
+
+Circular:
+1000 took 26.00437617301941 s computation time
+The average reward over 1000 episodes is: 869.2255
+The median reward over 1000 episodes is: 603.0
+The maximum reward over 1000 episodes is: 2527.0
+The minimum reward over 1000 episodes is: 260.5
+       data  episode_number
+0    2067.0               0
+1     406.0               1
+2     387.5               2
+3     612.0               3
+4     470.0               4
+..      ...             ...
+995   533.0             995
+996   534.5             996
+997   405.5             997
+998   495.5             998
+999   662.0             999
+
+Multi:
+1000 took 25.114437103271484 s computation time
+The average reward over 1000 episodes is: 951.455
+The median reward over 1000 episodes is: 357.0
+The maximum reward over 1000 episodes is: 7304.0
+The minimum reward over 1000 episodes is: 0.0
+       data  episode_number
+0     105.0               0
+1      98.0               1
+2       7.0               2
+3       0.0               3
+4     161.0               4
+..      ...             ...
+995  1360.0             995
+996  3008.0             996
+997   140.0             997
+998   168.0             998
+999     0.0             999
