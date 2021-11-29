@@ -11,3 +11,4 @@ import utils
 # or: from .context import ClassicScenario
 from customer import *
 from sim_market import *
+from agent import *
