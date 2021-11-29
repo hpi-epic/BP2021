@@ -28,12 +28,12 @@ class HumanPlayer(Agent):
 		return int(input())
 
 
-class HardcodedAgent(Agent):
-	def __init__(self):
-		pass
+class FixedPriceAgent(Agent):
+	def __init__(self, fixed_price=42):
+		self.fixed_price = fixed_price
 
 	def policy(self, state, epsilon=0) -> int:
-		return 42
+		return self.fixed_price
 
 
 class RuleBasedCEAgent(Agent):
