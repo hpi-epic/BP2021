@@ -1,0 +1,15 @@
+name: BP2021
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - coverage=5.5
+  - coverage-badge=1.1.0
+  - flake8=3.9.2
+  - gym=0.21.0
+  - numpy=1.21.2
+  - pre-commit=2.15.0
+  - pytest=6.2.4
+  - python=3.8.12
+  - pytorch=1.6.0
+  - tensorboard=2.7.0
