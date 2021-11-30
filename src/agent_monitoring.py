@@ -10,7 +10,7 @@ import sim_market as sim
 
 # api tbd
 # edit this path variable for your interests
-path_to_modelfile = os.getcwd() + os.sep + 'testmodel' + os.sep + 'test_marketplace.dat'
+path_to_modelfile = os.getcwd() + os.sep + '..' + os.sep + 'testmodel' + os.sep + 'test_marketplace.dat'
 situation = 'linear'
 
 marketplace = sim.CircularEconomy() if situation == 'circular' else sim.ClassicScenario()
