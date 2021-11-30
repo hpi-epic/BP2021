@@ -9,10 +9,6 @@ For more complex setups, communication protocols between different agents might 
 
 The simulation should cover the interaction between customers and particularly competing merchants, including self-learning agents and their rule-based opponents. While the focus can be put on several different aspects, an adjustable customer behavior model (which determines each participant!s sales) has to be developed. The platform should generate sales and interaction data for each of the merchants, which can then in turn be fed to the self-learning agents. Monitoring tools are required to analyze each agent!s policy and their effects on the overall market. With the help of such simulations, we seek to study the competitiveness of self-adapting pricing tools and their long-term impact on market competitors and customers.
 
-## First Protoype for Marketplace Simulation and Deep Q-Learning
-
-The four Python files in this repository belong to a simple protoype for marketplace simulation. It is build to simulate a simple market with two vendors trying to maximize their profit. One vendor is part of the environment as a rule based competitor, the other one in a simulated agent. The customer behaviour depends on the price and the quality of the product. Furthermore, some random events make the customers less predictable.
-
 ## Installing dependencies 
 
 If you have not yet done so, install Anaconda and run the following command to create an environment and install the required packages from the `environment.yml`:
@@ -54,32 +50,6 @@ pytest
 ```console
 pytest -v
 ```
-- Running all tests with increased verbosity:
-```console
-pytest -v
-```
-
-### Coverage
-
-[Coverage.py Documentation](https://coverage.readthedocs.io/en/6.1.2/)
-
-If you want to know/export the current test coverage use these commands:
-- Running all tests and collecting coverage info:
-```console
-coverage run --source=. -m pytest
-```
-- See coverage report locally:
-```console
-coverage report
-```
-- Export coverage to the `coverage.svg` in `src/tests` used in `README.md` (Do this when coverage has changed from the currently displayed badge):
-```console
-coverage-badge -f -o ./src/tests/coverage.svg
-```
-
-## Pre-commit
-
-[Pre-commit documentation](https://pre-commit.com/)
 
 ### Coverage
 
@@ -109,7 +79,7 @@ To circumvent possible errors caused later on, run pre-commit with the following
 ```console
 pre-commit run --all-files
 ```
-which will install the environment needed.
+which will install the needed environment.
 
 ### Pre-commit Troubleshooting
 
