@@ -1,5 +1,4 @@
 import os
-import time
 from typing import Tuple
 
 import matplotlib.pyplot as plt
@@ -9,11 +8,9 @@ import agent
 import sim_market as sim
 
 # api tbd
-# edit this path variable for your interests
+# edit this path variable to the wanted path of your .dat file
 path_to_modelfile = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + os.sep + 'testmodel' + os.sep + 'test_marketplace.dat'
-print(path_to_modelfile)
 situation = 'linear'
-
 marketplace = sim.CircularEconomy() if situation == 'circular' else sim.ClassicScenario()
 agent = agent.QLearningAgent(marketplace.observation_space.shape[0], marketplace.action_space.n, load_path=path_to_modelfile)
 
@@ -90,12 +87,8 @@ def run_marketplace(number_episodes, marketplace, agent) -> list:
 
 
 def main():
-	# track time
-	start_time = time.time()
-
 	rewards = run_marketplace(NUMBER_OF_EPISODES, marketplace, agent)
 
-	print(f'Finished!\nRunning marketplace for {NUMBER_OF_EPISODES} episodes took {time.time() - start_time} seconds\n')
 	print(f'The average reward over {NUMBER_OF_EPISODES} episodes is: ' + str(metrics_average(rewards)))
 	print(f'The median reward over {NUMBER_OF_EPISODES} episodes is: ' + str(metrics_median(rewards)))
 	print(f'The maximum reward over {NUMBER_OF_EPISODES} episodes is: ' + str(metrics_maximum(rewards)))
