@@ -1,3 +1,4 @@
+import os
 import time
 from typing import Tuple
 
@@ -8,9 +9,12 @@ import agent
 import sim_market as sim
 
 # api tbd
+# edit this path variable for your interests
+path_to_modelfile = os.getcwd() + os.sep + 'testmodel' + os.sep + 'test_marketplace.dat'
 situation = 'linear'
+
 marketplace = sim.CircularEconomy() if situation == 'circular' else sim.ClassicScenario()
-agent = agent.QLearningAgent(marketplace.observation_space.shape[0], marketplace.action_space.n, load_path='/Users/lion/Documents/HPI5/EPIC/BP2021/trainedModels/classic_scenario_end.dat.dat')
+agent = agent.QLearningAgent(marketplace.observation_space.shape[0], marketplace.action_space.n, load_path=path_to_modelfile)
 
 # constants
 NUMBER_OF_EPISODES = 500
@@ -44,7 +48,7 @@ def metrics_minimum(rewards) -> np.float64:
 def create_histogram(rewards) -> None:
 	plt.xlabel('Reward', fontsize='18')
 	plt.ylabel('Episodes', fontsize='18')
-	plt.hist(rewards, bins=10, color='#6e9bd1', align='mid', edgecolor='purple', range=(0, round_up(int(metrics_maximum(rewards)), -3)))
+	plt.hist(rewards, bins=10, color='#6e9bd1', align='mid', edgecolor='black', range=(0, round_up(int(metrics_maximum(rewards)), -3)))
 	plt.draw()
 	plt.pause(0.001)
 
