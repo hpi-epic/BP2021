@@ -2,11 +2,12 @@
 
 # helpers
 import math
-import random
 
 import numpy as np
 
 import utils as ut
+
+# import random
 
 
 class Customer:
