@@ -190,4 +190,4 @@ class QLearningAgent(Agent):
 	def save(self, path='QLearning_parameters'):
 		if not os.path.isdir('trainedModels'):
 			os.mkdir('trainedModels')
-		torch.save(self.net.state_dict(), './trainedModels/' + path + '.dat')
+		torch.save(self.net.state_dict(), './trainedModels/' + path)
