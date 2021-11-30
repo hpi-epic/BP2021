@@ -40,3 +40,8 @@ repos:
     hooks:
       - id: check-ast # check whether files parse as valid python
         types: [python]
+  - repo: https://github.com/pre-commit/pygrep-hooks
+    rev: v1.4.1
+    hooks:
+      - id: python-use-type-annotations
+        types: [python]

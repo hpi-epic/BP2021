@@ -7,6 +7,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 # import sim_market
 # import training
+import agent_monitoring
 import competitor
 import customer
 import utils
