@@ -8,13 +8,13 @@ import random
 import numpy as np
 
 MAX_STORAGE = 100
+STORAGE_COST_PER_PRODUCT = 0.5
 MAX_PRICE = None
 MAX_QUALITY = None
 MEAN_REWARD_BOUND = None
 NUMBER_OF_CUSTOMERS = None
 PRODUCTION_PRICE = None
 EPISODE_LENGTH = None
-
 
 config = {}
 

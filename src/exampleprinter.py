@@ -27,24 +27,24 @@ writer = SummaryWriter()
 with torch.no_grad():
     while not is_done:
         action = agent.policy(state)
-        # if situation == 'circular':
-        #     writer.add_scalar('Example_state/storage_content', env.state[0], counter)
-        #     writer.add_scalar('Example_state/products_in_circle', env.state[1], counter)
-        #     writer.add_scalar('Example_action/price_second_hand', math.floor(action / 10) + 1, counter)
-        #     writer.add_scalar('Example_action/price_new', math.floor(action % 10) + 1, counter)
-        # elif situation == 'linear':
-        #     writer.add_scalar('Example_state/agent_quality', env.state[0], counter)
-        #     writer.add_scalar('Example_state/competitor_quality', env.state[2], counter)
-        #     writer.add_scalar('Example_state/competitor_price', env.state[1], counter)
-        #     writer.add_scalar('Example_action/price_agent', action + 1, counter)
-        # print(
-        #     'This is the state:',
-        #     env.state,
-        #     ' and I will do ',
-        #     action
-        # )
+        if situation == 'circular':
+            writer.add_scalar('Example_state/storage_content', env.state[0], counter)
+            writer.add_scalar('Example_state/products_in_circle', env.state[1], counter)
+            writer.add_scalar('Example_action/price_second_hand', math.floor(action / 10) + 1, counter)
+            writer.add_scalar('Example_action/price_new', math.floor(action % 10) + 1, counter)
+        elif situation == 'linear':
+            writer.add_scalar('Example_state/agent_quality', env.state[0], counter)
+            writer.add_scalar('Example_state/competitor_quality', env.state[2], counter)
+            writer.add_scalar('Example_state/competitor_price', env.state[1], counter)
+            writer.add_scalar('Example_action/price_agent', action + 1, counter)
+        print(
+            'This is the state:',
+            env.state,
+            ' and I will do ',
+            action
+        )
         state, reward, is_done, dict = env.step(action)
-        # print('The agents profit this round is', reward)
+        print('The agents profit this round is', reward)
         our_profit += reward
         writer.add_scalar('Example_reward/reward', reward, counter)
         writer.add_scalar('Example_reward/reward_cumulated', our_profit, counter)
