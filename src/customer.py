@@ -1,26 +1,12 @@
 #!/usr/bin/env python3
 
-# helper
+# helpers
 import math
 import random
 
 import numpy as np
 
-
-# The following methods should be library calls in the future.
-def softmax(preferences):
-    exp_preferences = np.exp(preferences)
-    return exp_preferences / sum(exp_preferences)
-
-
-def shuffle_from_probabilities(probabilities):
-    randomnumber = random.random()
-    sum = 0
-    for i, p in enumerate(probabilities):
-        sum += p
-        if randomnumber <= sum:
-            return i
-    return len(probabilities) - 1
+import utils as ut
 
 
 class Customer:
@@ -58,16 +44,25 @@ class CustomerLinear(Customer):
         for i in range(int(len(offers) / 2)):
             ratio = offers[2 * i + 1] / offers[2 * i] - math.exp(offers[2 * i] - 27)
             ratios.append(ratio)
-        probabilities = softmax(np.array(ratios))
-        return shuffle_from_probabilities(probabilities), None
+        probabilities = ut.softmax(np.array(ratios))
+        return ut.shuffle_from_probabilities(probabilities), None
 
 
 class CustomerCircular(Customer):
     # This customer values a second-hand-product 55% of a new product
     def buy_object(self, offers):
+        # offers[0]: price for refurbished product
+        # offers[1]: price for new product
+        # offers[2]: num products in agents storage (don't use for customer)
+        # offers[3]: num products in circulation
+
         assert offers[0] >= 1 and offers[1] >= 1
+
         ratio_old = 5.5 / offers[0] - math.exp(offers[0] - 5)
         ratio_new = 10 / offers[1] - math.exp(offers[1] - 8)
         preferences = np.array([1, ratio_old, ratio_new])
-        probabilities = softmax(preferences)
-        return shuffle_from_probabilities(probabilities), 1 if np.random.rand() < 0.05 * offers[3] / 20 else None
+        probabilities = ut.softmax(preferences)
+
+        customer_desicion = ut.shuffle_from_probabilities(probabilities)
+        customer_return = 1 if np.random.rand() < 0.05 * offers[3] / 20 else None
+        return customer_desicion, customer_return

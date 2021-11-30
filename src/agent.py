@@ -6,26 +6,117 @@ import numpy as np
 import torch
 
 import model
-# import utils as ut
+import utils as ut
 import utils_rl as utrl
 from experience_buffer import ExperienceBuffer
+from customer import CustomerCircular
 
 
 class Agent:
-    def __init__(self):
-        pass
+	def __init__(self):
+		pass
 
-    def policy(self, state, epsilon=0):
-        assert False
+	def policy(self, state, epsilon=0):
+		assert False
 
 
 class HumanPlayer(Agent):
-    def __init__(self):
-        print('Welcome to this funny game! Now, you are the one playing the game!')
+	def __init__(self):
+		print('Welcome to this funny game! Now, you are the one playing the game!')
 
-    def policy(self, state, epsilon=0):
-        print('The state is ', state, 'and you have to decide what to do! Please enter your action!')
-        return int(input())
+	def policy(self, state, epsilon=0) -> int:
+		print('The state is ', state, 'and you have to decide what to do! Please enter your action!')
+		return int(input())
+
+
+class FixedPriceAgent(Agent):
+	def __init__(self, fixed_price=42):
+		self.fixed_price = fixed_price
+
+	def policy(self, state, epsilon=0) -> int:
+		return self.fixed_price
+
+
+class RuleBasedCEAgent(Agent):
+
+	def __init__(self):
+		pass
+
+	def action_to_array(self, action) -> np.array:
+		return [int(np.floor(action / ut.MAX_PRICE)), int(action % ut.MAX_PRICE)]
+
+	def array_to_action(self, array) -> int:
+		return array[0] * 10 + array[1]
+
+	def policy(self, state, epsilon=0) -> int:
+		# state[0]: products in my storage
+		# state[1]: products in circulation
+		return self.storage_evaluation(state)
+
+	def storage_evaluation(self, state) -> int:
+		# this policy sets the prices according to the amount of available storage
+		products_in_storage = state[0]
+		price_old = 0
+		price_new = ut.PRODUCTION_PRICE
+		if products_in_storage < ut.MAX_STORAGE / 4:
+			# less than 1/4 of storage filled
+			price_old = int(ut.MAX_PRICE * 6 / 10)
+			price_new += int(ut.MAX_PRICE * 6 / 10)
+
+		elif products_in_storage < ut.MAX_STORAGE / 2:
+			# less than 1/2 of storage filled
+			price_old = int(ut.MAX_PRICE * 5 / 10)
+			price_new += int(ut.MAX_PRICE * 5 / 10)
+
+		elif products_in_storage < ut.MAX_STORAGE * 3 / 4:
+			# less than 3/4 but more than 1/2 of storage filled
+			price_old = int(ut.MAX_PRICE * 4 / 10)
+			price_new += int(ut.MAX_PRICE * 4 / 10)
+		else:
+			# storage too full, we need to get rid of some refurbished products
+			price_old = int(ut.MAX_PRICE * 2 / 10)
+			price_new += int(ut.MAX_PRICE * 7 / 10)
+
+		price_new = min(9, price_new)
+		assert price_old <= price_new
+		return self.array_to_action([price_old, price_new])
+
+	def greedy_policy(self, state) -> int:
+		# this policy tries to figure out the best prices for the next round by simulating customers
+		# and trying each used_price, new_price combination
+		# Warning, this strategy is not very good or optimal
+		customers = []
+		for _ in range(0, ut.NUMBER_OF_CUSTOMERS * 10):
+			customers += [CustomerCircular()]
+
+		max_profit = -9999999999999  # we have not found a better solution yet
+		max_price_n = 0
+		max_price_u = 0
+		for p_u in range(1, ut.MAX_PRICE):
+			for p_n in range(1, ut.MAX_PRICE):
+				storage = state[0]
+				exp_sales_new = 0
+				exp_sales_old = 0
+				exp_return_prod = 0
+				for customer in customers:
+					c_buy, c_return = customer.buy_object([p_u, p_n, state[0], state[1]])
+					# c_buy: decision, whether the customer buys 1 (old product) or two (new product)
+					# c_return: decision, whether the customer returns a product
+					if c_return is not None:
+						exp_return_prod += 1
+					if c_buy == 1:
+						storage -= 1
+						exp_sales_old += 1
+					elif c_buy == 2:
+						exp_sales_new += 1
+				exp_profit = (p_n * exp_sales_new + p_u * exp_sales_old) - ((storage + exp_return_prod) * 2)
+				if exp_profit > max_profit:
+					max_profit = exp_profit
+					max_price_n = p_n
+					max_price_u = p_u
+		print(max_price_u, max_price_n)
+		assert max_price_n > 0 and max_price_u > 0
+		return self.array_to_action[max_price_u, max_price_n]
 
 
 class QLearningAgent(Agent):

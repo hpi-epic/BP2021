@@ -3,16 +3,18 @@
 # helper
 import json
 import os
+import random
 
 import numpy as np
 
+MAX_STORAGE = 100
+STORAGE_COST_PER_PRODUCT = 0.5
 MAX_PRICE = None
 MAX_QUALITY = None
 MEAN_REWARD_BOUND = None
 NUMBER_OF_CUSTOMERS = None
 PRODUCTION_PRICE = None
 EPISODE_LENGTH = None
-
 
 config = {}
 
@@ -52,3 +54,19 @@ MEAN_REWARD_BOUND = EPISODE_LENGTH * MAX_PRICE * NUMBER_OF_CUSTOMERS
 
 def shuffle_quality():
     return min(max(int(np.random.normal(MAX_QUALITY / 2, 2 * MAX_QUALITY / 5)), 1), MAX_QUALITY)
+
+
+# The following methods should be library calls in the future.
+def softmax(preferences) -> np.array:
+    exp_preferences = np.exp(preferences)
+    return exp_preferences / sum(exp_preferences)
+
+
+def shuffle_from_probabilities(probabilities) -> int:
+    randomnumber = random.random()
+    sum = 0
+    for i, p in enumerate(probabilities):
+        sum += p
+        if randomnumber <= sum:
+            return i
+    return len(probabilities) - 1

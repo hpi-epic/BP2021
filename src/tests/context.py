@@ -11,6 +11,7 @@ import competitor
 import customer
 import utils
 import utils_rl
+from agent import *
 from competitor import *
 from customer import *
 from sim_market import *
