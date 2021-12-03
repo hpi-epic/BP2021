@@ -40,6 +40,7 @@ class SimMarket(gym.Env):
 		return copy.deepcopy(self.state)
 
 	def simulate_customers(self, profits, offers, n) -> None:
+		self.customer.new_prices(offers)
 		for _ in range(n):
 			customer_buy, customer_return = self.customer.buy_object(offers)
 			# when using LE-Market, customer_return is None
@@ -73,12 +74,14 @@ class SimMarket(gym.Env):
 
 		profits = [0] * n_vendors
 
+		# simulation of the buying process
 		for i in range(n_vendors):
 			self.simulate_customers(
 				profits,
 				self.generate_offer(action),
 				int(np.floor(ut.NUMBER_OF_CUSTOMERS / n_vendors)),
 			)
+			# the competitor, which turn it is, will update its pricing
 			if i < len(self.competitors):
 				action_competitor_i = self.competitors[i].give_competitors_price(
 					self.generate_offer(action), i + 1

@@ -10,9 +10,10 @@ import sim_market as sim
 # api tbd
 # edit this path variable to the wanted path of your .dat file
 path_to_modelfile = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + os.sep + 'testmodel' + os.sep + 'test_marketplace.dat'
-situation = 'linear'
+situation = 'circular'
 marketplace = sim.CircularEconomy() if situation == 'circular' else sim.ClassicScenario()
-agent = agent.QLearningAgent(marketplace.observation_space.shape[0], marketplace.action_space.n, load_path=path_to_modelfile)
+# agent = agent.QLearningAgent(marketplace.observation_space.shape[0], marketplace.action_space.n, load_path=path_to_modelfile)
+agent = agent.RuleBasedCEAgent()
 
 # constants
 NUMBER_OF_EPISODES = 500
@@ -96,6 +97,7 @@ def main():
 
 	# show last histogram
 	plt.draw()
+	# stops showing after 5 seconds
 	plt.pause(5)
 
 

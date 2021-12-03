@@ -2,6 +2,7 @@
 
 # helpers
 import math
+from typing import Tuple
 
 import numpy as np
 
@@ -11,8 +12,11 @@ import utils as ut
 
 
 class Customer:
-    def buy_object(self, others):
-        assert False, 'This class should not be used.'
+	def __init__(self) -> None:
+		self.probabilities = None
+
+	def buy_object(self, others):
+		assert False, 'This class should not be used.'
 
 
 # This customer is only useful in a two-players setup. We consider to replace it fully
@@ -39,31 +43,35 @@ class Customer:
 
 
 class CustomerLinear(Customer):
-    # This customer calculates the value per money for each vendor and chooses those with high value with a higher probability
-    def buy_object(self, offers, nothingpreference=1):
-        ratios = [nothingpreference]
-        for i in range(int(len(offers) / 2)):
-            ratio = offers[2 * i + 1] / offers[2 * i] - math.exp(offers[2 * i] - 27)
-            ratios.append(ratio)
-        probabilities = ut.softmax(np.array(ratios))
-        return ut.shuffle_from_probabilities(probabilities), None
+	def new_prices(self, offers, nothingpreference=1) -> None:
+		ratios = [nothingpreference]
+		for i in range(int(len(offers) / 2)):
+			ratio = offers[2 * i + 1] / offers[2 * i] - math.exp(offers[2 * i] - 27)
+			ratios.append(ratio)
+		self.probabilities = ut.softmax(np.array(ratios))
+
+	# This customer calculates the value per money for each vendor and chooses those with high value with a higher probability
+	def buy_object(self, offers, nothingpreference=1) -> Tuple[int, int]:
+		return ut.shuffle_from_probabilities(self.probabilities), None
 
 
 class CustomerCircular(Customer):
-    # This customer values a second-hand-product 55% of a new product
-    def buy_object(self, offers):
-        # offers[0]: price for refurbished product
-        # offers[1]: price for new product
-        # offers[2]: num products in agents storage (don't use for customer)
-        # offers[3]: num products in circulation
 
-        assert offers[0] >= 1 and offers[1] >= 1
+	# This customer values a second-hand-product 55% of a new product
+	def new_prices(self, offers) -> None:
+		# offers[0]: price for refurbished product
+		# offers[1]: price for new product
+		# offers[2]: num products in agents storage (don't use for customer)
+		# offers[3]: num products in circulation
+		assert offers[0] >= 1 and offers[1] >= 1
 
-        ratio_old = 5.5 / offers[0] - math.exp(offers[0] - 5)
-        ratio_new = 10 / offers[1] - math.exp(offers[1] - 8)
-        preferences = np.array([1, ratio_old, ratio_new])
-        probabilities = ut.softmax(preferences)
+		ratio_old = 5.5 / offers[0] - math.exp(offers[0] - 5)
+		ratio_new = 10 / offers[1] - math.exp(offers[1] - 8)
+		preferences = np.array([1, ratio_old, ratio_new])
+		self.probabilities = ut.softmax(preferences)
 
-        customer_desicion = ut.shuffle_from_probabilities(probabilities)
-        customer_return = 1 if np.random.rand() < 0.05 * offers[3] / 20 else None
-        return customer_desicion, customer_return
+	def buy_object(self, offers) -> Tuple[int, int]:
+
+		customer_desicion = ut.shuffle_from_probabilities(self.probabilities)
+		customer_return = 1 if np.random.rand() < 0.05 * offers[3] / 20 else None
+		return customer_desicion, customer_return
