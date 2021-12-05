@@ -3,6 +3,7 @@ from typing import Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
+import time
 
 import agent
 import sim_market as sim
@@ -13,7 +14,7 @@ class Monitor():
 	def __init__(self) -> None:
 		self.episodes = 500
 		self.histogram_plot_interval = int(self.episodes / 10)
-		self.path_to_modelfile = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + os.sep + 'testmodel' + os.sep + 'test_marketplace.dat'
+		self.path_to_modelfile = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + os.sep + 'monitoring' + os.sep + 'test_marketplace.dat'
 		self.situation = 'linear'
 		self.marketplace = sim.CircularEconomy() if self.situation == 'circular' else sim.ClassicScenario()
 		self.agent = agent.QLearningAgent(self.marketplace.observation_space.shape[0], self.marketplace.action_space.n, load_path=self.path_to_modelfile)
@@ -97,7 +98,7 @@ class Monitor():
 def main():
 	monitor = Monitor()
 	# TODO: config file for setup_monitoring?
-	# monitor.setup_monitoring(new_situation='linear')
+	monitor.setup_monitoring(new_situation='circular')
 	print(f'Running', monitor.episodes, 'episodes')
 	print(f'Plot interval is:', monitor.histogram_plot_interval)
 	print(f'Using modelfile: ' + monitor.path_to_modelfile)
@@ -111,9 +112,10 @@ def main():
 	print(f'The maximum reward over {monitor.episodes} episodes is: ' + str(monitor.metrics_maximum(rewards)))
 	print(f'The minimum reward over {monitor.episodes} episodes is: ' + str(monitor.metrics_minimum(rewards)))
 
-	# show last histogram
-	plt.draw()
-	plt.pause(5)
+	# save last histogram
+	fname=os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + os.sep + 'monitoring' + os.sep + 'final_plot_' + time.strftime("%Y%m%d-%H%M%S") + '.svg'
+	plt.savefig(fname=fname)
+	print(f'The final histogram was saved at: ' + fname)
 
 
 if __name__ == '__main__':

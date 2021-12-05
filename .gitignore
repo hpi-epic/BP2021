@@ -1,11 +1,11 @@
 # from https://github.com/github/gitignore
 
-# To exclude marketplace files created by training the agent
-# args.env-best_*[0-9].*[0-9]_marketplace.dat
-
+# Output files
 *.csv
 trainedModels/
 runs/
+# output-plots from agent monitoring
+monitoring/*.svg
 
 # vscode settings
 .vscode/
