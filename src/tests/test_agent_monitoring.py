@@ -71,5 +71,5 @@ def test_reset_episode():
 
 
 def test_run_marketplace():
-	monitor.setup_monitoring(new_episodes=10, new_interval=10)
-	assert len(monitor.run_marketplace()) == 10
+	monitor.setup_monitoring(new_episodes=100, new_interval=100)
+	assert len(monitor.run_marketplace()) == 100
