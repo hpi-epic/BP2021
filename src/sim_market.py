@@ -41,10 +41,7 @@ class SimMarket(gym.Env):
 
 	def simulate_customers(self, profits, offers, n) -> None:
 		for _ in range(n):
-			customer_buy, customer_return = self.customer.buy_object(offers)
-			# when using LE-Market, customer_return is None
-			if customer_return is not None:
-				self.apply_customer_return(customer_return)
+			customer_buy, _ = self.customer.buy_object(offers)
 			if customer_buy != 0:
 				self.complete_purchase(offers, profits, customer_buy)
 
@@ -54,11 +51,11 @@ class SimMarket(gym.Env):
 			(self.action_to_array(action), self.state), dtype=np.float64
 		)
 
-	def modify_profit_by_state(self, profits) -> None:
+	def consider_owners_return(self) -> None:
 		pass
 
-	def apply_customer_return(self, customer_return) -> None:
-		assert False
+	def modify_profit_by_state(self, profits) -> None:
+		pass
 
 	def step(self, action) -> Tuple[np.array, np.float64, bool, dict]:
 		# The action is the new price of the agent
@@ -73,6 +70,7 @@ class SimMarket(gym.Env):
 
 		profits = [0] * n_vendors
 
+		self.consider_owners_return()
 		for i in range(n_vendors):
 			self.simulate_customers(
 				profits,
@@ -161,25 +159,27 @@ class CircularEconomy(SimMarket):
 	def action_to_array(self, action) -> list:
 		# cell 0: price for second-hand-product, cell 1: price for new product
 		act = [int(np.floor(action / ut.MAX_PRICE)) + 1, int(action % ut.MAX_PRICE) + 1]
-		# print("You perform ", act)
 		return act
 
 	def choose_customer(self) -> Customer:
 		return customer.CustomerCircular()
 
-	def apply_customer_return(self, customer_return) -> None:
-		assert customer_return == 1
-		# print("A customer returns a product")
+	def consider_owners_return(self) -> None:
+		for _ in range(int(0.05 * self.state[1])):
+			owner_action = int(np.floor(np.random.rand() * 2))
 
-		# check if number of products in circulation > 0
-		if self.state[1] >= customer_return:
-			# check if storage is full
-			if self.state[0] < self.max_storage:
-				self.state[0] += customer_return
-			self.state[1] -= customer_return
+			if owner_action == 0:
+				# Owner throws away his object
+				self.state[1] -= 1
+			elif owner_action == 1:
+				# Owner returns product to the agent
+
+				# check if storage is full
+				if self.state[0] < self.max_storage:
+					self.state[0] += 1
+				self.state[1] -= 1
 
 	def complete_purchase(self, offers, profits, customer_buy) -> None:
-		# print("I want to buy ", customer_buy)
 		assert len(profits) == 1
 		assert 0 < customer_buy and customer_buy <= 2
 		if customer_buy == 1:
@@ -196,5 +196,4 @@ class CircularEconomy(SimMarket):
 			self.state[1] = min(self.state[1] + 1, 10 * self.max_storage)
 
 	def modify_profit_by_state(self, profits) -> None:
-		# print("Your storage cost is ", self.state[0])
 		profits[0] -= self.state[0] / 2  # Storage costs per timestep

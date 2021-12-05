@@ -13,7 +13,7 @@ import sim_market
 situation = 'circular'
 
 env = sim_market.CircularEconomy() if situation == 'circular' else sim_market.ClassicScenario()
-agent = a.FixedPriceAgent(67)  # a.RuleBasedCEAgent()  # a.HumanPlayer() #a.QLearningAgent(env.observation_space.shape[0], env.action_space.n, load_path='trainedModels\\BITTE PFAD EINGEBEN')  # a.HumanPlayer() if you want to play the game
+agent = a.RuleBasedCEAgent()  # a.HumanPlayer() #a.QLearningAgent(env.observation_space.shape[0], env.action_space.n, load_path='trainedModels\\BITTE PFAD EINGEBEN')  # a.HumanPlayer() if you want to play the game
 
 counter = 0
 our_profit = 0
