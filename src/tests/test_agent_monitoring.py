@@ -1,4 +1,8 @@
+import os
+import re
+
 from .context import Monitor
+from .context import agent_monitoring as am
 
 monitor = None
 
@@ -70,3 +74,14 @@ def test_reset_episode():
 def test_run_marketplace():
 	monitor.setup_monitoring(new_episodes=100, new_interval=100)
 	assert len(monitor.run_marketplace()) == 100
+
+
+def test_main():
+	am.monitor.setup_monitoring(new_episodes=10, new_interval=10)
+	am.main()
+	# make sure a final_plot was saved, and remove it after the test
+	for f in os.listdir('./monitoring'):
+		if re.match('final_plot*', f):
+			os.remove('./monitoring/' + f)
+			return True
+	assert False
