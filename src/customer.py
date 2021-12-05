@@ -65,5 +65,4 @@ class CustomerCircular(Customer):
         probabilities = ut.softmax(preferences)
 
         customer_desicion = ut.shuffle_from_probabilities(probabilities)
-        customer_return = 1 if np.random.rand() < 0.05 * offers[3] / 20 else None
-        return customer_desicion, customer_return
+        return customer_desicion
