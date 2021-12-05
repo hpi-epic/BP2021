@@ -32,7 +32,7 @@ class HumanPlayer(Agent):
 class HumanPlayerCE(HumanPlayer):
 	def policy(self, state, epsilon=0) -> int:
 		step = super().policy(state, epsilon)
-		return (int(step % 10), int(step / 10))
+		return (int(step / 10), int(step % 10))
 
 
 class HumanPlayerCERebuy(HumanPlayer):
@@ -41,12 +41,28 @@ class HumanPlayerCERebuy(HumanPlayer):
 		return (int(step / 100), int(step / 10 % 10), int(step % 10))
 
 
-class FixedPriceAgent(Agent):
-	def __init__(self, fixed_price=42):
+class FixedPriceLEAgent(Agent):
+	def __init__(self, fixed_price=ut.PRODUCTION_PRICE + 3):
 		self.fixed_price = fixed_price
 
 	def policy(self, state, epsilon=0) -> int:
 		return self.fixed_price
+
+
+class FixedPriceCEAgent(Agent):
+	def __init__(self, fixed_price=24):
+		self.fixed_price = fixed_price
+
+	def policy(self, state, epsilon=0) -> int:
+		return (int(self.fixed_price / 10), int(self.fixed_price % 10))
+
+
+class FixedPriceCERebuyAgent(Agent):
+	def __init__(self, fixed_price=362):
+		self.fixed_price = fixed_price
+
+	def policy(self, state, epsilon=0) -> int:
+		return (int(self.fixed_price / 100), int(self.fixed_price / 10 % 10), int(self.fixed_price % 10))
 
 
 class RuleBasedCEAgent(Agent):

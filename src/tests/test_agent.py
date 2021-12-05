@@ -1,19 +1,19 @@
 import pytest
 
-from .context import FixedPriceAgent, RuleBasedCEAgent, RuleBasedCERebuyAgent
+from .context import FixedPriceCEAgent, RuleBasedCEAgent, RuleBasedCERebuyAgent
 from .context import utils as ut
 
 test_state = [50, 60]
 
 
 def test_fixed_price_agent_returns_default_fixed_price():
-	test_agent = FixedPriceAgent()
-	assert 42 == test_agent.policy(test_state)
+	test_agent = FixedPriceCEAgent()
+	assert (2, 4) == test_agent.policy(test_state)
 
 
 def test_fixed_price_agent_returns_fixed_price():
-	test_agent = FixedPriceAgent(35)
-	assert 35 == test_agent.policy(test_state)
+	test_agent = FixedPriceCEAgent(35)
+	assert (3, 5) == test_agent.policy(test_state)
 
 
 def test_helper_function_action_to_array():
