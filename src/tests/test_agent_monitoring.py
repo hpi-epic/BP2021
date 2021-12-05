@@ -21,10 +21,6 @@ def create_mock_rewards() -> list:
 	return mock_rewards
 
 
-def test_run_agent_monitoring():
-	reload(am)
-
-
 # new_episodes, new_interval, new_modelfile, new_situation, new_marketplace, new_agent
 # types and values are mismatched on purpose, as we just want to make sure the global values are changed correctly, we don't work with them
 def test_setup_monitoring():
@@ -55,3 +51,8 @@ def test_metrics_minimum():
 
 def test_round_up():
 	assert monitor.round_up(999, -3) == 1000
+
+
+def test_create_histogram():
+	rewards = [100, 1000, 0, 1538]
+	monitor.create_histogram(rewards)
