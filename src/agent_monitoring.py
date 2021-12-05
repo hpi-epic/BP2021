@@ -96,7 +96,8 @@ class Monitor():
 
 def main():
 	monitor = Monitor()
-	monitor.setup_monitoring(new_situation='linear')
+	# TODO: config file for setup_monitoring?
+	# monitor.setup_monitoring(new_situation='linear')
 	print(f'Running', monitor.episodes, 'episodes')
 	print(f'Plot interval is:', monitor.histogram_plot_interval)
 	print(f'Using modelfile: ' + monitor.path_to_modelfile)

@@ -25,8 +25,18 @@ def test_run_agent_monitoring():
 	reload(am)
 
 
-# TODO: add test for setup_monitoring
-# TODO: should probably add a fixture setting up a Monitor instance
+# new_episodes, new_interval, new_modelfile, new_situation, new_marketplace, new_agent
+# types and values are mismatched on purpose, as we just want to make sure the global values are changed correctly, we don't work with them
+def test_setup_monitoring():
+	monitor.setup_monitoring(1, 2, 3, 4, 5, 6)
+	assert 1 == monitor.episodes
+	assert 2 == monitor.histogram_plot_interval
+	assert 3 == monitor.path_to_modelfile
+	assert 4 == monitor.situation
+	assert 5 == monitor.marketplace
+	assert 6 == monitor.agent
+
+
 def test_metrics_average():
 	assert 6 == monitor.metrics_average(create_mock_rewards())
 
