@@ -83,7 +83,7 @@ class RuleBasedCEAgent(Agent):
 			price_new += int(ut.MAX_PRICE * 5 / 10)
 			rebuy_price = price_old - 2
 
-		elif products_in_storage < ut.MAX_STORAGE / 4:
+		elif products_in_storage < ut.MAX_STORAGE / 3:
 			# less than 3/4 but more than 1/2 of storage filled
 			price_old = int(ut.MAX_PRICE * 4 / 10)
 			price_new += int(ut.MAX_PRICE * 4 / 10)
@@ -96,7 +96,7 @@ class RuleBasedCEAgent(Agent):
 
 		price_new = min(9, price_new)
 		assert price_old <= price_new
-		return (price_old, price_new, rebuy_price)
+		return self.return_slice(price_old, price_new, rebuy_price)
 
 	def greedy_policy(self, state) -> int:
 		# this policy tries to figure out the best prices for the next round by simulating customers
