@@ -70,7 +70,7 @@ class SimMarket(gym.Env):
 
 		profits = [0] * n_vendors
 
-		self.consider_owners_return()
+		self.consider_owners_return(self.generate_offer(action), profits)
 		for i in range(n_vendors):
 			self.simulate_customers(
 				profits,
@@ -157,13 +157,13 @@ class CircularEconomy(SimMarket):
 		return [int(np.random.rand() * self.max_storage), int(5 * np.random.rand() * self.max_storage)]
 
 	def action_to_array(self, action) -> np.array:
-		# cell 0: price for second-hand-product, cell 1: price for new product
+		# cell 0: price for second-hand-product, cell 1: price for new product (with rebuy price cell 3: rebuy price)
 		return np.array(action)
 
 	def choose_customer(self) -> Customer:
 		return customer.CustomerCircular()
 
-	def consider_owners_return(self) -> None:
+	def consider_owners_return(self, offer, profits) -> None:
 		for _ in range(int(0.05 * self.state[1])):
 			owner_action = int(np.floor(np.random.rand() * 2))
 
@@ -197,8 +197,32 @@ class CircularEconomy(SimMarket):
 	def modify_profit_by_state(self, profits) -> None:
 		profits[0] -= self.state[0] / 2  # Storage costs per timestep
 
-# class CircularEconomyRebuyPrice(SimMarket):
-# 	# currently monopoly
-# 	def setup_action_observation_space(self) -> None:
-# 		super().setup_action_observation_space()
-# 		self.action_space = gym.spaces.Discrete(ut.MAX_PRICE * ut.MAX_PRICE * ut.MAX_PRICE)  # Every triple of actions encoded in one number
+
+class CircularEconomyRebuyPrice(CircularEconomy):
+	def setup_action_observation_space(self) -> None:
+		super().setup_action_observation_space()
+		self.action_space = gym.spaces.Tuple((gym.spaces.Discrete(ut.MAX_PRICE), gym.spaces.Discrete(ut.MAX_PRICE), gym.spaces.Discrete(ut.MAX_PRICE)))
+
+	def consider_owners_return(self, offer, profits) -> None:
+		holding_preference = 1
+		discard_preference = 2 / (offer[2] + 1)  # If the price is low, the customer will discard the product
+		return_preference = 2 * np.exp((offer[2] - min(offer[0], offer[1])) / min(offer[0], offer[1]))  # Customer is very excited if the value of his product is close to the new or refurbished price
+
+		# print(np.array([holding_preference, discard_preference, return_preference]))
+		probabilities = ut.softmax(np.array([holding_preference, discard_preference, return_preference]))
+		# print(probabilities)
+
+		for _ in range(int(0.05 * self.state[1])):
+			owner_action = ut.shuffle_from_probabilities(probabilities)
+
+			if owner_action == 1:
+				# Owner throws away his object
+				self.state[1] -= 1
+			elif owner_action == 2:
+				# Owner returns product to the agent
+
+				# check if storage is full
+				if self.state[0] < self.max_storage:
+					self.state[0] += 1
+				self.state[1] -= 1
+				profits[0] -= offer[2]

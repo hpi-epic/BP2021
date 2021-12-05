@@ -10,15 +10,14 @@ import sim_market
 
 situation = 'circular'
 
-env = sim_market.CircularEconomy() if situation == 'circular' else sim_market.ClassicScenario()
-agent = a.RuleBasedCEAgent()  # a.HumanPlayer() #a.QLearningAgent(env.observation_space.shape[0], env.action_space.n, load_path='trainedModels\\BITTE PFAD EINGEBEN')  # a.HumanPlayer() if you want to play the game
+env = sim_market.CircularEconomyRebuyPrice() if situation == 'circular' else sim_market.ClassicScenario()
+agent = a.CERebuyWrapper(a.HumanPlayer())  # a.RuleBasedCEAgent() #a.QLearningAgent(env.observation_space.shape[0], env.action_space.n, load_path='trainedModels\\BITTE PFAD EINGEBEN')  # a.HumanPlayer() if you want to play the game
 
 counter = 0
 our_profit = 0
 is_done = False
 state = env.reset()
 # print('The production price is', ut.PRODUCTION_PRICE)
-print('agent action', agent.policy(state))
 
 writer = SummaryWriter()
 

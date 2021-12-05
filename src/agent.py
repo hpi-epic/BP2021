@@ -29,6 +29,15 @@ class CEWrapper(Agent):
 		return (int(step % 10), int(step / 10))
 
 
+class CERebuyWrapper(Agent):
+	def __init__(self, inner_agent):
+		self.inner_agent = inner_agent
+
+	def policy(self, state, epsilon=0) -> int:
+		step = self.inner_agent.policy(state, epsilon)
+		return (int(step / 100), int(step / 10 % 10), int(step % 10))
+
+
 class HumanPlayer(Agent):
 	def __init__(self):
 		print('Welcome to this funny game! Now, you are the one playing the game!')
