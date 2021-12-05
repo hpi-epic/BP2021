@@ -113,7 +113,6 @@ class LinearEconomy(SimMarket):
 		return [comp_price, comp_quality]
 
 	def action_to_array(self, action) -> np.array:
-		assert action is int
 		return np.array([action + 1.0])
 
 	def choose_customer(self) -> Customer:
