@@ -10,7 +10,7 @@ import sim_market as sim
 
 class Monitor():
 
-	def __init__(self):
+	def __init__(self) -> None:
 		self.episodes = 500
 		self.histogram_plot_interval = int(self.episodes / 10)
 		self.path_to_modelfile = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + os.sep + 'testmodel' + os.sep + 'test_marketplace.dat'
@@ -24,7 +24,7 @@ class Monitor():
 		return np.ceil(number * multiplier) / multiplier
 
 	# configure the situation to be monitored
-	def setup_monitoring(self, new_episodes=None, new_interval=None, new_modelfile=None, new_situation=None, new_marketplace=None, new_agent=None):
+	def setup_monitoring(self, new_episodes=None, new_interval=None, new_modelfile=None, new_situation=None, new_marketplace=None, new_agent=None) -> None:
 		# doesn't look nice, but afaik only way to keep parameter list short
 		if(new_episodes is not None):
 			self.episodes = new_episodes
