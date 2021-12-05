@@ -68,15 +68,15 @@ class Monitor():
 
 		return reward_per_episode, is_done, state
 
-	def run_marketplace(self, number_episodes, marketplace, agent) -> list:
+	def run_marketplace(self) -> list:
 		# initialize marketplace
 		reward_per_episode = 0
 		rewards = []
 		is_done = False
 
-		for episode in range(1, number_episodes + 1):
+		for episode in range(1, self.episodes + 1):
 
-			reward_per_episode, is_done, state = self.reset_episode(reward_per_episode, is_done, marketplace)
+			reward_per_episode, is_done, state = self.reset_episode(reward_per_episode, is_done, self.marketplace)
 
 			while not is_done:
 				action = self.agent.policy(state)
@@ -104,7 +104,7 @@ def main():
 	print(f'The situation is: ' + monitor.situation)
 	print(f'The marketplace is:', monitor.marketplace)
 	print(f'The agent is:', monitor.agent)
-	rewards = monitor.run_marketplace(monitor.episodes, monitor.marketplace, monitor.agent)
+	rewards = monitor.run_marketplace()
 
 	print(f'The average reward over {monitor.episodes} episodes is: ' + str(monitor.metrics_average(rewards)))
 	print(f'The median reward over {monitor.episodes} episodes is: ' + str(monitor.metrics_median(rewards)))
