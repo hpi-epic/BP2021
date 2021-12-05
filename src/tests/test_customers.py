@@ -1,5 +1,4 @@
 import pytest
-from numpy import random
 
 from .context import ClassicScenario as SClassic
 from .context import CustomerCircular as CCircular
@@ -12,7 +11,7 @@ from .context import customer
 def random_offer(market_scenario):
 	ins = market_scenario()
 	ins.reset()
-	return ins.generate_offer(random.randint(1, 29))
+	return ins.generate_offer(ins.action_space.sample())
 
 
 # Test the Customer parent class, i.e. make sure it cannot be used
@@ -38,8 +37,4 @@ array_customer_action_range = [
 def test_customer_action_range(customer, offers, expectedSize):
 	assert len(offers) == expectedSize
 	buy_decisions = customer.buy_object(customer, offers)
-	assert 0 <= buy_decisions[0] <= expectedSize - 1
-	if customer is CLinear:
-		assert buy_decisions[1] is None
-	elif customer is CCircular:
-		assert ((buy_decisions[1] is None) or (buy_decisions[1] == 1))
+	assert 0 <= buy_decisions <= expectedSize - 1

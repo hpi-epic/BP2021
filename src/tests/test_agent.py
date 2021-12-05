@@ -21,12 +21,7 @@ def test_helper_function_action_to_array():
 	assert [3, 4] == test_agent.action_to_array(34)
 
 
-def test_helper_function_array_to_action():
-	test_agent = RuleBasedCEAgent()
-	assert 34 == test_agent.array_to_action([3, 4])
-
-
-array_testing = [([20, 50], 68), ([40, 50], 57), ([60, 50], 46), ([80, 50], 29)]
+array_testing = [([20, 50], (6, 8)), ([40, 50], (5, 7)), ([60, 50], (4, 6)), ([80, 50], (2, 9))]
 
 
 @pytest.mark.parametrize('state, expected_prices', array_testing)
@@ -47,4 +42,4 @@ def test_prices_are_not_higher_than_allowed():
 
 	test_agent = RuleBasedCEAgent()
 
-	assert 99 >= test_agent.policy(test_state)
+	assert (9, 9) >= test_agent.policy(test_state)
