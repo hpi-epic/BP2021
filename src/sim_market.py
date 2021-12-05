@@ -28,7 +28,7 @@ class SimMarket(gym.Env):
 	def reset(self) -> np.array:
 		self.step_counter = 0
 
-		reset_state = self.reset_agent_information()
+		reset_state = self.reset_market_state()
 		for competitor in self.competitors:
 			reset_state += self.reset_competitor_information(competitor)
 
@@ -41,7 +41,7 @@ class SimMarket(gym.Env):
 
 	def simulate_customers(self, profits, offers, n) -> None:
 		for _ in range(n):
-			customer_buy, _ = self.customer.buy_object(offers)
+			customer_buy = self.customer.buy_object(offers)
 			if customer_buy != 0:
 				self.complete_purchase(offers, profits, customer_buy)
 
@@ -105,7 +105,7 @@ class LinearEconomy(SimMarket):
 		# one action for every price possible for 0 and MAX_PRICE
 		self.action_space = gym.spaces.Discrete(ut.MAX_PRICE)
 
-	def reset_agent_information(self) -> list:
+	def reset_market_state(self) -> list:
 		return [ut.shuffle_quality()]
 
 	def reset_competitor_information(self, competitor) -> list:
@@ -113,6 +113,7 @@ class LinearEconomy(SimMarket):
 		return [comp_price, comp_quality]
 
 	def action_to_array(self, action) -> np.array:
+		assert action is int
 		return np.array([action + 1.0])
 
 	def choose_customer(self) -> Customer:
@@ -148,18 +149,17 @@ class CircularEconomy(SimMarket):
 		# cell 0: number of products in the used storage, cell 1: number of products in circulation
 		self.max_storage = 1e2
 		self.observation_space = gym.spaces.Box(np.array([0, 0]), np.array([self.max_storage, 10 * self.max_storage]), dtype=np.float64)
-		self.action_space = gym.spaces.Discrete(ut.MAX_PRICE * ut.MAX_PRICE)  # Every pair of actions encoded in one number
+		self.action_space = gym.spaces.Tuple((gym.spaces.Discrete(ut.MAX_PRICE), gym.spaces.Discrete(ut.MAX_PRICE)))
 
 	def get_competitor_list(self) -> list:
 		return []
 
-	def reset_agent_information(self) -> list:
+	def reset_market_state(self) -> list:
 		return [int(np.random.rand() * self.max_storage), int(5 * np.random.rand() * self.max_storage)]
 
-	def action_to_array(self, action) -> list:
+	def action_to_array(self, action) -> np.array:
 		# cell 0: price for second-hand-product, cell 1: price for new product
-		act = [int(np.floor(action / ut.MAX_PRICE)) + 1, int(action % ut.MAX_PRICE) + 1]
-		return act
+		return np.array(action)
 
 	def choose_customer(self) -> Customer:
 		return customer.CustomerCircular()
@@ -197,3 +197,9 @@ class CircularEconomy(SimMarket):
 
 	def modify_profit_by_state(self, profits) -> None:
 		profits[0] -= self.state[0] / 2  # Storage costs per timestep
+
+# class CircularEconomyRebuyPrice(SimMarket):
+# 	# currently monopoly
+# 	def setup_action_observation_space(self) -> None:
+# 		super().setup_action_observation_space()
+# 		self.action_space = gym.spaces.Discrete(ut.MAX_PRICE * ut.MAX_PRICE * ut.MAX_PRICE)  # Every triple of actions encoded in one number

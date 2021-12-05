@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-import math
-
 import torch
 from torch.utils.tensorboard import SummaryWriter
 
@@ -30,8 +28,8 @@ with torch.no_grad():
         if situation == 'circular':
             writer.add_scalar('Example_state/storage_content', env.state[0], counter)
             writer.add_scalar('Example_state/products_in_circle', env.state[1], counter)
-            writer.add_scalar('Example_action/price_second_hand', math.floor(action / 10) + 1, counter)
-            writer.add_scalar('Example_action/price_new', math.floor(action % 10) + 1, counter)
+            writer.add_scalar('Example_action/price_second_hand', action[0] + 1, counter)
+            writer.add_scalar('Example_action/price_new', action[1] + 1, counter)
         elif situation == 'linear':
             writer.add_scalar('Example_state/agent_quality', env.state[0], counter)
             writer.add_scalar('Example_state/competitor_quality', env.state[2], counter)

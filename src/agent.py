@@ -20,6 +20,15 @@ class Agent:
 		assert False
 
 
+class CEWrapper(Agent):
+	def __init__(self, inner_agent):
+		self.inner_agent = inner_agent
+
+	def policy(self, state, epsilon=0) -> int:
+		step = self.inner_agent.policy(state, epsilon)
+		return (int(step % 10), int(step / 10))
+
+
 class HumanPlayer(Agent):
 	def __init__(self):
 		print('Welcome to this funny game! Now, you are the one playing the game!')
@@ -44,9 +53,6 @@ class RuleBasedCEAgent(Agent):
 
 	def action_to_array(self, action) -> np.array:
 		return [int(np.floor(action / ut.MAX_PRICE)), int(action % ut.MAX_PRICE)]
-
-	def array_to_action(self, array) -> int:
-		return array[0] * 10 + array[1]
 
 	def policy(self, state, epsilon=0) -> int:
 		# state[0]: products in my storage
@@ -79,7 +85,7 @@ class RuleBasedCEAgent(Agent):
 
 		price_new = min(9, price_new)
 		assert price_old <= price_new
-		return self.array_to_action([price_old, price_new])
+		return (price_old, price_new)
 
 	def greedy_policy(self, state) -> int:
 		# this policy tries to figure out the best prices for the next round by simulating customers
