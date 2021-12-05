@@ -22,11 +22,6 @@ def test_customer_parent_class():
 	assert str(assertion_info.value) == 'This class should not be used.'
 
 
-def get_customer_action_range_ids():
-	return [
-	]
-
-
 array_customer_action_range = [
 	(CLinear, random_offer(SClassic), 4), (CLinear, random_offer(SMulti), 8), (CCircular, random_offer(SClassic), 4), (CCircular, random_offer(SMulti), 8)
 ]
@@ -34,7 +29,7 @@ array_customer_action_range = [
 
 # mark.parametrize can be used to run the same test with different parameters
 # Test the different Customers in the different Market Scenarios
-@pytest.mark.parametrize('customer, offers, expectedSize', array_customer_action_range, ids=get_customer_action_range_ids())
+@pytest.mark.parametrize('customer, offers, expectedSize', array_customer_action_range)
 def test_customer_action_range(customer, offers, expectedSize):
 	assert len(offers) == expectedSize
 	buy_decisions = customer.buy_object(customer, offers)
