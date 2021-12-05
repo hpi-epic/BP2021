@@ -29,13 +29,13 @@ class HumanPlayer(Agent):
 		return int(input())
 
 
-class HumanPlayerCe(Agent):
+class HumanPlayerCE(HumanPlayer):
 	def policy(self, state, epsilon=0) -> int:
 		step = super().policy(state, epsilon)
 		return (int(step % 10), int(step / 10))
 
 
-class HumanPlayerCeRebuy(Agent):
+class HumanPlayerCERebuy(HumanPlayer):
 	def policy(self, state, epsilon=0) -> int:
 		step = super().policy(state, epsilon)
 		return (int(step / 100), int(step / 10 % 10), int(step % 10))
