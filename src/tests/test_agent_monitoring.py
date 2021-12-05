@@ -1,7 +1,4 @@
-from importlib import reload
-import copy
 from .context import Monitor
-from .context import agent_monitoring as am
 
 monitor = None
 
@@ -22,7 +19,7 @@ def create_mock_rewards() -> list:
 
 
 # new_episodes, new_interval, new_modelfile, new_situation, new_marketplace, new_agent
-# types and values are mismatched on purpose, as we just want to make sure the global values are changed correctly, we don't work with them
+# values and types are mismatched on purpose, as we just want to make sure the global values are changed correctly, we don't work with them
 def test_setup_monitoring():
 	monitor.setup_monitoring(1, 2, 3, 4, 5, 6)
 	assert 1 == monitor.episodes
@@ -66,7 +63,7 @@ def test_reset_episode():
 	reward_per_episode, is_done, monitor.marketplace.state = monitor.reset_episode(reward_per_episode, is_done, monitor.marketplace)
 
 	assert reward_per_episode == 0
-	assert is_done == False
+	assert is_done is False
 	assert len(monitor.marketplace.state) != 0
 
 

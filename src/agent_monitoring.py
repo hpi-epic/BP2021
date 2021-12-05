@@ -1,9 +1,9 @@
 import os
+import time
 from typing import Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
-import time
 
 import agent
 import sim_market as sim
@@ -113,7 +113,7 @@ def main():
 	print(f'The minimum reward over {monitor.episodes} episodes is: ' + str(monitor.metrics_minimum(rewards)))
 
 	# save last histogram
-	fname=os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + os.sep + 'monitoring' + os.sep + 'final_plot_' + time.strftime("%Y%m%d-%H%M%S") + '.svg'
+	fname = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + os.sep + 'monitoring' + os.sep + 'final_plot_' + time.strftime('%Y%m%d-%H%M%S') + '.svg'
 	plt.savefig(fname=fname)
 	print(f'The final histogram was saved at: ' + fname)
 
