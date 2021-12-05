@@ -1,5 +1,5 @@
 from importlib import reload
-
+import copy
 from .context import Monitor
 from .context import agent_monitoring as am
 
@@ -56,3 +56,15 @@ def test_round_up():
 def test_create_histogram():
 	rewards = [100, 1000, 0, 1538]
 	monitor.create_histogram(rewards)
+
+
+def test_reset_episode():
+	reward_per_episode = 20
+	is_done = True
+	monitor.marketplace.state = []
+
+	reward_per_episode, is_done, monitor.marketplace.state = monitor.reset_episode(reward_per_episode, is_done, monitor.marketplace)
+
+	assert reward_per_episode == 0
+	assert is_done == False
+	assert len(monitor.marketplace.state) != 0

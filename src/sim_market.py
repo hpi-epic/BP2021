@@ -24,6 +24,9 @@ class SimMarket(gym.Env):
 		assert (
 			self.observation_space and self.action_space
 		), 'Your subclass has major problems with setting up the environment'
+		
+		# Make sure that variables such as state, customer are known
+		self.reset()
 
 	def reset(self) -> np.array:
 		self.step_counter = 0
