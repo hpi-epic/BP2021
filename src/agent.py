@@ -20,24 +20,6 @@ class Agent:
 		assert False
 
 
-class CEWrapper(Agent):
-	def __init__(self, inner_agent):
-		self.inner_agent = inner_agent
-
-	def policy(self, state, epsilon=0) -> int:
-		step = self.inner_agent.policy(state, epsilon)
-		return (int(step % 10), int(step / 10))
-
-
-class CERebuyWrapper(Agent):
-	def __init__(self, inner_agent):
-		self.inner_agent = inner_agent
-
-	def policy(self, state, epsilon=0) -> int:
-		step = self.inner_agent.policy(state, epsilon)
-		return (int(step / 100), int(step / 10 % 10), int(step % 10))
-
-
 class HumanPlayer(Agent):
 	def __init__(self):
 		print('Welcome to this funny game! Now, you are the one playing the game!')
@@ -45,6 +27,18 @@ class HumanPlayer(Agent):
 	def policy(self, state, epsilon=0) -> int:
 		print('The state is ', state, 'and you have to decide what to do! Please enter your action!')
 		return int(input())
+
+
+class HumanPlayerCe(Agent):
+	def policy(self, state, epsilon=0) -> int:
+		step = super().policy(state, epsilon)
+		return (int(step % 10), int(step / 10))
+
+
+class HumanPlayerCeRebuy(Agent):
+	def policy(self, state, epsilon=0) -> int:
+		step = super().policy(state, epsilon)
+		return (int(step / 100), int(step / 10 % 10), int(step % 10))
 
 
 class FixedPriceAgent(Agent):
@@ -206,3 +200,15 @@ class QLearningAgent(Agent):
 		if not os.path.isdir('trainedModels'):
 			os.mkdir('trainedModels')
 		torch.save(self.net.state_dict(), './trainedModels/' + path)
+
+
+class QLearningCE(QLearningAgent):
+	def policy(self, state, epsilon=0) -> int:
+		step = super().policy(state, epsilon)
+		return (int(step % 10), int(step / 10))
+
+
+class QLearningCERebuy(QLearningAgent):
+	def policy(self, state, epsilon=0) -> int:
+		step = super().policy(state, epsilon)
+		return (int(step / 100), int(step / 10 % 10), int(step % 10))

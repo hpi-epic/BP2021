@@ -51,7 +51,7 @@ class SimMarket(gym.Env):
 			(self.action_to_array(action), self.state), dtype=np.float64
 		)
 
-	def consider_owners_return(self) -> None:
+	def consider_owners_return(self, *_) -> None:
 		pass
 
 	def modify_profit_by_state(self, profits) -> None:
@@ -158,7 +158,7 @@ class CircularEconomy(SimMarket):
 
 	def action_to_array(self, action) -> np.array:
 		# cell 0: price for second-hand-product, cell 1: price for new product (with rebuy price cell 3: rebuy price)
-		return np.array(action)
+		return np.array(action) + 1
 
 	def choose_customer(self) -> Customer:
 		return customer.CustomerCircular()
