@@ -68,3 +68,8 @@ def test_reset_episode():
 	assert reward_per_episode == 0
 	assert is_done == False
 	assert len(monitor.marketplace.state) != 0
+
+
+def test_run_marketplace():
+	monitor.setup_monitoring(new_episodes=10, new_interval=10)
+	assert len(monitor.run_marketplace()) == 10
