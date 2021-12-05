@@ -11,7 +11,7 @@ import sim_market
 situation = 'circular'
 
 env = sim_market.CircularEconomyRebuyPrice() if situation == 'circular' else sim_market.ClassicScenario()
-agent = a.HumanPlayerCE()  # a.RuleBasedCEAgent() #a.QLearningAgent(env.observation_space.shape[0], env.action_space.n, load_path='trainedModels\\BITTE PFAD EINGEBEN')  # a.HumanPlayer() if you want to play the game
+agent = a.RuleBasedCERebuyAgent()  # a.QLearningAgent(env.observation_space.shape[0], env.action_space.n, load_path='trainedModels\\BITTE PFAD EINGEBEN')  # a.HumanPlayer() if you want to play the game
 
 counter = 0
 our_profit = 0
@@ -29,6 +29,8 @@ with torch.no_grad():
             writer.add_scalar('Example_state/products_in_circle', env.state[1], counter)
             writer.add_scalar('Example_action/price_second_hand', action[0] + 1, counter)
             writer.add_scalar('Example_action/price_new', action[1] + 1, counter)
+            if isinstance(env, sim_market.CircularEconomyRebuyPrice):
+                writer.add_scalar('Example_action/rebuy_price', action[2] + 1, counter)
         elif situation == 'linear':
             writer.add_scalar('Example_state/agent_quality', env.state[0], counter)
             writer.add_scalar('Example_state/competitor_quality', env.state[2], counter)

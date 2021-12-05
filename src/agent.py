@@ -62,33 +62,41 @@ class RuleBasedCEAgent(Agent):
 		# state[1]: products in circulation
 		return self.storage_evaluation(state)
 
+	def return_slice(self, price_old, price_new, rebuy_price):
+		return (price_old, price_new)
+
 	def storage_evaluation(self, state) -> int:
 		# this policy sets the prices according to the amount of available storage
 		products_in_storage = state[0]
 		price_old = 0
 		price_new = ut.PRODUCTION_PRICE
-		if products_in_storage < ut.MAX_STORAGE / 4:
+		rebuy_price = 0
+		if products_in_storage < ut.MAX_STORAGE / 10:
 			# less than 1/4 of storage filled
 			price_old = int(ut.MAX_PRICE * 6 / 10)
 			price_new += int(ut.MAX_PRICE * 6 / 10)
+			rebuy_price = price_old - 1
 
-		elif products_in_storage < ut.MAX_STORAGE / 2:
+		elif products_in_storage < ut.MAX_STORAGE / 5:
 			# less than 1/2 of storage filled
 			price_old = int(ut.MAX_PRICE * 5 / 10)
 			price_new += int(ut.MAX_PRICE * 5 / 10)
+			rebuy_price = price_old - 2
 
-		elif products_in_storage < ut.MAX_STORAGE * 3 / 4:
+		elif products_in_storage < ut.MAX_STORAGE / 4:
 			# less than 3/4 but more than 1/2 of storage filled
 			price_old = int(ut.MAX_PRICE * 4 / 10)
 			price_new += int(ut.MAX_PRICE * 4 / 10)
+			rebuy_price = int(price_old / 2)
 		else:
 			# storage too full, we need to get rid of some refurbished products
 			price_old = int(ut.MAX_PRICE * 2 / 10)
 			price_new += int(ut.MAX_PRICE * 7 / 10)
+			rebuy_price = 0
 
 		price_new = min(9, price_new)
 		assert price_old <= price_new
-		return (price_old, price_new)
+		return (price_old, price_new, rebuy_price)
 
 	def greedy_policy(self, state) -> int:
 		# this policy tries to figure out the best prices for the next round by simulating customers
@@ -125,7 +133,12 @@ class RuleBasedCEAgent(Agent):
 					max_price_u = p_u
 		print(max_price_u, max_price_n)
 		assert max_price_n > 0 and max_price_u > 0
-		return self.array_to_action[max_price_u, max_price_n]
+		return (max_price_u, max_price_n)
+
+
+class RuleBasedCERebuyAgent(RuleBasedCEAgent):
+	def return_slice(self, price_old, price_new, rebuy_price):
+		return (price_old, price_new, rebuy_price)
 
 
 class QLearningAgent(Agent):
