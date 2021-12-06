@@ -11,3 +11,4 @@ ignore = W503,E203,E501,W605,W191,E117
 # F403: from module import * used; unable to detect undefined names
 per-file-ignores =
     src/tests/context.py:F401, E402, F403
+	src/performance.py:F401
