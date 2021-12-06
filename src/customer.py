@@ -43,6 +43,9 @@ class Customer:
 
 
 class CustomerLinear(Customer):
+	def __init__(self) -> None:
+		super().__init__()
+
 	def new_prices(self, offers, nothingpreference=1) -> None:
 		ratios = [nothingpreference]
 		for i in range(int(len(offers) / 2)):
@@ -56,6 +59,8 @@ class CustomerLinear(Customer):
 
 
 class CustomerCircular(Customer):
+	def __init__(self) -> None:
+		super().__init__()
 
 	# This customer values a second-hand-product 55% of a new product
 	def new_prices(self, offers) -> None:
