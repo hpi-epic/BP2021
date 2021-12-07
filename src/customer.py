@@ -21,32 +21,32 @@ class Customer:
 
 # This customer is only useful in a two-players setup. We consider to replace it fully
 # class CustomerDeprecated(Customer):
-#     def buy_object(self, offers):
-#         if random.random() < 0.17:
-#             return random.randint(1, 2)
-#         value_agent = max(offers[1] / offers[0] + np.random.normal() / 2, 0.1)
-#         value_compet = max(offers[3] / offers[2] + np.random.normal() / 2, 0.1)
-#         maxprice = np.random.normal() * 3 + 25
-#         if offers[0] > maxprice:
-#             value_agent = 0
-#         if offers[2] > maxprice:
-#             value_compet = 0
+# 	def buy_object(self, offers):
+# 		if random.random() < 0.17:
+# 			return random.randint(1, 2)
+# 		value_agent = max(offers[1] / offers[0] + np.random.normal() / 2, 0.1)
+# 		value_compet = max(offers[3] / offers[2] + np.random.normal() / 2, 0.1)
+# 		maxprice = np.random.normal() * 3 + 25
+# 		if offers[0] > maxprice:
+# 			value_agent = 0
+# 		if offers[2] > maxprice:
+# 			value_compet = 0
 
-#         customer_buy = 0
-#         if value_agent == 0 and value_compet == 0:
-#             customer_buy = 0  # Don't buy anything
-#         elif value_agent > value_compet:
-#             customer_buy = 1  # Buy agent's
-#         else:
-#             customer_buy = 2  # Buy competitor's
-#         return customer_buy, None
+# 		customer_buy = 0
+# 		if value_agent == 0 and value_compet == 0:
+# 			customer_buy = 0  # Don't buy anything
+# 		elif value_agent > value_compet:
+# 			customer_buy = 1  # Buy agent's
+# 		else:
+# 			customer_buy = 2  # Buy competitor's
+# 		return customer_buy, None
 
 
 class CustomerLinear(Customer):
 	def __init__(self) -> None:
 		super().__init__()
 
-	def new_prices(self, offers, nothingpreference=1) -> None:
+	def set_probabilities_from_offers(self, offers, nothingpreference=1) -> None:
 		ratios = [nothingpreference]
 		for i in range(int(len(offers) / 2)):
 			ratio = offers[2 * i + 1] / offers[2 * i] - math.exp(offers[2 * i] - 27)
@@ -63,7 +63,7 @@ class CustomerCircular(Customer):
 		super().__init__()
 
 	# This customer values a second-hand-product 55% of a new product
-	def new_prices(self, offers) -> None:
+	def set_probabilities_from_offers(self, offers) -> None:
 		# offers[0]: price for refurbished product
 		# offers[1]: price for new product
 		# offers[2]: num products in agents storage (don't use for customer)

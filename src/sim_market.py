@@ -40,7 +40,7 @@ class SimMarket(gym.Env):
 		return copy.deepcopy(self.state)
 
 	def simulate_customers(self, profits, offers, n) -> None:
-		self.customer.new_prices(offers)
+		self.customer.set_probabilities_from_offers(offers)
 		for _ in range(n):
 			customer_buy, customer_return = self.customer.buy_object(offers)
 			# when using LE-Market, customer_return is None

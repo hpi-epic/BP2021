@@ -10,10 +10,9 @@ import sim_market as sim
 # api tbd
 # edit this path variable to the wanted path of your .dat file
 path_to_modelfile = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + os.sep + 'testmodel' + os.sep + 'test_marketplace.dat'
-situation = 'circular'
+situation = 'linear'
 marketplace = sim.CircularEconomy() if situation == 'circular' else sim.ClassicScenario()
-# agent = agent.QLearningAgent(marketplace.observation_space.shape[0], marketplace.action_space.n, load_path=path_to_modelfile)
-agent = agent.RuleBasedCEAgent()
+agent = agent.QLearningAgent(marketplace.observation_space.shape[0], marketplace.action_space.n, load_path=path_to_modelfile)
 
 # constants
 NUMBER_OF_EPISODES = 500
