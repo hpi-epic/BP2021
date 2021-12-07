@@ -48,3 +48,7 @@ def print_example(env=sim_market.CircularEconomyRebuyPrice(), agent=a.RuleBasedC
         our_profit
     )
     return our_profit
+
+
+if __name__ == "__main__":
+	print_example()
