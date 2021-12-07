@@ -36,11 +36,6 @@ def test_fixed_price_CERebuy_agent_returns_fixed_price():
 	assert (4, 7, 3) == test_agent.policy(test_state)
 
 
-def test_helper_function_action_to_array():
-	test_agent = agent.RuleBasedCEAgent()
-	assert [3, 4] == test_agent.action_to_array(34)
-
-
 array_testing = [([8, 50], (6, 8)), ([17, 50], (5, 7)), ([27, 50], (4, 6)), ([80, 50], (2, 9))]
 @pytest.mark.parametrize('state, expected_prices', array_testing)
 def test_storage_evaluation(state, expected_prices):

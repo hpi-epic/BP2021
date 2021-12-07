@@ -25,20 +25,22 @@ class HumanPlayer(Agent):
 		print('Welcome to this funny game! Now, you are the one playing the game!')
 
 	def policy(self, state, _) -> int:
-		print('The state is ', state, 'and you have to decide what to do! Please enter your action!')
-		return int(input())
+		print('The state is', state, 'and you have to decide what to do! Please enter your actions, seperated by spaces!')
+		return input()
 
 
 class HumanPlayerCE(HumanPlayer):
 	def policy(self, state, _) -> int:
-		step = super().policy(state)
-		return (int(step / 10), int(step % 10))
+		raw_input_string = super().policy(state)
+		price_old, price_new = raw_input_string.split(' ')
+		return (int(price_old), int(price_new))
 
 
 class HumanPlayerCERebuy(HumanPlayer):
 	def policy(self, state, _) -> int:
-		step = super().policy(state)
-		return (int(step / 100), int(step / 10 % 10), int(step % 10))
+		raw_input_string = super().policy(state)
+		price_old, price_new, rebuy_price = raw_input_string.split(' ')
+		return (int(price_old), int(price_new), int(rebuy_price))
 
 
 class FixedPriceAgent(Agent):
@@ -65,12 +67,8 @@ class FixedPriceCERebuyAgent(FixedPriceAgent):
 
 
 class RuleBasedCEAgent(Agent):
-
 	def __init__(self):
 		pass
-
-	def action_to_array(self, action) -> np.array:
-		return [int(np.floor(action / ut.MAX_PRICE)), int(action % ut.MAX_PRICE)]
 
 	def policy(self, state, epsilon=0) -> int:
 		# state[0]: products in my storage
