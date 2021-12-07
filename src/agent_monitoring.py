@@ -18,11 +18,15 @@ class Monitor():
 		self.situation = 'linear'
 		self.marketplace = sim.CircularEconomy() if self.situation == 'circular' else sim.ClassicScenario()
 		self.agents = [agent.QLearningAgent(self.marketplace.observation_space.shape[0], self.marketplace.action_space.n, load_path=self.path_to_modelfile)]
+		self.agent_colors = ['#0000ff']
 
 	# helper functions
 	def round_up(self, number, decimals=0):
 		multiplier = 10 ** decimals
 		return np.ceil(number * multiplier) / multiplier
+
+	def get_cmap(self, n, name='hsv'):
+		return plt.cm.get_cmap(name, n + 1)
 
 	# configure the situation to be monitored
 	def setup_monitoring(self, draw_enabled=None, new_episodes=None, new_interval=None, new_modelfile=None, new_situation=None, new_marketplace=None, new_agents=None) -> None:
@@ -41,6 +45,10 @@ class Monitor():
 			self.marketplace = new_marketplace
 		if(new_agents is not None):
 			self.agents = new_agents
+			color_map = self.get_cmap(len(self.agents))
+			self.agent_colors = []
+			for i in range(0, len(self.agents)):
+				self.agent_colors.append(color_map(i))
 
 	# metrics
 	def metrics_average(self, rewards) -> np.float64:
@@ -59,7 +67,8 @@ class Monitor():
 	def create_histogram(self, rewards) -> None:
 		plt.xlabel('Reward', fontsize='18')
 		plt.ylabel('Episodes', fontsize='18')
-		plt.hist(rewards, bins=10, align='mid', edgecolor='black', range=(0, self.round_up(int(self.metrics_maximum(rewards)), -3)))
+		plt.hist(rewards, bins=10, align='mid', color=self.agent_colors, edgecolor='black', range=(0, self.round_up(int(self.metrics_maximum(rewards)), -3)))
+		plt.legend(self.agents)
 		if self.enable_live_draws:
 			plt.draw()
 			plt.pause(0.001)
@@ -103,8 +112,8 @@ monitor = Monitor()
 
 
 def main():
-	# import agent
-	# monitor.setup_monitoring(new_agents=[monitor.agents[0], agent.FixedPriceAgent(6)])
+	import agent
+	monitor.setup_monitoring(new_agents=[monitor.agents[0], agent.FixedPriceAgent(6), agent.FixedPriceAgent(2)])
 	print(f'Running', monitor.episodes, 'episodes')
 	print(f'Plot interval is:', monitor.histogram_plot_interval)
 	print(f'Using modelfile: ' + monitor.path_to_modelfile)

@@ -3,7 +3,7 @@ import re
 
 import pytest
 
-from .context import Monitor
+from .context import Monitor, agent
 from .context import agent_monitoring as am
 
 monitor = None
@@ -28,14 +28,15 @@ def create_mock_rewards() -> list:
 # new_episodes, new_interval, new_modelfile, new_situation, new_marketplace, new_agent
 # values and types are mismatched on purpose, as we just want to make sure the global values are changed correctly, we don't work with them
 def test_setup_monitoring():
-	monitor.setup_monitoring(0, 1, 2, 3, 4, 5, 6)
+	monitor.setup_monitoring(0, 1, 2, 3, 4, 5, [6])
 	assert 0 == monitor.enable_live_draws
 	assert 1 == monitor.episodes
 	assert 2 == monitor.histogram_plot_interval
 	assert 3 == monitor.path_to_modelfile
 	assert 4 == monitor.situation
 	assert 5 == monitor.marketplace
-	assert 6 == monitor.agents
+	assert [6] == monitor.agents
+	assert 1 == len(monitor.agent_colors)
 
 
 def test_metrics_average():
@@ -65,8 +66,17 @@ def test_rewards_array_size():
 		monitor.create_histogram(rewards_wrong)
 
 
-@pytest.mark.parametrize('rewards', ([100, 0], [[100, 0], [10, 5]], [[100, 0], [10, 5], [100, 10000], [10, 1000]]))
-def test_create_histogram(rewards):
+agent_rewards_histogram = [
+	([agent.RuleBasedCEAgent()], [100, 0]),
+	([agent.RuleBasedCEAgent(), agent.RuleBasedCEAgent()], [[100, 0], [10, 5]]),
+	([agent.RuleBasedCEAgent(), agent.RuleBasedCEAgent(), agent.RuleBasedCEAgent(), agent.RuleBasedCEAgent()],
+		[[100, 0], [10, 5], [100, 10000], [10, 1000]])
+]
+
+
+@pytest.mark.parametrize('agents, rewards', agent_rewards_histogram)
+def test_create_histogram(agents, rewards):
+	monitor.setup_monitoring(new_agents=agents)
 	monitor.create_histogram(rewards)
 
 
