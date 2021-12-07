@@ -13,15 +13,16 @@ from experience_buffer import ExperienceBuffer
 
 
 class Agent:
-	def __init__(self):
-		pass
+	def __init__(self, name='agent'):
+		self.name = name
 
 	def policy(self, state, epsilon=0):
 		assert False
 
 
 class HumanPlayer(Agent):
-	def __init__(self):
+	def __init__(self, name='YOU'):
+		self.name = name
 		print('Welcome to this funny game! Now, you are the one playing the game!')
 
 	def policy(self, state, *_) -> int:
@@ -51,26 +52,29 @@ class FixedPriceAgent(Agent):
 
 
 class FixedPriceLEAgent(FixedPriceAgent):
-	def __init__(self, fixed_price=ut.PRODUCTION_PRICE + 3):
+	def __init__(self, fixed_price=ut.PRODUCTION_PRICE + 3, name='fixed_price_le'):
 		assert isinstance(fixed_price, int)
+		self.name = name
 		self.fixed_price = fixed_price
 
 
 class FixedPriceCEAgent(FixedPriceAgent):
-	def __init__(self, fixed_price=(2, 4)):
+	def __init__(self, fixed_price=(2, 4), name='fixed_price_ce'):
 		assert isinstance(fixed_price, tuple) and len(fixed_price) == 2
+		self.name = name
 		self.fixed_price = fixed_price
 
 
 class FixedPriceCERebuyAgent(FixedPriceAgent):
-	def __init__(self, fixed_price=(3, 6, 2)):
+	def __init__(self, fixed_price=(3, 6, 2), name='fixed_price_ce_rebuy'):
 		assert isinstance(fixed_price, tuple) and len(fixed_price) == 3
+		self.name = name
 		self.fixed_price = fixed_price
 
 
 class RuleBasedCEAgent(Agent):
-	def __init__(self):
-		pass
+	def __init__(self, name='rule_based_ce'):
+		self.name = name
 
 	def policy(self, state, epsilon=0) -> int:
 		# state[0]: products in my storage
@@ -162,11 +166,12 @@ class QLearningAgent(Agent):
 	# If you enter load_path, the model will be loaded. For example, if you want to use a pretrained net or test a given agent.
 	# If you set an optim, this means you want training.
 	# Give no optim if you don't want training.
-	def __init__(self, n_observation, n_actions, optim=None, device='cpu', load_path=None):
+	def __init__(self, n_observation, n_actions, optim=None, device='cpu', load_path=None, name='q_learning'):
 		self.device = device
 		self.n_actions = n_actions
 		self.buffer_for_feedback = None
 		self.optimizer = None
+		self.name = name
 		print('I initiate a QLearningAgent using {} device'.format(self.device))
 		self.net = model.simple_network(n_observation, n_actions).to(self.device)
 		if load_path:

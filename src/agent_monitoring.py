@@ -74,7 +74,7 @@ class Monitor():
 		plt.xlabel('Reward', fontsize='18')
 		plt.ylabel('Episodes', fontsize='18')
 		plt.hist(rewards, bins=10, align='mid', color=self.agent_colors, edgecolor='black', range=(0, self.round_up(int(self.metrics_maximum(rewards)), -3)))
-		plt.legend(self.agents)
+		plt.legend([a.name for a in self.agents])
 		if self.enable_live_draws:
 			plt.draw()
 			plt.pause(0.001)
@@ -124,7 +124,7 @@ monitor = Monitor()
 
 def main():
 	import agent
-	monitor.setup_monitoring(new_agents=[monitor.agents[0], agent.FixedPriceAgent(6), agent.FixedPriceAgent(6)])
+	monitor.setup_monitoring(new_agents=[monitor.agents[0], agent.FixedPriceLEAgent(6, name='fixed_6'), agent.FixedPriceLEAgent(3, 'fixed_3')])
 	print(f'Running', monitor.episodes, 'episodes')
 	print(f'Plot interval is:', monitor.histogram_plot_interval)
 	print(f'Using modelfile: ' + monitor.path_to_modelfile)
@@ -132,12 +132,12 @@ def main():
 	print(f'The marketplace is:', monitor.marketplace)
 	print(f'Monitoring these agents:')
 	for current_agent in monitor.agents:
-		print(current_agent)
+		print(current_agent.name)
 
 	rewards = monitor.run_marketplace()
 
 	for i in range(len(rewards)):
-		print(f'Statistics for agent:', monitor.agents[i])
+		print(f'Statistics for agent:', monitor.agents[i].name)
 		print(f'The average reward over {monitor.episodes} episodes is: ' + str(monitor.metrics_average(rewards[i])))
 		print(f'The median reward over {monitor.episodes} episodes is: ' + str(monitor.metrics_median(rewards[i])))
 		print(f'The maximum reward over {monitor.episodes} episodes is: ' + str(monitor.metrics_maximum(rewards[i])))
