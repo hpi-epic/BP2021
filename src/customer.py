@@ -46,7 +46,7 @@ class CustomerLinear(Customer):
             ratio = offers[2 * i + 1] / offers[2 * i] - math.exp(offers[2 * i] - 27)
             ratios.append(ratio)
         probabilities = ut.softmax(np.array(ratios))
-        return ut.shuffle_from_probabilities(probabilities), None
+        return ut.shuffle_from_probabilities(probabilities)
 
 
 class CustomerCircular(Customer):
@@ -65,5 +65,4 @@ class CustomerCircular(Customer):
         probabilities = ut.softmax(preferences)
 
         customer_desicion = ut.shuffle_from_probabilities(probabilities)
-        customer_return = 1 if np.random.rand() < 0.05 * offers[3] / 20 else None
-        return customer_desicion, customer_return
+        return customer_desicion
