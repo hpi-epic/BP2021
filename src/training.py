@@ -6,11 +6,9 @@ import time
 
 import numpy as np
 # import torch
-import torch.optim as optim
 from torch.utils.tensorboard import SummaryWriter
 
 import agent
-import sim_market as sim
 import utils as ut
 import utils_rl as utrl
 
@@ -26,11 +24,11 @@ def direct_comparison_dict(profits):
 	return comparison_dict
 
 
-def train_QLearning_agent(environment=sim.MultiCompetitorScenario(), maxsteps=2 * utrl.EPSILON_DECAY_LAST_FRAME):
+def train_QLearning_agent(RL_agent, environment, maxsteps=2 * utrl.EPSILON_DECAY_LAST_FRAME):
+	assert isinstance(RL_agent, agent.QLearningAgent)
 	# torch.set_num_threads(1)
 	# print(torch.get_num_threads())
 	state = environment.reset()
-	RL_agent = agent.QLearningAgent(environment.observation_space.shape[0], environment.action_space.n, optim.Adam)
 
 	all_agent_returns = []
 	all_vendors_reward = []

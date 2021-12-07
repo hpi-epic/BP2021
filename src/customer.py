@@ -54,8 +54,8 @@ class CustomerLinear(Customer):
 		self.probabilities = ut.softmax(np.array(ratios))
 
 	# This customer calculates the value per money for each vendor and chooses those with high value with a higher probability
-	def buy_object(self, offers, nothingpreference=1) -> Tuple[int, int]:
-		return ut.shuffle_from_probabilities(self.probabilities), None
+	def buy_object(self, offers, nothingpreference=1) -> int:
+		return ut.shuffle_from_probabilities(self.probabilities)
 
 
 class CustomerCircular(Customer):
@@ -78,5 +78,4 @@ class CustomerCircular(Customer):
 	def buy_object(self, offers) -> Tuple[int, int]:
 
 		customer_desicion = ut.shuffle_from_probabilities(self.probabilities)
-		customer_return = 1 if np.random.rand() < 0.05 * offers[3] / 20 else None
-		return customer_desicion, customer_return
+		return customer_desicion

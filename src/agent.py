@@ -24,17 +24,44 @@ class HumanPlayer(Agent):
 	def __init__(self):
 		print('Welcome to this funny game! Now, you are the one playing the game!')
 
-	def policy(self, state, epsilon=0) -> int:
+	def policy(self, state, _) -> int:
 		print('The state is ', state, 'and you have to decide what to do! Please enter your action!')
 		return int(input())
 
 
+class HumanPlayerCE(HumanPlayer):
+	def policy(self, state, _) -> int:
+		step = super().policy(state)
+		return (int(step / 10), int(step % 10))
+
+
+class HumanPlayerCERebuy(HumanPlayer):
+	def policy(self, state, _) -> int:
+		step = super().policy(state)
+		return (int(step / 100), int(step / 10 % 10), int(step % 10))
+
+
 class FixedPriceAgent(Agent):
-	def __init__(self, fixed_price=42):
+	def policy(self, *_) -> int:
+		return self.fixed_price
+
+
+class FixedPriceLEAgent(FixedPriceAgent):
+	def __init__(self, fixed_price=ut.PRODUCTION_PRICE + 3):
+		assert isinstance(fixed_price, int)
 		self.fixed_price = fixed_price
 
-	def policy(self, state, epsilon=0) -> int:
-		return self.fixed_price
+
+class FixedPriceCEAgent(FixedPriceAgent):
+	def __init__(self, fixed_price=(2, 4)):
+		assert isinstance(fixed_price, tuple) and len(fixed_price) == 2
+		self.fixed_price = fixed_price
+
+
+class FixedPriceCERebuyAgent(FixedPriceAgent):
+	def __init__(self, fixed_price=(3, 6, 2)):
+		assert isinstance(fixed_price, tuple) and len(fixed_price) == 3
+		self.fixed_price = fixed_price
 
 
 class RuleBasedCEAgent(Agent):
@@ -45,41 +72,46 @@ class RuleBasedCEAgent(Agent):
 	def action_to_array(self, action) -> np.array:
 		return [int(np.floor(action / ut.MAX_PRICE)), int(action % ut.MAX_PRICE)]
 
-	def array_to_action(self, array) -> int:
-		return array[0] * 10 + array[1]
-
 	def policy(self, state, epsilon=0) -> int:
 		# state[0]: products in my storage
 		# state[1]: products in circulation
 		return self.storage_evaluation(state)
+
+	def return_prices(self, price_old, price_new, rebuy_price):
+		return (price_old, price_new)
 
 	def storage_evaluation(self, state) -> int:
 		# this policy sets the prices according to the amount of available storage
 		products_in_storage = state[0]
 		price_old = 0
 		price_new = ut.PRODUCTION_PRICE
-		if products_in_storage < ut.MAX_STORAGE / 4:
+		rebuy_price = 0
+		if products_in_storage < ut.MAX_STORAGE / 10:
 			# less than 1/4 of storage filled
 			price_old = int(ut.MAX_PRICE * 6 / 10)
 			price_new += int(ut.MAX_PRICE * 6 / 10)
+			rebuy_price = price_old - 1
 
-		elif products_in_storage < ut.MAX_STORAGE / 2:
+		elif products_in_storage < ut.MAX_STORAGE / 5:
 			# less than 1/2 of storage filled
 			price_old = int(ut.MAX_PRICE * 5 / 10)
 			price_new += int(ut.MAX_PRICE * 5 / 10)
+			rebuy_price = price_old - 2
 
-		elif products_in_storage < ut.MAX_STORAGE * 3 / 4:
+		elif products_in_storage < ut.MAX_STORAGE / 3:
 			# less than 3/4 but more than 1/2 of storage filled
 			price_old = int(ut.MAX_PRICE * 4 / 10)
 			price_new += int(ut.MAX_PRICE * 4 / 10)
+			rebuy_price = int(price_old / 2)
 		else:
 			# storage too full, we need to get rid of some refurbished products
 			price_old = int(ut.MAX_PRICE * 2 / 10)
 			price_new += int(ut.MAX_PRICE * 7 / 10)
+			rebuy_price = 0
 
 		price_new = min(9, price_new)
 		assert price_old <= price_new
-		return self.array_to_action([price_old, price_new])
+		return self.return_prices(price_old, price_new, rebuy_price)
 
 	def greedy_policy(self, state) -> int:
 		# this policy tries to figure out the best prices for the next round by simulating customers
@@ -116,7 +148,12 @@ class RuleBasedCEAgent(Agent):
 					max_price_u = p_u
 		print(max_price_u, max_price_n)
 		assert max_price_n > 0 and max_price_u > 0
-		return self.array_to_action[max_price_u, max_price_n]
+		return (max_price_u, max_price_n)
+
+
+class RuleBasedCERebuyAgent(RuleBasedCEAgent):
+	def return_prices(self, price_old, price_new, rebuy_price):
+		return (price_old, price_new, rebuy_price)
 
 
 class QLearningAgent(Agent):
@@ -191,3 +228,15 @@ class QLearningAgent(Agent):
 		if not os.path.isdir('trainedModels'):
 			os.mkdir('trainedModels')
 		torch.save(self.net.state_dict(), './trainedModels/' + path)
+
+
+class QLearningCEAgent(QLearningAgent):
+	def policy(self, state, epsilon=0) -> int:
+		step = super().policy(state, epsilon)
+		return (int(step % 10), int(step / 10))
+
+
+class QLearningCERebuyAgent(QLearningAgent):
+	def policy(self, state, epsilon=0) -> int:
+		step = super().policy(state, epsilon)
+		return (int(step / 100), int(step / 10 % 10), int(step % 10))
