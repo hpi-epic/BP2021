@@ -77,7 +77,7 @@ class RuleBasedCEAgent(Agent):
 		# state[1]: products in circulation
 		return self.storage_evaluation(state)
 
-	def return_slice(self, price_old, price_new, rebuy_price):
+	def return_prices(self, price_old, price_new, rebuy_price):
 		return (price_old, price_new)
 
 	def storage_evaluation(self, state) -> int:
@@ -111,7 +111,7 @@ class RuleBasedCEAgent(Agent):
 
 		price_new = min(9, price_new)
 		assert price_old <= price_new
-		return self.return_slice(price_old, price_new, rebuy_price)
+		return self.return_prices(price_old, price_new, rebuy_price)
 
 	def greedy_policy(self, state) -> int:
 		# this policy tries to figure out the best prices for the next round by simulating customers
@@ -152,7 +152,7 @@ class RuleBasedCEAgent(Agent):
 
 
 class RuleBasedCERebuyAgent(RuleBasedCEAgent):
-	def return_slice(self, price_old, price_new, rebuy_price):
+	def return_prices(self, price_old, price_new, rebuy_price):
 		return (price_old, price_new, rebuy_price)
 
 
