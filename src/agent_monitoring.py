@@ -20,6 +20,11 @@ class Monitor():
 		self.agents = [agent.QLearningAgent(self.marketplace.observation_space.shape[0], self.marketplace.action_space.n, load_path=self.path_to_modelfile)]
 		self.agent_colors = ['#0000ff']
 
+		# create folder with current timestamp to save diagrams at
+		curr_time = time.strftime('%Y%m%d-%H%M%S')
+		self.folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + os.sep + 'monitoring' + os.sep + 'plots_' + curr_time
+		# os.mkdir(self.folder_path)
+
 	# helper functions
 	def round_up(self, number, decimals=0):
 		multiplier = 10 ** decimals
@@ -64,7 +69,7 @@ class Monitor():
 		return np.min(np.array(rewards))
 
 	# visualize metrics
-	def create_histogram(self, rewards) -> None:
+	def create_histogram(self, rewards, name) -> None:
 		plt.xlabel('Reward', fontsize='18')
 		plt.ylabel('Episodes', fontsize='18')
 		plt.hist(rewards, bins=10, align='mid', color=self.agent_colors, edgecolor='black', range=(0, self.round_up(int(self.metrics_maximum(rewards)), -3)))
@@ -72,6 +77,7 @@ class Monitor():
 		if self.enable_live_draws:
 			plt.draw()
 			plt.pause(0.001)
+		plt.savefig(fname=self.folder_path + str(name))
 
 	def run_marketplace(self) -> list:
 		# initialize the rewards list with a list for each agent
@@ -103,7 +109,7 @@ class Monitor():
 				print(f'Running {episode}th episode...')
 
 			if (episode % self.histogram_plot_interval) == 0:
-				self.create_histogram(rewards)
+				self.create_histogram(rewards, episode)
 
 		return rewards
 
@@ -122,6 +128,11 @@ def main():
 	print(f'Monitoring these agents:')
 	for current_agent in monitor.agents:
 		print(current_agent)
+
+	# create folder with current timestamp to save diagrams at
+	# curr_time = time.strftime('%Y%m%d-%H%M%S')
+	# folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + os.sep + 'monitoring' + os.sep + 'plots_' + curr_time
+	# os.mkdir(folder_path)
 
 	rewards = monitor.run_marketplace()
 
