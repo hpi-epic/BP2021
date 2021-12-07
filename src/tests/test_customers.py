@@ -36,5 +36,6 @@ array_customer_action_range = [
 @pytest.mark.parametrize('customer, offers, expectedSize', array_customer_action_range, ids=get_customer_action_range_ids())
 def test_customer_action_range(customer, offers, expectedSize):
 	assert len(offers) == expectedSize
+	customer.set_probabilities_from_offers(customer, offers)
 	buy_decisions = customer.buy_object(customer, offers)
 	assert 0 <= buy_decisions <= expectedSize - 1

@@ -9,32 +9,39 @@ For more complex setups, communication protocols between different agents might 
 
 The simulation should cover the interaction between customers and particularly competing merchants, including self-learning agents and their rule-based opponents. While the focus can be put on several different aspects, an adjustable customer behavior model (which determines each participant!s sales) has to be developed. The platform should generate sales and interaction data for each of the merchants, which can then in turn be fed to the self-learning agents. Monitoring tools are required to analyze each agent!s policy and their effects on the overall market. With the help of such simulations, we seek to study the competitiveness of self-adapting pricing tools and their long-term impact on market competitors and customers.
 
-## Installing dependencies 
+## Installing dependencies
 
 If you have not yet done so, install Anaconda and run the following command to create an environment and install the required packages from the `environment.yml`:
+
 ```console
 conda env create -n your_venv_name
 ```
+
 To activate your created environment use:
+
 ```console
 conda activate your_venv_name
 ```
 
 If you have a Nvidia GPU, consider installing cuda to get better training performance:
+
 ```console
 conda install -c anaconda cudatoolkit
 ```
 
 To update an existing environment with the needed packages run the following command:
+
 ```console
 conda env update -n your_venv_name
 ```
 
 If version numbers have changed in the `environment.yml` it can happen that conda finds conflicts and tries resolving them without succeeding. In this case you may need to reinstall the packages. Deactivate your environment before proceeding, otherwise conda cannot perform the commands.
+
 ```console
 conda uninstall -n your_venv_name --all
 conda env update -n your_venv_name
 ```
+
 This will first uninstall all packages and then re-install them from the `environment.yml`.
 
 ## Using Pytest locally
@@ -42,11 +49,15 @@ This will first uninstall all packages and then re-install them from the `enviro
 [Pytest documentation](https://docs.pytest.org/en/latest/index.html)
 
 If you want to run tests locally you can do so in a few ways:
+
 - Simply running all tests:
+
 ```console
 pytest
 ```
+
 - Running all tests with increased verbosity:
+
 ```console
 pytest -v
 ```
@@ -56,13 +67,17 @@ pytest -v
 [Coverage.py Documentation](https://coverage.readthedocs.io/en/6.1.2/)
 
 If you want to know/export the current test coverage use these commands:
+
 - Run all tests, collect coverage info, write it to the coverage.json (for source code analysis of coverage) and update the coverage.svg badge:
+
 ```console
 coverage run --source=. -m pytest
 coverage json
 coverage-badge -f -o ./src/tests/coverage.svg
 ```
+
 - See coverage report locally:
+
 ```console
 coverage report
 ```
@@ -72,13 +87,17 @@ coverage report
 [Pre-commit documentation](https://pre-commit.com/)
 
 We are using `pre-commit` to lint our files before committing. Pre-commit itself should already have been installed through the `environment.yml`. Initialize pre-commit using
+
 ```console
 pre-commit install
 ```
+
 To circumvent possible errors caused later on, run pre-commit with the following command:
+
 ```console
 pre-commit run --all-files
 ```
+
 which will install the needed environment.
 
 ### Pre-commit Troubleshooting
@@ -97,7 +116,8 @@ Solution: Check the App execution Aliases, and if no Python version is present, 
 
 If you get an error saying that the `_sqlite3`-module is missing, you are missing the `sqlite3.dll` and `sqlite3.def` files.
 
-Solution: Go to https://www.sqlite.org/download.html to download the `sqlite3.dll` and `sqlite3.def` files and drop them into the following folder:
+Solution: Go to <https://www.sqlite.org/download.html> to download the `sqlite3.dll` and `sqlite3.def` files and drop them into the following folder:
+
 ```console
 C:\Users\your_username\anaconda3\envs\your_venv_name\DLLs
 ```

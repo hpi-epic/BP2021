@@ -40,6 +40,7 @@ class SimMarket(gym.Env):
 		return copy.deepcopy(self.state)
 
 	def simulate_customers(self, profits, offers, n) -> None:
+		self.customer.set_probabilities_from_offers(offers)
 		for _ in range(n):
 			customer_buy = self.customer.buy_object(offers)
 			if customer_buy != 0:
@@ -77,6 +78,7 @@ class SimMarket(gym.Env):
 				self.generate_offer(action),
 				int(np.floor(ut.NUMBER_OF_CUSTOMERS / n_vendors)),
 			)
+			# the competitor, which turn it is, will update its pricing
 			if i < len(self.competitors):
 				action_competitor_i = self.competitors[i].give_competitors_price(
 					self.generate_offer(action), i + 1

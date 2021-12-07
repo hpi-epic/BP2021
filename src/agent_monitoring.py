@@ -96,6 +96,7 @@ def main():
 
 	# show last histogram
 	plt.draw()
+	# stops showing after 5 seconds
 	plt.pause(5)
 
 
