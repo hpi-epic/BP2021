@@ -24,21 +24,23 @@ class HumanPlayer(Agent):
 	def __init__(self):
 		print('Welcome to this funny game! Now, you are the one playing the game!')
 
-	def policy(self, state, _) -> int:
+	def policy(self, state, *_) -> int:
 		print('The state is', state, 'and you have to decide what to do! Please enter your actions, seperated by spaces!')
 		return input()
 
 
 class HumanPlayerCE(HumanPlayer):
-	def policy(self, state, _) -> int:
+	def policy(self, state, *_) -> int:
 		raw_input_string = super().policy(state)
+		assert raw_input_string.count(' ') == 1, 'Please enter two numbers seperated by spaces!'
 		price_old, price_new = raw_input_string.split(' ')
 		return (int(price_old), int(price_new))
 
 
 class HumanPlayerCERebuy(HumanPlayer):
-	def policy(self, state, _) -> int:
+	def policy(self, state, *_) -> int:
 		raw_input_string = super().policy(state)
+		assert raw_input_string.count(' ') == 2, 'Please enter three numbers seperated by spaces!'
 		price_old, price_new, rebuy_price = raw_input_string.split(' ')
 		return (int(price_old), int(price_new), int(rebuy_price))
 

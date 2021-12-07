@@ -7,7 +7,7 @@ import agent as a
 import sim_market
 
 
-def print_example(env=sim_market.CircularEconomyRebuyPrice(), agent=a.RuleBasedCERebuyAgent()):
+def print_example(env=sim_market.CircularEconomy(), agent=a.HumanPlayerCE()):
 	counter = 0
 	our_profit = 0
 	is_done = False
@@ -18,8 +18,9 @@ def print_example(env=sim_market.CircularEconomyRebuyPrice(), agent=a.RuleBasedC
 
 	with torch.no_grad():
 		while not is_done:
+			print(state)
 			action = agent.policy(state)
-			if isinstance(env, sim_market.CircularEconomy):
+			if isinstance(env, sim_market.CircularEconomy) and isinstance(agent, a.QLearningAgent):
 				writer.add_scalar('Example_state/storage_content', env.state[0], counter)
 				writer.add_scalar('Example_state/products_in_circle', env.state[1], counter)
 				writer.add_scalar('Example_action/price_second_hand', action[0] + 1, counter)
