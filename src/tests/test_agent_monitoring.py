@@ -1,10 +1,12 @@
 import os
-import re
 
 import pytest
 
 from .context import Monitor, agent
 from .context import agent_monitoring as am
+
+# import re
+
 
 monitor = None
 
@@ -88,9 +90,5 @@ def test_run_marketplace():
 def test_main():
 	am.monitor.setup_monitoring(draw_enabled=False, new_episodes=10, new_interval=10)
 	am.main()
-	# make sure a final_plot was saved, and remove it after the test
-	for f in os.listdir('./monitoring'):
-		if re.match('final_plot*', f):
-			os.remove('./monitoring/' + f)
-			return True
-	assert False
+	# any ideas what could be tested?
+	assert os.path.exists(am.monitor.folder_path)

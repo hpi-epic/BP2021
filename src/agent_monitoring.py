@@ -23,7 +23,8 @@ class Monitor():
 		# create folder with current timestamp to save diagrams at
 		curr_time = time.strftime('%Y%m%d-%H%M%S')
 		self.folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + os.sep + 'monitoring' + os.sep + 'plots_' + curr_time
-		# os.mkdir(self.folder_path)
+		if not os.path.exists(self.folder_path):
+			os.mkdir(self.folder_path)
 
 	# helper functions
 	def round_up(self, number, decimals=0):
@@ -69,7 +70,7 @@ class Monitor():
 		return np.min(np.array(rewards))
 
 	# visualize metrics
-	def create_histogram(self, rewards, name) -> None:
+	def create_histogram(self, rewards, name='default') -> None:
 		plt.xlabel('Reward', fontsize='18')
 		plt.ylabel('Episodes', fontsize='18')
 		plt.hist(rewards, bins=10, align='mid', color=self.agent_colors, edgecolor='black', range=(0, self.round_up(int(self.metrics_maximum(rewards)), -3)))
@@ -77,7 +78,7 @@ class Monitor():
 		if self.enable_live_draws:
 			plt.draw()
 			plt.pause(0.001)
-		plt.savefig(fname=self.folder_path + str(name))
+		plt.savefig(fname=self.folder_path + os.sep + 'episode_' + str(name) + '.svg')
 
 	def run_marketplace(self) -> list:
 		# initialize the rewards list with a list for each agent
@@ -90,19 +91,23 @@ class Monitor():
 			default_state = self.marketplace.reset()
 
 			for i in range(0, len(self.agents)):
+				# reset marketplace, bit hacky, if you find a better solution feel free
+				self.marketplace.reset()
+				self.marketplace.state = default_state
+
 				# reset values for all agents
 				state = default_state
-				reward_per_episode = 0
+				episode_reward = 0
 				is_done = False
 
 				# run marketplace for this agent
 				while not is_done:
 					action = self.agents[i].policy(state)
 					state, reward, is_done, _ = self.marketplace.step(action)
-					reward_per_episode += reward
+					episode_reward += reward
 
 				# add the reward to the current agent's reward-Array
-				rewards[i].append(reward_per_episode)
+				rewards[i] += [episode_reward]
 
 			# after all agents have run the episode
 			if (episode % 100) == 0:
@@ -119,7 +124,7 @@ monitor = Monitor()
 
 def main():
 	import agent
-	monitor.setup_monitoring(new_agents=[monitor.agents[0], agent.FixedPriceAgent(6), agent.FixedPriceAgent(2)])
+	monitor.setup_monitoring(new_agents=[monitor.agents[0], agent.FixedPriceAgent(6), agent.FixedPriceAgent(6)])
 	print(f'Running', monitor.episodes, 'episodes')
 	print(f'Plot interval is:', monitor.histogram_plot_interval)
 	print(f'Using modelfile: ' + monitor.path_to_modelfile)
@@ -129,11 +134,6 @@ def main():
 	for current_agent in monitor.agents:
 		print(current_agent)
 
-	# create folder with current timestamp to save diagrams at
-	# curr_time = time.strftime('%Y%m%d-%H%M%S')
-	# folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + os.sep + 'monitoring' + os.sep + 'plots_' + curr_time
-	# os.mkdir(folder_path)
-
 	rewards = monitor.run_marketplace()
 
 	for i in range(len(rewards)):
@@ -142,11 +142,6 @@ def main():
 		print(f'The median reward over {monitor.episodes} episodes is: ' + str(monitor.metrics_median(rewards[i])))
 		print(f'The maximum reward over {monitor.episodes} episodes is: ' + str(monitor.metrics_maximum(rewards[i])))
 		print(f'The minimum reward over {monitor.episodes} episodes is: ' + str(monitor.metrics_minimum(rewards[i])))
-
-	# save last histogram
-	fname = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + os.sep + 'monitoring' + os.sep + 'final_plot_' + time.strftime('%Y%m%d-%H%M%S') + '.svg'
-	plt.savefig(fname=fname)
-	print(f'The final histogram was saved at: ' + fname)
 
 
 if __name__ == '__main__':
