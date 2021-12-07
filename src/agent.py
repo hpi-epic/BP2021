@@ -24,45 +24,44 @@ class HumanPlayer(Agent):
 	def __init__(self):
 		print('Welcome to this funny game! Now, you are the one playing the game!')
 
-	def policy(self, state, epsilon=0) -> int:
+	def policy(self, state, _) -> int:
 		print('The state is ', state, 'and you have to decide what to do! Please enter your action!')
 		return int(input())
 
 
 class HumanPlayerCE(HumanPlayer):
-	def policy(self, state, epsilon=0) -> int:
-		step = super().policy(state, epsilon)
+	def policy(self, state, _) -> int:
+		step = super().policy(state)
 		return (int(step / 10), int(step % 10))
 
 
 class HumanPlayerCERebuy(HumanPlayer):
-	def policy(self, state, epsilon=0) -> int:
-		step = super().policy(state, epsilon)
+	def policy(self, state, _) -> int:
+		step = super().policy(state)
 		return (int(step / 100), int(step / 10 % 10), int(step % 10))
 
 
-class FixedPriceLEAgent(Agent):
-	def __init__(self, fixed_price=ut.PRODUCTION_PRICE + 3):
-		self.fixed_price = fixed_price
-
-	def policy(self, state, epsilon=0) -> int:
+class FixedPriceAgent(Agent):
+	def policy(self, *_) -> int:
 		return self.fixed_price
 
 
-class FixedPriceCEAgent(Agent):
-	def __init__(self, fixed_price=24):
+class FixedPriceLEAgent(FixedPriceAgent):
+	def __init__(self, fixed_price=ut.PRODUCTION_PRICE + 3):
+		assert isinstance(fixed_price, int)
 		self.fixed_price = fixed_price
 
-	def policy(self, state, epsilon=0) -> int:
-		return (int(self.fixed_price / 10), int(self.fixed_price % 10))
 
-
-class FixedPriceCERebuyAgent(Agent):
-	def __init__(self, fixed_price=362):
+class FixedPriceCEAgent(FixedPriceAgent):
+	def __init__(self, fixed_price=(2, 4)):
+		assert isinstance(fixed_price, tuple) and len(fixed_price) == 2
 		self.fixed_price = fixed_price
 
-	def policy(self, state, epsilon=0) -> int:
-		return (int(self.fixed_price / 100), int(self.fixed_price / 10 % 10), int(self.fixed_price % 10))
+
+class FixedPriceCERebuyAgent(FixedPriceAgent):
+	def __init__(self, fixed_price=(3, 6, 2)):
+		assert isinstance(fixed_price, tuple) and len(fixed_price) == 3
+		self.fixed_price = fixed_price
 
 
 class RuleBasedCEAgent(Agent):
@@ -231,13 +230,13 @@ class QLearningAgent(Agent):
 		torch.save(self.net.state_dict(), './trainedModels/' + path)
 
 
-class QLearningCE(QLearningAgent):
+class QLearningCEAgent(QLearningAgent):
 	def policy(self, state, epsilon=0) -> int:
 		step = super().policy(state, epsilon)
 		return (int(step % 10), int(step / 10))
 
 
-class QLearningCERebuy(QLearningAgent):
+class QLearningCERebuyAgent(QLearningAgent):
 	def policy(self, state, epsilon=0) -> int:
 		step = super().policy(state, epsilon)
 		return (int(step / 100), int(step / 10 % 10), int(step % 10))

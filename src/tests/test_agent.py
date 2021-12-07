@@ -1,23 +1,43 @@
 import pytest
 
-from .context import FixedPriceCEAgent, RuleBasedCEAgent, RuleBasedCERebuyAgent
+from .context import agent
 from .context import utils as ut
 
 test_state = [50, 60]
 
 
-def test_fixed_price_agent_returns_default_fixed_price():
-	test_agent = FixedPriceCEAgent()
+def test_fixed_price_LE_agent_returns_default_fixed_price():
+	test_agent = agent.FixedPriceLEAgent()
+	assert ut.PRODUCTION_PRICE + 3 == test_agent.policy(test_state)
+
+
+def test_fixed_price_LE_agent_returns_fixed_price():
+	test_agent = agent.FixedPriceLEAgent(7)
+	assert 7 == test_agent.policy(test_state)
+
+
+def test_fixed_price_CE_agent_returns_default_fixed_price():
+	test_agent = agent.FixedPriceCEAgent()
 	assert (2, 4) == test_agent.policy(test_state)
 
 
-def test_fixed_price_agent_returns_fixed_price():
-	test_agent = FixedPriceCEAgent(35)
+def test_fixed_price_CE_agent_returns_fixed_price():
+	test_agent = agent.FixedPriceCEAgent((3, 5))
 	assert (3, 5) == test_agent.policy(test_state)
 
 
+def test_fixed_price_CERebuy_agent_returns_default_fixed_price():
+	test_agent = agent.FixedPriceCERebuyAgent()
+	assert (3, 6, 2) == test_agent.policy(test_state)
+
+
+def test_fixed_price_CERebuy_agent_returns_fixed_price():
+	test_agent = agent.FixedPriceCERebuyAgent((4, 7, 3))
+	assert (4, 7, 3) == test_agent.policy(test_state)
+
+
 def test_helper_function_action_to_array():
-	test_agent = RuleBasedCEAgent()
+	test_agent = agent.RuleBasedCEAgent()
 	assert [3, 4] == test_agent.action_to_array(34)
 
 
@@ -28,7 +48,7 @@ def test_storage_evaluation(state, expected_prices):
 	ut.MAX_STORAGE = 100
 	ut.MAX_PRICE = 10
 	ut.PRODUCTION_PRICE = 2
-	test_agent = RuleBasedCEAgent()
+	test_agent = agent.RuleBasedCEAgent()
 
 	assert expected_prices == test_agent.policy(state)
 
@@ -40,7 +60,7 @@ def test_storage_evaluation_with_rebuy_price(state, expected_prices):
 	ut.MAX_STORAGE = 100
 	ut.MAX_PRICE = 10
 	ut.PRODUCTION_PRICE = 2
-	test_agent = RuleBasedCERebuyAgent()
+	test_agent = agent.RuleBasedCERebuyAgent()
 
 	assert expected_prices == test_agent.policy(state)
 
@@ -50,6 +70,6 @@ def test_prices_are_not_higher_than_allowed():
 	ut.MAX_PRICE = 10
 	ut.PRODUCTION_PRICE = 9
 
-	test_agent = RuleBasedCEAgent()
+	test_agent = agent.RuleBasedCEAgent()
 
 	assert (9, 9) >= test_agent.policy(test_state)

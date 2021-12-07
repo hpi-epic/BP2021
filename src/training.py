@@ -9,7 +9,6 @@ import numpy as np
 from torch.utils.tensorboard import SummaryWriter
 
 import agent
-import sim_market as sim
 import utils as ut
 import utils_rl as utrl
 
@@ -25,7 +24,7 @@ def direct_comparison_dict(profits):
 	return comparison_dict
 
 
-def train_QLearning_agent(RL_agent, environment=sim.MultiCompetitorScenario(), maxsteps=2 * utrl.EPSILON_DECAY_LAST_FRAME):
+def train_QLearning_agent(RL_agent, environment, maxsteps=2 * utrl.EPSILON_DECAY_LAST_FRAME):
 	assert isinstance(RL_agent, agent.QLearningAgent)
 	# torch.set_num_threads(1)
 	# print(torch.get_num_threads())

@@ -1,13 +1,11 @@
 import pytest
 
-from src.sim_market import (CircularEconomy, CircularEconomyRebuyPrice,
-                            ClassicScenario, MultiCompetitorScenario)
+import agent
+import sim_market as sim
 
-from .context import (FixedPriceCEAgent, FixedPriceCERebuyAgent,
-                      FixedPriceLEAgent, RuleBasedCEAgent,
-                      RuleBasedCERebuyAgent, exampleprinter)
+from .context import exampleprinter
 
-test_scenarios = [(ClassicScenario(), FixedPriceLEAgent()), (MultiCompetitorScenario(), FixedPriceLEAgent()), (CircularEconomy(), FixedPriceCEAgent()), (CircularEconomy(), RuleBasedCEAgent()), (CircularEconomyRebuyPrice(), FixedPriceCERebuyAgent()), (CircularEconomyRebuyPrice(), RuleBasedCERebuyAgent())]
+test_scenarios = [(sim.ClassicScenario(), agent.FixedPriceLEAgent()), (sim.MultiCompetitorScenario(), agent.FixedPriceLEAgent()), (sim.CircularEconomy(), agent.FixedPriceCEAgent()), (sim.CircularEconomy(), agent.RuleBasedCEAgent()), (sim.CircularEconomyRebuyPrice(), agent.FixedPriceCERebuyAgent()), (sim.CircularEconomyRebuyPrice(), agent.RuleBasedCERebuyAgent())]
 @pytest.mark.parametrize('environment, agent', test_scenarios)
 def test_full_episode(environment, agent):
     assert exampleprinter.print_example(environment, agent) >= -5000

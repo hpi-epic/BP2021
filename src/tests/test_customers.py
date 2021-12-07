@@ -9,9 +9,9 @@ from .context import customer
 
 # Helper function that creates a random offer (state that includes the agent's price) to test customer behaviour. This is dependent on the sim_market working!
 def random_offer(market_scenario):
-	ins = market_scenario()
-	ins.reset()
-	return ins.generate_offer(ins.action_space.sample())
+	market = market_scenario()
+	market.reset()
+	return market.generate_offer(market.action_space.sample())
 
 
 # Test the Customer parent class, i.e. make sure it cannot be used
