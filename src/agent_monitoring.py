@@ -78,8 +78,13 @@ class Monitor():
 	def create_histogram(self, rewards, name='default') -> None:
 		plt.xlabel('Reward', fontsize='18')
 		plt.ylabel('Episodes', fontsize='18')
-		plt.hist(rewards, bins=10, align='mid', color=self.agent_colors, edgecolor='black', range=(0, self.round_up(int(self.metrics_maximum(rewards)), -3)))
+		# find the number of bins needed, we only use steps of 1000, assuming our agents are good bois :)
+		plot_range = (0, self.round_up(int(self.metrics_maximum(rewards)), -3))
+		plot_bins = int(int(plot_range[1]) / 1000)
+
+		plt.hist(rewards, bins=plot_bins, align='mid', color=self.agent_colors, stacked=True, edgecolor='black', range=plot_range)
 		plt.legend([a.name for a in self.agents])
+
 		if self.enable_live_draws:
 			plt.draw()
 			plt.pause(0.001)
@@ -128,8 +133,8 @@ monitor = Monitor()
 
 
 def main():
-	# import agent
-	# monitor.setup_monitoring(new_agents=[monitor.agents[0], agent.FixedPriceLEAgent(6, name='fixed_6'), agent.FixedPriceLEAgent(3, 'fixed_3')])
+	import agent
+	monitor.setup_monitoring(new_agents=[monitor.agents[0], agent.FixedPriceLEAgent(6, name='fixed_6'), agent.FixedPriceLEAgent(3, 'fixed_3')])
 	print(f'Running', monitor.episodes, 'episodes')
 	print(f'Plot interval is:', monitor.histogram_plot_interval)
 	print(f'Using modelfile: ' + monitor.path_to_modelfile)

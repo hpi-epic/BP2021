@@ -1,5 +1,5 @@
 {
-    "episode_size": 5,
+    "episode_size": 50,
     "max_price": 10,
     "max_quality": 50,
     "number_of_customers": 20,
