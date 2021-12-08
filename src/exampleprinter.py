@@ -7,13 +7,13 @@ import agent as a
 import sim_market
 
 
-def print_example(env=sim_market.CircularEconomy(), agent=a.HumanPlayerCE()):
+def print_example(env=sim_market.CircularEconomyRebuyPrice(), agent=a.RuleBasedCERebuyAgent()):
 	counter = 0
 	our_profit = 0
 	is_done = False
 	state = env.reset()
 	# print('The production price is', ut.PRODUCTION_PRICE)
-
+	print('hello')
 	writer = SummaryWriter()
 
 	with torch.no_grad():
@@ -52,6 +52,4 @@ def print_example(env=sim_market.CircularEconomy(), agent=a.HumanPlayerCE()):
 
 
 if __name__ == '__main__':
-	env = sim_market.CircularEconomy()
-	agent = a.HumanPlayerCE()
-	print_example(env, agent)
+	print_example()

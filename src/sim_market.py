@@ -8,6 +8,7 @@ import numpy as np
 
 import competitor as comp
 import customer
+import owner
 import utils as ut
 from customer import Customer
 from owner import Owner
@@ -20,7 +21,8 @@ class SimMarket(gym.Env, abc.ABC):
 		self.competitors = self.get_competitor_list()
 		# The agent's price does not belong to the observation_space any more because an agent should not depend on it
 		self.setup_action_observation_space()
-
+		self.owner = None
+		self.customer = None
 		# TODO: Better testing for the observation and action space
 		assert (
 			self.observation_space and self.action_space
@@ -100,7 +102,7 @@ class SimMarket(gym.Env, abc.ABC):
 	def consider_storage_costs(self, profits) -> None:
 		pass
 
-	def choose_owner(self) -> Owner:
+	def choose_owner(self):
 		pass
 
 
@@ -191,7 +193,7 @@ class CircularEconomy(SimMarket):
 		return customer.CustomerCircular()
 
 	def choose_owner(self) -> Owner:
-		return Owner.OwnerReturn()
+		return owner.OwnerReturn()
 
 	def consider_owners_return(self, offer, profits) -> None:
 		assert self.owner is not None, 'please choose an owner'
@@ -234,10 +236,10 @@ class CircularEconomyRebuyPrice(CircularEconomy):
 		self.action_space = gym.spaces.Tuple((gym.spaces.Discrete(ut.MAX_PRICE), gym.spaces.Discrete(ut.MAX_PRICE), gym.spaces.Discrete(ut.MAX_PRICE)))
 
 	def choose_owner(self) -> Owner:
-		return self.owner.OwnerRebuy()
+		return owner.OwnerRebuy()
 
 	def consider_owners_return(self, offer, profits) -> None:
 		# just like with the customer the probabilities are set beforehand to improve performance
 		assert self.owner is not None, 'please choose an owner'
 		self.owner.set_probabilities_from_offer(offer)
-		super.consider_owners_return(self, offer, profits)
+		super(CircularEconomy, self).consider_owners_return(self, offer, profits)
