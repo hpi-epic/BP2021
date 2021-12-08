@@ -41,7 +41,7 @@ def test_setup_monitoring():
 	monitor.setup_monitoring(0, 1, 2, 3, 4, 5, [6])
 	assert 0 == monitor.enable_live_draws
 	assert 1 == monitor.episodes
-	assert 2 == monitor.histogram_plot_interval
+	assert 2 == monitor.plot_interval
 	assert 3 == monitor.path_to_modelfile
 	assert 4 == monitor.situation
 	assert 5 == monitor.marketplace
@@ -78,7 +78,7 @@ def test_rewards_array_size():
 
 
 agent_rewards_histogram = [
-	([agent.RuleBasedCEAgent()], [100, 0]),
+	([agent.RuleBasedCEAgent()], [[100, 0]]),
 	([agent.RuleBasedCEAgent(), agent.RuleBasedCEAgent()], [[100, 0], [10, 5]]),
 	([agent.RuleBasedCEAgent(), agent.RuleBasedCEAgent(), agent.RuleBasedCEAgent(), agent.RuleBasedCEAgent()],
 		[[100, 0], [10, 5], [100, 10000], [10, 1000]])
@@ -91,12 +91,18 @@ def test_create_histogram(agents, rewards):
 	monitor.create_histogram(rewards)
 
 
+@pytest.mark.parametrize('agents, rewards', agent_rewards_histogram)
+def test_create_mean_rewards_plot(agents, rewards):
+	monitor.setup_monitoring(new_agents=agents, new_episodes=len(rewards[0]), new_plot_interval=1)
+	monitor.create_mean_line_plot(rewards)
+
+
 def test_run_marketplace():
-	monitor.setup_monitoring(new_episodes=100, new_interval=100)
+	monitor.setup_monitoring(new_episodes=100, new_plot_interval=100)
 	assert len(monitor.run_marketplace()[0]) == 100
 
 
 def test_main():
-	am.monitor.setup_monitoring(draw_enabled=False, new_episodes=10, new_interval=10, new_subfolder_path='test_plots_')
+	am.monitor.setup_monitoring(draw_enabled=False, new_episodes=10, new_plot_interval=10, new_subfolder_path='test_plots_')
 	am.main()
 	assert os.path.exists(am.monitor.folder_path)
