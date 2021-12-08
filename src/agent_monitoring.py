@@ -19,12 +19,8 @@ class Monitor():
 		self.marketplace = sim.CircularEconomy() if self.situation == 'circular' else sim.ClassicScenario()
 		self.agents = [agent.QLearningAgent(self.marketplace.observation_space.shape[0], self.marketplace.action_space.n, load_path=self.path_to_modelfile)]
 		self.agent_colors = ['#0000ff']
-
-		# create folder with current timestamp to save diagrams at
-		curr_time = time.strftime('%Y%m%d-%H%M%S')
-		self.folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + os.sep + 'monitoring' + os.sep + 'plots_' + curr_time
-		if not os.path.exists(self.folder_path):
-			os.mkdir(self.folder_path)
+		self.subfolder_path = 'plots_' + time.strftime('%Y%m%d-%H%M%S')
+		self.folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + os.sep + 'monitoring' + os.sep + self.subfolder_path
 
 	# helper functions
 	def round_up(self, number, decimals=0):
@@ -34,8 +30,14 @@ class Monitor():
 	def get_cmap(self, n, name='hsv'):
 		return plt.cm.get_cmap(name, n + 1)
 
+	def get_folder(self):
+		# create folder with current timestamp to save diagrams at
+		if not os.path.exists(self.folder_path):
+			os.mkdir(self.folder_path)
+		return self.folder_path
+
 	# configure the situation to be monitored
-	def setup_monitoring(self, draw_enabled=None, new_episodes=None, new_interval=None, new_modelfile=None, new_situation=None, new_marketplace=None, new_agents=None) -> None:
+	def setup_monitoring(self, draw_enabled=None, new_episodes=None, new_interval=None, new_modelfile=None, new_situation=None, new_marketplace=None, new_agents=None, new_subfolder_path=None) -> None:
 		# doesn't look nice, but afaik only way to keep parameter list short
 		if(draw_enabled is not None):
 			self.enable_live_draws = draw_enabled
@@ -49,6 +51,9 @@ class Monitor():
 			self.situation = new_situation
 		if(new_marketplace is not None):
 			self.marketplace = new_marketplace
+		if(new_subfolder_path is not None):
+			self.subfolder_path = new_subfolder_path
+			self.folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + os.sep + 'monitoring' + os.sep + self.subfolder_path
 		if(new_agents is not None):
 			self.agents = new_agents
 			color_map = self.get_cmap(len(self.agents))
@@ -78,7 +83,7 @@ class Monitor():
 		if self.enable_live_draws:
 			plt.draw()
 			plt.pause(0.001)
-		plt.savefig(fname=self.folder_path + os.sep + 'episode_' + str(name) + '.svg')
+		plt.savefig(fname=self.get_folder() + os.sep + 'episode_' + str(name) + '.svg')
 
 	def run_marketplace(self) -> list:
 		# initialize the rewards list with a list for each agent
@@ -123,8 +128,8 @@ monitor = Monitor()
 
 
 def main():
-	import agent
-	monitor.setup_monitoring(new_agents=[monitor.agents[0], agent.FixedPriceLEAgent(6, name='fixed_6'), agent.FixedPriceLEAgent(3, 'fixed_3')])
+	# import agent
+	# monitor.setup_monitoring(new_agents=[monitor.agents[0], agent.FixedPriceLEAgent(6, name='fixed_6'), agent.FixedPriceLEAgent(3, 'fixed_3')])
 	print(f'Running', monitor.episodes, 'episodes')
 	print(f'Plot interval is:', monitor.histogram_plot_interval)
 	print(f'Using modelfile: ' + monitor.path_to_modelfile)

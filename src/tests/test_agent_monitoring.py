@@ -1,12 +1,11 @@
 import os
+import re
+import shutil
 
 import pytest
 
 from .context import Monitor, agent
 from .context import agent_monitoring as am
-
-# import re
-
 
 monitor = None
 
@@ -16,7 +15,15 @@ def setup_function(function):
 	print('***SETUP***')
 	global monitor
 	monitor = Monitor()
-	monitor.setup_monitoring(draw_enabled=False)
+	monitor.setup_monitoring(draw_enabled=False, new_subfolder_path='test_plots_')
+
+
+# teardown after each test
+def teardown_function(function):
+	print('***TEARDOWN***')
+	for f in os.listdir('./monitoring'):
+		if re.match('test_plots_*', f):
+			shutil.rmtree('./monitoring/' + f)
 
 
 # create mock rewards list
@@ -88,7 +95,6 @@ def test_run_marketplace():
 
 
 def test_main():
-	am.monitor.setup_monitoring(draw_enabled=False, new_episodes=10, new_interval=10)
+	am.monitor.setup_monitoring(draw_enabled=False, new_episodes=10, new_interval=10, new_subfolder_path='test_plots_')
 	am.main()
-	# any ideas what could be tested?
 	assert os.path.exists(am.monitor.folder_path)
