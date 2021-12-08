@@ -52,4 +52,6 @@ def print_example(env=sim_market.CircularEconomy(), agent=a.HumanPlayerCE()):
 
 
 if __name__ == '__main__':
-	print_example()
+	env = sim_market.CircularEconomy()
+	agent = a.HumanPlayerCE()
+	print_example(env, agent)
