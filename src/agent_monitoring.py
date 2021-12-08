@@ -136,10 +136,10 @@ def main():
 	import agent
 	monitor.setup_monitoring(new_agents=[monitor.agents[0], agent.FixedPriceLEAgent(6, name='fixed_6'), agent.FixedPriceLEAgent(3, 'fixed_3')])
 	print(f'Running', monitor.episodes, 'episodes')
-	print(f'Plot interval is:', monitor.histogram_plot_interval)
-	print(f'Using modelfile: ' + monitor.path_to_modelfile)
-	print(f'The situation is: ' + monitor.situation)
-	print(f'The marketplace is:', monitor.marketplace)
+	print(f'Plot interval is: {monitor.histogram_plot_interval}')
+	print(f'Using modelfile: {monitor.path_to_modelfile}')
+	print(f'The situation is: {monitor.situation}')
+	print(f'The marketplace is: {monitor.marketplace}')
 	print(f'Monitoring these agents:')
 	for current_agent in monitor.agents:
 		print(current_agent.name)
@@ -147,11 +147,11 @@ def main():
 	rewards = monitor.run_marketplace()
 
 	for i in range(len(rewards)):
-		print(f'Statistics for agent:', monitor.agents[i].name)
-		print(f'The average reward over {monitor.episodes} episodes is: ' + str(monitor.metrics_average(rewards[i])))
-		print(f'The median reward over {monitor.episodes} episodes is: ' + str(monitor.metrics_median(rewards[i])))
-		print(f'The maximum reward over {monitor.episodes} episodes is: ' + str(monitor.metrics_maximum(rewards[i])))
-		print(f'The minimum reward over {monitor.episodes} episodes is: ' + str(monitor.metrics_minimum(rewards[i])))
+		print(f'Statistics for agent: {monitor.agents[i].name}')
+		print(f'The average reward over {monitor.episodes} episodes is: {str(monitor.metrics_average(rewards[i]))}')
+		print(f'The median reward over {monitor.episodes} episodes is: {str(monitor.metrics_median(rewards[i]))}')
+		print(f'The maximum reward over {monitor.episodes} episodes is: {str(monitor.metrics_maximum(rewards[i]))}')
+		print(f'The minimum reward over {monitor.episodes} episodes is: {str(monitor.metrics_minimum(rewards[i]))}')
 
 
 if __name__ == '__main__':
