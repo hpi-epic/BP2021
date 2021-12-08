@@ -2,6 +2,7 @@ import os
 import re
 import shutil
 
+import numpy as np
 import pytest
 
 from .context import Monitor, agent
@@ -70,7 +71,8 @@ def test_round_up():
 
 # all arrays in rewards must be of the same size
 def test_rewards_array_size():
-	rewards_wrong = [[1, 2], [1, 2, 3]]
+	# Numpy doesn't like nested arrays of different sizes, need to specify dtype=object
+	rewards_wrong = np.array([[1, 2], [1, 2, 3]], dtype=object)
 	with pytest.raises(Exception):
 		monitor.create_histogram(rewards_wrong)
 
