@@ -35,7 +35,6 @@ def create_mock_rewards() -> list:
 	return mock_rewards
 
 
-# new_episodes, new_interval, new_modelfile, new_situation, new_marketplace, new_agent
 # values and types are mismatched on purpose, as we just want to make sure the global values are changed correctly, we don't work with them
 def test_setup_monitoring():
 	monitor.setup_monitoring(0, 1, 2, 3, 4, 5, [6])

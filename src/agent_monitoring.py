@@ -88,7 +88,7 @@ class Monitor():
 		plt.hist(rewards, bins=plot_bins, color=self.agent_colors, rwidth=0.9, range=plot_range)
 		plt.legend([a.name for a in self.agents])
 
-		if self.enable_live_draws:
+		if self.enable_live_draws:  # pragma: no cover
 			plt.draw()
 			plt.pause(0.001)
 		plt.savefig(fname=self.get_folder() + os.sep + 'histograms' + os.sep + 'episode_' + str(filename) + '.svg')
@@ -114,7 +114,7 @@ class Monitor():
 		plt.title(f'Total Mean Reward calculated each {self.plot_interval} episodes')
 		plt.legend([a.name for a in self.agents])
 		plt.grid(True)
-		if self.enable_live_draws:
+		if self.enable_live_draws:  # pragma: no cover
 			plt.draw()
 			plt.pause(0.001)
 		plt.savefig(fname=self.get_folder() + os.sep + 'mean_rewards.svg')
@@ -187,5 +187,5 @@ def main() -> None:
 	print(f'All plots were saved to {monitor.get_folder()}')
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # pragma: no cover
 	main()
