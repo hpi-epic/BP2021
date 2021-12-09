@@ -6,6 +6,7 @@ import numpy as np
 
 import agent
 import sim_market as sim
+import utils as ut
 
 
 class Monitor():
@@ -18,7 +19,7 @@ class Monitor():
 
 	def __init__(self) -> None:
 		self.enable_live_draws = True
-		self.episodes = 500
+		self.episodes = 200
 		self.plot_interval = int(self.episodes / 10)
 		# should get deprecated when introducing possibility to use multiple RL-agents
 		self.path_to_modelfile = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + os.sep + 'monitoring' + os.sep + 'test_marketplace.dat'
@@ -141,6 +142,32 @@ class Monitor():
 					metric_rewards[i].append(metrics_functions[function](rewards[i][0:self.plot_interval * j + self.plot_interval]))
 			self.create_line_plot(x_axis_episodes, metric_rewards, metrics_names[function])
 
+	def create_step_plots(self, all_steps_rewards) -> None:
+		"""
+		creates a reward per step plot for all agents
+
+		### Parameters:
+		- `all_steps_rewards` (array of array of float): An array containing an array for each agents,
+			in these arrays there are the rewards for this agent per step
+		"""
+		# average over episode
+		episode_step_average = []
+		for agent_index in range(len(self.agents)):
+			episode_step_average.append([])
+			curr_sum = 0
+			for i in range(self.episodes * ut.EPISODE_LENGTH):
+				curr_sum += all_steps_rewards[agent_index][i]
+				if(i % ut.EPISODE_LENGTH == ut.EPISODE_LENGTH - 1):
+					episode_step_average[agent_index] += [curr_sum / ut.EPISODE_LENGTH]
+					curr_sum = 0
+		print(len(episode_step_average[0]))
+		input()
+		# make output smaller and more readable
+		for agent_index in range(len(self.agents)):
+			episode_step_average[agent_index] = episode_step_average[agent_index][::10]
+		steps = range(0, int(self.episodes / 10))
+		self.create_line_plot(steps, episode_step_average, 'every 10th average episode reward per step')
+
 	def create_line_plot(self, episodes, metric_rewards, metric_name='default') -> None:
 		"""
 		Create a line plot with the given rewards data.
@@ -180,6 +207,10 @@ class Monitor():
 		for i in range(len(self.agents)):
 			rewards.append([])
 
+		all_steps_rewards = []
+		for i in range(len(self.agents)):
+			all_steps_rewards.append([])
+
 		for episode in range(1, self.episodes + 1):
 			# reset the state once to be used by all agents
 			default_state = self.marketplace.reset()
@@ -197,8 +228,9 @@ class Monitor():
 				# run marketplace for this agent
 				while not is_done:
 					action = self.agents[i].policy(state)
-					state, reward, is_done, _ = self.marketplace.step(action)
-					episode_reward += reward
+					state, step_reward, is_done, _ = self.marketplace.step(action)
+					episode_reward += step_reward
+					all_steps_rewards[i] += [step_reward]
 
 				# add the reward to the current agent's reward-Array
 				rewards[i] += [episode_reward]
@@ -207,10 +239,10 @@ class Monitor():
 			if (episode % 100) == 0:
 				print(f'Running {episode}th episode...')
 
-			if (episode % self.plot_interval) == 0:
-				self.create_histogram(rewards, 'episode_' + str(episode))
+			# if (episode % self.plot_interval) == 0:
+			# 	self.create_histogram(rewards, 'episode_' + str(episode))
 
-		return rewards
+		return rewards, all_steps_rewards
 
 
 monitor = Monitor()
@@ -228,7 +260,7 @@ def main() -> None:
 	for current_agent in monitor.agents:
 		print(current_agent.name)
 
-	rewards = monitor.run_marketplace()
+	rewards, all_steps_rewards = monitor.run_marketplace()
 
 	for i in range(len(rewards)):
 		print(f'Statistics for agent: {monitor.agents[i].name}')
@@ -237,6 +269,7 @@ def main() -> None:
 		print(f'The maximum reward over {monitor.episodes} episodes is: {str(monitor.metrics_maximum(rewards[i]))}')
 		print(f'The minimum reward over {monitor.episodes} episodes is: {str(monitor.metrics_minimum(rewards[i]))}')
 
+	monitor.create_step_plots(all_steps_rewards)
 	monitor.create_stat_plots(rewards)
 	print(f'All plots were saved to {monitor.get_folder()}')
 
