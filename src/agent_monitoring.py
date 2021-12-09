@@ -24,14 +24,14 @@ class Monitor():
 		self.folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + os.sep + 'monitoring' + os.sep + self.subfolder_path
 
 	# helper functions
-	def round_up(self, number, decimals=0):
+	def round_up(self, number, decimals=0) -> np.float64:
 		multiplier = 10 ** decimals
 		return np.ceil(number * multiplier) / multiplier
 
-	def get_cmap(self, n, name='hsv'):
+	def get_cmap(self, n, name='hsv') -> plt.cm.colors.LinearSegmentedColormap:
 		return plt.cm.get_cmap(name, n + 1)
 
-	def get_folder(self):
+	def get_folder(self) -> str:
 		# create folder with current timestamp to save diagrams at
 		if not os.path.exists(self.folder_path):
 			os.mkdir(self.folder_path)
@@ -161,7 +161,7 @@ class Monitor():
 monitor = Monitor()
 
 
-def main():
+def main() -> None:
 	import agent
 	monitor.setup_monitoring(draw_enabled=False, new_agents=[monitor.agents[0], agent.FixedPriceLEAgent(6, name='fixed_6'), agent.FixedPriceLEAgent(3, 'fixed_3')])
 	print(f'Running', monitor.episodes, 'episodes')
