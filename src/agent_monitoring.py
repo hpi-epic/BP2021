@@ -85,7 +85,7 @@ class Monitor():
 		plot_range = (0, self.round_up(int(self.metrics_maximum(rewards)), -3))
 		plot_bins = int(int(plot_range[1]) / 1000)
 
-		plt.hist(rewards, bins=plot_bins, align='mid', color=self.agent_colors, rwidth=0.9, stacked=False, edgecolor='black', range=plot_range)
+		plt.hist(rewards, bins=plot_bins, color=self.agent_colors, rwidth=0.9, range=plot_range)
 		plt.legend([a.name for a in self.agents])
 
 		if self.enable_live_draws:
