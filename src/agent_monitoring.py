@@ -155,8 +155,8 @@ class Monitor():
 		plt.clf()
 		filename = metric_name + '_rewards.svg'
 		# plot the metric rewards for each agent
-		for values in metric_rewards:
-			plt.plot(episodes, values, marker='o')
+		for index in range(len(metric_rewards)):
+			plt.plot(episodes, metric_rewards[index], marker='o', color=self.agent_colors[index])
 
 		plt.xlabel('Episodes', fontsize='18')
 		plt.xticks(episodes)

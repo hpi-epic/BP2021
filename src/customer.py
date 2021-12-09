@@ -79,4 +79,3 @@ class CustomerCircular(Customer):
 
 		customer_desicion = ut.shuffle_from_probabilities(self.probabilities)
 		return customer_desicion
-
