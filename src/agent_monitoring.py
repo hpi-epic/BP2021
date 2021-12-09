@@ -35,6 +35,7 @@ class Monitor():
 		# create folder with current timestamp to save diagrams at
 		if not os.path.exists(self.folder_path):
 			os.mkdir(self.folder_path)
+			os.mkdir(self.folder_path + os.sep + 'histograms')
 		return self.folder_path
 
 	# configure the situation to be monitored
@@ -90,7 +91,7 @@ class Monitor():
 		if self.enable_live_draws:
 			plt.draw()
 			plt.pause(0.001)
-		plt.savefig(fname=self.get_folder() + os.sep + 'episode_' + str(filename) + '.svg')
+		plt.savefig(fname=self.get_folder() + os.sep + 'histograms' + os.sep + 'episode_' + str(filename) + '.svg')
 
 	def create_mean_line_plot(self, rewards, filename='default') -> None:
 		# clear old plot completely
