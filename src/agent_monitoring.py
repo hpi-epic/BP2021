@@ -51,7 +51,7 @@ class Monitor():
 		Configure the current monitoring session.
 
 		### Parameters:
-		- ``draw_enabled`` (bool, optional): Whether or not diagrams should be diplayed on screen.
+		- ``draw_enabled`` (bool, optional): Whether or not diagrams should be displayed on screen when drawn.
 		- ``episodes`` (int, optional): The number of episodes to run.
 		- ``plot_interval`` (int, optional): After how many episodes a new data point/plot should be generated.
 		- ``modelfile`` (str, optional): Path to the file containing the model for a RL-agent.
