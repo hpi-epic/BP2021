@@ -160,13 +160,12 @@ class Monitor():
 				if(i % ut.EPISODE_LENGTH == ut.EPISODE_LENGTH - 1):
 					episode_step_average[agent_index] += [curr_sum / ut.EPISODE_LENGTH]
 					curr_sum = 0
-		print(len(episode_step_average[0]))
-		input()
+
 		# make output smaller and more readable
 		for agent_index in range(len(self.agents)):
 			episode_step_average[agent_index] = episode_step_average[agent_index][::10]
 		steps = range(0, int(self.episodes / 10))
-		self.create_line_plot(steps, episode_step_average, 'every 10th average episode reward per step')
+		self.create_line_plot(steps, episode_step_average, 'average step')
 
 	def create_line_plot(self, episodes, metric_rewards, metric_name='default') -> None:
 		"""
