@@ -16,7 +16,7 @@ def setup_function(function):
 	print('***SETUP***')
 	global monitor
 	monitor = Monitor()
-	monitor.setup_monitoring(draw_enabled=False, new_subfolder_path='test_plots_')
+	monitor.setup_monitoring(draw_enabled=False, subfolder_path='test_plots_')
 
 
 # teardown after each test
@@ -86,22 +86,22 @@ agent_rewards_histogram = [
 
 @pytest.mark.parametrize('agents, rewards', agent_rewards_histogram)
 def test_create_histogram(agents, rewards):
-	monitor.setup_monitoring(new_agents=agents)
+	monitor.setup_monitoring(agents=agents)
 	monitor.create_histogram(rewards)
 
 
 @pytest.mark.parametrize('agents, rewards', agent_rewards_histogram)
-def test_create_mean_rewards_plot(agents, rewards):
-	monitor.setup_monitoring(new_agents=agents, new_episodes=len(rewards[0]), new_plot_interval=1)
-	monitor.create_mean_line_plot(rewards)
+def test_create_stat_plots(agents, rewards):
+	monitor.setup_monitoring(agents=agents, episodes=len(rewards[0]), plot_interval=1)
+	monitor.create_stat_plots(rewards)
 
 
 def test_run_marketplace():
-	monitor.setup_monitoring(new_episodes=100, new_plot_interval=100)
+	monitor.setup_monitoring(episodes=100, plot_interval=100)
 	assert len(monitor.run_marketplace()[0]) == 100
 
 
 def test_main():
-	am.monitor.setup_monitoring(draw_enabled=False, new_episodes=10, new_plot_interval=10, new_subfolder_path='test_plots_')
+	am.monitor.setup_monitoring(draw_enabled=False, episodes=10, plot_interval=10, subfolder_path='test_plots_')
 	am.main()
 	assert os.path.exists(am.monitor.folder_path)
