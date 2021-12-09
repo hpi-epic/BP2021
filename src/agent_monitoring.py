@@ -109,6 +109,7 @@ class Monitor():
 			plt.plot(episodes, means, marker='o')
 
 		plt.xlabel('Episodes', fontsize='18')
+		plt.xticks(episodes)
 		plt.ylabel('Mean Reward', fontsize='18')
 		plt.title(f'Total Mean Reward calculated each {self.plot_interval} episodes')
 		plt.legend([a.name for a in self.agents])
