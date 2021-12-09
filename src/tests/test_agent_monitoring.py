@@ -7,6 +7,7 @@ import pytest
 
 from .context import Monitor, agent
 from .context import agent_monitoring as am
+from .context import utils as ut
 
 monitor = None
 
@@ -76,6 +77,14 @@ def test_rewards_array_size():
 		monitor.create_histogram(rewards_wrong)
 
 
+def test_get_episode_reward():
+	saved_episode_length = ut.EPISODE_LENGTH
+	ut.EPISODE_LENGTH = 2
+	all_steps_reward = [[1, 2, 3, 4], [4, 5, 6, 7], [1, 3, 4, 5]]
+	assert [[3, 7], [9, 13], [4, 9]] == monitor.get_episode_rewards(all_steps_reward)
+	ut.EPISODE_LENGTH = saved_episode_length
+
+
 agent_rewards_histogram = [
 	([agent.RuleBasedCEAgent()], [[100, 0]]),
 	([agent.RuleBasedCEAgent(), agent.RuleBasedCEAgent()], [[100, 0], [10, 5]]),
@@ -97,8 +106,11 @@ def test_create_stat_plots(agents, rewards):
 
 
 def test_run_marketplace():
-	monitor.setup_monitoring(episodes=100, plot_interval=100)
-	assert len(monitor.run_marketplace()[0]) == 100
+	monitor.setup_monitoring(episodes=100, plot_interval=100, agents=[agent.FixedPriceLEAgent(5)])
+	print(monitor.run_marketplace())
+	print('###########', monitor.agents)
+	assert 1 == len(monitor.agents)
+	assert 100 * ut.EPISODE_LENGTH == len(monitor.run_marketplace()[0])
 
 
 def test_main():

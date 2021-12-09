@@ -84,6 +84,24 @@ class Monitor():
 			for i in range(0, len(self.agents)):
 				self.agent_colors.append(color_map(i))
 
+	def get_episode_rewards(self, all_step_rewards):
+		""""
+		Accumulates all rewards per episode
+		### Parameter:
+		- `all_step_rewards` (array of array of float): containing an array per agent containing float rewards for the episode
+		"""
+		episode_rewards = []
+		for agent_reward in all_step_rewards:
+			episode_rewards.append([])
+			curr_sum = 0
+			for reward_index in range(len(agent_reward)):
+				curr_sum += agent_reward[reward_index]
+				if(reward_index % ut.EPISODE_LENGTH == ut.EPISODE_LENGTH - 1):
+					# one episode is over
+					episode_rewards[-1] += [curr_sum]
+					curr_sum = 0
+		return episode_rewards
+
 	# metrics
 	def metrics_average(self, rewards) -> np.float64:
 		return np.mean(np.array(rewards))
@@ -150,22 +168,18 @@ class Monitor():
 		- `all_steps_rewards` (array of array of float): An array containing an array for each agents,
 			in these arrays there are the rewards for this agent per step
 		"""
+		# this is what we used to log in the first place
+		episode_rewards = self.get_episode_rewards(all_steps_rewards)
 		# average over episode
-		episode_step_average = []
-		for agent_index in range(len(self.agents)):
-			episode_step_average.append([])
-			curr_sum = 0
-			for i in range(self.episodes * ut.EPISODE_LENGTH):
-				curr_sum += all_steps_rewards[agent_index][i]
-				if(i % ut.EPISODE_LENGTH == ut.EPISODE_LENGTH - 1):
-					episode_step_average[agent_index] += [curr_sum / ut.EPISODE_LENGTH]
-					curr_sum = 0
+		mean_episode_rewards = []
+		for agent_reward in episode_rewards:
+			mean_episode_rewards.append([])
+			agent_reward = [reward / ut.EPISODE_LENGTH for reward in agent_reward]
+			mean_episode_rewards[-1] = agent_reward
 
-		# make output smaller and more readable
-		for agent_index in range(len(self.agents)):
-			episode_step_average[agent_index] = episode_step_average[agent_index][::10]
-		steps = range(0, int(self.episodes / 10))
-		self.create_line_plot(steps, episode_step_average, 'average step')
+		mean_episode_rewards = [reward[::int(self.episodes / self.plot_interval)] for reward in mean_episode_rewards]
+		steps = range(0, int(self.episodes))[::int(self.episodes / self.plot_interval)]
+		self.create_line_plot(steps, mean_episode_rewards, 'average step')
 
 	def create_line_plot(self, episodes, metric_rewards, metric_name='default') -> None:
 		"""
@@ -221,35 +235,37 @@ class Monitor():
 
 				# reset values for all agents
 				state = default_state
-				episode_reward = 0
+				# episode_reward = 0
 				is_done = False
 
 				# run marketplace for this agent
 				while not is_done:
 					action = self.agents[i].policy(state)
 					state, step_reward, is_done, _ = self.marketplace.step(action)
-					episode_reward += step_reward
+					# episode_reward += step_reward
+					# this gives us a higher flexibility in terms of what metrics we would like to use
 					all_steps_rewards[i] += [step_reward]
 
+				# removing this will decrease our performance when we still want to do live drawing
+				# could think about a caching strategy for live drawing
 				# add the reward to the current agent's reward-Array
-				rewards[i] += [episode_reward]
+				# rewards[i] += [episode_reward]
 
 			# after all agents have run the episode
 			if (episode % 100) == 0:
 				print(f'Running {episode}th episode...')
 
 			# if (episode % self.plot_interval) == 0:
-			# 	self.create_histogram(rewards, 'episode_' + str(episode))
-
-		return rewards, all_steps_rewards
+			# 	self.create_histogram(self.get_episode_rewards(all_steps_rewards), 'episode_' + str(episode))
+		return all_steps_rewards
 
 
 monitor = Monitor()
 
 
 def main() -> None:
-	import agent
-	monitor.setup_monitoring(draw_enabled=False, agents=[monitor.agents[0], agent.FixedPriceLEAgent(6, name='fixed_6'), agent.FixedPriceLEAgent(3, 'fixed_3')])
+	# import agent
+	# monitor.setup_monitoring(draw_enabled=True, agents=[agent.RuleBasedCEAgent(), agent.FixedPriceCEAgent((3,4), name='fixed_6'), agent.FixedPriceCEAgent((2,2), 'fixed_3')])
 	print(f'Running', monitor.episodes, 'episodes')
 	print(f'Plot interval is: {monitor.plot_interval}')
 	print(f'Using modelfile: {monitor.path_to_modelfile}')
@@ -259,8 +275,9 @@ def main() -> None:
 	for current_agent in monitor.agents:
 		print(current_agent.name)
 
-	rewards, all_steps_rewards = monitor.run_marketplace()
+	all_steps_rewards = monitor.run_marketplace()
 
+	rewards = monitor.get_episode_rewards(all_steps_rewards)
 	for i in range(len(rewards)):
 		print(f'Statistics for agent: {monitor.agents[i].name}')
 		print(f'The average reward over {monitor.episodes} episodes is: {str(monitor.metrics_average(rewards[i]))}')
