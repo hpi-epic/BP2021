@@ -9,7 +9,7 @@ from .context import Monitor, agent
 from .context import agent_monitoring as am
 from .context import utils as ut
 
-monitor = None
+monitor = Monitor()
 
 
 # setup before each test
