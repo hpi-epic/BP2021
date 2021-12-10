@@ -36,11 +36,25 @@ class Monitor():
 		return np.ceil(number * multiplier) / multiplier
 
 	def get_cmap(self, n, name='hsv') -> plt.cm.colors.LinearSegmentedColormap:
-		"""Return a colormap containing a distinct color for each monitored agent to be used in the diagrams."""
+		"""
+		Return a colormap containing a distinct color for each monitored agent to be used in the diagrams.
+
+		Args:
+			n (int): How many colors should be generated.
+			name (str, optional): The type of colormap that should be generated. Defaults to 'hsv'.
+
+		Returns:
+			plt.cm.colors.LinearSegmentedColormap: The filled colormap.
+		"""
 		return plt.cm.get_cmap(name, n + 1)
 
 	def get_folder(self) -> str:
-		"""Return the folder where all diagrams of the current run are saved."""
+		"""
+		Return the folder where all diagrams of the current run are saved.
+
+		Returns:
+			str: The folder name
+		"""
 		# create folder with current timestamp to save diagrams at
 		if not os.path.exists(self.folder_path):
 			os.mkdir(self.folder_path)
@@ -51,15 +65,15 @@ class Monitor():
 		"""
 		Configure the current monitoring session.
 
-		### Parameters:
-		- ``draw_enabled`` (bool, optional): Whether or not diagrams should be displayed on screen when drawn.
-		- ``episodes`` (int, optional): The number of episodes to run.
-		- ``plot_interval`` (int, optional): After how many episodes a new data point/plot should be generated.
-		- ``modelfile`` (str, optional): Path to the file containing the model for a RL-agent.
-		- ``situation`` (str, optional): 'linear' or 'circular', which market situation should be played.
-		- ``marketplace`` (sim_market instance, optional): What marketplace to run the monitoring on.
-		- ``agents`` (array of agent instances, optional): What agents to monitor. Each agent will generate data points in the diagrams
-		- ``subfolder_path`` (str, optional): The name of the folder to save the diagrams in. Defaults to 'plots_currentTime'
+		Args:
+			draw_enabled (bool, optional): Whether or not diagrams should be displayed on screen when drawn. Defaults to None.
+			episodes (int, optional): The number of episodes to run. Defaults to None.
+			plot_interval (int, optional): After how many episodes a new data point/plot should be generated. Defaults to None.
+			modelfile (str, optional): Path to the file containing the model for a RL-agent. Defaults to None.
+			situation (str, optional): 'linear' or 'circular', which market situation should be played. Defaults to None.
+			marketplace (sim_market instance, optional): What marketplace to run the monitoring on. Defaults to None.
+			agents (list of agent instances, optional): What agents to monitor. Each agent will generate data points in the diagrams. Defaults to None.
+			subfolder_path (str, optional): The name of the folder to save the diagrams in. Defaults to None.
 		"""
 		# doesn't look nice, but afaik only way to keep parameter list short
 		if(draw_enabled is not None):
@@ -84,11 +98,15 @@ class Monitor():
 			for i in range(0, len(self.agents)):
 				self.agent_colors.append(color_map(i))
 
-	def get_episode_rewards(self, all_step_rewards):
-		""""
+	def get_episode_rewards(self, all_step_rewards) -> list:
+		"""
 		Accumulates all rewards per episode
-		### Parameter:
-		- `all_step_rewards` (array of array of float): containing an array per agent containing float rewards for the episode
+
+		Args:
+			all_step_rewards (list of list of floats): Contains a list per agent containing float rewards for the episode
+
+		Returns:
+			list of list of floats: List of accumulated rewards per episode per agent
 		"""
 		episode_rewards = []
 		for agent_reward in all_step_rewards:
@@ -104,15 +122,51 @@ class Monitor():
 
 	# metrics
 	def metrics_average(self, rewards) -> np.float64:
+		"""
+		Calculate the average value in the list.
+
+		Args:
+			rewards (list of float): The rewards to be averaged.
+
+		Returns:
+			np.float64: The average reward.
+		"""
 		return np.mean(np.array(rewards))
 
 	def metrics_median(self, rewards) -> np.float64:
+		"""
+		Calculate the median value in the list.
+
+		Args:
+			rewards (list of float): The rewards to find the median of.
+
+		Returns:
+			np.float64: The median reward.
+		"""
 		return np.median(np.array(rewards))
 
 	def metrics_maximum(self, rewards) -> np.float64:
+		"""
+		Calculate the maximum value in the list.
+
+		Args:
+			rewards (list of float): The rewards find the maximum of.
+
+		Returns:
+			np.float64: The maximum reward.
+		"""
 		return np.max(np.array(rewards))
 
 	def metrics_minimum(self, rewards) -> np.float64:
+		"""
+		Calculate the minimum value in the list.
+
+		Args:
+			rewards (list of float): The rewards find the minimum of.
+
+		Returns:
+			np.float64: The minimum reward.
+		"""
 		return np.min(np.array(rewards))
 
 	# visualize metrics
@@ -120,9 +174,9 @@ class Monitor():
 		"""
 		Create a histogram sorting rewards into bins of 1000.
 
-		### Parameters:
-		- ``rewards`` (array of arrays of int): An array containing an array of ints for each monitored agent.
-		- ``filename`` (str, optional): The name of the output file, format will be ``.svg``.
+		Args:
+			rewards (array of arrays of int): An array containing an array of ints for each monitored agent.
+			filename (str, optional): The name of the output file, format will be .svg. Defaults to 'default'.
 		"""
 		plt.xlabel('Reward', fontsize='18')
 		plt.ylabel('Episodes', fontsize='18')
@@ -144,8 +198,9 @@ class Monitor():
 		For each of our metrics, calculate the running value each self.plot_interval and plot it as a line graph.
 
 		Current metrics: Average, Maximum, Median, Minimum.
-		### Parameters:
-		- ``rewards`` (array of arrays of int): An array containing an array of ints for each monitored agent.
+
+		Args:
+			rewards ([list of list of float]): An array containing an array of ints for each monitored agent.
 		"""
 		metrics_functions = [self.metrics_average, self.metrics_maximum, self.metrics_median, self.metrics_minimum]
 		metrics_names = ['Average', 'Maximum', 'Median', 'Minimum']
@@ -162,11 +217,10 @@ class Monitor():
 
 	def create_step_plots(self, all_steps_rewards) -> None:
 		"""
-		creates a reward per step plot for all agents
+		Create a reward per step plot for all agents.
 
-		### Parameters:
-		- `all_steps_rewards` (array of array of float): An array containing an array for each agents,
-			in these arrays there are the rewards for this agent per step
+		Args:
+			all_steps_rewards (list of list of float): A list containing a list for each agent, in these lists there are the rewards for this agent per step.
 		"""
 		# this is what we used to log in the first place
 		episode_rewards = self.get_episode_rewards(all_steps_rewards)
@@ -182,13 +236,12 @@ class Monitor():
 		self.create_line_plot(steps, mean_episode_rewards, 'average step')
 
 	def create_line_plot(self, episodes, metric_rewards, metric_name='default') -> None:
-		"""
-		Create a line plot with the given rewards data.
+		"""Create a line plot with the given rewards data.
 
-		### Parameters:
-		``episodes`` (array of ints): Defines x-values of datapoints. Must have same length as ``metric_rewards``
-		``metric_rewards`` (array of array of ints): Defines y-values of datapoints, one array per monitored agent. Must have same length as ``episodes``.
-		``metric_name`` (str, optional): Used for naming the y-axis, diagram and output file.
+		Args:
+			episodes (array of ints): Defines x-values of datapoints. Must have same length as metric_rewards.
+			metric_rewards (array of array of ints): Defines y-values of datapoints, one array per monitored agent. Must have same length as episodes.
+			metric_name (str, optional): Used for naming the y-axis, diagram and output file. Defaults to 'default'.
 		"""
 		print(f'Creating line plot for {metric_name} rewards...')
 		# clear old plot completely
@@ -214,7 +267,11 @@ class Monitor():
 		Run the marketplace with the given monitoring configuration.
 
 		Automatically produces histograms, but not metric diagrams.
+
+		Returns:
+			list: A list with a list of rewards for each agent
 		"""
+
 		# initialize the rewards list with a list for each agent
 		rewards = []
 		for i in range(len(self.agents)):
