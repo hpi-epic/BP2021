@@ -122,51 +122,15 @@ class Monitor():
 
 	# metrics
 	def metrics_average(self, rewards) -> np.float64:
-		"""
-		Calculate the average value in the list.
-
-		Args:
-			rewards (list of float): The rewards to be averaged.
-
-		Returns:
-			np.float64: The average reward.
-		"""
 		return np.mean(np.array(rewards))
 
 	def metrics_median(self, rewards) -> np.float64:
-		"""
-		Calculate the median value in the list.
-
-		Args:
-			rewards (list of float): The rewards to find the median of.
-
-		Returns:
-			np.float64: The median reward.
-		"""
 		return np.median(np.array(rewards))
 
 	def metrics_maximum(self, rewards) -> np.float64:
-		"""
-		Calculate the maximum value in the list.
-
-		Args:
-			rewards (list of float): The rewards find the maximum of.
-
-		Returns:
-			np.float64: The maximum reward.
-		"""
 		return np.max(np.array(rewards))
 
 	def metrics_minimum(self, rewards) -> np.float64:
-		"""
-		Calculate the minimum value in the list.
-
-		Args:
-			rewards (list of float): The rewards find the minimum of.
-
-		Returns:
-			np.float64: The minimum reward.
-		"""
 		return np.min(np.array(rewards))
 
 	# visualize metrics
