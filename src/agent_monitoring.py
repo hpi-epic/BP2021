@@ -18,6 +18,7 @@ class Monitor():
 	"""
 
 	def __init__(self) -> None:
+		# Do not change the values in here! They are assumed in tests. Instead use setup_monitoring()!
 		self.enable_live_draws = True
 		self.episodes = 200
 		self.plot_interval = int(self.episodes / 10)
@@ -34,6 +35,10 @@ class Monitor():
 	def round_up(self, number, decimals=0) -> np.float64:
 		multiplier = 10 ** decimals
 		return np.ceil(number * multiplier) / multiplier
+
+	def round_down(self, number, decimals=0) -> np.float64:
+		multiplier = 10 ** decimals
+		return np.floor(number * multiplier) / multiplier
 
 	def get_cmap(self, n, name='hsv') -> plt.cm.colors.LinearSegmentedColormap:
 		"""
@@ -86,6 +91,7 @@ class Monitor():
 			self.path_to_modelfile = modelfile
 		if(situation is not None):
 			self.situation = situation
+			self.marketplace = sim.CircularEconomy() if self.situation == 'circular' else sim.ClassicScenario()
 		if(marketplace is not None):
 			self.marketplace = marketplace
 		if(subfolder_path is not None):
@@ -146,8 +152,10 @@ class Monitor():
 		plt.ylabel('Episodes', fontsize='18')
 		plt.title('Cumulative Reward per Episode')
 		# find the number of bins needed, we only use steps of 1000, assuming our agents are good bois :)
-		plot_range = (0, self.round_up(int(self.metrics_maximum(rewards)), -3))
-		plot_bins = int(int(plot_range[1]) / 1000)
+		plot_range = self.round_down(int(self.metrics_minimum(rewards)), -3), self.round_up(int(self.metrics_maximum(rewards)), -3)
+		plot_bins = int(int(np.abs(plot_range[0]) + plot_range[1]) / 1000)
+		print(plot_range)
+		print(plot_bins)
 
 		plt.hist(rewards, bins=plot_bins, color=self.agent_colors, rwidth=0.9, range=plot_range)
 		plt.legend([a.name for a in self.agents])
@@ -276,8 +284,8 @@ class Monitor():
 			if (episode % 100) == 0:
 				print(f'Running {episode}th episode...')
 
-			# if (episode % self.plot_interval) == 0:
-			# 	self.create_histogram(self.get_episode_rewards(all_steps_rewards), 'episode_' + str(episode))
+			if (episode % self.plot_interval) == 0:
+				self.create_histogram(self.get_episode_rewards(all_steps_rewards), 'episode_' + str(episode))
 		return all_steps_rewards
 
 
@@ -286,7 +294,7 @@ monitor = Monitor()
 
 def main() -> None:
 	# import agent
-	# monitor.setup_monitoring(draw_enabled=True, agents=[agent.RuleBasedCEAgent(), agent.FixedPriceCEAgent((3,4), name='fixed_6'), agent.FixedPriceCEAgent((2,2), 'fixed_3')])
+	# monitor.setup_monitoring(situation='circular', agents=[agent.RuleBasedCEAgent(), agent.FixedPriceCEAgent((3,4), 'fixed_6'), agent.FixedPriceCEAgent((2,2), 'fixed_3')])
 	print(f'Running', monitor.episodes, 'episodes')
 	print(f'Plot interval is: {monitor.plot_interval}')
 	print(f'Using modelfile: {monitor.path_to_modelfile}')
