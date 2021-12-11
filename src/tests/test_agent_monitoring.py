@@ -107,10 +107,10 @@ def test_create_stat_plots(agents, rewards):
 
 def test_run_marketplace():
 	monitor.setup_monitoring(episodes=100, plot_interval=100, agents=[agent.FixedPriceLEAgent(5)])
-	print(monitor.run_marketplace())
-	print('###########', monitor.agents)
+	agent_rewards = monitor.run_marketplace()
+	print(agent_rewards)
 	assert 1 == len(monitor.agents)
-	assert 100 * ut.EPISODE_LENGTH == len(monitor.run_marketplace()[0])
+	assert 100 * ut.EPISODE_LENGTH == len(agent_rewards[0])
 
 
 def test_main():
