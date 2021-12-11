@@ -241,5 +241,18 @@ class CircularEconomyRebuyPrice(CircularEconomy):
 	def consider_owners_return(self, offer, profits) -> None:
 		# just like with the customer the probabilities are set beforehand to improve performance
 		assert self.owner is not None, 'please choose an owner'
-		self.owner.set_probabilities_from_offer(offer)
-		super(CircularEconomy, self).consider_owners_return(self, offer, profits)
+
+		for _ in range(int(0.05 * self.state[1])):
+			self.owner.set_probabilities_from_offer(offer)
+			owner_action = self.owner.consider_return(offer, profits)
+			if owner_action == 1:
+				# Owner throws away his object
+				self.state[1] -= 1
+			elif owner_action == 2:
+				# Owner returns product to the agent
+
+				# check if storage is full
+				if self.state[0] < self.max_storage:
+					self.state[0] += 1
+				self.state[1] -= 1
+				profits[0] -= offer[2]
