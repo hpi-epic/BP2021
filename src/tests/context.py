@@ -12,11 +12,13 @@ import agent_monitoring
 import competitor
 import customer
 import exampleprinter
+import owner
 import utils
 import utils_rl
 from agent import *
 from competitor import *
 from customer import *
+from owner import *
 from sim_market import *
 from utils import *
 from utils_rl import *

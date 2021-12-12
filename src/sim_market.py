@@ -198,7 +198,7 @@ class CircularEconomy(SimMarket):
 	def consider_owners_return(self, offer, profits) -> None:
 		assert self.owner is not None, 'please choose an owner'
 		for _ in range(int(0.05 * self.state[1])):
-			owner_action = self.owner.consider_return(offer, profits)
+			owner_action = self.owner.consider_return()
 			if owner_action == 0:
 				# Owner throws away his object
 				self.state[1] -= 1
@@ -244,7 +244,7 @@ class CircularEconomyRebuyPrice(CircularEconomy):
 
 		for _ in range(int(0.05 * self.state[1])):
 			self.owner.set_probabilities_from_offer(offer)
-			owner_action = self.owner.consider_return(offer, profits)
+			owner_action = self.owner.consider_return()
 			if owner_action == 1:
 				# Owner throws away his object
 				self.state[1] -= 1
