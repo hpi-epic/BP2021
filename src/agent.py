@@ -15,10 +15,10 @@ from experience_buffer import ExperienceBuffer
 
 class Agent(ABC):
 	is_circular = None
+	is_rule_based = None
 
 	def __init__(self, name='agent'):
 		self.name = name
-		self.is_rule_based = None
 
 	@abstractmethod
 	def policy(self, state, epsilon=0):
@@ -33,7 +33,15 @@ class LinearAgent(Agent, ABC):
 	is_circular = False
 
 
-class HumanPlayer(Agent, ABC):
+class RuleBasedAgent(Agent, ABC):
+	is_rule_based = True
+
+
+class ReinforcementLearningAgent(Agent, ABC):
+	is_rule_based = False
+
+
+class HumanPlayer(RuleBasedAgent, ABC):
 	@abstractmethod
 	def policy(self, state, *_) -> int:
 		raise NotImplementedError
@@ -61,7 +69,7 @@ class HumanPlayerCE(CircularAgent, HumanPlayer):
 		return (int(price_old), int(price_new))
 
 
-class HumanPlayerCERebuy(CircularAgent, HumanPlayer):
+class HumanPlayerCERebuy(HumanPlayerCE):
 	def policy(self, state, *_) -> int:
 		raw_input_string = super().policy(state)
 		assert raw_input_string.count(' ') == 2, 'Please enter three numbers seperated by spaces!'
@@ -69,7 +77,7 @@ class HumanPlayerCERebuy(CircularAgent, HumanPlayer):
 		return (int(price_old), int(price_new), int(rebuy_price))
 
 
-class FixedPriceAgent(Agent, ABC):
+class FixedPriceAgent(RuleBasedAgent, ABC):
 	"""
 	An abstract class for FixedPriceAgents
 	"""
@@ -96,7 +104,7 @@ class FixedPriceCEAgent(CircularAgent, FixedPriceAgent):
 		return self.fixed_price
 
 
-class FixedPriceCERebuyAgent(FixedPriceAgent, CircularAgent):
+class FixedPriceCERebuyAgent(FixedPriceCEAgent):
 	def __init__(self, fixed_price=(3, 6, 2), name='fixed_price_ce_rebuy'):
 		assert isinstance(fixed_price, tuple) and len(fixed_price) == 3
 		self.name = name
@@ -106,7 +114,7 @@ class FixedPriceCERebuyAgent(FixedPriceAgent, CircularAgent):
 		return self.fixed_price
 
 
-class RuleBasedCEAgent(CircularAgent):
+class RuleBasedCEAgent(RuleBasedAgent, CircularAgent):
 	def __init__(self, name='rule_based_ce'):
 		self.name = name
 
@@ -189,12 +197,12 @@ class RuleBasedCEAgent(CircularAgent):
 		return (max_price_u, max_price_n)
 
 
-class RuleBasedCERebuyAgent(RuleBasedCEAgent, CircularAgent):
+class RuleBasedCERebuyAgent(RuleBasedCEAgent):
 	def return_prices(self, price_old, price_new, rebuy_price):
 		return (price_old, price_new, rebuy_price)
 
 
-class QLearningAgent(Agent, ABC):
+class QLearningAgent(ReinforcementLearningAgent, ABC):
 	Experience = collections.namedtuple('Experience', field_names=['state', 'action', 'reward', 'done', 'new_state'])
 
 	# If you enter load_path, the model will be loaded. For example, if you want to use a pretrained net or test a given agent.

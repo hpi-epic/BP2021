@@ -11,8 +11,8 @@ import agent_monitoring
 import competitor
 import customer
 import exampleprinter
-import sim_market
 import owner
+import sim_market
 import utils
 import utils_rl
 from agent import *

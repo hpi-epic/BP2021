@@ -18,7 +18,7 @@ def setup_function(function):
 	print('***SETUP***')
 	global monitor
 	monitor = Monitor()
-	monitor.setup_monitoring(draw_enabled=False, subfolder_path='test_plots_')
+	monitor.setup_monitoring(draw_enabled=False, subfolder_name='test_plots_')
 
 
 # teardown after each test
@@ -39,14 +39,14 @@ def create_mock_rewards() -> list:
 
 # values and types are mismatched on purpose, as we just want to make sure the global values are changed correctly, we don't work with them
 def test_setup_monitoring():
-	monitor.setup_monitoring(draw_enabled=False, episodes=10, plot_interval=2, modelfile='./modelfile.dat', marketplace=sim_market.CircularEconomy, agents=[agent.HumanPlayerCERebuy], subfolder_path='./subfolderpath')
+	monitor.setup_monitoring(draw_enabled=False, episodes=10, plot_interval=2, modelfile='modelfile.dat', marketplace=sim_market.CircularEconomy(), agents=[agent.HumanPlayerCERebuy], subfolder_name='subfoldername')
 	assert monitor.enable_live_draws is False
 	assert 10 == monitor.episodes
 	assert 2 == monitor.plot_interval
-	assert './modelfile.dat' == monitor.path_to_modelfile
-	assert sim_market.CircularEconomy == monitor.marketplace
-	assert [agent.HumanPlayerCERebuy] == monitor.agents
-	assert './subfolderpath' == monitor.subfolder_path
+	assert os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring' + os.sep + 'modelfile.dat' == monitor.path_to_modelfile
+	assert isinstance(monitor.marketplace, sim_market.CircularEconomy)
+	assert all(isinstance(test_agent, agent.HumanPlayerCERebuy) for test_agent in monitor.agents)
+	assert 'subfoldername' == monitor.subfolder_name
 	assert 1 == len(monitor.agent_colors)
 
 
@@ -96,9 +96,9 @@ def test_get_episode_reward():
 
 
 agent_rewards_histogram = [
-	([agent.RuleBasedCEAgent()], [[100, 0]]),
-	([agent.RuleBasedCEAgent(), agent.RuleBasedCEAgent()], [[100, 0], [10, 5]]),
-	([agent.RuleBasedCEAgent(), agent.RuleBasedCEAgent(), agent.RuleBasedCEAgent(), agent.RuleBasedCEAgent()],
+	([agent.RuleBasedCEAgent], [[100, 0]]),
+	([agent.RuleBasedCEAgent, agent.RuleBasedCEAgent], [[100, 0], [10, 5]]),
+	([agent.RuleBasedCEAgent, agent.RuleBasedCEAgent, agent.RuleBasedCEAgent, agent.RuleBasedCEAgent],
 		[[100, 0], [10, 5], [100, 10000], [10, 1000]])
 ]
 
@@ -116,7 +116,7 @@ def test_create_statistics_plots(agents, rewards):
 
 
 def test_run_marketplace():
-	monitor.setup_monitoring(episodes=100, plot_interval=100, agents=[agent.FixedPriceLEAgent(5)])
+	monitor.setup_monitoring(episodes=100, plot_interval=100, agents=[agent.FixedPriceLEAgent])
 	agent_rewards = monitor.run_marketplace()
 	print(agent_rewards)
 	assert 1 == len(monitor.agents)
@@ -124,6 +124,6 @@ def test_run_marketplace():
 
 
 def test_main():
-	am.monitor.setup_monitoring(draw_enabled=False, episodes=10, plot_interval=10, subfolder_path='test_plots_')
+	am.monitor.setup_monitoring(draw_enabled=False, episodes=10, plot_interval=10, subfolder_name='test_plots_')
 	am.main()
 	assert os.path.exists(am.monitor.folder_path)

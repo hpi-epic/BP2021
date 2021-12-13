@@ -1,11 +1,12 @@
 import os
 import time
 
+import gym
 import matplotlib.pyplot as plt
 import numpy as np
 
 import agent
-import sim_market as sim
+import sim_market
 import utils as ut
 
 
@@ -23,12 +24,12 @@ class Monitor():
 		self.episodes = 200
 		self.plot_interval = int(self.episodes / 10)
 		# should get deprecated when introducing possibility to use multiple RL-agents
-		self.path_to_modelfile = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + os.sep + 'monitoring' + os.sep + 'test_marketplace.dat'
-		self.marketplace = sim.ClassicScenario()
+		self.path_to_modelfile = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + os.sep + 'monitoring' + os.sep + 'QLearningAgent_ClassicScenario.dat'
+		self.marketplace = sim_market.ClassicScenario()
 		self.agents = [agent.QLearningAgent(self.marketplace.observation_space.shape[0], self.marketplace.action_space.n, load_path=self.path_to_modelfile)]
 		self.agent_colors = ['#0000ff']
-		self.subfolder_path = 'plots_' + time.strftime('%Y%m%d-%H%M%S')
-		self.folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + os.sep + 'monitoring' + os.sep + self.subfolder_path
+		self.subfolder_name = 'plots_' + time.strftime('%Y%m%d-%H%M%S')
+		self.folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + os.sep + 'monitoring' + os.sep + self.subfolder_name
 
 	# helper functions
 	def round_up(self, number, decimals=0) -> np.float64:
@@ -65,7 +66,47 @@ class Monitor():
 			os.mkdir(self.folder_path + os.sep + 'histograms')
 		return self.folder_path
 
-	def setup_monitoring(self, draw_enabled=None, episodes=None, plot_interval=None, modelfile=None, agents=None, marketplace=None, subfolder_path=None) -> None:
+	def update_agents(self, agents) -> None:
+		"""
+		Update the self.agents to the new agens provided
+
+		Args:
+			agents (list of agent classes, optional): What agents to monitor. Each agent will generate data points in the diagrams. Defaults to None.
+
+		Raises:
+			RuntimeError: Raised if the modelfile provided does not match the Market/Agent-type provided
+		"""
+		n_actions = 1
+		if isinstance(self.marketplace.action_space, gym.spaces.Discrete):
+			n_actions = self.marketplace.action_space.n
+		else:
+			for id in range(0, len(self.marketplace.action_space)):
+				n_actions *= self.marketplace.action_space[id].n
+
+		# All agents must be of the same type
+		assert all(agent_class.is_circular == agents[0].is_circular for agent_class in agents), 'The agents are not of the same type!'
+		self.agents = []
+
+		# Instantiate all agents. If they are not rule-based, use the marketplace parameters accordingly
+		for agent_class in agents:
+			if agent_class.is_rule_based:
+				self.agents.append(agent_class())
+			elif not agent_class.is_rule_based:
+				# TODO: Modelfile from list!
+				try:
+					self.agents.append(agent_class(self.marketplace.observation_space.shape[0], n_actions, load_path=self.path_to_modelfile))
+				except RuntimeError:
+					raise RuntimeError('The modelfile is probably not compatible with the agent you tried to instantiate!')
+			else:
+				assert False, agent_class + 'is neither a rule_based nor a reinforcement_learning agent!'
+
+		# set a color for each agent
+		color_map = self.get_cmap(len(self.agents))
+		self.agent_colors = []
+		for agent_id in range(0, len(self.agents)):
+			self.agent_colors.append(color_map(agent_id))
+
+	def setup_monitoring(self, draw_enabled=None, episodes=None, plot_interval=None, modelfile=None, agents=None, marketplace=None, subfolder_name=None) -> None:
 		"""
 		Configure the current monitoring session.
 
@@ -74,9 +115,9 @@ class Monitor():
 			episodes (int, optional): The number of episodes to run. Defaults to None.
 			plot_interval (int, optional): After how many episodes a new data point/plot should be generated. Defaults to None.
 			modelfile (str, optional): Path to the file containing the model for a RL-agent. Defaults to None.
-			agents (list of agent instances, optional): What agents to monitor. Each agent will generate data points in the diagrams. Defaults to None.
+			agents (list of agent classes, optional): What agents to monitor. Each agent will generate data points in the diagrams. Defaults to None.
 			marketplace (sim_market instance, optional): What marketplace to run the monitoring on. Defaults to None.
-			subfolder_path (str, optional): The name of the folder to save the diagrams in. Defaults to None.
+			subfolder_name (str, optional): The name of the folder to save the diagrams in. Defaults to None.
 		"""
 		# doesn't look nice, but afaik only way to keep parameter list short
 		if(draw_enabled is not None):
@@ -86,20 +127,23 @@ class Monitor():
 		if(plot_interval is not None):
 			self.plot_interval = plot_interval
 		if(modelfile is not None):
-			self.path_to_modelfile = modelfile
-		if(agents is not None):
-			print(all(agent_class.is_circular == agents[0].is_circular for agent_class in agents))
-			assert all(agent_class.is_circular == agents[0].is_circular for agent_class in agents)
-			self.agents = agents
-			color_map = self.get_cmap(len(self.agents))
-			self.agent_colors = []
-			for agent_id in range(0, len(self.agents)):
-				self.agent_colors.append(color_map(agent_id))
+			self.path_to_modelfile = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + os.sep + 'monitoring' + os.sep + modelfile
+
 		if(marketplace is not None):
 			self.marketplace = marketplace
-		if(subfolder_path is not None):
-			self.subfolder_path = subfolder_path
-			self.folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + os.sep + 'monitoring' + os.sep + self.subfolder_path
+			# The agents have not been changed, we reuse the old agents
+			if(agents is None):
+				# A bit hacky
+				agents = self.agents
+			self.update_agents(agents)
+
+		# marketplace has not changed but agents have
+		elif(agents is not None):
+			self.update_agents(agents)
+
+		if(subfolder_name is not None):
+			self.subfolder_name = subfolder_name
+			self.folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + os.sep + 'monitoring' + os.sep + self.subfolder_name
 
 	def get_episode_rewards(self, all_step_rewards) -> list:
 		"""
@@ -145,6 +189,7 @@ class Monitor():
 			rewards (array of arrays of int): An array containing an array of ints for each monitored agent.
 			filename (str, optional): The name of the output file, format will be .svg. Defaults to 'default'.
 		"""
+		plt.clf()
 		plt.xlabel('Reward', fontsize='18')
 		plt.ylabel('Episodes', fontsize='18')
 		plt.title('Cumulative Reward per Episode')
@@ -288,8 +333,8 @@ monitor = Monitor()
 
 
 def main() -> None:
-	# import agent
-	# monitor.setup_monitoring(situation='circular', agents=[agent.RuleBasedCEAgent(), agent.FixedPriceCEAgent((3,4), 'fixed_6'), agent.FixedPriceCEAgent((2,2), 'fixed_3')])
+	import agent
+	monitor.setup_monitoring(modelfile='QLearningCEAgent_CircularEconomy.dat', marketplace=sim_market.CircularEconomy(), agents=[agent.RuleBasedCEAgent, agent.QLearningCEAgent])
 	print(f'Running', monitor.episodes, 'episodes')
 	print(f'Plot interval is: {monitor.plot_interval}')
 	print(f'Using modelfile: {monitor.path_to_modelfile}')
