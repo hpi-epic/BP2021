@@ -29,13 +29,15 @@ class OwnerReturn(Owner):
 	def consider_return(self) -> None:
 		"""
 		The function returns the rebuy decision based on the probabilities calculated in the function set_probabilities_from_offer.
+		The set_probabilities_from_offer function is not needed for this owner to function properly.
 		"""
 		return int(np.floor(np.random.rand() * 2))
 
 
 class OwnerRebuy(OwnerReturn):
 	"""
-	An owner return represents a person who owns a product and might wants to sell it back to the store.In contrast to a return, a rebuy is a person who owns a product and wants to sell it to the vendor rather than to return it for free.
+		In contrast to its superclass, this owner sells the product rather than returning it out of good will.
+		For this it calculates a probability distribution of what to do with the product with every new offer and smaples from it.
 	"""
 	def __init__(self) -> None:
 		super().__init__()
@@ -43,7 +45,7 @@ class OwnerRebuy(OwnerReturn):
 
 	def set_probabilities_from_offer(self, offer):
 		"""
-		The function calculates the probabilities of a rebuy depending on the offer given by the buyer.
+		The function calculates the probability distribution of a rebuy depending on the offer given by the buyer.
 
 		Args:
 			offer (np.array(int)): The offer given by the vendor.
@@ -60,7 +62,7 @@ class OwnerRebuy(OwnerReturn):
 
 	def consider_return(self) -> None:
 		"""
-		The function returns the rebuy decision based on the probabilities calculated in the function set_probabilities_from_offer.
+		The function returns the rebuy decision based on the probabilities calculated in the function set_probabilities_from_offer. It has to be called first.
 		"""
 		assert self.probabilities is not None, 'Probabilities not set. You need to call set_probabilities_from_offer first.'
 		return ut.shuffle_from_probabilities(self.probabilities)
