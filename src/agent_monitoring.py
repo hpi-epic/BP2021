@@ -154,8 +154,6 @@ class Monitor():
 		# find the number of bins needed, we only use steps of 1000, assuming our agents are good bois :)
 		plot_range = self.round_down(int(self.metrics_minimum(rewards)), -3), self.round_up(int(self.metrics_maximum(rewards)), -3)
 		plot_bins = int(int(np.abs(plot_range[0]) + plot_range[1]) / 1000)
-		print(plot_range)
-		print(plot_bins)
 
 		plt.hist(rewards, bins=plot_bins, color=self.agent_colors, rwidth=0.9, range=plot_range)
 		plt.legend([a.name for a in self.agents])
