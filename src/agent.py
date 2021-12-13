@@ -1,6 +1,7 @@
 import collections
 import os
 import random
+from abc import ABC, abstractmethod
 
 import numpy as np
 import torch
@@ -12,15 +13,28 @@ from customer import CustomerCircular
 from experience_buffer import ExperienceBuffer
 
 
-class Agent:
+class Agent(ABC):
 	def __init__(self, name='agent'):
 		self.name = name
+		self.is_circular = None
+		self.is_rule_based = None
 
+	@abstractmethod
 	def policy(self, state, epsilon=0):
-		assert False
+		raise NotImplementedError
 
 
-class HumanPlayer(Agent):
+class CircularAgent(Agent, ABC):
+	def __init__(self):
+		self.is_circular = True
+
+
+class LinearAgent(Agent, ABC):
+	def __init__(self):
+		self.is_circular = False
+
+
+class HumanPlayer(LinearAgent):
 	def __init__(self, name='YOU'):
 		self.name = name
 		print('Welcome to this funny game! Now, you are the one playing the game!')
@@ -30,7 +44,7 @@ class HumanPlayer(Agent):
 		return input()
 
 
-class HumanPlayerCE(HumanPlayer):
+class HumanPlayerCE(CircularAgent, HumanPlayer):
 	def policy(self, state, *_) -> int:
 		raw_input_string = super().policy(state)
 		assert raw_input_string.count(' ') == 1, 'Please enter two numbers seperated by spaces!'
@@ -38,7 +52,7 @@ class HumanPlayerCE(HumanPlayer):
 		return (int(price_old), int(price_new))
 
 
-class HumanPlayerCERebuy(HumanPlayer):
+class HumanPlayerCERebuy(CircularAgent, HumanPlayer):
 	def policy(self, state, *_) -> int:
 		raw_input_string = super().policy(state)
 		assert raw_input_string.count(' ') == 2, 'Please enter three numbers seperated by spaces!'
@@ -46,33 +60,33 @@ class HumanPlayerCERebuy(HumanPlayer):
 		return (int(price_old), int(price_new), int(rebuy_price))
 
 
-class FixedPriceAgent(Agent):
+class FixedPriceAgent(Agent, ABC):
 	def policy(self, *_) -> int:
 		return self.fixed_price
 
 
-class FixedPriceLEAgent(FixedPriceAgent):
+class FixedPriceLEAgent(FixedPriceAgent, LinearAgent):
 	def __init__(self, fixed_price=ut.PRODUCTION_PRICE + 3, name='fixed_price_le'):
 		assert isinstance(fixed_price, int)
 		self.name = name
 		self.fixed_price = fixed_price
 
 
-class FixedPriceCEAgent(FixedPriceAgent):
+class FixedPriceCEAgent(FixedPriceAgent, CircularAgent):
 	def __init__(self, fixed_price=(2, 4), name='fixed_price_ce'):
 		assert isinstance(fixed_price, tuple) and len(fixed_price) == 2
 		self.name = name
 		self.fixed_price = fixed_price
 
 
-class FixedPriceCERebuyAgent(FixedPriceAgent):
+class FixedPriceCERebuyAgent(FixedPriceAgent, CircularAgent):
 	def __init__(self, fixed_price=(3, 6, 2), name='fixed_price_ce_rebuy'):
 		assert isinstance(fixed_price, tuple) and len(fixed_price) == 3
 		self.name = name
 		self.fixed_price = fixed_price
 
 
-class RuleBasedCEAgent(Agent):
+class RuleBasedCEAgent(CircularAgent):
 	def __init__(self, name='rule_based_ce'):
 		self.name = name
 
@@ -155,12 +169,12 @@ class RuleBasedCEAgent(Agent):
 		return (max_price_u, max_price_n)
 
 
-class RuleBasedCERebuyAgent(RuleBasedCEAgent):
+class RuleBasedCERebuyAgent(RuleBasedCEAgent, CircularAgent):
 	def return_prices(self, price_old, price_new, rebuy_price):
 		return (price_old, price_new, rebuy_price)
 
 
-class QLearningAgent(Agent):
+class QLearningAgent(Agent, ABC):
 	Experience = collections.namedtuple('Experience', field_names=['state', 'action', 'reward', 'done', 'new_state'])
 
 	# If you enter load_path, the model will be loaded. For example, if you want to use a pretrained net or test a given agent.
@@ -235,13 +249,13 @@ class QLearningAgent(Agent):
 		torch.save(self.net.state_dict(), './trainedModels/' + path)
 
 
-class QLearningCEAgent(QLearningAgent):
+class QLearningCEAgent(QLearningAgent, CircularAgent):
 	def policy(self, state, epsilon=0) -> int:
 		step = super().policy(state, epsilon)
 		return (int(step % 10), int(step / 10))
 
 
-class QLearningCERebuyAgent(QLearningAgent):
+class QLearningCERebuyAgent(QLearningAgent, CircularAgent):
 	def policy(self, state, epsilon=0) -> int:
 		step = super().policy(state, epsilon)
 		return (int(step / 100), int(step / 10 % 10), int(step % 10))

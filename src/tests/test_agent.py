@@ -6,6 +6,11 @@ from .context import utils as ut
 test_state = [50, 60]
 
 
+def test_agent_ist_abstract():
+	with pytest.raises(TypeError):
+		agent.Agent()
+
+
 def test_fixed_price_LE_agent_returns_default_fixed_price():
 	test_agent = agent.FixedPriceLEAgent()
 	assert ut.PRODUCTION_PRICE + 3 == test_agent.policy(test_state)
