@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-import abc
 import copy
+from abc import ABC, abstractmethod
 from typing import Tuple
 
 import gym
@@ -16,7 +16,7 @@ from owner import Owner
 # An offer is a Market State that contains both prices and both qualities
 
 
-class SimMarket(gym.Env, abc.ABC):
+class SimMarket(gym.Env, ABC):
 	def __init__(self) -> None:
 		self.competitors = self.get_competitor_list()
 		# The agent's price does not belong to the observation_space any more because an agent should not depend on it
@@ -90,23 +90,23 @@ class SimMarket(gym.Env, abc.ABC):
 		is_done = self.step_counter >= ut.EPISODE_LENGTH
 		return copy.deepcopy(self.state), profits[0], is_done, output_dict
 
-	@abc.abstractmethod
+	@abstractmethod
 	def consider_owners_return(self, *_) -> None:
-		pass
+		raise NotImplementedError
 
-	@abc.abstractmethod
+	@abstractmethod
 	def get_competitor_list(self) -> list:
-		pass
+		raise NotImplementedError
 
-	@abc.abstractmethod
+	@abstractmethod
 	def consider_storage_costs(self, profits) -> None:
-		pass
+		raise NotImplementedError
 
 	def choose_owner(self):
 		pass
 
 
-class LinearEconomy(SimMarket, abc.ABC):
+class LinearEconomy(SimMarket, ABC):
 
 	def setup_action_observation_space(self) -> None:
 		# cell 0: agent's quality, afterwards: odd cells: competitor's price, even cells: competitor's quality
@@ -150,9 +150,9 @@ class LinearEconomy(SimMarket, abc.ABC):
 	def consider_storage_costs(self, profits) -> None:
 		pass
 
-	@abc.abstractmethod
+	@abstractmethod
 	def get_competitor_list(self) -> list:
-		pass
+		raise NotImplementedError
 
 
 class ClassicScenario(LinearEconomy):

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import abc
+from abc import ABC, abstractmethod
 
 import numpy as np
 
@@ -8,17 +8,17 @@ import numpy as np
 import utils as ut
 
 
-class Owner(abc.ABC):
+class Owner(ABC):
 	"""
-	The abstract class represents the owner of a product and is responible for the decision what to do with the product.
+	The abstract class represents the owner of a product and is responsible for the decision what to do with the product.
 	"""
 
 	def __init__(self) -> None:
 		pass
 
-	@abc.abstractmethod
+	@abstractmethod
 	def consider_return(self, others):
-		pass
+		raise NotImplementedError
 
 
 class OwnerReturn(Owner):
