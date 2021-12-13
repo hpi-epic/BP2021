@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-
 import copy
+from abc import ABC, abstractmethod
 from typing import Tuple
 
 import gym
@@ -8,18 +8,21 @@ import numpy as np
 
 import competitor as comp
 import customer
+import owner
 import utils as ut
 from customer import Customer
+from owner import Owner
 
 # An offer is a Market State that contains both prices and both qualities
 
 
-class SimMarket(gym.Env):
+class SimMarket(gym.Env, ABC):
 	def __init__(self) -> None:
 		self.competitors = self.get_competitor_list()
 		# The agent's price does not belong to the observation_space any more because an agent should not depend on it
 		self.setup_action_observation_space()
-
+		self.owner = None
+		self.customer = None
 		# TODO: Better testing for the observation and action space
 		assert (
 			self.observation_space and self.action_space
@@ -38,6 +41,7 @@ class SimMarket(gym.Env):
 		self.state = np.array(reset_state)
 
 		self.customer = self.choose_customer()
+		self.owner = self.choose_owner()
 
 		# print('I initiate with', self.state)
 		return copy.deepcopy(self.state)
@@ -55,12 +59,6 @@ class SimMarket(gym.Env):
 			(self.action_to_array(action), self.state), dtype=np.float64
 		)
 
-	def consider_owners_return(self, *_) -> None:
-		pass
-
-	def modify_profit_by_state(self, profits) -> None:
-		pass
-
 	def step(self, action) -> Tuple[np.array, np.float64, bool, dict]:
 		# The action is the new price of the agent
 
@@ -75,6 +73,7 @@ class SimMarket(gym.Env):
 		profits = [0] * n_vendors
 
 		self.consider_owners_return(self.generate_offer(action), profits)
+
 		for i in range(n_vendors):
 			self.simulate_customers(
 				profits,
@@ -88,14 +87,30 @@ class SimMarket(gym.Env):
 				)
 				self.apply_competitor_action(action_competitor_i, i)
 
-		self.modify_profit_by_state(profits)
+		self.consider_storage_costs(profits)
 
 		output_dict = {'all_profits': profits}
 		is_done = self.step_counter >= ut.EPISODE_LENGTH
 		return copy.deepcopy(self.state), profits[0], is_done, output_dict
 
+	@abstractmethod
+	def consider_owners_return(self, *_) -> None:
+		raise NotImplementedError
 
-class LinearEconomy(SimMarket):
+	@abstractmethod
+	def get_competitor_list(self) -> list:
+		raise NotImplementedError
+
+	@abstractmethod
+	def consider_storage_costs(self, profits) -> None:
+		raise NotImplementedError
+
+	def choose_owner(self):
+		pass
+
+
+class LinearEconomy(SimMarket, ABC):
+
 	def setup_action_observation_space(self) -> None:
 		# cell 0: agent's quality, afterwards: odd cells: competitor's price, even cells: competitor's quality
 		self.observation_space = gym.spaces.Box(
@@ -132,13 +147,25 @@ class LinearEconomy(SimMarket):
 	def apply_competitor_action(self, action, i) -> None:
 		self.state[self.ith_competitor_index(i)] = action
 
+	def consider_owners_return(self, offer, profits) -> None:
+		pass
+
+	def consider_storage_costs(self, profits) -> None:
+		pass
+
+	@abstractmethod
+	def get_competitor_list(self) -> list:
+		raise NotImplementedError
+
 
 class ClassicScenario(LinearEconomy):
+
 	def get_competitor_list(self) -> list:
 		return [comp.CompetitorJust2Players()]
 
 
 class MultiCompetitorScenario(LinearEconomy):
+
 	def get_competitor_list(self) -> list:
 		return [
 			comp.CompetitorLinearRatio1(),
@@ -168,10 +195,13 @@ class CircularEconomy(SimMarket):
 	def choose_customer(self) -> Customer:
 		return customer.CustomerCircular()
 
-	def consider_owners_return(self, offer, profits) -> None:
-		for _ in range(int(0.05 * self.state[1])):
-			owner_action = int(np.floor(np.random.rand() * 2))
+	def choose_owner(self) -> Owner:
+		return owner.OwnerReturn()
 
+	def consider_owners_return(self, offer, profits) -> None:
+		assert self.owner is not None, 'please choose an owner'
+		for _ in range(int(0.05 * self.state[1])):
+			owner_action = self.owner.consider_return()
 			if owner_action == 0:
 				# Owner throws away his object
 				self.state[1] -= 1
@@ -199,7 +229,7 @@ class CircularEconomy(SimMarket):
 			# One more product is in circulation now
 			self.state[1] = min(self.state[1] + 1, 10 * self.max_storage)
 
-	def modify_profit_by_state(self, profits) -> None:
+	def consider_storage_costs(self, profits) -> None:
 		profits[0] -= self.state[0] / 2  # Storage costs per timestep
 
 
@@ -208,18 +238,16 @@ class CircularEconomyRebuyPrice(CircularEconomy):
 		super().setup_action_observation_space()
 		self.action_space = gym.spaces.Tuple((gym.spaces.Discrete(ut.MAX_PRICE), gym.spaces.Discrete(ut.MAX_PRICE), gym.spaces.Discrete(ut.MAX_PRICE)))
 
-	def consider_owners_return(self, offer, profits) -> None:
-		holding_preference = 1
-		discard_preference = 2 / (offer[2] + 1)  # If the price is low, the customer will discard the product
-		return_preference = 2 * np.exp((offer[2] - min(offer[0], offer[1])) / min(offer[0], offer[1]))  # Customer is very excited if the value of his product is close to the new or refurbished price
+	def choose_owner(self) -> Owner:
+		return owner.OwnerRebuy()
 
-		# print(np.array([holding_preference, discard_preference, return_preference]))
-		probabilities = ut.softmax(np.array([holding_preference, discard_preference, return_preference]))
-		# print(probabilities)
+	def consider_owners_return(self, offer, profits) -> None:
+		# just like with the customer the probabilities are set beforehand to improve performance
+		assert self.owner is not None, 'please choose an owner'
 
 		for _ in range(int(0.05 * self.state[1])):
-			owner_action = ut.shuffle_from_probabilities(probabilities)
-
+			self.owner.set_probabilities_from_offer(offer)
+			owner_action = self.owner.consider_return()
 			if owner_action == 1:
 				# Owner throws away his object
 				self.state[1] -= 1

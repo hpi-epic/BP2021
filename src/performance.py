@@ -5,6 +5,7 @@ import signal
 import sys
 
 import agent_monitoring as am
+import exampleprinter
 import training
 
 
@@ -17,7 +18,7 @@ def handler(signum, frame) -> None:
 
 
 def run_profiling() -> None:
-	cProfile.run('am.main()', filename='../results', sort=3)
+	cProfile.run('exampleprinter.main()', filename='../results', sort=3)
 	p = pstats.Stats('../results')
 	p.sort_stats('cumulative').dump_stats(filename='../results.prof')
 	signal.signal(signal.SIGINT, handler)
