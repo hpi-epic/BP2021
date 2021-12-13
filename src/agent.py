@@ -14,9 +14,10 @@ from experience_buffer import ExperienceBuffer
 
 
 class Agent(ABC):
+	is_circular = None
+
 	def __init__(self, name='agent'):
 		self.name = name
-		self.is_circular = None
 		self.is_rule_based = None
 
 	@abstractmethod
@@ -25,13 +26,11 @@ class Agent(ABC):
 
 
 class CircularAgent(Agent, ABC):
-	def __init__(self):
-		self.is_circular = True
+	is_circular = True
 
 
 class LinearAgent(Agent, ABC):
-	def __init__(self):
-		self.is_circular = False
+	is_circular = False
 
 
 class HumanPlayer(Agent, ABC):
@@ -77,7 +76,7 @@ class FixedPriceAgent(Agent, ABC):
 	pass
 
 
-class FixedPriceLEAgent(FixedPriceAgent, LinearAgent):
+class FixedPriceLEAgent(LinearAgent, FixedPriceAgent):
 	def __init__(self, fixed_price=ut.PRODUCTION_PRICE + 3, name='fixed_price_le'):
 		assert isinstance(fixed_price, int)
 		self.name = name
@@ -87,7 +86,7 @@ class FixedPriceLEAgent(FixedPriceAgent, LinearAgent):
 		return self.fixed_price
 
 
-class FixedPriceCEAgent(FixedPriceAgent, CircularAgent):
+class FixedPriceCEAgent(CircularAgent, FixedPriceAgent):
 	def __init__(self, fixed_price=(2, 4), name='fixed_price_ce'):
 		assert isinstance(fixed_price, tuple) and len(fixed_price) == 2
 		self.name = name

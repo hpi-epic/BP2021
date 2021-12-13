@@ -7,6 +7,7 @@ import pytest
 
 from .context import Monitor, agent
 from .context import agent_monitoring as am
+from .context import sim_market
 from .context import utils as ut
 
 monitor = Monitor()
@@ -38,15 +39,24 @@ def create_mock_rewards() -> list:
 
 # values and types are mismatched on purpose, as we just want to make sure the global values are changed correctly, we don't work with them
 def test_setup_monitoring():
-	monitor.setup_monitoring(0, 1, 2, 3, 4, 5, [6])
-	assert 0 == monitor.enable_live_draws
-	assert 1 == monitor.episodes
+	monitor.setup_monitoring(draw_enabled=False, episodes=10, plot_interval=2, modelfile='./modelfile.dat', marketplace=sim_market.CircularEconomy, agents=[agent.HumanPlayerCERebuy], subfolder_path='./subfolderpath')
+	assert monitor.enable_live_draws is False
+	assert 10 == monitor.episodes
 	assert 2 == monitor.plot_interval
-	assert 3 == monitor.path_to_modelfile
-	assert 4 == monitor.situation
-	assert 5 == monitor.marketplace
-	assert [6] == monitor.agents
+	assert './modelfile.dat' == monitor.path_to_modelfile
+	assert sim_market.CircularEconomy == monitor.marketplace
+	assert [agent.HumanPlayerCERebuy] == monitor.agents
+	assert './subfolderpath' == monitor.subfolder_path
 	assert 1 == len(monitor.agent_colors)
+
+
+def test_setup_with_invalid_agents():
+	with pytest.raises(AssertionError):
+		monitor.setup_monitoring(agents=[agent.FixedPriceLEAgent, agent.FixedPriceCERebuyAgent])
+
+
+def test_setup_with_valid_agents():
+	monitor.setup_monitoring(agents=[agent.FixedPriceCERebuyAgent, agent.FixedPriceCEAgent])
 
 
 def test_metrics_average():
@@ -100,9 +110,9 @@ def test_create_histogram(agents, rewards):
 
 
 @pytest.mark.parametrize('agents, rewards', agent_rewards_histogram)
-def test_create_stat_plots(agents, rewards):
+def test_create_statistics_plots(agents, rewards):
 	monitor.setup_monitoring(agents=agents, episodes=len(rewards[0]), plot_interval=1)
-	monitor.create_stat_plots(rewards)
+	monitor.create_statistics_plots(rewards)
 
 
 def test_run_marketplace():

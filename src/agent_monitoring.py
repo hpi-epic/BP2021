@@ -24,8 +24,7 @@ class Monitor():
 		self.plot_interval = int(self.episodes / 10)
 		# should get deprecated when introducing possibility to use multiple RL-agents
 		self.path_to_modelfile = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + os.sep + 'monitoring' + os.sep + 'test_marketplace.dat'
-		self.situation = 'linear'
-		self.marketplace = sim.CircularEconomy() if self.situation == 'circular' else sim.ClassicScenario()
+		self.marketplace = sim.ClassicScenario()
 		self.agents = [agent.QLearningAgent(self.marketplace.observation_space.shape[0], self.marketplace.action_space.n, load_path=self.path_to_modelfile)]
 		self.agent_colors = ['#0000ff']
 		self.subfolder_path = 'plots_' + time.strftime('%Y%m%d-%H%M%S')
@@ -66,7 +65,7 @@ class Monitor():
 			os.mkdir(self.folder_path + os.sep + 'histograms')
 		return self.folder_path
 
-	def setup_monitoring(self, draw_enabled=None, episodes=None, plot_interval=None, modelfile=None, situation=None, marketplace=None, agents=None, subfolder_path=None) -> None:
+	def setup_monitoring(self, draw_enabled=None, episodes=None, plot_interval=None, modelfile=None, agents=None, marketplace=None, subfolder_path=None) -> None:
 		"""
 		Configure the current monitoring session.
 
@@ -75,9 +74,8 @@ class Monitor():
 			episodes (int, optional): The number of episodes to run. Defaults to None.
 			plot_interval (int, optional): After how many episodes a new data point/plot should be generated. Defaults to None.
 			modelfile (str, optional): Path to the file containing the model for a RL-agent. Defaults to None.
-			situation (str, optional): 'linear' or 'circular', which market situation should be played. Defaults to None.
-			marketplace (sim_market instance, optional): What marketplace to run the monitoring on. Defaults to None.
 			agents (list of agent instances, optional): What agents to monitor. Each agent will generate data points in the diagrams. Defaults to None.
+			marketplace (sim_market instance, optional): What marketplace to run the monitoring on. Defaults to None.
 			subfolder_path (str, optional): The name of the folder to save the diagrams in. Defaults to None.
 		"""
 		# doesn't look nice, but afaik only way to keep parameter list short
@@ -89,20 +87,19 @@ class Monitor():
 			self.plot_interval = plot_interval
 		if(modelfile is not None):
 			self.path_to_modelfile = modelfile
-		if(situation is not None):
-			self.situation = situation
-			self.marketplace = sim.CircularEconomy() if self.situation == 'circular' else sim.ClassicScenario()
+		if(agents is not None):
+			print(all(agent_class.is_circular == agents[0].is_circular for agent_class in agents))
+			assert all(agent_class.is_circular == agents[0].is_circular for agent_class in agents)
+			self.agents = agents
+			color_map = self.get_cmap(len(self.agents))
+			self.agent_colors = []
+			for agent_id in range(0, len(self.agents)):
+				self.agent_colors.append(color_map(agent_id))
 		if(marketplace is not None):
 			self.marketplace = marketplace
 		if(subfolder_path is not None):
 			self.subfolder_path = subfolder_path
 			self.folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + os.sep + 'monitoring' + os.sep + self.subfolder_path
-		if(agents is not None):
-			self.agents = agents
-			color_map = self.get_cmap(len(self.agents))
-			self.agent_colors = []
-			for i in range(0, len(self.agents)):
-				self.agent_colors.append(color_map(i))
 
 	def get_episode_rewards(self, all_step_rewards) -> list:
 		"""
@@ -163,7 +160,7 @@ class Monitor():
 			plt.pause(0.001)
 		plt.savefig(fname=self.get_folder() + os.sep + 'histograms' + os.sep + filename + '.svg')
 
-	def create_stat_plots(self, rewards) -> None:
+	def create_statistics_plots(self, rewards) -> None:
 		"""
 		For each of our metrics, calculate the running value each self.plot_interval and plot it as a line graph.
 
@@ -179,10 +176,10 @@ class Monitor():
 		for function in range(len(metrics_functions)):
 			# calculate <metric> rewards per self.plot_interval episodes for each agent
 			metric_rewards = []
-			for i in range(0, len(rewards)):
+			for agent_rewards_id in range(0, len(rewards)):
 				metric_rewards.append([])
-				for j in range(0, int(len(rewards[i]) / self.plot_interval)):
-					metric_rewards[i].append(metrics_functions[function](rewards[i][0:self.plot_interval * j + self.plot_interval]))
+				for starting_index in range(0, int(len(rewards[agent_rewards_id]) / self.plot_interval)):
+					metric_rewards[agent_rewards_id].append(metrics_functions[function](rewards[agent_rewards_id][0:self.plot_interval * starting_index + self.plot_interval]))
 			self.create_line_plot(x_axis_episodes, metric_rewards, metrics_names[function])
 
 	def create_step_plots(self, all_steps_rewards) -> None:
@@ -296,7 +293,6 @@ def main() -> None:
 	print(f'Running', monitor.episodes, 'episodes')
 	print(f'Plot interval is: {monitor.plot_interval}')
 	print(f'Using modelfile: {monitor.path_to_modelfile}')
-	print(f'The situation is: {monitor.situation}')
 	print(f'The marketplace is: {monitor.marketplace}')
 	print('Monitoring these agents:')
 	for current_agent in monitor.agents:
@@ -313,7 +309,7 @@ def main() -> None:
 		print(f'The minimum reward over {monitor.episodes} episodes is: {str(monitor.metrics_minimum(rewards[i]))}')
 
 	monitor.create_step_plots(all_steps_rewards)
-	monitor.create_stat_plots(rewards)
+	monitor.create_statistics_plots(rewards)
 	print(f'All plots were saved to {monitor.get_folder()}')
 
 
