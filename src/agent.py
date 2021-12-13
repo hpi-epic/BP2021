@@ -71,8 +71,10 @@ class HumanPlayerCERebuy(CircularAgent, HumanPlayer):
 
 
 class FixedPriceAgent(Agent, ABC):
-	def policy(self, *_) -> int:
-		return self.fixed_price
+	"""
+	An abstract class for FixedPriceAgents
+	"""
+	pass
 
 
 class FixedPriceLEAgent(FixedPriceAgent, LinearAgent):
@@ -81,6 +83,9 @@ class FixedPriceLEAgent(FixedPriceAgent, LinearAgent):
 		self.name = name
 		self.fixed_price = fixed_price
 
+	def policy(self, *_) -> int:
+		return self.fixed_price
+
 
 class FixedPriceCEAgent(FixedPriceAgent, CircularAgent):
 	def __init__(self, fixed_price=(2, 4), name='fixed_price_ce'):
@@ -88,12 +93,18 @@ class FixedPriceCEAgent(FixedPriceAgent, CircularAgent):
 		self.name = name
 		self.fixed_price = fixed_price
 
+	def policy(self, *_) -> int:
+		return self.fixed_price
+
 
 class FixedPriceCERebuyAgent(FixedPriceAgent, CircularAgent):
 	def __init__(self, fixed_price=(3, 6, 2), name='fixed_price_ce_rebuy'):
 		assert isinstance(fixed_price, tuple) and len(fixed_price) == 3
 		self.name = name
 		self.fixed_price = fixed_price
+
+	def policy(self, *_) -> int:
+		return self.fixed_price
 
 
 class RuleBasedCEAgent(CircularAgent):
