@@ -34,8 +34,14 @@ class LinearAgent(Agent, ABC):
 		self.is_circular = False
 
 
-class HumanPlayer(LinearAgent):
-	def __init__(self, name='YOU'):
+class HumanPlayer(Agent, ABC):
+	@abstractmethod
+	def policy(self, state, *_) -> int:
+		raise NotImplementedError
+
+
+class HumanPlayerLE(LinearAgent, HumanPlayer):
+	def __init__(self, name='YOU - Linear'):
 		self.name = name
 		print('Welcome to this funny game! Now, you are the one playing the game!')
 
@@ -45,6 +51,10 @@ class HumanPlayer(LinearAgent):
 
 
 class HumanPlayerCE(CircularAgent, HumanPlayer):
+	def __init__(self, name='YOU - Circular'):
+		self.name = name
+		print('Welcome to this funny game! Now, you are the one playing the game!')
+
 	def policy(self, state, *_) -> int:
 		raw_input_string = super().policy(state)
 		assert raw_input_string.count(' ') == 1, 'Please enter two numbers seperated by spaces!'
