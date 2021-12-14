@@ -52,11 +52,11 @@ def test_init_default_values():
 
 
 def test_correct_setup_monitoring():
-	monitor.setup_monitoring(enable_live_draws=False, episodes=10, plot_interval=2, modelfile='CircularEconomy_QlearningCEAgent.dat', marketplace=sim_market.CircularEconomy, agents=[(agent.HumanPlayerCERebuy, ['reptiloid'])], subfolder_name='subfoldername')
+	monitor.setup_monitoring(enable_live_draws=False, episodes=10, plot_interval=2, modelfile='CircularEconomy_QLearningCEAgent.dat', marketplace=sim_market.CircularEconomy, agents=[(agent.HumanPlayerCERebuy, ['reptiloid'])], subfolder_name='subfoldername')
 	assert monitor.enable_live_draws is False
 	assert 10 == monitor.episodes
 	assert 2 == monitor.plot_interval
-	assert os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring' + os.sep + 'CircularEconomy_QlearningCEAgent.dat' == monitor.path_to_modelfile
+	assert os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring' + os.sep + 'CircularEconomy_QLearningCEAgent.dat' == monitor.path_to_modelfile
 	assert isinstance(monitor.marketplace, sim_market.CircularEconomy)
 	assert all(isinstance(test_agent, agent.HumanPlayerCERebuy) for test_agent in monitor.agents)
 	assert 'reptiloid' == monitor.agents[0].name
