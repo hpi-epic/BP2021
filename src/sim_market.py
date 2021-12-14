@@ -72,14 +72,13 @@ class SimMarket(gym.Env, ABC):
 
 		profits = [0] * self.n_vendors()
 
-		self.consider_owners_return(self.generate_customer_offer(), profits)
+		output_dict = {'all_profits': profits}
 
+		customers_per_vendor_iteration = int(np.floor(ut.NUMBER_OF_CUSTOMERS / self.n_vendors()))
 		for i in range(self.n_vendors()):
-			self.simulate_customers(
-				profits,
-				self.generate_customer_offer(),
-				int(np.floor(ut.NUMBER_OF_CUSTOMERS / self.n_vendors())),
-			)
+			self.simulate_customers(profits, self.generate_customer_offer(), customers_per_vendor_iteration)
+			self.simulate_owners(profits, self.generate_customer_offer())
+
 			# the competitor, which turn it is, will update its pricing
 			if i < len(self.competitors):
 				action_competitor_i = self.competitors[i].policy(
@@ -90,7 +89,6 @@ class SimMarket(gym.Env, ABC):
 
 		self.consider_storage_costs(profits)
 
-		output_dict = {'all_profits': profits}
 		is_done = self.step_counter >= ut.EPISODE_LENGTH
 		return self.observation(), profits[0], is_done, output_dict
 
@@ -127,9 +125,8 @@ class SimMarket(gym.Env, ABC):
 	def reset_specific_vendor_state(self) -> None:
 		None
 
-	@abstractmethod
-	def consider_owners_return(self, *_) -> None:
-		raise NotImplementedError
+	def simulate_owners(self, *_) -> None:
+		pass
 
 	@abstractmethod
 	def get_competitor_list(self) -> list:
@@ -170,9 +167,6 @@ class LinearEconomy(SimMarket, ABC):
 
 	def complete_purchase(self, offers, profits, customer_buy) -> None:
 		profits[customer_buy - 1] += (offers[(customer_buy - 1) * 2] - ut.PRODUCTION_PRICE)
-
-	def consider_owners_return(self, offer, profits) -> None:
-		pass
 
 	def consider_storage_costs(self, profits) -> None:
 		pass
@@ -225,20 +219,24 @@ class CircularEconomy(SimMarket):
 	def choose_owner(self) -> Owner:
 		return owner.OwnerReturn()
 
-	def consider_owners_return(self, offer, profits) -> None:
+	def throw_away(self) -> None:
+		self.in_circulation -= 1
+
+	def transfer_product_to_storage(self, vendor, profits=None, rebuy_price=0) -> None:
+		if self.in_storage < self.max_storage:
+			self.in_storage += 1
+		self.in_circulation -= 1
+		if profits is not None:
+			profits[vendor] -= rebuy_price
+
+	def simulate_owners(self, *_) -> None:
 		assert self.owner is not None, 'please choose an owner'
-		for _ in range(int(0.05 * self.in_circulation)):
+		for _ in range(int(0.05 * self.in_circulation / self.n_vendors())):
 			owner_action = self.owner.consider_return()
 			if owner_action == 0:
-				# Owner throws away his object
-				self.in_circulation -= 1
-			elif owner_action == 1:
-				# Owner returns product to the agent
-
-				# check if storage is full
-				if self.in_storage < self.max_storage:
-					self.in_storage+= 1
-				self.in_circulation -= 1
+				self.throw_away()
+			else:
+				self.transfer_product_to_storage(owner_action - 1)
 
 	def complete_purchase(self, offers, profits, customer_buy) -> None:
 		assert len(profits) == 1
@@ -253,7 +251,7 @@ class CircularEconomy(SimMarket):
 				profits[0] -= 2 * ut.MAX_PRICE
 		elif customer_buy == 2:
 			profits[0] += offers[1] - ut.PRODUCTION_PRICE
-			# One more product is in circulation now
+			# One more product is in circulation now, but only 10 times the amount of storage space we have 
 			self.in_circulation = min(self.in_circulation + 1, 10 * self.max_storage)
 
 	def consider_storage_costs(self, profits) -> None:
@@ -271,7 +269,7 @@ class CircularEconomyRebuyPrice(CircularEconomy):
 	def choose_owner(self) -> Owner:
 		return owner.OwnerRebuy()
 
-	def consider_owners_return(self, offer, profits) -> None:
+	def simulate_owners(self, profits, offer) -> None:
 		# just like with the customer the probabilities are set beforehand to improve performance
 		assert self.owner is not None, 'please choose an owner'
 
@@ -279,13 +277,7 @@ class CircularEconomyRebuyPrice(CircularEconomy):
 			self.owner.set_probabilities_from_offer(offer)
 			owner_action = self.owner.consider_return()
 			if owner_action == 1:
-				# Owner throws away his object
-				self.in_circulation -= 1
-			elif owner_action == 2:
-				# Owner returns product to the agent
-
-				# check if storage is full
-				if self.in_storage < self.max_storage:
-					self.in_storage += 1
-				self.in_circulation -= 1
-				profits[0] -= offer[2]
+				self.throw_away()
+			elif owner_action >= 2:
+				rebuy_price = self.vendors_actions[owner_action - 2][2]
+				self.transfer_product_to_storage(owner_action - 2, profits, rebuy_price)
