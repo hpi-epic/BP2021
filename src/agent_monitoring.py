@@ -21,12 +21,12 @@ class Monitor():
 	def __init__(self) -> None:
 		# Do not change the values in here! They are assumed in tests. Instead use setup_monitoring()!
 		self.enable_live_draws = True
-		self.episodes = 200
-		self.plot_interval = int(self.episodes / 10)
+		self.episodes = 500
+		self.plot_interval = 50
 		# should get deprecated when introducing possibility to use multiple RL-agents
-		self.path_to_modelfile = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + os.sep + 'monitoring' + os.sep + 'QLearningAgent_ClassicScenario.dat'
-		self.marketplace = sim_market.ClassicScenario()
-		self.agents = [agent.QLearningAgent(self.marketplace.observation_space.shape[0], self.marketplace.action_space.n, load_path=self.path_to_modelfile)]
+		self.path_to_modelfile = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + os.sep + 'monitoring' + os.sep + 'QLearningCEAgent_CircularEconomy.dat'
+		self.marketplace = sim_market.CircularEconomy()
+		self.agents = [agent.QLearningCEAgent(self.marketplace.observation_space.shape[0], self.get_action_space(), load_path=self.path_to_modelfile)]
 		self.agent_colors = ['#0000ff']
 		self.subfolder_name = 'plots_' + time.strftime('%Y%m%d-%H%M%S')
 		self.folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + os.sep + 'monitoring' + os.sep + self.subfolder_name
@@ -66,6 +66,21 @@ class Monitor():
 			os.mkdir(self.folder_path + os.sep + 'histograms')
 		return self.folder_path
 
+	def get_action_space(self) -> int:
+		"""
+		Return the size of the action space in the self.marketplace
+
+		Returns:
+			int: The size of the action space
+		"""
+		n_actions = 1
+		if isinstance(self.marketplace.action_space, gym.spaces.Discrete):
+			n_actions = self.marketplace.action_space.n
+		else:
+			for id in range(0, len(self.marketplace.action_space)):
+				n_actions *= self.marketplace.action_space[id].n
+		return n_actions
+
 	def update_agents(self, agents) -> None:
 		"""
 		Update the self.agents to the new agens provided
@@ -76,15 +91,11 @@ class Monitor():
 		Raises:
 			RuntimeError: Raised if the modelfile provided does not match the Market/Agent-type provided
 		"""
-		n_actions = 1
-		if isinstance(self.marketplace.action_space, gym.spaces.Discrete):
-			n_actions = self.marketplace.action_space.n
-		else:
-			for id in range(0, len(self.marketplace.action_space)):
-				n_actions *= self.marketplace.action_space[id].n
-
 		# All agents must be of the same type
-		assert all(agent_class.is_circular == agents[0].is_circular for agent_class in agents), 'The agents are not of the same type!'
+		assert all(issubclass(agent_class, agent.Agent) for agent_class in agents), 'the agents must be agent classes in agent.py'
+		assert all(agent_class.is_circular == agents[0].is_circular for agent_class in agents), 'the agents must be of the same type'
+		assert agents[0].is_circular == self.marketplace.is_circular, 'the agent and marketplace must be of the same economy type'
+
 		self.agents = []
 
 		# Instantiate all agents. If they are not rule-based, use the marketplace parameters accordingly
@@ -94,11 +105,11 @@ class Monitor():
 			elif not agent_class.is_rule_based:
 				# TODO: Modelfile from list!
 				try:
-					self.agents.append(agent_class(self.marketplace.observation_space.shape[0], n_actions, load_path=self.path_to_modelfile))
-				except RuntimeError:
-					raise RuntimeError('The modelfile is probably not compatible with the agent you tried to instantiate!')
-			else:
-				assert False, agent_class + 'is neither a rule_based nor a reinforcement_learning agent!'
+					self.agents.append(agent_class(self.marketplace.observation_space.shape[0], self.get_action_space(), load_path=self.path_to_modelfile))
+				except RuntimeError:  # pragma: no cover
+					raise RuntimeError('the modelfile is not compatible with the agent you tried to instantiate')
+			else:  # pragma: no cover
+				assert False, agent_class + 'is neither a rule_based nor a reinforcement_learning agent'
 
 		# set a color for each agent
 		color_map = self.get_cmap(len(self.agents))
@@ -106,7 +117,7 @@ class Monitor():
 		for agent_id in range(0, len(self.agents)):
 			self.agent_colors.append(color_map(agent_id))
 
-	def setup_monitoring(self, draw_enabled=None, episodes=None, plot_interval=None, modelfile=None, agents=None, marketplace=None, subfolder_name=None) -> None:
+	def setup_monitoring(self, draw_enabled=None, episodes=None, plot_interval=None, modelfile=None, marketplace=None, agents=None, subfolder_name=None) -> None:
 		"""
 		Configure the current monitoring session.
 
@@ -121,16 +132,21 @@ class Monitor():
 		"""
 		# doesn't look nice, but afaik only way to keep parameter list short
 		if(draw_enabled is not None):
+			assert isinstance(draw_enabled, bool), 'draw_enabled must be True or False'
 			self.enable_live_draws = draw_enabled
 		if(episodes is not None):
+			assert isinstance(episodes, int), 'episodes must be of type int'
 			self.episodes = episodes
 		if(plot_interval is not None):
+			assert isinstance(plot_interval, int), 'plot_interval must be of type int'
 			self.plot_interval = plot_interval
 		if(modelfile is not None):
+			assert isinstance(modelfile, str), 'modelfile must be of type string'
 			self.path_to_modelfile = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + os.sep + 'monitoring' + os.sep + modelfile
 
 		if(marketplace is not None):
-			self.marketplace = marketplace
+			assert issubclass(marketplace, sim_market.SimMarket), 'the marketplace must be a subclass of sim_market'
+			self.marketplace = marketplace()
 			# The agents have not been changed, we reuse the old agents
 			if(agents is None):
 				# A bit hacky
@@ -142,6 +158,7 @@ class Monitor():
 			self.update_agents(agents)
 
 		if(subfolder_name is not None):
+			assert isinstance(subfolder_name, str), 'subfolder_name must be of type string'
 			self.subfolder_name = subfolder_name
 			self.folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + os.sep + 'monitoring' + os.sep + self.subfolder_name
 
@@ -334,7 +351,7 @@ monitor = Monitor()
 
 def main() -> None:
 	import agent
-	monitor.setup_monitoring(modelfile='QLearningCEAgent_CircularEconomy.dat', marketplace=sim_market.CircularEconomy(), agents=[agent.RuleBasedCEAgent, agent.QLearningCEAgent])
+	monitor.setup_monitoring(modelfile='QLearningCEAgent_CircularEconomy.dat', marketplace=sim_market.CircularEconomy, agents=[agent.RuleBasedCEAgent, agent.QLearningCEAgent])
 	print(f'Running', monitor.episodes, 'episodes')
 	print(f'Plot interval is: {monitor.plot_interval}')
 	print(f'Using modelfile: {monitor.path_to_modelfile}')

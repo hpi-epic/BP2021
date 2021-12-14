@@ -37,9 +37,8 @@ def create_mock_rewards() -> list:
 	return mock_rewards
 
 
-# values and types are mismatched on purpose, as we just want to make sure the global values are changed correctly, we don't work with them
-def test_setup_monitoring():
-	monitor.setup_monitoring(draw_enabled=False, episodes=10, plot_interval=2, modelfile='modelfile.dat', marketplace=sim_market.CircularEconomy(), agents=[agent.HumanPlayerCERebuy], subfolder_name='subfoldername')
+def test_correct_setup_monitoring():
+	monitor.setup_monitoring(draw_enabled=False, episodes=10, plot_interval=2, modelfile='modelfile.dat', marketplace=sim_market.CircularEconomy, agents=[agent.HumanPlayerCERebuy], subfolder_name='subfoldername')
 	assert monitor.enable_live_draws is False
 	assert 10 == monitor.episodes
 	assert 2 == monitor.plot_interval
@@ -48,6 +47,60 @@ def test_setup_monitoring():
 	assert all(isinstance(test_agent, agent.HumanPlayerCERebuy) for test_agent in monitor.agents)
 	assert 'subfoldername' == monitor.subfolder_name
 	assert 1 == len(monitor.agent_colors)
+
+
+def test_incorrect_setup_monitoring():
+	with pytest.raises(AssertionError) as assertion_message:
+		monitor.setup_monitoring(draw_enabled=1)
+	assert 'draw_enabled must be True or False' in str(assertion_message.value)
+	with pytest.raises(AssertionError) as assertion_message:
+		monitor.setup_monitoring(episodes='Hello World')
+	assert 'episodes must be of type int' in str(assertion_message.value)
+	with pytest.raises(AssertionError) as assertion_message:
+		monitor.setup_monitoring(plot_interval='1')
+	assert 'plot_interval must be of type int' in str(assertion_message.value)
+	with pytest.raises(AssertionError) as assertion_message:
+		monitor.setup_monitoring(modelfile=1)
+	assert 'modelfile must be of type string' in str(assertion_message.value)
+	with pytest.raises(AssertionError) as assertion_message:
+		monitor.setup_monitoring(marketplace=agent.RuleBasedCEAgent)
+	assert 'the marketplace must be a subclass of sim_market' in str(assertion_message.value)
+	with pytest.raises(TypeError):
+		monitor.setup_monitoring(marketplace=sim_market.ClassicScenario())
+	with pytest.raises(AssertionError) as assertion_message:
+		monitor.setup_monitoring(agents=[sim_market.ClassicScenario])
+	assert 'the agents must be agent classes in agent.py' in str(assertion_message.value)
+	with pytest.raises(TypeError):
+		monitor.setup_monitoring(agents=[agent.RuleBasedCEAgent()])
+	with pytest.raises(AssertionError) as assertion_message:
+		monitor.setup_monitoring(subfolder_name=1)
+	assert 'subfolder_name must be of type string' in str(assertion_message.value)
+
+
+def test_mismatched_scenarios():
+	with pytest.raises(AssertionError) as assertion_message:
+		monitor.setup_monitoring(marketplace=sim_market.ClassicScenario, agents=[agent.RuleBasedCEAgent])
+	assert 'the agent and marketplace must be of the same economy type' in str(assertion_message.value)
+
+
+def test_mismatched_modelfile():
+	with pytest.raises(RuntimeError) as assertion_message:
+		monitor.setup_monitoring(modelfile='QLearningAgent_ClassicScenario.dat', agents=[agent.QLearningCEAgent], marketplace=sim_market.CircularEconomyRebuyPrice)
+	assert 'the modelfile is not compatible with the agent you tried to instantiate' in str(assertion_message.value)
+
+
+def test_init_default_values():
+	test_monitor = am.Monitor()
+	assert test_monitor.enable_live_draws is True
+	assert 500 == test_monitor.episodes
+	assert 50 == test_monitor.plot_interval
+	assert os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring' + os.sep + 'QLearningCEAgent_CircularEconomy.dat' == test_monitor.path_to_modelfile
+	assert isinstance(test_monitor.marketplace, sim_market.CircularEconomy)
+	assert isinstance(test_monitor.agents[0], agent.QLearningCEAgent)
+	assert 1 == len(test_monitor.agents)
+	assert ['#0000ff'] == test_monitor.agent_colors
+	assert test_monitor.subfolder_name.startswith('plots_')
+	assert os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring' + os.sep + test_monitor.subfolder_name == test_monitor.folder_path
 
 
 def test_setup_with_invalid_agents():
@@ -116,7 +169,7 @@ def test_create_statistics_plots(agents, rewards):
 
 
 def test_run_marketplace():
-	monitor.setup_monitoring(episodes=100, plot_interval=100, agents=[agent.FixedPriceLEAgent])
+	monitor.setup_monitoring(episodes=100, plot_interval=100, agents=[agent.FixedPriceCEAgent])
 	agent_rewards = monitor.run_marketplace()
 	print(agent_rewards)
 	assert 1 == len(monitor.agents)
