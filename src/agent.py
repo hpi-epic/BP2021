@@ -20,6 +20,19 @@ class Agent(ABC):
 	def __init__(self, name='agent'):
 		self.name = name
 
+	def custom_init(self, class_name, args):
+		"""
+		Initialize an agent with a list of arguments.
+
+		Args:
+			class_name (agent class): The class of the agent that should be instantiated.
+			args (list): List of arguments to pass the initializer.
+
+		Returns:
+			agent instance: An instance of the agent_class initialized with the given args.
+		"""
+		return class_name(*args)
+
 	@abstractmethod
 	def policy(self, state, epsilon=0):
 		raise NotImplementedError

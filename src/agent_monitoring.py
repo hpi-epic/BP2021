@@ -26,7 +26,7 @@ class Monitor():
 		# should get deprecated when introducing possibility to use multiple RL-agents
 		self.path_to_modelfile = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + os.sep + 'monitoring' + os.sep + 'CircularEconomy_QLearningCEAgent.dat'
 		self.marketplace = sim_market.CircularEconomy()
-		self.agents = [agent.QLearningCEAgent(self.marketplace.observation_space.shape[0], self.get_action_space(), load_path=self.path_to_modelfile)]
+		self.agents = [(agent.QLearningCEAgent(self.marketplace.observation_space.shape[0], self.get_action_space(), load_path=self.path_to_modelfile), [])]
 		self.agent_colors = ['#0000ff']
 		self.subfolder_name = 'plots_' + time.strftime('%Y%m%d-%H%M%S')
 		self.folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + os.sep + 'monitoring' + os.sep + self.subfolder_name
@@ -68,7 +68,7 @@ class Monitor():
 
 	def get_action_space(self) -> int:
 		"""
-		Return the size of the action space in the self.marketplace
+		Return the size of the action space in the self.marketplace.
 
 		Returns:
 			int: The size of the action space
@@ -83,33 +83,38 @@ class Monitor():
 
 	def update_agents(self, agents) -> None:
 		"""
-		Update the self.agents to the new agens provided
+		Update the self.agents to the new agents provided.
 
 		Args:
-			agents (list of agent classes, optional): What agents to monitor. Each agent will generate data points in the diagrams. Defaults to None.
+			agents (list of tuples of agent classes and lists): What agents to monitor. Must be tuples where the first entry is the class of the agent and the second entry is a list of arguments for its initialization. Arguments are read left to right, arguments cannot be skipped. Each agent will generate data points in the diagrams. Defaults to None.
 
 		Raises:
-			RuntimeError: Raised if the modelfile provided does not match the Market/Agent-type provided
+			RuntimeError: Raised if the modelfile provided does not match the Market/Agent-type provided.
 		"""
 		# All agents must be of the same type
-		assert all(issubclass(agent_class, agent.Agent) for agent_class in agents), 'the agents must be agent classes in agent.py'
-		assert all(agent_class.is_circular == agents[0].is_circular for agent_class in agents), 'the agents must be of the same type'
-		assert agents[0].is_circular == self.marketplace.is_circular, 'the agent and marketplace must be of the same economy type'
+		assert all(isinstance(agent_tuple, tuple) for agent_tuple in agents), 'agents must be a list of tuples'
+		assert all(len(agent_tuple) == 2 for agent_tuple in agents), 'the list entries in agents must have size 2 ([agent_class, arguments])'
+		assert all(issubclass(agent_tuple[0], agent.Agent) for agent_tuple in agents), 'the first entry in each agent-tuple must be an agent class in agent.py'
+		assert all(isinstance(agent_tuple[1], list) for agent_tuple in agents), 'the second entry in each agent-tuple must be a list of arguments'
+		assert all(agent_tuple[0].is_circular == agents[0][0].is_circular for agent_tuple in agents), 'the agents must all be of the same type (Linear/Circular)'
+		assert agents[0][0].is_circular == self.marketplace.is_circular, 'the agent and marketplace must be of the same economy type (Linear/Circular)'
 
 		self.agents = []
 
 		# Instantiate all agents. If they are not rule-based, use the marketplace parameters accordingly
-		for agent_class in agents:
-			if agent_class.is_rule_based:
-				self.agents.append(agent_class())
-			elif not agent_class.is_rule_based:
+		for current_agent in agents:
+			if current_agent[0].is_rule_based:
+				self.agents.append(agent.Agent.custom_init(agent.Agent, current_agent[0], current_agent[1]))
+			elif not current_agent[0].is_rule_based:
 				# TODO: Modelfile from list!
 				try:
-					self.agents.append(agent_class(self.marketplace.observation_space.shape[0], self.get_action_space(), load_path=self.path_to_modelfile))
+					assert current_agent[1] == [] or isinstance(current_agent[1][0], str), 'reinforcement learning agents accept only a name (str) or an empty list as arguments'
+					agent_name = 'q_learning' if current_agent[1] == [] else current_agent[1][0]
+					self.agents.append(current_agent[0](self.marketplace.observation_space.shape[0], self.get_action_space(), load_path=self.path_to_modelfile, name=agent_name))
 				except RuntimeError:  # pragma: no cover
 					raise RuntimeError('the modelfile is not compatible with the agent you tried to instantiate')
 			else:  # pragma: no cover
-				assert False, agent_class + 'is neither a rule_based nor a reinforcement_learning agent'
+				assert False, current_agent[0] + 'is neither a rule_based nor a reinforcement_learning agent'
 
 		# set a color for each agent
 		color_map = self.get_cmap(len(self.agents))
@@ -126,13 +131,13 @@ class Monitor():
 			episodes (int, optional): The number of episodes to run. Defaults to None.
 			plot_interval (int, optional): After how many episodes a new data point/plot should be generated. Defaults to None.
 			modelfile (str, optional): Path to the file containing the model for a RL-agent. Defaults to None.
-			agents (list of agent classes, optional): What agents to monitor. Each agent will generate data points in the diagrams. Defaults to None.
-			marketplace (sim_market instance, optional): What marketplace to run the monitoring on. Defaults to None.
+			marketplace (sim_market class, optional): What marketplace to run the monitoring on. Defaults to None.
+			agents (list of tuples of agent classes and lists): What agents to monitor. Must be tuples where the first entry is the class of the agent and the second entry is a list of arguments for its initialization. Arguments are read left to right, arguments cannot be skipped. Each agent will generate data points in the diagrams. Defaults to None.
 			subfolder_name (str, optional): The name of the folder to save the diagrams in. Defaults to None.
 		"""
 		# doesn't look nice, but afaik only way to keep parameter list short
 		if(draw_enabled is not None):
-			assert isinstance(draw_enabled, bool), 'draw_enabled must be True or False'
+			assert isinstance(draw_enabled, bool), 'draw_enabled must be a Boolean'
 			self.enable_live_draws = draw_enabled
 		if(episodes is not None):
 			assert isinstance(episodes, int), 'episodes must be of type int'
@@ -150,7 +155,7 @@ class Monitor():
 			# The agents have not been changed, we reuse the old agents
 			if(agents is None):
 				print('Warning: Your agents are being overwritten by new instances of themselves!')
-				agents = [type(current_agent) for current_agent in self.agents]
+				agents = [(type(current_agent[0]), []) for current_agent in self.agents]
 				print(agents)
 			self.update_agents(agents)
 
@@ -352,7 +357,7 @@ monitor = Monitor()
 
 def main() -> None:
 	import agent
-	monitor.setup_monitoring(marketplace=sim_market.CircularEconomy, agents=[agent.RuleBasedCEAgent, agent.QLearningCEAgent])
+	monitor.setup_monitoring(marketplace=sim_market.CircularEconomy, agents=[(agent.RuleBasedCEAgent, ['my favorit agent']), (agent.QLearningCEAgent, [])])
 	print(f'Running', monitor.episodes, 'episodes')
 	print(f'Plot interval is: {monitor.plot_interval}')
 	print(f'Using modelfile: {monitor.path_to_modelfile}')
