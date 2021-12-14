@@ -26,7 +26,7 @@ class HumanPlayer(Agent):
 
 	def policy(self, state, *_) -> int:
 		print('The state is', state, 'and you have to decide what to do! Please enter your actions, seperated by spaces!')
-		return input()
+		return int(input())
 
 
 class HumanPlayerCE(HumanPlayer):

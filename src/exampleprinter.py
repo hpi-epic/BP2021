@@ -26,11 +26,11 @@ def print_example(env=sim_market.CircularEconomy(), agent=a.RuleBasedCEAgent()):
 				writer.add_scalar('Example_action/price_new', action[1] + 1, counter)
 				if isinstance(env, sim_market.CircularEconomyRebuyPrice):
 					writer.add_scalar('Example_action/rebuy_price', action[2] + 1, counter)
-			elif isinstance(env, sim_market.LinearEconomy):
-				writer.add_scalar('Example_state/agent_quality', env.state[0], counter)
-				writer.add_scalar('Example_state/competitor_quality', env.state[2], counter)
-				writer.add_scalar('Example_state/competitor_price', env.state[1], counter)
-				writer.add_scalar('Example_action/price_agent', action + 1, counter)
+			# elif isinstance(env, sim_market.LinearEconomy):
+			# 	writer.add_scalar('Example_state/agent_quality', env.state[0], counter)
+			# 	writer.add_scalar('Example_state/competitor_quality', env.state[2], counter)
+			# 	writer.add_scalar('Example_state/competitor_price', env.state[1], counter)
+			# 	writer.add_scalar('Example_action/price_agent', action + 1, counter)
 			# print(
 			# 	'This is the state:',
 			# 	env.state,
@@ -40,8 +40,8 @@ def print_example(env=sim_market.CircularEconomy(), agent=a.RuleBasedCEAgent()):
 			state, reward, is_done, dict = env.step(action)
 			# print('The agents profit this round is', reward)
 			our_profit += reward
-			writer.add_scalar('Example_reward/reward', reward, counter)
-			writer.add_scalar('Example_reward/reward_cumulated', our_profit, counter)
+			# writer.add_scalar('Example_reward/reward', reward, counter)
+			# writer.add_scalar('Example_reward/reward_cumulated', our_profit, counter)
 			counter += 1
 	# print(
 	# 	'In total the agent earned',
@@ -51,8 +51,8 @@ def print_example(env=sim_market.CircularEconomy(), agent=a.RuleBasedCEAgent()):
 
 
 def main():
-	agent = a.FixedPriceCERebuyAgent()
-	environment = sim_market.CircularEconomyRebuyPrice()
+	agent = a.HumanPlayer
+	environment = sim_market.ClassicScenario()
 	cumulative_reward = 0
 	for i in range(1000):
 		cumulative_reward += print_example(environment, agent)
@@ -61,4 +61,6 @@ def main():
 
 
 if __name__ == '__main__':
-	main()
+	agent = a.HumanPlayer()
+	environment = sim_market.ClassicScenario()
+	print_example(environment, agent)

@@ -15,6 +15,10 @@ from owner import Owner
 
 # An offer is a Market State that contains both prices and both qualities
 
+# There are three kinds of state:
+# First: a common state for all vendors
+# Second: a state specific to one vendor
+# Third: vendor's actions from the former round which needs to be saved and influence the other's decision e.g. prices
 
 class SimMarket(gym.Env, ABC):
 	def __init__(self) -> None:
@@ -28,20 +32,27 @@ class SimMarket(gym.Env, ABC):
 			self.observation_space and self.action_space
 		), 'Your subclass has major problems with setting up the environment'
 
+	# The number of competitors plus the agent
+	def n_vendors(self) -> int:
+		return len(self.competitors) + 1
+
 	def reset(self) -> np.array:
 		self.step_counter = 0
 
-		reset_state = self.reset_market_state()
-		for competitor in self.competitors:
-			reset_state += self.reset_competitor_information(competitor)
+		self.set_common_state()
 
-		self.state = np.array(reset_state)
+		self.vendor_specific_state = []
+		for _ in range(self.n_vendors()):
+			self.vendor_specific_state.append(self.reset_specific_vendor_state())
+
+		self.vendors_actions = []
+		for _ in range(self.n_vendors()):
+			self.vendors_actions.append(ut.PRODUCTION_PRICE + 1)
 
 		self.customer = self.choose_customer()
 		self.owner = self.choose_owner()
 
-		# print('I initiate with', self.state)
-		return copy.deepcopy(self.state)
+		return self.observation()
 
 	def simulate_customers(self, profits, offers, n) -> None:
 		self.customer.set_probabilities_from_offers(offers)
@@ -50,45 +61,65 @@ class SimMarket(gym.Env, ABC):
 			if customer_buy != 0:
 				self.complete_purchase(offers, profits, customer_buy)
 
-	def generate_offer(self, action) -> np.array:
-		# add agent prices to state array
-		return np.concatenate(
-			(self.action_to_array(action), self.state), dtype=np.float64
-		)
-
 	def step(self, action) -> Tuple[np.array, np.float64, bool, dict]:
 		# The action is the new price of the agent
 
 		err_msg = '%r (%s) invalid' % (action, type(action))
 		assert self.action_space.contains(action), err_msg
+		self.vendors_actions[0] = action + 1
 
 		self.step_counter += 1
-		n_vendors = (
-			len(self.competitors) + 1
-		)  # The number of competitors plus the agent
 
-		profits = [0] * n_vendors
+		profits = [0] * self.n_vendors()
 
-		self.consider_owners_return(self.generate_offer(action), profits)
+		self.consider_owners_return(self.generate_customer_offer(), profits)
 
-		for i in range(n_vendors):
+		for i in range(self.n_vendors()):
 			self.simulate_customers(
 				profits,
-				self.generate_offer(action),
-				int(np.floor(ut.NUMBER_OF_CUSTOMERS / n_vendors)),
+				self.generate_customer_offer(),
+				int(np.floor(ut.NUMBER_OF_CUSTOMERS / self.n_vendors())),
 			)
 			# the competitor, which turn it is, will update its pricing
 			if i < len(self.competitors):
-				action_competitor_i = self.competitors[i].give_competitors_price(
-					self.generate_offer(action), i + 1
+				action_competitor_i = self.competitors[i].policy(
+					self.observation(i + 1)
 				)
-				self.apply_competitor_action(action_competitor_i, i)
+				assert self.action_space.contains(action_competitor_i), 'The %dth vendor does not deliver a suitable action'.format(i + 1)
+				self.vendors_actions[i + 1] = action_competitor_i + 1
 
 		self.consider_storage_costs(profits)
 
 		output_dict = {'all_profits': profits}
 		is_done = self.step_counter >= ut.EPISODE_LENGTH
-		return copy.deepcopy(self.state), profits[0], is_done, output_dict
+		return self.observation(), profits[0], is_done, output_dict
+
+	def observation(self, vendor_view=0):
+		obs = self.get_common_state_array()
+		assert isinstance(obs, np.ndarray), 'get_common_state_array must return a np-Array'
+		obs = np.concatenate((obs, np.array(self.vendor_specific_state[vendor_view], ndmin=1)), dtype=np.float64)
+		for i in range(self.n_vendors()):
+			if i == vendor_view:
+				continue
+			obs = np.concatenate((obs, np.array(self.vendors_actions[i], ndmin=1)), dtype=np.float64)
+			obs = np.concatenate((obs, np.array(self.vendor_specific_state[i], ndmin=1)), dtype=np.float64)
+		err_msg = '%r (%s) invalid observation' % (obs, type(obs))
+		assert self.observation_space.contains(obs), err_msg
+		return obs
+
+	def generate_customer_offer(self):
+		offer = self.get_common_state_array()
+		assert isinstance(offer, np.ndarray), 'get_common_state_array must return a np-Array'
+		for i in range(self.n_vendors()):
+			offer = np.concatenate((offer, np.array(self.vendors_actions[i], ndmin=1)), dtype=np.float64)
+			offer = np.concatenate((offer, np.array(self.vendor_specific_state[i], ndmin=1)), dtype=np.float64)
+		return offer
+
+	def set_common_state(self) -> None:
+		pass
+	
+	def get_common_state_array(self) -> np.array:
+		return np.array([])
 
 	@abstractmethod
 	def consider_owners_return(self, *_) -> None:
@@ -122,27 +153,17 @@ class LinearEconomy(SimMarket, ABC):
 		# one action for every price possible for 0 and MAX_PRICE
 		self.action_space = gym.spaces.Discrete(ut.MAX_PRICE)
 
-	def reset_market_state(self) -> list:
-		return [ut.shuffle_quality()]
+	def reset_specific_vendor_state(self) -> int:
+		return ut.shuffle_quality()
 
-	def reset_competitor_information(self, competitor) -> list:
-		comp_price, comp_quality = competitor.reset()
-		return [comp_price, comp_quality]
-
-	def action_to_array(self, action) -> np.array:
-		return np.array([action + 1.0])
+	# def action_to_array(self, action) -> np.array:
+	# 	return np.array([action + 1.0])
 
 	def choose_customer(self) -> Customer:
 		return customer.CustomerLinear()
 
 	def complete_purchase(self, offers, profits, customer_buy) -> None:
 		profits[customer_buy - 1] += (offers[(customer_buy - 1) * 2] - ut.PRODUCTION_PRICE)
-
-	def ith_competitor_index(self, i) -> int:
-		return 2 * i + 1
-
-	def apply_competitor_action(self, action, i) -> None:
-		self.state[self.ith_competitor_index(i)] = action
 
 	def consider_owners_return(self, offer, profits) -> None:
 		pass
@@ -158,7 +179,7 @@ class LinearEconomy(SimMarket, ABC):
 class ClassicScenario(LinearEconomy):
 
 	def get_competitor_list(self) -> list:
-		return [comp.CompetitorJust2Players()]
+		return [comp.CompetitorLinearRatio1()]
 
 
 class MultiCompetitorScenario(LinearEconomy):
