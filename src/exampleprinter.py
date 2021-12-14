@@ -1,52 +1,55 @@
 #!/usr/bin/env python3
 
 import torch
+import copy
 from torch.utils.tensorboard import SummaryWriter
 
 import agent as a
 import sim_market
 
+def write_dict_to_tensorboard(writer, mydict, counter, cum=False):
+	for name, content in mydict.items():
+		if cum and (name.startswith('actions') or name.startswith('state')):
+			continue
+		if cum:
+			name = 'cumulated_' + name
+		print(name, content)
+		if isinstance(content, dict):
+			writer.add_scalars(name, content, counter)
+		else:
+			writer.add_scalar(name, content, counter)
 
-def print_example(env=sim_market.CircularEconomy(), agent=a.RuleBasedCEAgent()):
+def add_content_of_two_dicts(dict1, dict2) -> dict:
+	newdict = {}
+	for key in dict1:
+		if isinstance(dict1[key], dict):
+			newdict[key] = add_content_of_two_dicts(dict1[key], dict2[key])
+		else:
+			newdict[key] = dict1[key] + dict2[key]
+	return newdict
+
+def print_example(env=sim_market.CircularEconomy(), agent=a.RuleBasedCEAgent()) -> int:
 	counter = 0
 	our_profit = 0
 	is_done = False
 	state = env.reset()
 	# print('The production price is', ut.PRODUCTION_PRICE)
 	writer = SummaryWriter()
+	cumdict = None
 
 	with torch.no_grad():
 		while not is_done:
 			action = agent.policy(state)
 			print(state)
-			# if isinstance(env, sim_market.CircularEconomy):
-			# 	writer.add_scalar('Example_state/storage_content', env.state[0], counter)
-			# 	writer.add_scalar('Example_state/products_in_circle', env.state[1], counter)
-			# 	writer.add_scalar('Example_action/price_second_hand', action[0] + 1, counter)
-			# 	writer.add_scalar('Example_action/price_new', action[1] + 1, counter)
-			# 	if isinstance(env, sim_market.CircularEconomyRebuyPrice):
-			# 		writer.add_scalar('Example_action/rebuy_price', action[2] + 1, counter)
-			# elif isinstance(env, sim_market.LinearEconomy):
-			# 	writer.add_scalar('Example_state/agent_quality', env.state[0], counter)
-			# 	writer.add_scalar('Example_state/competitor_quality', env.state[2], counter)
-			# 	writer.add_scalar('Example_state/competitor_price', env.state[1], counter)
-			# 	writer.add_scalar('Example_action/price_agent', action + 1, counter)
-			# print(
-			# 	'This is the state:',
-			# 	env.state,
-			# 	' and I will do ',
-			# 	action
-			# )
-			state, reward, is_done, dict = env.step(action)
-			# print('The agents profit this round is', reward)
+			state, reward, is_done, mydict = env.step(action)
+			if cumdict is not None:
+				cumdict = add_content_of_two_dicts(cumdict, mydict)
+			else:
+				cumdict = copy.deepcopy(mydict)
+			write_dict_to_tensorboard(writer, mydict, counter)
+			write_dict_to_tensorboard(writer, cumdict, counter, cum=True)
 			our_profit += reward
-			# writer.add_scalar('Example_reward/reward', reward, counter)
-			# writer.add_scalar('Example_reward/reward_cumulated', our_profit, counter)
 			counter += 1
-	# print(
-	# 	'In total the agent earned',
-	# 	our_profit
-	# )
 	return our_profit
 
 
@@ -61,6 +64,6 @@ def main():
 
 
 if __name__ == '__main__':
-	agent = a.HumanPlayerCE()
-	environment = sim_market.CircularEconomy()
+	agent = a.RuleBasedCERebuyAgent()
+	environment = sim_market.CircularEconomyRebuyPrice()
 	print_example(environment, agent)
