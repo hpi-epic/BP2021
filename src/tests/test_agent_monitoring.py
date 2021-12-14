@@ -18,7 +18,7 @@ def setup_function(function):
 	print('***SETUP***')
 	global monitor
 	monitor = Monitor()
-	monitor.setup_monitoring(draw_enabled=False, subfolder_name='test_plots_')
+	monitor.setup_monitoring(enable_live_draws=False, subfolder_name='test_plots_')
 
 
 # teardown after each test
@@ -44,10 +44,7 @@ def test_init_default_values():
 	assert 50 == test_monitor.plot_interval
 	assert os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring' + os.sep + 'CircularEconomy_QLearningCEAgent.dat' == test_monitor.path_to_modelfile
 	assert isinstance(test_monitor.marketplace, sim_market.CircularEconomy)
-	assert isinstance(test_monitor.agents[0], tuple)
-	assert isinstance(test_monitor.agents[0][0], agent.QLearningCEAgent)
-	assert isinstance(test_monitor.agents[0][1], list)
-	assert 0 == len(test_monitor.agents[0][1])
+	assert isinstance(test_monitor.agents[0], agent.QLearningCEAgent)
 	assert 1 == len(test_monitor.agents)
 	assert ['#0000ff'] == test_monitor.agent_colors
 	assert test_monitor.subfolder_name.startswith('plots_')
@@ -55,11 +52,11 @@ def test_init_default_values():
 
 
 def test_correct_setup_monitoring():
-	monitor.setup_monitoring(draw_enabled=False, episodes=10, plot_interval=2, modelfile='modelfile.dat', marketplace=sim_market.CircularEconomy, agents=[(agent.HumanPlayerCERebuy, ['reptiloid'])], subfolder_name='subfoldername')
+	monitor.setup_monitoring(enable_live_draws=False, episodes=10, plot_interval=2, modelfile='CircularEconomy_QlearningCEAgent.dat', marketplace=sim_market.CircularEconomy, agents=[(agent.HumanPlayerCERebuy, ['reptiloid'])], subfolder_name='subfoldername')
 	assert monitor.enable_live_draws is False
 	assert 10 == monitor.episodes
 	assert 2 == monitor.plot_interval
-	assert os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring' + os.sep + 'modelfile.dat' == monitor.path_to_modelfile
+	assert os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring' + os.sep + 'CircularEconomy_QlearningCEAgent.dat' == monitor.path_to_modelfile
 	assert isinstance(monitor.marketplace, sim_market.CircularEconomy)
 	assert all(isinstance(test_agent, agent.HumanPlayerCERebuy) for test_agent in monitor.agents)
 	assert 'reptiloid' == monitor.agents[0].name
@@ -69,8 +66,8 @@ def test_correct_setup_monitoring():
 
 def test_incorrect_setup_monitoring():
 	with pytest.raises(AssertionError) as assertion_message:
-		monitor.setup_monitoring(draw_enabled=1)
-	assert 'draw_enabled must be a Boolean' in str(assertion_message.value)
+		monitor.setup_monitoring(enable_live_draws=1)
+	assert 'enable_live_draws must be a Boolean' in str(assertion_message.value)
 
 	with pytest.raises(AssertionError) as assertion_message:
 		monitor.setup_monitoring(episodes='Hello World')
@@ -83,6 +80,12 @@ def test_incorrect_setup_monitoring():
 	with pytest.raises(AssertionError) as assertion_message:
 		monitor.setup_monitoring(modelfile=1)
 	assert 'modelfile must be of type string' in str(assertion_message.value)
+	with pytest.raises(AssertionError) as assertion_message:
+		monitor.setup_monitoring(modelfile='abc.dat')
+	assert 'the specified modelfile does not exist' in str(assertion_message.value)
+	with pytest.raises(RuntimeError) as assertion_message:
+		monitor.setup_monitoring(modelfile='ClassicScenario_QLearningLEAgent.dat', agents=[(agent.QLearningCEAgent, [])], marketplace=sim_market.CircularEconomy)
+	assert 'the modelfile is not compatible with the agent you tried to instantiate' in str(assertion_message.value)
 
 	with pytest.raises(AssertionError) as assertion_message:
 		monitor.setup_monitoring(marketplace=agent.RuleBasedCEAgent)
@@ -132,12 +135,6 @@ def test_mismatched_scenarios():
 	with pytest.raises(AssertionError) as assertion_message:
 		monitor.setup_monitoring(marketplace=sim_market.ClassicScenario, agents=[(agent.RuleBasedCEAgent, [])])
 	assert 'the agent and marketplace must be of the same economy type' in str(assertion_message.value)
-
-
-def test_mismatched_modelfile():
-	with pytest.raises(RuntimeError) as assertion_message:
-		monitor.setup_monitoring(modelfile='ClassicScenario_QLearningLEAgent.dat', agents=[(agent.QLearningCEAgent, [])], marketplace=sim_market.CircularEconomyRebuyPrice)
-	assert 'the modelfile is not compatible with the agent you tried to instantiate' in str(assertion_message.value)
 
 
 # Test once for a Linear, Circular and RebuyPrice Economy
@@ -225,6 +222,8 @@ def test_run_marketplace():
 
 
 def test_main():
-	am.monitor.setup_monitoring(draw_enabled=False, episodes=10, plot_interval=10, subfolder_name='test_plots_')
+	am.monitor.setup_monitoring(enable_live_draws=False, episodes=10, plot_interval=10, subfolder_name='test_plots_')
+	current_configuration = am.monitor.get_configuration()
 	am.main()
+	assert current_configuration == am.monitor.get_configuration(), 'the monitor configuration should not be changed within main'
 	assert os.path.exists(am.monitor.folder_path)

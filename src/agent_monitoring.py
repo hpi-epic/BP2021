@@ -26,7 +26,7 @@ class Monitor():
 		# should get deprecated when introducing possibility to use multiple RL-agents
 		self.path_to_modelfile = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + os.sep + 'monitoring' + os.sep + 'CircularEconomy_QLearningCEAgent.dat'
 		self.marketplace = sim_market.CircularEconomy()
-		self.agents = [(agent.QLearningCEAgent(self.marketplace.observation_space.shape[0], self.get_action_space(), load_path=self.path_to_modelfile), [])]
+		self.agents = [agent.QLearningCEAgent(self.marketplace.observation_space.shape[0], self.get_action_space(), load_path=self.path_to_modelfile)]
 		self.agent_colors = ['#0000ff']
 		self.subfolder_name = 'plots_' + time.strftime('%Y%m%d-%H%M%S')
 		self.folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + os.sep + 'monitoring' + os.sep + self.subfolder_name
@@ -122,12 +122,12 @@ class Monitor():
 		for agent_id in range(0, len(self.agents)):
 			self.agent_colors.append(color_map(agent_id))
 
-	def setup_monitoring(self, draw_enabled=None, episodes=None, plot_interval=None, modelfile=None, marketplace=None, agents=None, subfolder_name=None) -> None:
+	def setup_monitoring(self, enable_live_draws=None, episodes=None, plot_interval=None, modelfile=None, marketplace=None, agents=None, subfolder_name=None) -> None:
 		"""
 		Configure the current monitoring session.
 
 		Args:
-			draw_enabled (bool, optional): Whether or not diagrams should be displayed on screen when drawn. Defaults to None.
+			enable_live_draws (bool, optional): Whether or not diagrams should be displayed on screen when drawn. Defaults to None.
 			episodes (int, optional): The number of episodes to run. Defaults to None.
 			plot_interval (int, optional): After how many episodes a new data point/plot should be generated. Defaults to None.
 			modelfile (str, optional): Path to the file containing the model for a RL-agent. Defaults to None.
@@ -136,9 +136,9 @@ class Monitor():
 			subfolder_name (str, optional): The name of the folder to save the diagrams in. Defaults to None.
 		"""
 		# doesn't look nice, but afaik only way to keep parameter list short
-		if(draw_enabled is not None):
-			assert isinstance(draw_enabled, bool), 'draw_enabled must be a Boolean'
-			self.enable_live_draws = draw_enabled
+		if(enable_live_draws is not None):
+			assert isinstance(enable_live_draws, bool), 'enable_live_draws must be a Boolean'
+			self.enable_live_draws = enable_live_draws
 		if(episodes is not None):
 			assert isinstance(episodes, int), 'episodes must be of type int'
 			self.episodes = episodes
@@ -147,6 +147,7 @@ class Monitor():
 			self.plot_interval = plot_interval
 		if(modelfile is not None):
 			assert isinstance(modelfile, str), 'modelfile must be of type string'
+			assert os.path.exists(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + os.sep + 'monitoring' + os.sep + modelfile), 'the specified modelfile does not exist'
 			self.path_to_modelfile = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + os.sep + 'monitoring' + os.sep + modelfile
 
 		if(marketplace is not None):
@@ -155,8 +156,7 @@ class Monitor():
 			# The agents have not been changed, we reuse the old agents
 			if(agents is None):
 				print('Warning: Your agents are being overwritten by new instances of themselves!')
-				agents = [(type(current_agent[0]), []) for current_agent in self.agents]
-				print(agents)
+				agents = [(type(current_agent), []) for current_agent in self.agents]
 			self.update_agents(agents)
 
 		# marketplace has not changed but agents have
@@ -167,6 +167,26 @@ class Monitor():
 			assert isinstance(subfolder_name, str), 'subfolder_name must be of type string'
 			self.subfolder_name = subfolder_name
 			self.folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + os.sep + 'monitoring' + os.sep + self.subfolder_name
+
+	def get_configuration(self) -> list:
+		"""
+		Return the configuration of the current monitor.
+
+		Returns:
+			list: A list containing the configuration (=class variables)
+		"""
+		configuration = []
+		configuration.append(self.enable_live_draws)
+		configuration.append(self.episodes)
+		configuration.append(self.plot_interval)
+		configuration.append(self.path_to_modelfile)
+		configuration.append(self.marketplace)
+		configuration.append(self.agents)
+		configuration.append(self.agent_colors)
+		configuration.append(self.subfolder_name)
+		configuration.append(self.folder_path)
+		print(configuration)
+		return configuration
 
 	def get_episode_rewards(self, all_step_rewards) -> list:
 		"""
@@ -356,8 +376,7 @@ monitor = Monitor()
 
 
 def main() -> None:
-	import agent
-	monitor.setup_monitoring(marketplace=sim_market.CircularEconomy, agents=[(agent.RuleBasedCEAgent, ['my favorit agent']), (agent.QLearningCEAgent, [])])
+	# monitor.setup_monitoring(marketplace=sim_market.CircularEconomy, agents=[(agent.QLearningCEAgent, [])], modelfile='CircularEconomy_QLearningCEAgent.dat')
 	print(f'Running', monitor.episodes, 'episodes')
 	print(f'Plot interval is: {monitor.plot_interval}')
 	print(f'Using modelfile: {monitor.path_to_modelfile}')
