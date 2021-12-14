@@ -64,14 +64,12 @@ class CustomerCircular(Customer):
 
 	# This customer values a second-hand-product 55% of a new product
 	def set_probabilities_from_offers(self, offers) -> None:
-		# offers[0]: price for refurbished product
-		# offers[1]: price for new product
-		# offers[2]: num products in agents storage (don't use for customer)
-		# offers[3]: num products in circulation
+		price_refurbished = offers[2]
+		price_new = offers[3]
 		assert offers[0] >= 1 and offers[1] >= 1
 
-		ratio_old = 5.5 / offers[0] - math.exp(offers[0] - 5)
-		ratio_new = 10 / offers[1] - math.exp(offers[1] - 8)
+		ratio_old = 5.5 / price_refurbished - math.exp(price_refurbished - 5)
+		ratio_new = 10 / price_new - math.exp(price_new - 8)
 		preferences = np.array([1, ratio_old, ratio_new])
 		self.probabilities = ut.softmax(preferences)
 

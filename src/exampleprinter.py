@@ -19,13 +19,13 @@ def print_example(env=sim_market.CircularEconomy(), agent=a.RuleBasedCEAgent()):
 		while not is_done:
 			action = agent.policy(state)
 			print(state)
-			if isinstance(env, sim_market.CircularEconomy):
-				writer.add_scalar('Example_state/storage_content', env.state[0], counter)
-				writer.add_scalar('Example_state/products_in_circle', env.state[1], counter)
-				writer.add_scalar('Example_action/price_second_hand', action[0] + 1, counter)
-				writer.add_scalar('Example_action/price_new', action[1] + 1, counter)
-				if isinstance(env, sim_market.CircularEconomyRebuyPrice):
-					writer.add_scalar('Example_action/rebuy_price', action[2] + 1, counter)
+			# if isinstance(env, sim_market.CircularEconomy):
+			# 	writer.add_scalar('Example_state/storage_content', env.state[0], counter)
+			# 	writer.add_scalar('Example_state/products_in_circle', env.state[1], counter)
+			# 	writer.add_scalar('Example_action/price_second_hand', action[0] + 1, counter)
+			# 	writer.add_scalar('Example_action/price_new', action[1] + 1, counter)
+			# 	if isinstance(env, sim_market.CircularEconomyRebuyPrice):
+			# 		writer.add_scalar('Example_action/rebuy_price', action[2] + 1, counter)
 			# elif isinstance(env, sim_market.LinearEconomy):
 			# 	writer.add_scalar('Example_state/agent_quality', env.state[0], counter)
 			# 	writer.add_scalar('Example_state/competitor_quality', env.state[2], counter)
@@ -51,8 +51,8 @@ def print_example(env=sim_market.CircularEconomy(), agent=a.RuleBasedCEAgent()):
 
 
 def main():
-	agent = a.HumanPlayer
-	environment = sim_market.ClassicScenario()
+	agent = a.HumanPlayerCE()
+	environment = sim_market.CircularEconomy()
 	cumulative_reward = 0
 	for i in range(1000):
 		cumulative_reward += print_example(environment, agent)
@@ -61,6 +61,6 @@ def main():
 
 
 if __name__ == '__main__':
-	agent = a.HumanPlayer()
-	environment = sim_market.ClassicScenario()
+	agent = a.HumanPlayerCE()
+	environment = sim_market.CircularEconomy()
 	print_example(environment, agent)

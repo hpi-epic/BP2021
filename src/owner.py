@@ -44,6 +44,9 @@ class OwnerRebuy(OwnerReturn):
 		self.probabilities = None
 
 	def set_probabilities_from_offer(self, offer):
+		price_refurbished = offer[2]
+		price_new = offer[3]
+		price_rebuy = offer[4]
 		"""
 		The function calculates the probability distribution of a rebuy depending on the offer given by the buyer.
 
@@ -53,10 +56,10 @@ class OwnerRebuy(OwnerReturn):
 		holding_preference = 1
 
 		# If the price is low, the customer will discard the product
-		discard_preference = 2 / (offer[2] + 1)
+		discard_preference = 2 / (price_rebuy + 1)
 
 		# Customer is very excited if the value of his product is close to the new or refurbished price
-		return_preference = 2 * np.exp((offer[2] - min(offer[0], offer[1])) / min(offer[0], offer[1]))
+		return_preference = 2 * np.exp((price_rebuy - min(price_refurbished, price_new)) / min(price_refurbished, price_new))
 
 		self.probabilities = ut.softmax(np.array([holding_preference, discard_preference, return_preference]))
 

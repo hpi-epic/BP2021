@@ -30,7 +30,7 @@ class CompetitorLinearRatio1(Agent):
 
 class CompetitorRandom(Agent):
 	def policy(self, state, epsilon=0):
-		return random.randint(ut.PRODUCTION_PRICE + 1, ut.MAX_PRICE)
+		return random.randint(ut.PRODUCTION_PRICE + 1, ut.MAX_PRICE - 1)
 
 
 class CompetitorJust2Players(Agent):
@@ -63,4 +63,6 @@ class CompetitorJust2Players(Agent):
 			new_price = ut.PRODUCTION_PRICE + 1
 		elif new_price > ut.MAX_PRICE:
 			new_price = ut.MAX_PRICE
+		new_price = int(new_price)
+		assert isinstance(new_price, int)
 		return new_price

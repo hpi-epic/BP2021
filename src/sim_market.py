@@ -39,7 +39,7 @@ class SimMarket(gym.Env, ABC):
 	def reset(self) -> np.array:
 		self.step_counter = 0
 
-		self.set_common_state()
+		self.reset_common_state()
 
 		self.vendor_specific_state = []
 		for _ in range(self.n_vendors()):
@@ -47,7 +47,7 @@ class SimMarket(gym.Env, ABC):
 
 		self.vendors_actions = []
 		for _ in range(self.n_vendors()):
-			self.vendors_actions.append(ut.PRODUCTION_PRICE + 1)
+			self.vendors_actions.append(self.reset_vendors_actions())
 
 		self.customer = self.choose_customer()
 		self.owner = self.choose_owner()
@@ -66,7 +66,7 @@ class SimMarket(gym.Env, ABC):
 
 		err_msg = '%r (%s) invalid' % (action, type(action))
 		assert self.action_space.contains(action), err_msg
-		self.vendors_actions[0] = action + 1
+		self.vendors_actions[0] = action
 
 		self.step_counter += 1
 
@@ -85,8 +85,8 @@ class SimMarket(gym.Env, ABC):
 				action_competitor_i = self.competitors[i].policy(
 					self.observation(i + 1)
 				)
-				assert self.action_space.contains(action_competitor_i), 'The %dth vendor does not deliver a suitable action'.format(i + 1)
-				self.vendors_actions[i + 1] = action_competitor_i + 1
+				assert self.action_space.contains(action_competitor_i), 'This vendor does not deliver a suitable action'
+				self.vendors_actions[i + 1] = action_competitor_i
 
 		self.consider_storage_costs(profits)
 
@@ -97,12 +97,14 @@ class SimMarket(gym.Env, ABC):
 	def observation(self, vendor_view=0):
 		obs = self.get_common_state_array()
 		assert isinstance(obs, np.ndarray), 'get_common_state_array must return a np-Array'
-		obs = np.concatenate((obs, np.array(self.vendor_specific_state[vendor_view], ndmin=1)), dtype=np.float64)
+		if self.vendor_specific_state[vendor_view] is not None:
+			obs = np.concatenate((obs, np.array(self.vendor_specific_state[vendor_view], ndmin=1)), dtype=np.float64)
 		for i in range(self.n_vendors()):
 			if i == vendor_view:
 				continue
 			obs = np.concatenate((obs, np.array(self.vendors_actions[i], ndmin=1)), dtype=np.float64)
-			obs = np.concatenate((obs, np.array(self.vendor_specific_state[i], ndmin=1)), dtype=np.float64)
+			if self.vendor_specific_state[i] is not None:
+				obs = np.concatenate((obs, np.array(self.vendor_specific_state[i], ndmin=1)), dtype=np.float64)
 		err_msg = '%r (%s) invalid observation' % (obs, type(obs))
 		assert self.observation_space.contains(obs), err_msg
 		return obs
@@ -112,14 +114,18 @@ class SimMarket(gym.Env, ABC):
 		assert isinstance(offer, np.ndarray), 'get_common_state_array must return a np-Array'
 		for i in range(self.n_vendors()):
 			offer = np.concatenate((offer, np.array(self.vendors_actions[i], ndmin=1)), dtype=np.float64)
-			offer = np.concatenate((offer, np.array(self.vendor_specific_state[i], ndmin=1)), dtype=np.float64)
+			if self.vendor_specific_state[i] is not None:
+				offer = np.concatenate((offer, np.array(self.vendor_specific_state[i], ndmin=1)), dtype=np.float64)
 		return offer
 
-	def set_common_state(self) -> None:
+	def reset_common_state(self) -> None:
 		pass
 	
 	def get_common_state_array(self) -> np.array:
 		return np.array([])
+
+	def reset_specific_vendor_state(self) -> None:
+		None
 
 	@abstractmethod
 	def consider_owners_return(self, *_) -> None:
@@ -153,14 +159,14 @@ class LinearEconomy(SimMarket, ABC):
 		# one action for every price possible for 0 and MAX_PRICE
 		self.action_space = gym.spaces.Discrete(ut.MAX_PRICE)
 
-	def reset_specific_vendor_state(self) -> int:
-		return ut.shuffle_quality()
-
-	# def action_to_array(self, action) -> np.array:
-	# 	return np.array([action + 1.0])
+	def reset_specific_vendor_state(self) -> list:
+		return [ut.shuffle_quality()]
 
 	def choose_customer(self) -> Customer:
 		return customer.CustomerLinear()
+
+	def reset_vendors_actions(self) -> list:
+		return ut.PRODUCTION_PRICE + 1
 
 	def complete_purchase(self, offers, profits, customer_buy) -> None:
 		profits[customer_buy - 1] += (offers[(customer_buy - 1) * 2] - ut.PRODUCTION_PRICE)
@@ -203,12 +209,15 @@ class CircularEconomy(SimMarket):
 	def get_competitor_list(self) -> list:
 		return []
 
-	def reset_market_state(self) -> list:
-		return [int(np.random.rand() * self.max_storage), int(5 * np.random.rand() * self.max_storage)]
+	def reset_common_state(self) -> None:
+		self.in_storage = int(np.random.rand() * self.max_storage)
+		self.in_circulation = int(5 * np.random.rand() * self.max_storage)
 
-	def action_to_array(self, action) -> np.array:
-		# cell 0: price for second-hand-product, cell 1: price for new product (with rebuy price cell 3: rebuy price)
-		return np.array(action) + 1
+	def get_common_state_array(self) -> np.array:
+		return np.array([self.in_storage, self.in_circulation])
+
+	def reset_vendors_actions(self) -> int:
+		return (ut.PRODUCTION_PRICE, ut.PRODUCTION_PRICE + 1)
 
 	def choose_customer(self) -> Customer:
 		return customer.CustomerCircular()
@@ -218,37 +227,37 @@ class CircularEconomy(SimMarket):
 
 	def consider_owners_return(self, offer, profits) -> None:
 		assert self.owner is not None, 'please choose an owner'
-		for _ in range(int(0.05 * self.state[1])):
+		for _ in range(int(0.05 * self.in_circulation)):
 			owner_action = self.owner.consider_return()
 			if owner_action == 0:
 				# Owner throws away his object
-				self.state[1] -= 1
+				self.in_circulation -= 1
 			elif owner_action == 1:
 				# Owner returns product to the agent
 
 				# check if storage is full
-				if self.state[0] < self.max_storage:
-					self.state[0] += 1
-				self.state[1] -= 1
+				if self.in_storage < self.max_storage:
+					self.in_storage+= 1
+				self.in_circulation -= 1
 
 	def complete_purchase(self, offers, profits, customer_buy) -> None:
 		assert len(profits) == 1
 		assert 0 < customer_buy and customer_buy <= 2
 		if customer_buy == 1:
-			if self.state[0] >= 1:
+			if self.in_storage >= 1:
 				# Increase the profit and decrease the storage
 				profits[0] += offers[0]
-				self.state[0] -= 1
+				self.in_storage -= 1
 			else:
 				# Punish the agent for not having enough second-hand-products
 				profits[0] -= 2 * ut.MAX_PRICE
 		elif customer_buy == 2:
 			profits[0] += offers[1] - ut.PRODUCTION_PRICE
 			# One more product is in circulation now
-			self.state[1] = min(self.state[1] + 1, 10 * self.max_storage)
+			self.in_circulation = min(self.in_circulation + 1, 10 * self.max_storage)
 
 	def consider_storage_costs(self, profits) -> None:
-		profits[0] -= self.state[0] / 2  # Storage costs per timestep
+		profits[0] -= self.in_storage / 2  # Storage costs per timestep
 
 
 class CircularEconomyRebuyPrice(CircularEconomy):
@@ -256,6 +265,9 @@ class CircularEconomyRebuyPrice(CircularEconomy):
 		super().setup_action_observation_space()
 		self.action_space = gym.spaces.Tuple((gym.spaces.Discrete(ut.MAX_PRICE), gym.spaces.Discrete(ut.MAX_PRICE), gym.spaces.Discrete(ut.MAX_PRICE)))
 
+	def reset_vendors_actions(self) -> int:
+		return (ut.PRODUCTION_PRICE, ut.PRODUCTION_PRICE + 1, 1)
+	
 	def choose_owner(self) -> Owner:
 		return owner.OwnerRebuy()
 
@@ -263,17 +275,17 @@ class CircularEconomyRebuyPrice(CircularEconomy):
 		# just like with the customer the probabilities are set beforehand to improve performance
 		assert self.owner is not None, 'please choose an owner'
 
-		for _ in range(int(0.05 * self.state[1])):
+		for _ in range(int(0.05 * self.in_circulation)):
 			self.owner.set_probabilities_from_offer(offer)
 			owner_action = self.owner.consider_return()
 			if owner_action == 1:
 				# Owner throws away his object
-				self.state[1] -= 1
+				self.in_circulation -= 1
 			elif owner_action == 2:
 				# Owner returns product to the agent
 
 				# check if storage is full
-				if self.state[0] < self.max_storage:
-					self.state[0] += 1
-				self.state[1] -= 1
+				if self.in_storage < self.max_storage:
+					self.in_storage += 1
+				self.in_circulation -= 1
 				profits[0] -= offer[2]
