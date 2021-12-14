@@ -96,15 +96,15 @@ class SimMarket(gym.Env, ABC):
 		return copy.deepcopy(self.state), profits[0], is_done, output_dict
 
 	@abstractmethod
-	def consider_owners_return(self, *_) -> None:
+	def consider_owners_return(self, *_) -> None:  # pragma: no cover
 		raise NotImplementedError
 
 	@abstractmethod
-	def get_competitor_list(self) -> list:
+	def get_competitor_list(self) -> list:  # pragma: no cover
 		raise NotImplementedError
 
 	@abstractmethod
-	def consider_storage_costs(self, profits) -> None:
+	def consider_storage_costs(self, profits) -> None:  # pragma: no cover
 		raise NotImplementedError
 
 	def choose_owner(self):

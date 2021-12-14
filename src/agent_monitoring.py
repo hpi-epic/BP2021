@@ -24,7 +24,7 @@ class Monitor():
 		self.episodes = 500
 		self.plot_interval = 50
 		# should get deprecated when introducing possibility to use multiple RL-agents
-		self.path_to_modelfile = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + os.sep + 'monitoring' + os.sep + 'QLearningCEAgent_CircularEconomy.dat'
+		self.path_to_modelfile = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + os.sep + 'monitoring' + os.sep + 'CircularEconomy_QLearningCEAgent.dat'
 		self.marketplace = sim_market.CircularEconomy()
 		self.agents = [agent.QLearningCEAgent(self.marketplace.observation_space.shape[0], self.get_action_space(), load_path=self.path_to_modelfile)]
 		self.agent_colors = ['#0000ff']
@@ -149,8 +149,9 @@ class Monitor():
 			self.marketplace = marketplace()
 			# The agents have not been changed, we reuse the old agents
 			if(agents is None):
-				# A bit hacky
-				agents = self.agents
+				print('Warning: Your agents are being overwritten by new instances of themselves!')
+				agents = [type(current_agent) for current_agent in self.agents]
+				print(agents)
 			self.update_agents(agents)
 
 		# marketplace has not changed but agents have
@@ -351,7 +352,7 @@ monitor = Monitor()
 
 def main() -> None:
 	import agent
-	monitor.setup_monitoring(modelfile='QLearningCEAgent_CircularEconomy.dat', marketplace=sim_market.CircularEconomy, agents=[agent.RuleBasedCEAgent, agent.QLearningCEAgent])
+	monitor.setup_monitoring(marketplace=sim_market.CircularEconomy, agents=[agent.RuleBasedCEAgent, agent.QLearningCEAgent])
 	print(f'Running', monitor.episodes, 'episodes')
 	print(f'Plot interval is: {monitor.plot_interval}')
 	print(f'Using modelfile: {monitor.path_to_modelfile}')

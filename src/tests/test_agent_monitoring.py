@@ -85,8 +85,19 @@ def test_mismatched_scenarios():
 
 def test_mismatched_modelfile():
 	with pytest.raises(RuntimeError) as assertion_message:
-		monitor.setup_monitoring(modelfile='QLearningAgent_ClassicScenario.dat', agents=[agent.QLearningCEAgent], marketplace=sim_market.CircularEconomyRebuyPrice)
+		monitor.setup_monitoring(modelfile='ClassicScenario_QLearningLEAgent.dat', agents=[agent.QLearningCEAgent], marketplace=sim_market.CircularEconomyRebuyPrice)
 	assert 'the modelfile is not compatible with the agent you tried to instantiate' in str(assertion_message.value)
+
+
+# Test once for a Linear, Circular and RebuyPrice Economy
+def test_get_action_space():
+	monitor.setup_monitoring(modelfile='ClassicScenario_QLearningLEAgent.dat', agents=[agent.QLearningLEAgent], marketplace=sim_market.ClassicScenario)
+	monitor.setup_monitoring(modelfile='CircularEconomy_QLearningCEAgent.dat', agents=[agent.QLearningCEAgent], marketplace=sim_market.CircularEconomy)
+	monitor.setup_monitoring(modelfile='CircularEconomyRebuyPrice_QLearningCERebuyAgent.dat', agents=[agent.QLearningCERebuyAgent], marketplace=sim_market.CircularEconomyRebuyPrice)
+
+
+def test_setting_market_not_agents():
+	monitor.setup_monitoring(marketplace=sim_market.CircularEconomy)
 
 
 def test_init_default_values():
@@ -94,7 +105,7 @@ def test_init_default_values():
 	assert test_monitor.enable_live_draws is True
 	assert 500 == test_monitor.episodes
 	assert 50 == test_monitor.plot_interval
-	assert os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring' + os.sep + 'QLearningCEAgent_CircularEconomy.dat' == test_monitor.path_to_modelfile
+	assert os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring' + os.sep + 'CircularEconomy_QLearningCEAgent.dat' == test_monitor.path_to_modelfile
 	assert isinstance(test_monitor.marketplace, sim_market.CircularEconomy)
 	assert isinstance(test_monitor.agents[0], agent.QLearningCEAgent)
 	assert 1 == len(test_monitor.agents)

@@ -277,6 +277,10 @@ class QLearningAgent(ReinforcementLearningAgent, ABC):
 		torch.save(self.net.state_dict(), './trainedModels/' + path)
 
 
+class QLearningLEAgent(QLearningAgent, LinearAgent):
+	pass
+
+
 class QLearningCEAgent(QLearningAgent, CircularAgent):
 	def policy(self, state, epsilon=0) -> int:
 		step = super().policy(state, epsilon)
