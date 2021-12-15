@@ -49,7 +49,7 @@ class CustomerLinear(Customer):
 	def set_probabilities_from_offers(self, offers, nothingpreference=1) -> None:
 		ratios = [nothingpreference]
 		for i in range(int(len(offers) / 2)):
-			ratio = offers[2 * i + 1] / offers[2 * i] - math.exp(offers[2 * i] - 27)
+			ratio = offers[2 * i + 1] / (offers[2 * i] + 1) - math.exp(offers[2 * i] - 27)
 			ratios.append(ratio)
 		self.probabilities = ut.softmax(np.array(ratios))
 
@@ -66,7 +66,7 @@ class CustomerCircular(Customer):
 	def set_probabilities_from_offers(self, offers) -> None:
 		price_refurbished = offers[2]
 		price_new = offers[3]
-		assert offers[0] >= 1 and offers[1] >= 1
+		assert price_refurbished >= 1 and price_new >= 1
 
 		ratio_old = 5.5 / price_refurbished - math.exp(price_refurbished - 5)
 		ratio_new = 10 / price_new - math.exp(price_new - 8)
@@ -74,6 +74,5 @@ class CustomerCircular(Customer):
 		self.probabilities = ut.softmax(preferences)
 
 	def buy_object(self, offers) -> Tuple[int, int]:
-
 		customer_desicion = ut.shuffle_from_probabilities(self.probabilities)
 		return customer_desicion

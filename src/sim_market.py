@@ -230,12 +230,10 @@ class CircularEconomy(SimMarket):
 		return owner.OwnerReturn()
 
 	def throw_away(self) -> None:
-		print(self.output_dict['owner/throw_away'])
 		self.output_dict['owner/throw_away'] += 1
 		self.in_circulation -= 1
 
 	def transfer_product_to_storage(self, vendor, profits=None, rebuy_price=0) -> None:
-		self.ensure_output_dict_has('owner/rebuys', [0] * self.n_vendors())
 		self.output_dict['owner/rebuys']['vendor_' + str(vendor)] += 1
 
 		if self.in_storage < self.max_storage:
@@ -247,6 +245,7 @@ class CircularEconomy(SimMarket):
 
 	def simulate_owners(self, *_) -> None:
 		self.ensure_output_dict_has('owner/throw_away')
+		self.ensure_output_dict_has('owner/rebuys', [0] * self.n_vendors())
 		self.ensure_output_dict_has('profits/rebuy_cost', [0] * self.n_vendors())
 		assert self.owner is not None, 'please choose an owner'
 		for _ in range(int(0.05 * self.in_circulation / self.n_vendors())):
@@ -311,6 +310,7 @@ class CircularEconomyRebuyPrice(CircularEconomy):
 		# just like with the customer the probabilities are set beforehand to improve performance
 		assert self.owner is not None, 'please choose an owner'
 		self.ensure_output_dict_has('owner/throw_away')
+		self.ensure_output_dict_has('owner/rebuys', [0] * self.n_vendors())
 		self.ensure_output_dict_has('profits/rebuy_cost', [0] * self.n_vendors())
 
 		for _ in range(int(0.05 * self.in_circulation)):

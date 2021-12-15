@@ -61,8 +61,8 @@ class CompetitorJust2Players(Agent):
 			new_price = agent_price
 		if new_price < ut.PRODUCTION_PRICE:
 			new_price = ut.PRODUCTION_PRICE + 1
-		elif new_price > ut.MAX_PRICE:
-			new_price = ut.MAX_PRICE
+		elif new_price >= ut.MAX_PRICE:
+			new_price = ut.MAX_PRICE - 1
 		new_price = int(new_price)
 		assert isinstance(new_price, int)
 		return new_price

@@ -15,7 +15,6 @@ def write_dict_to_tensorboard(writer, mydict, counter, cum=False):
 			continue
 		if cum:
 			name = 'cumulated_' + name
-		print(name, content)
 		if isinstance(content, dict):
 			writer.add_scalars(name, content, counter)
 		else:
