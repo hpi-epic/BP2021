@@ -1,11 +1,11 @@
 import pytest
 from numpy import random
 
+# from .context import competitor
 # from .context import Competitor
 from .context import CompetitorJust2Players as C2Players
 from .context import CompetitorLinearRatio1 as CLinear1
 from .context import CompetitorRandom as CRandom
-from .context import competitor
 from .context import utils as ut
 
 

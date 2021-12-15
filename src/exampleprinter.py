@@ -21,6 +21,7 @@ def write_dict_to_tensorboard(writer, mydict, counter, cum=False):
 		else:
 			writer.add_scalar(name, content, counter)
 
+
 def add_content_of_two_dicts(dict1, dict2) -> dict:
 	newdict = {}
 	for key in dict1:
@@ -29,6 +30,7 @@ def add_content_of_two_dicts(dict1, dict2) -> dict:
 		else:
 			newdict[key] = dict1[key] + dict2[key]
 	return newdict
+
 
 def print_example(env=sim_market.CircularEconomy(), agent=a.RuleBasedCEAgent()) -> int:
 	counter = 0
@@ -53,16 +55,6 @@ def print_example(env=sim_market.CircularEconomy(), agent=a.RuleBasedCEAgent()) 
 			our_profit += reward
 			counter += 1
 	return our_profit
-
-
-def main():
-	agent = a.HumanPlayerCE()
-	environment = sim_market.CircularEconomy()
-	cumulative_reward = 0
-	for i in range(1000):
-		cumulative_reward += print_example(environment, agent)
-
-	print('The average reward is', cumulative_reward / 1000)
 
 
 if __name__ == '__main__':

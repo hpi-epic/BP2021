@@ -20,6 +20,7 @@ from owner import Owner
 # Second: a state specific to one vendor
 # Third: vendor's actions from the former round which needs to be saved and influence the other's decision e.g. prices
 
+
 class SimMarket(gym.Env, ABC):
 	def __init__(self) -> None:
 		self.competitors = self.get_competitor_list()
@@ -52,7 +53,7 @@ class SimMarket(gym.Env, ABC):
 		self.customer = self.choose_customer()
 		self.owner = self.choose_owner()
 
-		return self.observation()
+		return copy.deepcopy(self.observation())
 
 	def simulate_customers(self, profits, offers, n) -> None:
 		self.customer.set_probabilities_from_offers(offers)
@@ -94,7 +95,7 @@ class SimMarket(gym.Env, ABC):
 		self.ensure_output_dict_has('profits/all', profits)
 		self.extend_dict_from_state()
 		is_done = self.step_counter >= ut.EPISODE_LENGTH
-		return self.observation(), profits[0], is_done, self.output_dict
+		return copy.deepcopy(self.observation()), profits[0], is_done, self.output_dict
 
 	def observation(self, vendor_view=0):
 		obs = self.get_common_state_array()
@@ -143,7 +144,7 @@ class SimMarket(gym.Env, ABC):
 		pass
 
 	def ensure_output_dict_has(self, name, init_for_all_vendors=None):
-		if not name in self.output_dict:
+		if name not in self.output_dict:
 			if init_for_all_vendors is None:
 				self.output_dict[name] = 0
 			else:
@@ -290,7 +291,7 @@ class CircularEconomy(SimMarket):
 	def extend_dict_from_state(self):
 		assert self.n_vendors() == 1, 'This feature does not support more than one customer'
 		self.output_dict['state/in_circulation'] = self.in_circulation
-		self.ensure_output_dict_has('state/in_storage', [self.in_storage]) # self.vendor_specific_state)
+		self.ensure_output_dict_has('state/in_storage', [self.in_storage])  # self.vendor_specific_state)
 		self.ensure_output_dict_has('actions/price_refurbished', [self.vendors_actions[i][0] for i in range(self.n_vendors())])
 		self.ensure_output_dict_has('actions/price_new', [self.vendors_actions[i][1] for i in range(self.n_vendors())])
 

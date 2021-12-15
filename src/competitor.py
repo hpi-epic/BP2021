@@ -3,7 +3,6 @@
 # helper
 import math
 import random
-from abc import ABC, abstractmethod
 
 import utils as ut
 from agent import Agent
