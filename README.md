@@ -24,9 +24,11 @@ conda activate your_venv_name
 ```
 
 If you have a Nvidia GPU, consider installing cuda to get better training performance:
+Note that depending on your specific GPU you might need to change the cudatoolkit version.
 
 ```console
-conda install -c anaconda cudatoolkit
+conda uninstall pytorch
+conda install pytorch torchvision torchaudio cudatoolkit=11.3 -c pytorch -c nvidia
 ```
 
 To update an existing environment with the needed packages run the following command:

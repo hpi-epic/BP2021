@@ -197,7 +197,7 @@ class QLearningAgent(Agent):
 	def train_batch(self):
 		self.optimizer.zero_grad()
 		batch = self.buffer.sample(utrl.BATCH_SIZE)
-		loss_t, selected_q_val_mean = self.calc_loss(batch)
+		loss_t, selected_q_val_mean = self.calc_loss(batch, self.device)
 		loss_t.backward()
 		self.optimizer.step()
 		return loss_t.item(), selected_q_val_mean.item()
