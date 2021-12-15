@@ -17,7 +17,6 @@ from owner import Owner
 
 
 class SimMarket(gym.Env, ABC):
-	is_circular = None
 
 	def __init__(self) -> None:
 		self.competitors = self.get_competitor_list()
@@ -112,7 +111,6 @@ class SimMarket(gym.Env, ABC):
 
 
 class LinearEconomy(SimMarket, ABC):
-	is_circular = False
 
 	def setup_action_observation_space(self) -> None:
 		# cell 0: agent's quality, afterwards: odd cells: competitor's price, even cells: competitor's quality
@@ -176,7 +174,6 @@ class MultiCompetitorScenario(LinearEconomy):
 
 
 class CircularEconomy(SimMarket):
-	is_circular = True
 
 	# currently monopoly
 	def setup_action_observation_space(self) -> None:

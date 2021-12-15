@@ -96,16 +96,16 @@ class Monitor():
 		assert all(len(agent_tuple) == 2 for agent_tuple in agents), 'the list entries in agents must have size 2 ([agent_class, arguments])'
 		assert all(issubclass(agent_tuple[0], agent.Agent) for agent_tuple in agents), 'the first entry in each agent-tuple must be an agent class in agent.py'
 		assert all(isinstance(agent_tuple[1], list) for agent_tuple in agents), 'the second entry in each agent-tuple must be a list of arguments'
-		assert all(agent_tuple[0].is_circular == agents[0][0].is_circular for agent_tuple in agents), 'the agents must all be of the same type (Linear/Circular)'
-		assert agents[0][0].is_circular == self.marketplace.is_circular, 'the agent and marketplace must be of the same economy type (Linear/Circular)'
+		assert all(issubclass(agent_tuple[0], agent.CircularAgent) == issubclass(agents[0][0], agent.CircularAgent) for agent_tuple in agents), 'the agents must all be of the same type (Linear/Circular)'
+		assert issubclass(agents[0][0], agent.CircularAgent) == isinstance(self.marketplace, sim_market.CircularEconomy), 'the agent and marketplace must be of the same economy type (Linear/Circular)'
 
 		self.agents = []
 
 		# Instantiate all agents. If they are not rule-based, use the marketplace parameters accordingly
 		for current_agent in agents:
-			if current_agent[0].is_rule_based:
+			if issubclass(current_agent[0], agent.RuleBasedAgent) :
 				self.agents.append(agent.Agent.custom_init(agent.Agent, current_agent[0], current_agent[1]))
-			elif not current_agent[0].is_rule_based:
+			elif not issubclass(current_agent[0], agent.RuleBasedAgent):
 				# TODO: Modelfile from list!
 				try:
 					assert current_agent[1] == [] or isinstance(current_agent[1][0], str), 'reinforcement learning agents accept only a name (str) or an empty list as arguments'
@@ -168,24 +168,23 @@ class Monitor():
 			self.subfolder_name = subfolder_name
 			self.folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + os.sep + 'monitoring' + os.sep + self.subfolder_name
 
-	def get_configuration(self) -> list:
+	def get_configuration(self) -> dict:
 		"""
 		Return the configuration of the current monitor.
 
 		Returns:
-			list: A list containing the configuration (=class variables)
+			dict: A dict containing the configuration (=class variables)
 		"""
-		configuration = []
-		configuration.append(self.enable_live_draws)
-		configuration.append(self.episodes)
-		configuration.append(self.plot_interval)
-		configuration.append(self.path_to_modelfile)
-		configuration.append(self.marketplace)
-		configuration.append(self.agents)
-		configuration.append(self.agent_colors)
-		configuration.append(self.subfolder_name)
-		configuration.append(self.folder_path)
-		print(configuration)
+		configuration = {}
+		configuration['enable_live_draw'] = self.enable_live_draws
+		configuration['episodes'] = self.episodes
+		configuration['plot_interval'] = self.plot_interval
+		configuration['path_to_modelfile'] = self.path_to_modelfile
+		configuration['marketplace'] = self.marketplace
+		configuration['agents'] = self.agents
+		configuration['agent_colors'] = self.agent_colors
+		configuration['subfolder_name'] = self.subfolder_name
+		configuration['folder_path'] = self.folder_path
 		return configuration
 
 	def get_episode_rewards(self, all_step_rewards) -> list:

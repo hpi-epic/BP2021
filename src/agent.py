@@ -14,8 +14,6 @@ from experience_buffer import ExperienceBuffer
 
 
 class Agent(ABC):
-	is_circular = None
-	is_rule_based = None
 
 	def __init__(self, name='agent'):
 		self.name = name
@@ -39,19 +37,19 @@ class Agent(ABC):
 
 
 class CircularAgent(Agent, ABC):
-	is_circular = True
+	pass
 
 
 class LinearAgent(Agent, ABC):
-	is_circular = False
+	pass
 
 
 class RuleBasedAgent(Agent, ABC):
-	is_rule_based = True
+	pass
 
 
 class ReinforcementLearningAgent(Agent, ABC):
-	is_rule_based = False
+	pass
 
 
 class HumanPlayer(RuleBasedAgent, ABC):
