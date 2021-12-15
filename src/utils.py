@@ -69,4 +69,4 @@ def shuffle_from_probabilities(probabilities) -> int:
         sum += p
         if randomnumber <= sum:
             return i
-    return len(probabilities) - 1
+    return len(probabilities) - 1  # pragma: no cover
