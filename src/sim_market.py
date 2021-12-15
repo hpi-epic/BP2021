@@ -59,7 +59,7 @@ class SimMarket(gym.Env, ABC):
 		self.customer = self.choose_customer()
 		self.owner = self.choose_owner()
 
-		return copy.deepcopy(self.observation())
+		return self.observation()
 
 	def simulate_customers(self, profits, offers, n) -> None:
 		self.customer.set_probabilities_from_offers(offers)
@@ -101,7 +101,7 @@ class SimMarket(gym.Env, ABC):
 		self.ensure_output_dict_has('profits/all', profits)
 		self.extend_dict_from_state()
 		is_done = self.step_counter >= ut.EPISODE_LENGTH
-		return copy.deepcopy(self.observation()), profits[0], is_done, self.output_dict
+		return self.observation(), profits[0], is_done, copy.deepcopy(self.output_dict)
 
 	def observation(self, vendor_view=0) -> np.array:
 		"""observation creates a different view of the market for every vendor.
