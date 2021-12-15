@@ -17,6 +17,9 @@ jobs:
           miniconda-version: "latest"
           auto-update-conda: true
           environment-file: environment.yml
+      - name: Lint using Pre-commit
+        shell: bash -l {0}
+        run: pre-commit run --all-files
       - name: Pytest
         shell: bash -l {0}
         run: coverage run --source=./src -m pytest
