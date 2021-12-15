@@ -20,13 +20,11 @@ class Monitor():
 
 	def __init__(self) -> None:
 		# Do not change the values in here! They are assumed in tests. Instead use setup_monitoring()!
-		self.enable_live_draws = True
+		self.enable_live_draw = True
 		self.episodes = 500
 		self.plot_interval = 50
-		# should get deprecated when introducing possibility to use multiple RL-agents
-		self.path_to_modelfile = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + os.sep + 'monitoring' + os.sep + 'CircularEconomy_QLearningCEAgent.dat'
 		self.marketplace = sim_market.CircularEconomy()
-		self.agents = [agent.QLearningCEAgent(self.marketplace.observation_space.shape[0], self.get_action_space(), load_path=self.path_to_modelfile)]
+		self.agents = [agent.QLearningCEAgent(self.marketplace.observation_space.shape[0], self.get_action_space(), load_path=self.get_modelfile_path('CircularEconomy_QLearningCEAgent.dat'))]
 		self.agent_colors = ['#0000ff']
 		self.subfolder_name = 'plots_' + time.strftime('%Y%m%d-%H%M%S')
 		self.folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + os.sep + 'monitoring' + os.sep + self.subfolder_name
@@ -65,6 +63,10 @@ class Monitor():
 			os.mkdir(self.folder_path)
 			os.mkdir(self.folder_path + os.sep + 'histograms')
 		return self.folder_path
+
+	def get_modelfile_path(self, model_name) -> str:
+		# TODO: Docstring
+		return os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + os.sep + 'monitoring' + os.sep + model_name
 
 	def get_action_space(self) -> int:
 		"""
@@ -108,9 +110,12 @@ class Monitor():
 			elif not issubclass(current_agent[0], agent.RuleBasedAgent):
 				# TODO: Modelfile from list!
 				try:
-					assert current_agent[1] == [] or isinstance(current_agent[1][0], str), 'reinforcement learning agents accept only a name (str) or an empty list as arguments'
-					agent_name = 'q_learning' if current_agent[1] == [] else current_agent[1][0]
-					self.agents.append(current_agent[0](self.marketplace.observation_space.shape[0], self.get_action_space(), load_path=self.path_to_modelfile, name=agent_name))
+					assert len(current_agent[1]) == 1 or len(current_agent[1]) == 2 and isinstance(current_agent[1][1], str), 'the first argument for an reinforcement lerner needs to be a modelfile, the second one is an optional name'
+					assert isinstance(current_agent[1][0], str), 'the modelfile must be of type str'
+					assert os.path.exists(self.get_modelfile_path(current_agent[1][0])), 'the specified modelfile does not exist'
+
+					agent_name = 'q_learning' if len(current_agent[1]) == 1 else current_agent[1][1]
+					self.agents.append(current_agent[0](self.marketplace.observation_space.shape[0], self.get_action_space(), load_path=self.get_modelfile_path(current_agent[1][0]), name=agent_name))
 				except RuntimeError:  # pragma: no cover
 					raise RuntimeError('the modelfile is not compatible with the agent you tried to instantiate')
 			else:  # pragma: no cover
@@ -122,33 +127,32 @@ class Monitor():
 		for agent_id in range(0, len(self.agents)):
 			self.agent_colors.append(color_map(agent_id))
 
-	def setup_monitoring(self, enable_live_draws=None, episodes=None, plot_interval=None, modelfile=None, marketplace=None, agents=None, subfolder_name=None) -> None:
+	def setup_monitoring(self, enable_live_draw=None, episodes=None, plot_interval=None, marketplace=None, agents=None, subfolder_name=None) -> None:
 		"""
 		Configure the current monitoring session.
 
 		Args:
-			enable_live_draws (bool, optional): Whether or not diagrams should be displayed on screen when drawn. Defaults to None.
+			enable_live_draw (bool, optional): Whether or not diagrams should be displayed on screen when drawn. Defaults to None.
 			episodes (int, optional): The number of episodes to run. Defaults to None.
 			plot_interval (int, optional): After how many episodes a new data point/plot should be generated. Defaults to None.
-			modelfile (str, optional): Path to the file containing the model for a RL-agent. Defaults to None.
 			marketplace (sim_market class, optional): What marketplace to run the monitoring on. Defaults to None.
-			agents (list of tuples of agent classes and lists): What agents to monitor. Must be tuples where the first entry is the class of the agent and the second entry is a list of arguments for its initialization. Arguments are read left to right, arguments cannot be skipped. Each agent will generate data points in the diagrams. Defaults to None.
+			agents (list of tuples of agent classes and lists): What agents to monitor.
+			Must be tuples where the first entry is the class of the agent and the second entry is a list of arguments for its initialization.
+			Arguments are read left to right, arguments cannot be skipped.
+			The first argument must exist and be the path to the modelfile for the agent, the second is optional and the name the agent should have.
+			Each agent will generate data points in the diagrams. Defaults to None.
 			subfolder_name (str, optional): The name of the folder to save the diagrams in. Defaults to None.
 		"""
 		# doesn't look nice, but afaik only way to keep parameter list short
-		if(enable_live_draws is not None):
-			assert isinstance(enable_live_draws, bool), 'enable_live_draws must be a Boolean'
-			self.enable_live_draws = enable_live_draws
+		if(enable_live_draw is not None):
+			assert isinstance(enable_live_draw, bool), 'enable_live_draw must be a Boolean'
+			self.enable_live_draw = enable_live_draw
 		if(episodes is not None):
 			assert isinstance(episodes, int), 'episodes must be of type int'
 			self.episodes = episodes
 		if(plot_interval is not None):
 			assert isinstance(plot_interval, int), 'plot_interval must be of type int'
 			self.plot_interval = plot_interval
-		if(modelfile is not None):
-			assert isinstance(modelfile, str), 'modelfile must be of type string'
-			assert os.path.exists(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + os.sep + 'monitoring' + os.sep + modelfile), 'the specified modelfile does not exist'
-			self.path_to_modelfile = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + os.sep + 'monitoring' + os.sep + modelfile
 
 		if(marketplace is not None):
 			assert issubclass(marketplace, sim_market.SimMarket), 'the marketplace must be a subclass of sim_market'
@@ -156,7 +160,7 @@ class Monitor():
 			# The agents have not been changed, we reuse the old agents
 			if(agents is None):
 				print('Warning: Your agents are being overwritten by new instances of themselves!')
-				agents = [(type(current_agent), []) for current_agent in self.agents]
+				agents = [(type(current_agent), [f'{type(monitor.marketplace).__name__}_{type(current_agent).__name__}.dat']) for current_agent in self.agents]
 			self.update_agents(agents)
 
 		# marketplace has not changed but agents have
@@ -176,10 +180,9 @@ class Monitor():
 			dict: A dict containing the configuration (=class variables)
 		"""
 		configuration = {}
-		configuration['enable_live_draw'] = self.enable_live_draws
+		configuration['enable_live_draw'] = self.enable_live_draw
 		configuration['episodes'] = self.episodes
 		configuration['plot_interval'] = self.plot_interval
-		configuration['path_to_modelfile'] = self.path_to_modelfile
 		configuration['marketplace'] = self.marketplace
 		configuration['agents'] = self.agents
 		configuration['agent_colors'] = self.agent_colors
@@ -242,7 +245,7 @@ class Monitor():
 		plt.hist(rewards, bins=plot_bins, color=self.agent_colors, rwidth=0.9, range=plot_range)
 		plt.legend([a.name for a in self.agents])
 
-		if self.enable_live_draws:  # pragma: no cover
+		if self.enable_live_draw:  # pragma: no cover
 			plt.draw()
 			plt.pause(0.001)
 		plt.savefig(fname=self.get_folder() + os.sep + 'histograms' + os.sep + filename + '.svg')
@@ -311,7 +314,7 @@ class Monitor():
 		plt.title(f'Overall {metric_name} Reward calculated each {self.plot_interval} episodes')
 		plt.legend([a.name for a in self.agents])
 		plt.grid(True)
-		if self.enable_live_draws:  # pragma: no cover
+		if self.enable_live_draw:  # pragma: no cover
 			plt.draw()
 			plt.pause(0.001)
 		plt.savefig(fname=self.get_folder() + os.sep + filename)
@@ -375,11 +378,11 @@ monitor = Monitor()
 
 
 def main() -> None:
-	# monitor.setup_monitoring(marketplace=sim_market.CircularEconomy, agents=[(agent.QLearningCEAgent, [])], modelfile='CircularEconomy_QLearningCEAgent.dat')
-	print(f'Running', monitor.episodes, 'episodes')
-	print(f'Plot interval is: {monitor.plot_interval}')
-	print(f'Using modelfile: {monitor.path_to_modelfile}')
-	print(f'The marketplace is: {monitor.marketplace}')
+	# monitor.setup_monitoring(enable_live_draw=False, marketplace=sim_market.ClassicScenario, agents=[(agent.QLearningLEAgent, ['ClassicScenario_QLearningLEAgent.dat'])])
+	print(f'Live Drawing enabled:', monitor.enable_live_draw)
+	print(f'Episodes:', monitor.episodes)
+	print(f'Plot interval: {monitor.plot_interval}')
+	print(f'Marketplace: {type(monitor.marketplace).__name__}')
 	print('Monitoring these agents:')
 	for current_agent in monitor.agents:
 		print(current_agent.name)
