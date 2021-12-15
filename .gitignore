@@ -1,18 +1,16 @@
 # from https://github.com/github/gitignore
 
-# To exclude marketplace files created by training the agent
-# args.env-best_*[0-9].*[0-9]_marketplace.dat
-
-*.csv
 trainedModels/
 runs/
 
 # vscode settings
 .vscode/
 .DS_Store
-# to exclude some notes etc
+# to exclude notes and tests
 notes.txt
 test.py
+# interrogate result (docstring lint rule)
+mit-covered-files
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -37,6 +37,8 @@ def test_fixed_price_CERebuy_agent_returns_fixed_price():
 
 
 array_testing = [([8, 50], (6, 8)), ([17, 50], (5, 7)), ([27, 50], (4, 6)), ([80, 50], (2, 9))]
+
+
 @pytest.mark.parametrize('state, expected_prices', array_testing)
 def test_storage_evaluation(state, expected_prices):
 	# setting up test constants
@@ -49,6 +51,8 @@ def test_storage_evaluation(state, expected_prices):
 
 
 array_testing_rebuy = [([8, 50], (6, 8, 5)), ([17, 50], (5, 7, 3)), ([27, 50], (4, 6, 2)), ([80, 50], (2, 9, 0))]
+
+
 @pytest.mark.parametrize('state, expected_prices', array_testing_rebuy)
 def test_storage_evaluation_with_rebuy_price(state, expected_prices):
 	# setting up test constants

@@ -1,6 +1,7 @@
 # Online Marketplace Simulation: A Testbed for Self-Learning Agents
 
 ![Coverage-Badge](/src/tests/coverage.svg)
+![Docstring-Coverage](/src/tests/docstrings.svg)
 
 Working repository in context of the bachelorproject "Online Marketplace Simulation: A Testbed for Self-Learning Agents" at the research group Enterprise Platform and Integration Concepts.
 
@@ -94,7 +95,7 @@ We are using `pre-commit` to lint our files before committing. Pre-commit itself
 pre-commit install
 ```
 
-To circumvent possible errors caused later on, run pre-commit with the following command:
+To circumvent possible errors caused later on, run pre-commit once with the following command:
 
 ```console
 pre-commit run --all-files
