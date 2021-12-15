@@ -91,7 +91,7 @@ def train_QLearning_agent(RL_agent, environment, maxsteps=2 * utrl.EPSILON_DECAY
 			if (
 				best_m_reward is None or best_m_reward < m_reward
 			) and frame_idx > utrl.EPSILON_DECAY_LAST_FRAME + 101:
-				RL_agent.save('args.env-best_%.2f_marketplace.dat' % m_reward)
+				RL_agent.save(type(environment).__name__ + '_' + type(RL_agent).__name__ + '_%.2f.dat' % m_reward)
 				if best_m_reward is not None:
 					print('Best reward updated %.3f -> %.3f' % (best_m_reward, m_reward))
 				best_m_reward = m_reward
