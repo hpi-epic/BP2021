@@ -2,6 +2,7 @@
 
 # helpers
 import math
+from abc import ABC, abstractmethod
 from typing import Tuple
 
 import numpy as np
@@ -11,10 +12,11 @@ import utils as ut
 # import random
 
 
-class Customer:
+class Customer(ABC):
 	def __init__(self) -> None:
 		self.probabilities = None
 
+	@abstractmethod
 	def buy_object(self, others):
 		assert False, 'This class should not be used.'
 
@@ -48,8 +50,8 @@ class CustomerLinear(Customer):
 
 	def set_probabilities_from_offers(self, offers, nothingpreference=1) -> None:
 		ratios = [nothingpreference]
-		for i in range(int(len(offers) / 2)):
-			ratio = offers[2 * i + 1] / (offers[2 * i] + 1) - math.exp(offers[2 * i] - 27)
+		for offer in range(int(len(offers) / 2)):
+			ratio = offers[2 * offer + 1] / (offers[2 * offer] + 1) - math.exp(offers[2 * offer] - 27)
 			ratios.append(ratio)
 		self.probabilities = ut.softmax(np.array(ratios))
 
@@ -66,7 +68,7 @@ class CustomerCircular(Customer):
 	def set_probabilities_from_offers(self, offers) -> None:
 		price_refurbished = offers[2]
 		price_new = offers[3]
-		assert price_refurbished >= 1 and price_new >= 1
+		assert price_refurbished >= 1 and price_new >= 1, 'price_old and price_new need to be greater 1'
 
 		ratio_old = 5.5 / price_refurbished - math.exp(price_refurbished - 5)
 		ratio_new = 10 / price_new - math.exp(price_new - 8)

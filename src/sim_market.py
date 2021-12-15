@@ -30,14 +30,17 @@ class SimMarket(gym.Env, ABC):
 		self.owner = None
 		self.customer = None
 		# TODO: Better testing for the observation and action space
-		assert (
-			self.observation_space and self.action_space
-		), 'Your subclass has major problems with setting up the environment'
+		assert (self.observation_space and self.action_space), 'Your observation or action space is not defined'
 		# Make sure that variables such as state, customer are known
 		self.reset()
 
 	# The number of competitors plus the agent
-	def n_vendors(self) -> int:
+	def get_number_of_vendors(self) -> int:
+		"""Returns the number of competitors plus the agent
+
+		Returns:
+			int: number of competitors plus the agent
+		"""
 		return len(self.competitors) + 1
 
 	def reset(self) -> np.array:
@@ -46,11 +49,11 @@ class SimMarket(gym.Env, ABC):
 		self.reset_common_state()
 
 		self.vendor_specific_state = []
-		for _ in range(self.n_vendors()):
+		for _ in range(self.get_number_of_vendors()):
 			self.vendor_specific_state.append(self.reset_specific_vendor_state())
 
 		self.vendors_actions = []
-		for _ in range(self.n_vendors()):
+		for _ in range(self.get_number_of_vendors()):
 			self.vendors_actions.append(self.reset_vendors_actions())
 
 		self.customer = self.choose_customer()
@@ -70,18 +73,18 @@ class SimMarket(gym.Env, ABC):
 	def step(self, action) -> Tuple[np.array, np.float64, bool, dict]:
 		# The action is the new price of the agent
 
-		err_msg = '%r (%s) invalid' % (action, type(action))
-		assert self.action_space.contains(action), err_msg
+		assert self.action_space.contains(action), f'{action} ({type(action)}) invalid'
+
 		self.vendors_actions[0] = action
 
 		self.step_counter += 1
 
-		profits = [0] * self.n_vendors()
+		profits = [0] * self.get_number_of_vendors()
 
 		self.output_dict = {'customer/buy_nothing': 0}
 
-		customers_per_vendor_iteration = int(np.floor(ut.NUMBER_OF_CUSTOMERS / self.n_vendors()))
-		for i in range(self.n_vendors()):
+		customers_per_vendor_iteration = int(np.floor(ut.NUMBER_OF_CUSTOMERS / self.get_number_of_vendors()))
+		for i in range(self.get_number_of_vendors()):
 			self.simulate_customers(profits, self.generate_customer_offer(), customers_per_vendor_iteration)
 			self.simulate_owners(profits, self.generate_customer_offer())
 
@@ -100,28 +103,41 @@ class SimMarket(gym.Env, ABC):
 		is_done = self.step_counter >= ut.EPISODE_LENGTH
 		return copy.deepcopy(self.observation()), profits[0], is_done, self.output_dict
 
-	def observation(self, vendor_view=0):
-		obs = self.get_common_state_array()
-		assert isinstance(obs, np.ndarray), 'get_common_state_array must return a np-Array'
+	def observation(self, vendor_view=0) -> np.array:
+		"""observation creates a different view of the market for every vendor.
+		Each one sees every others vendors specific state, their actions and the global state.
+		Its own action and state are included at the very front of the vendor list so it is reliably at the same position.
+
+		Args:
+			vendor_view (int, optional): Index of the vendor whose view we create. Defaults to 0.
+		"""
+		# observaton is the array containing the global state. We concatenate everything relevant to it, then return it.
+		observation = self.get_common_state_array()
+		assert isinstance(observation, np.ndarray), 'get_common_state_array must return a np-Array'
+
+		# first the action and state of the of the vendor whose view we create will be added
 		if self.vendor_specific_state[vendor_view] is not None:
-			obs = np.concatenate((obs, np.array(self.vendor_specific_state[vendor_view], ndmin=1)), dtype=np.float64)
-		for i in range(self.n_vendors()):
-			if i == vendor_view:
+			observation = np.concatenate((observation, np.array(self.vendor_specific_state[vendor_view], ndmin=1)), dtype=np.float64)
+
+		# the rest of the vendors actions and states will be added
+		for vendor_index in range(self.get_number_of_vendors()):
+			if vendor_index == vendor_view:
 				continue
-			obs = np.concatenate((obs, np.array(self.vendors_actions[i], ndmin=1)), dtype=np.float64)
-			if self.vendor_specific_state[i] is not None:
-				obs = np.concatenate((obs, np.array(self.vendor_specific_state[i], ndmin=1)), dtype=np.float64)
-		err_msg = '%r (%s) invalid observation' % (obs, type(obs))
-		assert self.observation_space.contains(obs), err_msg
-		return obs
+			observation = np.concatenate((observation, np.array(self.vendors_actions[vendor_index], ndmin=1)), dtype=np.float64)
+			if self.vendor_specific_state[vendor_index] is not None:
+				observation = np.concatenate((observation, np.array(self.vendor_specific_state[vendor_index], ndmin=1)), dtype=np.float64)
+
+		# The observation has to be part of the observation_space defined by the market
+		assert self.observation_space.contains(observation), '%r (%s) invalid observation' % (observation, type(observation))
+		return observation
 
 	def generate_customer_offer(self):
 		offer = self.get_common_state_array()
 		assert isinstance(offer, np.ndarray), 'get_common_state_array must return a np-Array'
-		for i in range(self.n_vendors()):
-			offer = np.concatenate((offer, np.array(self.vendors_actions[i], ndmin=1)), dtype=np.float64)
-			if self.vendor_specific_state[i] is not None:
-				offer = np.concatenate((offer, np.array(self.vendor_specific_state[i], ndmin=1)), dtype=np.float64)
+		for vendor_index in range(self.get_number_of_vendors()):
+			offer = np.concatenate((offer, np.array(self.vendors_actions[vendor_index], ndmin=1)), dtype=np.float64)
+			if self.vendor_specific_state[vendor_index] is not None:
+				offer = np.concatenate((offer, np.array(self.vendor_specific_state[vendor_index], ndmin=1)), dtype=np.float64)
 		return offer
 
 	def reset_common_state(self) -> None:
@@ -137,6 +153,10 @@ class SimMarket(gym.Env, ABC):
 		pass
 
 	@abstractmethod
+	def setup_action_observation_space(self) -> None:
+		raise NotImplementedError
+
+	@abstractmethod
 	def get_competitor_list(self) -> list:  # pragma: no cover
 		raise NotImplementedError
 
@@ -146,12 +166,18 @@ class SimMarket(gym.Env, ABC):
 	def choose_owner(self):
 		pass
 
-	def ensure_output_dict_has(self, name, init_for_all_vendors=None):
+	def ensure_output_dict_has(self, name, init_for_all_vendors=None) -> None:
+		"""Ensures that the output_dict has an entry with the given name.
+
+		Args:
+			name (string): [description]
+			init_for_all_vendors ([type], optional): [description]. Defaults to None.
+		"""
 		if name not in self.output_dict:
 			if init_for_all_vendors is None:
 				self.output_dict[name] = 0
 			else:
-				self.output_dict[name] = dict(zip(['vendor_' + str(i) for i in range(self.n_vendors())], init_for_all_vendors))
+				self.output_dict[name] = dict(zip(['vendor_' + str(i) for i in range(self.get_number_of_vendors())], init_for_all_vendors))
 
 
 class LinearEconomy(SimMarket, ABC):
@@ -180,13 +206,13 @@ class LinearEconomy(SimMarket, ABC):
 		return ut.PRODUCTION_PRICE + 1
 
 	def complete_purchase(self, offers, profits, customer_buy) -> None:
-		self.ensure_output_dict_has('customer/purchases', [0] * self.n_vendors())
+		self.ensure_output_dict_has('customer/purchases', [0] * self.get_number_of_vendors())
 
 		profits[customer_buy - 1] += (offers[(customer_buy - 1) * 2] - ut.PRODUCTION_PRICE)
 		self.output_dict['customer/purchases']['vendor_' + str(customer_buy - 1)] += 1
 
 	def extend_dict_from_state(self):
-		self.ensure_output_dict_has('state/quality', [self.vendor_specific_state[i][0] for i in range(self.n_vendors())])
+		self.ensure_output_dict_has('state/quality', [self.vendor_specific_state[i][0] for i in range(self.get_number_of_vendors())])
 
 
 class ClassicScenario(LinearEconomy):
@@ -247,10 +273,10 @@ class CircularEconomy(SimMarket):
 
 	def simulate_owners(self, *_) -> None:
 		self.ensure_output_dict_has('owner/throw_away')
-		self.ensure_output_dict_has('owner/rebuys', [0] * self.n_vendors())
-		self.ensure_output_dict_has('profits/rebuy_cost', [0] * self.n_vendors())
+		self.ensure_output_dict_has('owner/rebuys', [0] * self.get_number_of_vendors())
+		self.ensure_output_dict_has('profits/rebuy_cost', [0] * self.get_number_of_vendors())
 		assert self.owner is not None, 'please choose an owner'
-		for _ in range(int(0.05 * self.in_circulation / self.n_vendors())):
+		for _ in range(int(0.05 * self.in_circulation / self.get_number_of_vendors())):
 			owner_action = self.owner.consider_return()
 			if owner_action == 0:
 				self.throw_away()
@@ -258,12 +284,12 @@ class CircularEconomy(SimMarket):
 				self.transfer_product_to_storage(owner_action - 1)
 
 	def complete_purchase(self, offers, profits, customer_buy) -> None:
-		assert len(profits) == 1
-		assert 0 < customer_buy and customer_buy <= 2
-		self.ensure_output_dict_has('customer/purchases_refurbished', [0] * self.n_vendors())
-		self.ensure_output_dict_has('customer/purchases_new', [0] * self.n_vendors())
-		self.ensure_output_dict_has('profits/by_selling_refurbished', [0] * self.n_vendors())
-		self.ensure_output_dict_has('profits/by_selling_new', [0] * self.n_vendors())
+		assert len(profits) == 1, 'this is a monopoly economy'
+		assert 0 < customer_buy and customer_buy <= 2, 'invalid action of the customer, only 1 or 2 are allowed'
+		self.ensure_output_dict_has('customer/purchases_refurbished', [0] * self.get_number_of_vendors())
+		self.ensure_output_dict_has('customer/purchases_new', [0] * self.get_number_of_vendors())
+		self.ensure_output_dict_has('profits/by_selling_refurbished', [0] * self.get_number_of_vendors())
+		self.ensure_output_dict_has('profits/by_selling_new', [0] * self.get_number_of_vendors())
 
 		if customer_buy == 1:
 			self.output_dict['customer/purchases_refurbished']['vendor_0'] += 1
@@ -284,17 +310,17 @@ class CircularEconomy(SimMarket):
 			self.in_circulation = min(self.in_circulation + 1, 10 * self.max_storage)
 
 	def consider_storage_costs(self, profits) -> None:
-		assert self.n_vendors() == 1, 'This feature does not support more than one customer yet'
-		self.ensure_output_dict_has('profits/storage_cost', [0] * self.n_vendors())
+		assert self.get_number_of_vendors() == 1, 'This feature does not support more than one vendor yet'
+		self.ensure_output_dict_has('profits/storage_cost', [0] * self.get_number_of_vendors())
 		profits[0] -= self.in_storage / 2  # Storage costs per timestep
 		self.output_dict['profits/storage_cost']['vendor_0'] = -self.in_storage / 2
 
 	def extend_dict_from_state(self):
-		assert self.n_vendors() == 1, 'This feature does not support more than one customer'
+		assert self.get_number_of_vendors() == 1, 'This feature does not support more than one vendor yet'
 		self.output_dict['state/in_circulation'] = self.in_circulation
 		self.ensure_output_dict_has('state/in_storage', [self.in_storage])  # self.vendor_specific_state)
-		self.ensure_output_dict_has('actions/price_refurbished', [self.vendors_actions[i][0] for i in range(self.n_vendors())])
-		self.ensure_output_dict_has('actions/price_new', [self.vendors_actions[i][1] for i in range(self.n_vendors())])
+		self.ensure_output_dict_has('actions/price_refurbished', [self.vendors_actions[i][0] for i in range(self.get_number_of_vendors())])
+		self.ensure_output_dict_has('actions/price_new', [self.vendors_actions[i][1] for i in range(self.get_number_of_vendors())])
 
 
 class CircularEconomyRebuyPrice(CircularEconomy):
@@ -302,7 +328,7 @@ class CircularEconomyRebuyPrice(CircularEconomy):
 		super().setup_action_observation_space()
 		self.action_space = gym.spaces.Tuple((gym.spaces.Discrete(ut.MAX_PRICE), gym.spaces.Discrete(ut.MAX_PRICE), gym.spaces.Discrete(ut.MAX_PRICE)))
 
-	def reset_vendors_actions(self) -> int:
+	def reset_vendors_actions(self) -> tuple:
 		return (ut.PRODUCTION_PRICE, ut.PRODUCTION_PRICE + 1, 1)
 
 	def choose_owner(self) -> Owner:
@@ -312,8 +338,8 @@ class CircularEconomyRebuyPrice(CircularEconomy):
 		# just like with the customer the probabilities are set beforehand to improve performance
 		assert self.owner is not None, 'please choose an owner'
 		self.ensure_output_dict_has('owner/throw_away')
-		self.ensure_output_dict_has('owner/rebuys', [0] * self.n_vendors())
-		self.ensure_output_dict_has('profits/rebuy_cost', [0] * self.n_vendors())
+		self.ensure_output_dict_has('owner/rebuys', [0] * self.get_number_of_vendors())
+		self.ensure_output_dict_has('profits/rebuy_cost', [0] * self.get_number_of_vendors())
 
 		for _ in range(int(0.05 * self.in_circulation)):
 			self.owner.set_probabilities_from_offer(offer)
@@ -326,4 +352,4 @@ class CircularEconomyRebuyPrice(CircularEconomy):
 
 	def extend_dict_from_state(self):
 		super().extend_dict_from_state()
-		self.ensure_output_dict_has('actions/price_rebuy', [self.vendors_actions[i][2] for i in range(self.n_vendors())])
+		self.ensure_output_dict_has('actions/price_rebuy', [self.vendors_actions[i][2] for i in range(self.get_number_of_vendors())])

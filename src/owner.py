@@ -43,16 +43,17 @@ class OwnerRebuy(OwnerReturn):
 		super().__init__()
 		self.probabilities = None
 
-	def set_probabilities_from_offer(self, offer):
-		price_refurbished = offer[2]
-		price_new = offer[3]
-		price_rebuy = offer[4]
+	def set_probabilities_from_offer(self, offer) -> None:
 		"""
 		The function calculates the probability distribution of a rebuy depending on the offer given by the buyer.
 
 		Args:
 			offer (np.array(int)): The offer given by the vendor.
 		"""
+		price_refurbished = offer[2]
+		price_new = offer[3]
+		price_rebuy = offer[4]
+
 		holding_preference = 1
 
 		# If the price is low, the customer will discard the product
