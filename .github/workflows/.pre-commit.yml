@@ -1,0 +1,47 @@
+# see https://pre-commit.com for more information
+# see https://pre-commit.com/hooks.html for more hooks
+# see https://www.python.org/dev/peps/pep-0008/ for PEP8 standard
+# isort, black, flake8 for PEP8 https://rednafi.github.io/digressions/python/2020/04/06/python-precommit.html
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.0.1
+    hooks:
+      - id: trailing-whitespace # trims trailing whitespace
+        args: [--markdown-linebreak-ext=md]
+        types: [python]
+      - id: check-case-conflict # check for system dependent case conflicts
+        types: [python]
+      - id: check-yaml
+      - id: double-quote-string-fixer
+  - repo: https://github.com/pre-commit/pygrep-hooks
+    rev: v1.9.0
+    hooks:
+      - id: python-use-type-annotations # https://florimond.dev/en/posts/2018/07/why-i-started-using-python-type-annotations-and-why-you-should-too/
+        types: [python]
+  - repo: https://github.com/pycqa/isort
+    rev: 5.10.1
+    hooks:
+      - id: isort
+        name: isort
+  - repo: https://gitlab.com/pycqa/flake8
+    rev: 3.9.2
+    hooks:
+      - id: flake8
+        types: [python]
+  # - repo: https://github.com/econchick/interrogate
+  #   rev: 1.5.0  
+  #   hooks:
+  #   - id: interrogate
+  #     args: [-vv, --ignore-init-method, --ignore-module, --exclude=./src/tests/, --omit-covered-files, --generate-badge=./src/tests/docstrings.svg, --badge-style=flat]
+  #     pass_filenames: false
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.0.1
+    hooks:
+      - id: check-ast # check whether files parse as valid python
+        types: [python]
+  - repo: https://github.com/pre-commit/pygrep-hooks
+    rev: v1.9.0
+    hooks:
+      - id: python-use-type-annotations
+        types: [python]

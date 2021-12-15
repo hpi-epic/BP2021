@@ -18,8 +18,9 @@ jobs:
           auto-update-conda: true
           environment-file: environment.yml
       - name: Lint using Pre-commit
-        shell: bash -l {0}
-        run: pre-commit run --all-files
+        uses: pre-commit/action@v2.0.3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
       - name: Pytest
         shell: bash -l {0}
         run: coverage run --source=./src -m pytest
