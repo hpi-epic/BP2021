@@ -36,7 +36,6 @@ def print_example(env=sim_market.CircularEconomy(), agent=a.RuleBasedCEAgent()) 
 	our_profit = 0
 	is_done = False
 	state = env.reset()
-	# print('The production price is', ut.PRODUCTION_PRICE)
 	writer = SummaryWriter()
 	cumdict = None
 
