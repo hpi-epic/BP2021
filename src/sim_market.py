@@ -122,7 +122,7 @@ class SimMarket(gym.Env, ABC):
 
 	def reset_common_state(self) -> None:
 		pass
-	
+
 	def get_common_state_array(self) -> np.array:
 		return np.array([])
 
@@ -177,7 +177,7 @@ class LinearEconomy(SimMarket, ABC):
 
 	def complete_purchase(self, offers, profits, customer_buy) -> None:
 		self.ensure_output_dict_has('customer/purchases', [0] * self.n_vendors())
-		
+
 		profits[customer_buy - 1] += (offers[(customer_buy - 1) * 2] - ut.PRODUCTION_PRICE)
 		self.output_dict['customer/purchases']['vendor_' + str(customer_buy - 1)] += 1
 
@@ -278,7 +278,7 @@ class CircularEconomy(SimMarket):
 			self.output_dict['customer/purchases_new']['vendor_0'] += 1
 			profits[0] += self.vendors_actions[0][1] - ut.PRODUCTION_PRICE
 			self.output_dict['profits/by_selling_new']['vendor_0'] += self.vendors_actions[0][1] - ut.PRODUCTION_PRICE
-			# One more product is in circulation now, but only 10 times the amount of storage space we have 
+			# One more product is in circulation now, but only 10 times the amount of storage space we have
 			self.in_circulation = min(self.in_circulation + 1, 10 * self.max_storage)
 
 	def consider_storage_costs(self, profits) -> None:
@@ -302,7 +302,7 @@ class CircularEconomyRebuyPrice(CircularEconomy):
 
 	def reset_vendors_actions(self) -> int:
 		return (ut.PRODUCTION_PRICE, ut.PRODUCTION_PRICE + 1, 1)
-	
+
 	def choose_owner(self) -> Owner:
 		return owner.OwnerRebuy()
 

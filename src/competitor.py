@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 
 # helper
-from abc import ABC, abstractmethod
 import math
 import random
-from agent import Agent
+from abc import ABC, abstractmethod
+
 import utils as ut
+from agent import Agent
 
 
 class CompetitorLinearRatio1(Agent):
@@ -20,7 +21,7 @@ class CompetitorLinearRatio1(Agent):
 			ratios.append(ratio)
 			if ratio > max_competing_ratio:
 				max_competing_ratio = ratio
-		
+
 		ratio = max_competing_ratio / ratios[0]
 		intended = math.floor(1 / max_competing_ratio * state[0]) - 1
 		actual_price = min(max(ut.PRODUCTION_PRICE + 1, intended), ut.MAX_PRICE - 1)

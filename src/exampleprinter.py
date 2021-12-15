@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 
-import torch
 import copy
+
+import torch
 from torch.utils.tensorboard import SummaryWriter
 
 import agent as a
 import sim_market
+
 
 def write_dict_to_tensorboard(writer, mydict, counter, cum=False):
 	for name, content in mydict.items():
