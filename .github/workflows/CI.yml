@@ -13,7 +13,7 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.8
-      - name: Add Conda to system path
+      - name: Setup Conda environment
         run: |
           source ~/anaconda3/etc/profile.d/conda.sh
           echo $CONDA_EXE >> $GITHUB_PATH
@@ -21,7 +21,9 @@ jobs:
           conda activate BP2021
       - name: Pytest
         shell: bash -l {0}
-        run: coverage run --source=./src -m pytest
+        run: |
+          env
+          coverage run --source=./src -m pytest
       - name: Report Coverage
         shell: bash -l {0}
         run: coverage report
