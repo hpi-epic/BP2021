@@ -17,7 +17,6 @@ jobs:
         run: |
           echo "conda activate" >> ~/.bashrc
           source ~/.bashrc
-          echo $CONDA_EXE >> $GITHUB_PATH
           conda env update --file environment.yml --name base
           conda activate base
       - name: Pytest

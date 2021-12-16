@@ -2,6 +2,7 @@
 
 ![Coverage-Badge](/src/tests/coverage.svg)
 ![Docstring-Coverage](/src/tests/docstrings.svg)
+![CI](https://github.com/hpi-epic/BP2021/actions/workflows/CI.yml/badge.svg)
 
 Working repository in context of the bachelorproject "Online Marketplace Simulation: A Testbed for Self-Learning Agents" at the research group Enterprise Platform and Integration Concepts.
 
