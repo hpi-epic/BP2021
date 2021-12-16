@@ -3,7 +3,6 @@
 # helpers
 import math
 from abc import ABC, abstractmethod
-from typing import Tuple
 
 import numpy as np
 
@@ -75,6 +74,6 @@ class CustomerCircular(Customer):
 		preferences = np.array([1, ratio_old, ratio_new])
 		self.probabilities = ut.softmax(preferences)
 
-	def buy_object(self, offers) -> Tuple[int, int]:
+	def buy_object(self, offers) -> int:
 		customer_desicion = ut.shuffle_from_probabilities(self.probabilities)
 		return customer_desicion

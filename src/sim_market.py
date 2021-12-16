@@ -13,7 +13,7 @@ import utils as ut
 from customer import Customer
 from owner import Owner
 
-# An offer is a Market State that contains both prices and both qualities
+# An offer is a market state that contains all prices and qualities
 
 # There are three kinds of state:
 # First: a common state for all vendors
@@ -44,6 +44,11 @@ class SimMarket(gym.Env, ABC):
 		return len(self.competitors) + 1
 
 	def reset(self) -> np.array:
+		"""This method is required by the gym library. It is called to reset the market before each episode.
+
+		Returns:
+			np.array: The initial observation of the market.
+		"""
 		self.step_counter = 0
 
 		self.reset_common_state()
@@ -61,18 +66,32 @@ class SimMarket(gym.Env, ABC):
 
 		return self.observation()
 
-	def simulate_customers(self, profits, offers, n) -> None:
+	def simulate_customers(self, profits, offers, number_of_customers) -> None:
+		"""Here customers are simulated, the procducts offered by the vendors get sold to n customers. The profits for each vendor get saved to the profits array.
+
+		Args:
+			profits (np.array): The profits of the customers get saved to this array
+			offers (np.array): this array contains the offers of the vendors. It has to be compatible with the customers used.
+			number_of_customers (int): the number of customers eager to buy each step.
+		"""
 		self.customer.set_probabilities_from_offers(offers)
-		for _ in range(n):
-			customer_buy = self.customer.buy_object(offers)
-			if customer_buy != 0:
-				self.complete_purchase(offers, profits, customer_buy)
+		for _ in range(number_of_customers):
+			customer_decision = self.customer.buy_object(offers)
+			if customer_decision != 0:
+				self.complete_purchase(offers, profits, customer_decision)
 			else:
 				self.output_dict['customer/buy_nothing'] += 1
 
 	def step(self, action) -> Tuple[np.array, np.float64, bool, dict]:
-		# The action is the new price of the agent
+		"""This method is called to simulate the market between actions by the agent. It is part of the gym library for reinforcement learning.
+		It is pretty generic and configured by overwriting the abstract and empty methods.
 
+		Args:
+			action (np.array): The action of the agent.
+
+		Returns:
+			Tuple[np.array, np.float64, bool, dict]: A Tuple, containing the observation the agents makes right before his next action, the reward he made between these actions, a flag indicating if the market closes and information about the market for logging purposes.
+		"""
 		assert self.action_space.contains(action), f'{action} ({type(action)}) invalid'
 
 		self.vendors_actions[0] = action
@@ -153,7 +172,7 @@ class SimMarket(gym.Env, ABC):
 		pass
 
 	@abstractmethod
-	def setup_action_observation_space(self) -> None:
+	def setup_action_observation_space(self) -> None:  # pragma: no cover
 		raise NotImplementedError
 
 	@abstractmethod
@@ -170,7 +189,7 @@ class SimMarket(gym.Env, ABC):
 		"""Ensures that the output_dict has an entry with the given name.
 
 		Args:
-			name (string): [description]
+			name (string): name of the dict entry which should be checked
 			init_for_all_vendors ([type], optional): [description]. Defaults to None.
 		"""
 		if name not in self.output_dict:
@@ -183,6 +202,8 @@ class SimMarket(gym.Env, ABC):
 class LinearEconomy(SimMarket, ABC):
 
 	def setup_action_observation_space(self) -> None:
+		"""The method sets up the action and observation space for the linear economy. It is called in the constructor of the class.
+		"""
 		# cell 0: agent's quality, afterwards: odd cells: competitor's price, even cells: competitor's quality
 		self.observation_space = gym.spaces.Box(
 			np.array([0.0] * (len(self.competitors) * 2 + 1)),
@@ -205,22 +226,31 @@ class LinearEconomy(SimMarket, ABC):
 	def reset_vendors_actions(self) -> list:
 		return ut.PRODUCTION_PRICE + 1
 
-	def complete_purchase(self, offers, profits, customer_buy) -> None:
+	def complete_purchase(self, offers, profits, customer_decision) -> None:
+		"""The method handles the customer's decision by raising the profit by the price paid minus the produtcion price.
+
+		Args:
+			offers (np.array): An array containing the offers of all vendors.
+			profits (np.array(int)): An array containing the profits of all vendors.
+			customer_decision (int): Indicates the customer's decision.
+		"""
 		self.ensure_output_dict_has('customer/purchases', [0] * self.get_number_of_vendors())
 
-		profits[customer_buy - 1] += (offers[(customer_buy - 1) * 2] - ut.PRODUCTION_PRICE)
-		self.output_dict['customer/purchases']['vendor_' + str(customer_buy - 1)] += 1
+		profits[customer_decision - 1] += (offers[(customer_decision - 1) * 2] - ut.PRODUCTION_PRICE)
+		self.output_dict['customer/purchases']['vendor_' + str(customer_decision - 1)] += 1
 
 	def extend_dict_from_state(self):
 		self.ensure_output_dict_has('state/quality', [self.vendor_specific_state[i][0] for i in range(self.get_number_of_vendors())])
 
 
 class ClassicScenario(LinearEconomy):
+
 	def get_competitor_list(self) -> list:
 		return [comp.CompetitorLinearRatio1()]
 
 
 class MultiCompetitorScenario(LinearEconomy):
+
 	def get_competitor_list(self) -> list:
 		return [
 			comp.CompetitorLinearRatio1(),
@@ -262,6 +292,13 @@ class CircularEconomy(SimMarket):
 		self.in_circulation -= 1
 
 	def transfer_product_to_storage(self, vendor, profits=None, rebuy_price=0) -> None:
+		"""Handles the transfer of a used product to the storage after it got bought by the vendor. It respects the storage capacity and adjusts the profit the vendor makes.
+
+		Args:
+			vendor (int): The index of the vendor that bought the product.
+			profits (np.array(int), optional): The proftits of all vendors. Only the specific proftit of the given vendor is needed. Defaults to None.
+			rebuy_price (int, optional): the price to which the used product is bought. Defaults to 0.
+		"""
 		self.output_dict['owner/rebuys']['vendor_' + str(vendor)] += 1
 
 		if self.in_storage < self.max_storage:
@@ -272,10 +309,14 @@ class CircularEconomy(SimMarket):
 			profits[vendor] -= rebuy_price
 
 	def simulate_owners(self, *_) -> None:
+		"""The process of getting used products is handled here.
+		"""
 		self.ensure_output_dict_has('owner/throw_away')
 		self.ensure_output_dict_has('owner/rebuys', [0] * self.get_number_of_vendors())
 		self.ensure_output_dict_has('profits/rebuy_cost', [0] * self.get_number_of_vendors())
+
 		assert self.owner is not None, 'please choose an owner'
+
 		for _ in range(int(0.05 * self.in_circulation / self.get_number_of_vendors())):
 			owner_action = self.owner.consider_return()
 			if owner_action == 0:
@@ -283,15 +324,22 @@ class CircularEconomy(SimMarket):
 			else:
 				self.transfer_product_to_storage(owner_action - 1)
 
-	def complete_purchase(self, offers, profits, customer_buy) -> None:
+	def complete_purchase(self, offers, profits, customer_decision) -> None:
+		"""The method handles the customer's decision by raising the profit by the price paid minus the produtcion price. It also handles the storage of used products.
+
+		Args:
+			offers (np.array): The offers of all vendors.
+			profits (np.array(int)): The profits of all vendors.
+			customer_decision ([int): Indicates the customer's decision.
+		"""
 		assert len(profits) == 1, 'this is a monopoly economy'
-		assert 0 < customer_buy and customer_buy <= 2, 'invalid action of the customer, only 1 or 2 are allowed'
+		assert 0 < customer_decision and customer_decision <= 2, 'invalid action of the customer, only 1 or 2 are allowed'
 		self.ensure_output_dict_has('customer/purchases_refurbished', [0] * self.get_number_of_vendors())
 		self.ensure_output_dict_has('customer/purchases_new', [0] * self.get_number_of_vendors())
 		self.ensure_output_dict_has('profits/by_selling_refurbished', [0] * self.get_number_of_vendors())
 		self.ensure_output_dict_has('profits/by_selling_new', [0] * self.get_number_of_vendors())
 
-		if customer_buy == 1:
+		if customer_decision == 1:
 			self.output_dict['customer/purchases_refurbished']['vendor_0'] += 1
 			if self.in_storage >= 1:
 				# Increase the profit and decrease the storage
@@ -302,7 +350,7 @@ class CircularEconomy(SimMarket):
 				# Punish the agent for not having enough second-hand-products
 				profits[0] -= 2 * ut.MAX_PRICE
 				self.output_dict['profits/by_selling_refurbished']['vendor_0'] -= 2 * ut.MAX_PRICE
-		elif customer_buy == 2:
+		elif customer_decision == 2:
 			self.output_dict['customer/purchases_new']['vendor_0'] += 1
 			profits[0] += self.vendors_actions[0][1] - ut.PRODUCTION_PRICE
 			self.output_dict['profits/by_selling_new']['vendor_0'] += self.vendors_actions[0][1] - ut.PRODUCTION_PRICE
@@ -310,12 +358,19 @@ class CircularEconomy(SimMarket):
 			self.in_circulation = min(self.in_circulation + 1, 10 * self.max_storage)
 
 	def consider_storage_costs(self, profits) -> None:
+		"""The method handles the storage costs. they depend on the amount of refurbished products in storage.
+
+		Args:
+			profits (np.array(int)): The profits of all vendors.
+		"""
 		assert self.get_number_of_vendors() == 1, 'This feature does not support more than one vendor yet'
 		self.ensure_output_dict_has('profits/storage_cost', [0] * self.get_number_of_vendors())
 		profits[0] -= self.in_storage / 2  # Storage costs per timestep
 		self.output_dict['profits/storage_cost']['vendor_0'] = -self.in_storage / 2
 
 	def extend_dict_from_state(self):
+		"""Extends the output_dict with the state of the environment, and the actions the agents takes.
+		"""
 		assert self.get_number_of_vendors() == 1, 'This feature does not support more than one vendor yet'
 		self.output_dict['state/in_circulation'] = self.in_circulation
 		self.ensure_output_dict_has('state/in_storage', [self.in_storage])  # self.vendor_specific_state)
@@ -324,6 +379,7 @@ class CircularEconomy(SimMarket):
 
 
 class CircularEconomyRebuyPrice(CircularEconomy):
+
 	def setup_action_observation_space(self) -> None:
 		super().setup_action_observation_space()
 		self.action_space = gym.spaces.Tuple((gym.spaces.Discrete(ut.MAX_PRICE), gym.spaces.Discrete(ut.MAX_PRICE), gym.spaces.Discrete(ut.MAX_PRICE)))
@@ -335,6 +391,12 @@ class CircularEconomyRebuyPrice(CircularEconomy):
 		return owner.OwnerRebuy()
 
 	def simulate_owners(self, profits, offer) -> None:
+		"""The process of owners selling their used products to the vendor. It is prepared for multiple vendor scenarios but is still part of a monopoly.
+
+		Args:
+			profits (np.array(int)): The profits of the vendor.
+			offer (np.array): The offers of the vendor.
+		"""
 		# just like with the customer the probabilities are set beforehand to improve performance
 		assert self.owner is not None, 'please choose an owner'
 		self.ensure_output_dict_has('owner/throw_away')
@@ -350,6 +412,8 @@ class CircularEconomyRebuyPrice(CircularEconomy):
 				rebuy_price = self.vendors_actions[owner_action - 2][2]
 				self.transfer_product_to_storage(owner_action - 2, profits, rebuy_price)
 
-	def extend_dict_from_state(self):
+	def extend_dict_from_state(self) -> None:
+		"""Extends the output_dict with the state of the environment, and the actions the agents takes. It extends the method of the superclass.
+		"""
 		super().extend_dict_from_state()
 		self.ensure_output_dict_has('actions/price_rebuy', [self.vendors_actions[i][2] for i in range(self.get_number_of_vendors())])
