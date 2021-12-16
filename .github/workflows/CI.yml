@@ -22,6 +22,9 @@ jobs:
       - name: Pytest
         run: |
           env
+          conda info
+          conda activate BP2021
+          conda info
           coverage run --source=./src -m pytest
       - name: Report Coverage
         run: coverage report
