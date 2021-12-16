@@ -15,6 +15,7 @@ jobs:
           python-version: 3.8
       - name: Add Conda to system path
         run: |
+          ls
           echo "conda activate" >> ~/.bashrc
           source ~/.bashrc
           echo $CONDA/bin >> $GITHUB_PATH
