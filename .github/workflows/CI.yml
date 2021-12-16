@@ -18,10 +18,8 @@ jobs:
           echo "conda activate" >> ~/.bashrc
           source ~/.bashrc
           echo $CONDA_EXE >> $GITHUB_PATH
-          conda activate base
-      - name: Install dependencies
-        run: |
           conda env update --file environment.yml --name base
+          conda activate base
       - name: Pytest
         shell: bash -l {0}
         run: coverage run --source=./src -m pytest
