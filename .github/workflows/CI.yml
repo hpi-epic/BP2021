@@ -21,8 +21,11 @@ jobs:
         run: |
           source ~/anaconda3/etc/profile.d/conda.sh
           conda activate BP2021
+          git init
+          git add .
           pre-commit install
           pre-commit run --all-files
+          rm -rf .git
       - name: Pytest
         run: |
           source ~/anaconda3/etc/profile.d/conda.sh
