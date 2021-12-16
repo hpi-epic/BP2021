@@ -16,7 +16,7 @@ jobs:
       - name: Add Conda to system path
         run: |
           source ~/anaconda3/etc/profile.d/conda.sh
-          env
+          echo $CONDA_EXE >> $GITHUB_PATH
           conda env update -n BP2021
           conda activate BP2021
       - name: Pytest
