@@ -21,6 +21,7 @@ jobs:
           conda activate BP2021
       - name: Pytest
         run: |
+          source ~/anaconda3/etc/profile.d/conda.sh
           env
           conda info
           conda activate BP2021
