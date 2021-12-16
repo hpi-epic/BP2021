@@ -20,16 +20,13 @@ jobs:
           conda env update -n BP2021
           conda activate BP2021
       - name: Pytest
-        shell: bash -l {0}
         run: |
           env
           coverage run --source=./src -m pytest
       - name: Report Coverage
-        shell: bash -l {0}
         run: coverage report
       - name: "OnError: Test with pytest (verbose)"
         if: failure()
-        shell: bash -l {0}
         run: pytest -v
 
 
