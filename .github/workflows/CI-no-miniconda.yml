@@ -1,0 +1,28 @@
+name: CI-no-miniconda
+
+on: push
+
+jobs:
+  build-linux:
+    runs-on: [self-hosted, ubuntu-20.04]
+    name: CI on Ubuntu
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Install dependencies
+        run: |
+          $CONDA/bin/conda env update --file environment.yml --name base
+      - name: Pytest
+        shell: bash -l {0}
+        run: coverage run --source=./src -m pytest
+      - name: Report Coverage
+        shell: bash -l {0}
+        run: coverage report
+      - name: "OnError: Test with pytest (verbose)"
+        if: failure()
+        shell: bash -l {0}
+        run: pytest -v

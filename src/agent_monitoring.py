@@ -376,7 +376,7 @@ monitor = Monitor()
 
 def main() -> None:
 	# monitor.setup_monitoring(marketplace=sim_market.CircularEconomy, agents=[(agent.QLearningCEAgent, [])], modelfile='CircularEconomy_QLearningCEAgent.dat')
-	print(f'Running', monitor.episodes, 'episodes')
+	print(f'Running {monitor.episodes} episodes')
 	print(f'Plot interval is: {monitor.plot_interval}')
 	print(f'Using modelfile: {monitor.path_to_modelfile}')
 	print(f'The marketplace is: {monitor.marketplace}')
