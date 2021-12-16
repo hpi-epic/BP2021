@@ -15,8 +15,8 @@ jobs:
           python-version: 3.8
       - name: Add Conda to system path
         run: |
-          echo $CONDA_EXE >> $GITHUB_PATH
-          source ~/.bashrc
+          source ~/anaconda3/etc/profile.d/conda.sh
+          #source ~/.bashrc
           conda env update -n BP2021
           conda activate BP2021
       - name: Pytest
