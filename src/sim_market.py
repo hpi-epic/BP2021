@@ -116,12 +116,8 @@ class LinearEconomy(SimMarket, ABC):
 		# cell 0: agent's quality, afterwards: odd cells: competitor's price, even cells: competitor's quality
 		self.observation_space = gym.spaces.Box(
 			np.array([0.0] * (len(self.competitors) * 2 + 1)),
-			np.array(
-				[ut.MAX_QUALITY]
-				+ [ut.MAX_PRICE, ut.MAX_QUALITY] * len(self.competitors)
-			),
-			dtype=np.float64,
-		)
+			np.array([ut.MAX_QUALITY] + [ut.MAX_PRICE, ut.MAX_QUALITY] * len(self.competitors)),
+			dtype=np.float64)
 
 		# one action for every price possible for 0 and MAX_PRICE
 		self.action_space = gym.spaces.Discrete(ut.MAX_PRICE)

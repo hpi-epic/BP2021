@@ -103,7 +103,7 @@ class Monitor():
 
 		# Instantiate all agents. If they are not rule-based, use the marketplace parameters accordingly
 		for current_agent in agents:
-			if issubclass(current_agent[0], agent.RuleBasedAgent) :
+			if issubclass(current_agent[0], agent.RuleBasedAgent):
 				self.agents.append(agent.Agent.custom_init(agent.Agent, current_agent[0], current_agent[1]))
 			elif not issubclass(current_agent[0], agent.RuleBasedAgent):
 				# TODO: Modelfile from list!
