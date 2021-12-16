@@ -225,6 +225,9 @@ class Monitor():
 	def metrics_minimum(self, rewards) -> np.float64:
 		return np.min(np.array(rewards))
 
+	# def metrics_average_in_episode(self, rewards) -> np.float64:
+	# 	return sum(rewards) / (len(rewards) * ut.EPISODE_LENGTH)
+
 	# visualize metrics
 	def create_histogram(self, rewards, filename='default') -> None:
 		"""
@@ -259,8 +262,8 @@ class Monitor():
 		Args:
 			rewards ([list of list of float]): An array containing an array of ints for each monitored agent.
 		"""
-		metrics_functions = [self.metrics_average, self.metrics_maximum, self.metrics_median, self.metrics_minimum]
-		metrics_names = ['Average', 'Maximum', 'Median', 'Minimum']
+		metrics_functions = [self.metrics_average, self.metrics_maximum, self.metrics_median, self.metrics_minimum]  # , self.metrics_average_in_episode
+		metrics_names = ['Average', 'Maximum', 'Median', 'Minimum']  # , 'Average in episode'
 		x_axis_episodes = np.arange(self.plot_interval, self.episodes + 1, self.plot_interval)
 
 		for function in range(len(metrics_functions)):
@@ -272,44 +275,28 @@ class Monitor():
 					metric_rewards[agent_rewards_id].append(metrics_functions[function](rewards[agent_rewards_id][0:self.plot_interval * starting_index + self.plot_interval]))
 			self.create_line_plot(x_axis_episodes, metric_rewards, metrics_names[function])
 
-	def create_step_plots(self, all_steps_rewards) -> None:
-		"""
-		Create a reward per step plot for all agents.
-
-		Args:
-			all_steps_rewards (list of list of float): A list containing a list for each agent, in these lists there are the rewards for this agent per step.
-		"""
-		# this is what we used to log in the first place
-		episode_rewards = self.get_episode_rewards(all_steps_rewards)
-		# average over episode
-		mean_episode_rewards = []
-		for agent_reward in episode_rewards:
-			mean_episode_rewards.append([])
-			agent_reward = [reward / ut.EPISODE_LENGTH for reward in agent_reward]
-			mean_episode_rewards[-1] = agent_reward
-
-		mean_episode_rewards = [reward[::int(self.episodes / self.plot_interval)] for reward in mean_episode_rewards]
-		steps = range(0, int(self.episodes))[::int(self.episodes / self.plot_interval)]
-		self.create_line_plot(steps, mean_episode_rewards, 'average step')
-
-	def create_line_plot(self, episodes, metric_rewards, metric_name='default') -> None:
+	def create_line_plot(self, x_values, y_values, metric_name='no name provided') -> None:
 		"""Create a line plot with the given rewards data.
 
 		Args:
-			episodes (array of ints): Defines x-values of datapoints. Must have same length as metric_rewards.
-			metric_rewards (array of array of ints): Defines y-values of datapoints, one array per monitored agent. Must have same length as episodes.
-			metric_name (str, optional): Used for naming the y-axis, diagram and output file. Defaults to 'default'.
+			x_values (list of ints): Defines x-values of datapoints. Must have same length as y_values.
+			y_values (list of list of ints): Defines y-values of datapoints, one array per monitored agent. Must have same length as episodes.
+			metric_name (str, optional): Used for naming the y-axis, diagram and output file. Defaults to 'no name provided'.
 		"""
+		assert len(x_values) == int(self.episodes / self.plot_interval), 'x_values must have self.episodes / self.plot_interval many items'
+		assert len(y_values) == len(self.agents), 'y_values must have one entry per agent'
+		assert all(len(agent_y_value) == int(self.episodes / self.plot_interval) for agent_y_value in y_values), 'y_values must have self.episodes / self.plot_interval many items'
 		print(f'Creating line plot for {metric_name} rewards...')
 		# clear old plot completely
 		plt.clf()
 		filename = metric_name + '_rewards.svg'
 		# plot the metric rewards for each agent
-		for index in range(len(metric_rewards)):
-			plt.plot(episodes, metric_rewards[index], marker='o', color=self.agent_colors[index])
+		for index in range(len(y_values)):
+			plt.plot(x_values, y_values[index], marker='o', color=self.agent_colors[index])
 
 		plt.xlabel('Episodes', fontsize='18')
-		plt.xticks(episodes)
+		# array containing the values to be plotted on the x axis, equally spaced each self.plot_interval
+		plt.xticks(np.arange(0, self.episodes + 1, self.plot_interval))
 		plt.ylabel(f'{metric_name} Reward', fontsize='18')
 		plt.title(f'Overall {metric_name} Reward calculated each {self.plot_interval} episodes')
 		plt.legend([a.name for a in self.agents])
@@ -334,9 +321,9 @@ class Monitor():
 		for i in range(len(self.agents)):
 			rewards.append([])
 
-		all_steps_rewards = []
-		for i in range(len(self.agents)):
-			all_steps_rewards.append([])
+		# all_steps_rewards = []
+		# for i in range(len(self.agents)):
+		# 	all_steps_rewards.append([])
 
 		for episode in range(1, self.episodes + 1):
 			# reset the state once to be used by all agents
@@ -349,36 +336,36 @@ class Monitor():
 
 				# reset values for all agents
 				state = default_state
-				# episode_reward = 0
+				episode_reward = 0
 				is_done = False
 
 				# run marketplace for this agent
 				while not is_done:
 					action = self.agents[i].policy(state)
 					state, step_reward, is_done, _ = self.marketplace.step(action)
-					# episode_reward += step_reward
+					episode_reward += step_reward
 					# this gives us a higher flexibility in terms of what metrics we would like to use
-					all_steps_rewards[i] += [step_reward]
+					# all_steps_rewards[i] += [step_reward]
 
 				# removing this will decrease our performance when we still want to do live drawing
 				# could think about a caching strategy for live drawing
 				# add the reward to the current agent's reward-Array
-				# rewards[i] += [episode_reward]
+				rewards[i] += [episode_reward]
 
 			# after all agents have run the episode
 			if (episode % 100) == 0:
 				print(f'Running {episode}th episode...')
 
 			if (episode % self.plot_interval) == 0:
-				self.create_histogram(self.get_episode_rewards(all_steps_rewards), 'episode_' + str(episode))
-		return all_steps_rewards
+				self.create_histogram(rewards, 'episode_' + str(episode))
+		return rewards
 
 
 monitor = Monitor()
 
 
 def main() -> None:
-	# monitor.setup_monitoring(enable_live_draw=False, marketplace=sim_market.ClassicScenario, agents=[(agent.QLearningLEAgent, ['ClassicScenario_QLearningLEAgent.dat'])])
+	# monitor.setup_monitoring(enable_live_draw=False, agents=[(agent.QLearningCEAgent, ['CircularEconomy_QLearningCEAgent.dat']), (agent.FixedPriceCEAgent, [(4,6)])])
 	print(f'Live Drawing enabled:', monitor.enable_live_draw)
 	print(f'Episodes:', monitor.episodes)
 	print(f'Plot interval: {monitor.plot_interval}')
@@ -387,9 +374,8 @@ def main() -> None:
 	for current_agent in monitor.agents:
 		print(current_agent.name)
 
-	all_steps_rewards = monitor.run_marketplace()
+	rewards = monitor.run_marketplace()
 
-	rewards = monitor.get_episode_rewards(all_steps_rewards)
 	for i in range(len(rewards)):
 		print(f'Statistics for agent: {monitor.agents[i].name}')
 		print(f'The average reward over {monitor.episodes} episodes is: {str(monitor.metrics_average(rewards[i]))}')
@@ -397,7 +383,6 @@ def main() -> None:
 		print(f'The maximum reward over {monitor.episodes} episodes is: {str(monitor.metrics_maximum(rewards[i]))}')
 		print(f'The minimum reward over {monitor.episodes} episodes is: {str(monitor.metrics_minimum(rewards[i]))}')
 
-	monitor.create_step_plots(all_steps_rewards)
 	monitor.create_statistics_plots(rewards)
 	print(f'All plots were saved to {monitor.get_folder()}')
 

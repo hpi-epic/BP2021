@@ -216,12 +216,25 @@ def test_create_statistics_plots(agents, rewards):
 	monitor.create_statistics_plots(rewards)
 
 
+def test_create_line_plot():
+	monitor.setup_monitoring(episodes=4, plot_interval=2)
+	with pytest.raises(AssertionError) as assertion_message:
+		monitor.create_line_plot([1, 2, 3], [[2], [1]])
+	assert 'x_values must have self.episodes / self.plot_interval many items' in str(assertion_message.value)
+	with pytest.raises(AssertionError) as assertion_message:
+		monitor.create_line_plot([1, 2], [[2], [1]])
+	assert 'y_values must have one entry per agent' in str(assertion_message.value)
+	with pytest.raises(AssertionError) as assertion_message:
+		monitor.create_line_plot([1, 2], [[2]])
+	assert 'y_values must have self.episodes / self.plot_interval many items' in str(assertion_message.value)
+
+
 def test_run_marketplace():
 	monitor.setup_monitoring(episodes=100, plot_interval=100, agents=[(agent.FixedPriceCEAgent, [(5, 2)])])
 	agent_rewards = monitor.run_marketplace()
 	print(agent_rewards)
 	assert 1 == len(monitor.agents)
-	assert 100 * ut.EPISODE_LENGTH == len(agent_rewards[0])
+	assert monitor.episodes == len(agent_rewards[0])
 
 
 def test_main():
