@@ -15,6 +15,8 @@ repos:
       - id: check-yaml
       - id: double-quote-string-fixer
       - id: end-of-file-fixer
+      - id: check-ast # check whether files parse as valid python
+        types: [python]
   - repo: https://github.com/pre-commit/pygrep-hooks
     rev: v1.9.0
     hooks:
@@ -34,15 +36,5 @@ repos:
   #   rev: 1.5.0  
   #   hooks:
   #   - id: interrogate
-  #     args: [-vv, --ignore-init-method, --ignore-module, --exclude=./src/tests/, --omit-covered-files, --generate-badge=./src/tests/docstrings.svg, --badge-style=flat]
+  #     args: [-vv, --ignore-init-method, --ignore-module, --exclude=./src/tests/, --omit-covered-files, --generate-badge=./badges/docstring_coverage.svg, --badge-style=flat]
   #     pass_filenames: false
-  - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.0.1
-    hooks:
-      - id: check-ast # check whether files parse as valid python
-        types: [python]
-  - repo: https://github.com/pre-commit/pygrep-hooks
-    rev: v1.9.0
-    hooks:
-      - id: python-use-type-annotations
-        types: [python]
