@@ -13,25 +13,26 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.8
-      - name: Setup Conda environment
+      - name: Update Conda environment
         run: |
           source ~/anaconda3/etc/profile.d/conda.sh
-          echo $CONDA_EXE >> $GITHUB_PATH
           conda env update -n BP2021
-          conda activate BP2021
       - name: Pytest
         run: |
           source ~/anaconda3/etc/profile.d/conda.sh
-          env
-          conda info
           conda activate BP2021
-          conda info
           coverage run --source=./src -m pytest
       - name: Report Coverage
-        run: coverage report
+        run: |
+          source ~/anaconda3/etc/profile.d/conda.sh
+          conda activate BP2021
+          coverage report
       - name: "OnError: Test with pytest (verbose)"
         if: failure()
-        run: pytest -v
+        run:  |
+          source ~/anaconda3/etc/profile.d/conda.sh
+          conda activate BP2021
+          pytest -v
 
 
 # name: CI
