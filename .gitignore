@@ -2,6 +2,9 @@
 
 trainedModels/
 runs/
+# output-plots from agent monitoring
+monitoring/*
+!monitoring/*.dat
 
 # vscode settings
 .vscode/

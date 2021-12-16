@@ -17,6 +17,7 @@ from owner import Owner
 
 
 class SimMarket(gym.Env, ABC):
+
 	def __init__(self) -> None:
 		self.competitors = self.get_competitor_list()
 		# The agent's price does not belong to the observation_space any more because an agent should not depend on it
@@ -27,6 +28,9 @@ class SimMarket(gym.Env, ABC):
 		assert (
 			self.observation_space and self.action_space
 		), 'Your subclass has major problems with setting up the environment'
+
+		# Make sure that variables such as state, customer are known
+		self.reset()
 
 	def reset(self) -> np.array:
 		self.step_counter = 0
@@ -91,15 +95,15 @@ class SimMarket(gym.Env, ABC):
 		return copy.deepcopy(self.state), profits[0], is_done, output_dict
 
 	@abstractmethod
-	def consider_owners_return(self, *_) -> None:
+	def consider_owners_return(self, *_) -> None:  # pragma: no cover
 		raise NotImplementedError
 
 	@abstractmethod
-	def get_competitor_list(self) -> list:
+	def get_competitor_list(self) -> list:  # pragma: no cover
 		raise NotImplementedError
 
 	@abstractmethod
-	def consider_storage_costs(self, profits) -> None:
+	def consider_storage_costs(self, profits) -> None:  # pragma: no cover
 		raise NotImplementedError
 
 	def choose_owner(self):
@@ -156,13 +160,11 @@ class LinearEconomy(SimMarket, ABC):
 
 
 class ClassicScenario(LinearEconomy):
-
 	def get_competitor_list(self) -> list:
 		return [comp.CompetitorJust2Players()]
 
 
 class MultiCompetitorScenario(LinearEconomy):
-
 	def get_competitor_list(self) -> list:
 		return [
 			comp.CompetitorLinearRatio1(),
@@ -172,6 +174,7 @@ class MultiCompetitorScenario(LinearEconomy):
 
 
 class CircularEconomy(SimMarket):
+
 	# currently monopoly
 	def setup_action_observation_space(self) -> None:
 		# cell 0: number of products in the used storage, cell 1: number of products in circulation
