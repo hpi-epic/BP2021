@@ -17,8 +17,8 @@ jobs:
         run: |
           echo $CONDA_EXE >> $GITHUB_PATH
           source ~/.bashrc
-          conda env update --file environment.yml --name base
-          conda activate base
+          conda env update -n BP2021
+          conda activate BP2021
       - name: Pytest
         shell: bash -l {0}
         run: coverage run --source=./src -m pytest
