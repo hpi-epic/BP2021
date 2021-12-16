@@ -17,6 +17,12 @@ jobs:
         run: |
           source ~/anaconda3/etc/profile.d/conda.sh
           conda env update -n BP2021
+      - name: Pre-commit
+        run: |
+          source ~/anaconda3/etc/profile.d/conda.sh
+          conda activate BP2021
+          pre-commit install
+          pre-commit run --all-files
       - name: Pytest
         run: |
           source ~/anaconda3/etc/profile.d/conda.sh
