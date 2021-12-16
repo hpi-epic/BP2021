@@ -18,7 +18,7 @@ jobs:
           echo $CONDA/bin >> $GITHUB_PATH
       - name: Install dependencies
         run: |
-          $CONDA/bin/conda env update --file environment.yml --name base
+          conda env update --file environment.yml --name base
       - name: Pytest
         shell: bash -l {0}
         run: coverage run --source=./src -m pytest
