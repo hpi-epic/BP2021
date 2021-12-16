@@ -15,13 +15,13 @@ jobs:
           python-version: 3.8
       - name: Add Conda to system path
         run: |
-          ls -d $PWD/*
           echo "conda activate" >> ~/.bashrc
           source ~/.bashrc
           echo $CONDA_EXE >> $GITHUB_PATH
+          conda activate base
       - name: Install dependencies
         run: |
-          $CONDA_EXE/conda env update --file environment.yml --name base
+          conda env update --file environment.yml --name base
       - name: Pytest
         shell: bash -l {0}
         run: coverage run --source=./src -m pytest
