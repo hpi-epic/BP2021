@@ -17,6 +17,7 @@ jobs:
           miniconda-version: "latest"
           auto-update-conda: true
           environment-file: environment.yml
+          activate-environment: BP2021
       - name: Pytest
         shell: bash -l {0}
         run: coverage run --source=./src -m pytest
