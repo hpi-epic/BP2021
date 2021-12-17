@@ -20,6 +20,7 @@ class Monitor():
 
 	def __init__(self) -> None:
 		# Do not change the values in here! They are assumed in tests. Instead use setup_monitoring()!
+		assert os.path.exists(self.get_modelfile_path('CircularEconomy_QLearningCEAgent.dat')), 'the default modelfile \'CircularEconomy_QLearningCEAgent.dat\' does not exist'
 		self.enable_live_draw = True
 		self.episodes = 500
 		self.plot_interval = 50
@@ -65,8 +66,19 @@ class Monitor():
 		return self.folder_path
 
 	def get_modelfile_path(self, model_name) -> str:
-		# TODO: Docstring
-		return os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + os.sep + 'monitoring' + os.sep + model_name
+		"""
+		Get the full path to a modelfile in the \'monitoring\' folder.
+
+		Args:
+			model_name (str): The name of the .dat modelfile.
+
+		Returns:
+			str: The full path to the modelfile.
+		"""
+		assert str.endswith(model_name, '.dat'), 'the modelfile must be a .dat file'
+		full_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + os.sep + 'monitoring' + os.sep + model_name
+		assert os.path.exists(full_path), 'the specified modelfile does not exist'
+		return full_path
 
 	def get_action_space(self) -> int:
 		"""
@@ -108,11 +120,9 @@ class Monitor():
 			if issubclass(current_agent[0], agent.RuleBasedAgent) :
 				self.agents.append(agent.Agent.custom_init(agent.Agent, current_agent[0], current_agent[1]))
 			elif not issubclass(current_agent[0], agent.RuleBasedAgent):
-				# TODO: Modelfile from list!
 				try:
-					assert len(current_agent[1]) == 1 or len(current_agent[1]) == 2 and isinstance(current_agent[1][1], str), 'the first argument for an reinforcement lerner needs to be a modelfile, the second one is an optional name'
+					assert len(current_agent[1]) == 1 or len(current_agent[1]) == 2 and isinstance(current_agent[1][1], str), 'the first argument for an reinforcement lerner needs to be a modelfile, the second one is an optional name (str)'
 					assert isinstance(current_agent[1][0], str), 'the modelfile must be of type str'
-					assert os.path.exists(self.get_modelfile_path(current_agent[1][0])), 'the specified modelfile does not exist'
 
 					agent_name = 'q_learning' if len(current_agent[1]) == 1 else current_agent[1][1]
 					self.agents.append(current_agent[0](self.marketplace.observation_space.shape[0], self.get_action_space(), load_path=self.get_modelfile_path(current_agent[1][0]), name=agent_name))

@@ -131,12 +131,24 @@ def test_mismatched_scenarios():
 def test_RL_agents_need_modelfile():
 	with pytest.raises(AssertionError) as assertion_message:
 		monitor.setup_monitoring(marketplace=sim_market.CircularEconomy, agents=[(agent.QLearningCEAgent, [])])
-	assert 'the first argument for an reinforcement lerner needs to be a modelfile, the second one is an optional name' in str(assertion_message.value)
+	assert 'the first argument for an reinforcement lerner needs to be a modelfile, the second one is an optional name (str)' in str(assertion_message.value)
+	with pytest.raises(AssertionError) as assertion_message:
+		monitor.setup_monitoring(marketplace=sim_market.CircularEconomy, agents=[(agent.QLearningCEAgent, ['modelfile.dat', 35])])
+	assert 'the first argument for an reinforcement lerner needs to be a modelfile, the second one is an optional name (str)' in str(assertion_message.value)
 	with pytest.raises(AssertionError) as assertion_message:
 		monitor.setup_monitoring(marketplace=sim_market.CircularEconomy, agents=[(agent.QLearningCEAgent, [25])])
 	assert 'the modelfile must be of type str' in str(assertion_message.value)
 	with pytest.raises(AssertionError) as assertion_message:
-		monitor.setup_monitoring(marketplace=sim_market.CircularEconomy, agents=[(agent.QLearningCEAgent, ['mystring'])])
+		monitor.setup_monitoring(marketplace=sim_market.CircularEconomy, agents=[(agent.QLearningCEAgent, ['mymodel.dat'])])
+	assert 'the specified modelfile does not exist' in str(assertion_message.value)
+
+
+def test_get_modelfile_path():
+	with pytest.raises(AssertionError) as assertion_message:
+		monitor.get_modelfile_path('wrong_extension.png')
+	assert 'the modelfile must be a .dat file' in str(assertion_message.value)
+	with pytest.raises(AssertionError) as assertion_message:
+		monitor.get_modelfile_path('non_existing_modelfile.dat')
 	assert 'the specified modelfile does not exist' in str(assertion_message.value)
 
 
