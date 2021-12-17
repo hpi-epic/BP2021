@@ -103,7 +103,7 @@ class Monitor():
 
 		# Instantiate all agents. If they are not rule-based, use the marketplace parameters accordingly
 		for current_agent in agents:
-			if issubclass(current_agent[0], agent.RuleBasedAgent) :
+			if issubclass(current_agent[0], agent.RuleBasedAgent):
 				self.agents.append(agent.Agent.custom_init(agent.Agent, current_agent[0], current_agent[1]))
 			elif not issubclass(current_agent[0], agent.RuleBasedAgent):
 				# TODO: Modelfile from list!
@@ -376,7 +376,7 @@ monitor = Monitor()
 
 def main() -> None:
 	# monitor.setup_monitoring(marketplace=sim_market.CircularEconomy, agents=[(agent.QLearningCEAgent, [])], modelfile='CircularEconomy_QLearningCEAgent.dat')
-	print(f'Running', monitor.episodes, 'episodes')
+	print(f'Running {monitor.episodes} episodes')
 	print(f'Plot interval is: {monitor.plot_interval}')
 	print(f'Using modelfile: {monitor.path_to_modelfile}')
 	print(f'The marketplace is: {monitor.marketplace}')
