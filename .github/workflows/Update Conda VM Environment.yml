@@ -1,43 +1,20 @@
 name: CI
 
-on: push
+on: workflow-dispatch
 
 jobs:
   build-linux:
     runs-on: [self-hosted, ubuntu-20.04]
-    name: CI on Ubuntu
+    name: Update Conda BP2021 environment
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
       - name: Set up Python 3.8
         uses: actions/setup-python@v2
         with:
           python-version: 3.8
-      # - name: Update Conda environment
-      #   shell: bash -l {0}
-      #   run: |
-      #     conda env update -n BP2021
-      - name: Pre-commit
+      - name: Update Conda environment
         shell: bash -l {0}
         run: |
-          git init
-          git add .
-          pre-commit install
-          pre-commit run --all-files
-          rm -rf .git
-      - name: Pytest
-        shell: bash -l {0}
-        run: |
-          coverage run --source=./src -m pytest
-      - name: Report Coverage
-        shell: bash -l {0}
-        run: |
-          coverage report
-      - name: "OnError: Test with pytest (verbose)"
-        if: failure()
-        shell: bash -l {0}
-        run:  |
-          pytest -v
+          conda env update -n BP2021
 
 
 # name: CI
