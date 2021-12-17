@@ -10,6 +10,14 @@ import sim_market
 
 
 def write_dict_to_tensorboard(writer, dictionary, counter, is_cumulative=False) -> None:
+	"""The method takes a dictionary of data with data from one step and adds it at the specified time to the tensorboard.
+
+	Args:
+		writer (SummaryWriter): The tensorboard writer on which the calls to write are taken.
+		dictionary (dict): The dictionary containing the data to be added to the tensorboard.
+		counter (int): Specifies the timestamp/step at which the data should be added to the tensorboard.
+		is_cumulative (bool, optional): . Defaults to False.
+	"""
 	for name, content in dictionary.items():
 
 		if is_cumulative:
