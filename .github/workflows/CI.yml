@@ -13,10 +13,6 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.8
-      # - name: Update Conda environment
-      #   shell: bash -l {0}
-      #   run: |
-      #     conda env update -n BP2021
       - name: Pre-commit
         shell: bash -l {0}
         run: |
@@ -39,7 +35,7 @@ jobs:
         run:  |
           pytest -v
 
-
+# This is the old version of the CI, we are keeping it in case we need to use it again
 # name: CI
 
 # on: push

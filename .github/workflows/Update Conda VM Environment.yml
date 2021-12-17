@@ -15,38 +15,3 @@ jobs:
         shell: bash -l {0}
         run: |
           conda env update -n BP2021
-
-
-# name: CI
-
-# on: push
-
-# # using setup-miniconda from https://github.com/conda-incubator/setup-miniconda
-
-# jobs:
-#   build:
-#     runs-on: [self-hosted, ubuntu-20.04]
-#     name: CI on Ubuntu
-#     steps:
-#       - name: Checkout
-#         uses: actions/checkout@v2
-#       - name: Setup Miniconda
-#         uses: conda-incubator/setup-miniconda@v2
-#         with:
-#           miniconda-version: "latest"
-#           auto-update-conda: true
-#           environment-file: environment.yml
-#       - name: Lint using Pre-commit
-#         uses: pre-commit/action@v2.0.3
-#         with:
-#           token: ${{ secrets.GITHUB_TOKEN }}
-#       - name: Pytest
-#         shell: bash -l {0}
-#         run: coverage run --source=./src -m pytest
-#       - name: Report Coverage
-#         shell: bash -l {0}
-#         run: coverage report
-#       - name: "OnError: Test with pytest (verbose)"
-#         if: failure()
-#         shell: bash -l {0}
-#         run: pytest -v
