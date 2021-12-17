@@ -14,10 +14,12 @@ jobs:
         with:
           python-version: 3.8
       - name: Update Conda environment
+        shell: bash -l {0}
         run: |
           #source ~/anaconda3/etc/profile.d/conda.sh
           conda env update -n BP2021
       - name: Pre-commit
+        shell: bash -l {0}
         run: |
           #source ~/anaconda3/etc/profile.d/conda.sh
           #conda activate BP2021
