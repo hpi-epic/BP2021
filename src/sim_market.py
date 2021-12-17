@@ -53,13 +53,8 @@ class SimMarket(gym.Env, ABC):
 
 		self.reset_common_state()
 
-		self.vendor_specific_state = []
-		for _ in range(self.get_number_of_vendors()):
-			self.vendor_specific_state.append(self.reset_vendor_specific_state())
-
-		self.vendors_actions = []
-		for _ in range(self.get_number_of_vendors()):
-			self.vendors_actions.append(self.reset_vendors_actions())
+		self.vendor_specific_state = [self.reset_vendor_specific_state() for _ in range(self.get_number_of_vendors())]
+		self.vendors_actions = [self.reset_vendors_actions() for _ in range(self.get_number_of_vendors())]
 
 		self.customer = self.choose_customer()
 		self.owner = self.choose_owner()
@@ -87,7 +82,8 @@ class SimMarket(gym.Env, ABC):
 		It is pretty generic and configured by overwriting the abstract and empty methods.
 
 		Args:
-			action (np.array): The action of the agent.
+			action (np.array): The action of the agent. In discrete case: the action must be between 0 and number of actions -1.
+			Note that you must add one to this price to get the real price!
 
 		Returns:
 			Tuple[np.array, np.float64, bool, dict]: A Tuple, containing the observation the agents makes right before his next action, the reward he made between these actions, a flag indicating if the market closes and information about the market for logging purposes.
@@ -147,10 +143,10 @@ class SimMarket(gym.Env, ABC):
 				observation = np.concatenate((observation, np.array(self.vendor_specific_state[vendor_index], ndmin=1)), dtype=np.float64)
 
 		# The observation has to be part of the observation_space defined by the market
-		assert self.observation_space.contains(observation), '%r (%s) invalid observation' % (observation, type(observation))
+		assert self.observation_space.contains(observation), f'{observation} ({type(observation)}) invalid observation'
 		return observation
 
-	def generate_customer_offer(self):
+	def generate_customer_offer(self) -> np.array:
 		"""This methods maps the internal state to an array which is presented to the customers.
 		It includes all information customers will use for their decisions.
 		At the beginning of the array you have the common state.
@@ -199,7 +195,7 @@ class SimMarket(gym.Env, ABC):
 			init_for_all_vendors (list, optional): initialization values for all vendors in this entry. Defaults to None.
 		"""
 		if init_for_all_vendors is not None:
-			assert init_for_all_vendors is list and len(init_for_all_vendors) == self.n_vendors()
+			assert isinstance(init_for_all_vendors, list) and len(init_for_all_vendors) == self.get_number_of_vendors(), 'make sure you pass an array with length of number of vendors'
 		if name not in self.output_dict:
 			if init_for_all_vendors is None:
 				self.output_dict[name] = 0
@@ -225,13 +221,17 @@ class LinearEconomy(SimMarket, ABC):
 		self.action_space = gym.spaces.Discrete(ut.MAX_PRICE)
 
 	def reset_vendor_specific_state(self) -> list:
-		"""In the linear economy the """
 		return [ut.shuffle_quality()]
 
 	def choose_customer(self) -> Customer:
 		return customer.CustomerLinear()
 
-	def reset_vendors_actions(self) -> list:
+	def reset_vendors_actions(self) -> int:
+		"""Resets the price in the linear economy
+
+		Returns:
+			int: price of the new product
+		"""
 		return ut.PRODUCTION_PRICE + 1
 
 	def complete_purchase(self, offers, profits, customer_decision) -> None:
@@ -273,7 +273,8 @@ class CircularEconomy(SimMarket):
 	def setup_action_observation_space(self) -> None:
 		# cell 0: number of products in the used storage, cell 1: number of products in circulation
 		self.max_storage = 1e2
-		self.observation_space = gym.spaces.Box(np.array([0, 0]), np.array([self.max_storage, 10 * self.max_storage]), dtype=np.float64)
+		self.max_circulation = 10 * self.max_storage
+		self.observation_space = gym.spaces.Box(np.array([0, 0]), np.array([self.max_storage, self.max_circulation]), dtype=np.float64)
 		self.action_space = gym.spaces.Tuple((gym.spaces.Discrete(ut.MAX_PRICE), gym.spaces.Discrete(ut.MAX_PRICE)))
 
 	def get_competitor_list(self) -> list:
@@ -286,7 +287,12 @@ class CircularEconomy(SimMarket):
 	def get_common_state_array(self) -> np.array:
 		return np.array([self.in_storage, self.in_circulation])
 
-	def reset_vendors_actions(self) -> int:
+	def reset_vendors_actions(self) -> tuple:
+		"""Resets the prices in the circular economy (without rebuy price)
+
+		Returns:
+			tuple: (refurbished_price, new_price)
+		"""
 		return (ut.PRODUCTION_PRICE, ut.PRODUCTION_PRICE + 1)
 
 	def choose_customer(self) -> Customer:
@@ -309,8 +315,7 @@ class CircularEconomy(SimMarket):
 		"""
 		self.output_dict['owner/rebuys']['vendor_' + str(vendor)] += 1
 
-		if self.in_storage < self.max_storage:
-			self.in_storage += 1
+		self.in_storage = min(self.in_storage + 1, self.max_storage)  # receive the product only if you have space for it. Otherwise throw it away.
 		self.in_circulation -= 1
 		if profits is not None:
 			self.output_dict['profits/rebuy_cost']['vendor_' + str(vendor)] -= rebuy_price
@@ -363,7 +368,7 @@ class CircularEconomy(SimMarket):
 			profits[0] += self.vendors_actions[0][1] - ut.PRODUCTION_PRICE
 			self.output_dict['profits/by_selling_new']['vendor_0'] += self.vendors_actions[0][1] - ut.PRODUCTION_PRICE
 			# One more product is in circulation now, but only 10 times the amount of storage space we have
-			self.in_circulation = min(self.in_circulation + 1, 10 * self.max_storage)
+			self.in_circulation = min(self.in_circulation + 1, self.max_circulation)
 
 	def consider_storage_costs(self, profits) -> None:
 		"""The method handles the storage costs. they depend on the amount of refurbished products in storage.
@@ -393,6 +398,11 @@ class CircularEconomyRebuyPrice(CircularEconomy):
 		self.action_space = gym.spaces.Tuple((gym.spaces.Discrete(ut.MAX_PRICE), gym.spaces.Discrete(ut.MAX_PRICE), gym.spaces.Discrete(ut.MAX_PRICE)))
 
 	def reset_vendors_actions(self) -> tuple:
+		"""Resets the prices in the circular economy with rebuy prices.
+
+		Returns:
+			tuple: (refurbished_price, new_price, rebuy_price)
+		"""
 		return (ut.PRODUCTION_PRICE, ut.PRODUCTION_PRICE + 1, 1)
 
 	def choose_owner(self) -> Owner:

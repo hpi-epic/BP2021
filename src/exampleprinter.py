@@ -10,7 +10,7 @@ import sim_market
 
 
 def write_dict_to_tensorboard(writer, dictionary, counter, is_cumulative=False) -> None:
-	"""The method takes a dictionary of data with data from one step and adds it at the specified time to the tensorboard.
+	"""This function takes a dictionary of data with data from one step and adds it at the specified time to the tensorboard.
 
 	Args:
 		writer (SummaryWriter): The tensorboard writer on which the calls to write are taken.
@@ -33,6 +33,16 @@ def write_dict_to_tensorboard(writer, dictionary, counter, is_cumulative=False) 
 
 
 def add_content_of_two_dicts(dict1, dict2) -> dict:
+	"""This function takes two dicts and runs recursively through the dicts. The dicts must have the same structure.
+
+	Args:
+		dict1 (dict): first dictionary you want to add
+		dict2 (dict): second dictionary you want to add
+
+	Returns:
+		dict: same structure as dict1 and dict2, each entry contains the sum of the entries of dict1 and dict2
+	"""
+	# TODO: assert dicts have the same structure
 	newdict = {}
 	for key in dict1:
 		if isinstance(dict1[key], dict):
