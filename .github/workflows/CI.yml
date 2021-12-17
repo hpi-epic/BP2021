@@ -15,12 +15,12 @@ jobs:
           python-version: 3.8
       - name: Update Conda environment
         run: |
-          source ~/anaconda3/etc/profile.d/conda.sh
+          #source ~/anaconda3/etc/profile.d/conda.sh
           conda env update -n BP2021
       - name: Pre-commit
         run: |
-          source ~/anaconda3/etc/profile.d/conda.sh
-          conda activate BP2021
+          #source ~/anaconda3/etc/profile.d/conda.sh
+          #conda activate BP2021
           git init
           git add .
           pre-commit install
