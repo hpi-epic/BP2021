@@ -21,6 +21,7 @@ jobs:
         run: |
           #source ~/anaconda3/etc/profile.d/conda.sh
           #conda activate BP2021
+          cat ~/.profile
           git init
           git add .
           pre-commit install
