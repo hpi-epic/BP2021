@@ -55,7 +55,7 @@ class SimMarket(gym.Env, ABC):
 
 		self.vendor_specific_state = []
 		for _ in range(self.get_number_of_vendors()):
-			self.vendor_specific_state.append(self.reset_specific_vendor_state())
+			self.vendor_specific_state.append(self.reset_vendor_specific_state())
 
 		self.vendors_actions = []
 		for _ in range(self.get_number_of_vendors()):
@@ -121,9 +121,11 @@ class SimMarket(gym.Env, ABC):
 		return self.observation(), profits[0], is_done, copy.deepcopy(self.output_dict)
 
 	def observation(self, vendor_view=0) -> np.array:
-		"""observation creates a different view of the market for every vendor.
+		"""This method creates a different view of the market for every vendor.
 		Each one sees every others vendors specific state, their actions and the global state.
-		Its own action and state are included at the very front of the vendor list so it is reliably at the same position.
+		At the beginning of the array you have the common state.
+		Afterwards you have the vendor specific state for the vendor with index vendor_view but NOT its actions from prior steps.
+		Then, all other vendors follow with their actions and vendor specific state.
 
 		Args:
 			vendor_view (int, optional): Index of the vendor whose view we create. Defaults to 0.
@@ -149,6 +151,11 @@ class SimMarket(gym.Env, ABC):
 		return observation
 
 	def generate_customer_offer(self):
+		"""This methods maps the internal state to an array which is presented to the customers.
+		It includes all information customers will use for their decisions.
+		At the beginning of the array you have the common state.
+		Afterwards you have the action and vendor specific state for all vendors.
+		"""
 		offer = self.get_common_state_array()
 		assert isinstance(offer, np.ndarray), 'get_common_state_array must return a np-Array'
 		for vendor_index in range(self.get_number_of_vendors()):
@@ -163,7 +170,7 @@ class SimMarket(gym.Env, ABC):
 	def get_common_state_array(self) -> np.array:
 		return np.array([])
 
-	def reset_specific_vendor_state(self) -> None:
+	def reset_vendor_specific_state(self) -> None:
 		None
 
 	def simulate_owners(self, *_) -> None:
@@ -184,12 +191,15 @@ class SimMarket(gym.Env, ABC):
 		pass
 
 	def ensure_output_dict_has(self, name, init_for_all_vendors=None) -> None:
-		"""Ensures that the output_dict has an entry with the given name.
+		"""Ensures that the output_dict has an entry with the given name and creates an entry otherwise.
+		If you pass a parameter for init_for_all_vendors, that will be interpreted as creating a dict with the passed array as content.
 
 		Args:
 			name (string): name of the dict entry which should be checked
-			init_for_all_vendors ([type], optional): [description]. Defaults to None.
+			init_for_all_vendors (list, optional): initialization values for all vendors in this entry. Defaults to None.
 		"""
+		if init_for_all_vendors is not None:
+			assert init_for_all_vendors is list and len(init_for_all_vendors) == self.n_vendors()
 		if name not in self.output_dict:
 			if init_for_all_vendors is None:
 				self.output_dict[name] = 0
@@ -200,9 +210,13 @@ class SimMarket(gym.Env, ABC):
 class LinearEconomy(SimMarket, ABC):
 
 	def setup_action_observation_space(self) -> None:
-		"""The method sets up the action and observation space for the linear economy. It is called in the constructor of the class.
+		"""The observation array has the following format:
+		cell 0: quality of that vendor from whose perspective the observation is generated.
+		following odd cells: price of an other vendor
+		following even cells: quality of an other competitor
+
+		The action space is discrete with as many actions as prices.
 		"""
-		# cell 0: agent's quality, afterwards: odd cells: competitor's price, even cells: competitor's quality
 		self.observation_space = gym.spaces.Box(
 			np.array([0.0] * (len(self.competitors) * 2 + 1)),
 			np.array(
@@ -212,10 +226,10 @@ class LinearEconomy(SimMarket, ABC):
 			dtype=np.float64,
 		)
 
-		# one action for every price possible for 0 and MAX_PRICE
 		self.action_space = gym.spaces.Discrete(ut.MAX_PRICE)
 
-	def reset_specific_vendor_state(self) -> list:
+	def reset_vendor_specific_state(self) -> list:
+		"""In the linear economy the """
 		return [ut.shuffle_quality()]
 
 	def choose_customer(self) -> Customer:
