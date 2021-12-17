@@ -1,6 +1,8 @@
 # Online Marketplace Simulation: A Testbed for Self-Learning Agents
 
-![Coverage-Badge](/src/tests/coverage.svg)
+![CI](https://github.com/hpi-epic/BP2021/actions/workflows/CI.yml/badge.svg)
+![Coverage-Badge](/badges/coverage.svg)
+![Docstring-Coverage](/badges/docstring_coverage.svg)
 
 Working repository in context of the bachelorproject "Online Marketplace Simulation: A Testbed for Self-Learning Agents" at the research group Enterprise Platform and Integration Concepts.
 
@@ -75,7 +77,7 @@ If you want to know/export the current test coverage use these commands:
 ```console
 coverage run --source=. -m pytest
 coverage json
-coverage-badge -f -o ./src/tests/coverage.svg
+coverage-badge -f -o ./badges/coverage.svg
 ```
 
 - See coverage report locally:
@@ -94,7 +96,7 @@ We are using `pre-commit` to lint our files before committing. Pre-commit itself
 pre-commit install
 ```
 
-To circumvent possible errors caused later on, run pre-commit with the following command:
+To circumvent possible errors caused later on, run pre-commit once with the following command:
 
 ```console
 pre-commit run --all-files
