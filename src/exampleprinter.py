@@ -66,7 +66,11 @@ def print_example(env=sim_market.CircularEconomy(), agent=a.RuleBasedCEAgent()) 
 	return our_profit
 
 
-if __name__ == '__main__':
+def main() -> None:
 	agent = a.RuleBasedCERebuyAgent()
 	environment = sim_market.CircularEconomyRebuyPrice()
 	print_example(environment, agent)
+
+
+if __name__ == '__main__':
+	main()

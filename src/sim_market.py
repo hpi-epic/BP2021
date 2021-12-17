@@ -109,9 +109,7 @@ class SimMarket(gym.Env, ABC):
 
 			# the competitor, which turn it is, will update its pricing
 			if i < len(self.competitors):
-				action_competitor_i = self.competitors[i].policy(
-					self.observation(i + 1)
-				)
+				action_competitor_i = self.competitors[i].policy(self.observation(i + 1))
 				assert self.action_space.contains(action_competitor_i), 'This vendor does not deliver a suitable action'
 				self.vendors_actions[i + 1] = action_competitor_i
 
