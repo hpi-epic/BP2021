@@ -117,7 +117,7 @@ class Monitor():
 
 		# Instantiate all agents. If they are not rule-based, use the marketplace parameters accordingly
 		for current_agent in agents:
-			if issubclass(current_agent[0], agent.RuleBasedAgent) :
+			if issubclass(current_agent[0], agent.RuleBasedAgent):
 				self.agents.append(agent.Agent.custom_init(agent.Agent, current_agent[0], current_agent[1]))
 			elif not issubclass(current_agent[0], agent.RuleBasedAgent):
 				try:
@@ -376,8 +376,8 @@ monitor = Monitor()
 
 def main() -> None:
 	# monitor.setup_monitoring(enable_live_draw=False, agents=[(agent.QLearningCEAgent, ['CircularEconomy_QLearningCEAgent.dat']), (agent.FixedPriceCEAgent, [(4,6)])])
-	print(f'Live Drawing enabled:', monitor.enable_live_draw)
-	print(f'Episodes:', monitor.episodes)
+	print('Live Drawing enabled:', monitor.enable_live_draw)
+	print('Episodes:', monitor.episodes)
 	print(f'Plot interval: {monitor.plot_interval}')
 	print(f'Marketplace: {type(monitor.marketplace).__name__}')
 	print('Monitoring these agents:')

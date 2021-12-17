@@ -1,7 +1,5 @@
 # from https://github.com/github/gitignore
 
-# Output files
-*.csv
 trainedModels/
 runs/
 # output-plots from agent monitoring
@@ -11,9 +9,11 @@ monitoring/*
 # vscode settings
 .vscode/
 .DS_Store
-# to exclude some notes etc
+# to exclude notes and tests
 notes.txt
 test.py
+# interrogate result (docstring lint rule)
+mit-covered-files
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
