@@ -19,10 +19,8 @@ jobs:
           conda env update -n BP2021
       - name: Pre-commit
         run: |
-          #source ~/anaconda3/etc/profile.d/conda.sh
-          #conda activate BP2021
-          cat ~/.profile
-          conda info
+          source ~/anaconda3/etc/profile.d/conda.sh
+          conda activate BP2021
           git init
           git add .
           pre-commit install
@@ -30,19 +28,19 @@ jobs:
           rm -rf .git
       - name: Pytest
         run: |
-          #source ~/anaconda3/etc/profile.d/conda.sh
-          #conda activate BP2021
+          source ~/anaconda3/etc/profile.d/conda.sh
+          conda activate BP2021
           coverage run --source=./src -m pytest
       - name: Report Coverage
         run: |
-          #source ~/anaconda3/etc/profile.d/conda.sh
-          #conda activate BP2021
+          source ~/anaconda3/etc/profile.d/conda.sh
+          conda activate BP2021
           coverage report
       - name: "OnError: Test with pytest (verbose)"
         if: failure()
         run:  |
-          #source ~/anaconda3/etc/profile.d/conda.sh
-          #conda activate BP2021
+          source ~/anaconda3/etc/profile.d/conda.sh
+          conda activate BP2021
           pytest -v
 
 
