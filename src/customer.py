@@ -2,7 +2,7 @@
 
 # helpers
 import math
-from typing import Tuple
+from abc import ABC, abstractmethod
 
 import numpy as np
 
@@ -11,10 +11,11 @@ import utils as ut
 # import random
 
 
-class Customer:
+class Customer(ABC):
 	def __init__(self) -> None:
 		self.probabilities = None
 
+	@abstractmethod
 	def buy_object(self, others):
 		assert False, 'This class should not be used.'
 
@@ -48,8 +49,10 @@ class CustomerLinear(Customer):
 
 	def set_probabilities_from_offers(self, offers, nothingpreference=1) -> None:
 		ratios = [nothingpreference]
-		for i in range(int(len(offers) / 2)):
-			ratio = offers[2 * i + 1] / offers[2 * i] - math.exp(offers[2 * i] - 27)
+		for offer in range(int(len(offers) / 2)):
+			quality = offers[2 * offer + 1]
+			price = offers[2 * offer] + 1
+			ratio = quality / price
 			ratios.append(ratio)
 		self.probabilities = ut.softmax(np.array(ratios))
 
@@ -64,18 +67,15 @@ class CustomerCircular(Customer):
 
 	# This customer values a second-hand-product 55% of a new product
 	def set_probabilities_from_offers(self, offers) -> None:
-		# offers[0]: price for refurbished product
-		# offers[1]: price for new product
-		# offers[2]: num products in agents storage (don't use for customer)
-		# offers[3]: num products in circulation
-		assert offers[0] >= 1 and offers[1] >= 1
+		price_refurbished = offers[2] + 1
+		price_new = offers[3] + 1
+		assert price_refurbished >= 1 and price_new >= 1, 'price_old and price_new need to be greater 1'
 
-		ratio_old = 5.5 / offers[0] - math.exp(offers[0] - 5)
-		ratio_new = 10 / offers[1] - math.exp(offers[1] - 8)
+		ratio_old = 5.5 / price_refurbished - math.exp(price_refurbished - 5)
+		ratio_new = 10 / price_new - math.exp(price_new - 8)
 		preferences = np.array([1, ratio_old, ratio_new])
 		self.probabilities = ut.softmax(preferences)
 
-	def buy_object(self, offers) -> Tuple[int, int]:
-
+	def buy_object(self, offers) -> int:
 		customer_desicion = ut.shuffle_from_probabilities(self.probabilities)
 		return customer_desicion
