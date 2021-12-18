@@ -32,10 +32,30 @@ class Monitor():
 
 	# helper functions
 	def round_up(self, number, decimals=0) -> np.float64:
+		"""
+		Round the number up to the specified ceiling.
+
+		Args:
+			number (int): The number to round up.
+			decimals (int, optional): The decimal places (inverse) to use for rounding. I.e. -3 rounds to thousands. Defaults to 0.
+
+		Returns:
+			np.float64: The rounded number.
+		"""
 		multiplier = 10 ** decimals
 		return np.ceil(number * multiplier) / multiplier
 
 	def round_down(self, number, decimals=0) -> np.float64:
+		"""
+		Round the number down to the specified floor.
+
+		Args:
+			number (int): The number to round down.
+			decimals (int, optional): The decimal places (inverse) to use for rounding. I.e. -3 rounds to thousands. Defaults to 0.
+
+		Returns:
+			np.float64: The rounded number.
+		"""
 		multiplier = 10 ** decimals
 		return np.floor(number * multiplier) / multiplier
 
@@ -170,7 +190,7 @@ class Monitor():
 			# The agents have not been changed, we reuse the old agents
 			if(agents is None):
 				print('Warning: Your agents are being overwritten by new instances of themselves!')
-				agents = [(type(current_agent), [f'{type(monitor.marketplace).__name__}_{type(current_agent).__name__}.dat']) for current_agent in self.agents]
+				agents = [(type(current_agent), [f'{type(self.marketplace).__name__}_{type(current_agent).__name__}.dat']) for current_agent in self.agents]
 			self.update_agents(agents)
 
 		# marketplace has not changed but agents have
@@ -371,10 +391,13 @@ class Monitor():
 		return rewards
 
 
-monitor = Monitor()
+def main(monitor=Monitor()) -> None:
+	"""
+	Run a monitoring session with a configured Monitor() and display and save metrics.
 
-
-def main() -> None:
+	Args:
+		monitor (Monitor instance, optional): The monitor to run the session on. Defaults to a default Monitor() instance.
+	"""
 	# monitor.setup_monitoring(enable_live_draw=False, agents=[(agent.QLearningCEAgent, ['CircularEconomy_QLearningCEAgent.dat']), (agent.FixedPriceCEAgent, [(4,6)])])
 	print('Live Drawing enabled:', monitor.enable_live_draw)
 	print('Episodes:', monitor.episodes)

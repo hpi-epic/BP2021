@@ -250,8 +250,8 @@ def test_run_marketplace():
 
 
 def test_main():
-	am.monitor.setup_monitoring(enable_live_draw=False, episodes=10, plot_interval=10, subfolder_name='test_plots_')
-	current_configuration = am.monitor.get_configuration()
-	am.main()
-	assert current_configuration == am.monitor.get_configuration(), 'the monitor configuration should not be changed within main'
-	assert os.path.exists(am.monitor.folder_path)
+	monitor.setup_monitoring(enable_live_draw=False, episodes=10, plot_interval=10, subfolder_name='test_plots_')
+	current_configuration = monitor.get_configuration()
+	am.main(monitor)
+	assert current_configuration == monitor.get_configuration(), 'the monitor configuration should not be changed within main'
+	assert os.path.exists(monitor.folder_path)
