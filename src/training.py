@@ -30,18 +30,15 @@ def train_QLearning_agent(RL_agent, environment, maxsteps=2 * utrl.EPSILON_DECAY
 	# print(torch.get_num_threads())
 	state = environment.reset()
 
-	all_agent_returns = []
-	all_vendors_reward = []
+	ts_frame = 0
+	ts = time.time()
+	vendors_cumulated_info = None
+	all_dicts = []
+
 	losses = []
 	rmse_losses = []
 	selected_q_vals = []
-	# this variable is never used according to the linter
-	# loss_val_ratio = []
-	ts_frame = 0
-	ts = time.time()
-	best_m_reward = None
-	episode_return = 0
-	vendors_episode_return = None
+	best_m_reward = 0
 
 	# tensorboard init
 	writer = SummaryWriter()
@@ -53,26 +50,31 @@ def train_QLearning_agent(RL_agent, environment, maxsteps=2 * utrl.EPSILON_DECAY
 		action = RL_agent.policy(state, epsilon)
 		state, reward, is_done, info = environment.step(action)
 		RL_agent.set_feedback(reward, is_done, state)
-		episode_return += reward
-		if vendors_episode_return is None:
-			vendors_episode_return = np.zeros(len(info['all_profits']))
-		vendors_episode_return += np.array(info['all_profits'])
+		if vendors_cumulated_info is None:
+			vendors_cumulated_info = info
+		else:
+			vendors_cumulated_info = ut.add_content_of_two_dicts(vendors_cumulated_info, info)
 
 		if is_done:
-			all_agent_returns.append(episode_return)
-			all_vendors_reward.append(vendors_episode_return)
+			all_dicts.append(vendors_cumulated_info)
 			speed = (frame_idx - ts_frame) / (
 				(time.time() - ts) if (time.time() - ts) > 0 else 1
 			)
 			ts_frame = frame_idx
 			ts = time.time()
-			m_reward = np.mean(all_agent_returns[-100:])
+
+			# calculate the average of the last 100 items
+			sliced_dicts = all_dicts[-100:]
+			averaged_info = sliced_dicts[0]
+			for i, next_dict in enumerate(sliced_dicts):
+				if i != 0:
+					averaged_info = ut.add_content_of_two_dicts(averaged_info, next_dict)
+			averaged_info = ut.divide_content_of_dict(averaged_info, len(sliced_dicts))
+
+			m_reward = averaged_info['profits/all']['vendor_0']
+
 			writer.add_scalar('Profit_mean/agent', m_reward, frame_idx / ut.EPISODE_LENGTH)
-			writer.add_scalars(
-				'Profit_mean/direct_comparison',
-				direct_comparison_dict(all_vendors_reward),
-				frame_idx / ut.EPISODE_LENGTH,
-			)
+			ut.write_dict_to_tensorboard(writer, averaged_info, frame_idx / ut.EPISODE_LENGTH, is_cumulative=True)
 			if frame_idx > utrl.REPLAY_START_SIZE:
 				writer.add_scalar(
 					'Loss/MSE', np.mean(losses[-1000:]), frame_idx / ut.EPISODE_LENGTH
@@ -86,7 +88,7 @@ def train_QLearning_agent(RL_agent, environment, maxsteps=2 * utrl.EPSILON_DECAY
 					frame_idx / ut.EPISODE_LENGTH,
 				)
 			writer.add_scalar('epsilon', epsilon, frame_idx / ut.EPISODE_LENGTH)
-			print('%d: done %d games, this episode return %.3f, mean return %.3f, eps %.2f, speed %.2f f/s' % (frame_idx, len(all_agent_returns), episode_return, m_reward, epsilon, speed))
+			print('%d: done %d games, this episode return %.3f, mean return %.3f, eps %.2f, speed %.2f f/s' % (frame_idx, len(all_dicts), all_dicts[-1]['profits/all']['vendor_0'], m_reward, epsilon, speed))
 
 			if (
 				best_m_reward is None or best_m_reward < m_reward
@@ -99,8 +101,7 @@ def train_QLearning_agent(RL_agent, environment, maxsteps=2 * utrl.EPSILON_DECAY
 				print('Solved in %d frames!' % frame_idx)
 				break
 
-			episode_return = 0
-			vendors_episode_return = None
+			vendors_cumulated_info = None
 			environment.reset()
 
 		if len(RL_agent.buffer) < utrl.REPLAY_START_SIZE:

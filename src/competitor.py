@@ -10,13 +10,14 @@ from agent import Agent
 
 class CompetitorLinearRatio1(Agent):
 	def policy(self, state, epsilon=0):
-		# print(state)
 		# this stratgy calculates the value per money for each competing vendor and tries to adapt to it
 		ratios = []
 		# ratios[0] is the ratio of the competitor itself. it is compared to the other ratios
 		max_competing_ratio = 0
 		for i in range(math.floor(len(state) / 2)):
-			ratio = state[2 * i + 2] / state[2 * i + 1]  # value for price for vendor i
+			quality_opponent = state[2 * i + 2]
+			price_opponent = state[2 * i + 1] + 1
+			ratio = quality_opponent / price_opponent  # value for price for vendor i
 			ratios.append(ratio)
 			if ratio > max_competing_ratio:
 				max_competing_ratio = ratio

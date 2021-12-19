@@ -1,11 +1,21 @@
-# import pytest
+import pytest
+import torch
 
-# from .context import sim_market, training
-# from .context import utils as ut
+import training
+
+from .context import agent, sim_market
+from .context import utils_rl as ut_rl
 
 # This test is currently not working ON THE CI, we believe the cause to be pytorch attempting multithreading
 # which is probably not possible/allowed on the CI and/or VM. We will investigate further
-# @pytest.mark.parametrize('environment', [sim_market.ClassicScenario(), sim_market.MultiCompetitorScenario(), sim_market.CircularEconomy()])
-# def test_market_scenario(environment):
-#     ut.REPLAY_START_SIZE = 500
-#     training.train_QLearning_agent(environment, int(ut.REPLAY_START_SIZE * 2))
+
+test_scenarios = [
+    (sim_market.ClassicScenario(), agent.QLearningAgent(n_observation=sim_market.ClassicScenario().observation_space.shape[0], n_actions=10, device='cpu', optim=torch.optim.Adam)),
+    (sim_market.MultiCompetitorScenario(), agent.QLearningAgent(n_observation=sim_market.MultiCompetitorScenario().observation_space.shape[0], n_actions=10, device='cpu', optim=torch.optim.Adam)),
+    (sim_market.CircularEconomy(), agent.QLearningCEAgent(sim_market.CircularEconomy().observation_space.shape[0], n_actions=100, device='cpu', optim=torch.optim.Adam)),
+    (sim_market.CircularEconomyRebuyPrice(), agent.QLearningCERebuyAgent(sim_market.CircularEconomyRebuyPrice().observation_space.shape[0], n_actions=100, device='cpu', optim=torch.optim.Adam))]
+
+
+@pytest.mark.parametrize('environment, agent', test_scenarios)
+def test_market_scenario(environment, agent):
+    training.train_QLearning_agent(agent, environment, int(ut_rl.REPLAY_START_SIZE * 1.2))
