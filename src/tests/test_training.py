@@ -6,9 +6,6 @@ import training
 from .context import agent, sim_market
 from .context import utils_rl as ut_rl
 
-# This test is currently not working ON THE CI, we believe the cause to be pytorch attempting multithreading
-# which is probably not possible/allowed on the CI and/or VM. We will investigate further
-
 test_scenarios = [
     (sim_market.ClassicScenario(), agent.QLearningAgent(n_observation=sim_market.ClassicScenario().observation_space.shape[0], n_actions=10, device='cpu', optim=torch.optim.Adam)),
     (sim_market.MultiCompetitorScenario(), agent.QLearningAgent(n_observation=sim_market.MultiCompetitorScenario().observation_space.shape[0], n_actions=10, device='cpu', optim=torch.optim.Adam)),
