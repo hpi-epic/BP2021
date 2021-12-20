@@ -12,7 +12,7 @@ repos:
         types: [python]
       - id: check-case-conflict # check for system dependent case conflicts
         types: [python]
-      - id: check-yaml # check fi YAML files can be compiled
+      - id: check-yaml # check if YAML files can be compiled
       - id: double-quote-string-fixer # change double quotes to single quotes
       - id: end-of-file-fixer # add missing empty lines at EOF
         exclude: 'docstring_coverage.svg' # must be ignored to prevent an endless loop of conflicting with each other
