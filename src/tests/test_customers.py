@@ -5,6 +5,7 @@ from .context import CustomerCircular as CCircular
 from .context import CustomerLinear as CLinear
 from .context import MultiCompetitorScenario as SMulti
 from .context import customer
+from .context import utils as ut
 
 
 # Helper function that creates a random offer (state that includes the agent's price) to test customer behaviour. This is dependent on the sim_market working!
@@ -18,7 +19,7 @@ def random_offer(market_scenario):
 # Test the Customer parent class, i.e. make sure it cannot be used
 def test_customer_parent_class():
 	with pytest.raises(AssertionError) as assertion_info:
-		customer.Customer.buy_object(CLinear, random_offer(SClassic))
+		customer.Customer.generate_probabilities_from_offers(CLinear, random_offer(SClassic))
 	assert str(assertion_info.value) == 'This class should not be used.'
 
 
@@ -32,6 +33,6 @@ array_customer_action_range = [
 @pytest.mark.parametrize('customer, offers, expectedSize', array_customer_action_range)
 def test_customer_action_range(customer, offers, expectedSize):
 	assert len(offers) == expectedSize
-	customer.set_probabilities_from_offers(customer, offers)
-	buy_decisions = customer.buy_object(customer, offers)
+	probability_distribution = customer.generate_probabilities_from_offers(customer, offers)
+	buy_decisions = ut.shuffle_from_probabilities(probability_distribution)
 	assert 0 <= buy_decisions <= expectedSize - 1

@@ -36,7 +36,7 @@ class SimMarket(gym.Env, ABC):
 
 	# The number of competitors plus the agent
 	def get_number_of_vendors(self) -> int:
-		"""Returns the number of competitors plus the agent
+		"""This method returns the number of competitors plus the agent.
 
 		Returns:
 			int: number of competitors plus the agent
@@ -44,7 +44,8 @@ class SimMarket(gym.Env, ABC):
 		return len(self.competitors) + 1
 
 	def reset(self) -> np.array:
-		"""This method is required by the gym library. It is called to reset the market before each episode.
+		"""This method is required by the gym library.
+		It is called to reset the market before each episode.
 
 		Returns:
 			np.array: The initial observation of the market.
@@ -62,23 +63,27 @@ class SimMarket(gym.Env, ABC):
 		return self.observation()
 
 	def simulate_customers(self, profits, offers, number_of_customers) -> None:
-		"""Here customers are simulated, the procducts offered by the vendors get sold to n customers. The profits for each vendor get saved to the profits array.
+		"""Here customers are simulated, the procducts offered by the vendors get sold to n customers.
+		The profits for each vendor get saved to the profits array.
 
 		Args:
 			profits (np.array): The profits of the customers get saved to this array
 			offers (np.array): this array contains the offers of the vendors. It has to be compatible with the customers used.
 			number_of_customers (int): the number of customers eager to buy each step.
 		"""
-		self.customer.set_probabilities_from_offers(offers)
+		probability_distribution = self.customer.generate_probabilities_from_offers(offers)
+		assert isinstance(probability_distribution, np.ndarray) and len(probability_distribution) == 1 + (1 if isinstance(self, LinearEconomy) else 2) * self.get_number_of_vendors()
+
 		for _ in range(number_of_customers):
-			customer_decision = self.customer.buy_object(offers)
+			customer_decision = ut.shuffle_from_probabilities(probability_distribution)
 			if customer_decision != 0:
 				self.complete_purchase(offers, profits, customer_decision)
 			else:
 				self.output_dict['customer/buy_nothing'] += 1
 
 	def step(self, action) -> Tuple[np.array, np.float64, bool, dict]:
-		"""This method is called to simulate the market between actions by the agent. It is part of the gym library for reinforcement learning.
+		"""This method is called to simulate the market between actions by the agent.
+		It is part of the gym library for reinforcement learning.
 		It is pretty generic and configured by overwriting the abstract and empty methods.
 
 		Args:
