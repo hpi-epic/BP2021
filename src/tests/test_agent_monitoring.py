@@ -18,7 +18,7 @@ def setup_function(function):
 	print('***SETUP***')
 	global monitor
 	monitor = Monitor()
-	monitor.setup_monitoring(enable_live_draws=False, subfolder_name='test_plots_' + function.__name__)
+	monitor.setup_monitoring(enable_live_draw=False, subfolder_name='test_plots_' + function.__name__)
 
 
 def teardown_module(module):
