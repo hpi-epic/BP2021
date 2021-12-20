@@ -8,7 +8,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 import agent
 import sim_market
-import utils as ut
+import utils_sim_market as ut
 
 
 def print_example(environment=sim_market.CircularEconomy(), agent=agent.RuleBasedCEAgent(), log_dir_prepend='') -> int:

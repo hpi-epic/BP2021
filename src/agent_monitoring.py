@@ -7,7 +7,7 @@ import numpy as np
 
 import agent
 import sim_market
-import utils as ut
+import utils_sim_market as ut
 
 
 class Monitor():

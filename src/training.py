@@ -8,8 +8,8 @@ import numpy as np
 from torch.utils.tensorboard import SummaryWriter
 
 import agent
-import utils as ut
 import utils_rl as utrl
+import utils_sim_market as ut
 
 
 # Gets the profit array of all vendors and returns the necessary dict for direct comparison in tb

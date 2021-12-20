@@ -7,8 +7,8 @@ import numpy as np
 import torch
 
 import model
-import utils as ut
 import utils_rl as utrl
+import utils_sim_market as ut
 from customer import CustomerCircular
 from experience_buffer import ExperienceBuffer
 
