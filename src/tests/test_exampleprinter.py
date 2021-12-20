@@ -10,8 +10,7 @@ import sim_market as sim
 from .context import exampleprinter
 
 
-# teardown after each test
-def teardown_function(function):
+def teardown_module(module):
 	print('***TEARDOWN***')
 	for f in os.listdir('./runs'):
 		if re.match('test_*', f):

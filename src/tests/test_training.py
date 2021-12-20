@@ -12,7 +12,7 @@ from .context import utils_rl as ut_rl
 
 
 # teardown after each test
-def teardown_function(function):
+def teardown_module(module):
 	print('***TEARDOWN***')
 	for f in os.listdir('./runs'):
 		if re.match('test_*', f):

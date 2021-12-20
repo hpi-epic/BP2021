@@ -18,11 +18,10 @@ def setup_function(function):
 	print('***SETUP***')
 	global monitor
 	monitor = Monitor()
-	monitor.setup_monitoring(enable_live_draws=False, subfolder_name='test_plots_')
+	monitor.setup_monitoring(enable_live_draws=False, subfolder_name='test_plots_' + function.__name__)
 
 
-# teardown after each test
-def teardown_function(function):
+def teardown_module(module):
 	print('***TEARDOWN***')
 	for f in os.listdir('./monitoring'):
 		if re.match('test_plots_*', f):
