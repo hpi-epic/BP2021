@@ -97,7 +97,7 @@ class FixedPriceAgent(RuleBasedAgent, ABC):
 
 class FixedPriceLEAgent(LinearAgent, FixedPriceAgent):
 	def __init__(self, fixed_price=ut.PRODUCTION_PRICE + 3, name='fixed_price_le'):
-		assert isinstance(fixed_price, int)
+		assert isinstance(fixed_price, int), 'The fixed_price must be an integer'
 		self.name = name
 		self.fixed_price = fixed_price
 
@@ -107,7 +107,7 @@ class FixedPriceLEAgent(LinearAgent, FixedPriceAgent):
 
 class FixedPriceCEAgent(CircularAgent, FixedPriceAgent):
 	def __init__(self, fixed_price=(2, 4), name='fixed_price_ce'):
-		assert isinstance(fixed_price, tuple) and len(fixed_price) == 2
+		assert isinstance(fixed_price, tuple) and len(fixed_price) == 2, 'The fixed_price must be a tuple of integers'
 		self.name = name
 		self.fixed_price = fixed_price
 
@@ -117,7 +117,7 @@ class FixedPriceCEAgent(CircularAgent, FixedPriceAgent):
 
 class FixedPriceCERebuyAgent(FixedPriceCEAgent):
 	def __init__(self, fixed_price=(3, 6, 2), name='fixed_price_ce_rebuy'):
-		assert isinstance(fixed_price, tuple) and len(fixed_price) == 3
+		assert isinstance(fixed_price, tuple) and len(fixed_price) == 3, 'The fixed_price must be a triple of integers'
 		self.name = name
 		self.fixed_price = fixed_price
 

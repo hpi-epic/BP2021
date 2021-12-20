@@ -20,23 +20,42 @@ class Monitor():
 
 	def __init__(self) -> None:
 		# Do not change the values in here! They are assumed in tests. Instead use setup_monitoring()!
-		self.enable_live_draws = True
+		assert os.path.exists(self.get_modelfile_path('CircularEconomy_QLearningCEAgent.dat')), 'the default modelfile \'CircularEconomy_QLearningCEAgent.dat\' does not exist'
+		self.enable_live_draw = True
 		self.episodes = 500
 		self.plot_interval = 50
-		# should get deprecated when introducing possibility to use multiple RL-agents
-		self.path_to_modelfile = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + os.sep + 'monitoring' + os.sep + 'CircularEconomy_QLearningCEAgent.dat'
 		self.marketplace = sim_market.CircularEconomy()
-		self.agents = [agent.QLearningCEAgent(self.marketplace.observation_space.shape[0], self.get_action_space(), load_path=self.path_to_modelfile)]
+		self.agents = [agent.QLearningCEAgent(self.marketplace.observation_space.shape[0], self.get_action_space(), load_path=self.get_modelfile_path('CircularEconomy_QLearningCEAgent.dat'))]
 		self.agent_colors = ['#0000ff']
 		self.subfolder_name = 'plots_' + time.strftime('%Y%m%d-%H%M%S')
 		self.folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + os.sep + 'monitoring' + os.sep + self.subfolder_name
 
 	# helper functions
 	def round_up(self, number, decimals=0) -> np.float64:
+		"""
+		Round the number up to the specified ceiling.
+
+		Args:
+			number (int): The number to round up.
+			decimals (int, optional): The decimal places (inverse) to use for rounding. I.e. -3 rounds to thousands. Defaults to 0.
+
+		Returns:
+			np.float64: The rounded number.
+		"""
 		multiplier = 10 ** decimals
 		return np.ceil(number * multiplier) / multiplier
 
 	def round_down(self, number, decimals=0) -> np.float64:
+		"""
+		Round the number down to the specified floor.
+
+		Args:
+			number (int): The number to round down.
+			decimals (int, optional): The decimal places (inverse) to use for rounding. I.e. -3 rounds to thousands. Defaults to 0.
+
+		Returns:
+			np.float64: The rounded number.
+		"""
 		multiplier = 10 ** decimals
 		return np.floor(number * multiplier) / multiplier
 
@@ -65,6 +84,21 @@ class Monitor():
 			os.mkdir(self.folder_path)
 			os.mkdir(self.folder_path + os.sep + 'histograms')
 		return self.folder_path
+
+	def get_modelfile_path(self, model_name) -> str:
+		"""
+		Get the full path to a modelfile in the \'monitoring\' folder.
+
+		Args:
+			model_name (str): The name of the .dat modelfile.
+
+		Returns:
+			str: The full path to the modelfile.
+		"""
+		assert str.endswith(model_name, '.dat'), 'the modelfile must be a .dat file'
+		full_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + os.sep + 'monitoring' + os.sep + model_name
+		assert os.path.exists(full_path), 'the specified modelfile does not exist'
+		return full_path
 
 	def get_action_space(self) -> int:
 		"""
@@ -106,11 +140,12 @@ class Monitor():
 			if issubclass(current_agent[0], agent.RuleBasedAgent):
 				self.agents.append(agent.Agent.custom_init(agent.Agent, current_agent[0], current_agent[1]))
 			elif not issubclass(current_agent[0], agent.RuleBasedAgent):
-				# TODO: Modelfile from list!
 				try:
-					assert current_agent[1] == [] or isinstance(current_agent[1][0], str), 'reinforcement learning agents accept only a name (str) or an empty list as arguments'
-					agent_name = 'q_learning' if current_agent[1] == [] else current_agent[1][0]
-					self.agents.append(current_agent[0](self.marketplace.observation_space.shape[0], self.get_action_space(), load_path=self.path_to_modelfile, name=agent_name))
+					assert len(current_agent[1]) == 1 or len(current_agent[1]) == 2 and isinstance(current_agent[1][1], str), 'the first argument for an reinforcement lerner needs to be a modelfile, the second one is an optional name (str)'
+					assert isinstance(current_agent[1][0], str), 'the modelfile must be of type str'
+
+					agent_name = 'q_learning' if len(current_agent[1]) == 1 else current_agent[1][1]
+					self.agents.append(current_agent[0](self.marketplace.observation_space.shape[0], self.get_action_space(), load_path=self.get_modelfile_path(current_agent[1][0]), name=agent_name))
 				except RuntimeError:  # pragma: no cover
 					raise RuntimeError('the modelfile is not compatible with the agent you tried to instantiate')
 			else:  # pragma: no cover
@@ -122,33 +157,32 @@ class Monitor():
 		for agent_id in range(0, len(self.agents)):
 			self.agent_colors.append(color_map(agent_id))
 
-	def setup_monitoring(self, enable_live_draws=None, episodes=None, plot_interval=None, modelfile=None, marketplace=None, agents=None, subfolder_name=None) -> None:
+	def setup_monitoring(self, enable_live_draw=None, episodes=None, plot_interval=None, marketplace=None, agents=None, subfolder_name=None) -> None:
 		"""
 		Configure the current monitoring session.
 
 		Args:
-			enable_live_draws (bool, optional): Whether or not diagrams should be displayed on screen when drawn. Defaults to None.
+			enable_live_draw (bool, optional): Whether or not diagrams should be displayed on screen when drawn. Defaults to None.
 			episodes (int, optional): The number of episodes to run. Defaults to None.
 			plot_interval (int, optional): After how many episodes a new data point/plot should be generated. Defaults to None.
-			modelfile (str, optional): Path to the file containing the model for a RL-agent. Defaults to None.
 			marketplace (sim_market class, optional): What marketplace to run the monitoring on. Defaults to None.
-			agents (list of tuples of agent classes and lists): What agents to monitor. Must be tuples where the first entry is the class of the agent and the second entry is a list of arguments for its initialization. Arguments are read left to right, arguments cannot be skipped. Each agent will generate data points in the diagrams. Defaults to None.
+			agents (list of tuples of agent classes and lists): What agents to monitor.
+			Must be tuples where the first entry is the class of the agent and the second entry is a list of arguments for its initialization.
+			Arguments are read left to right, arguments cannot be skipped.
+			The first argument must exist and be the path to the modelfile for the agent, the second is optional and the name the agent should have.
+			Each agent will generate data points in the diagrams. Defaults to None.
 			subfolder_name (str, optional): The name of the folder to save the diagrams in. Defaults to None.
 		"""
 		# doesn't look nice, but afaik only way to keep parameter list short
-		if(enable_live_draws is not None):
-			assert isinstance(enable_live_draws, bool), 'enable_live_draws must be a Boolean'
-			self.enable_live_draws = enable_live_draws
+		if(enable_live_draw is not None):
+			assert isinstance(enable_live_draw, bool), 'enable_live_draw must be a Boolean'
+			self.enable_live_draw = enable_live_draw
 		if(episodes is not None):
 			assert isinstance(episodes, int), 'episodes must be of type int'
 			self.episodes = episodes
 		if(plot_interval is not None):
 			assert isinstance(plot_interval, int), 'plot_interval must be of type int'
 			self.plot_interval = plot_interval
-		if(modelfile is not None):
-			assert isinstance(modelfile, str), 'modelfile must be of type string'
-			assert os.path.exists(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + os.sep + 'monitoring' + os.sep + modelfile), 'the specified modelfile does not exist'
-			self.path_to_modelfile = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + os.sep + 'monitoring' + os.sep + modelfile
 
 		if(marketplace is not None):
 			assert issubclass(marketplace, sim_market.SimMarket), 'the marketplace must be a subclass of sim_market'
@@ -156,7 +190,7 @@ class Monitor():
 			# The agents have not been changed, we reuse the old agents
 			if(agents is None):
 				print('Warning: Your agents are being overwritten by new instances of themselves!')
-				agents = [(type(current_agent), []) for current_agent in self.agents]
+				agents = [(type(current_agent), [f'{type(self.marketplace).__name__}_{type(current_agent).__name__}.dat']) for current_agent in self.agents]
 			self.update_agents(agents)
 
 		# marketplace has not changed but agents have
@@ -176,10 +210,9 @@ class Monitor():
 			dict: A dict containing the configuration (=class variables)
 		"""
 		configuration = {}
-		configuration['enable_live_draw'] = self.enable_live_draws
+		configuration['enable_live_draw'] = self.enable_live_draw
 		configuration['episodes'] = self.episodes
 		configuration['plot_interval'] = self.plot_interval
-		configuration['path_to_modelfile'] = self.path_to_modelfile
 		configuration['marketplace'] = self.marketplace
 		configuration['agents'] = self.agents
 		configuration['agent_colors'] = self.agent_colors
@@ -222,6 +255,9 @@ class Monitor():
 	def metrics_minimum(self, rewards) -> np.float64:
 		return np.min(np.array(rewards))
 
+	# def metrics_average_in_episode(self, rewards) -> np.float64:
+	# 	return sum(rewards) / (len(rewards) * ut.EPISODE_LENGTH)
+
 	# visualize metrics
 	def create_histogram(self, rewards, filename='default') -> None:
 		"""
@@ -242,7 +278,7 @@ class Monitor():
 		plt.hist(rewards, bins=plot_bins, color=self.agent_colors, rwidth=0.9, range=plot_range)
 		plt.legend([a.name for a in self.agents])
 
-		if self.enable_live_draws:  # pragma: no cover
+		if self.enable_live_draw:  # pragma: no cover
 			plt.draw()
 			plt.pause(0.001)
 		plt.savefig(fname=self.get_folder() + os.sep + 'histograms' + os.sep + filename + '.svg')
@@ -256,8 +292,8 @@ class Monitor():
 		Args:
 			rewards ([list of list of float]): An array containing an array of ints for each monitored agent.
 		"""
-		metrics_functions = [self.metrics_average, self.metrics_maximum, self.metrics_median, self.metrics_minimum]
-		metrics_names = ['Average', 'Maximum', 'Median', 'Minimum']
+		metrics_functions = [self.metrics_average, self.metrics_maximum, self.metrics_median, self.metrics_minimum]  # , self.metrics_average_in_episode
+		metrics_names = ['Average', 'Maximum', 'Median', 'Minimum']  # , 'Average in episode'
 		x_axis_episodes = np.arange(self.plot_interval, self.episodes + 1, self.plot_interval)
 
 		for function in range(len(metrics_functions)):
@@ -269,49 +305,33 @@ class Monitor():
 					metric_rewards[agent_rewards_id].append(metrics_functions[function](rewards[agent_rewards_id][0:self.plot_interval * starting_index + self.plot_interval]))
 			self.create_line_plot(x_axis_episodes, metric_rewards, metrics_names[function])
 
-	def create_step_plots(self, all_steps_rewards) -> None:
-		"""
-		Create a reward per step plot for all agents.
-
-		Args:
-			all_steps_rewards (list of list of float): A list containing a list for each agent, in these lists there are the rewards for this agent per step.
-		"""
-		# this is what we used to log in the first place
-		episode_rewards = self.get_episode_rewards(all_steps_rewards)
-		# average over episode
-		mean_episode_rewards = []
-		for agent_reward in episode_rewards:
-			mean_episode_rewards.append([])
-			agent_reward = [reward / ut.EPISODE_LENGTH for reward in agent_reward]
-			mean_episode_rewards[-1] = agent_reward
-
-		mean_episode_rewards = [reward[::int(self.episodes / self.plot_interval)] for reward in mean_episode_rewards]
-		steps = range(0, int(self.episodes))[::int(self.episodes / self.plot_interval)]
-		self.create_line_plot(steps, mean_episode_rewards, 'average step')
-
-	def create_line_plot(self, episodes, metric_rewards, metric_name='default') -> None:
+	def create_line_plot(self, x_values, y_values, metric_name='no name provided') -> None:
 		"""Create a line plot with the given rewards data.
 
 		Args:
-			episodes (array of ints): Defines x-values of datapoints. Must have same length as metric_rewards.
-			metric_rewards (array of array of ints): Defines y-values of datapoints, one array per monitored agent. Must have same length as episodes.
-			metric_name (str, optional): Used for naming the y-axis, diagram and output file. Defaults to 'default'.
+			x_values (list of ints): Defines x-values of datapoints. Must have same length as y_values.
+			y_values (list of list of ints): Defines y-values of datapoints, one array per monitored agent. Must have same length as episodes.
+			metric_name (str, optional): Used for naming the y-axis, diagram and output file. Defaults to 'no name provided'.
 		"""
+		assert len(x_values) == int(self.episodes / self.plot_interval), 'x_values must have self.episodes / self.plot_interval many items'
+		assert len(y_values) == len(self.agents), 'y_values must have one entry per agent'
+		assert all(len(agent_y_value) == int(self.episodes / self.plot_interval) for agent_y_value in y_values), 'y_values must have self.episodes / self.plot_interval many items'
 		print(f'Creating line plot for {metric_name} rewards...')
 		# clear old plot completely
 		plt.clf()
 		filename = metric_name + '_rewards.svg'
 		# plot the metric rewards for each agent
-		for index in range(len(metric_rewards)):
-			plt.plot(episodes, metric_rewards[index], marker='o', color=self.agent_colors[index])
+		for index in range(len(y_values)):
+			plt.plot(x_values, y_values[index], marker='o', color=self.agent_colors[index])
 
 		plt.xlabel('Episodes', fontsize='18')
-		plt.xticks(episodes)
+		# array containing the values to be plotted on the x axis, equally spaced each self.plot_interval
+		plt.xticks(np.arange(0, self.episodes + 1, self.plot_interval))
 		plt.ylabel(f'{metric_name} Reward', fontsize='18')
 		plt.title(f'Overall {metric_name} Reward calculated each {self.plot_interval} episodes')
 		plt.legend([a.name for a in self.agents])
 		plt.grid(True)
-		if self.enable_live_draws:  # pragma: no cover
+		if self.enable_live_draw:  # pragma: no cover
 			plt.draw()
 			plt.pause(0.001)
 		plt.savefig(fname=self.get_folder() + os.sep + filename)
@@ -331,9 +351,9 @@ class Monitor():
 		for i in range(len(self.agents)):
 			rewards.append([])
 
-		all_steps_rewards = []
-		for i in range(len(self.agents)):
-			all_steps_rewards.append([])
+		# all_steps_rewards = []
+		# for i in range(len(self.agents)):
+		# 	all_steps_rewards.append([])
 
 		for episode in range(1, self.episodes + 1):
 			# reset the state once to be used by all agents
@@ -346,47 +366,49 @@ class Monitor():
 
 				# reset values for all agents
 				state = default_state
-				# episode_reward = 0
+				episode_reward = 0
 				is_done = False
 
 				# run marketplace for this agent
 				while not is_done:
 					action = self.agents[i].policy(state)
 					state, step_reward, is_done, _ = self.marketplace.step(action)
-					# episode_reward += step_reward
+					episode_reward += step_reward
 					# this gives us a higher flexibility in terms of what metrics we would like to use
-					all_steps_rewards[i] += [step_reward]
+					# all_steps_rewards[i] += [step_reward]
 
 				# removing this will decrease our performance when we still want to do live drawing
 				# could think about a caching strategy for live drawing
 				# add the reward to the current agent's reward-Array
-				# rewards[i] += [episode_reward]
+				rewards[i] += [episode_reward]
 
 			# after all agents have run the episode
 			if (episode % 100) == 0:
 				print(f'Running {episode}th episode...')
 
 			if (episode % self.plot_interval) == 0:
-				self.create_histogram(self.get_episode_rewards(all_steps_rewards), 'episode_' + str(episode))
-		return all_steps_rewards
+				self.create_histogram(rewards, 'episode_' + str(episode))
+		return rewards
 
 
-monitor = Monitor()
+def main(monitor=Monitor()) -> None:
+	"""
+	Run a monitoring session with a configured Monitor() and display and save metrics.
 
-
-def main() -> None:
-	# monitor.setup_monitoring(marketplace=sim_market.CircularEconomy, agents=[(agent.QLearningCEAgent, [])], modelfile='CircularEconomy_QLearningCEAgent.dat')
-	print(f'Running {monitor.episodes} episodes')
-	print(f'Plot interval is: {monitor.plot_interval}')
-	print(f'Using modelfile: {monitor.path_to_modelfile}')
-	print(f'The marketplace is: {monitor.marketplace}')
+	Args:
+		monitor (Monitor instance, optional): The monitor to run the session on. Defaults to a default Monitor() instance.
+	"""
+	# monitor.setup_monitoring(enable_live_draw=False, agents=[(agent.QLearningCEAgent, ['CircularEconomy_QLearningCEAgent.dat']), (agent.FixedPriceCEAgent, [(4,6)])])
+	print('Live Drawing enabled:', monitor.enable_live_draw)
+	print('Episodes:', monitor.episodes)
+	print(f'Plot interval: {monitor.plot_interval}')
+	print(f'Marketplace: {type(monitor.marketplace).__name__}')
 	print('Monitoring these agents:')
 	for current_agent in monitor.agents:
 		print(current_agent.name)
 
-	all_steps_rewards = monitor.run_marketplace()
+	rewards = monitor.run_marketplace()
 
-	rewards = monitor.get_episode_rewards(all_steps_rewards)
 	for i in range(len(rewards)):
 		print(f'Statistics for agent: {monitor.agents[i].name}')
 		print(f'The average reward over {monitor.episodes} episodes is: {str(monitor.metrics_average(rewards[i]))}')
@@ -394,7 +416,6 @@ def main() -> None:
 		print(f'The maximum reward over {monitor.episodes} episodes is: {str(monitor.metrics_maximum(rewards[i]))}')
 		print(f'The minimum reward over {monitor.episodes} episodes is: {str(monitor.metrics_minimum(rewards[i]))}')
 
-	monitor.create_step_plots(all_steps_rewards)
 	monitor.create_statistics_plots(rewards)
 	print(f'All plots were saved to {monitor.get_folder()}')
 
