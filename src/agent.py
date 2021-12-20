@@ -225,7 +225,7 @@ class QLearningAgent(ReinforcementLearningAgent, ABC):
 		self.buffer_for_feedback = None
 		self.optimizer = None
 		self.name = name
-		print('I initiate a QLearningAgent using {} device'.format(self.device))
+		print(f'I initiate a QLearningAgent using {self.device} device')
 		self.net = model.simple_network(n_observation, n_actions).to(self.device)
 		if load_path:
 			self.net.load_state_dict(torch.load(load_path, map_location=self.device))

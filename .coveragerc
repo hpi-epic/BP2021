@@ -4,3 +4,5 @@ omit =
 	*/__init__.py
 	# ignore files in the test folder
 	*/tests/*
+	# ignore training_scenario.py
+	*/training_scenario.py
