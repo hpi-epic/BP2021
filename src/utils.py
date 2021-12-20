@@ -19,9 +19,16 @@ EPISODE_LENGTH = None
 config = {}
 
 
-def load_config(
-	path_sim_market=os.path.dirname(__file__) + os.sep + '..' + os.sep + 'config_sim_market.json'
-):
+def load_config(path_sim_market=os.path.dirname(__file__) + os.sep + '..' + os.sep + 'config_sim_market.json'):
+	"""
+	Load the SimMarket json file from the specified path.
+
+	Args:
+		path_sim_market (str, optional): The path to the json file containing the configuration values. Defaults to os.path.dirname(__file__)+os.sep+'..'+os.sep+'config_sim_market.json'.
+
+	Returns:
+		dict: A dictionary containing the configuration values.
+	"""
 	with open(path_sim_market) as config_file:
 		return json.load(config_file)
 
@@ -52,7 +59,7 @@ assert EPISODE_LENGTH > 0, 'episode_size should be positive'
 MEAN_REWARD_BOUND = EPISODE_LENGTH * MAX_PRICE * NUMBER_OF_CUSTOMERS
 
 
-def shuffle_quality():
+def shuffle_quality() -> int:
 	return min(max(int(np.random.normal(MAX_QUALITY / 2, 2 * MAX_QUALITY / 5)), 1), MAX_QUALITY)
 
 
