@@ -30,8 +30,8 @@ def train_QLearning_agent(RL_agent, environment, maxsteps=2 * utrl.EPSILON_DECAY
 	# print(torch.get_num_threads())
 	state = environment.reset()
 
-	ts_frame = 0
-	ts = time.time()
+	frame_number_last_speed_update = 0
+	time_last_speed_update = time.time()
 	vendors_cumulated_info = None
 	all_dicts = []
 
@@ -50,18 +50,15 @@ def train_QLearning_agent(RL_agent, environment, maxsteps=2 * utrl.EPSILON_DECAY
 		action = RL_agent.policy(state, epsilon)
 		state, reward, is_done, info = environment.step(action)
 		RL_agent.set_feedback(reward, is_done, state)
-		if vendors_cumulated_info is None:
-			vendors_cumulated_info = info
-		else:
-			vendors_cumulated_info = ut.add_content_of_two_dicts(vendors_cumulated_info, info)
+		vendors_cumulated_info = info if vendors_cumulated_info is None else ut.add_content_of_two_dicts(vendors_cumulated_info, info)
 
 		if is_done:
 			all_dicts.append(vendors_cumulated_info)
-			speed = (frame_idx - ts_frame) / (
-				(time.time() - ts) if (time.time() - ts) > 0 else 1
+			speed = (frame_idx - frame_number_last_speed_update) / (
+				(time.time() - time_last_speed_update) if (time.time() - time_last_speed_update) > 0 else 1
 			)
-			ts_frame = frame_idx
-			ts = time.time()
+			frame_number_last_speed_update = frame_idx
+			time_last_speed_update = time.time()
 
 			# calculate the average of the last 100 items
 			sliced_dicts = all_dicts[-100:]

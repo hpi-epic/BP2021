@@ -247,6 +247,8 @@ class LinearEconomy(SimMarket, ABC):
 		self.output_dict['customer/purchases']['vendor_' + str(customer_decision - 1)] += 1
 
 	def initialize_output_dict(self):
+		"""Initializes the entries for state and quality in the output dict for the linear economy
+		"""
 		self.ensure_output_dict_has('state/quality', [self.vendor_specific_state[i][0] for i in range(self.get_number_of_vendors())])
 
 		self.ensure_output_dict_has('customer/purchases', [0] * self.get_number_of_vendors())
@@ -375,7 +377,8 @@ class CircularEconomy(SimMarket):
 		self.output_dict['profits/storage_cost']['vendor_0'] = -self.in_storage / 2
 
 	def initialize_output_dict(self):
-		"""Extends the output_dict with the state of the environment, and the actions the agents takes.
+		"""Initialize the output_dict with the state of the environment and the actions the agents takes.
+		Furthermore, the dictionary entries for all events which shall be monitored in the market are initialized.
 		"""
 		assert self.get_number_of_vendors() == 1, 'This feature does not support more than one vendor yet'
 		self.output_dict['state/in_circulation'] = self.in_circulation
@@ -432,7 +435,7 @@ class CircularEconomyRebuyPrice(CircularEconomy):
 				self.transfer_product_to_storage(owner_action - 2, profits, rebuy_price)
 
 	def initialize_output_dict(self) -> None:
-		"""Extends the output_dict with the state of the environment, and the actions the agents takes. It extends the method of the superclass.
+		"""Extends the the output_dict initialized by the of the superclass with entries concerning the rebuy price and cost.
 		"""
 		super().initialize_output_dict()
 		self.ensure_output_dict_has('actions/price_rebuy', [self.vendors_actions[i][2] for i in range(self.get_number_of_vendors())])
