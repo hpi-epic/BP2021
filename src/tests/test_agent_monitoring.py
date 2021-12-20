@@ -9,6 +9,7 @@ from .context import Monitor, agent
 from .context import agent_monitoring as am
 from .context import sim_market
 from .context import utils_sim_market as ut
+from .context import utils_tests as ut_t
 
 monitor = Monitor()
 
@@ -26,14 +27,6 @@ def teardown_module(module):
 	for f in os.listdir('./monitoring'):
 		if re.match('test_plots_*', f):
 			shutil.rmtree('./monitoring/' + f)
-
-
-# create mock rewards list
-def create_mock_rewards() -> list:
-	mock_rewards = []
-	for number in range(1, 12):
-		mock_rewards.append(number)
-	return mock_rewards
 
 
 def test_init_default_values():
@@ -172,23 +165,27 @@ def test_setup_with_valid_agents():
 
 
 def test_metrics_average():
-	assert 6 == monitor.metrics_average(create_mock_rewards())
+	assert 6 == monitor.metrics_average(ut_t.create_mock_rewards(12))
 
 
 def test_metrics_median():
-	assert 6 == monitor.metrics_median(create_mock_rewards())
+	assert 6 == monitor.metrics_median(ut_t.create_mock_rewards(12))
 
 
 def test_metrics_maximum():
-	assert 11 == monitor.metrics_maximum(create_mock_rewards())
+	assert 11 == monitor.metrics_maximum(ut_t.create_mock_rewards(12))
 
 
 def test_metrics_minimum():
-	assert 1 == monitor.metrics_minimum(create_mock_rewards())
+	assert 1 == monitor.metrics_minimum(ut_t.create_mock_rewards(12))
 
 
 def test_round_up():
 	assert monitor.round_up(999, -3) == 1000
+
+
+def test_round_down():
+	assert monitor.round_down(999, -3) == 0
 
 
 # all arrays in rewards must be of the same size

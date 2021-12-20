@@ -6,13 +6,13 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 
 import agent
-# import training
 import agent_monitoring
 import competitor
 import customer
 import exampleprinter
 import owner
 import sim_market
+import tests.utils_tests as utils_tests
 import training
 import utils_rl
 import utils_sim_market
