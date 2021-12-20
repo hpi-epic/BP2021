@@ -40,7 +40,7 @@ test_scenarios = [
 
 @pytest.mark.parametrize('environment, agent', test_scenarios)
 def test_market_scenario(environment, agent):
-	json = create_mock_json(replay_start_size='50')
+	json = create_mock_json(replay_start_size='500')
 	with patch('builtins.open', mock_open(read_data=json)) as mock_file:
 		check_mock_file(mock_file, json)
 		# Include utils_rl again to make sure the file is read again
