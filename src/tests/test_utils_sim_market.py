@@ -4,7 +4,7 @@ from unittest.mock import mock_open, patch
 
 import pytest
 
-from .context import utils as ut
+from .context import utils_sim_market as ut
 
 
 # Helper function that returns a mock config.json file/string with the given values

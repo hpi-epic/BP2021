@@ -8,7 +8,7 @@ import pytest
 from .context import Monitor, agent
 from .context import agent_monitoring as am
 from .context import sim_market
-from .context import utils as ut
+from .context import utils_sim_market as ut
 
 monitor = Monitor()
 

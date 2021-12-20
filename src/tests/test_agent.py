@@ -1,7 +1,7 @@
 import pytest
 
 from .context import agent
-from .context import utils as ut
+from .context import utils_sim_market as ut
 
 
 def test_abstract_agent_classes():
