@@ -167,7 +167,7 @@ class SimMarket(gym.Env, ABC):
 		return np.array([])
 
 	def reset_vendor_specific_state(self) -> None:
-		None
+		pass
 
 	def simulate_owners(self, *_) -> None:
 		pass
