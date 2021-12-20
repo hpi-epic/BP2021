@@ -34,11 +34,11 @@ def print_example(env=sim_market.CircularEconomy(), agent=a.RuleBasedCEAgent()) 
 	return our_profit
 
 
-def main() -> None:
+def main() -> None:  # pragma: no cover
 	agent = a.RuleBasedCERebuyAgent()
 	environment = sim_market.CircularEconomyRebuyPrice()
 	print_example(environment, agent)
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # pragma: no cover
 	main()
