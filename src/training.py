@@ -26,8 +26,6 @@ def direct_comparison_dict(profits):
 
 def train_QLearning_agent(RL_agent, environment, maxsteps=2 * utrl.EPSILON_DECAY_LAST_FRAME):
 	assert isinstance(RL_agent, agent.QLearningAgent)
-	# torch.set_num_threads(1)
-	# print(torch.get_num_threads())
 	state = environment.reset()
 
 	frame_number_last_speed_update = 0
