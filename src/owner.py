@@ -13,9 +13,6 @@ class Owner(ABC):
 	The abstract class represents the owner of a product and is responsible for the decision what to do with the product.
 	"""
 
-	def __init__(self) -> None:
-		pass
-
 	@abstractmethod
 	def consider_return(self, others):
 		raise NotImplementedError

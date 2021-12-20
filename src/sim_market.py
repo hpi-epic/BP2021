@@ -71,7 +71,7 @@ class SimMarket(gym.Env, ABC):
 			offers (np.array): this array contains the offers of the vendors. It has to be compatible with the customers used.
 			number_of_customers (int): the number of customers eager to buy each step.
 		"""
-		probability_distribution = self.customer.generate_probabilities_from_offers(offers)
+		probability_distribution = self.customer.generate_purchase_probabilities_from_offer(offers)
 		assert isinstance(probability_distribution, np.ndarray) and len(probability_distribution) == 1 + (1 if isinstance(self, LinearEconomy) else 2) * self.get_number_of_vendors()
 
 		for _ in range(number_of_customers):
