@@ -19,7 +19,7 @@ def random_offer(market_scenario):
 # Test the Customer parent class, i.e. make sure it cannot be used
 def test_customer_parent_class():
 	with pytest.raises(AssertionError) as assertion_info:
-		customer.Customer.generate_probabilities_from_offers(CLinear, random_offer(SClassic))
+		customer.Customer.generate_purchase_probabilities_from_offer(CLinear, random_offer(SClassic))
 	assert str(assertion_info.value) == 'This class should not be used.'
 
 
@@ -33,6 +33,6 @@ array_customer_action_range = [
 @pytest.mark.parametrize('customer, offers, expectedSize', array_customer_action_range)
 def test_customer_action_range(customer, offers, expectedSize):
 	assert len(offers) == expectedSize
-	probability_distribution = customer.generate_probabilities_from_offers(customer, offers)
+	probability_distribution = customer.generate_purchase_probabilities_from_offer(customer, offers)
 	buy_decisions = ut.shuffle_from_probabilities(probability_distribution)
 	assert 0 <= buy_decisions <= expectedSize - 1

@@ -189,7 +189,7 @@ class SimMarket(gym.Env, ABC):
 		pass
 
 	def choose_owner(self):
-		pass
+		None
 
 	def ensure_output_dict_has(self, name, init_for_all_vendors=None) -> None:
 		"""Ensures that the output_dict has an entry with the given name and creates an entry otherwise.
@@ -307,7 +307,7 @@ class CircularEconomy(SimMarket):
 		return customer.CustomerCircular()
 
 	def choose_owner(self) -> Owner:
-		return owner.OwnerReturn()
+		return owner.UniformDistributionOwner()
 
 	def throw_away(self) -> None:
 		self.output_dict['owner/throw_away'] += 1
@@ -329,18 +329,21 @@ class CircularEconomy(SimMarket):
 			self.output_dict['profits/rebuy_cost']['vendor_' + str(vendor)] -= rebuy_price
 			profits[vendor] -= rebuy_price
 
-	def simulate_owners(self, *_) -> None:
+	def simulate_owners(self, _, offer) -> None:
 		"""The process of getting used products is handled here.
 		"""
 
 		assert self.owner is not None, 'please choose an owner'
+		return_probabilities = self.owner.generate_return_probabilities_from_offer(offer)
+		assert len(return_probabilities) == 3
 
 		for _ in range(int(0.05 * self.in_circulation / self.get_number_of_vendors())):
-			owner_action = self.owner.consider_return()
-			if owner_action == 0:
+			owner_action = ut.shuffle_from_probabilities(return_probabilities)
+
+			if owner_action == 1:
 				self.throw_away()
-			else:
-				self.transfer_product_to_storage(owner_action - 1)
+			elif owner_action >= 2:
+				self.transfer_product_to_storage(owner_action - 2)
 
 	def complete_purchase(self, offers, profits, customer_decision) -> None:
 		"""The method handles the customer's decision by raising the profit by the price paid minus the produtcion price. It also handles the storage of used products.
@@ -429,10 +432,11 @@ class CircularEconomyRebuyPrice(CircularEconomy):
 		"""
 		# just like with the customer the probabilities are set beforehand to improve performance
 		assert self.owner is not None, 'please choose an owner'
+		return_probabilities = self.owner.generate_return_probabilities_from_offer(offer)
 
 		for _ in range(int(0.05 * self.in_circulation)):
-			self.owner.set_probabilities_from_offer(offer)
-			owner_action = self.owner.consider_return()
+			owner_action = ut.shuffle_from_probabilities(return_probabilities)
+
 			if owner_action == 1:
 				self.throw_away()
 			elif owner_action >= 2:

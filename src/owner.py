@@ -38,7 +38,7 @@ class UniformDistributionOwner(Owner):
 			np.array: a uniform distribution over all possible actions
 		"""
 		number_of_options = np.floor(len(offers) / 3) + 2
-		return np.array([1 / number_of_options] * number_of_options)
+		return np.array([1 / number_of_options] * int(number_of_options))
 
 
 class OwnerRebuy(Owner):
