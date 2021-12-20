@@ -5,7 +5,6 @@ import math
 import time
 
 import numpy as np
-# import torch
 from torch.utils.tensorboard import SummaryWriter
 
 import agent
@@ -24,7 +23,7 @@ def direct_comparison_dict(profits):
 	return comparison_dict
 
 
-def train_QLearning_agent(RL_agent, environment, maxsteps=2 * utrl.EPSILON_DECAY_LAST_FRAME):
+def train_QLearning_agent(RL_agent, environment, maxsteps=2 * utrl.EPSILON_DECAY_LAST_FRAME, log_dir_prepend=''):
 	assert isinstance(RL_agent, agent.QLearningAgent)
 	state = environment.reset()
 
@@ -39,11 +38,9 @@ def train_QLearning_agent(RL_agent, environment, maxsteps=2 * utrl.EPSILON_DECAY
 	best_m_reward = 0
 
 	# tensorboard init
-	writer = SummaryWriter()
+	writer = SummaryWriter(log_dir='runs/' + log_dir_prepend + time.strftime('%Y%m%d-%H%M%S') + f'_{type(environment).__name__}_{type(RL_agent).__name__}_training')
 	for frame_idx in range(maxsteps):
-		epsilon = max(
-			utrl.EPSILON_FINAL, utrl.EPSILON_START - frame_idx / utrl.EPSILON_DECAY_LAST_FRAME
-		)
+		epsilon = max(utrl.EPSILON_FINAL, utrl.EPSILON_START - frame_idx / utrl.EPSILON_DECAY_LAST_FRAME)
 
 		action = RL_agent.policy(state, epsilon)
 		state, reward, is_done, info = environment.step(action)

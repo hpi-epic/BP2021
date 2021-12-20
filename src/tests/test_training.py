@@ -1,4 +1,6 @@
 import os
+import re
+import shutil
 from importlib import reload
 from unittest.mock import mock_open, patch
 
@@ -7,6 +9,14 @@ import torch
 
 from .context import agent, sim_market, training
 from .context import utils_rl as ut_rl
+
+
+# teardown after each test
+def teardown_function(function):
+	print('***TEARDOWN***')
+	for f in os.listdir('./runs'):
+		if re.match('test_*', f):
+			shutil.rmtree('./runs/' + f)
 
 
 # Helper function that returns a mock config_rl.json file/string with the given values
@@ -45,4 +55,4 @@ def test_market_scenario(environment, agent):
 		check_mock_file(mock_file, json)
 		# Include utils_rl again to make sure the file is read again
 		reload(ut_rl)
-		training.train_QLearning_agent(agent, environment, int(ut_rl.REPLAY_START_SIZE * 1.2))
+		training.train_QLearning_agent(agent, environment, int(ut_rl.REPLAY_START_SIZE * 1.2), log_dir_prepend='test_')
