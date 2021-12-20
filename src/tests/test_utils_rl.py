@@ -4,10 +4,10 @@ from unittest.mock import mock_open, patch
 
 import pytest
 
-from .context import utils_rl
+from .context import utils_rl as ut_rl
 
 
-# Helper function that returns a mock config.json file/string with the given values
+# Helper function that returns a mock config_rl.json file/string with the given values
 def create_mock_json(gamma='0.99', batch_size='32', replay_size='100000', learning_rate='1e-6', sync_target_frames='1000', replay_start_size='10000', epsilon_decay_last_frame='75000', epsilon_start='1.0', epsilon_final='0.1'):
 	return '{\n\t"gamma" : ' + gamma + ',\n' + \
 		'\t"batch_size" : ' + batch_size + ',\n' + \
@@ -31,11 +31,11 @@ def create_mock_json_with_missing_line(number, json=create_mock_json()):
 
 
 # Helper function to test if the mock_file is setup correctly
-def check_mock_file(mock_file, json=create_mock_json()):
+def check_mock_file(mock_file, json):
 	path = os.path.dirname(__file__) + os.sep + '...' + os.sep + 'config_rl.json'
 	assert (open(path).read() == json)
 	mock_file.assert_called_with(path)
-	utils_rl.config = utils_rl.load_config(path)
+	ut_rl.config = ut_rl.load_config(path)
 
 
 # mock format taken from: https://stackoverflow.com/questions/1289894/how-do-i-mock-an-open-used-in-a-with-statement-using-the-mock-framework-in-pyth
@@ -43,27 +43,27 @@ def check_mock_file(mock_file, json=create_mock_json()):
 def test_reading_file_values():
 	json = create_mock_json()
 	with patch('builtins.open', mock_open(read_data=json)) as mock_file:
-		check_mock_file(mock_file)
+		check_mock_file(mock_file, json)
 		# Include utils_rl again to make sure the file is read again
-		reload(utils_rl)
+		reload(ut_rl)
 		# Test all imported values. Extend this test as new values get added!
-		assert utils_rl.GAMMA == 0.99
-		assert utils_rl.BATCH_SIZE == 32
-		assert utils_rl.REPLAY_SIZE == 100000
-		assert utils_rl.LEARNING_RATE == 1e-6
-		assert utils_rl.SYNC_TARGET_FRAMES == 1000
-		assert utils_rl.REPLAY_START_SIZE == 10000
-		assert utils_rl.EPSILON_DECAY_LAST_FRAME == 75000
-		assert utils_rl.EPSILON_START == 1.0
-		assert utils_rl.EPSILON_FINAL == 0.1
+		assert len(ut_rl.config) == 9, 'utils_rl has more or less values than expected. Check this test for the missing values'
+		assert ut_rl.GAMMA == 0.99
+		assert ut_rl.BATCH_SIZE == 32
+		assert ut_rl.REPLAY_SIZE == 100000
+		assert ut_rl.LEARNING_RATE == 1e-6
+		assert ut_rl.SYNC_TARGET_FRAMES == 1000
+		assert ut_rl.REPLAY_START_SIZE == 10000
+		assert ut_rl.EPSILON_DECAY_LAST_FRAME == 75000
+		assert ut_rl.EPSILON_START == 1.0
+		assert ut_rl.EPSILON_FINAL == 0.1
 
 	# Test a second time with other values to ensure, that the values are read correctly
 	json2 = create_mock_json(learning_rate='1e-4')
 	with patch('builtins.open', mock_open(read_data=json2)) as mock_file:
 		check_mock_file(mock_file, json2)
-		reload(utils_rl)
-
-		assert utils_rl.LEARNING_RATE == 1e-4
+		reload(ut_rl)
+		assert ut_rl.LEARNING_RATE == 1e-4
 
 
 # The following variables are input mock-json strings for the test_invalid_values test
@@ -98,5 +98,5 @@ def test_invalid_values(json_values, expected_error_msg):
 	with patch('builtins.open', mock_open(read_data=json)) as mock_file:
 		check_mock_file(mock_file, json)
 		with pytest.raises(AssertionError) as assertion_info:
-			reload(utils_rl)
+			reload(ut_rl)
 		assert expected_error_msg in str(assertion_info.value)

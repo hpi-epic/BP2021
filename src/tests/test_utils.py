@@ -14,7 +14,6 @@ def create_mock_json(episode_size='20', max_price='15', max_quality='100', numbe
 		'\t"max_quality": ' + max_quality + ',\n' + \
 		'\t"number_of_customers": ' + number_of_customers + ',\n' + \
 		'\t"production_price": ' + production_price + '\n}'
-# '\t"learning_rate": ' + learning_rate + ',\n' + \
 
 
 # Helper function that builds a mock config.json file/string that is missing a specified line
@@ -27,7 +26,7 @@ def create_mock_json_with_missing_line(number, json=create_mock_json()):
 
 
 # Helper function to test if the mock_file is setup correctly
-def check_mock_file(mock_file, json=create_mock_json()):
+def check_mock_file(mock_file, json):
 	path = os.path.dirname(__file__) + os.sep + '...' + os.sep + 'config_sim_market.json'
 	assert (open(path).read() == json)
 	mock_file.assert_called_with(path)
@@ -39,14 +38,14 @@ def check_mock_file(mock_file, json=create_mock_json()):
 def test_reading_file_values():
 	json = create_mock_json()
 	with patch('builtins.open', mock_open(read_data=json)) as mock_file:
-		check_mock_file(mock_file)
+		check_mock_file(mock_file, json)
 
 		# Include utils again to make sure the file is read again
 		reload(ut)
 
 		# Test all imported values. Extend this test as new values get added!
+		assert len(ut.config) == 5, 'utils has more or less values than expected. Check this test for the missing values'
 		assert ut.EPISODE_LENGTH == 20
-		# assert ut.LEARNING_RATE == 1e-6
 		assert ut.MAX_PRICE == 15
 		assert ut.MAX_QUALITY == 100
 		assert ut.NUMBER_OF_CUSTOMERS == 30

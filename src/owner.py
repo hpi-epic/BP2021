@@ -50,9 +50,9 @@ class OwnerRebuy(OwnerReturn):
 		Args:
 			offer (np.array(int)): The offer given by the vendor.
 		"""
-		price_refurbished = offer[2]
-		price_new = offer[3]
-		price_rebuy = offer[4]
+		price_refurbished = offer[2] + 1
+		price_new = offer[3] + 1
+		price_rebuy = offer[4] + 1
 
 		holding_preference = 1
 

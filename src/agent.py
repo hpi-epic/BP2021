@@ -97,7 +97,7 @@ class FixedPriceAgent(RuleBasedAgent, ABC):
 
 class FixedPriceLEAgent(LinearAgent, FixedPriceAgent):
 	def __init__(self, fixed_price=ut.PRODUCTION_PRICE + 3, name='fixed_price_le'):
-		assert isinstance(fixed_price, int)
+		assert isinstance(fixed_price, int), 'The fixed_price must be an integer'
 		self.name = name
 		self.fixed_price = fixed_price
 
@@ -107,7 +107,7 @@ class FixedPriceLEAgent(LinearAgent, FixedPriceAgent):
 
 class FixedPriceCEAgent(CircularAgent, FixedPriceAgent):
 	def __init__(self, fixed_price=(2, 4), name='fixed_price_ce'):
-		assert isinstance(fixed_price, tuple) and len(fixed_price) == 2
+		assert isinstance(fixed_price, tuple) and len(fixed_price) == 2, 'The fixed_price must be a tuple of integers'
 		self.name = name
 		self.fixed_price = fixed_price
 
@@ -117,7 +117,7 @@ class FixedPriceCEAgent(CircularAgent, FixedPriceAgent):
 
 class FixedPriceCERebuyAgent(FixedPriceCEAgent):
 	def __init__(self, fixed_price=(3, 6, 2), name='fixed_price_ce_rebuy'):
-		assert isinstance(fixed_price, tuple) and len(fixed_price) == 3
+		assert isinstance(fixed_price, tuple) and len(fixed_price) == 3, 'The fixed_price must be a triple of integers'
 		self.name = name
 		self.fixed_price = fixed_price
 
@@ -219,13 +219,13 @@ class QLearningAgent(ReinforcementLearningAgent, ABC):
 	# If you enter load_path, the model will be loaded. For example, if you want to use a pretrained net or test a given agent.
 	# If you set an optim, this means you want training.
 	# Give no optim if you don't want training.
-	def __init__(self, n_observation, n_actions, optim=None, device='cpu', load_path=None, name='q_learning'):
+	def __init__(self, n_observation, n_actions, optim=None, device='cuda' if torch.cuda.is_available() else 'cpu', load_path=None, name='q_learning'):
 		self.device = device
 		self.n_actions = n_actions
 		self.buffer_for_feedback = None
 		self.optimizer = None
 		self.name = name
-		print('I initiate a QLearningAgent using {} device'.format(self.device))
+		print(f'I initiate a QLearningAgent using {self.device} device')
 		self.net = model.simple_network(n_observation, n_actions).to(self.device)
 		if load_path:
 			self.net.load_state_dict(torch.load(load_path, map_location=self.device))

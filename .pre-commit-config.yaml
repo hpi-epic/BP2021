@@ -12,9 +12,10 @@ repos:
         types: [python]
       - id: check-case-conflict # check for system dependent case conflicts
         types: [python]
-      - id: check-yaml
-      - id: double-quote-string-fixer
-      - id: end-of-file-fixer
+      - id: check-yaml # check if YAML files can be compiled
+      - id: double-quote-string-fixer # change double quotes to single quotes
+      - id: end-of-file-fixer # add missing empty lines at EOF
+        exclude: 'docstring_coverage.svg' # must be ignored to prevent an endless loop of conflicting with each other
       - id: check-ast # check whether files parse as valid python
         types: [python]
   - repo: https://github.com/pre-commit/pygrep-hooks
