@@ -13,6 +13,7 @@ import customer
 import exampleprinter
 import owner
 import sim_market
+import training
 import utils
 import utils_rl
 from agent import *
