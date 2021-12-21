@@ -71,7 +71,7 @@ class SimMarket(gym.Env, ABC):
 			offers (np.array): this array contains the offers of the vendors. It has to be compatible with the customers used.
 			number_of_customers (int): the number of customers eager to buy each step.
 		"""
-		probability_distribution = self.customer.generate_purchase_probabilities_from_offer(offers)
+		probability_distribution = self.customer.generate_purchase_probabilities_from_offer(offers, self.get_offer_length_per_vendor())
 		assert isinstance(probability_distribution, np.ndarray) and len(probability_distribution) == 1 + (1 if isinstance(self, LinearEconomy) else 2) * self.get_number_of_vendors()
 
 		for _ in range(number_of_customers):
@@ -188,6 +188,15 @@ class SimMarket(gym.Env, ABC):
 
 	def choose_owner(self):
 		None
+
+	def get_offer_length_per_vendor(self) -> int:
+		action_encoding_length = 1 if isinstance(self.action_space, gym.spaces.Discrete) else len(self.action_space)
+		if self.vendor_specific_state[0] is None:
+			vendor_specific_state_encoding_length = 0
+		else:
+			vendor_specific_state_encoding_length = len(self.vendor_specific_state[0])
+		print(action_encoding_length + vendor_specific_state_encoding_length)
+		return action_encoding_length + vendor_specific_state_encoding_length
 
 	def ensure_output_dict_has(self, name, init_for_all_vendors=None) -> None:
 		"""Ensures that the output_dict has an entry with the given name and creates an entry otherwise.
@@ -335,8 +344,8 @@ class CircularEconomy(SimMarket):
 			offer (np.array): The offers of the vendor.
 		"""
 		assert self.owner is not None, 'please choose an owner'
-		return_probabilities = self.owner.generate_return_probabilities_from_offer(offer)
-		# assert isinstance(return_probabilities, np.ndarray) and len(return_probabilities) == 2 + len(self.get_number_of_vendors())
+		return_probabilities = self.owner.generate_return_probabilities_from_offer(offer, self.get_offer_length_per_vendor())
+		assert isinstance(return_probabilities, np.ndarray) and len(return_probabilities) == 2 + self.get_number_of_vendors()
 
 		number_of_owners = int(0.05 * self.in_circulation / self.get_number_of_vendors())
 		for _ in range(number_of_owners):

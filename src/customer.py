@@ -13,7 +13,7 @@ import utils as ut
 
 class Customer(ABC):
 	@abstractmethod
-	def generate_purchase_probabilities_from_offer(self, offers) -> np.array:
+	def generate_purchase_probabilities_from_offer(self, offers, offer_length_per_vendor) -> np.array:
 		"""This method receives a list of offers from the market and returns probabilities for all possible purchase decisions.
 
 		Args:
@@ -29,7 +29,7 @@ class Customer(ABC):
 
 
 class CustomerLinear(Customer):
-	def generate_purchase_probabilities_from_offer(self, offers) -> np.array:
+	def generate_purchase_probabilities_from_offer(self, offers, offer_length_per_vendor) -> np.array:
 		"""This method receives a list of offers for a linear economy and returns the purchase probability for all vendors.
 
 		Args:
@@ -40,6 +40,7 @@ class CustomerLinear(Customer):
 			np.array: The first entry contains the probability that a customer does not buy anything.
 			Afterwards, the probabilities for all vendors follow.
 		"""
+		assert offer_length_per_vendor == 2
 		nothingpreference = 1
 		ratios = [nothingpreference]
 		for offer in range(int(len(offers) / 2)):
@@ -51,7 +52,7 @@ class CustomerLinear(Customer):
 
 
 class CustomerCircular(Customer):
-	def generate_purchase_probabilities_from_offer(self, offers) -> np.array:
+	def generate_purchase_probabilities_from_offer(self, offers, offer_length_per_vendor) -> np.array:
 		"""This method receives a list of offers for a circular economy and returns the purchase probability for the refurbished and new product of all vendors.
 		It is assumed that all vendors do have the same quality and same reputation.
 		The customer values a second-hand-product 55% compared to a new one.
@@ -64,6 +65,7 @@ class CustomerCircular(Customer):
 			np.array: The first entry contains the probability that a customer does not buy anything.
 			Afterwards, for each vendor the probabilities for the second-hand and the new product follow.
 		"""
+		# assert isinstance(offers, np.ndarray) and len(offers) % offer_length_per_vendor == 1 and (offer_length_per_vendor == 3 or offer_length_per_vendor == 4)
 		price_refurbished = offers[2] + 1
 		price_new = offers[3] + 1
 		assert price_refurbished >= 1 and price_new >= 1, 'price_old and price_new need to be greater 1'
