@@ -65,13 +65,16 @@ class CustomerCircular(Customer):
 			np.array: The first entry contains the probability that a customer does not buy anything.
 			Afterwards, for each vendor the probabilities for the second-hand and the new product follow.
 		"""
-		print(offers)
 		assert isinstance(offers, np.ndarray) and len(offers) % offer_length_per_vendor == 1 and (offer_length_per_vendor == 3 or offer_length_per_vendor == 4)
-		price_refurbished = offers[1] + 1
-		price_new = offers[2] + 1
-		assert price_refurbished >= 1 and price_new >= 1, 'price_old and price_new need to be greater 1'
+		nothingpreference = 1
+		preferences = [nothingpreference]
+		for offer in range(int(np.floor(len(offers) / offer_length_per_vendor))):
+			price_refurbished = offers[1 + offer * offer_length_per_vendor] + 1
+			price_new = offers[2 + offer * offer_length_per_vendor] + 1
+			assert price_refurbished >= 1 and price_new >= 1, 'price_old and price_new need to be greater 1'
 
-		ratio_old = 5.5 / price_refurbished - math.exp(price_refurbished - 5)
-		ratio_new = 10 / price_new - math.exp(price_new - 8)
-		preferences = np.array([1, ratio_old, ratio_new])
-		return ut.softmax(preferences)
+			ratio_old = 5.5 / price_refurbished - math.exp(price_refurbished - 5)
+			ratio_new = 10 / price_new - math.exp(price_new - 8)
+			preferences += [ratio_old, ratio_new]
+
+		return ut.softmax(np.array(preferences))
