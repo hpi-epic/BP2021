@@ -10,6 +10,7 @@ import competitor as comp
 import customer
 import owner
 import utils as ut
+from agent import RuleBasedCERebuyAgent
 from customer import Customer
 from owner import Owner
 
@@ -288,7 +289,7 @@ class CircularEconomy(SimMarket):
 		# cell 0: number of products in the used storage, cell 1: number of products in circulation
 		self.max_storage = 1e2
 		self.max_circulation = 10 * self.max_storage
-		self.observation_space = gym.spaces.Box(np.array([0, 0]), np.array([self.max_circulation, self.max_storage]), dtype=np.float64)
+		self.observation_space = gym.spaces.Box(np.array([0, 0] + [0, 0, 0] * len(self.competitors)), np.array([self.max_circulation, self.max_storage] + [ut.MAX_PRICE, ut.MAX_PRICE, self.max_storage] * len(self.competitors)), dtype=np.float64)
 		self.action_space = gym.spaces.Tuple((gym.spaces.Discrete(ut.MAX_PRICE), gym.spaces.Discrete(ut.MAX_PRICE)))
 
 	def reset_vendor_specific_state(self) -> list:
@@ -436,6 +437,7 @@ class CircularEconomyRebuyPrice(CircularEconomy):
 
 	def setup_action_observation_space(self) -> None:
 		super().setup_action_observation_space()
+		self.observation_space = gym.spaces.Box(np.array([0, 0] + [0, 0, 0, 0] * len(self.competitors)), np.array([self.max_circulation, self.max_storage] + [ut.MAX_PRICE, ut.MAX_PRICE, ut.MAX_PRICE, self.max_storage] * len(self.competitors)), dtype=np.float64)
 		self.action_space = gym.spaces.Tuple((gym.spaces.Discrete(ut.MAX_PRICE), gym.spaces.Discrete(ut.MAX_PRICE), gym.spaces.Discrete(ut.MAX_PRICE)))
 
 	def reset_vendor_actions(self) -> tuple:
@@ -464,3 +466,8 @@ class CircularEconomyRebuyPrice(CircularEconomy):
 class CircularEconomyRebuyPriceMonopolyScenario(CircularEconomyRebuyPrice):
 	def get_competitor_list(self) -> list:
 		return []
+
+
+class CircularEconomyRebuyPriceOneCompetitor(CircularEconomyRebuyPrice):
+	def get_competitor_list(self) -> list:
+		return [RuleBasedCERebuyAgent()]
