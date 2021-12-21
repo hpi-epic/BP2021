@@ -13,7 +13,7 @@ from .context import utils as ut
 def random_offer(market_scenario):
 	market = market_scenario()
 	market.reset()
-	market.vendors_actions[0] = market.action_space.sample()
+	market.vendor_actions[0] = market.action_space.sample()
 	return market.generate_customer_offer(), market.get_offer_length_per_vendor()
 
 
