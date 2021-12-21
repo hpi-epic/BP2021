@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import copy
-
+import os
 import torch
 from torch.utils.tensorboard import SummaryWriter
 
@@ -38,6 +38,7 @@ def main() -> None:  # pragma: no cover
 	agent = a.RuleBasedCERebuyAgent()
 	environment = sim_market.CircularEconomyRebuyPrice()
 	print_example(environment, agent)
+	os.system('tensorboard --logdir runs --host 0.0.0.0')
 
 
 if __name__ == '__main__':  # pragma: no cover

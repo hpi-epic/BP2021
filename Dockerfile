@@ -14,6 +14,10 @@ ENV CONDA_DEFAULT_ENV dockervenv
 RUN echo "Make sure numpy is installed:"
 RUN python -c "import numpy"
 
+# copy all relevant files to the container
+COPY ./src ./src
+COPY config_rl.json .
+COPY config_sim_market.json .
+
 # The code to run when container is started:
-COPY . .
 ENTRYPOINT ["conda", "run", "-n", "dockervenv", "python3", "src/exampleprinter.py"]
