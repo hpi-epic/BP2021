@@ -2,9 +2,12 @@
 
 trainedModels/
 runs/
-# output-plots from agent monitoring
+# output-plots from agent_monitoring.py
 monitoring/*
 !monitoring/*.dat
+
+# result files from performance.py
+performance/
 
 # vscode settings
 .vscode/
