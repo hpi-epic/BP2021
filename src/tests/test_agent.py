@@ -1,7 +1,11 @@
+from importlib import reload
+from unittest.mock import mock_open, patch
+
 import pytest
 
 from .context import agent
-from .context import utils as ut
+from .context import utils_sim_market as ut
+from .context import utils_tests as ut_t
 
 
 def test_abstract_agent_classes():
@@ -71,34 +75,31 @@ array_storage_evaluation = [([8, 50], (6, 8)), ([17, 50], (5, 7)), ([27, 50], (4
 
 @pytest.mark.parametrize('state, expected_prices', array_storage_evaluation)
 def test_storage_evaluation(state, expected_prices):
-	# setting up test constants
-	ut.MAX_STORAGE = 100
-	ut.MAX_PRICE = 10
-	ut.PRODUCTION_PRICE = 2
-	test_agent = agent.RuleBasedCEAgent()
-
-	assert expected_prices == test_agent.policy(state)
+	json = ut_t.create_mock_json_sim_market(max_price='10', production_price='2')
+	with patch('builtins.open', mock_open(read_data=json)) as mock_file:
+		ut_t.check_mock_file_sim_market(mock_file, json)
+		reload(ut)
+		test_agent = agent.RuleBasedCEAgent()
+		assert expected_prices == test_agent.policy(state)
 
 
 array_testing_rebuy = [([8, 50], (6, 8, 5)), ([17, 50], (5, 7, 3)), ([27, 50], (4, 6, 2)), ([80, 50], (2, 9, 0))]
 
 
-# @pytest.mark.parametrize('state, expected_prices', array_testing_rebuy)
-# def test_storage_evaluation_with_rebuy_price(state, expected_prices):
-# 	# setting up test constants
-# 	ut.MAX_STORAGE = 100
-# 	ut.MAX_PRICE = 10
-# 	ut.PRODUCTION_PRICE = 2
-# 	test_agent = agent.RuleBasedCERebuyAgent()
+@pytest.mark.parametrize('state, expected_prices', array_testing_rebuy)
+def test_storage_evaluation_with_rebuy_price(state, expected_prices):
+	json = ut_t.create_mock_json_sim_market(max_price='10', production_price='2')
+	with patch('builtins.open', mock_open(read_data=json)) as mock_file:
+		ut_t.check_mock_file_sim_market(mock_file, json)
+		reload(ut)
+		test_agent = agent.RuleBasedCERebuyAgent()
+		assert expected_prices == test_agent.policy(state)
 
-# 	assert expected_prices == test_agent.policy(state)
 
-
-# def test_prices_are_not_higher_than_allowed():
-# 	# setting up test constants
-# 	ut.MAX_PRICE = 10
-# 	ut.PRODUCTION_PRICE = 9
-
-# 	test_agent = agent.RuleBasedCEAgent()
-
-# 	assert (9, 9) >= test_agent.policy(test_state)
+def test_prices_are_not_higher_than_allowed():
+	json = ut_t.create_mock_json_sim_market(max_price='10', production_price='9')
+	with patch('builtins.open', mock_open(read_data=json)) as mock_file:
+		ut_t.check_mock_file_sim_market(mock_file, json)
+		reload(ut)
+		test_agent = agent.RuleBasedCEAgent()
+		assert (9, 9) >= test_agent.policy(test_state)

@@ -1,28 +1,40 @@
 #!/usr/bin/env python3
 
 import copy
+import time
 
 import torch
 from torch.utils.tensorboard import SummaryWriter
 
-import agent as a
+import agent
 import sim_market
-import utils as ut
+import utils_sim_market as ut
 
 
-def print_example(env=sim_market.CircularEconomy(), agent=a.RuleBasedCEAgent()) -> int:
+def print_example(environment=sim_market.CircularEconomy(), agent=agent.RuleBasedCEAgent(), log_dir_prepend='') -> int:
+	"""
+	Run a specified marketplace with a (pre-trained, if RL) agent and record various statistics using TensorBoard.
+
+	Args:
+		env (sim_market instance, optional): The market environment to run the simulation on. Defaults to sim_market.CircularEconomy().
+		agent (agent instance, optional): The agent to run the simulation on. Defaults to a.RuleBasedCEAgent().
+		log_dir_prepend (str, optional): What to prepend to the log_dir folder name. Defaults to ''.
+
+	Returns:
+		int: The profit made.
+	"""
 	counter = 0
 	our_profit = 0
 	is_done = False
-	state = env.reset()
-	writer = SummaryWriter()
+	state = environment.reset()
+	writer = SummaryWriter(log_dir='runs/' + log_dir_prepend + time.strftime('%Y%m%d-%H%M%S') + f'_{type(environment).__name__}_{type(agent).__name__}_exampleprinter')
 	cumulative_dict = None
 
 	with torch.no_grad():
 		while not is_done:
 			action = agent.policy(state)
 			print(state)
-			state, reward, is_done, logdict = env.step(action)
+			state, reward, is_done, logdict = environment.step(action)
 			if cumulative_dict is not None:
 				cumulative_dict = ut.add_content_of_two_dicts(cumulative_dict, logdict)
 			else:
@@ -35,9 +47,9 @@ def print_example(env=sim_market.CircularEconomy(), agent=a.RuleBasedCEAgent()) 
 
 
 def main() -> None:  # pragma: no cover
-	agent = a.RuleBasedCERebuyAgent()
+	used_agent = agent.RuleBasedCERebuyAgent()
 	environment = sim_market.CircularEconomyRebuyPrice()
-	print_example(environment, agent)
+	print_example(environment, used_agent)
 
 
 if __name__ == '__main__':  # pragma: no cover

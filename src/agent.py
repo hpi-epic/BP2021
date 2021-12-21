@@ -7,8 +7,8 @@ import numpy as np
 import torch
 
 import model
-import utils as ut
-import utils_rl as utrl
+import utils_rl as ut_rl
+import utils_sim_market as ut
 from customer import CustomerCircular
 from experience_buffer import ExperienceBuffer
 
@@ -230,11 +230,11 @@ class QLearningAgent(ReinforcementLearningAgent, ABC):
 		if load_path:
 			self.net.load_state_dict(torch.load(load_path, map_location=self.device))
 		if optim:
-			self.optimizer = optim(self.net.parameters(), lr=utrl.LEARNING_RATE)
+			self.optimizer = optim(self.net.parameters(), lr=ut_rl.LEARNING_RATE)
 			self.tgt_net = model.simple_network(n_observation, n_actions).to(self.device)
 			if load_path:
 				self.tgt_net.load_state_dict(torch.load(load_path), map_location=self.device)
-			self.buffer = ExperienceBuffer(utrl.REPLAY_SIZE)
+			self.buffer = ExperienceBuffer(ut_rl.REPLAY_SIZE)
 
 	@torch.no_grad()
 	def policy(self, state, epsilon=0):
@@ -254,7 +254,7 @@ class QLearningAgent(ReinforcementLearningAgent, ABC):
 
 	def train_batch(self):
 		self.optimizer.zero_grad()
-		batch = self.buffer.sample(utrl.BATCH_SIZE)
+		batch = self.buffer.sample(ut_rl.BATCH_SIZE)
 		loss_t, selected_q_val_mean = self.calc_loss(batch, self.device)
 		loss_t.backward()
 		self.optimizer.step()
@@ -279,7 +279,7 @@ class QLearningAgent(ReinforcementLearningAgent, ABC):
 			next_state_values[done_mask] = 0.0
 			next_state_values = next_state_values.detach()
 
-		expected_state_action_values = next_state_values * utrl.GAMMA + rewards_v
+		expected_state_action_values = next_state_values * ut_rl.GAMMA + rewards_v
 		return torch.nn.MSELoss()(state_action_values, expected_state_action_values), state_action_values.mean()
 
 	def save(self, path='QLearning_parameters'):
