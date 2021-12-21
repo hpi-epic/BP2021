@@ -1,7 +1,7 @@
 import os
 
 
-def create_mock_json_rl(gamma='0.99', batch_size='32', replay_size='100000', learning_rate='1e-6', sync_target_frames='100', replay_start_size='10000', epsilon_decay_last_frame='75000', epsilon_start='1.0', epsilon_final='0.1') -> str:
+def create_mock_json_rl(gamma='0.99', batch_size='32', replay_size='100000', learning_rate='1e-6', sync_target_frames='1000', replay_start_size='10000', epsilon_decay_last_frame='75000', epsilon_start='1.0', epsilon_final='0.1') -> str:
 	"""
 	Create a string in JSON format that can be used to mock the config_rl.json file.
 

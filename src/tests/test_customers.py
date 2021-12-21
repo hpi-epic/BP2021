@@ -7,7 +7,7 @@ from .context import CustomerCircular as CCircular
 from .context import CustomerLinear as CLinear
 from .context import MultiCompetitorScenario as SMulti
 from .context import customer
-from .context import utils as ut
+from .context import utils_sim_market as ut
 
 
 # Helper function that creates a random offer (state that includes the agent's price) to test customer behaviour. This is dependent on the sim_market working!
