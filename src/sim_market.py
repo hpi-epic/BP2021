@@ -428,6 +428,11 @@ class CircularEconomy(SimMarket):
 		self.ensure_output_dict_has('profits/storage_cost', [0] * self.get_number_of_vendors())
 
 
+class CircularEconomyMonopolyScenario(CircularEconomy):
+	def get_competitor_list(self) -> list:
+		return []
+
+
 class CircularEconomyRebuyPrice(CircularEconomy):
 
 	def setup_action_observation_space(self) -> None:
