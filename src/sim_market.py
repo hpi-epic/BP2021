@@ -301,9 +301,6 @@ class CircularEconomy(SimMarket):
 		"""
 		return [int(np.random.rand() * self.max_storage)]
 
-	def get_competitor_list(self) -> list:
-		return []
-
 	def reset_common_state(self) -> None:
 		self.in_circulation = int(5 * np.random.rand() * self.max_storage)
 
