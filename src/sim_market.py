@@ -338,7 +338,7 @@ class CircularEconomy(SimMarket):
 		"""
 		self.output_dict['owner/rebuys']['vendor_' + str(vendor)] += 1
 
-		self.vendor_specific_state[0][0] = min(self.vendor_specific_state[0][0] + 1, self.max_storage)  # receive the product only if you have space for it. Otherwise throw it away.
+		self.vendor_specific_state[vendor][0] = min(self.vendor_specific_state[vendor][0] + 1, self.max_storage)  # receive the product only if you have space for it. Otherwise throw it away.
 		self.in_circulation -= 1
 		if profits is not None:
 			self.output_dict['profits/rebuy_cost']['vendor_' + str(vendor)] -= rebuy_price
