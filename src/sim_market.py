@@ -377,7 +377,6 @@ class CircularEconomy(SimMarket):
 			profits (np.array(int)): The profits of all vendors.
 			customer_decision ([int): Indicates the customer's decision.
 		"""
-		assert len(profits) == 1, 'this is a monopoly economy'
 		assert 0 <= customer_decision and customer_decision < 2 * self.get_number_of_vendors(), 'Invalid action of the customer! Note that you have two options per vendor!'
 
 		chosen_vendor = int(np.floor(customer_decision / 2))
@@ -405,9 +404,10 @@ class CircularEconomy(SimMarket):
 		Args:
 			profits (np.array(int)): The profits of all vendors.
 		"""
-		assert self.get_number_of_vendors() == 1, 'This feature does not support more than one vendor yet'
-		profits[0] -= self.vendor_specific_state[0][0] / 2  # Storage costs per timestep
-		self.output_dict['profits/storage_cost']['vendor_0'] = -self.vendor_specific_state[0][0] / 2
+		for vendor in range(self.get_number_of_vendors()):
+			storage_cost_per_timestep = -self.vendor_specific_state[vendor][0] / 2
+			profits[vendor] += storage_cost_per_timestep
+			self.output_dict['profits/storage_cost']['vendor_' + str(vendor)] = storage_cost_per_timestep / 2
 
 	def initialize_output_dict(self):
 		"""Initialize the output_dict with the state of the environment and the actions the agents takes.
