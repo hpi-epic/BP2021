@@ -410,7 +410,6 @@ class CircularEconomy(SimMarket):
 		"""Initialize the output_dict with the state of the environment and the actions the agents takes.
 		Furthermore, the dictionary entries for all events which shall be monitored in the market are initialized.
 		"""
-		assert self.get_number_of_vendors() == 1, 'This feature does not support more than one vendor yet'
 		self.output_dict['state/in_circulation'] = self.in_circulation
 		self.ensure_output_dict_has('state/in_storage', [self.vendor_specific_state[vendor][0] for vendor in range(self.get_number_of_vendors())])
 		self.ensure_output_dict_has('actions/price_refurbished', [self.vendor_actions[i][0] for i in range(self.get_number_of_vendors())])
