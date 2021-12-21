@@ -195,7 +195,6 @@ class SimMarket(gym.Env, ABC):
 			vendor_specific_state_encoding_length = 0
 		else:
 			vendor_specific_state_encoding_length = len(self.vendor_specific_state[0])
-		print(action_encoding_length + vendor_specific_state_encoding_length)
 		return action_encoding_length + vendor_specific_state_encoding_length
 
 	def ensure_output_dict_has(self, name, init_for_all_vendors=None) -> None:
