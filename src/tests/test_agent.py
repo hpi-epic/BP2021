@@ -40,7 +40,7 @@ def test_agent_observation_policy_pairs(agent_under_test, expected_result):
 	assert expected_result == agent_under_test.policy(test_state)
 
 
-array_storage_evaluation = [([50, 8], (6, 8)), ([50, 17], (5, 7)), ([50, 27], (4, 6)), ([50, 80], (2, 9))]
+array_storage_evaluation = [([50, 5], (6, 8)), ([50, 9], (5, 7)), ([50, 12], (4, 6)), ([50, 15], (2, 9))]
 
 
 @pytest.mark.parametrize('state, expected_prices', array_storage_evaluation)
@@ -54,7 +54,7 @@ def test_storage_evaluation(state, expected_prices):
 	assert expected_prices == test_agent.policy(state)
 
 
-array_testing_rebuy = [([50, 8], (6, 8, 5)), ([50, 17], (5, 7, 3)), ([50, 27], (4, 6, 2)), ([50, 80], (2, 9, 0))]
+array_testing_rebuy = [([50, 5], (6, 8, 5)), ([50, 9], (5, 7, 3)), ([50, 12], (4, 6, 2)), ([50, 15], (2, 9, 0))]
 
 
 @pytest.mark.parametrize('state, expected_prices', array_testing_rebuy)

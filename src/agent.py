@@ -138,20 +138,20 @@ class RuleBasedCEAgent(RuleBasedAgent, CircularAgent):
 		price_old = 0
 		price_new = ut.PRODUCTION_PRICE
 		rebuy_price = 0
-		if products_in_storage < ut.MAX_STORAGE / 10:
-			# less than 1/4 of storage filled
+		if products_in_storage < ut.MAX_STORAGE / 15:
+			# fill up the storage immediately
 			price_old = int(ut.MAX_PRICE * 6 / 10)
 			price_new += int(ut.MAX_PRICE * 6 / 10)
 			rebuy_price = price_old - 1
 
-		elif products_in_storage < ut.MAX_STORAGE / 5:
-			# less than 1/2 of storage filled
+		elif products_in_storage < ut.MAX_STORAGE / 10:
+			# fill up the storage
 			price_old = int(ut.MAX_PRICE * 5 / 10)
 			price_new += int(ut.MAX_PRICE * 5 / 10)
 			rebuy_price = price_old - 2
 
-		elif products_in_storage < ut.MAX_STORAGE / 3:
-			# less than 3/4 but more than 1/2 of storage filled
+		elif products_in_storage < ut.MAX_STORAGE / 8:
+			# storage content is ok
 			price_old = int(ut.MAX_PRICE * 4 / 10)
 			price_new += int(ut.MAX_PRICE * 4 / 10)
 			rebuy_price = int(price_old / 2)
