@@ -289,18 +289,26 @@ class CircularEconomy(SimMarket):
 		# cell 0: number of products in the used storage, cell 1: number of products in circulation
 		self.max_storage = 1e2
 		self.max_circulation = 10 * self.max_storage
-		self.observation_space = gym.spaces.Box(np.array([0, 0]), np.array([self.max_storage, self.max_circulation]), dtype=np.float64)
+		self.observation_space = gym.spaces.Box(np.array([0, 0]), np.array([self.max_circulation, self.max_storage]), dtype=np.float64)
 		self.action_space = gym.spaces.Tuple((gym.spaces.Discrete(ut.MAX_PRICE), gym.spaces.Discrete(ut.MAX_PRICE)))
+
+	def reset_vendor_specific_state(self) -> list:
+		"""In the circular economy, the vendor specific state contains the number of products in storage for each vendor
+
+		Returns:
+			list: a list with only one item which contains the number of elements in the storage of one specific vendor.
+			It is chosen randomly between 0 and max_storage
+		"""
+		return [int(np.random.rand() * self.max_storage)]
 
 	def get_competitor_list(self) -> list:
 		return []
 
 	def reset_common_state(self) -> None:
-		self.in_storage = int(np.random.rand() * self.max_storage)
 		self.in_circulation = int(5 * np.random.rand() * self.max_storage)
 
 	def get_common_state_array(self) -> np.array:
-		return np.array([self.in_storage, self.in_circulation])
+		return np.array([self.in_circulation])
 
 	def reset_vendors_actions(self) -> tuple:
 		"""Resets the prices in the circular economy (without rebuy price)
@@ -330,7 +338,7 @@ class CircularEconomy(SimMarket):
 		"""
 		self.output_dict['owner/rebuys']['vendor_' + str(vendor)] += 1
 
-		self.in_storage = min(self.in_storage + 1, self.max_storage)  # receive the product only if you have space for it. Otherwise throw it away.
+		self.vendor_specific_state[0][0] = min(self.vendor_specific_state[0][0] + 1, self.max_storage)  # receive the product only if you have space for it. Otherwise throw it away.
 		self.in_circulation -= 1
 		if profits is not None:
 			self.output_dict['profits/rebuy_cost']['vendor_' + str(vendor)] -= rebuy_price
@@ -373,11 +381,11 @@ class CircularEconomy(SimMarket):
 
 		if customer_decision == 0:
 			self.output_dict['customer/purchases_refurbished']['vendor_0'] += 1
-			if self.in_storage >= 1:
+			if self.vendor_specific_state[0][0] >= 1:
 				# Increase the profit and decrease the storage
 				profits[0] += self.vendors_actions[0][0]
 				self.output_dict['profits/by_selling_refurbished']['vendor_0'] += self.vendors_actions[0][0]
-				self.in_storage -= 1
+				self.vendor_specific_state[0][0] -= 1
 			else:
 				# Punish the agent for not having enough second-hand-products
 				profits[0] -= 2 * ut.MAX_PRICE
@@ -396,8 +404,8 @@ class CircularEconomy(SimMarket):
 			profits (np.array(int)): The profits of all vendors.
 		"""
 		assert self.get_number_of_vendors() == 1, 'This feature does not support more than one vendor yet'
-		profits[0] -= self.in_storage / 2  # Storage costs per timestep
-		self.output_dict['profits/storage_cost']['vendor_0'] = -self.in_storage / 2
+		profits[0] -= self.vendor_specific_state[0][0] / 2  # Storage costs per timestep
+		self.output_dict['profits/storage_cost']['vendor_0'] = -self.vendor_specific_state[0][0] / 2
 
 	def initialize_output_dict(self):
 		"""Initialize the output_dict with the state of the environment and the actions the agents takes.
@@ -405,7 +413,7 @@ class CircularEconomy(SimMarket):
 		"""
 		assert self.get_number_of_vendors() == 1, 'This feature does not support more than one vendor yet'
 		self.output_dict['state/in_circulation'] = self.in_circulation
-		self.ensure_output_dict_has('state/in_storage', [self.in_storage])  # self.vendor_specific_state)
+		self.ensure_output_dict_has('state/in_storage', [self.vendor_specific_state[vendor][0] for vendor in range(self.get_number_of_vendors())])
 		self.ensure_output_dict_has('actions/price_refurbished', [self.vendors_actions[i][0] for i in range(self.get_number_of_vendors())])
 		self.ensure_output_dict_has('actions/price_new', [self.vendors_actions[i][1] for i in range(self.get_number_of_vendors())])
 
