@@ -21,7 +21,7 @@ class Owner(ABC):
 			offers (np.array): a rebuy offer an owner receives
 
 		Returns:
-			np.array: The first entry is the probability that the owner throws away his product. The second entry is the probability that the owner holds his product. Afterwards, for all vendors the probabilities of returning the product to him follows.
+			np.array: The first entry is the probability that the holds his product. The second entry is the probability that the owner throws away his product. Afterwards, for all vendors the probabilities of returning the product to him follows.
 		"""
 		raise NotImplementedError
 
@@ -56,16 +56,18 @@ class OwnerRebuy(Owner):
 			np.array: probability distribution over all possible actions.
 		"""
 		assert isinstance(offers, np.ndarray) and len(offers) % offer_length_per_vendor == 1
-		price_refurbished = offers[1] + 1
-		price_new = offers[2] + 1
-		price_rebuy = offers[3] + 1
 
 		holding_preference = 1
+		discard_preference = 20
+		return_preferences = []
 
-		# If the price is low, the customer will discard the product
-		discard_preference = 2 / (price_rebuy + 1)
+		for offer in range(int(np.floor(len(offers) / offer_length_per_vendor))):
+			price_refurbished = offers[1 + offer * offer_length_per_vendor] + 1
+			price_new = offers[2 + offer * offer_length_per_vendor] + 1
+			price_rebuy = offers[3 + offer * offer_length_per_vendor] + 1
+			best_purchase_offer = min(price_refurbished, price_new)
+			return_preferences.append(2 * np.exp((price_rebuy - best_purchase_offer) / best_purchase_offer))
 
-		# Customer is very excited if the value of his product is close to the new or refurbished price
-		return_preference = 2 * np.exp((price_rebuy - min(price_refurbished, price_new)) / min(price_refurbished, price_new))
+			discard_preference = min(discard_preference, 2 / (price_rebuy + 1))
 
-		return ut.softmax(np.array([holding_preference, discard_preference, return_preference]))
+		return ut.softmax(np.array([holding_preference, discard_preference] + return_preferences))
