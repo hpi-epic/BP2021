@@ -369,7 +369,8 @@ class CircularEconomy(SimMarket):
 		return 0
 
 	def complete_purchase(self, profits, customer_decision) -> None:
-		"""The method handles the customer's decision by raising the profit by the price paid minus the produtcion price. It also handles the storage of used products.
+		"""The method handles the customer's decision by raising the profit by the price paid minus the produtcion price.
+		It also handles the storage of used products.
 
 		Args:
 			offers (np.array): The offers of all vendors.
@@ -377,23 +378,24 @@ class CircularEconomy(SimMarket):
 			customer_decision ([int): Indicates the customer's decision.
 		"""
 		assert len(profits) == 1, 'this is a monopoly economy'
-		assert 0 <= customer_decision and customer_decision < 2, 'invalid action of the customer, only 1 or 2 are allowed'
+		assert 0 <= customer_decision and customer_decision < 2 * self.get_number_of_vendors(), 'Invalid action of the customer! Note that you have two options per vendor!'
 
-		if customer_decision == 0:
-			self.output_dict['customer/purchases_refurbished']['vendor_0'] += 1
-			if self.vendor_specific_state[0][0] >= 1:
+		chosen_vendor = int(np.floor(customer_decision / 2))
+		if customer_decision % 2 == 0:
+			self.output_dict['customer/purchases_refurbished']['vendor_' + str(chosen_vendor)] += 1
+			if self.vendor_specific_state[chosen_vendor][0] >= 1:
 				# Increase the profit and decrease the storage
-				profits[0] += self.vendors_actions[0][0]
-				self.output_dict['profits/by_selling_refurbished']['vendor_0'] += self.vendors_actions[0][0]
-				self.vendor_specific_state[0][0] -= 1
+				profits[chosen_vendor] += self.vendors_actions[chosen_vendor][0]
+				self.output_dict['profits/by_selling_refurbished']['vendor_' + str(chosen_vendor)] += self.vendors_actions[chosen_vendor][0]
+				self.vendor_specific_state[chosen_vendor][0] -= 1
 			else:
 				# Punish the agent for not having enough second-hand-products
-				profits[0] -= 2 * ut.MAX_PRICE
-				self.output_dict['profits/by_selling_refurbished']['vendor_0'] -= 2 * ut.MAX_PRICE
-		elif customer_decision == 1:
-			self.output_dict['customer/purchases_new']['vendor_0'] += 1
-			profits[0] += self.vendors_actions[0][1] - ut.PRODUCTION_PRICE
-			self.output_dict['profits/by_selling_new']['vendor_0'] += self.vendors_actions[0][1] - ut.PRODUCTION_PRICE
+				profits[chosen_vendor] -= 2 * ut.MAX_PRICE
+				self.output_dict['profits/by_selling_refurbished']['vendor_' + str(chosen_vendor)] -= 2 * ut.MAX_PRICE
+		elif customer_decision % 2 == 1:
+			self.output_dict['customer/purchases_new']['vendor_' + str(chosen_vendor)] += 1
+			profits[chosen_vendor] += self.vendors_actions[chosen_vendor][1] - ut.PRODUCTION_PRICE
+			self.output_dict['profits/by_selling_new']['vendor_' + str(chosen_vendor)] += self.vendors_actions[chosen_vendor][1] - ut.PRODUCTION_PRICE
 			# One more product is in circulation now, but only 10 times the amount of storage space we have
 			self.in_circulation = min(self.in_circulation + 1, self.max_circulation)
 
