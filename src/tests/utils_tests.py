@@ -1,8 +1,5 @@
 import os
 
-from .context import utils_rl as ut_rl
-from .context import utils_sim_market as ut
-
 
 def create_mock_json_rl(gamma='0.99', batch_size='32', replay_size='100000', learning_rate='1e-6', sync_target_frames='1000', replay_start_size='10000', epsilon_decay_last_frame='75000', epsilon_start='1.0', epsilon_final='0.1') -> str:
 	"""
@@ -45,7 +42,6 @@ def check_mock_file_rl(mock_file, json) -> None:
 	path = os.path.dirname(__file__) + os.sep + '...' + os.sep + 'config_rl.json'
 	assert (open(path).read() == json)
 	mock_file.assert_called_with(path)
-	ut_rl.config = ut_rl.load_config(path)
 
 
 def create_mock_json_sim_market(episode_size='20', max_price='15', max_quality='100', number_of_customers='30', production_price='5') -> str:
@@ -80,7 +76,6 @@ def check_mock_file_sim_market(mock_file, json) -> None:
 	path = os.path.dirname(__file__) + os.sep + '...' + os.sep + 'config_sim_market.json'
 	assert (open(path).read() == json)
 	mock_file.assert_called_with(path)
-	ut.config = ut.load_config(path)
 
 
 def remove_line(number, json) -> str:
