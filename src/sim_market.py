@@ -9,7 +9,7 @@ import numpy as np
 import competitor as comp
 import customer
 import owner
-import utils as ut
+import utils_sim_market as ut
 from agent import RuleBasedCERebuyAgent
 from customer import Customer
 from owner import Owner

@@ -1,12 +1,12 @@
+from importlib import reload
+
 import pytest
 from numpy import random
 
-# from .context import competitor
-# from .context import Competitor
 from .context import CompetitorJust2Players as C2Players
 from .context import CompetitorLinearRatio1 as CLinear1
 from .context import CompetitorRandom as CRandom
-from .context import utils as ut
+from .context import utils_sim_market as ut
 
 
 # Helper function that creates a random offer (state that includes the agent's price) to test customer behaviour. This is dependent on the sim_market working!
@@ -20,13 +20,18 @@ def get_competitor_pricing_ids():
 	]
 
 
-array_competitor_pricing = [(CLinear1, random_offer()), (CRandom, random_offer()), (C2Players, random_offer())]
+array_competitor_pricing = [
+	(CLinear1, random_offer()),
+	(CRandom, random_offer()),
+	(C2Players, random_offer())
+]
 
 
 # Test the policy()-function of the different competitors
-@pytest.mark.parametrize('competitor, state', array_competitor_pricing, ids=get_competitor_pricing_ids())
-def test_policy(competitor, state):
-	competitor.__init__(competitor)
+@pytest.mark.parametrize('competitor_class, state', array_competitor_pricing, ids=get_competitor_pricing_ids())
+def test_policy(competitor_class, state):
+	reload(ut)
+	competitor = competitor_class()
 	assert ut.PRODUCTION_PRICE == 2
 	if competitor is CLinear1:
 		assert ut.PRODUCTION_PRICE + 1 <= competitor.policy(competitor, state) < ut.MAX_PRICE

@@ -4,7 +4,7 @@
 import math
 import random
 
-import utils as ut
+import utils_sim_market as ut
 from agent import Agent
 
 

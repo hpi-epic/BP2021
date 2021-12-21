@@ -5,10 +5,15 @@ import shutil
 import numpy as np
 import pytest
 
+# from .context import utils_sim_market as ut
 from .context import Monitor, agent
 from .context import agent_monitoring as am
 from .context import sim_market
-from .context import utils as ut
+from .context import utils_tests as ut_t
+
+# from importlib import reload
+# from unittest.mock import mock_open, patch
+
 
 monitor = Monitor()
 
@@ -18,23 +23,14 @@ def setup_function(function):
 	print('***SETUP***')
 	global monitor
 	monitor = Monitor()
-	monitor.setup_monitoring(enable_live_draw=False, subfolder_name='test_plots_')
+	monitor.setup_monitoring(enable_live_draw=False, subfolder_name='test_plots_' + function.__name__)
 
 
-# teardown after each test
-def teardown_function(function):
+def teardown_module(module):
 	print('***TEARDOWN***')
 	for f in os.listdir('./monitoring'):
 		if re.match('test_plots_*', f):
 			shutil.rmtree('./monitoring/' + f)
-
-
-# create mock rewards list
-def create_mock_rewards() -> list:
-	mock_rewards = []
-	for number in range(1, 12):
-		mock_rewards.append(number)
-	return mock_rewards
 
 
 def test_init_default_values():
@@ -173,23 +169,27 @@ def test_setup_with_valid_agents():
 
 
 def test_metrics_average():
-	assert 6 == monitor.metrics_average(create_mock_rewards())
+	assert 6 == monitor.metrics_average(ut_t.create_mock_rewards(12))
 
 
 def test_metrics_median():
-	assert 6 == monitor.metrics_median(create_mock_rewards())
+	assert 6 == monitor.metrics_median(ut_t.create_mock_rewards(12))
 
 
 def test_metrics_maximum():
-	assert 11 == monitor.metrics_maximum(create_mock_rewards())
+	assert 11 == monitor.metrics_maximum(ut_t.create_mock_rewards(12))
 
 
 def test_metrics_minimum():
-	assert 1 == monitor.metrics_minimum(create_mock_rewards())
+	assert 1 == monitor.metrics_minimum(ut_t.create_mock_rewards(12))
 
 
 def test_round_up():
 	assert monitor.round_up(999, -3) == 1000
+
+
+def test_round_down():
+	assert monitor.round_down(999, -3) == 0
 
 
 # all arrays in rewards must be of the same size
@@ -200,12 +200,14 @@ def test_rewards_array_size():
 		monitor.create_histogram(rewards_wrong)
 
 
-def test_get_episode_reward():
-	saved_episode_length = ut.EPISODE_LENGTH
-	ut.EPISODE_LENGTH = 2
-	all_steps_reward = [[1, 2, 3, 4], [4, 5, 6, 7], [1, 3, 4, 5]]
-	assert [[3, 7], [9, 13], [4, 9]] == monitor.get_episode_rewards(all_steps_reward)
-	ut.EPISODE_LENGTH = saved_episode_length
+# def test_get_episode_reward():
+# 	json = ut_t.create_mock_json_sim_market(episode_size='2')
+# 	with patch('builtins.open', mock_open(read_data=json)) as mock_file:
+# 		ut_t.check_mock_file_sim_market(mock_file, json)
+# 		reload(ut)
+# 		all_steps_reward = [[1, 2, 3, 4], [4, 5, 6, 7], [1, 3, 4, 5]]
+# 		assert [[3, 7], [9, 13], [4, 9]] == monitor.get_episode_rewards(all_steps_reward)
+	# reload(ut)
 
 
 agent_rewards_histogram = [
