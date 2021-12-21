@@ -10,7 +10,7 @@ import sim_market
 import utils as ut
 
 
-def print_example(env=sim_market.CircularEconomy(), agent=a.RuleBasedCEAgent()) -> int:
+def print_example(env=sim_market.CircularEconomyMonopolyScenario(), agent=a.RuleBasedCEAgent()) -> int:
 	counter = 0
 	our_profit = 0
 	is_done = False

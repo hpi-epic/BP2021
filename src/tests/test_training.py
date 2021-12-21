@@ -34,8 +34,8 @@ def check_mock_file(mock_file, json=create_mock_json()):
 test_scenarios = [
 	(sim_market.ClassicScenario(), agent.QLearningAgent(n_observation=sim_market.ClassicScenario().observation_space.shape[0], n_actions=10, optim=torch.optim.Adam)),
 	(sim_market.MultiCompetitorScenario(), agent.QLearningAgent(n_observation=sim_market.MultiCompetitorScenario().observation_space.shape[0], n_actions=10, optim=torch.optim.Adam)),
-	(sim_market.CircularEconomy(), agent.QLearningCEAgent(sim_market.CircularEconomy().observation_space.shape[0], n_actions=100, optim=torch.optim.Adam)),
-	(sim_market.CircularEconomyRebuyPrice(), agent.QLearningCERebuyAgent(sim_market.CircularEconomyRebuyPrice().observation_space.shape[0], n_actions=100, optim=torch.optim.Adam))]
+	(sim_market.CircularEconomyMonopolyScenario(), agent.QLearningCEAgent(sim_market.CircularEconomyMonopolyScenario().observation_space.shape[0], n_actions=100, optim=torch.optim.Adam)),
+	(sim_market.CircularEconomyRebuyPriceMonopolyScenario(), agent.QLearningCERebuyAgent(sim_market.CircularEconomyRebuyPriceMonopolyScenario().observation_space.shape[0], n_actions=100, optim=torch.optim.Adam))]
 
 
 @pytest.mark.parametrize('environment, agent', test_scenarios)

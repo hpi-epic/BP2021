@@ -1,6 +1,7 @@
 import pytest
 
-from .context import CircularEconomy, CircularEconomyRebuyPrice
+from .context import CircularEconomyMonopolyScenario as CEMonopoly
+from .context import CircularEconomyRebuyPriceMonopolyScenario
 from .context import ClassicScenario as SClassic
 from .context import CustomerCircular as CCircular
 from .context import CustomerLinear as CLinear
@@ -25,7 +26,7 @@ def test_customer_parent_class():
 
 
 array_customer_action_range = [
-	(CLinear, *random_offer(SClassic), 4), (CLinear, *random_offer(SMulti), 8), (CCircular, *random_offer(CircularEconomy), 4), (CCircular, *random_offer(CircularEconomyRebuyPrice), 5)
+	(CLinear, *random_offer(SClassic), 4), (CLinear, *random_offer(SMulti), 8), (CCircular, *random_offer(CEMonopoly), 4), (CCircular, *random_offer(CircularEconomyRebuyPriceMonopolyScenario), 5)
 ]
 
 
