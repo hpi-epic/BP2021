@@ -55,7 +55,7 @@ class SimMarket(gym.Env, ABC):
 		self.reset_common_state()
 
 		self.vendor_specific_state = [self.reset_vendor_specific_state() for _ in range(self.get_number_of_vendors())]
-		self.vendors_actions = [self.reset_vendors_actions() for _ in range(self.get_number_of_vendors())]
+		self.vendor_actions = [self.reset_vendor_actions() for _ in range(self.get_number_of_vendors())]
 
 		self.customer = self.choose_customer()
 		self.owner = self.choose_owner()
@@ -95,7 +95,7 @@ class SimMarket(gym.Env, ABC):
 		"""
 		assert self.action_space.contains(action), f'{action} ({type(action)}) invalid'
 
-		self.vendors_actions[0] = action
+		self.vendor_actions[0] = action
 
 		self.step_counter += 1
 
@@ -114,7 +114,7 @@ class SimMarket(gym.Env, ABC):
 			if i < len(self.competitors):
 				action_competitor_i = self.competitors[i].policy(self.observation(i + 1))
 				assert self.action_space.contains(action_competitor_i), 'This vendor does not deliver a suitable action'
-				self.vendors_actions[i + 1] = action_competitor_i
+				self.vendor_actions[i + 1] = action_competitor_i
 
 		self.consider_storage_costs(profits)
 
@@ -144,7 +144,7 @@ class SimMarket(gym.Env, ABC):
 		for vendor_index in range(self.get_number_of_vendors()):
 			if vendor_index == vendor_view:
 				continue
-			observation = np.concatenate((observation, np.array(self.vendors_actions[vendor_index], ndmin=1)), dtype=np.float64)
+			observation = np.concatenate((observation, np.array(self.vendor_actions[vendor_index], ndmin=1)), dtype=np.float64)
 			if self.vendor_specific_state[vendor_index] is not None:
 				observation = np.concatenate((observation, np.array(self.vendor_specific_state[vendor_index], ndmin=1)), dtype=np.float64)
 
@@ -161,7 +161,7 @@ class SimMarket(gym.Env, ABC):
 		offer = self.get_common_state_array()
 		assert isinstance(offer, np.ndarray), 'get_common_state_array must return a np-Array'
 		for vendor_index in range(self.get_number_of_vendors()):
-			offer = np.concatenate((offer, np.array(self.vendors_actions[vendor_index], ndmin=1)), dtype=np.float64)
+			offer = np.concatenate((offer, np.array(self.vendor_actions[vendor_index], ndmin=1)), dtype=np.float64)
 			if self.vendor_specific_state[vendor_index] is not None:
 				offer = np.concatenate((offer, np.array(self.vendor_specific_state[vendor_index], ndmin=1)), dtype=np.float64)
 		return offer
@@ -238,7 +238,7 @@ class LinearEconomy(SimMarket, ABC):
 	def choose_customer(self) -> Customer:
 		return customer.CustomerLinear()
 
-	def reset_vendors_actions(self) -> int:
+	def reset_vendor_actions(self) -> int:
 		"""Resets the price in the linear economy
 
 		Returns:
@@ -255,7 +255,7 @@ class LinearEconomy(SimMarket, ABC):
 			customer_decision (int): Indicates the customer's decision.
 		"""
 
-		profits[chosen_vendor] += self.vendors_actions[chosen_vendor] - ut.PRODUCTION_PRICE
+		profits[chosen_vendor] += self.vendor_actions[chosen_vendor] - ut.PRODUCTION_PRICE
 		self.output_dict['customer/purchases']['vendor_' + str(chosen_vendor)] += 1
 
 	def initialize_output_dict(self):
@@ -310,7 +310,7 @@ class CircularEconomy(SimMarket):
 	def get_common_state_array(self) -> np.array:
 		return np.array([self.in_circulation])
 
-	def reset_vendors_actions(self) -> tuple:
+	def reset_vendor_actions(self) -> tuple:
 		"""Resets the prices in the circular economy (without rebuy price)
 
 		Returns:
@@ -384,8 +384,8 @@ class CircularEconomy(SimMarket):
 			self.output_dict['customer/purchases_refurbished']['vendor_' + str(chosen_vendor)] += 1
 			if self.vendor_specific_state[chosen_vendor][0] >= 1:
 				# Increase the profit and decrease the storage
-				profits[chosen_vendor] += self.vendors_actions[chosen_vendor][0]
-				self.output_dict['profits/by_selling_refurbished']['vendor_' + str(chosen_vendor)] += self.vendors_actions[chosen_vendor][0]
+				profits[chosen_vendor] += self.vendor_actions[chosen_vendor][0]
+				self.output_dict['profits/by_selling_refurbished']['vendor_' + str(chosen_vendor)] += self.vendor_actions[chosen_vendor][0]
 				self.vendor_specific_state[chosen_vendor][0] -= 1
 			else:
 				# Punish the agent for not having enough second-hand-products
@@ -393,8 +393,8 @@ class CircularEconomy(SimMarket):
 				self.output_dict['profits/by_selling_refurbished']['vendor_' + str(chosen_vendor)] -= 2 * ut.MAX_PRICE
 		elif customer_decision % 2 == 1:
 			self.output_dict['customer/purchases_new']['vendor_' + str(chosen_vendor)] += 1
-			profits[chosen_vendor] += self.vendors_actions[chosen_vendor][1] - ut.PRODUCTION_PRICE
-			self.output_dict['profits/by_selling_new']['vendor_' + str(chosen_vendor)] += self.vendors_actions[chosen_vendor][1] - ut.PRODUCTION_PRICE
+			profits[chosen_vendor] += self.vendor_actions[chosen_vendor][1] - ut.PRODUCTION_PRICE
+			self.output_dict['profits/by_selling_new']['vendor_' + str(chosen_vendor)] += self.vendor_actions[chosen_vendor][1] - ut.PRODUCTION_PRICE
 			# One more product is in circulation now, but only 10 times the amount of storage space we have
 			self.in_circulation = min(self.in_circulation + 1, self.max_circulation)
 
@@ -416,8 +416,8 @@ class CircularEconomy(SimMarket):
 		assert self.get_number_of_vendors() == 1, 'This feature does not support more than one vendor yet'
 		self.output_dict['state/in_circulation'] = self.in_circulation
 		self.ensure_output_dict_has('state/in_storage', [self.vendor_specific_state[vendor][0] for vendor in range(self.get_number_of_vendors())])
-		self.ensure_output_dict_has('actions/price_refurbished', [self.vendors_actions[i][0] for i in range(self.get_number_of_vendors())])
-		self.ensure_output_dict_has('actions/price_new', [self.vendors_actions[i][1] for i in range(self.get_number_of_vendors())])
+		self.ensure_output_dict_has('actions/price_refurbished', [self.vendor_actions[i][0] for i in range(self.get_number_of_vendors())])
+		self.ensure_output_dict_has('actions/price_new', [self.vendor_actions[i][1] for i in range(self.get_number_of_vendors())])
 
 		self.ensure_output_dict_has('owner/throw_away')
 		self.ensure_output_dict_has('owner/rebuys', [0] * self.get_number_of_vendors())
@@ -437,7 +437,7 @@ class CircularEconomyRebuyPrice(CircularEconomy):
 		super().setup_action_observation_space()
 		self.action_space = gym.spaces.Tuple((gym.spaces.Discrete(ut.MAX_PRICE), gym.spaces.Discrete(ut.MAX_PRICE), gym.spaces.Discrete(ut.MAX_PRICE)))
 
-	def reset_vendors_actions(self) -> tuple:
+	def reset_vendor_actions(self) -> tuple:
 		"""Resets the prices in the circular economy with rebuy prices.
 
 		Returns:
@@ -452,9 +452,9 @@ class CircularEconomyRebuyPrice(CircularEconomy):
 		"""Extends the the output_dict initialized by the of the superclass with entries concerning the rebuy price and cost.
 		"""
 		super().initialize_output_dict()
-		self.ensure_output_dict_has('actions/price_rebuy', [self.vendors_actions[i][2] for i in range(self.get_number_of_vendors())])
+		self.ensure_output_dict_has('actions/price_rebuy', [self.vendor_actions[i][2] for i in range(self.get_number_of_vendors())])
 
 		self.ensure_output_dict_has('profits/rebuy_cost', [0] * self.get_number_of_vendors())
 
 	def get_rebuy_price(self, vendor_idx) -> int:
-		return self.vendors_actions[vendor_idx][2]
+		return self.vendor_actions[vendor_idx][2]
