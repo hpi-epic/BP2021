@@ -7,7 +7,8 @@ import numpy as np
 
 import agent
 import sim_market
-import utils_sim_market as ut
+
+# import utils_sim_market as ut
 
 
 class Monitor():
@@ -220,27 +221,27 @@ class Monitor():
 		configuration['folder_path'] = self.folder_path
 		return configuration
 
-	def get_episode_rewards(self, all_step_rewards) -> list:
-		"""
-		Accumulates all rewards per episode
+	# def get_episode_rewards(self, all_step_rewards) -> list:
+	# 	"""
+	# 	Accumulates all rewards per episode
 
-		Args:
-			all_step_rewards (list of list of floats): Contains a list per agent containing float rewards for the episode
+	# 	Args:
+	# 		all_step_rewards (list of list of floats): Contains a list per agent containing float rewards for the episode
 
-		Returns:
-			list of list of floats: List of accumulated rewards per episode per agent
-		"""
-		episode_rewards = []
-		for agent_reward in all_step_rewards:
-			episode_rewards.append([])
-			curr_sum = 0
-			for reward_index in range(len(agent_reward)):
-				curr_sum += agent_reward[reward_index]
-				if(reward_index % ut.EPISODE_LENGTH == ut.EPISODE_LENGTH - 1):
-					# one episode is over
-					episode_rewards[-1] += [curr_sum]
-					curr_sum = 0
-		return episode_rewards
+	# 	Returns:
+	# 		list of list of floats: List of accumulated rewards per episode per agent
+	# 	"""
+	# 	episode_rewards = []
+	# 	for agent_reward in all_step_rewards:
+	# 		episode_rewards.append([])
+	# 		curr_sum = 0
+	# 		for reward_index in range(len(agent_reward)):
+	# 			curr_sum += agent_reward[reward_index]
+	# 			if(reward_index % ut.EPISODE_LENGTH == ut.EPISODE_LENGTH - 1):
+	# 				# one episode is over
+	# 				episode_rewards[-1] += [curr_sum]
+	# 				curr_sum = 0
+	# 	return episode_rewards
 
 	# metrics
 	def metrics_average(self, rewards) -> np.float64:

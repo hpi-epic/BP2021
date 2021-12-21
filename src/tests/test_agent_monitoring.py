@@ -1,17 +1,19 @@
 import os
 import re
 import shutil
-from importlib import reload
-from unittest.mock import mock_open, patch
 
 import numpy as np
 import pytest
 
+# from .context import utils_sim_market as ut
 from .context import Monitor, agent
 from .context import agent_monitoring as am
 from .context import sim_market
-from .context import utils_sim_market as ut
 from .context import utils_tests as ut_t
+
+# from importlib import reload
+# from unittest.mock import mock_open, patch
+
 
 monitor = Monitor()
 
@@ -198,14 +200,14 @@ def test_rewards_array_size():
 		monitor.create_histogram(rewards_wrong)
 
 
-def test_get_episode_reward():
-	json = ut_t.create_mock_json_sim_market(episode_size='2')
-	with patch('builtins.open', mock_open(read_data=json)) as mock_file:
-		ut_t.check_mock_file_sim_market(mock_file, json)
-		reload(ut)
-		all_steps_reward = [[1, 2, 3, 4], [4, 5, 6, 7], [1, 3, 4, 5]]
-		assert [[3, 7], [9, 13], [4, 9]] == monitor.get_episode_rewards(all_steps_reward)
-	reload(ut)
+# def test_get_episode_reward():
+# 	json = ut_t.create_mock_json_sim_market(episode_size='2')
+# 	with patch('builtins.open', mock_open(read_data=json)) as mock_file:
+# 		ut_t.check_mock_file_sim_market(mock_file, json)
+# 		reload(ut)
+# 		all_steps_reward = [[1, 2, 3, 4], [4, 5, 6, 7], [1, 3, 4, 5]]
+# 		assert [[3, 7], [9, 13], [4, 9]] == monitor.get_episode_rewards(all_steps_reward)
+	# reload(ut)
 
 
 agent_rewards_histogram = [
