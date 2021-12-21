@@ -31,7 +31,6 @@ def test_not_abstract_agent_classes():
 
 
 test_state = [50, 60]
-
 fixed_price_testcases = [(agent.FixedPriceLEAgent(), ut.PRODUCTION_PRICE + 3), (agent.FixedPriceLEAgent(7), 7), (agent.FixedPriceCEAgent(), (2, 4)), (agent.FixedPriceCEAgent((3, 5)), (3, 5)), (agent.FixedPriceCERebuyAgent(), (3, 6, 2)), (agent.FixedPriceCERebuyAgent((4, 7, 3)), (4, 7, 3))]
 
 
