@@ -460,3 +460,8 @@ class CircularEconomyRebuyPrice(CircularEconomy):
 
 	def get_rebuy_price(self, vendor_idx) -> int:
 		return self.vendor_actions[vendor_idx][2]
+
+
+class CircularEconomyRebuyPriceMonopolyScenario(CircularEconomyRebuyPrice):
+	def get_competitor_list(self) -> list:
+		return []
