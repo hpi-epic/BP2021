@@ -26,6 +26,7 @@ def test_not_abstract_agent_classes():
 	agent.FixedPriceLEAgent()
 	agent.RuleBasedCEAgent()
 	agent.RuleBasedCERebuyAgent()
+	agent.QLearningAgent(10, 10)
 	agent.QLearningCEAgent(10, 10)
 	agent.QLearningCERebuyAgent(10, 10)
 
