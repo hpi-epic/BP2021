@@ -10,7 +10,7 @@ from .context import utils_rl as ut_rl
 
 
 # Helper function that returns a mock config_rl.json file/string with the given values
-def create_mock_json(gamma='0.99', batch_size='32', replay_size='100000', learning_rate='1e-6', sync_target_frames='1000', replay_start_size='10000', epsilon_decay_last_frame='75000', epsilon_start='1.0', epsilon_final='0.1'):
+def create_mock_json(gamma='0.99', batch_size='32', replay_size='100000', learning_rate='1e-6', sync_target_frames='100', replay_start_size='10000', epsilon_decay_last_frame='75000', epsilon_start='1.0', epsilon_final='0.1'):
 	return '{\n\t"gamma" : ' + gamma + ',\n' + \
 		'\t"batch_size" : ' + batch_size + ',\n' + \
 		'\t"replay_size" : ' + replay_size + ',\n' + \

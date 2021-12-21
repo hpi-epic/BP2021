@@ -256,7 +256,7 @@ class QLearningAgent(ReinforcementLearningAgent, ABC):
 		return loss_t.item(), selected_q_val_mean.item()
 
 	def synchronize_tgt_net(self):
-		self.tgt_net.load_state_dict(self.net.observation_dict())
+		self.tgt_net.load_state_dict(self.net.state_dict())
 
 	def calc_loss(self, batch, device='cpu'):
 		states, actions, rewards, dones, next_states = batch
@@ -280,7 +280,7 @@ class QLearningAgent(ReinforcementLearningAgent, ABC):
 	def save(self, path='QLearning_parameters'):
 		if not os.path.isdir('trainedModels'):
 			os.mkdir('trainedModels')
-		torch.save(self.net.observation_dict(), './trainedModels/' + path)
+		torch.save(self.net.state_dict(), './trainedModels/' + path)
 
 
 class QLearningLEAgent(QLearningAgent, LinearAgent):
