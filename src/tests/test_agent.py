@@ -3,9 +3,9 @@ from unittest.mock import mock_open, patch
 
 import pytest
 
-from .context import agent
-from .context import utils_sim_market as ut
-from .context import utils_tests as ut_t
+import agent
+import tests.utils_tests as ut_t
+import utils_sim_market as ut
 
 
 def test_abstract_agent_classes():

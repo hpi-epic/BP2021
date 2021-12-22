@@ -3,8 +3,8 @@ from unittest.mock import mock_open, patch
 
 import pytest
 
-from .context import utils_rl as ut_rl
-from .context import utils_tests as ut_t
+import tests.utils_tests as ut_t
+import utils_rl as ut_rl
 
 
 # mock format taken from: https://stackoverflow.com/questions/1289894/how-do-i-mock-an-open-used-in-a-with-statement-using-the-mock-framework-in-pyth

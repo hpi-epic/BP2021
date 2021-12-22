@@ -1,10 +1,10 @@
 import pytest
 
-from .context import ClassicScenario as SClassic
-from .context import CustomerCircular as CCircular
-from .context import CustomerLinear as CLinear
-from .context import MultiCompetitorScenario as SMulti
-from .context import customer
+import customer
+from customer import CustomerCircular as CCircular
+from customer import CustomerLinear as CLinear
+from sim_market import ClassicScenario as SClassic
+from sim_market import MultiCompetitorScenario as SMulti
 
 
 # Helper function that creates a random offer (state that includes the agent's price) to test customer behaviour. This is dependent on the sim_market working!

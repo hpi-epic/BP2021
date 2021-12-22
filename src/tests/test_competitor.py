@@ -3,10 +3,10 @@ from importlib import reload
 import pytest
 from numpy import random
 
-from .context import CompetitorJust2Players as C2Players
-from .context import CompetitorLinearRatio1 as CLinear1
-from .context import CompetitorRandom as CRandom
-from .context import utils_sim_market as ut
+import utils_sim_market as ut
+from competitor import CompetitorJust2Players as C2Players
+from competitor import CompetitorLinearRatio1 as CLinear1
+from competitor import CompetitorRandom as CRandom
 
 
 # Helper function that creates a random offer (state that includes the agent's price) to test customer behaviour. This is dependent on the sim_market working!

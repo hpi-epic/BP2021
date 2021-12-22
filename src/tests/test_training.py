@@ -7,9 +7,11 @@ from unittest.mock import mock_open, patch
 import pytest
 import torch
 
-from .context import agent, sim_market, training
-from .context import utils_rl as ut_rl
-from .context import utils_tests as ut_t
+import agent
+import sim_market
+import tests.utils_tests as ut_t
+import training
+import utils_rl as ut_rl
 
 
 # teardown after each test
