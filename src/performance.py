@@ -39,11 +39,11 @@ def run_profiling(function='exampleprinter.main()') -> None:
 		os.mkdir('performance')
 
 	date_time = time.strftime('%Y%m%d-%H%M%S')
-	start_time = time.time()
+	start_time = time.perf_counter()
 
 	cProfile.run(function, filename='./performance/' + function + '_' + date_time, sort=3)
 	# Estimate of how long the function took to run for the filename
-	time_frame = str(round(time.time() - start_time, 3))
+	time_frame = str(round(time.perf_counter() - start_time, 3))
 
 	p = pstats.Stats('./performance/' + function + '_' + date_time)
 	p.sort_stats('cumulative').dump_stats(filename='./performance/' + function + '_' + time_frame + '_secs_' + date_time + '.prof')
@@ -54,9 +54,5 @@ def run_profiling(function='exampleprinter.main()') -> None:
 	os.system('snakeviz ./performance/' + function + '_' + time_frame + '_secs_' + date_time + '.prof')
 
 
-def main() -> None:  # pragma: no cover
-	run_profiling()
-
-
 if __name__ == '__main__':  # pragma: no cover
-	main()
+	run_profiling()
