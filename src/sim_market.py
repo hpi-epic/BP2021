@@ -133,6 +133,9 @@ class SimMarket(gym.Env, ABC):
 
 		Args:
 			vendor_view (int, optional): Index of the vendor whose view we create. Defaults to 0.
+
+		Returns:
+			np.array: the view for the vendor with index vendor_view
 		"""
 		# observaton is the array containing the global state. We concatenate everything relevant to it, then return it.
 		observation = self.get_common_state_array()
