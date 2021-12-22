@@ -73,7 +73,8 @@ class SimMarket(gym.Env, ABC):
 			number_of_customers (int): the number of customers eager to buy each step.
 		"""
 		probability_distribution = self.customer.generate_purchase_probabilities_from_offer(offers, self.get_offer_length_per_vendor())
-		assert isinstance(probability_distribution, np.ndarray) and len(probability_distribution) == 1 + (1 if isinstance(self, LinearEconomy) else 2) * self.get_number_of_vendors()
+		assert isinstance(probability_distribution, np.ndarray), 'Your method in customer must return a np.array!'
+		assert len(probability_distribution) == 1 + (1 if isinstance(self, LinearEconomy) else 2) * self.get_number_of_vendors(), 'The probability distribution must have one entry for buy_nothing and one or two entries for every vendor. One entry if it is a linear economy (with only one price) or a circular economy with the option to buy refurbished or new.'
 
 		for _ in range(number_of_customers):
 			customer_decision = ut.shuffle_from_probabilities(probability_distribution)
@@ -191,6 +192,11 @@ class SimMarket(gym.Env, ABC):
 		None
 
 	def get_offer_length_per_vendor(self) -> int:
+		"""This methods generates the number of fields each vendor takes in the offer array
+
+		Returns:
+			int: The offer lenght is the sum of the number of fields required to encode the action and the length of the encoding of vendor specific state.
+		"""
 		action_encoding_length = 1 if isinstance(self.action_space, gym.spaces.Discrete) else len(self.action_space)
 		if self.vendor_specific_state[0] is None:
 			vendor_specific_state_encoding_length = 0
@@ -250,9 +256,8 @@ class LinearEconomy(SimMarket, ABC):
 		"""The method handles the customer's decision by raising the profit by the price paid minus the produtcion price.
 
 		Args:
-			offers (np.array): An array containing the offers of all vendors.
 			profits (np.array(int)): An array containing the profits of all vendors.
-			customer_decision (int): Indicates the customer's decision.
+			chosen_vendor (int): Indicates the customer's decision.
 		"""
 
 		profits[chosen_vendor] += self.vendor_actions[chosen_vendor] - ut.PRODUCTION_PRICE
@@ -322,6 +327,9 @@ class CircularEconomy(SimMarket):
 		return owner.UniformDistributionOwner()
 
 	def throw_away(self) -> None:
+		"""The call of this method will decrease the in_circulation counter by one.
+		Call it if one of your owners decided to throw away his product.
+		"""
 		self.output_dict['owner/throw_away'] += 1
 		self.in_circulation -= 1
 
@@ -356,6 +364,7 @@ class CircularEconomy(SimMarket):
 		for _ in range(number_of_owners):
 			owner_action = ut.shuffle_from_probabilities(return_probabilities)
 
+			# owner_action 0 means holding the product, so nothing happens
 			if owner_action == 1:
 				self.throw_away()
 			elif owner_action >= 2:
@@ -370,9 +379,8 @@ class CircularEconomy(SimMarket):
 		It also handles the storage of used products.
 
 		Args:
-			offers (np.array): The offers of all vendors.
 			profits (np.array(int)): The profits of all vendors.
-			customer_decision ([int): Indicates the customer's decision.
+			customer_decision (int): Indicates the customer's decision.
 		"""
 		assert 0 <= customer_decision and customer_decision < 2 * self.get_number_of_vendors(), 'Invalid action of the customer! Note that you have two options per vendor!'
 
@@ -388,7 +396,7 @@ class CircularEconomy(SimMarket):
 				# Punish the agent for not having enough second-hand-products
 				profits[chosen_vendor] -= 2 * ut.MAX_PRICE
 				self.output_dict['profits/by_selling_refurbished']['vendor_' + str(chosen_vendor)] -= 2 * ut.MAX_PRICE
-		elif customer_decision % 2 == 1:
+		else:
 			self.output_dict['customer/purchases_new']['vendor_' + str(chosen_vendor)] += 1
 			profits[chosen_vendor] += self.vendor_actions[chosen_vendor][1] - ut.PRODUCTION_PRICE
 			self.output_dict['profits/by_selling_new']['vendor_' + str(chosen_vendor)] += self.vendor_actions[chosen_vendor][1] - ut.PRODUCTION_PRICE
