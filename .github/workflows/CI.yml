@@ -13,10 +13,10 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.8
-      - name: Update Conda environment
+      - name: Install AlphaBusiness package
         shell: bash -l {0}
         run: |
-          conda env update -n BP2021
+          pip install -e ./src
       - name: Pre-commit
         shell: bash -l {0}
         run: |
