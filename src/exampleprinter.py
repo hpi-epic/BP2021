@@ -11,7 +11,7 @@ import sim_market
 import utils_sim_market as ut
 
 
-def print_example(environment=sim_market.CircularEconomy(), agent=agent.RuleBasedCEAgent(), log_dir_prepend='') -> int:
+def run_example(environment=sim_market.CircularEconomyMonopolyScenario(), agent=agent.RuleBasedCEAgent(), log_dir_prepend='') -> int:
 	"""
 	Run a specified marketplace with a (pre-trained, if RL) agent and record various statistics using TensorBoard.
 
@@ -46,11 +46,5 @@ def print_example(environment=sim_market.CircularEconomy(), agent=agent.RuleBase
 	return our_profit
 
 
-def main() -> None:  # pragma: no cover
-	used_agent = agent.RuleBasedCERebuyAgent()
-	environment = sim_market.CircularEconomyRebuyPrice()
-	print_example(environment, used_agent)
-
-
 if __name__ == '__main__':  # pragma: no cover
-	main()
+	print(run_example(environment=sim_market.CircularEconomyRebuyPriceOneCompetitor(), agent=agent.RuleBasedCERebuyAgent()))

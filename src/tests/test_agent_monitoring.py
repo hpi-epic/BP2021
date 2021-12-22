@@ -38,7 +38,7 @@ def test_init_default_values():
 	assert test_monitor.enable_live_draw is True
 	assert 500 == test_monitor.episodes
 	assert 50 == test_monitor.plot_interval
-	assert isinstance(test_monitor.marketplace, sim_market.CircularEconomy)
+	assert isinstance(test_monitor.marketplace, sim_market.CircularEconomyMonopolyScenario)
 	assert isinstance(test_monitor.agents[0], agent.QLearningCEAgent)
 	assert 1 == len(test_monitor.agents)
 	assert ['#0000ff'] == test_monitor.agent_colors
@@ -47,11 +47,11 @@ def test_init_default_values():
 
 
 def test_correct_setup_monitoring():
-	monitor.setup_monitoring(enable_live_draw=False, episodes=10, plot_interval=2, marketplace=sim_market.CircularEconomy, agents=[(agent.HumanPlayerCERebuy, ['reptiloid']), (agent.QLearningCERebuyAgent, ['CircularEconomy_QLearningCEAgent.dat', 'q_learner'])], subfolder_name='subfoldername')
+	monitor.setup_monitoring(enable_live_draw=False, episodes=10, plot_interval=2, marketplace=sim_market.CircularEconomyMonopolyScenario, agents=[(agent.HumanPlayerCERebuy, ['reptiloid']), (agent.QLearningCERebuyAgent, ['CircularEconomy_QLearningCEAgent.dat', 'q_learner'])], subfolder_name='subfoldername')
 	assert monitor.enable_live_draw is False
 	assert 10 == monitor.episodes
 	assert 2 == monitor.plot_interval
-	assert isinstance(monitor.marketplace, sim_market.CircularEconomy)
+	assert isinstance(monitor.marketplace, sim_market.CircularEconomyMonopolyScenario)
 	assert 2 == len(monitor.agents)
 	assert isinstance(monitor.agents[0], agent.HumanPlayerCERebuy)
 	assert isinstance(monitor.agents[1], agent.QLearningCERebuyAgent)
@@ -105,7 +105,7 @@ def test_incorrect_setup_monitoring():
 		monitor.setup_monitoring(agents=[(agent.RuleBasedCEAgent, []), (agent.FixedPriceLEAgent, []), (agent.FixedPriceCEAgent, [])])
 	assert 'the agents must all be of the same type (Linear/Circular)' in str(assertion_message.value)
 	with pytest.raises(AssertionError) as assertion_message:
-		monitor.setup_monitoring(agents=[(agent.FixedPriceLEAgent, [])], marketplace=sim_market.CircularEconomyRebuyPrice)
+		monitor.setup_monitoring(agents=[(agent.FixedPriceLEAgent, [])], marketplace=sim_market.CircularEconomyRebuyPriceMonopolyScenario)
 	assert 'the agent and marketplace must be of the same economy type (Linear/Circular)' in str(assertion_message.value)
 	with pytest.raises(AssertionError) as assertion_message:
 		monitor.setup_monitoring(agents=[(agent.FixedPriceCEAgent, [])], marketplace=sim_market.ClassicScenario)
@@ -126,16 +126,16 @@ def test_mismatched_scenarios():
 
 def test_RL_agents_need_modelfile():
 	with pytest.raises(AssertionError) as assertion_message:
-		monitor.setup_monitoring(marketplace=sim_market.CircularEconomy, agents=[(agent.QLearningCEAgent, [])])
+		monitor.setup_monitoring(marketplace=sim_market.CircularEconomyMonopolyScenario, agents=[(agent.QLearningCEAgent, [])])
 	assert 'the first argument for an reinforcement lerner needs to be a modelfile, the second one is an optional name (str)' in str(assertion_message.value)
 	with pytest.raises(AssertionError) as assertion_message:
-		monitor.setup_monitoring(marketplace=sim_market.CircularEconomy, agents=[(agent.QLearningCEAgent, ['modelfile.dat', 35])])
+		monitor.setup_monitoring(marketplace=sim_market.CircularEconomyMonopolyScenario, agents=[(agent.QLearningCEAgent, ['modelfile.dat', 35])])
 	assert 'the first argument for an reinforcement lerner needs to be a modelfile, the second one is an optional name (str)' in str(assertion_message.value)
 	with pytest.raises(AssertionError) as assertion_message:
-		monitor.setup_monitoring(marketplace=sim_market.CircularEconomy, agents=[(agent.QLearningCEAgent, [25])])
+		monitor.setup_monitoring(marketplace=sim_market.CircularEconomyMonopolyScenario, agents=[(agent.QLearningCEAgent, [25])])
 	assert 'the modelfile must be of type str' in str(assertion_message.value)
 	with pytest.raises(AssertionError) as assertion_message:
-		monitor.setup_monitoring(marketplace=sim_market.CircularEconomy, agents=[(agent.QLearningCEAgent, ['mymodel.dat'])])
+		monitor.setup_monitoring(marketplace=sim_market.CircularEconomyMonopolyScenario, agents=[(agent.QLearningCEAgent, ['mymodel.dat'])])
 	assert 'the specified modelfile does not exist' in str(assertion_message.value)
 
 
@@ -151,12 +151,12 @@ def test_get_modelfile_path():
 # Test once for a Linear, Circular and RebuyPrice Economy
 def test_get_action_space():
 	monitor.setup_monitoring(agents=[(agent.QLearningLEAgent, ['ClassicScenario_QLearningLEAgent.dat'])], marketplace=sim_market.ClassicScenario)
-	monitor.setup_monitoring(agents=[(agent.QLearningCEAgent, ['CircularEconomy_QLearningCEAgent.dat'])], marketplace=sim_market.CircularEconomy)
-	monitor.setup_monitoring(agents=[(agent.QLearningCERebuyAgent, ['CircularEconomyRebuyPrice_QLearningCERebuyAgent.dat'])], marketplace=sim_market.CircularEconomyRebuyPrice)
+	monitor.setup_monitoring(agents=[(agent.QLearningCEAgent, ['CircularEconomy_QLearningCEAgent.dat'])], marketplace=sim_market.CircularEconomyMonopolyScenario)
+	monitor.setup_monitoring(agents=[(agent.QLearningCERebuyAgent, ['CircularEconomyRebuyPrice_QLearningCERebuyAgent.dat'])], marketplace=sim_market.CircularEconomyRebuyPriceMonopolyScenario)
 
 
 def test_setting_market_not_agents():
-	monitor.setup_monitoring(marketplace=sim_market.CircularEconomy)
+	monitor.setup_monitoring(marketplace=sim_market.CircularEconomyMonopolyScenario)
 
 
 def test_setup_with_invalid_agents():
