@@ -175,7 +175,7 @@ class SimMarket(gym.Env, ABC):
 		return np.array([])
 
 	def reset_vendor_specific_state(self) -> None:
-		None
+		return None
 
 	@abstractmethod
 	def setup_action_observation_space(self) -> None:  # pragma: no cover
@@ -189,7 +189,7 @@ class SimMarket(gym.Env, ABC):
 		pass
 
 	def choose_owner(self):
-		None
+		return None
 
 	def get_offer_length_per_vendor(self) -> int:
 		"""This methods generates the number of fields each vendor takes in the offer array
@@ -420,8 +420,8 @@ class CircularEconomy(SimMarket):
 		"""
 		self.output_dict['state/in_circulation'] = self.in_circulation
 		self.ensure_output_dict_has('state/in_storage', [self.vendor_specific_state[vendor][0] for vendor in range(self.get_number_of_vendors())])
-		self.ensure_output_dict_has('actions/price_refurbished', [self.vendor_actions[i][0] for i in range(self.get_number_of_vendors())])
-		self.ensure_output_dict_has('actions/price_new', [self.vendor_actions[i][1] for i in range(self.get_number_of_vendors())])
+		self.ensure_output_dict_has('actions/price_refurbished', [self.vendor_actions[vendor][0] for vendor in range(self.get_number_of_vendors())])
+		self.ensure_output_dict_has('actions/price_new', [self.vendor_actions[vendor][1] for vendor in range(self.get_number_of_vendors())])
 
 		self.ensure_output_dict_has('owner/throw_away')
 		self.ensure_output_dict_has('owner/rebuys', [0] * self.get_number_of_vendors())
@@ -462,7 +462,7 @@ class CircularEconomyRebuyPrice(CircularEconomy):
 		"""Extends the the output_dict initialized by the of the superclass with entries concerning the rebuy price and cost.
 		"""
 		super().initialize_output_dict()
-		self.ensure_output_dict_has('actions/price_rebuy', [self.vendor_actions[i][2] for i in range(self.get_number_of_vendors())])
+		self.ensure_output_dict_has('actions/price_rebuy', [self.vendor_actions[vendor][2] for vendor in range(self.get_number_of_vendors())])
 
 		self.ensure_output_dict_has('profits/rebuy_cost', [0] * self.get_number_of_vendors())
 
