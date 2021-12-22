@@ -4,7 +4,7 @@ import agent
 import sim_market as sim
 import training
 
-economy = sim.CircularEconomyRebuyPrice()
+economy = sim.CircularEconomyRebuyPriceOneCompetitor()
 n_actions = 1
 for id in range(0, len(economy.action_space)):
 	n_actions *= economy.action_space[id].n

@@ -16,9 +16,9 @@ def teardown_module(module):
 			shutil.rmtree('./runs/' + f)
 
 
-test_scenarios = [(sim.ClassicScenario(), agent.FixedPriceLEAgent()), (sim.MultiCompetitorScenario(), agent.FixedPriceLEAgent()), (sim.CircularEconomy(), agent.FixedPriceCEAgent()), (sim.CircularEconomy(), agent.RuleBasedCEAgent()), (sim.CircularEconomyRebuyPrice(), agent.FixedPriceCERebuyAgent()), (sim.CircularEconomyRebuyPrice(), agent.RuleBasedCERebuyAgent())]
+test_cases = [(sim.ClassicScenario(), agent.FixedPriceLEAgent()), (sim.MultiCompetitorScenario(), agent.FixedPriceLEAgent()), (sim.CircularEconomyMonopolyScenario(), agent.FixedPriceCEAgent()), (sim.CircularEconomyMonopolyScenario(), agent.RuleBasedCEAgent()), (sim.CircularEconomyRebuyPriceMonopolyScenario(), agent.FixedPriceCERebuyAgent()), (sim.CircularEconomyRebuyPriceMonopolyScenario(), agent.RuleBasedCERebuyAgent()), (sim.CircularEconomyRebuyPriceOneCompetitor(), agent.FixedPriceCERebuyAgent()), (sim.CircularEconomyRebuyPriceOneCompetitor(), agent.RuleBasedCERebuyAgent())]
 
 
-@pytest.mark.parametrize('environment, agent', test_scenarios)
+@pytest.mark.parametrize('environment, agent', test_cases)
 def test_full_episode(environment, agent):
-	assert exampleprinter.print_example(environment, agent, log_dir_prepend='test_') >= -5000
+	assert exampleprinter.run_example(environment, agent, log_dir_prepend='test_') >= -5000

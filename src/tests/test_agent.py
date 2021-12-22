@@ -19,9 +19,6 @@ def test_abstract_agent_classes():
 		agent.HumanPlayer()
 	with pytest.raises(TypeError):
 		agent.FixedPriceAgent()
-	# The QLearningAgent should be an abstract class, but since all of its child classes use the same methods it is not actually abstract
-	# with pytest.raises(TypeError):
-	# 	agent.QLearningAgent(10, 10)
 
 
 def test_not_abstract_agent_classes():
@@ -33,44 +30,21 @@ def test_not_abstract_agent_classes():
 	agent.FixedPriceLEAgent()
 	agent.RuleBasedCEAgent()
 	agent.RuleBasedCERebuyAgent()
+	agent.QLearningAgent(10, 10)
 	agent.QLearningCEAgent(10, 10)
 	agent.QLearningCERebuyAgent(10, 10)
 
 
 test_state = [50, 60]
+fixed_price_testcases = [(agent.FixedPriceLEAgent(), ut.PRODUCTION_PRICE + 3), (agent.FixedPriceLEAgent(7), 7), (agent.FixedPriceCEAgent(), (2, 4)), (agent.FixedPriceCEAgent((3, 5)), (3, 5)), (agent.FixedPriceCERebuyAgent(), (3, 6, 2)), (agent.FixedPriceCERebuyAgent((4, 7, 3)), (4, 7, 3))]
 
 
-def test_fixed_price_LE_agent_returns_default_fixed_price():
-	test_agent = agent.FixedPriceLEAgent()
-	assert ut.PRODUCTION_PRICE + 3 == test_agent.policy(test_state)
+@pytest.mark.parametrize('test_agent, expected_result', fixed_price_testcases)
+def test_agent_observation_policy_pairs(test_agent, expected_result):
+	assert expected_result == test_agent.policy(test_state)
 
 
-def test_fixed_price_LE_agent_returns_fixed_price():
-	test_agent = agent.FixedPriceLEAgent(7)
-	assert 7 == test_agent.policy(test_state)
-
-
-def test_fixed_price_CE_agent_returns_default_fixed_price():
-	test_agent = agent.FixedPriceCEAgent()
-	assert (2, 4) == test_agent.policy(test_state)
-
-
-def test_fixed_price_CE_agent_returns_fixed_price():
-	test_agent = agent.FixedPriceCEAgent((3, 5))
-	assert (3, 5) == test_agent.policy(test_state)
-
-
-def test_fixed_price_CERebuy_agent_returns_default_fixed_price():
-	test_agent = agent.FixedPriceCERebuyAgent()
-	assert (3, 6, 2) == test_agent.policy(test_state)
-
-
-def test_fixed_price_CERebuy_agent_returns_fixed_price():
-	test_agent = agent.FixedPriceCERebuyAgent((4, 7, 3))
-	assert (4, 7, 3) == test_agent.policy(test_state)
-
-
-array_storage_evaluation = [([8, 50], (6, 8)), ([17, 50], (5, 7)), ([27, 50], (4, 6)), ([80, 50], (2, 9))]
+array_storage_evaluation = [([50, 5], (6, 8)), ([50, 9], (5, 7)), ([50, 12], (4, 6)), ([50, 15], (2, 9))]
 
 
 @pytest.mark.parametrize('state, expected_prices', array_storage_evaluation)
@@ -83,7 +57,7 @@ def test_storage_evaluation(state, expected_prices):
 		assert expected_prices == test_agent.policy(state)
 
 
-array_testing_rebuy = [([8, 50], (6, 8, 5)), ([17, 50], (5, 7, 3)), ([27, 50], (4, 6, 2)), ([80, 50], (2, 9, 0))]
+array_testing_rebuy = [([50, 5], (6, 8, 5)), ([50, 9], (5, 7, 3)), ([50, 12], (4, 6, 2)), ([50, 15], (2, 9, 0))]
 
 
 @pytest.mark.parametrize('state, expected_prices', array_testing_rebuy)
