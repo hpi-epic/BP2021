@@ -39,9 +39,9 @@ test_state = [50, 60]
 fixed_price_testcases = [(agent.FixedPriceLEAgent(), ut.PRODUCTION_PRICE + 3), (agent.FixedPriceLEAgent(7), 7), (agent.FixedPriceCEAgent(), (2, 4)), (agent.FixedPriceCEAgent((3, 5)), (3, 5)), (agent.FixedPriceCERebuyAgent(), (3, 6, 2)), (agent.FixedPriceCERebuyAgent((4, 7, 3)), (4, 7, 3))]
 
 
-@pytest.mark.parametrize('agent_under_test, expected_result', fixed_price_testcases)
-def test_agent_observation_policy_pairs(agent_under_test, expected_result):
-	assert expected_result == agent_under_test.policy(test_state)
+@pytest.mark.parametrize('test_agent, expected_result', fixed_price_testcases)
+def test_agent_observation_policy_pairs(test_agent, expected_result):
+	assert expected_result == test_agent.policy(test_state)
 
 
 array_storage_evaluation = [([50, 5], (6, 8)), ([50, 9], (5, 7)), ([50, 12], (4, 6)), ([50, 15], (2, 9))]
