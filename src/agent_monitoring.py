@@ -25,7 +25,7 @@ class Monitor():
 		self.enable_live_draw = True
 		self.episodes = 500
 		self.plot_interval = 50
-		self.marketplace = sim_market.CircularEconomy()
+		self.marketplace = sim_market.CircularEconomyMonopolyScenario()
 		self.agents = [vendors.QLearningCEAgent(self.marketplace.observation_space.shape[0], self.get_action_space(), load_path=self.get_modelfile_path('CircularEconomy_QLearningCEAgent.dat'))]
 		self.agent_colors = ['#0000ff']
 		self.subfolder_name = 'plots_' + time.strftime('%Y%m%d-%H%M%S')

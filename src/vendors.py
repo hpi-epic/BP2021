@@ -33,7 +33,7 @@ class Agent(ABC):
 		return class_name(*args)
 
 	@abstractmethod
-	def policy(self, state, epsilon=0):
+	def policy(self, observation, epsilon=0):
 		raise NotImplementedError
 
 
@@ -55,7 +55,7 @@ class ReinforcementLearningAgent(Agent, ABC):
 
 class HumanPlayer(RuleBasedAgent, ABC):
 	@abstractmethod
-	def policy(self, state, *_) -> int:
+	def policy(self, observation, *_) -> int:
 		raise NotImplementedError
 
 
@@ -64,8 +64,8 @@ class HumanPlayerLE(LinearAgent, HumanPlayer):
 		self.name = name
 		print('Welcome to this funny game! Now, you are the one playing the game!')
 
-	def policy(self, state, *_) -> int:
-		print('The state is', state, 'and you have to decide what to do! Please enter your actions, seperated by spaces!')
+	def policy(self, observation, *_) -> int:
+		print('The observation is', observation, 'and you have to decide what to do! Please enter your actions, seperated by spaces!')
 		return input()
 
 
@@ -74,16 +74,16 @@ class HumanPlayerCE(CircularAgent, HumanPlayer):
 		self.name = name
 		print('Welcome to this funny game! Now, you are the one playing the game!')
 
-	def policy(self, state, *_) -> int:
-		raw_input_string = super().policy(state)
+	def policy(self, observation, *_) -> int:
+		raw_input_string = super().policy(observation)
 		assert raw_input_string.count(' ') == 1, 'Please enter two numbers seperated by spaces!'
 		price_old, price_new = raw_input_string.split(' ')
 		return (int(price_old), int(price_new))
 
 
 class HumanPlayerCERebuy(HumanPlayerCE):
-	def policy(self, state, *_) -> int:
-		raw_input_string = super().policy(state)
+	def policy(self, observation, *_) -> int:
+		raw_input_string = super().policy(observation)
 		assert raw_input_string.count(' ') == 2, 'Please enter three numbers seperated by spaces!'
 		price_old, price_new, rebuy_price = raw_input_string.split(' ')
 		return (int(price_old), int(price_new), int(rebuy_price))
@@ -130,34 +130,29 @@ class RuleBasedCEAgent(RuleBasedAgent, CircularAgent):
 	def __init__(self, name='rule_based_ce'):
 		self.name = name
 
-	def policy(self, state, epsilon=0) -> int:
-		# state[0]: products in my storage
-		# state[1]: products in circulation
-		return self.storage_evaluation(state)
-
 	def return_prices(self, price_old, price_new, rebuy_price):
 		return (price_old, price_new)
 
-	def storage_evaluation(self, state) -> int:
+	def policy(self, observation, epsilon=0) -> int:
 		# this policy sets the prices according to the amount of available storage
-		products_in_storage = state[0]
+		products_in_storage = observation[1]
 		price_old = 0
 		price_new = ut.PRODUCTION_PRICE
 		rebuy_price = 0
-		if products_in_storage < ut.MAX_STORAGE / 10:
-			# less than 1/4 of storage filled
+		if products_in_storage < ut.MAX_STORAGE / 15:
+			# fill up the storage immediately
 			price_old = int(ut.MAX_PRICE * 6 / 10)
 			price_new += int(ut.MAX_PRICE * 6 / 10)
 			rebuy_price = price_old - 1
 
-		elif products_in_storage < ut.MAX_STORAGE / 5:
-			# less than 1/2 of storage filled
+		elif products_in_storage < ut.MAX_STORAGE / 10:
+			# fill up the storage
 			price_old = int(ut.MAX_PRICE * 5 / 10)
 			price_new += int(ut.MAX_PRICE * 5 / 10)
 			rebuy_price = price_old - 2
 
-		elif products_in_storage < ut.MAX_STORAGE / 3:
-			# less than 3/4 but more than 1/2 of storage filled
+		elif products_in_storage < ut.MAX_STORAGE / 8:
+			# storage content is ok
 			price_old = int(ut.MAX_PRICE * 4 / 10)
 			price_new += int(ut.MAX_PRICE * 4 / 10)
 			rebuy_price = int(price_old / 2)
@@ -171,7 +166,7 @@ class RuleBasedCEAgent(RuleBasedAgent, CircularAgent):
 		assert price_old <= price_new
 		return self.return_prices(price_old, price_new, rebuy_price)
 
-	def greedy_policy(self, state) -> int:
+	def greedy_policy(self, observation) -> int:
 		# this policy tries to figure out the best prices for the next round by simulating customers
 		# and trying each used_price, new_price combination
 		# Warning, this strategy is not very good or optimal
@@ -184,12 +179,12 @@ class RuleBasedCEAgent(RuleBasedAgent, CircularAgent):
 		max_price_u = 0
 		for p_u in range(1, ut.MAX_PRICE):
 			for p_n in range(1, ut.MAX_PRICE):
-				storage = state[0]
+				storage = observation[0]
 				exp_sales_new = 0
 				exp_sales_old = 0
 				exp_return_prod = 0
 				for customer in customers:
-					c_buy, c_return = customer.buy_object([p_u, p_n, state[0], state[1]])
+					c_buy, c_return = customer.buy_object([p_u, p_n, observation[0], observation[1]])
 					# c_buy: decision, whether the customer buys 1 (old product) or two (new product)
 					# c_return: decision, whether the customer returns a product
 					if c_return is not None:
@@ -215,7 +210,7 @@ class RuleBasedCERebuyAgent(RuleBasedCEAgent):
 
 
 class QLearningAgent(ReinforcementLearningAgent, ABC):
-	Experience = collections.namedtuple('Experience', field_names=['state', 'action', 'reward', 'done', 'new_state'])
+	Experience = collections.namedtuple('Experience', field_names=['observation', 'action', 'reward', 'done', 'new_observation'])
 
 	# If you enter load_path, the model will be loaded. For example, if you want to use a pretrained net or test a given agent.
 	# If you set an optim, this means you want training.
@@ -238,18 +233,18 @@ class QLearningAgent(ReinforcementLearningAgent, ABC):
 			self.buffer = ExperienceBuffer(ut_rl.REPLAY_SIZE)
 
 	@torch.no_grad()
-	def policy(self, state, epsilon=0):
+	def policy(self, observation, epsilon=0):
 		assert self.buffer_for_feedback is None or self.optimizer is None
 		if np.random.random() < epsilon:
 			action = random.randint(0, self.n_actions - 1)
 		else:
-			action = int(torch.argmax(self.net(torch.Tensor(state).to(self.device))))
+			action = int(torch.argmax(self.net(torch.Tensor(observation).to(self.device))))
 		if self.optimizer is not None:
-			self.buffer_for_feedback = (state, action)
+			self.buffer_for_feedback = (observation, action)
 		return action
 
-	def set_feedback(self, reward, is_done, new_state):
-		exp = self.Experience(*self.buffer_for_feedback, reward, is_done, new_state)
+	def set_feedback(self, reward, is_done, new_observation):
+		exp = self.Experience(*self.buffer_for_feedback, reward, is_done, new_observation)
 		self.buffer.append(exp)
 		self.buffer_for_feedback = None
 
@@ -294,14 +289,14 @@ class QLearningLEAgent(QLearningAgent, LinearAgent):
 
 
 class QLearningCEAgent(QLearningAgent, CircularAgent):
-	def policy(self, state, epsilon=0) -> int:
-		step = super().policy(state, epsilon)
+	def policy(self, observation, epsilon=0) -> int:
+		step = super().policy(observation, epsilon)
 		return (int(step % 10), int(step / 10))
 
 
 class QLearningCERebuyAgent(QLearningAgent, CircularAgent):
-	def policy(self, state, epsilon=0) -> int:
-		step = super().policy(state, epsilon)
+	def policy(self, observation, epsilon=0) -> int:
+		step = super().policy(observation, epsilon)
 		return (int(step / 100), int(step / 10 % 10), int(step % 10))
 
 
