@@ -4,8 +4,8 @@ import shutil
 
 import pytest
 
-import agent
 import sim_market as sim
+import vendors
 
 from .context import exampleprinter
 
@@ -17,7 +17,7 @@ def teardown_module(module):
 			shutil.rmtree('./runs/' + f)
 
 
-test_scenarios = [(sim.ClassicScenario(), agent.FixedPriceLEAgent()), (sim.MultiCompetitorScenario(), agent.FixedPriceLEAgent()), (sim.CircularEconomy(), agent.FixedPriceCEAgent()), (sim.CircularEconomy(), agent.RuleBasedCEAgent()), (sim.CircularEconomyRebuyPrice(), agent.FixedPriceCERebuyAgent()), (sim.CircularEconomyRebuyPrice(), agent.RuleBasedCERebuyAgent())]
+test_scenarios = [(sim.ClassicScenario(), vendors.FixedPriceLEAgent()), (sim.MultiCompetitorScenario(), vendors.FixedPriceLEAgent()), (sim.CircularEconomy(), vendors.FixedPriceCEAgent()), (sim.CircularEconomy(), vendors.RuleBasedCEAgent()), (sim.CircularEconomyRebuyPrice(), vendors.FixedPriceCERebuyAgent()), (sim.CircularEconomyRebuyPrice(), vendors.RuleBasedCERebuyAgent())]
 
 
 @pytest.mark.parametrize('environment, agent', test_scenarios)

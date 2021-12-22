@@ -6,10 +6,10 @@ from typing import Tuple
 import gym
 import numpy as np
 
-import agent
 import customer
 import owner
 import utils_sim_market as ut
+import vendors
 from customer import Customer
 from owner import Owner
 
@@ -257,16 +257,16 @@ class LinearEconomy(SimMarket, ABC):
 class ClassicScenario(LinearEconomy):
 
 	def get_competitor_list(self) -> list:
-		return [agent.CompetitorLinearRatio1()]
+		return [vendors.CompetitorLinearRatio1()]
 
 
 class MultiCompetitorScenario(LinearEconomy):
 
 	def get_competitor_list(self) -> list:
 		return [
-			agent.CompetitorLinearRatio1(),
-			agent.CompetitorRandom(),
-			agent.CompetitorJust2Players(),
+			vendors.CompetitorLinearRatio1(),
+			vendors.CompetitorRandom(),
+			vendors.CompetitorJust2Players(),
 		]
 
 

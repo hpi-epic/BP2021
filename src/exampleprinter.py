@@ -6,12 +6,12 @@ import time
 import torch
 from torch.utils.tensorboard import SummaryWriter
 
-import agent
 import sim_market
 import utils_sim_market as ut
+import vendors
 
 
-def print_example(environment=sim_market.CircularEconomy(), agent=agent.RuleBasedCEAgent(), log_dir_prepend='') -> int:
+def print_example(environment=sim_market.CircularEconomy(), agent=vendors.RuleBasedCEAgent(), log_dir_prepend='') -> int:
 	"""
 	Run a specified marketplace with a (pre-trained, if RL) agent and record various statistics using TensorBoard.
 
@@ -47,7 +47,7 @@ def print_example(environment=sim_market.CircularEconomy(), agent=agent.RuleBase
 
 
 def main() -> None:  # pragma: no cover
-	used_agent = agent.RuleBasedCERebuyAgent()
+	used_agent = vendors.RuleBasedCERebuyAgent()
 	environment = sim_market.CircularEconomyRebuyPrice()
 	print_example(environment, used_agent)
 

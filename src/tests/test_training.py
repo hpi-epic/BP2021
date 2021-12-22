@@ -7,9 +7,10 @@ from unittest.mock import mock_open, patch
 import pytest
 import torch
 
-from .context import agent, sim_market, training
+from .context import sim_market, training
 from .context import utils_rl as ut_rl
 from .context import utils_tests as ut_t
+from .context import vendors
 
 
 # teardown after each test
@@ -21,10 +22,10 @@ def teardown_module(module):
 
 
 test_scenarios = [
-	(sim_market.ClassicScenario(), agent.QLearningAgent(n_observation=sim_market.ClassicScenario().observation_space.shape[0], n_actions=10, optim=torch.optim.Adam)),
-	(sim_market.MultiCompetitorScenario(), agent.QLearningAgent(n_observation=sim_market.MultiCompetitorScenario().observation_space.shape[0], n_actions=10, optim=torch.optim.Adam)),
-	(sim_market.CircularEconomy(), agent.QLearningCEAgent(sim_market.CircularEconomy().observation_space.shape[0], n_actions=100, optim=torch.optim.Adam)),
-	(sim_market.CircularEconomyRebuyPrice(), agent.QLearningCERebuyAgent(sim_market.CircularEconomyRebuyPrice().observation_space.shape[0], n_actions=100, optim=torch.optim.Adam))]
+	(sim_market.ClassicScenario(), vendors.QLearningAgent(n_observation=sim_market.ClassicScenario().observation_space.shape[0], n_actions=10, optim=torch.optim.Adam)),
+	(sim_market.MultiCompetitorScenario(), vendors.QLearningAgent(n_observation=sim_market.MultiCompetitorScenario().observation_space.shape[0], n_actions=10, optim=torch.optim.Adam)),
+	(sim_market.CircularEconomy(), vendors.QLearningCEAgent(sim_market.CircularEconomy().observation_space.shape[0], n_actions=100, optim=torch.optim.Adam)),
+	(sim_market.CircularEconomyRebuyPrice(), vendors.QLearningCERebuyAgent(sim_market.CircularEconomyRebuyPrice().observation_space.shape[0], n_actions=100, optim=torch.optim.Adam))]
 
 
 @pytest.mark.parametrize('environment, agent', test_scenarios)

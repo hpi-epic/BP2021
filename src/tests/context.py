@@ -5,9 +5,7 @@ import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 
-import agent
 import agent_monitoring
-import competitor
 import customer
 import exampleprinter
 import owner
@@ -16,14 +14,14 @@ import tests.utils_tests as utils_tests
 import training
 import utils_rl
 import utils_sim_market
-from agent import *
+import vendors
 from agent_monitoring import *
-from competitor import *
 from customer import *
 from owner import *
 from sim_market import *
 from utils_rl import *
 from utils_sim_market import *
+from vendors import *
 
 # import any classes needed in tests here and call them as such:
 # from .context import customer

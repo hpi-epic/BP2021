@@ -7,70 +7,70 @@ from numpy import random
 from .context import CompetitorJust2Players as C2Players
 from .context import CompetitorLinearRatio1 as CLinear1
 from .context import CompetitorRandom as CRandom
-from .context import agent
 from .context import utils_sim_market as ut
 from .context import utils_tests as ut_t
+from .context import vendors
 
 
 def test_abstract_agent_classes():
 	with pytest.raises(TypeError):
-		agent.Agent()
+		vendors.Agent()
 	with pytest.raises(TypeError):
-		agent.CircularAgent()
+		vendors.CircularAgent()
 	with pytest.raises(TypeError):
-		agent.LinearAgent()
+		vendors.LinearAgent()
 	with pytest.raises(TypeError):
-		agent.HumanPlayer()
+		vendors.HumanPlayer()
 	with pytest.raises(TypeError):
-		agent.FixedPriceAgent()
+		vendors.FixedPriceAgent()
 	# The QLearningAgent should be an abstract class, but since all of its child classes use the same methods it is not actually abstract
 	# with pytest.raises(TypeError):
-	# 	agent.QLearningAgent(10, 10)
+	# 	vendors.QLearningAgent(10, 10)
 
 
 def test_not_abstract_agent_classes():
-	agent.HumanPlayerLE()
-	agent.HumanPlayerCE()
-	agent.HumanPlayerCERebuy()
-	agent.FixedPriceCEAgent()
-	agent.FixedPriceCERebuyAgent()
-	agent.FixedPriceLEAgent()
-	agent.RuleBasedCEAgent()
-	agent.RuleBasedCERebuyAgent()
-	agent.QLearningCEAgent(10, 10)
-	agent.QLearningCERebuyAgent(10, 10)
+	vendors.HumanPlayerLE()
+	vendors.HumanPlayerCE()
+	vendors.HumanPlayerCERebuy()
+	vendors.FixedPriceCEAgent()
+	vendors.FixedPriceCERebuyAgent()
+	vendors.FixedPriceLEAgent()
+	vendors.RuleBasedCEAgent()
+	vendors.RuleBasedCERebuyAgent()
+	vendors.QLearningCEAgent(10, 10)
+	vendors.QLearningCERebuyAgent(10, 10)
 
 
 test_state = [50, 60]
 
 
 def test_fixed_price_LE_agent_returns_default_fixed_price():
-	test_agent = agent.FixedPriceLEAgent()
+	test_agent = vendors.FixedPriceLEAgent()
 	assert ut.PRODUCTION_PRICE + 3 == test_agent.policy(test_state)
 
 
 def test_fixed_price_LE_agent_returns_fixed_price():
-	test_agent = agent.FixedPriceLEAgent(7)
+	test_agent = vendors.FixedPriceLEAgent(7)
 	assert 7 == test_agent.policy(test_state)
 
 
 def test_fixed_price_CE_agent_returns_default_fixed_price():
-	test_agent = agent.FixedPriceCEAgent()
+	test_agent = vendors.FixedPriceCEAgent()
 	assert (2, 4) == test_agent.policy(test_state)
 
 
 def test_fixed_price_CE_agent_returns_fixed_price():
-	test_agent = agent.FixedPriceCEAgent((3, 5))
+	test_agent = vendors.FixedPriceCEAgent((3, 5))
 	assert (3, 5) == test_agent.policy(test_state)
 
 
 def test_fixed_price_CERebuy_agent_returns_default_fixed_price():
-	test_agent = agent.FixedPriceCERebuyAgent()
+	test_agent = vendors.FixedPriceCERebuyAgent()
 	assert (3, 6, 2) == test_agent.policy(test_state)
 
 
 def test_fixed_price_CERebuy_agent_returns_fixed_price():
-	test_agent = agent.FixedPriceCERebuyAgent((4, 7, 3))
+	test_agent = vendors.FixedPriceCERebuyAgent((4, 7, 3))
 	assert (4, 7, 3) == test_agent.policy(test_state)
 
 
@@ -83,7 +83,7 @@ def test_storage_evaluation(state, expected_prices):
 	with patch('builtins.open', mock_open(read_data=json)) as mock_file:
 		ut_t.check_mock_file_sim_market(mock_file, json)
 		reload(ut)
-		test_agent = agent.RuleBasedCEAgent()
+		test_agent = vendors.RuleBasedCEAgent()
 		assert expected_prices == test_agent.policy(state)
 
 
@@ -96,7 +96,7 @@ def test_storage_evaluation_with_rebuy_price(state, expected_prices):
 	with patch('builtins.open', mock_open(read_data=json)) as mock_file:
 		ut_t.check_mock_file_sim_market(mock_file, json)
 		reload(ut)
-		test_agent = agent.RuleBasedCERebuyAgent()
+		test_agent = vendors.RuleBasedCERebuyAgent()
 		assert expected_prices == test_agent.policy(state)
 
 
@@ -105,7 +105,7 @@ def test_prices_are_not_higher_than_allowed():
 	with patch('builtins.open', mock_open(read_data=json)) as mock_file:
 		ut_t.check_mock_file_sim_market(mock_file, json)
 		reload(ut)
-		test_agent = agent.RuleBasedCEAgent()
+		test_agent = vendors.RuleBasedCEAgent()
 		assert (9, 9) >= test_agent.policy(test_state)
 
 

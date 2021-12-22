@@ -5,8 +5,8 @@ import gym
 import matplotlib.pyplot as plt
 import numpy as np
 
-import agent
 import sim_market
+import vendors
 
 # import utils_sim_market as ut
 
@@ -26,7 +26,7 @@ class Monitor():
 		self.episodes = 500
 		self.plot_interval = 50
 		self.marketplace = sim_market.CircularEconomy()
-		self.agents = [agent.QLearningCEAgent(self.marketplace.observation_space.shape[0], self.get_action_space(), load_path=self.get_modelfile_path('CircularEconomy_QLearningCEAgent.dat'))]
+		self.agents = [vendors.QLearningCEAgent(self.marketplace.observation_space.shape[0], self.get_action_space(), load_path=self.get_modelfile_path('CircularEconomy_QLearningCEAgent.dat'))]
 		self.agent_colors = ['#0000ff']
 		self.subfolder_name = 'plots_' + time.strftime('%Y%m%d-%H%M%S')
 		self.folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + os.sep + 'monitoring' + os.sep + self.subfolder_name
@@ -129,18 +129,18 @@ class Monitor():
 		# All agents must be of the same type
 		assert all(isinstance(agent_tuple, tuple) for agent_tuple in agents), 'agents must be a list of tuples'
 		assert all(len(agent_tuple) == 2 for agent_tuple in agents), 'the list entries in agents must have size 2 ([agent_class, arguments])'
-		assert all(issubclass(agent_tuple[0], agent.Agent) for agent_tuple in agents), 'the first entry in each agent-tuple must be an agent class in agent.py'
+		assert all(issubclass(agent_tuple[0], vendors.Agent) for agent_tuple in agents), 'the first entry in each agent-tuple must be an agent class in vendors.py'
 		assert all(isinstance(agent_tuple[1], list) for agent_tuple in agents), 'the second entry in each agent-tuple must be a list of arguments'
-		assert all(issubclass(agent_tuple[0], agent.CircularAgent) == issubclass(agents[0][0], agent.CircularAgent) for agent_tuple in agents), 'the agents must all be of the same type (Linear/Circular)'
-		assert issubclass(agents[0][0], agent.CircularAgent) == isinstance(self.marketplace, sim_market.CircularEconomy), 'the agent and marketplace must be of the same economy type (Linear/Circular)'
+		assert all(issubclass(agent_tuple[0], vendors.CircularAgent) == issubclass(agents[0][0], vendors.CircularAgent) for agent_tuple in agents), 'the agents must all be of the same type (Linear/Circular)'
+		assert issubclass(agents[0][0], vendors.CircularAgent) == isinstance(self.marketplace, sim_market.CircularEconomy), 'the agent and marketplace must be of the same economy type (Linear/Circular)'
 
 		self.agents = []
 
 		# Instantiate all agents. If they are not rule-based, use the marketplace parameters accordingly
 		for current_agent in agents:
-			if issubclass(current_agent[0], agent.RuleBasedAgent):
-				self.agents.append(agent.Agent.custom_init(agent.Agent, current_agent[0], current_agent[1]))
-			elif not issubclass(current_agent[0], agent.RuleBasedAgent):
+			if issubclass(current_agent[0], vendors.RuleBasedAgent):
+				self.agents.append(vendors.Agent.custom_init(vendors.Agent, current_agent[0], current_agent[1]))
+			elif not issubclass(current_agent[0], vendors.RuleBasedAgent):
 				try:
 					assert len(current_agent[1]) == 1 or len(current_agent[1]) == 2 and isinstance(current_agent[1][1], str), 'the first argument for an reinforcement lerner needs to be a modelfile, the second one is an optional name (str)'
 					assert isinstance(current_agent[1][0], str), 'the modelfile must be of type str'
@@ -399,7 +399,7 @@ def main(monitor=Monitor()) -> None:
 	Args:
 		monitor (Monitor instance, optional): The monitor to run the session on. Defaults to a default Monitor() instance.
 	"""
-	# monitor.setup_monitoring(enable_live_draw=False, agents=[(agent.QLearningCEAgent, ['CircularEconomy_QLearningCEAgent.dat']), (agent.FixedPriceCEAgent, [(4,6)])])
+	# monitor.setup_monitoring(enable_live_draw=False, agents=[(vendors.QLearningCEAgent, ['CircularEconomy_QLearningCEAgent.dat']), (vendors.FixedPriceCEAgent, [(4,6)])])
 	print('Live Drawing enabled:', monitor.enable_live_draw)
 	print('Episodes:', monitor.episodes)
 	print(f'Plot interval: {monitor.plot_interval}')

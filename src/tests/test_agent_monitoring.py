@@ -6,10 +6,11 @@ import numpy as np
 import pytest
 
 # from .context import utils_sim_market as ut
-from .context import Monitor, agent
+from .context import Monitor
 from .context import agent_monitoring as am
 from .context import sim_market
 from .context import utils_tests as ut_t
+from .context import vendors
 
 # from importlib import reload
 # from unittest.mock import mock_open, patch
@@ -39,7 +40,7 @@ def test_init_default_values():
 	assert 500 == test_monitor.episodes
 	assert 50 == test_monitor.plot_interval
 	assert isinstance(test_monitor.marketplace, sim_market.CircularEconomy)
-	assert isinstance(test_monitor.agents[0], agent.QLearningCEAgent)
+	assert isinstance(test_monitor.agents[0], vendors.QLearningCEAgent)
 	assert 1 == len(test_monitor.agents)
 	assert ['#0000ff'] == test_monitor.agent_colors
 	assert test_monitor.subfolder_name.startswith('plots_')
@@ -47,14 +48,14 @@ def test_init_default_values():
 
 
 def test_correct_setup_monitoring():
-	monitor.setup_monitoring(enable_live_draw=False, episodes=10, plot_interval=2, marketplace=sim_market.CircularEconomy, agents=[(agent.HumanPlayerCERebuy, ['reptiloid']), (agent.QLearningCERebuyAgent, ['CircularEconomy_QLearningCEAgent.dat', 'q_learner'])], subfolder_name='subfoldername')
+	monitor.setup_monitoring(enable_live_draw=False, episodes=10, plot_interval=2, marketplace=sim_market.CircularEconomy, agents=[(vendors.HumanPlayerCERebuy, ['reptiloid']), (vendors.QLearningCERebuyAgent, ['CircularEconomy_QLearningCEAgent.dat', 'q_learner'])], subfolder_name='subfoldername')
 	assert monitor.enable_live_draw is False
 	assert 10 == monitor.episodes
 	assert 2 == monitor.plot_interval
 	assert isinstance(monitor.marketplace, sim_market.CircularEconomy)
 	assert 2 == len(monitor.agents)
-	assert isinstance(monitor.agents[0], agent.HumanPlayerCERebuy)
-	assert isinstance(monitor.agents[1], agent.QLearningCERebuyAgent)
+	assert isinstance(monitor.agents[0], vendors.HumanPlayerCERebuy)
+	assert isinstance(monitor.agents[1], vendors.QLearningCERebuyAgent)
 	assert 'reptiloid' == monitor.agents[0].name
 	assert 'q_learner' == monitor.agents[1].name
 	assert 'subfoldername' == monitor.subfolder_name
@@ -75,43 +76,43 @@ def test_incorrect_setup_monitoring():
 	assert 'plot_interval must be of type int' in str(assertion_message.value)
 
 	with pytest.raises(AssertionError) as assertion_message:
-		monitor.setup_monitoring(marketplace=agent.RuleBasedCEAgent)
+		monitor.setup_monitoring(marketplace=vendors.RuleBasedCEAgent)
 	assert 'the marketplace must be a subclass of sim_market' in str(assertion_message.value)
 	with pytest.raises(TypeError):
 		monitor.setup_monitoring(marketplace=sim_market.ClassicScenario())
 
 	with pytest.raises(AssertionError) as assertion_message:
-		monitor.setup_monitoring(agents=[agent.RuleBasedCEAgent])
+		monitor.setup_monitoring(agents=[vendors.RuleBasedCEAgent])
 	assert 'agents must be a list of tuples' in str(assertion_message.value)
 	with pytest.raises(AssertionError) as assertion_message:
-		monitor.setup_monitoring(agents=[[agent.RuleBasedCEAgent, 1, '2']])
+		monitor.setup_monitoring(agents=[[vendors.RuleBasedCEAgent, 1, '2']])
 	assert 'agents must be a list of tuples' in str(assertion_message.value)
 	with pytest.raises(AssertionError) as assertion_message:
-		monitor.setup_monitoring(agents=[(agent.RuleBasedCEAgent)])
+		monitor.setup_monitoring(agents=[(vendors.RuleBasedCEAgent)])
 	assert 'agents must be a list of tuples' in str(assertion_message.value)
 	with pytest.raises(AssertionError) as assertion_message:
 		monitor.setup_monitoring(agents=[(sim_market.ClassicScenario, [])])
-	assert 'the first entry in each agent-tuple must be an agent class in agent.py' in str(assertion_message.value)
+	assert 'the first entry in each agent-tuple must be an agent class in vendors.py' in str(assertion_message.value)
 	with pytest.raises(AssertionError) as assertion_message:
-		monitor.setup_monitoring(agents=[(agent.RuleBasedCEAgent, sim_market.ClassicScenario)])
+		monitor.setup_monitoring(agents=[(vendors.RuleBasedCEAgent, sim_market.ClassicScenario)])
 	assert 'the second entry in each agent-tuple must be a list of arguments' in str(assertion_message.value)
 	with pytest.raises(AssertionError) as assertion_message:
-		monitor.setup_monitoring(agents=[(agent.RuleBasedCEAgent, 'new_name')])
+		monitor.setup_monitoring(agents=[(vendors.RuleBasedCEAgent, 'new_name')])
 	assert 'the second entry in each agent-tuple must be a list of arguments' in str(assertion_message.value)
 	with pytest.raises(AssertionError) as assertion_message:
-		monitor.setup_monitoring(agents=[(agent.RuleBasedCEAgent, []), (agent.FixedPriceLEAgent, [])])
+		monitor.setup_monitoring(agents=[(vendors.RuleBasedCEAgent, []), (vendors.FixedPriceLEAgent, [])])
 	assert 'the agents must all be of the same type (Linear/Circular)' in str(assertion_message.value)
 	with pytest.raises(AssertionError) as assertion_message:
-		monitor.setup_monitoring(agents=[(agent.RuleBasedCEAgent, []), (agent.FixedPriceLEAgent, []), (agent.FixedPriceCEAgent, [])])
+		monitor.setup_monitoring(agents=[(vendors.RuleBasedCEAgent, []), (vendors.FixedPriceLEAgent, []), (vendors.FixedPriceCEAgent, [])])
 	assert 'the agents must all be of the same type (Linear/Circular)' in str(assertion_message.value)
 	with pytest.raises(AssertionError) as assertion_message:
-		monitor.setup_monitoring(agents=[(agent.FixedPriceLEAgent, [])], marketplace=sim_market.CircularEconomyRebuyPrice)
+		monitor.setup_monitoring(agents=[(vendors.FixedPriceLEAgent, [])], marketplace=sim_market.CircularEconomyRebuyPrice)
 	assert 'the agent and marketplace must be of the same economy type (Linear/Circular)' in str(assertion_message.value)
 	with pytest.raises(AssertionError) as assertion_message:
-		monitor.setup_monitoring(agents=[(agent.FixedPriceCEAgent, [])], marketplace=sim_market.ClassicScenario)
+		monitor.setup_monitoring(agents=[(vendors.FixedPriceCEAgent, [])], marketplace=sim_market.ClassicScenario)
 	assert 'the agent and marketplace must be of the same economy type (Linear/Circular)' in str(assertion_message.value)
 	with pytest.raises(TypeError):
-		monitor.setup_monitoring(agents=[(agent.RuleBasedCEAgent(), [])])
+		monitor.setup_monitoring(agents=[(vendors.RuleBasedCEAgent(), [])])
 
 	with pytest.raises(AssertionError) as assertion_message:
 		monitor.setup_monitoring(subfolder_name=1)
@@ -120,22 +121,22 @@ def test_incorrect_setup_monitoring():
 
 def test_mismatched_scenarios():
 	with pytest.raises(AssertionError) as assertion_message:
-		monitor.setup_monitoring(marketplace=sim_market.ClassicScenario, agents=[(agent.RuleBasedCEAgent, [])])
+		monitor.setup_monitoring(marketplace=sim_market.ClassicScenario, agents=[(vendors.RuleBasedCEAgent, [])])
 	assert 'the agent and marketplace must be of the same economy type' in str(assertion_message.value)
 
 
 def test_RL_agents_need_modelfile():
 	with pytest.raises(AssertionError) as assertion_message:
-		monitor.setup_monitoring(marketplace=sim_market.CircularEconomy, agents=[(agent.QLearningCEAgent, [])])
+		monitor.setup_monitoring(marketplace=sim_market.CircularEconomy, agents=[(vendors.QLearningCEAgent, [])])
 	assert 'the first argument for an reinforcement lerner needs to be a modelfile, the second one is an optional name (str)' in str(assertion_message.value)
 	with pytest.raises(AssertionError) as assertion_message:
-		monitor.setup_monitoring(marketplace=sim_market.CircularEconomy, agents=[(agent.QLearningCEAgent, ['modelfile.dat', 35])])
+		monitor.setup_monitoring(marketplace=sim_market.CircularEconomy, agents=[(vendors.QLearningCEAgent, ['modelfile.dat', 35])])
 	assert 'the first argument for an reinforcement lerner needs to be a modelfile, the second one is an optional name (str)' in str(assertion_message.value)
 	with pytest.raises(AssertionError) as assertion_message:
-		monitor.setup_monitoring(marketplace=sim_market.CircularEconomy, agents=[(agent.QLearningCEAgent, [25])])
+		monitor.setup_monitoring(marketplace=sim_market.CircularEconomy, agents=[(vendors.QLearningCEAgent, [25])])
 	assert 'the modelfile must be of type str' in str(assertion_message.value)
 	with pytest.raises(AssertionError) as assertion_message:
-		monitor.setup_monitoring(marketplace=sim_market.CircularEconomy, agents=[(agent.QLearningCEAgent, ['mymodel.dat'])])
+		monitor.setup_monitoring(marketplace=sim_market.CircularEconomy, agents=[(vendors.QLearningCEAgent, ['mymodel.dat'])])
 	assert 'the specified modelfile does not exist' in str(assertion_message.value)
 
 
@@ -150,9 +151,9 @@ def test_get_modelfile_path():
 
 # Test once for a Linear, Circular and RebuyPrice Economy
 def test_get_action_space():
-	monitor.setup_monitoring(agents=[(agent.QLearningLEAgent, ['ClassicScenario_QLearningLEAgent.dat'])], marketplace=sim_market.ClassicScenario)
-	monitor.setup_monitoring(agents=[(agent.QLearningCEAgent, ['CircularEconomy_QLearningCEAgent.dat'])], marketplace=sim_market.CircularEconomy)
-	monitor.setup_monitoring(agents=[(agent.QLearningCERebuyAgent, ['CircularEconomyRebuyPrice_QLearningCERebuyAgent.dat'])], marketplace=sim_market.CircularEconomyRebuyPrice)
+	monitor.setup_monitoring(agents=[(vendors.QLearningLEAgent, ['ClassicScenario_QLearningLEAgent.dat'])], marketplace=sim_market.ClassicScenario)
+	monitor.setup_monitoring(agents=[(vendors.QLearningCEAgent, ['CircularEconomy_QLearningCEAgent.dat'])], marketplace=sim_market.CircularEconomy)
+	monitor.setup_monitoring(agents=[(vendors.QLearningCERebuyAgent, ['CircularEconomyRebuyPrice_QLearningCERebuyAgent.dat'])], marketplace=sim_market.CircularEconomyRebuyPrice)
 
 
 def test_setting_market_not_agents():
@@ -161,11 +162,11 @@ def test_setting_market_not_agents():
 
 def test_setup_with_invalid_agents():
 	with pytest.raises(AssertionError):
-		monitor.setup_monitoring(agents=[agent.FixedPriceLEAgent, agent.FixedPriceCERebuyAgent])
+		monitor.setup_monitoring(agents=[vendors.FixedPriceLEAgent, vendors.FixedPriceCERebuyAgent])
 
 
 def test_setup_with_valid_agents():
-	monitor.setup_monitoring(agents=[(agent.FixedPriceCERebuyAgent, []), (agent.FixedPriceCEAgent, [])])
+	monitor.setup_monitoring(agents=[(vendors.FixedPriceCERebuyAgent, []), (vendors.FixedPriceCEAgent, [])])
 
 
 def test_metrics_average():
@@ -211,9 +212,9 @@ def test_rewards_array_size():
 
 
 agent_rewards_histogram = [
-	([(agent.RuleBasedCEAgent, [])], [[100, 0]]),
-	([(agent.RuleBasedCEAgent, []), (agent.RuleBasedCEAgent, [])], [[100, 0], [10, 5]]),
-	([(agent.RuleBasedCEAgent, []), (agent.RuleBasedCEAgent, []), (agent.RuleBasedCEAgent, []), (agent.RuleBasedCEAgent, [])],
+	([(vendors.RuleBasedCEAgent, [])], [[100, 0]]),
+	([(vendors.RuleBasedCEAgent, []), (vendors.RuleBasedCEAgent, [])], [[100, 0], [10, 5]]),
+	([(vendors.RuleBasedCEAgent, []), (vendors.RuleBasedCEAgent, []), (vendors.RuleBasedCEAgent, []), (vendors.RuleBasedCEAgent, [])],
 		[[100, 0], [10, 5], [100, 10000], [10, 1000]])
 ]
 
@@ -244,7 +245,7 @@ def test_create_line_plot():
 
 
 def test_run_marketplace():
-	monitor.setup_monitoring(episodes=100, plot_interval=100, agents=[(agent.FixedPriceCEAgent, [(5, 2)])])
+	monitor.setup_monitoring(episodes=100, plot_interval=100, agents=[(vendors.FixedPriceCEAgent, [(5, 2)])])
 	agent_rewards = monitor.run_marketplace()
 	print(agent_rewards)
 	assert 1 == len(monitor.agents)
