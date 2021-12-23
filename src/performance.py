@@ -4,9 +4,7 @@ import pstats
 import time
 
 # all of our files, so that you can monitor anything you want
-import agent
 import agent_monitoring
-import competitor
 import customer
 import exampleprinter
 import experience_buffer
@@ -17,6 +15,7 @@ import training
 import training_scenario
 import utils_rl
 import utils_sim_market
+import vendors
 
 
 def remove_files() -> None:

@@ -4,8 +4,8 @@ import shutil
 
 import pytest
 
-import agent
 import sim_market as sim
+import vendors
 
 from .context import exampleprinter
 
@@ -17,7 +17,7 @@ def teardown_module(module):
 			shutil.rmtree('./runs/' + f)
 
 
-test_cases = [(sim.ClassicScenario(), agent.FixedPriceLEAgent()), (sim.MultiCompetitorScenario(), agent.FixedPriceLEAgent()), (sim.CircularEconomyMonopolyScenario(), agent.FixedPriceCEAgent()), (sim.CircularEconomyMonopolyScenario(), agent.RuleBasedCEAgent()), (sim.CircularEconomyRebuyPriceMonopolyScenario(), agent.FixedPriceCERebuyAgent()), (sim.CircularEconomyRebuyPriceMonopolyScenario(), agent.RuleBasedCERebuyAgent()), (sim.CircularEconomyRebuyPriceOneCompetitor(), agent.FixedPriceCERebuyAgent()), (sim.CircularEconomyRebuyPriceOneCompetitor(), agent.RuleBasedCERebuyAgent())]
+test_cases = [(sim.ClassicScenario(), vendors.FixedPriceLEAgent()), (sim.MultiCompetitorScenario(), vendors.FixedPriceLEAgent()), (sim.CircularEconomyMonopolyScenario(), vendors.FixedPriceCEAgent()), (sim.CircularEconomyMonopolyScenario(), vendors.RuleBasedCEAgent()), (sim.CircularEconomyRebuyPriceMonopolyScenario(), vendors.FixedPriceCERebuyAgent()), (sim.CircularEconomyRebuyPriceMonopolyScenario(), vendors.RuleBasedCERebuyAgent()), (sim.CircularEconomyRebuyPriceOneCompetitor(), vendors.FixedPriceCERebuyAgent()), (sim.CircularEconomyRebuyPriceOneCompetitor(), vendors.RuleBasedCERebuyAgent())]
 
 
 @pytest.mark.parametrize('environment, agent', test_cases)

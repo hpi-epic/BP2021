@@ -6,11 +6,10 @@ from typing import Tuple
 import gym
 import numpy as np
 
-import competitor as comp
 import customer
 import owner
 import utils_sim_market as ut
-from agent import RuleBasedCERebuyAgent
+import vendors
 from customer import Customer
 from owner import Owner
 
@@ -277,16 +276,16 @@ class LinearEconomy(SimMarket, ABC):
 class ClassicScenario(LinearEconomy):
 
 	def get_competitor_list(self) -> list:
-		return [comp.CompetitorLinearRatio1()]
+		return [vendors.CompetitorLinearRatio1()]
 
 
 class MultiCompetitorScenario(LinearEconomy):
 
 	def get_competitor_list(self) -> list:
 		return [
-			comp.CompetitorLinearRatio1(),
-			comp.CompetitorRandom(),
-			comp.CompetitorJust2Players(),
+			vendors.CompetitorLinearRatio1(),
+			vendors.CompetitorRandom(),
+			vendors.CompetitorJust2Players(),
 		]
 
 
@@ -480,4 +479,4 @@ class CircularEconomyRebuyPriceMonopolyScenario(CircularEconomyRebuyPrice):
 
 class CircularEconomyRebuyPriceOneCompetitor(CircularEconomyRebuyPrice):
 	def get_competitor_list(self) -> list:
-		return [RuleBasedCERebuyAgent()]
+		return [vendors.RuleBasedCERebuyAgent()]

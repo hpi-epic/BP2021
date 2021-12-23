@@ -7,9 +7,9 @@ import time
 import numpy as np
 from torch.utils.tensorboard import SummaryWriter
 
-import agent
 import utils_rl as utrl
 import utils_sim_market as ut
+import vendors
 
 
 # Gets the profit array of all vendors and returns the necessary dict for direct comparison in tb
@@ -24,7 +24,7 @@ def direct_comparison_dict(profits):
 
 
 def train_QLearning_agent(RL_agent, environment, maxsteps=2 * utrl.EPSILON_DECAY_LAST_FRAME, log_dir_prepend=''):
-	assert isinstance(RL_agent, agent.QLearningAgent)
+	assert isinstance(RL_agent, vendors.QLearningAgent)
 	state = environment.reset()
 
 	frame_number_last_speed_update = 0

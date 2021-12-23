@@ -21,11 +21,11 @@
 
 
 # test_scenarios = [
-# 	(sim_market.ClassicScenario(), agent.QLearningAgent(n_observation=sim_market.ClassicScenario().observation_space.shape[0], n_actions=10, optim=torch.optim.Adam)),
-# 	(sim_market.MultiCompetitorScenario(), agent.QLearningAgent(n_observation=sim_market.MultiCompetitorScenario().observation_space.shape[0], n_actions=10, optim=torch.optim.Adam)),
-# 	(sim_market.CircularEconomyMonopolyScenario(), agent.QLearningCEAgent(sim_market.CircularEconomyMonopolyScenario().observation_space.shape[0], n_actions=100, optim=torch.optim.Adam)),
-# 	(sim_market.CircularEconomyRebuyPriceMonopolyScenario(), agent.QLearningCERebuyAgent(sim_market.CircularEconomyRebuyPriceMonopolyScenario().observation_space.shape[0], n_actions=100, optim=torch.optim.Adam)),
-# 	(sim_market.CircularEconomyRebuyPriceOneCompetitor(), agent.QLearningCERebuyAgent(sim_market.CircularEconomyRebuyPriceOneCompetitor().observation_space.shape[0], n_actions=100, optim=torch.optim.Adam))]
+# 	(sim_market.ClassicScenario(), vendors.QLearningAgent(n_observation=sim_market.ClassicScenario().observation_space.shape[0], n_actions=10, optim=torch.optim.Adam)),
+# 	(sim_market.MultiCompetitorScenario(), vendors.QLearningAgent(n_observation=sim_market.MultiCompetitorScenario().observation_space.shape[0], n_actions=10, optim=torch.optim.Adam)),
+# 	(sim_market.CircularEconomyMonopolyScenario(), vendors.QLearningCEAgent(sim_market.CircularEconomyMonopolyScenario().observation_space.shape[0], n_actions=100, optim=torch.optim.Adam)),
+# 	(sim_market.CircularEconomyRebuyPriceMonopolyScenario(), vendors.QLearningCERebuyAgent(sim_market.CircularEconomyRebuyPriceMonopolyScenario().observation_space.shape[0], n_actions=100, optim=torch.optim.Adam)),
+# 	(sim_market.CircularEconomyRebuyPriceOneCompetitor(), vendors.QLearningCERebuyAgent(sim_market.CircularEconomyRebuyPriceOneCompetitor().observation_space.shape[0], n_actions=100, optim=torch.optim.Adam))]
 
 
 # @pytest.mark.parametrize('environment, agent', test_scenarios)
