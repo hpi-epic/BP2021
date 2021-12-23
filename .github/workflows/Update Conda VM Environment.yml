@@ -1,0 +1,17 @@
+name: Update Conda environment
+
+on: workflow_dispatch
+
+jobs:
+  build-linux:
+    runs-on: [self-hosted, ubuntu-20.04]
+    name: Update Conda BP2021 environment
+    steps:
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Update Conda environment
+        shell: bash -l {0}
+        run: |
+          conda env update -n BP2021

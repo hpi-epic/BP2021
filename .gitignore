@@ -1,15 +1,22 @@
 # from https://github.com/github/gitignore
 
-# To exclude marketplace files created by training the agent
-# args.env-best_*[0-9].*[0-9]_marketplace.dat
-
-*.dat
-*.csv
 trainedModels/
 runs/
-test.py
-# to exclude some notes
+# output-plots from agent_monitoring.py
+monitoring/*
+!monitoring/*.dat
+
+# result files from performance.py
+performance/
+
+# vscode settings
+.vscode/
+.DS_Store
+# to exclude notes and tests
 notes.txt
+test.py
+# interrogate result (docstring lint rule)
+mit-covered-files
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -58,6 +65,7 @@ htmlcov/
 .cache
 nosetests.xml
 coverage.xml
+coverage.json
 *.cover
 *.py,cover
 .hypothesis/
