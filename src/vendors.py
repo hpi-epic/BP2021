@@ -294,13 +294,13 @@ class QLearningCEAgent(QLearningAgent, CircularAgent):
 		return (int(step % 10), int(step / 10))
 
 
-class QLearningCERebuyAgent(QLearningAgent, CircularAgent):
+class QLearningCERebuyAgent(QLearningCEAgent):
 	def policy(self, observation, epsilon=0) -> int:
 		step = super().policy(observation, epsilon)
 		return (int(step / 100), int(step / 10 % 10), int(step % 10))
 
 
-class CompetitorLinearRatio1(Agent):
+class CompetitorLinearRatio1(LinearAgent, RuleBasedAgent):
 	def policy(self, state, epsilon=0):
 		# this stratgy calculates the value per money for each competing vendor and tries to adapt to it
 		ratios = []
@@ -321,12 +321,12 @@ class CompetitorLinearRatio1(Agent):
 		return actual_price
 
 
-class CompetitorRandom(Agent):
+class CompetitorRandom(LinearAgent, RuleBasedAgent):
 	def policy(self, state, epsilon=0):
 		return random.randint(ut.PRODUCTION_PRICE + 1, ut.MAX_PRICE - 1)
 
 
-class CompetitorJust2Players(Agent):
+class CompetitorJust2Players(LinearAgent, RuleBasedAgent):
 	def policy(self, state, epsilon=0) -> int:
 		"""	This competitor is based on quality and agents actions.
 		While he can act in every linear economy, you should not expect good performance in a multicompetitor setting.

@@ -3,6 +3,7 @@ import os
 import pstats
 import time
 
+# all of our files, so that you can monitor anything you want
 import agent_monitoring
 import customer
 import exampleprinter
@@ -14,7 +15,6 @@ import training
 import training_scenario
 import utils_rl
 import utils_sim_market
-# all of our files, so that you can monitor anything you want
 import vendors
 
 
