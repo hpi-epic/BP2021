@@ -3,6 +3,7 @@
 ![CI](https://github.com/hpi-epic/BP2021/actions/workflows/CI.yml/badge.svg)
 ![Coverage-Badge](/badges/coverage.svg)
 ![Docstring-Coverage](/badges/docstring_coverage.svg)
+[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 
 Working repository in context of the bachelorproject "Online Marketplace Simulation: A Testbed for Self-Learning Agents" at the research group Enterprise Platform and Integration Concepts.
 
