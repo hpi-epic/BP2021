@@ -19,7 +19,7 @@ EPISODE_LENGTH = None
 config = {}
 
 
-def load_config(path_sim_market=os.path.dirname(__file__) + os.sep + '..' + os.sep + 'config_sim_market.json'):
+def load_config(path_sim_market=os.path.dirname(__file__) + os.sep + '../..' + os.sep + 'config_sim_market.json'):
 	"""
 	Load the SimMarket json file from the specified path.
 

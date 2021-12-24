@@ -6,18 +6,18 @@ import time
 import torch
 from torch.utils.tensorboard import SummaryWriter
 
-import sim_market
-import utils_sim_market as ut
-import vendors
+import agents.vendors as vendors
+import configuration.utils_sim_market as ut
+import market.sim_market as sim_market
 
 
-def run_example(environment=sim_market.CircularEconomyMonopolyScenario(), agent=vendors.RuleBasedCEAgent(), log_dir_prepend='') -> int:
+def run_example(environment=sim_market.CircularEconomyRebuyPriceOneCompetitor(), agent=vendors.RuleBasedCERebuyAgent(), log_dir_prepend='') -> int:
 	"""
 	Run a specified marketplace with a (pre-trained, if RL) agent and record various statistics using TensorBoard.
 
 	Args:
-		env (sim_market instance, optional): The market environment to run the simulation on. Defaults to sim_market.CircularEconomy().
-		agent (agent instance, optional): The agent to run the simulation on. Defaults to a.RuleBasedCEAgent().
+		env (sim_market instance, optional): The market environment to run the simulation on. Defaults to sim_market.CircularEconomyRebuyPriceOneCompetitor().
+		agent (agent instance, optional): The agent to run the simulation on. Defaults to vendors.RuleBasedCERebuyAgent().
 		log_dir_prepend (str, optional): What to prepend to the log_dir folder name. Defaults to ''.
 
 	Returns:
@@ -47,4 +47,4 @@ def run_example(environment=sim_market.CircularEconomyMonopolyScenario(), agent=
 
 
 if __name__ == '__main__':  # pragma: no cover
-	print(run_example(environment=sim_market.CircularEconomyRebuyPriceOneCompetitor(), agent=vendors.RuleBasedCERebuyAgent()))
+	print(run_example())

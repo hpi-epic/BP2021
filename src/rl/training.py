@@ -7,9 +7,9 @@ import time
 import numpy as np
 from torch.utils.tensorboard import SummaryWriter
 
-import utils_rl as utrl
-import utils_sim_market as ut
-import vendors
+import agents.vendors as vendors
+import configuration.utils_rl as ut_rl
+import configuration.utils_sim_market as ut
 
 
 # Gets the profit array of all vendors and returns the necessary dict for direct comparison in tb
@@ -23,7 +23,7 @@ def direct_comparison_dict(profits):
 	return comparison_dict
 
 
-def train_QLearning_agent(RL_agent, environment, maxsteps=2 * utrl.EPSILON_DECAY_LAST_FRAME, log_dir_prepend=''):
+def train_QLearning_agent(RL_agent, environment, maxsteps=2 * ut_rl.EPSILON_DECAY_LAST_FRAME, log_dir_prepend=''):
 	assert isinstance(RL_agent, vendors.QLearningAgent)
 	state = environment.reset()
 
@@ -40,7 +40,7 @@ def train_QLearning_agent(RL_agent, environment, maxsteps=2 * utrl.EPSILON_DECAY
 	# tensorboard init
 	writer = SummaryWriter(log_dir='runs/' + log_dir_prepend + time.strftime('%Y%m%d-%H%M%S') + f'_{type(environment).__name__}_{type(RL_agent).__name__}_training')
 	for frame_idx in range(maxsteps):
-		epsilon = max(utrl.EPSILON_FINAL, utrl.EPSILON_START - frame_idx / utrl.EPSILON_DECAY_LAST_FRAME)
+		epsilon = max(ut_rl.EPSILON_FINAL, ut_rl.EPSILON_START - frame_idx / ut_rl.EPSILON_DECAY_LAST_FRAME)
 
 		action = RL_agent.policy(state, epsilon)
 		state, reward, is_done, info = environment.step(action)
@@ -67,7 +67,7 @@ def train_QLearning_agent(RL_agent, environment, maxsteps=2 * utrl.EPSILON_DECAY
 
 			writer.add_scalar('Profit_mean/agent', m_reward, frame_idx / ut.EPISODE_LENGTH)
 			ut.write_dict_to_tensorboard(writer, averaged_info, frame_idx / ut.EPISODE_LENGTH, is_cumulative=True)
-			if frame_idx > utrl.REPLAY_START_SIZE:
+			if frame_idx > ut_rl.REPLAY_START_SIZE:
 				writer.add_scalar(
 					'Loss/MSE', np.mean(losses[-1000:]), frame_idx / ut.EPISODE_LENGTH
 				)
@@ -84,7 +84,7 @@ def train_QLearning_agent(RL_agent, environment, maxsteps=2 * utrl.EPSILON_DECAY
 
 			if (
 				best_m_reward is None or best_m_reward < m_reward
-			) and frame_idx > utrl.EPSILON_DECAY_LAST_FRAME + 101:
+			) and frame_idx > ut_rl.EPSILON_DECAY_LAST_FRAME + 101:
 				RL_agent.save(type(environment).__name__ + '_' + type(RL_agent).__name__ + '_%.2f.dat' % m_reward)
 				if best_m_reward is not None:
 					print('Best reward updated %.3f -> %.3f' % (best_m_reward, m_reward))
@@ -96,10 +96,10 @@ def train_QLearning_agent(RL_agent, environment, maxsteps=2 * utrl.EPSILON_DECAY
 			vendors_cumulated_info = None
 			environment.reset()
 
-		if len(RL_agent.buffer) < utrl.REPLAY_START_SIZE:
+		if len(RL_agent.buffer) < ut_rl.REPLAY_START_SIZE:
 			continue
 
-		if frame_idx % utrl.SYNC_TARGET_FRAMES == 0:
+		if frame_idx % ut_rl.SYNC_TARGET_FRAMES == 0:
 			RL_agent.synchronize_tgt_net()
 
 		loss, selected_q_val_mean = RL_agent.train_batch()
