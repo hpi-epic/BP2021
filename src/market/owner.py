@@ -55,7 +55,8 @@ class OwnerRebuy(Owner):
 		Returns:
 			np.array: probability distribution over all possible actions.
 		"""
-		assert isinstance(offers, np.ndarray) and len(offers) % offer_length_per_vendor == 1
+		assert isinstance(offers, np.ndarray), 'offers needs to be an ndarray'
+		assert len(offers) % offer_length_per_vendor == 1, 'one of offer_length_per_vendor and len(offers) must be even, the other odd'
 
 		holding_preference = 1
 		discard_preference = 20
