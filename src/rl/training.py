@@ -24,7 +24,7 @@ def direct_comparison_dict(profits):
 
 
 def train_QLearning_agent(RL_agent, environment, maxsteps=2 * ut_rl.EPSILON_DECAY_LAST_FRAME, log_dir_prepend=''):
-	assert isinstance(RL_agent, vendors.QLearningAgent)
+	assert isinstance(RL_agent, vendors.QLearningAgent), 'the passed agent must be a QLearningAgent'
 	state = environment.reset()
 
 	frame_number_last_speed_update = 0
