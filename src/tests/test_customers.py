@@ -21,9 +21,9 @@ def random_offer(market_scenario):
 
 # Test the Customer parent class, i.e. make sure it cannot be used
 def test_customer_parent_class():
-	with pytest.raises(AssertionError) as assertion_info:
-		customer.Customer.generate_purchase_probabilities_from_offer(CLinear, *random_offer(SClassic))
-	assert str(assertion_info.value) == 'This class should not be used.'
+	with pytest.raises(NotImplementedError) as assertion_message:
+		customer.Customer.generate_purchase_probabilities_from_offer(CLinear, random_offer(SClassic), 1)
+	assert 'This method is abstract. Use a subclass' in str(assertion_message.value)
 
 
 # the following list contains invalid parameters for generate_purchase_probabilities_from_offer and the expected error messages
