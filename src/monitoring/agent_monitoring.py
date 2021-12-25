@@ -397,7 +397,7 @@ def main(monitor=Monitor()) -> None:
 	Args:
 		monitor (Monitor instance, optional): The monitor to run the session on. Defaults to a default Monitor() instance.
 	"""
-	# monitor.setup_monitoring(enable_live_draw=False, agents=[(vendors.QLearningCEAgent, ['CircularEconomy_QLearningCEAgent.dat']), (vendors.FixedPriceCEAgent, [(4,6)])])
+	# monitor.setup_monitoring(enable_live_draw=False, agents=[(vendors.FixedPriceCEAgent, [])], marketplace=sim_market.CircularEconomyMonopolyScenario)
 	print('Live Drawing enabled:', monitor.enable_live_draw)
 	print('Episodes:', monitor.episodes)
 	print(f'Plot interval: {monitor.plot_interval}')

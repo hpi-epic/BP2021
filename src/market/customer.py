@@ -73,7 +73,7 @@ class CustomerCircular(Customer):
 		"""
 		assert isinstance(offers, np.ndarray), 'offers must be a np.array'
 		assert len(offers) % offer_length_per_vendor == 1, 'there must be exactly one field for common state (in_circulation)'
-		assert offer_length_per_vendor == 3 or offer_length_per_vendor == 4
+		assert offer_length_per_vendor == 3 or offer_length_per_vendor == 4, 'offer_length_per_vendor needs to be  3 or 4'
 		nothingpreference = 1
 		preferences = [nothingpreference]
 		for offer in range(int(np.floor(len(offers) / offer_length_per_vendor))):
