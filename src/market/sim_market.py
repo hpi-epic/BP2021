@@ -72,7 +72,7 @@ class SimMarket(gym.Env, ABC):
 			number_of_customers (int): the number of customers eager to buy each step.
 		"""
 		probability_distribution = self.customer.generate_purchase_probabilities_from_offer(offers, self.get_offer_length_per_vendor())
-		assert isinstance(probability_distribution, np.ndarray), 'Your method in customer must return a np.array!'
+		assert isinstance(probability_distribution, np.ndarray), 'generate_purchase_probabilities_from_offer must return an np.ndarray'
 		assert len(probability_distribution) == 1 + (1 if isinstance(self, LinearEconomy) else 2) * self.get_number_of_vendors(), 'The probability distribution must have one entry for buy_nothing and one or two entries for every vendor. One entry if it is a linear economy (with only one price) or a circular economy with the option to buy refurbished or new.'
 
 		for _ in range(number_of_customers):
@@ -138,7 +138,7 @@ class SimMarket(gym.Env, ABC):
 		"""
 		# observaton is the array containing the global state. We concatenate everything relevant to it, then return it.
 		observation = self.get_common_state_array()
-		assert isinstance(observation, np.ndarray), 'get_common_state_array must return a np-Array'
+		assert isinstance(observation, np.ndarray), 'get_common_state_array must return a np.ndarray'
 
 		# first the action and state of the of the vendor whose view we create will be added
 		if self.vendor_specific_state[vendor_view] is not None:
@@ -163,7 +163,7 @@ class SimMarket(gym.Env, ABC):
 		Afterwards you have the action and vendor specific state for all vendors.
 		"""
 		offer = self.get_common_state_array()
-		assert isinstance(offer, np.ndarray), 'get_common_state_array must return a np-Array'
+		assert isinstance(offer, np.ndarray), 'get_common_state_array must return an np.ndarray'
 		for vendor_index in range(self.get_number_of_vendors()):
 			offer = np.concatenate((offer, np.array(self.vendor_actions[vendor_index], ndmin=1)), dtype=np.float64)
 			if self.vendor_specific_state[vendor_index] is not None:
@@ -358,7 +358,7 @@ class CircularEconomy(SimMarket):
 			profits (np.array(int)): The profits of the vendor.
 			offer (np.array): The offers of the vendor.
 		"""
-		assert self.owner is not None, 'please choose an owner'
+		assert self.owner is not None, 'an owner must be set'
 		return_probabilities = self.owner.generate_return_probabilities_from_offer(offer, self.get_offer_length_per_vendor())
 		assert isinstance(return_probabilities, np.ndarray) and len(return_probabilities) == 2 + self.get_number_of_vendors()
 
@@ -384,7 +384,7 @@ class CircularEconomy(SimMarket):
 			profits (np.array(int)): The profits of all vendors.
 			customer_decision (int): Indicates the customer's decision.
 		"""
-		assert 0 <= customer_decision and customer_decision < 2 * self.get_number_of_vendors(), 'Invalid action of the customer! Note that you have two options per vendor!'
+		assert 0 <= customer_decision and customer_decision < 2 * self.get_number_of_vendors(), 'invalid action of the customer. Note that you have two options per vendor'
 
 		chosen_vendor = int(np.floor(customer_decision / 2))
 		if customer_decision % 2 == 0:
