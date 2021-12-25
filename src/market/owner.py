@@ -37,7 +37,8 @@ class UniformDistributionOwner(Owner):
 		Returns:
 			np.array: a uniform distribution over all possible actions
 		"""
-		assert isinstance(offers, np.ndarray) and len(offers) % offer_length_per_vendor == 1
+		assert isinstance(offers, np.ndarray), 'offers needs to be an ndarray'
+		assert len(offers) % offer_length_per_vendor == 1, 'one of offer_length_per_vendor and len(offers) must be even, the other odd'
 		number_of_options = np.floor(len(offers) / 3) + 2
 		return np.array([1 / number_of_options] * int(number_of_options))
 
