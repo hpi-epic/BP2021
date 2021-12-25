@@ -113,12 +113,12 @@ def divide_content_of_dict(dict1, divisor) -> dict:
 	Returns:
 		dict: the dictionary containing the divided numbers
 	"""
-	# TODO: assert dictionary contains only numbers
 	newdict = {}
 	for key in dict1:
 		if isinstance(dict1[key], dict):
 			newdict[key] = divide_content_of_dict(dict1[key], divisor)
 		else:
+			assert isinstance(dict1[key], int) or isinstance(dict1[key], float), 'the dictionary should only contain numbers (int or float)'
 			newdict[key] = dict1[key] / divisor
 	return newdict
 
@@ -139,5 +139,7 @@ def add_content_of_two_dicts(dict1, dict2) -> dict:
 		if isinstance(dict1[key], dict):
 			newdict[key] = add_content_of_two_dicts(dict1[key], dict2[key])
 		else:
+			assert isinstance(dict1[key], int) or isinstance(dict1[key], float), 'dict1 should only contain numbers (int or float)'
+			assert isinstance(dict2[key], int) or isinstance(dict2[key], float), 'dict2 should only contain numbers (int or float)'
 			newdict[key] = dict1[key] + dict2[key]
 	return newdict
