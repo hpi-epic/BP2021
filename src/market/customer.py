@@ -1,14 +1,11 @@
 #!/usr/bin/env python3
 
-# helpers
 import math
 from abc import ABC, abstractmethod
 
 import numpy as np
 
 import configuration.utils_sim_market as ut
-
-# import random
 
 
 class Customer(ABC):
@@ -27,7 +24,7 @@ class Customer(ABC):
 			In the subsequent fields, there are the probabilites for buying the specific offers from the vendor.
 			Look subclass implementation for more details.
 		"""
-		assert False, 'This class should not be used.'
+		raise NotImplementedError('This method is abstract. Use a subclass')
 
 
 class CustomerLinear(Customer):
