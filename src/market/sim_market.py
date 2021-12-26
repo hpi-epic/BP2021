@@ -181,11 +181,11 @@ class SimMarket(gym.Env, ABC):
 
 	@abstractmethod
 	def setup_action_observation_space(self) -> None:  # pragma: no cover
-		raise NotImplementedError
+		raise NotImplementedError('This method is abstract. Use a subclass')
 
 	@abstractmethod
 	def get_competitor_list(self) -> list:  # pragma: no cover
-		raise NotImplementedError
+		raise NotImplementedError('This method is abstract. Use a subclass')
 
 	def consider_storage_costs(self, profits) -> None:
 		pass

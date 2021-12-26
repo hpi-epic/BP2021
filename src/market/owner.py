@@ -23,7 +23,7 @@ class Owner(ABC):
 		Returns:
 			np.array: The first entry is the probability that the holds his product. The second entry is the probability that the owner throws away his product. Afterwards, for all vendors the probabilities of returning the product to him follows.
 		"""
-		raise NotImplementedError
+		raise NotImplementedError('This method is abstract. Use a subclass')
 
 
 class UniformDistributionOwner(Owner):

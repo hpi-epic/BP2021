@@ -33,8 +33,8 @@ class Agent(ABC):
 		return class_name(*args)
 
 	@abstractmethod
-	def policy(self, observation, epsilon=0):
-		raise NotImplementedError
+	def policy(self, observation, epsilon=0):  # pragma: no cover
+		raise NotImplementedError('This method is abstract. Use a subclass')
 
 
 class CircularAgent(Agent, ABC):
@@ -55,8 +55,8 @@ class ReinforcementLearningAgent(Agent, ABC):
 
 class HumanPlayer(RuleBasedAgent, ABC):
 	@abstractmethod
-	def policy(self, observation, *_) -> int:
-		raise NotImplementedError
+	def policy(self, observation, *_) -> int:  # pragma: no cover
+		raise NotImplementedError('This method is abstract. Use a subclass')
 
 
 class HumanPlayerLE(LinearAgent, HumanPlayer):
