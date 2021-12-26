@@ -37,8 +37,8 @@ class UniformDistributionOwner(Owner):
 		Returns:
 			np.array: a uniform distribution over all possible actions
 		"""
-		assert isinstance(offers, np.ndarray), 'offers needs to be an ndarray'
-		assert len(offers) % offer_length_per_vendor == 1, 'one of offer_length_per_vendor and len(offers) must be even, the other odd'
+		assert isinstance(offers, np.ndarray), 'offers needs to be an np.ndarray'
+		assert len(offers) % offer_length_per_vendor == 1, 'there must be exactly one field for common state (in_circulation)'
 		number_of_options = np.floor(len(offers) / 3) + 2
 		return np.array([1 / number_of_options] * int(number_of_options))
 
@@ -57,7 +57,7 @@ class OwnerRebuy(Owner):
 			np.array: probability distribution over all possible actions.
 		"""
 		assert isinstance(offers, np.ndarray), 'offers needs to be an ndarray'
-		assert len(offers) % offer_length_per_vendor == 1, 'one of offer_length_per_vendor and len(offers) must be even, the other odd'
+		assert len(offers) % offer_length_per_vendor == 1, 'there must be exactly one field for common state (in_circulation)'
 
 		holding_preference = 1
 		discard_preference = 20

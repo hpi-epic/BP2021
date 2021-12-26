@@ -108,7 +108,9 @@ class FixedPriceLEAgent(LinearAgent, FixedPriceAgent):
 
 class FixedPriceCEAgent(CircularAgent, FixedPriceAgent):
 	def __init__(self, fixed_price=(2, 4), name='fixed_price_ce'):
-		assert isinstance(fixed_price, tuple) and len(fixed_price) == 2, 'The fixed_price must be a tuple of integers'
+		assert isinstance(fixed_price, tuple), 'fixed_price must be a tuple'
+		assert len(fixed_price) == 2, 'fixed_price must contain two values'
+		assert all(isinstance(price, int) for price in fixed_price), 'the prices in fixed_price must be integers'
 		self.name = name
 		self.fixed_price = fixed_price
 
@@ -118,7 +120,9 @@ class FixedPriceCEAgent(CircularAgent, FixedPriceAgent):
 
 class FixedPriceCERebuyAgent(FixedPriceCEAgent):
 	def __init__(self, fixed_price=(3, 6, 2), name='fixed_price_ce_rebuy'):
-		assert isinstance(fixed_price, tuple) and len(fixed_price) == 3, 'The fixed_price must be a triple of integers'
+		assert isinstance(fixed_price, tuple), 'fixed_price must be a tuple'
+		assert len(fixed_price) == 3, 'fixed_price must contain three values'
+		assert all(isinstance(price, int) for price in fixed_price), 'the prices in fixed_price must be integers'
 		self.name = name
 		self.fixed_price = fixed_price
 
@@ -163,7 +167,7 @@ class RuleBasedCEAgent(RuleBasedAgent, CircularAgent):
 			rebuy_price = 0
 
 		price_new = min(9, price_new)
-		assert price_old <= price_new, 'The price for used products should be loower or equal to the price of new products'
+		assert price_old <= price_new, 'The price for used products should be lower or equal to the price of new products'
 		return self.return_prices(price_old, price_new, rebuy_price)
 
 	def greedy_policy(self, observation) -> int:

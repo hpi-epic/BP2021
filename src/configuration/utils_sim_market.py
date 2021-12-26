@@ -51,7 +51,7 @@ PRODUCTION_PRICE = int(config['production_price'])
 
 
 assert NUMBER_OF_CUSTOMERS > 0 and NUMBER_OF_CUSTOMERS % 2 == 0, 'number_of_customers should be even and positive'
-assert PRODUCTION_PRICE <= MAX_PRICE and PRODUCTION_PRICE >= 0, 'production_price needs to smaller than max_price and positive or zero'
+assert PRODUCTION_PRICE <= MAX_PRICE and PRODUCTION_PRICE >= 0, 'production_price needs to be <= than max_price and >= zero'
 assert MAX_QUALITY > 0, 'max_quality should be positive'
 assert MAX_PRICE > 0, 'max_price should be positive'
 assert EPISODE_LENGTH > 0, 'episode_size should be positive'
@@ -133,7 +133,7 @@ def add_content_of_two_dicts(dict1, dict2) -> dict:
 	Returns:
 		dict: same structure as dict1 and dict2, each entry contains the sum of the entries of dict1 and dict2
 	"""
-	# TODO: assert dicts have the same structure, dictionary contains only numbers
+	# TODO: assert dicts have the same structure
 	newdict = {}
 	for key in dict1:
 		if isinstance(dict1[key], dict):

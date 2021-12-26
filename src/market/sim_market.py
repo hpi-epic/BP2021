@@ -138,7 +138,7 @@ class SimMarket(gym.Env, ABC):
 		"""
 		# observaton is the array containing the global state. We concatenate everything relevant to it, then return it.
 		observation = self.get_common_state_array()
-		assert isinstance(observation, np.ndarray), 'get_common_state_array must return a np.ndarray'
+		assert isinstance(observation, np.ndarray), 'get_common_state_array must return an np.ndarray'
 
 		# first the action and state of the of the vendor whose view we create will be added
 		if self.vendor_specific_state[vendor_view] is not None:
@@ -215,7 +215,7 @@ class SimMarket(gym.Env, ABC):
 			init_for_all_vendors (list, optional): initialization values for all vendors in this entry. Defaults to None.
 		"""
 		if init_for_all_vendors is not None:
-			assert isinstance(init_for_all_vendors, list) and len(init_for_all_vendors) == self.get_number_of_vendors(), 'make sure you pass an array with length of number of vendors'
+			assert isinstance(init_for_all_vendors, list) and len(init_for_all_vendors) == self.get_number_of_vendors(), 'make sure you pass a list with length of number of vendors'
 		if name not in self.output_dict:
 			if init_for_all_vendors is None:
 				self.output_dict[name] = 0
@@ -360,7 +360,8 @@ class CircularEconomy(SimMarket):
 		"""
 		assert self.owner is not None, 'an owner must be set'
 		return_probabilities = self.owner.generate_return_probabilities_from_offer(offer, self.get_offer_length_per_vendor())
-		assert isinstance(return_probabilities, np.ndarray) and len(return_probabilities) == 2 + self.get_number_of_vendors()
+		assert isinstance(return_probabilities, np.ndarray), 'return_probabilities must be an np.ndarray'
+		assert len(return_probabilities) == 2 + self.get_number_of_vendors(), 'the length of return_probabilities must be the number of vendors plus 2'
 
 		number_of_owners = int(0.05 * self.in_circulation / self.get_number_of_vendors())
 		for _ in range(number_of_owners):
@@ -384,7 +385,7 @@ class CircularEconomy(SimMarket):
 			profits (np.array(int)): The profits of all vendors.
 			customer_decision (int): Indicates the customer's decision.
 		"""
-		assert 0 <= customer_decision and customer_decision < 2 * self.get_number_of_vendors(), 'invalid action of the customer. Note that you have two options per vendor'
+		assert 0 <= customer_decision and customer_decision < 2 * self.get_number_of_vendors(), 'the customer_decision must be between 0 and 2 * the number of vendors, as each vendor offers a new and a refurbished product'
 
 		chosen_vendor = int(np.floor(customer_decision / 2))
 		if customer_decision % 2 == 0:
