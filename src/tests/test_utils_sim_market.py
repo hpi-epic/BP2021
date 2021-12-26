@@ -42,8 +42,8 @@ def test_reading_file_values():
 # These tests have invalid values in their input file, the import should throw a specific error message
 odd_number_of_customers = (ut_t.create_mock_json_sim_market('50', '50', '80', '21', '10'), 'number_of_customers should be even and positive')
 negative_number_of_customers = (ut_t.create_mock_json_sim_market('50', '50', '80', '-10', '10'), 'number_of_customers should be even and positive')
-prod_price_higher_max_price = (ut_t.create_mock_json_sim_market('50', '10', '80', '20', '50'), 'production_price needs to smaller than max_price and positive or zero')
-negative_prod_price = (ut_t.create_mock_json_sim_market('50', '50', '80', '20', '-10'), 'production_price needs to smaller than max_price and positive or zero')
+prod_price_higher_max_price = (ut_t.create_mock_json_sim_market('50', '10', '80', '20', '50'), 'production_price needs to be <= max_price and >= 0')
+negative_prod_price = (ut_t.create_mock_json_sim_market('50', '50', '80', '20', '-10'), 'production_price needs to be <= max_price and >= 0')
 negative_max_quality = (ut_t.create_mock_json_sim_market('20', '15', '-80', '30', '5'), 'max_quality should be positive')
 
 # These tests are missing a line in the config file, the import should throw a specific error message

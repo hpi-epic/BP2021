@@ -29,10 +29,10 @@ def test_customer_parent_class():
 # the following list contains invalid parameters for generate_purchase_probabilities_from_offer and the expected error messages
 invalid_values = [
 	(CLinear(), [20, 20], 1, 'offer_length_per_vendor must be two: one field for the price and one for the quality!'),
-	(CCircular(), [20, 20], 1, 'offers must be a np.array'),
+	(CCircular(), [20, 20], 1, 'offers must be a np.ndarray'),
 	(CCircular(), np.array([20, 20, 20, 20]), 4, 'there must be exactly one field for common state (in_circulation)'),
-	(CCircular(), np.array([20, 20, 20, 20, 20, 20]), 5, 'offer_length_per_vendor needs to be  3 or 4'),
-	(CCircular(), np.array([-20, -20, -20, -20]), 3, 'price_old and price_new need to be greater or equal 1')
+	(CCircular(), np.array([20, 20, 20, 20, 20, 20]), 5, 'offer_length_per_vendor needs to be 3 or 4'),
+	(CCircular(), np.array([-20, -20, -20, -20]), 3, 'price_refurbished and price_new need to be >= 1')
 ]
 
 

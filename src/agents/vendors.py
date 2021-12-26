@@ -98,7 +98,7 @@ class FixedPriceAgent(RuleBasedAgent, ABC):
 
 class FixedPriceLEAgent(LinearAgent, FixedPriceAgent):
 	def __init__(self, fixed_price=ut.PRODUCTION_PRICE + 3, name='fixed_price_le'):
-		assert isinstance(fixed_price, int), 'The fixed_price must be an integer'
+		assert isinstance(fixed_price, int), 'the fixed_price must be an integer'
 		self.name = name
 		self.fixed_price = fixed_price
 
