@@ -5,54 +5,37 @@
 		</clipPath>
 	</defs>
 	<g clip-path="url(#prefix__a)" transform="translate(-68 -72)">
-		<path stroke="#007A9E" stroke-width="3" stroke-miterlimit="8" stroke-dasharray="12 9" fill="#BDD7EE"
-			d="M649.5 165.5h103v232h-103zM457.5 164.5h102v233h-102z" />
-		<path stroke="#007A9E" stroke-width="2.667" stroke-linejoin="round" stroke-miterlimit="10" fill="#FFF"
-			d="M81.5 172.5h87v55h-87z" /><text fill="#323232" font-family="Verdana,Verdana_MSFontService,sans-serif"
-			font-weight="700" font-size="11" transform="translate(99.324 204)">Supplier</text>
-		<path stroke="#007A9E" stroke-width="2.667" stroke-linejoin="round" stroke-miterlimit="10" fill="#FFF"
-			d="M272.5 172.5h88v55h-88z" /><text fill="#323232" font-family="Verdana,Verdana_MSFontService,sans-serif"
-			font-weight="700" font-size="11" transform="translate(296.526 195)">Firm A<tspan font-style="italic"
-				font-size="8" x="-12.747" y="18"> Inventory:</tspan>
+		<path stroke="#007A9E" stroke-width="3" stroke-miterlimit="8" stroke-dasharray="12 9" fill="#BDD7EE" d="M649.5 165.5h103v232h-103zM457.5 164.5h102v233h-102z" />
+		<path stroke="#007A9E" stroke-width="2.667" stroke-linejoin="round" stroke-miterlimit="10" fill="#FFF" d="M81.5 172.5h87v55h-87z" />
+		<text fill="#323232" font-family="Verdana,Verdana_MSFontService,sans-serif" font-weight="700" font-size="11" transform="translate(99.324 204)">Supplier</text>
+		<path stroke="#007A9E" stroke-width="2.667" stroke-linejoin="round" stroke-miterlimit="10" fill="#FFF" d="M272.5 172.5h88v55h-88z" />
+		<text fill="#323232" font-family="Verdana,Verdana_MSFontService,sans-serif" font-weight="700" font-size="11" transform="translate(296.526 195)">Firm A
+			<tspan font-style="italic" font-size="8" x="-12.747" y="18"> Inventory:</tspan>
 		</text>
-		<path stroke="#007A9E" stroke-width="2.667" stroke-linejoin="round" stroke-miterlimit="10" fill="#FFF"
-			d="M848.5 172.5h88v55h-88z" /><text fill="#323232" font-family="Verdana,Verdana_MSFontService,sans-serif"
-			font-weight="700" font-size="11" transform="translate(866.611 195)">Garbage<tspan font-style="italic"
-				font-size="8" x="-7.167" y="18"> Amount:</tspan>
+		<path stroke="#007A9E" stroke-width="2.667" stroke-linejoin="round" stroke-miterlimit="10" fill="#FFF" d="M848.5 172.5h88v55h-88z" />
+		<text fill="#323232" font-family="Verdana,Verdana_MSFontService,sans-serif" font-weight="700" font-size="11" transform="translate(866.611 195)">Garbage
+			<tspan font-style="italic" font-size="8" x="-7.167" y="18"> Amount:</tspan>
 		</text>
-		<path stroke="#007A9E" stroke-width="2.667" stroke-linejoin="round" stroke-miterlimit="10" fill="#FFF"
-			d="M656.5 172.5h88v55h-88z" /><text fill="#323232" font-family="Verdana,Verdana_MSFontService,sans-serif"
-			font-weight="700" font-size="11" transform="translate(672.136 188)">Resource<tspan x="9.753" y="13">in use
-			</tspan>
+		<path stroke="#007A9E" stroke-width="2.667" stroke-linejoin="round" stroke-miterlimit="10" fill="#FFF" d="M656.5 172.5h88v55h-88z" />
+		<text fill="#323232" font-family="Verdana,Verdana_MSFontService,sans-serif" font-weight="700" font-size="11" transform="translate(672.136 188)">Resource
+			<tspan x="9.753" y="13">in use</tspan>
 			<tspan font-style="italic" font-size="8" x="-4.58" y="31">Amount:</tspan>
-			<tspan font-style="italic" font-size="8" x="30.587" y="31"> </tspan>
 		</text>
-		<path stroke="#007A9E" stroke-width="2.667" stroke-linejoin="round" stroke-miterlimit="10" fill="#FFF"
-			d="M464.5 172.5h88v55h-88z" /><text fill="#323232" font-family="Verdana,Verdana_MSFontService,sans-serif"
-			font-weight="700" font-size="11" transform="translate(484.601 198)">Market-<tspan x="7.587" y="12">place
-			</tspan>
+		<path stroke="#007A9E" stroke-width="2.667" stroke-linejoin="round" stroke-miterlimit="10" fill="#FFF" d="M464.5 172.5h88v55h-88z" />
+		<text fill="#323232" font-family="Verdana,Verdana_MSFontService,sans-serif" font-weight="700" font-size="11" transform="translate(484.601 198)">Market-
+			<tspan x="7.587" y="12">place</tspan>
 		</text>
-		<path
-			d="M177.5 201.216l83.163-.049-.001-1.333-83.162.048zm75.501 4.531l8.984-5.247-8.99-5.238a.667.667 0 00-.671 1.152l8.003 4.662v-1.151l-7.998 4.671a.667.667 0 00.672 1.151z"
-			fill="#313131" /><text fill="#323232" font-family="Verdana,Verdana_MSFontService,sans-serif"
-			font-style="italic" font-weight="700" font-size="8" transform="translate(180.11 179)">Resource cost:</tspan>
+		<path d="M177.5 201.216l83.163-.049-.001-1.333-83.162.048zm75.501 4.531l8.984-5.247-8.99-5.238a.667.667 0 00-.671 1.152l8.003 4.662v-1.151l-7.998 4.671a.667.667 0 00.672 1.151z" fill="#313131" />
+		<text fill="#323232" font-family="Verdana,Verdana_MSFontService,sans-serif" font-style="italic" font-weight="700" font-size="8" transform="translate(180.11 179)">Resource cost:
 			<tspan x="0" y="14">Purchases:</tspan>
 		</text>
-		<path
-			d="M758.502 199.833l1.334.005-.005 1.333-1.333-.004zm2.667.009l1.333.005-.004 1.333-1.334-.004zm2.667.009l1.333.005-.005 1.333-1.333-.005zm2.666.009l1.334.004-.005 1.334-1.333-.005zm2.667.009l1.333.004-.004 1.334-1.334-.005zm2.667.009l1.333.004-.005 1.334-1.333-.005zm2.666.009l1.334.004-.005 1.333-1.333-.004zm2.667.009l1.333.004-.004 1.333-1.334-.004zm2.667.008l1.333.005-.005 1.333-1.333-.004zm2.666.009l1.333.005-.004 1.333-1.333-.004zm2.667.009l1.333.005-.004 1.333-1.334-.004zm2.666.009l1.334.005-.005 1.333-1.333-.005zm2.667.009l1.333.004-.004 1.334-1.333-.005zm2.667.009l1.333.004-.004 1.334-1.334-.005zm2.666.009l1.334.004-.005 1.334-1.333-.005zm2.667.009l1.333.004-.004 1.333-1.333-.004zm2.667.008l1.333.005-.004 1.333-1.334-.004zm2.666.009l1.334.005-.005 1.333-1.333-.004zm2.667.009l1.333.005-.004 1.333-1.333-.004zm2.667.009l1.333.005-.004 1.333-1.334-.005zm2.666.009l1.334.004-.005 1.334-1.333-.005zm2.667.009l1.333.004-.004 1.334-1.333-.005zm2.667.009l1.333.004-.004 1.334-1.334-.005zm2.666.009l1.334.004-.005 1.333-1.333-.004zm2.667.009l1.333.004-.004 1.333-1.334-.004zm2.667.008l1.333.005-.005 1.333-1.333-.004zm2.666.009l1.334.005-.005 1.333-1.333-.004zm2.667.009l1.333.005-.004 1.333-1.334-.004zm2.667.009l1.333.005-.005 1.333-1.333-.005zm2.666.009l1.334.004-.005 1.334-1.333-.005zm2.667.009h.157l-.004 1.334-.158-.001zm-7.491-4.601l8.969 5.272-9.004 5.213a.667.667 0 11-.668-1.154l8.015-4.64-.004 1.152-7.984-4.694a.666.666 0 11.676-1.149z"
-			fill="#313131" />
-		<path d="M695.411 275.258L319.5 274.5" stroke="#313131" stroke-width="1.333" stroke-linejoin="round"
-			stroke-miterlimit="10" fill="none" />
-		<path
-			d="M320.167 274.3v-36.48h-1.334v36.48zm4.576-28.816l-5.243-8.987-5.242 8.987a.667.667 0 101.151.672l4.667-8h-1.152l4.667 8a.667.667 0 101.152-.672zM508.167 118.486l.819 39.778-1.333.028-.819-39.778zm5.236 32.022l-5.056 9.093-5.427-8.877a.667.667 0 011.138-.696l4.83 7.902-1.151.024 4.501-8.094a.666.666 0 111.165.648z"
-			fill="#313131" />
-		<path stroke="#007A9E" stroke-width="2.667" stroke-linejoin="round" stroke-miterlimit="10" fill="#FFF"
-			d="M464.5 83.5h88v27h-88z" /><text fill="#323232" font-family="Verdana,Verdana_MSFontService,sans-serif"
-			font-weight="700" font-size="11" transform="translate(478.02 101)">Consumer</text>
-		<path
-			d="M366.5 174.216l83.163-.049-.001-1.333-83.162.048zm75.501 4.531l8.984-5.247-8.99-5.238a.667.667 0 00-.671 1.152l8.003 4.662v-1.151l-7.998 4.671a.667.667 0 00.672 1.151zM367.5 227.216l83.163-.049-.001-1.333-83.162.048zm75.501 4.531l8.984-5.247-8.99-5.238a.667.667 0 00-.671 1.152l8.003 4.662v-1.151l-7.998 4.671a.667.667 0 00.672 1.151zM566.5 201.216l75.48-.049v-1.333l-75.48.048zm67.82 4.532l8.983-5.248-8.99-5.237a.667.667 0 00-.672 1.152l8.004 4.661-.001-1.151-7.997 4.672a.667.667 0 10.672 1.15z"
-			fill="#313131" /><text fill="#323232" font-family="Verdana,Verdana_MSFontService,sans-serif"
-			font-style="italic" font-weight="700" font-size="8" transform="translate(371.931 207)">Price used:
+		<path d="M758.502 199.833l1.334.005-.005 1.333-1.333-.004zm2.667.009l1.333.005-.004 1.333-1.334-.004zm2.667.009l1.333.005-.005 1.333-1.333-.005zm2.666.009l1.334.004-.005 1.334-1.333-.005zm2.667.009l1.333.004-.004 1.334-1.334-.005zm2.667.009l1.333.004-.005 1.334-1.333-.005zm2.666.009l1.334.004-.005 1.333-1.333-.004zm2.667.009l1.333.004-.004 1.333-1.334-.004zm2.667.008l1.333.005-.005 1.333-1.333-.004zm2.666.009l1.333.005-.004 1.333-1.333-.004zm2.667.009l1.333.005-.004 1.333-1.334-.004zm2.666.009l1.334.005-.005 1.333-1.333-.005zm2.667.009l1.333.004-.004 1.334-1.333-.005zm2.667.009l1.333.004-.004 1.334-1.334-.005zm2.666.009l1.334.004-.005 1.334-1.333-.005zm2.667.009l1.333.004-.004 1.333-1.333-.004zm2.667.008l1.333.005-.004 1.333-1.334-.004zm2.666.009l1.334.005-.005 1.333-1.333-.004zm2.667.009l1.333.005-.004 1.333-1.333-.004zm2.667.009l1.333.005-.004 1.333-1.334-.005zm2.666.009l1.334.004-.005 1.334-1.333-.005zm2.667.009l1.333.004-.004 1.334-1.333-.005zm2.667.009l1.333.004-.004 1.334-1.334-.005zm2.666.009l1.334.004-.005 1.333-1.333-.004zm2.667.009l1.333.004-.004 1.333-1.334-.004zm2.667.008l1.333.005-.005 1.333-1.333-.004zm2.666.009l1.334.005-.005 1.333-1.333-.004zm2.667.009l1.333.005-.004 1.333-1.334-.004zm2.667.009l1.333.005-.005 1.333-1.333-.005zm2.666.009l1.334.004-.005 1.334-1.333-.005zm2.667.009h.157l-.004 1.334-.158-.001zm-7.491-4.601l8.969 5.272-9.004 5.213a.667.667 0 11-.668-1.154l8.015-4.64-.004 1.152-7.984-4.694a.666.666 0 11.676-1.149z" fill="#313131" />
+		<path d="M695.411 275.258L319.5 274.5" stroke="#313131" stroke-width="1.333" stroke-linejoin="round" stroke-miterlimit="10" fill="none" />
+		<path d="M320.167 274.3v-36.48h-1.334v36.48zm4.576-28.816l-5.243-8.987-5.242 8.987a.667.667 0 101.151.672l4.667-8h-1.152l4.667 8a.667.667 0 101.152-.672zM508.167 118.486l.819 39.778-1.333.028-.819-39.778zm5.236 32.022l-5.056 9.093-5.427-8.877a.667.667 0 011.138-.696l4.83 7.902-1.151.024 4.501-8.094a.666.666 0 111.165.648z" fill="#313131" />
+		<path stroke="#007A9E" stroke-width="2.667" stroke-linejoin="round" stroke-miterlimit="10" fill="#FFF" d="M464.5 83.5h88v27h-88z" />
+		<text fill="#323232" font-family="Verdana,Verdana_MSFontService,sans-serif" font-weight="700" font-size="11" transform="translate(478.02 101)">Consumer</text>
+		<path d="M366.5 174.216l83.163-.049-.001-1.333-83.162.048zm75.501 4.531l8.984-5.247-8.99-5.238a.667.667 0 00-.671 1.152l8.003 4.662v-1.151l-7.998 4.671a.667.667 0 00.672 1.151zM367.5 227.216l83.163-.049-.001-1.333-83.162.048zm75.501 4.531l8.984-5.247-8.99-5.238a.667.667 0 00-.671 1.152l8.003 4.662v-1.151l-7.998 4.671a.667.667 0 00.672 1.151zM566.5 201.216l75.48-.049v-1.333l-75.48.048zm67.82 4.532l8.983-5.248-8.99-5.237a.667.667 0 00-.672 1.152l8.004 4.661-.001-1.151-7.997 4.672a.667.667 0 10.672 1.15z" fill="#313131" />
+		<text fill="#323232" font-family="Verdana,Verdana_MSFontService,sans-serif" font-style="italic" font-weight="700" font-size="8" transform="translate(371.931 207)">Price used:
 			<tspan x="0" y="14">Sales used:</tspan>
 			<tspan x="0" y="-53">Price new:</tspan>
 			<tspan x="0" y="-39">Sales new:</tspan>
@@ -64,44 +47,33 @@
 			<tspan fill="#000" font-size="9" x="-292.061" y="-89">Episode length:</tspan>
 			<tspan fill="#000" font-size="9" x="-292.061" y="-70">Episode:</tspan>
 		</text>
-		<path stroke="#007A9E" stroke-width="2.667" stroke-linejoin="round" stroke-miterlimit="10" fill="#FFF"
-			d="M81.5 333.5h87v55h-87z" /><text fill="#323232" font-family="Verdana,Verdana_MSFontService,sans-serif"
-			font-weight="700" font-size="11" transform="translate(99.324 365)">Supplier</text>
-		<path stroke="#007A9E" stroke-width="2.667" stroke-linejoin="round" stroke-miterlimit="10" fill="#FFF"
-			d="M272.5 333.5h88v55h-88z" /><text fill="#323232" font-family="Verdana,Verdana_MSFontService,sans-serif"
-			font-weight="700" font-size="11" transform="translate(296.612 356)">Firm B<tspan font-style="italic"
-				font-size="8" x="-12.833" y="18"> Inventory:</tspan>
+		<path stroke="#007A9E" stroke-width="2.667" stroke-linejoin="round" stroke-miterlimit="10" fill="#FFF" d="M81.5 333.5h87v55h-87z" />
+		<text fill="#323232" font-family="Verdana,Verdana_MSFontService,sans-serif" font-weight="700" font-size="11" transform="translate(99.324 365)">Supplier</text>
+		<path stroke="#007A9E" stroke-width="2.667" stroke-linejoin="round" stroke-miterlimit="10" fill="#FFF" d="M272.5 333.5h88v55h-88z" />
+		<text fill="#323232" font-family="Verdana,Verdana_MSFontService,sans-serif" font-weight="700" font-size="11" transform="translate(296.612 356)">Firm B
+			<tspan font-style="italic" font-size="8" x="-12.833" y="18">Inventory:</tspan>
 		</text>
-		<path stroke="#007A9E" stroke-width="2.667" stroke-linejoin="round" stroke-miterlimit="10" fill="#FFF"
-			d="M848.5 333.5h88v55h-88z" /><text fill="#323232" font-family="Verdana,Verdana_MSFontService,sans-serif"
-			font-weight="700" font-size="11" transform="translate(866.611 356)">Garbage<tspan font-style="italic"
-				font-size="8" x="-7.167" y="18"> Amount:</tspan>
+		<path stroke="#007A9E" stroke-width="2.667" stroke-linejoin="round" stroke-miterlimit="10" fill="#FFF" d="M848.5 333.5h88v55h-88z" />
+		<text fill="#323232" font-family="Verdana,Verdana_MSFontService,sans-serif" font-weight="700" font-size="11" transform="translate(866.611 356)">Garbage
+			<tspan font-style="italic" font-size="8" x="-7.167" y="18"> Amount:</tspan>
 		</text>
-		<path stroke="#007A9E" stroke-width="2.667" stroke-linejoin="round" stroke-miterlimit="10" fill="#FFF"
-			d="M656.5 333.5h88v55h-88z" /><text fill="#323232" font-family="Verdana,Verdana_MSFontService,sans-serif"
-			font-weight="700" font-size="11" transform="translate(672.136 349)">Resource<tspan x="9.753" y="13">in
-			</tspan>use<tspan font-style="italic" font-size="8" x="-4.58" y="31">Amount:</tspan>
+		<path stroke="#007A9E" stroke-width="2.667" stroke-linejoin="round" stroke-miterlimit="10" fill="#FFF" d="M656.5 333.5h88v55h-88z" />
+		<text fill="#323232" font-family="Verdana,Verdana_MSFontService,sans-serif" font-weight="700" font-size="11" transform="translate(672.136 349)">Resource
+			<tspan x="9.753" y="13">in use</tspan>
+			<tspan font-style="italic" font-size="8" x="-4.58" y="31">Amount:</tspan>
 		</text>
-		<path stroke="#007A9E" stroke-width="2.667" stroke-linejoin="round" stroke-miterlimit="10" fill="#FFF"
-			d="M464.5 333.5h88v55h-88z" /><text fill="#323232" font-family="Verdana,Verdana_MSFontService,sans-serif"
-			font-weight="700" font-size="11" transform="translate(484.601 359)">Market<tspan x="41.833" y="0">-</tspan>
+		<path stroke="#007A9E" stroke-width="2.667" stroke-linejoin="round" stroke-miterlimit="10" fill="#FFF" d="M464.5 333.5h88v55h-88z" />
+		<text fill="#323232" font-family="Verdana,Verdana_MSFontService,sans-serif" font-weight="700" font-size="11" transform="translate(484.601 359)">Market-
 			<tspan x="7.587" y="12">place</tspan>
 		</text>
-		<path
-			d="M177.5 362.216l83.163-.049-.001-1.333-83.162.048zm75.501 4.531l8.984-5.247-8.99-5.238a.667.667 0 00-.671 1.152l8.003 4.662v-1.151l-7.998 4.671a.667.667 0 00.672 1.151z"
-			fill="#313131" /><text fill="#323232" font-family="Verdana,Verdana_MSFontService,sans-serif"
-			font-style="italic" font-weight="700" font-size="8" transform="translate(180.11 340)">Resource cost:
+		<path d="M177.5 362.216l83.163-.049-.001-1.333-83.162.048zm75.501 4.531l8.984-5.247-8.99-5.238a.667.667 0 00-.671 1.152l8.003 4.662v-1.151l-7.998 4.671a.667.667 0 00.672 1.151z" fill="#313131" />
+		<text fill="#323232" font-family="Verdana,Verdana_MSFontService,sans-serif" font-style="italic" font-weight="700" font-size="8" transform="translate(180.11 340)">Resource cost:
 			<tspan x="0" y="14">Purchases:</tspan>
 		</text>
-		<path
-			d="M758.502 360.833l1.334.005-.005 1.333-1.333-.004zm2.667.009l1.333.005-.004 1.333-1.334-.004zm2.667.009l1.333.005-.005 1.333-1.333-.005zm2.666.009l1.334.004-.005 1.334-1.333-.005zm2.667.009l1.333.004-.004 1.334-1.334-.005zm2.667.009l1.333.004-.005 1.334-1.333-.005zm2.666.009l1.334.004-.005 1.333-1.333-.004zm2.667.009l1.333.004-.004 1.333-1.334-.004zm2.667.008l1.333.005-.005 1.333-1.333-.004zm2.666.009l1.333.005-.004 1.333-1.333-.004zm2.667.009l1.333.005-.004 1.333-1.334-.004zm2.666.009l1.334.005-.005 1.333-1.333-.005zm2.667.009l1.333.004-.004 1.334-1.333-.005zm2.667.009l1.333.004-.004 1.334-1.334-.005zm2.666.009l1.334.004-.005 1.334-1.333-.005zm2.667.009l1.333.004-.004 1.333-1.333-.004zm2.667.009l1.333.004-.004 1.333-1.334-.004zm2.666.008l1.334.005-.005 1.333-1.333-.004zm2.667.009l1.333.005-.004 1.333-1.333-.004zm2.667.009l1.333.005-.004 1.333-1.334-.005zm2.666.009l1.334.004-.005 1.334-1.333-.005zm2.667.009l1.333.004-.004 1.334-1.333-.005zm2.667.009l1.333.004-.004 1.334-1.334-.005zm2.666.009l1.334.004-.005 1.333-1.333-.004zm2.667.009l1.333.004-.004 1.333-1.334-.004zm2.667.008l1.333.005-.005 1.333-1.333-.004zm2.666.009l1.334.005-.005 1.333-1.333-.004zm2.667.009l1.333.005-.004 1.333-1.334-.004zm2.667.009l1.333.005-.005 1.333-1.333-.005zm2.666.009l1.334.004-.005 1.334-1.333-.005zm2.667.009h.157l-.004 1.334-.158-.001zm-7.491-4.601l8.969 5.272-9.004 5.213a.667.667 0 11-.668-1.154l8.015-4.64-.004 1.152-7.984-4.694a.666.666 0 11.676-1.149z"
-			fill="#313131" />
-		<path d="M695.5 404.5v32.497M695.411 436.258L319.5 435.5" stroke="#313131" stroke-width="1.333"
-			stroke-linejoin="round" stroke-miterlimit="10" fill="none" />
-		<path
-			d="M320.167 435.3v-36.48h-1.334v36.48zm4.576-28.816l-5.243-8.987-5.242 8.987a.667.667 0 101.151.672l4.667-8h-1.152l4.667 8a.667.667 0 101.152-.672zM366.5 335.216l83.163-.049-.001-1.333-83.162.048zm75.501 4.531l8.984-5.247-8.99-5.238a.667.667 0 00-.671 1.152l8.003 4.662v-1.151l-7.998 4.671a.667.667 0 00.672 1.151zM367.5 388.216l83.163-.049-.001-1.333-83.162.048zm75.501 4.531l8.984-5.247-8.99-5.238a.667.667 0 00-.671 1.152l8.003 4.662v-1.151l-7.998 4.671a.667.667 0 00.672 1.151zM566.5 361.216l75.48-.049v-1.333l-75.48.048zm67.82 4.532l8.983-5.248-8.99-5.237a.667.667 0 00-.672 1.152l8.004 4.661-.001-1.151-7.997 4.672a.667.667 0 10.672 1.15z"
-			fill="#313131" /><text fill="#323232" font-family="Verdana,Verdana_MSFontService,sans-serif"
-			font-style="italic" font-weight="700" font-size="8" transform="translate(371.931 367)">Price used:</tspan>
+		<path d="M758.502 360.833l1.334.005-.005 1.333-1.333-.004zm2.667.009l1.333.005-.004 1.333-1.334-.004zm2.667.009l1.333.005-.005 1.333-1.333-.005zm2.666.009l1.334.004-.005 1.334-1.333-.005zm2.667.009l1.333.004-.004 1.334-1.334-.005zm2.667.009l1.333.004-.005 1.334-1.333-.005zm2.666.009l1.334.004-.005 1.333-1.333-.004zm2.667.009l1.333.004-.004 1.333-1.334-.004zm2.667.008l1.333.005-.005 1.333-1.333-.004zm2.666.009l1.333.005-.004 1.333-1.333-.004zm2.667.009l1.333.005-.004 1.333-1.334-.004zm2.666.009l1.334.005-.005 1.333-1.333-.005zm2.667.009l1.333.004-.004 1.334-1.333-.005zm2.667.009l1.333.004-.004 1.334-1.334-.005zm2.666.009l1.334.004-.005 1.334-1.333-.005zm2.667.009l1.333.004-.004 1.333-1.333-.004zm2.667.009l1.333.004-.004 1.333-1.334-.004zm2.666.008l1.334.005-.005 1.333-1.333-.004zm2.667.009l1.333.005-.004 1.333-1.333-.004zm2.667.009l1.333.005-.004 1.333-1.334-.005zm2.666.009l1.334.004-.005 1.334-1.333-.005zm2.667.009l1.333.004-.004 1.334-1.333-.005zm2.667.009l1.333.004-.004 1.334-1.334-.005zm2.666.009l1.334.004-.005 1.333-1.333-.004zm2.667.009l1.333.004-.004 1.333-1.334-.004zm2.667.008l1.333.005-.005 1.333-1.333-.004zm2.666.009l1.334.005-.005 1.333-1.333-.004zm2.667.009l1.333.005-.004 1.333-1.334-.004zm2.667.009l1.333.005-.005 1.333-1.333-.005zm2.666.009l1.334.004-.005 1.334-1.333-.005zm2.667.009h.157l-.004 1.334-.158-.001zm-7.491-4.601l8.969 5.272-9.004 5.213a.667.667 0 11-.668-1.154l8.015-4.64-.004 1.152-7.984-4.694a.666.666 0 11.676-1.149z" fill="#313131" />
+		<path d="M695.5 404.5v32.497M695.411 436.258L319.5 435.5" stroke="#313131" stroke-width="1.333" stroke-linejoin="round" stroke-miterlimit="10" fill="none" />
+		<path d="M320.167 435.3v-36.48h-1.334v36.48zm4.576-28.816l-5.243-8.987-5.242 8.987a.667.667 0 101.151.672l4.667-8h-1.152l4.667 8a.667.667 0 101.152-.672zM366.5 335.216l83.163-.049-.001-1.333-83.162.048zm75.501 4.531l8.984-5.247-8.99-5.238a.667.667 0 00-.671 1.152l8.003 4.662v-1.151l-7.998 4.671a.667.667 0 00.672 1.151zM367.5 388.216l83.163-.049-.001-1.333-83.162.048zm75.501 4.531l8.984-5.247-8.99-5.238a.667.667 0 00-.671 1.152l8.003 4.662v-1.151l-7.998 4.671a.667.667 0 00.672 1.151zM566.5 361.216l75.48-.049v-1.333l-75.48.048zm67.82 4.532l8.983-5.248-8.99-5.237a.667.667 0 00-.672 1.152l8.004 4.661-.001-1.151-7.997 4.672a.667.667 0 10.672 1.15z" fill="#313131" />
+		<text fill="#323232" font-family="Verdana,Verdana_MSFontService,sans-serif" font-style="italic" font-weight="700" font-size="8" transform="translate(371.931 367)">Price used:
 			<tspan x="0" y="14">Sales used:</tspan>
 			<tspan x="0" y="-53">Price new:</tspan>
 			<tspan x="0" y="-39">Sales new:</tspan>
@@ -110,7 +82,6 @@
 			<tspan fill="#000" font-weight="400" x="418.467" y="54">All quantities are averaged over all </tspan>
 			<tspan fill="#000" font-weight="400" x="418.467" y="64">time periods of the current episode.</tspan>
 		</text>
-		<path d="M695.5 236.5v39.109" stroke="#313131" stroke-width="1.333" stroke-linejoin="round"
-			stroke-miterlimit="10" fill="none" />
+		<path d="M695.5 236.5v39.109" stroke="#313131" stroke-width="1.333" stroke-linejoin="round" stroke-miterlimit="10" fill="none" />
 	</g>
 </svg>
