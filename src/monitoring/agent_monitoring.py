@@ -19,12 +19,14 @@ class Monitor():
 
 	def __init__(self) -> None:
 		# Do not change the values in here! They are assumed in tests. Instead use setup_monitoring()!
-		assert os.path.exists(self.get_modelfile_path('CircularEconomy_QLearningCEAgent.dat')), 'the default modelfile \'CircularEconomy_QLearningCEAgent.dat\' does not exist'
 		self.enable_live_draw = True
 		self.episodes = 500
 		self.plot_interval = 50
 		self.marketplace = sim_market.CircularEconomyMonopolyScenario()
-		self.agents = [vendors.QLearningCEAgent(self.marketplace.observation_space.shape[0], self.get_action_space(), load_path=self.get_modelfile_path('CircularEconomy_QLearningCEAgent.dat'))]
+		default_agent = vendors.QLearningCEAgent
+		default_modelfile = f'{type(self.marketplace).__name__}_{default_agent.__name__}.dat'
+		assert os.path.exists(self.get_modelfile_path(default_modelfile)), f'the default modelfile does not exist: {default_modelfile}'
+		self.agents = [default_agent(self.marketplace.observation_space.shape[0], self.get_action_space(), load_path=self.get_modelfile_path(default_modelfile))]
 		self.agent_colors = ['#0000ff']
 		self.subfolder_name = 'plots_' + time.strftime('%Y%m%d-%H%M%S')
 		self.folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring' + os.sep + self.subfolder_name
@@ -96,7 +98,7 @@ class Monitor():
 		"""
 		assert str.endswith(model_name, '.dat'), 'the modelfile must be a .dat file'
 		full_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring' + os.sep + model_name
-		assert os.path.exists(full_path), 'the specified modelfile does not exist'
+		assert os.path.exists(full_path), f'the specified modelfile does not exist: {full_path}'
 		return full_path
 
 	def get_action_space(self) -> int:
