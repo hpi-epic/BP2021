@@ -37,9 +37,8 @@ def test_init_default_values():
 	assert isinstance(test_monitor.marketplace, sim_market.CircularEconomyMonopolyScenario)
 	assert isinstance(test_monitor.agents[0], vendors.QLearningCEAgent)
 	assert 1 == len(test_monitor.agents)
-	assert ['#0000ff'] == test_monitor.agent_colors
-	assert test_monitor.subfolder_name.startswith('plots_')
-	assert os.path.normcase(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring' + os.sep + test_monitor.subfolder_name) == os.path.normcase(test_monitor.folder_path)
+	assert [(1.0, 0.0, 0.0, 1.0)] == test_monitor.agent_colors
+	# folder_path can hardly be tested due to the default involving the current DateTime
 
 
 def test_correct_setup_monitoring():
@@ -53,7 +52,7 @@ def test_correct_setup_monitoring():
 	assert isinstance(monitor.agents[1], vendors.QLearningCERebuyAgent)
 	assert 'reptiloid' == monitor.agents[0].name
 	assert 'q_learner' == monitor.agents[1].name
-	assert 'subfoldername' == monitor.subfolder_name
+	assert os.path.normcase(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring' + os.sep + 'subfoldername') == os.path.normcase(monitor.folder_path)
 	assert 2 == len(monitor.agent_colors)
 
 
@@ -262,6 +261,19 @@ def test_run_marketplace():
 	print(agent_rewards)
 	assert 1 == len(monitor.agents)
 	assert monitor.episodes == len(agent_rewards[0])
+
+
+def test_get_configuration():
+	monitor.setup_monitoring(enable_live_draw=False, episodes=10, plot_interval=2, marketplace=sim_market.CircularEconomyMonopolyScenario, agents=[(vendors.HumanPlayerCERebuy, ['reptiloid']), (vendors.QLearningCERebuyAgent, ['CircularEconomyMonopolyScenario_QLearningCEAgent.dat', 'q_learner'])], subfolder_name='subfoldername')
+	current_configuration = monitor.get_configuration()
+	assert len(current_configuration) == 7, 'parameters were updated in agent_monitoring.py, but not updated in the tests!'
+	assert 'enable_live_draw' in current_configuration
+	assert 'episodes' in current_configuration
+	assert 'plot_interval' in current_configuration
+	assert 'marketplace' in current_configuration
+	assert 'agents' in current_configuration
+	assert 'agent_colors' in current_configuration
+	assert 'folder_path' in current_configuration
 
 
 def test_main():

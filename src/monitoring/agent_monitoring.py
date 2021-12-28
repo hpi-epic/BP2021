@@ -27,9 +27,8 @@ class Monitor():
 		default_modelfile = f'{type(self.marketplace).__name__}_{default_agent.__name__}.dat'
 		assert os.path.exists(self.get_modelfile_path(default_modelfile)), f'the default modelfile does not exist: {default_modelfile}'
 		self.agents = [default_agent(self.marketplace.observation_space.shape[0], self.get_action_space(), load_path=self.get_modelfile_path(default_modelfile))]
-		self.agent_colors = ['#0000ff']
-		self.subfolder_name = 'plots_' + time.strftime('%Y%m%d-%H%M%S')
-		self.folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring' + os.sep + self.subfolder_name
+		self.agent_colors = [(1.0, 0.0, 0.0, 1.0)]
+		self.folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring' + os.sep + 'plots_' + time.strftime('%Y%m%d-%H%M%S')
 
 	# helper functions
 	def round_up(self, number, decimals=0) -> np.float64:
@@ -218,12 +217,11 @@ class Monitor():
 
 		if(subfolder_name is not None):
 			assert isinstance(subfolder_name, str), 'subfolder_name must be of type str'
-			self.subfolder_name = subfolder_name
-			self.folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring' + os.sep + self.subfolder_name
+			self.folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring' + os.sep + subfolder_name
 
 	def get_configuration(self) -> dict:
 		"""
-		Return the configuration of the current monitor.
+		Return the configuration of the current monitor as a dictionary.
 
 		Returns:
 			dict: A dict containing the configuration (=class variables)
@@ -235,7 +233,6 @@ class Monitor():
 		configuration['marketplace'] = self.marketplace
 		configuration['agents'] = self.agents
 		configuration['agent_colors'] = self.agent_colors
-		configuration['subfolder_name'] = self.subfolder_name
 		configuration['folder_path'] = self.folder_path
 		return configuration
 
@@ -293,8 +290,10 @@ class Monitor():
 		# find the number of bins needed, we only use steps of 1000, assuming our agents are good bois :)
 		plot_range = self.round_down(int(self.metrics_minimum(rewards)), -3), self.round_up(int(self.metrics_maximum(rewards)), -3)
 		plot_bins = int(int(np.abs(plot_range[0]) + plot_range[1]) / 1000)
+		x_ticks = np.arange(plot_range[0], plot_range[1] + 1, 1000)
 
-		plt.hist(rewards, bins=plot_bins, color=self.agent_colors, rwidth=0.9, range=plot_range)
+		plt.hist(rewards, bins=plot_bins, color=self.agent_colors, range=plot_range, edgecolor='black')
+		plt.xticks(x_ticks)
 		plt.legend([a.name for a in self.agents])
 
 		if self.enable_live_draw:  # pragma: no cover
@@ -417,7 +416,8 @@ def main(monitor=Monitor()) -> None:
 	Args:
 		monitor (Monitor instance, optional): The monitor to run the session on. Defaults to a default Monitor() instance.
 	"""
-	# monitor.setup_monitoring(enable_live_draw=False, agents=[(vendors.QLearningCEAgent, []), (vendors.FixedPriceCEAgent, [(4,6)])])
+	# monitor.setup_monitoring(agents=[(vendors.QLearningCEAgent, []), (vendors.FixedPriceCEAgent, [(4, 6)])])
+	print('Running a monitoring session with the following configuration:')
 	print('Live Drawing enabled:', monitor.enable_live_draw)
 	print('Episodes:', monitor.episodes)
 	print(f'Plot interval: {monitor.plot_interval}')
@@ -428,12 +428,12 @@ def main(monitor=Monitor()) -> None:
 
 	rewards = monitor.run_marketplace()
 
-	for i in range(len(rewards)):
-		print(f'Statistics for agent: {monitor.agents[i].name}')
-		print(f'The average reward over {monitor.episodes} episodes is: {str(monitor.metrics_average(rewards[i]))}')
-		print(f'The median reward over {monitor.episodes} episodes is: {str(monitor.metrics_median(rewards[i]))}')
-		print(f'The maximum reward over {monitor.episodes} episodes is: {str(monitor.metrics_maximum(rewards[i]))}')
-		print(f'The minimum reward over {monitor.episodes} episodes is: {str(monitor.metrics_minimum(rewards[i]))}')
+	for current_reward in enumerate(rewards):
+		print(f'Statistics for agent: {monitor.agents[current_reward[0]].name}')
+		print(f'The average reward over {monitor.episodes} episodes is: {str(monitor.metrics_average(current_reward[1]))}')
+		print(f'The median reward over {monitor.episodes} episodes is: {str(monitor.metrics_median(current_reward[1]))}')
+		print(f'The maximum reward over {monitor.episodes} episodes is: {str(monitor.metrics_maximum(current_reward[1]))}')
+		print(f'The minimum reward over {monitor.episodes} episodes is: {str(monitor.metrics_minimum(current_reward[1]))}')
 
 	monitor.create_statistics_plots(rewards)
 	print(f'All plots were saved to {monitor.get_folder()}')
