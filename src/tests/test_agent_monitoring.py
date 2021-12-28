@@ -72,7 +72,7 @@ def test_incorrect_setup_monitoring():
 
 	with pytest.raises(AssertionError) as assertion_message:
 		monitor.setup_monitoring(marketplace=vendors.RuleBasedCEAgent)
-	assert 'the marketplace must be a subclass of sim_market' in str(assertion_message.value)
+	assert 'the marketplace must be a subclass of SimMarket' in str(assertion_message.value)
 	with pytest.raises(TypeError):
 		monitor.setup_monitoring(marketplace=sim_market.ClassicScenario())
 
@@ -86,14 +86,19 @@ def test_incorrect_setup_monitoring():
 		monitor.setup_monitoring(agents=[(vendors.RuleBasedCEAgent)])
 	assert 'agents must be a list of tuples' in str(assertion_message.value)
 	with pytest.raises(AssertionError) as assertion_message:
+		monitor.setup_monitoring(agents=[(vendors.RuleBasedCEAgent, ['arg'], 'too_much')])
+	assert 'the list entries in agents must have size 2 ([agent_class, arguments])' in str(assertion_message.value)
+	with pytest.raises(AssertionError) as assertion_message:
 		monitor.setup_monitoring(agents=[(sim_market.ClassicScenario, [])])
-	assert 'the first entry in each agent-tuple must be an agent class in vendors.py' in str(assertion_message.value)
+	assert 'the first entry in each agent-tuple must be an agent class in `vendors.py`' in str(assertion_message.value)
+	with pytest.raises(TypeError) as assertion_message:
+		monitor.setup_monitoring(agents=[(sim_market.ClassicScenario(), [])])
 	with pytest.raises(AssertionError) as assertion_message:
 		monitor.setup_monitoring(agents=[(vendors.RuleBasedCEAgent, sim_market.ClassicScenario)])
-	assert 'the second entry in each agent-tuple must be a list of arguments' in str(assertion_message.value)
+	assert 'the second entry in each agent-tuple must be a list' in str(assertion_message.value)
 	with pytest.raises(AssertionError) as assertion_message:
 		monitor.setup_monitoring(agents=[(vendors.RuleBasedCEAgent, 'new_name')])
-	assert 'the second entry in each agent-tuple must be a list of arguments' in str(assertion_message.value)
+	assert 'the second entry in each agent-tuple must be a list' in str(assertion_message.value)
 	with pytest.raises(AssertionError) as assertion_message:
 		monitor.setup_monitoring(agents=[(vendors.RuleBasedCEAgent, []), (vendors.FixedPriceLEAgent, [])])
 	assert 'the agents must all be of the same type (Linear/Circular)' in str(assertion_message.value)
@@ -111,7 +116,7 @@ def test_incorrect_setup_monitoring():
 
 	with pytest.raises(AssertionError) as assertion_message:
 		monitor.setup_monitoring(subfolder_name=1)
-	assert 'subfolder_name must be of type string' in str(assertion_message.value)
+	assert 'subfolder_name must be of type str' in str(assertion_message.value)
 
 
 def test_mismatched_scenarios():
@@ -120,19 +125,31 @@ def test_mismatched_scenarios():
 	assert 'the agent and marketplace must be of the same economy type' in str(assertion_message.value)
 
 
-def test_RL_agents_need_modelfile():
+def test_update_agents():
 	with pytest.raises(AssertionError) as assertion_message:
-		monitor.setup_monitoring(marketplace=sim_market.CircularEconomyMonopolyScenario, agents=[(vendors.QLearningCEAgent, [])])
-	assert 'the first argument for an reinforcement lerner needs to be a modelfile, the second one is an optional name (str)' in str(assertion_message.value)
+		monitor.setup_monitoring(agents=[(vendors.QLearningCEAgent, ['modelfile.dat', 'arg', 'too_much'])])
+	assert 'the argument list for a RL-agent must have length between 0 and 2' in str(assertion_message.value)
 	with pytest.raises(AssertionError) as assertion_message:
-		monitor.setup_monitoring(marketplace=sim_market.CircularEconomyMonopolyScenario, agents=[(vendors.QLearningCEAgent, ['modelfile.dat', 35])])
-	assert 'the first argument for an reinforcement lerner needs to be a modelfile, the second one is an optional name (str)' in str(assertion_message.value)
+		monitor.setup_monitoring(agents=[(vendors.QLearningCEAgent, [1, 2, 3, 4])])
+	assert 'the argument list for a RL-agent must have length between 0 and 2' in str(assertion_message.value)
 	with pytest.raises(AssertionError) as assertion_message:
-		monitor.setup_monitoring(marketplace=sim_market.CircularEconomyMonopolyScenario, agents=[(vendors.QLearningCEAgent, [25])])
-	assert 'the modelfile must be of type str' in str(assertion_message.value)
+		monitor.setup_monitoring(agents=[(vendors.QLearningCEAgent, ['modelfile.dat', 35])])
+	assert 'the arguments for a RL-agent must be of type str' in str(assertion_message.value)
 	with pytest.raises(AssertionError) as assertion_message:
-		monitor.setup_monitoring(marketplace=sim_market.CircularEconomyMonopolyScenario, agents=[(vendors.QLearningCEAgent, ['mymodel.dat'])])
+		monitor.setup_monitoring(agents=[(vendors.QLearningCEAgent, [25])])
+	assert 'the arguments for a RL-agent must be of type str' in str(assertion_message.value)
+	with pytest.raises(AssertionError) as assertion_message:
+		monitor.setup_monitoring(agents=[(vendors.QLearningCEAgent, ['agent_name', 'modelfile.dat'])])
+	assert 'if two arguments are provided, the first one must be the modelfile.' in str(assertion_message.value)
+	with pytest.raises(AssertionError) as assertion_message:
+		monitor.setup_monitoring(agents=[(vendors.QLearningCEAgent, ['mymodel.dat'])])
 	assert 'the specified modelfile does not exist' in str(assertion_message.value)
+	# some valid options that should pass
+	monitor.setup_monitoring(agents=[(vendors.QLearningCEAgent, [])])
+	monitor.setup_monitoring(agents=[(vendors.QLearningCEAgent, ['new_name'])])
+	monitor.setup_monitoring(agents=[(vendors.QLearningCEAgent, ['CircularEconomyMonopolyScenario_QLearningCEAgent.dat'])])
+	monitor.setup_monitoring(agents=[(vendors.QLearningCEAgent, ['CircularEconomyMonopolyScenario_QLearningCEAgent.dat', 'new_name'])])
+	monitor.setup_monitoring(agents=[(vendors.QLearningCEAgent, [f'{type(monitor.marketplace).__name__}_{vendors.QLearningCEAgent.__name__}.dat'])])
 
 
 def test_get_modelfile_path():
@@ -146,9 +163,9 @@ def test_get_modelfile_path():
 
 # Test once for a Linear, Circular and RebuyPrice Economy
 def test_get_action_space():
-	monitor.setup_monitoring(agents=[(vendors.QLearningLEAgent, ['ClassicScenario_QLearningLEAgent.dat'])], marketplace=sim_market.ClassicScenario)
-	monitor.setup_monitoring(agents=[(vendors.QLearningCEAgent, ['CircularEconomyMonopolyScenario_QLearningCEAgent.dat'])], marketplace=sim_market.CircularEconomyMonopolyScenario)
-	monitor.setup_monitoring(agents=[(vendors.QLearningCERebuyAgent, ['CircularEconomyRebuyPrice_QLearningCERebuyAgent.dat'])], marketplace=sim_market.CircularEconomyRebuyPriceMonopolyScenario)
+	monitor.setup_monitoring(agents=[(vendors.QLearningLEAgent, [])], marketplace=sim_market.ClassicScenario)
+	monitor.setup_monitoring(agents=[(vendors.QLearningCEAgent, [])], marketplace=sim_market.CircularEconomyMonopolyScenario)
+	monitor.setup_monitoring(agents=[(vendors.QLearningCERebuyAgent, [])], marketplace=sim_market.CircularEconomyRebuyPriceMonopolyScenario)
 
 
 def test_setting_market_not_agents():

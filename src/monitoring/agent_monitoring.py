@@ -121,7 +121,7 @@ class Monitor():
 		Update the self.agents to the new agents provided.
 
 		Args:
-			agents (list of tuples of agent classes and lists): What agents to monitor. Must be tuples where the first entry is the class of the agent and the second entry is a list of arguments for its initialization. Arguments are read left to right, arguments cannot be skipped. Each agent will generate data points in the diagrams. Defaults to None.
+			agents (list of tuples of agent classes and lists): What agents to monitor. Must be tuples where the first entry is the class of the agent and the second entry is an optional list of arguments for its initialization. Each agent will generate data points in the diagrams. See `setup_monitoring()` for more info. Defaults to None.
 
 		Raises:
 			RuntimeError: Raised if the modelfile provided does not match the Market/Agent-type provided.
@@ -129,8 +129,8 @@ class Monitor():
 		# All agents must be of the same type
 		assert all(isinstance(agent_tuple, tuple) for agent_tuple in agents), 'agents must be a list of tuples'
 		assert all(len(agent_tuple) == 2 for agent_tuple in agents), 'the list entries in agents must have size 2 ([agent_class, arguments])'
-		assert all(issubclass(agent_tuple[0], vendors.Agent) for agent_tuple in agents), 'the first entry in each agent-tuple must be an agent class in vendors.py'
-		assert all(isinstance(agent_tuple[1], list) for agent_tuple in agents), 'the second entry in each agent-tuple must be a list of arguments'
+		assert all(issubclass(agent_tuple[0], vendors.Agent) for agent_tuple in agents), 'the first entry in each agent-tuple must be an agent class in `vendors.py`'
+		assert all(isinstance(agent_tuple[1], list) for agent_tuple in agents), 'the second entry in each agent-tuple must be a list'
 		assert all(issubclass(agent_tuple[0], vendors.CircularAgent) == issubclass(agents[0][0], vendors.CircularAgent) for agent_tuple in agents), 'the agents must all be of the same type (Linear/Circular)'
 		assert issubclass(agents[0][0], vendors.CircularAgent) == isinstance(self.marketplace, sim_market.CircularEconomy), 'the agent and marketplace must be of the same economy type (Linear/Circular)'
 
@@ -142,21 +142,40 @@ class Monitor():
 				self.agents.append(vendors.Agent.custom_init(vendors.Agent, current_agent[0], current_agent[1]))
 			elif not issubclass(current_agent[0], vendors.RuleBasedAgent):
 				try:
-					assert len(current_agent[1]) == 1 or len(current_agent[1]) == 2 and isinstance(current_agent[1][1], str), 'the first argument for an reinforcement lerner needs to be a modelfile, the second one is an optional name (str)'
-					assert isinstance(current_agent[1][0], str), 'the modelfile must be of type str'
+					assert (0 <= len(current_agent[1]) <= 2), 'the argument list for a RL-agent must have length between 0 and 2'
+					assert all(isinstance(argument, str) for argument in current_agent[1]), 'the arguments for a RL-agent must be of type str'
 
-					agent_name = 'q_learning' if len(current_agent[1]) == 1 else current_agent[1][1]
-					self.agents.append(current_agent[0](self.marketplace.observation_space.shape[0], self.get_action_space(), load_path=self.get_modelfile_path(current_agent[1][0]), name=agent_name))
+					agent_modelfile = f'{type(self.marketplace).__name__}_{current_agent[0].__name__}.dat'
+					agent_name = 'q_learning'
+					# no arguments
+					if len(current_agent[1]) == 0:
+						pass
+					# only name argument
+					elif len(current_agent[1]) == 1 and not str.endswith(current_agent[1][0], '.dat'):
+						# get implicit modelfile name
+						agent_name = current_agent[1][0]
+					# only modelfile argument
+					elif len(current_agent[1]) == 1 and str.endswith(current_agent[1][0], '.dat'):
+						agent_modelfile = current_agent[1][0]
+					# both arguments
+					elif len(current_agent[1]) == 2:
+						assert str.endswith(current_agent[1][0], '.dat'), f'if two arguments are provided, the first one must be the modelfile. Arg1: {current_agent[1][0]}, Arg2: {current_agent[1][1]}'
+						agent_modelfile = current_agent[1][0]
+						agent_name = current_agent[1][1]
+					# this should never happen due to the asserts before, but you never know
+					else:  # pragma: no cover
+						raise RuntimeError('invalid arguments provided')
+
+					# create the agent
+					self.agents.append(current_agent[0](self.marketplace.observation_space.shape[0], self.get_action_space(), load_path=self.get_modelfile_path(agent_modelfile), name=agent_name))
 				except RuntimeError:  # pragma: no cover
 					raise RuntimeError('the modelfile is not compatible with the agent you tried to instantiate')
 			else:  # pragma: no cover
-				assert False, current_agent[0] + 'is neither a rule_based nor a reinforcement_learning agent'
+				raise RuntimeError(f'{current_agent[0]} is neither a rule_based nor a reinforcement_learning agent')
 
 		# set a color for each agent
 		color_map = self.get_cmap(len(self.agents))
-		self.agent_colors = []
-		for agent_id in range(0, len(self.agents)):
-			self.agent_colors.append(color_map(agent_id))
+		self.agent_colors = [color_map(agent_id) for agent_id in range(len(self.agents))]
 
 	def setup_monitoring(self, enable_live_draw=None, episodes=None, plot_interval=None, marketplace=None, agents=None, subfolder_name=None) -> None:
 		"""
@@ -167,14 +186,13 @@ class Monitor():
 			episodes (int, optional): The number of episodes to run. Defaults to None.
 			plot_interval (int, optional): After how many episodes a new data point/plot should be generated. Defaults to None.
 			marketplace (sim_market class, optional): What marketplace to run the monitoring on. Defaults to None.
-			agents (list of tuples of agent classes and lists): What agents to monitor.
+			agents (list of tuples of agent classes and lists): What agents to monitor. Each entry must be a tuple of a valid agent class and a list of optional arguments, where a .dat modelfile and/or a name for the agent can be specified. Modelfile defaults to \'marketplaceClass_AgentClass.dat\', Name defaults to \'q_learning\'
 			Must be tuples where the first entry is the class of the agent and the second entry is a list of arguments for its initialization.
 			Arguments are read left to right, arguments cannot be skipped.
 			The first argument must exist and be the path to the modelfile for the agent, the second is optional and the name the agent should have.
 			Each agent will generate data points in the diagrams. Defaults to None.
 			subfolder_name (str, optional): The name of the folder to save the diagrams in. Defaults to None.
 		"""
-		# doesn't look nice, but afaik only way to keep parameter list short
 		if(enable_live_draw is not None):
 			assert isinstance(enable_live_draw, bool), 'enable_live_draw must be a Boolean'
 			self.enable_live_draw = enable_live_draw
@@ -186,9 +204,9 @@ class Monitor():
 			self.plot_interval = plot_interval
 
 		if(marketplace is not None):
-			assert issubclass(marketplace, sim_market.SimMarket), 'the marketplace must be a subclass of sim_market'
+			assert issubclass(marketplace, sim_market.SimMarket), 'the marketplace must be a subclass of SimMarket'
 			self.marketplace = marketplace()
-			# The agents have not been changed, we reuse the old agents
+			# If the agents have not been changed, we reuse the old agents
 			if(agents is None):
 				print('Warning: Your agents are being overwritten by new instances of themselves!')
 				agents = [(type(current_agent), [f'{type(self.marketplace).__name__}_{type(current_agent).__name__}.dat']) for current_agent in self.agents]
@@ -199,7 +217,7 @@ class Monitor():
 			self.update_agents(agents)
 
 		if(subfolder_name is not None):
-			assert isinstance(subfolder_name, str), 'subfolder_name must be of type string'
+			assert isinstance(subfolder_name, str), 'subfolder_name must be of type str'
 			self.subfolder_name = subfolder_name
 			self.folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring' + os.sep + self.subfolder_name
 
@@ -399,7 +417,7 @@ def main(monitor=Monitor()) -> None:
 	Args:
 		monitor (Monitor instance, optional): The monitor to run the session on. Defaults to a default Monitor() instance.
 	"""
-	# monitor.setup_monitoring(enable_live_draw=False, agents=[(vendors.QLearningCEAgent, ['CircularEconomy_QLearningCEAgent.dat']), (vendors.FixedPriceCEAgent, [(4,6)])])
+	# monitor.setup_monitoring(enable_live_draw=False, agents=[(vendors.QLearningCEAgent, []), (vendors.FixedPriceCEAgent, [(4,6)])])
 	print('Live Drawing enabled:', monitor.enable_live_draw)
 	print('Episodes:', monitor.episodes)
 	print(f'Plot interval: {monitor.plot_interval}')
