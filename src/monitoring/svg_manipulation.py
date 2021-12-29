@@ -48,19 +48,22 @@ def get_default_dict() -> dict:
 	return output_dict
 
 
-def replace_values(filename: str = './monitoring/MarketOverview_copy.svg', target_dictionary: dict = get_default_dict()) -> str:
+def replace_values(filename: str = 'MarketOverview_copy.svg', target_dictionary: dict = get_default_dict()) -> str:
 	"""
 	Create a copy of the template `MarketOverview.svg` file and replace the placeholder values with the given ones.
 
 	Args:
-		filename (str, optional): The target file name of the copy. Defaults to `./monitoring/MarketOverview_copy.svg`.
+		filename (str, optional): The target file name of the copy. Defaults to `MarketOverview_copy.svg`.
 		target_dictionary (dict, optional): Dictionary containing the values that should be replaced in the copy. Defaults to `get_default_dict()`.
 
 	Returns:
 		str: The full path to the copied file.
 	"""
-	assert all(isinstance(value, str) for key, value in target_dictionary.items()), f'the dictionary should only contain strings: {target_dictionary}'
+	assert filename.endswith('.svg'), f'the passed filename must end in .svg: {filename}'
+	filename = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring' + os.sep + filename
 	assert not os.path.exists(filename), f'the specified file already exists: {os.path.abspath(filename)}'
+
+	assert all(isinstance(value, str) for key, value in target_dictionary.items()), f'the dictionary should only contain strings: {target_dictionary}'
 
 	template_file = open('./monitoring/MarketOverview_template.svg', 'r')
 	data = template_file.read()
@@ -75,7 +78,7 @@ def replace_values(filename: str = './monitoring/MarketOverview_copy.svg', targe
 	return os.path.abspath(filename)
 
 
-def main():
+def main():  # pragma: no cover
 	"""
 	This should be used for testing purposes only and is a way to quickly check if a configuration resulted in the correct `.svg`-output.
 	"""
