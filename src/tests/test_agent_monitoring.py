@@ -244,7 +244,7 @@ def test_metrics_minimum():
 def test_incorrect_create_histogram():
 	rewards_wrong = np.array([[1, 2], [1, 2, 3]], dtype=object)
 	with pytest.raises(AssertionError) as assertion_message:
-		monitor.create_histogram(rewards_wrong)
+		monitor.create_histogram(rewards_wrong, 'test_plot')
 	assert 'all rewards-arrays must be of the same size' in str(assertion_message.value)
 
 
@@ -259,7 +259,7 @@ agent_rewards_histogram = [
 @pytest.mark.parametrize('agents, rewards', agent_rewards_histogram)
 def test_create_histogram(agents, rewards):
 	monitor.setup_monitoring(agents=agents)
-	monitor.create_histogram(rewards)
+	monitor.create_histogram(rewards, 'test_plot')
 
 
 @pytest.mark.parametrize('agents, rewards', agent_rewards_histogram)
@@ -271,13 +271,13 @@ def test_create_statistics_plots(agents, rewards):
 def test_create_line_plot():
 	monitor.setup_monitoring(episodes=4, plot_interval=2)
 	with pytest.raises(AssertionError) as assertion_message:
-		monitor.create_line_plot([1, 2, 3], [[2], [1]])
+		monitor.create_line_plot([1, 2, 3], [[2], [1]], 'test_plot')
 	assert 'x_values must have self.episodes / self.plot_interval many items' in str(assertion_message.value)
 	with pytest.raises(AssertionError) as assertion_message:
-		monitor.create_line_plot([1, 2], [[2], [1]])
+		monitor.create_line_plot([1, 2], [[2], [1]], 'test_plot')
 	assert 'y_values must have one entry per agent' in str(assertion_message.value)
 	with pytest.raises(AssertionError) as assertion_message:
-		monitor.create_line_plot([1, 2], [[2]])
+		monitor.create_line_plot([1, 2], [[2]], 'test_plot')
 	assert 'y_values must have self.episodes / self.plot_interval many items' in str(assertion_message.value)
 
 

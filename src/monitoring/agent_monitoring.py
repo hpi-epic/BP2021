@@ -31,7 +31,7 @@ class Monitor():
 		self.folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring' + os.sep + 'plots_' + time.strftime('%Y%m%d-%H%M%S')
 
 	# helper functions
-	def round_up(self, number, decimals=0) -> np.float64:
+	def round_up(self, number: int, decimals: int = 0) -> np.float64:
 		"""
 		Round the number up to the specified ceiling.
 
@@ -45,7 +45,7 @@ class Monitor():
 		multiplier = 10 ** decimals
 		return np.ceil(number * multiplier) / multiplier
 
-	def round_down(self, number, decimals=0) -> np.float64:
+	def round_down(self, number: int, decimals: int = 0) -> np.float64:
 		"""
 		Round the number down to the specified floor.
 
@@ -59,7 +59,7 @@ class Monitor():
 		multiplier = 10 ** decimals
 		return np.floor(number * multiplier) / multiplier
 
-	def get_cmap(self, number_of_agents) -> plt.cm.colors.LinearSegmentedColormap:
+	def get_cmap(self, number_of_agents: int) -> plt.cm.colors.LinearSegmentedColormap:
 		"""
 		Return a colormap containing a distinct color for each monitored agent to be used in the diagrams.
 
@@ -84,7 +84,7 @@ class Monitor():
 			os.mkdir(self.folder_path + os.sep + 'histograms')
 		return self.folder_path
 
-	def get_modelfile_path(self, model_name) -> str:
+	def get_modelfile_path(self, model_name: str) -> str:
 		"""
 		Get the full path to a modelfile in the 'monitoring' folder.
 
@@ -114,7 +114,7 @@ class Monitor():
 				n_actions *= self.marketplace.action_space[id].n
 		return n_actions
 
-	def update_agents(self, agents) -> None:
+	def update_agents(self, agents: list) -> None:
 		"""
 		Update the self.agents to the new agents provided.
 
@@ -175,7 +175,7 @@ class Monitor():
 		color_map = self.get_cmap(len(self.agents))
 		self.agent_colors = [color_map(agent_id) for agent_id in range(len(self.agents))]
 
-	def setup_monitoring(self, enable_live_draw=None, episodes=None, plot_interval=None, marketplace=None, agents=None, subfolder_name=None) -> None:
+	def setup_monitoring(self, enable_live_draw: bool = None, episodes: int = None, plot_interval: int = None, marketplace: sim_market.SimMarket = None, agents: list = None, subfolder_name: str = None) -> None:
 		"""
 		Configure the current monitoring session.
 
@@ -258,29 +258,29 @@ class Monitor():
 	# 	return episode_rewards
 
 	# metrics
-	def metrics_average(self, rewards) -> np.float64:
+	def metrics_average(self, rewards: list) -> np.float64:
 		return np.mean(np.array(rewards))
 
-	def metrics_median(self, rewards) -> np.float64:
+	def metrics_median(self, rewards: list) -> np.float64:
 		return np.median(np.array(rewards))
 
-	def metrics_maximum(self, rewards) -> np.float64:
+	def metrics_maximum(self, rewards: list) -> np.float64:
 		return np.max(np.array(rewards))
 
-	def metrics_minimum(self, rewards) -> np.float64:
+	def metrics_minimum(self, rewards: list) -> np.float64:
 		return np.min(np.array(rewards))
 
 	# def metrics_average_in_episode(self, rewards) -> np.float64:
 	# 	return sum(rewards) / (len(rewards) * ut.EPISODE_LENGTH)
 
 	# visualize metrics
-	def create_histogram(self, rewards, filename='default') -> None:
+	def create_histogram(self, rewards: list, filename: str) -> None:
 		"""
 		Create a histogram sorting rewards into bins of 1000.
 
 		Args:
 			rewards (array of arrays of int): An array containing an array of ints for each monitored agent.
-			filename (str, optional): The name of the output file, format will be .svg. Defaults to 'default'.
+			filename (str): The name of the output file, format will be .svg.
 		"""
 		assert all(len(curr_reward) == len(rewards[0]) for curr_reward in rewards), 'all rewards-arrays must be of the same size'
 
@@ -302,7 +302,7 @@ class Monitor():
 			plt.pause(0.001)
 		plt.savefig(fname=self.get_folder() + os.sep + 'histograms' + os.sep + filename + '.svg')
 
-	def create_statistics_plots(self, rewards) -> None:
+	def create_statistics_plots(self, rewards: list) -> None:
 		"""
 		For each of our metrics, calculate the running value each self.plot_interval and plot it as a line graph.
 
@@ -324,13 +324,13 @@ class Monitor():
 					metric_rewards[agent_rewards_id].append(metrics_functions[function](rewards[agent_rewards_id][0:self.plot_interval * starting_index + self.plot_interval]))
 			self.create_line_plot(x_axis_episodes, metric_rewards, metrics_names[function])
 
-	def create_line_plot(self, x_values, y_values, metric_name='no name provided') -> None:
+	def create_line_plot(self, x_values: list, y_values: list, metric_name: str) -> None:
 		"""Create a line plot with the given rewards data.
 
 		Args:
 			x_values (list of ints): Defines x-values of datapoints. Must have same length as y_values.
 			y_values (list of list of ints): Defines y-values of datapoints, one array per monitored agent. Must have same length as episodes.
-			metric_name (str, optional): Used for naming the y-axis, diagram and output file. Defaults to 'no name provided'.
+			metric_name (str): Used for naming the y-axis, diagram and output file.
 		"""
 		assert len(x_values) == int(self.episodes / self.plot_interval), 'x_values must have self.episodes / self.plot_interval many items'
 		assert len(y_values) == len(self.agents), 'y_values must have one entry per agent'
@@ -410,7 +410,7 @@ class Monitor():
 		return rewards
 
 
-def run_monitoring_session(monitor=Monitor()) -> None:
+def run_monitoring_session(monitor: Monitor = Monitor()) -> None:
 	"""
 	Run a monitoring session with a configured Monitor() and display and save metrics.
 
