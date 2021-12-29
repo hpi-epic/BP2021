@@ -311,20 +311,31 @@ class Monitor():
 		Args:
 			rewards ([list of list of float]): An array containing an array of ints for each monitored agent.
 		"""
-		metrics_functions = [self.metrics_average, self.metrics_maximum, self.metrics_median, self.metrics_minimum]  # , self.metrics_average_in_episode
-		metrics_names = ['Average', 'Maximum', 'Median', 'Minimum']  # , 'Average in episode'
+		# the functions that should be called to calculate the given metric
+		metric_functions = [self.metrics_average, self.metrics_median, self.metrics_maximum, self.metrics_minimum]  # , self.metrics_average_in_episode
+		# the name both the file as well as the plot title will have
+		metric_names = ['Average', 'Median', 'Maximum', 'Minimum']  # , 'Average in episode'
+		# what kind of metric it is: Overall means the values are calculated from 0-episode, Episode means from previousEpisode-Episode
+		metric_types = ['Overall', 'Overall', 'Episode', 'Episode']
 		x_axis_episodes = np.arange(self.plot_interval, self.episodes + 1, self.plot_interval)
 
-		for function in range(len(metrics_functions)):
+		for function in range(len(metric_functions)):
 			# calculate <metric> rewards per self.plot_interval episodes for each agent
 			metric_rewards = []
-			for agent_rewards_id in range(0, len(rewards)):
+			for agent_rewards_id in range(len(rewards)):
 				metric_rewards.append([])
-				for starting_index in range(0, int(len(rewards[agent_rewards_id]) / self.plot_interval)):
-					metric_rewards[agent_rewards_id].append(metrics_functions[function](rewards[agent_rewards_id][0:self.plot_interval * starting_index + self.plot_interval]))
-			self.create_line_plot(x_axis_episodes, metric_rewards, metrics_names[function])
+				for starting_index in range(int(len(rewards[agent_rewards_id]) / self.plot_interval)):
+					if metric_types[function] == 'Overall':
+						metric_rewards[agent_rewards_id].append(
+							metric_functions[function](rewards[agent_rewards_id][0:self.plot_interval * (starting_index + 1)]))
+					elif metric_types[function] == 'Episode':
+						metric_rewards[agent_rewards_id].append(
+							metric_functions[function](rewards[agent_rewards_id][self.plot_interval * (starting_index):self.plot_interval * (starting_index + 1)]))
+					else:  # pragma: no cover
+						raise RuntimeError(f'this metric_type is unknown: {metric_types[function]}')
+			self.create_line_plot(x_axis_episodes, metric_rewards, metric_names[function], metric_types[function])
 
-	def create_line_plot(self, x_values: list, y_values: list, metric_name: str) -> None:
+	def create_line_plot(self, x_values: list, y_values: list, metric_name: str, metric_type: str) -> None:
 		"""Create a line plot with the given rewards data.
 
 		Args:
@@ -336,7 +347,7 @@ class Monitor():
 		assert len(y_values) == len(self.agents), 'y_values must have one entry per agent'
 		assert all(len(agent_y_value) == int(self.episodes / self.plot_interval) for agent_y_value in y_values), 'y_values must have self.episodes / self.plot_interval many items'
 		print(f'Creating line plot for {metric_name} rewards...')
-		# clear old plot completely
+
 		plt.clf()
 		filename = metric_name + '_rewards.svg'
 		# plot the metric rewards for each agent
@@ -347,7 +358,12 @@ class Monitor():
 		# array containing the values to be plotted on the x axis, equally spaced each self.plot_interval
 		plt.xticks(np.arange(0, self.episodes + 1, self.plot_interval))
 		plt.ylabel(f'{metric_name} Reward', fontsize='18')
-		plt.title(f'Overall {metric_name} Reward calculated each {self.plot_interval} episodes')
+		if metric_type == 'Overall':
+			plt.title(f'Overall {metric_name} Reward calculated each {self.plot_interval} episodes')
+		elif metric_type == 'Episode':
+			plt.title(f'{metric_name} Reward within each previous {self.plot_interval} episodes')
+		else:  # pragma: no cover
+			raise RuntimeError(f'this metric_type is unknown: {metric_type}')
 		plt.legend([a.name for a in self.agents])
 		plt.grid(True)
 		if self.enable_live_draw:  # pragma: no cover

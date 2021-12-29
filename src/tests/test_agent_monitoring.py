@@ -271,13 +271,13 @@ def test_create_statistics_plots(agents, rewards):
 def test_create_line_plot():
 	monitor.setup_monitoring(episodes=4, plot_interval=2)
 	with pytest.raises(AssertionError) as assertion_message:
-		monitor.create_line_plot([1, 2, 3], [[2], [1]], 'test_plot')
+		monitor.create_line_plot([1, 2, 3], [[2], [1]], 'test_plot', 'Overall')
 	assert 'x_values must have self.episodes / self.plot_interval many items' in str(assertion_message.value)
 	with pytest.raises(AssertionError) as assertion_message:
-		monitor.create_line_plot([1, 2], [[2], [1]], 'test_plot')
+		monitor.create_line_plot([1, 2], [[2], [1]], 'test_plot', 'Overall')
 	assert 'y_values must have one entry per agent' in str(assertion_message.value)
 	with pytest.raises(AssertionError) as assertion_message:
-		monitor.create_line_plot([1, 2], [[2]], 'test_plot')
+		monitor.create_line_plot([1, 2], [[2]], 'test_plot', 'Overall')
 	assert 'y_values must have self.episodes / self.plot_interval many items' in str(assertion_message.value)
 
 
