@@ -24,9 +24,9 @@ def setup_function(function):
 
 def teardown_module(module):
 	print('***TEARDOWN***')
-	for f in os.listdir(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring/'):
+	for f in os.listdir(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring' + os.sep):
 		if re.match('test_plots_*', f):
-			shutil.rmtree(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring/' + f)
+			shutil.rmtree(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring' + os.sep + f)
 
 
 def test_init_default_values():
