@@ -49,6 +49,26 @@ def test_round_down():
 	assert monitor.round_down(999, -3) == 0
 
 
+def test_get_cmap():
+	# should have TWO (n+1) entries, but the way that get_cmap works you can call color_map() with higher numbers,
+	# but all higher colors are the same, so we test for that to find out if it worked
+	color_map = monitor.get_cmap(1)
+	assert color_map(0) != color_map(1)
+	assert color_map(1) == color_map(2)
+
+	color_map = monitor.get_cmap(3)
+	assert color_map(0) != color_map(1)
+	assert color_map(1) != color_map(2)
+	assert color_map(2) != color_map(3)
+	assert color_map(3) == color_map(4)
+
+
+def test_get_folder():
+	# if you change the name of this function, change it in the assert as well!
+	monitor.get_folder()
+	assert os.path.exists(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring' + os.sep + 'test_plots_test_get_folder')
+
+
 def test_get_modelfile_path():
 	with pytest.raises(AssertionError) as assertion_message:
 		monitor.get_modelfile_path('wrong_extension.png')
@@ -106,9 +126,13 @@ def test_correct_setup_monitoring():
 	assert os.path.normcase(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring' + os.sep + 'subfoldername') == os.path.normcase(monitor.folder_path)
 	assert 2 == len(monitor.agent_colors)
 
-	# setting two agents
+
+def test_setting_multiple_agents():
 	monitor.setup_monitoring(agents=[(vendors.FixedPriceCERebuyAgent, []), (vendors.FixedPriceCEAgent, [])])
-	# setting market not agents
+	monitor.setup_monitoring(agents=[(vendors.FixedPriceCERebuyAgent, []), (vendors.FixedPriceCEAgent, []), (vendors.FixedPriceCERebuyAgent, [])])
+
+
+def test_setting_market_not_agents():
 	monitor.setup_monitoring(marketplace=sim_market.CircularEconomyMonopolyScenario)
 
 
@@ -218,7 +242,7 @@ def test_metrics_minimum():
 
 # all arrays in rewards must be of the same size
 def test_incorrect_create_histogram():
-	rewards_wrong = np.array([[1, 2], [1, 2, 3]])
+	rewards_wrong = np.array([[1, 2], [1, 2, 3]], dtype=object)
 	with pytest.raises(AssertionError) as assertion_message:
 		monitor.create_histogram(rewards_wrong)
 	assert 'all rewards-arrays must be of the same size' in str(assertion_message.value)

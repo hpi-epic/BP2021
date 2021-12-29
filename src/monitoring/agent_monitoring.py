@@ -59,18 +59,17 @@ class Monitor():
 		multiplier = 10 ** decimals
 		return np.floor(number * multiplier) / multiplier
 
-	def get_cmap(self, n, name='hsv') -> plt.cm.colors.LinearSegmentedColormap:
+	def get_cmap(self, number_of_agents) -> plt.cm.colors.LinearSegmentedColormap:
 		"""
 		Return a colormap containing a distinct color for each monitored agent to be used in the diagrams.
 
 		Args:
-			n (int): How many colors should be generated.
-			name (str, optional): The type of colormap that should be generated. Defaults to 'hsv'.
+			number_of_agents (int): How many colors should be generated.
 
 		Returns:
 			plt.cm.colors.LinearSegmentedColormap: The filled colormap.
 		"""
-		return plt.cm.get_cmap(name, n + 1)
+		return plt.cm.get_cmap('hsv', number_of_agents + 1)
 
 	def get_folder(self) -> str:
 		"""
