@@ -248,7 +248,7 @@ def test_incorrect_create_histogram():
 	assert 'all rewards-arrays must be of the same size' in str(assertion_message.value)
 
 
-agent_rewards_histogram = [
+agent_rewards_plots = [
 	([(vendors.RuleBasedCEAgent, [])], [[100, 0]]),
 	([(vendors.RuleBasedCEAgent, []), (vendors.RuleBasedCEAgent, [])], [[100, 0], [10, 5]]),
 	([(vendors.RuleBasedCEAgent, []), (vendors.RuleBasedCEAgent, []), (vendors.RuleBasedCEAgent, []), (vendors.RuleBasedCEAgent, [])],
@@ -256,19 +256,19 @@ agent_rewards_histogram = [
 ]
 
 
-@pytest.mark.parametrize('agents, rewards', agent_rewards_histogram)
+@pytest.mark.parametrize('agents, rewards', agent_rewards_plots)
 def test_create_histogram(agents, rewards):
 	monitor.setup_monitoring(agents=agents)
 	monitor.create_histogram(rewards, 'test_plot')
 
 
-@pytest.mark.parametrize('agents, rewards', agent_rewards_histogram)
-def test_create_statistics_plots(agents, rewards):
+@pytest.mark.parametrize('agents, rewards', agent_rewards_plots)
+def test_correct_create_statistics_plots(agents, rewards):
 	monitor.setup_monitoring(agents=agents, episodes=len(rewards[0]), plot_interval=1)
 	monitor.create_statistics_plots(rewards)
 
 
-def test_create_line_plot():
+def test_incorrect_create_line_plot():
 	monitor.setup_monitoring(episodes=4, plot_interval=2)
 	with pytest.raises(AssertionError) as assertion_message:
 		monitor.create_line_plot([1, 2, 3], [[2], [1]], 'test_plot', 'Overall')
