@@ -37,7 +37,7 @@ def test_init_default_values():
 	assert isinstance(test_monitor.marketplace, sim_market.CircularEconomyMonopolyScenario)
 	assert isinstance(test_monitor.agents[0], vendors.QLearningCEAgent)
 	assert 1 == len(test_monitor.agents)
-	assert [(1.0, 0.0, 0.0, 1.0)] == test_monitor.agent_colors
+	assert [(0.0, 0.0, 1.0, 1.0)] == test_monitor.agent_colors
 	# folder_path can hardly be tested due to the default involving the current DateTime
 
 
@@ -276,9 +276,9 @@ def test_get_configuration():
 	assert 'folder_path' in current_configuration
 
 
-def test_main():
-	monitor.setup_monitoring(enable_live_draw=False, episodes=10, plot_interval=10, subfolder_name='test_plots_')
+def test_run_monitoring_session():
+	monitor.setup_monitoring(enable_live_draw=False, episodes=10, plot_interval=10)
 	current_configuration = monitor.get_configuration()
-	am.main(monitor)
+	am.run_monitoring_session(monitor)
 	assert current_configuration == monitor.get_configuration(), 'the monitor configuration should not be changed within main'
 	assert os.path.exists(monitor.folder_path)

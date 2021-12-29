@@ -27,7 +27,7 @@ class Monitor():
 		default_modelfile = f'{type(self.marketplace).__name__}_{default_agent.__name__}.dat'
 		assert os.path.exists(self.get_modelfile_path(default_modelfile)), f'the default modelfile does not exist: {default_modelfile}'
 		self.agents = [default_agent(self.marketplace.observation_space.shape[0], self.get_action_space(), load_path=self.get_modelfile_path(default_modelfile))]
-		self.agent_colors = [(1.0, 0.0, 0.0, 1.0)]
+		self.agent_colors = [(0.0, 0.0, 1.0, 1.0)]
 		self.folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring' + os.sep + 'plots_' + time.strftime('%Y%m%d-%H%M%S')
 
 	# helper functions
@@ -409,7 +409,7 @@ class Monitor():
 		return rewards
 
 
-def main(monitor=Monitor()) -> None:
+def run_monitoring_session(monitor=Monitor()) -> None:
 	"""
 	Run a monitoring session with a configured Monitor() and display and save metrics.
 
@@ -418,26 +418,27 @@ def main(monitor=Monitor()) -> None:
 	"""
 	# monitor.setup_monitoring(agents=[(vendors.QLearningCEAgent, []), (vendors.FixedPriceCEAgent, [(4, 6)])])
 	print('Running a monitoring session with the following configuration:')
-	print('Live Drawing enabled:', monitor.enable_live_draw)
-	print('Episodes:', monitor.episodes)
-	print(f'Plot interval: {monitor.plot_interval}')
-	print(f'Marketplace: {type(monitor.marketplace).__name__}')
+	print(str.ljust('Live Drawing enabled:', 25) + str(monitor.enable_live_draw))
+	print(str.ljust('Episodes:', 25) + str(monitor.episodes))
+	print(str.ljust('Plot interval:', 25) + str(monitor.plot_interval))
+	print(str.ljust('Marketplace:', 25) + type(monitor.marketplace).__name__)
 	print('Monitoring these agents:')
 	for current_agent in monitor.agents:
-		print(current_agent.name)
+		print(str.ljust('', 25) + current_agent.name)
 
+	print('\nStarting monitoring session...')
 	rewards = monitor.run_marketplace()
 
 	for current_reward in enumerate(rewards):
 		print(f'Statistics for agent: {monitor.agents[current_reward[0]].name}')
-		print(f'The average reward over {monitor.episodes} episodes is: {str(monitor.metrics_average(current_reward[1]))}')
-		print(f'The median reward over {monitor.episodes} episodes is: {str(monitor.metrics_median(current_reward[1]))}')
-		print(f'The maximum reward over {monitor.episodes} episodes is: {str(monitor.metrics_maximum(current_reward[1]))}')
-		print(f'The minimum reward over {monitor.episodes} episodes is: {str(monitor.metrics_minimum(current_reward[1]))}')
+		print(f'The average reward over {monitor.episodes} episodes is:  {str(monitor.metrics_average(current_reward[1]))}')
+		print(f'The median reward over {monitor.episodes} episodes is:   {str(monitor.metrics_median(current_reward[1]))}')
+		print(f'The maximum reward over {monitor.episodes} episodes is:  {str(monitor.metrics_maximum(current_reward[1]))}')
+		print(f'The minimum reward over {monitor.episodes} episodes is:  {str(monitor.metrics_minimum(current_reward[1]))}')
 
 	monitor.create_statistics_plots(rewards)
 	print(f'All plots were saved to {monitor.get_folder()}')
 
 
 if __name__ == '__main__':  # pragma: no cover
-	main()
+	run_monitoring_session()
