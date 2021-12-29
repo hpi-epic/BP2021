@@ -41,6 +41,57 @@ def test_init_default_values():
 	# folder_path can hardly be tested due to the default involving the current DateTime
 
 
+def test_round_up():
+	assert monitor.round_up(999, -3) == 1000
+
+
+def test_round_down():
+	assert monitor.round_down(999, -3) == 0
+
+
+def test_get_modelfile_path():
+	with pytest.raises(AssertionError) as assertion_message:
+		monitor.get_modelfile_path('wrong_extension.png')
+	assert 'the modelfile must be a .dat file' in str(assertion_message.value)
+	with pytest.raises(AssertionError) as assertion_message:
+		monitor.get_modelfile_path('non_existing_modelfile.dat')
+	assert 'the specified modelfile does not exist' in str(assertion_message.value)
+
+
+# Test once for a Linear, Circular and RebuyPrice Economy
+def test_get_action_space():
+	monitor.setup_monitoring(agents=[(vendors.QLearningLEAgent, [])], marketplace=sim_market.ClassicScenario)
+	monitor.setup_monitoring(agents=[(vendors.QLearningCEAgent, [])], marketplace=sim_market.CircularEconomyMonopolyScenario)
+	monitor.setup_monitoring(agents=[(vendors.QLearningCERebuyAgent, [])], marketplace=sim_market.CircularEconomyRebuyPriceMonopolyScenario)
+
+
+def test_update_agents():
+	with pytest.raises(AssertionError) as assertion_message:
+		monitor.setup_monitoring(agents=[(vendors.QLearningCEAgent, ['modelfile.dat', 'arg', 'too_much'])])
+	assert 'the argument list for a RL-agent must have length between 0 and 2' in str(assertion_message.value)
+	with pytest.raises(AssertionError) as assertion_message:
+		monitor.setup_monitoring(agents=[(vendors.QLearningCEAgent, [1, 2, 3, 4])])
+	assert 'the argument list for a RL-agent must have length between 0 and 2' in str(assertion_message.value)
+	with pytest.raises(AssertionError) as assertion_message:
+		monitor.setup_monitoring(agents=[(vendors.QLearningCEAgent, ['modelfile.dat', 35])])
+	assert 'the arguments for a RL-agent must be of type str' in str(assertion_message.value)
+	with pytest.raises(AssertionError) as assertion_message:
+		monitor.setup_monitoring(agents=[(vendors.QLearningCEAgent, [25])])
+	assert 'the arguments for a RL-agent must be of type str' in str(assertion_message.value)
+	with pytest.raises(AssertionError) as assertion_message:
+		monitor.setup_monitoring(agents=[(vendors.QLearningCEAgent, ['agent_name', 'modelfile.dat'])])
+	assert 'if two arguments are provided, the first one must be the modelfile.' in str(assertion_message.value)
+	with pytest.raises(AssertionError) as assertion_message:
+		monitor.setup_monitoring(agents=[(vendors.QLearningCEAgent, ['mymodel.dat'])])
+	assert 'the specified modelfile does not exist' in str(assertion_message.value)
+	# some valid options that should pass
+	monitor.setup_monitoring(agents=[(vendors.QLearningCEAgent, [])])
+	monitor.setup_monitoring(agents=[(vendors.QLearningCEAgent, ['new_name'])])
+	monitor.setup_monitoring(agents=[(vendors.QLearningCEAgent, ['CircularEconomyMonopolyScenario_QLearningCEAgent.dat'])])
+	monitor.setup_monitoring(agents=[(vendors.QLearningCEAgent, ['CircularEconomyMonopolyScenario_QLearningCEAgent.dat', 'new_name'])])
+	monitor.setup_monitoring(agents=[(vendors.QLearningCEAgent, [f'{type(monitor.marketplace).__name__}_{vendors.QLearningCEAgent.__name__}.dat'])])
+
+
 def test_correct_setup_monitoring():
 	monitor.setup_monitoring(enable_live_draw=False, episodes=10, plot_interval=2, marketplace=sim_market.CircularEconomyMonopolyScenario, agents=[(vendors.HumanPlayerCERebuy, ['reptiloid']), (vendors.QLearningCERebuyAgent, ['CircularEconomyMonopolyScenario_QLearningCEAgent.dat', 'q_learner'])], subfolder_name='subfoldername')
 	assert monitor.enable_live_draw is False
@@ -54,6 +105,11 @@ def test_correct_setup_monitoring():
 	assert 'q_learner' == monitor.agents[1].name
 	assert os.path.normcase(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring' + os.sep + 'subfoldername') == os.path.normcase(monitor.folder_path)
 	assert 2 == len(monitor.agent_colors)
+
+	# setting two agents
+	monitor.setup_monitoring(agents=[(vendors.FixedPriceCERebuyAgent, []), (vendors.FixedPriceCEAgent, [])])
+	# setting market not agents
+	monitor.setup_monitoring(marketplace=sim_market.CircularEconomyMonopolyScenario)
 
 
 def test_incorrect_setup_monitoring():
@@ -74,6 +130,9 @@ def test_incorrect_setup_monitoring():
 	assert 'the marketplace must be a subclass of SimMarket' in str(assertion_message.value)
 	with pytest.raises(TypeError):
 		monitor.setup_monitoring(marketplace=sim_market.ClassicScenario())
+	with pytest.raises(AssertionError) as assertion_message:
+		monitor.setup_monitoring(marketplace=sim_market.ClassicScenario, agents=[(vendors.RuleBasedCEAgent, [])])
+	assert 'the agent and marketplace must be of the same economy type' in str(assertion_message.value)
 
 	with pytest.raises(AssertionError) as assertion_message:
 		monitor.setup_monitoring(agents=[vendors.RuleBasedCEAgent])
@@ -118,66 +177,27 @@ def test_incorrect_setup_monitoring():
 	assert 'subfolder_name must be of type str' in str(assertion_message.value)
 
 
-def test_mismatched_scenarios():
-	with pytest.raises(AssertionError) as assertion_message:
-		monitor.setup_monitoring(marketplace=sim_market.ClassicScenario, agents=[(vendors.RuleBasedCEAgent, [])])
-	assert 'the agent and marketplace must be of the same economy type' in str(assertion_message.value)
+def test_get_configuration():
+	monitor.setup_monitoring(enable_live_draw=False, episodes=10, plot_interval=2, marketplace=sim_market.CircularEconomyMonopolyScenario, agents=[(vendors.HumanPlayerCERebuy, ['reptiloid']), (vendors.QLearningCERebuyAgent, ['CircularEconomyMonopolyScenario_QLearningCEAgent.dat', 'q_learner'])], subfolder_name='subfoldername')
+	current_configuration = monitor.get_configuration()
+	assert len(current_configuration) == 7, 'parameters were updated in agent_monitoring.py, but not updated in the tests!'
+	assert 'enable_live_draw' in current_configuration
+	assert 'episodes' in current_configuration
+	assert 'plot_interval' in current_configuration
+	assert 'marketplace' in current_configuration
+	assert 'agents' in current_configuration
+	assert 'agent_colors' in current_configuration
+	assert 'folder_path' in current_configuration
 
 
-def test_update_agents():
-	with pytest.raises(AssertionError) as assertion_message:
-		monitor.setup_monitoring(agents=[(vendors.QLearningCEAgent, ['modelfile.dat', 'arg', 'too_much'])])
-	assert 'the argument list for a RL-agent must have length between 0 and 2' in str(assertion_message.value)
-	with pytest.raises(AssertionError) as assertion_message:
-		monitor.setup_monitoring(agents=[(vendors.QLearningCEAgent, [1, 2, 3, 4])])
-	assert 'the argument list for a RL-agent must have length between 0 and 2' in str(assertion_message.value)
-	with pytest.raises(AssertionError) as assertion_message:
-		monitor.setup_monitoring(agents=[(vendors.QLearningCEAgent, ['modelfile.dat', 35])])
-	assert 'the arguments for a RL-agent must be of type str' in str(assertion_message.value)
-	with pytest.raises(AssertionError) as assertion_message:
-		monitor.setup_monitoring(agents=[(vendors.QLearningCEAgent, [25])])
-	assert 'the arguments for a RL-agent must be of type str' in str(assertion_message.value)
-	with pytest.raises(AssertionError) as assertion_message:
-		monitor.setup_monitoring(agents=[(vendors.QLearningCEAgent, ['agent_name', 'modelfile.dat'])])
-	assert 'if two arguments are provided, the first one must be the modelfile.' in str(assertion_message.value)
-	with pytest.raises(AssertionError) as assertion_message:
-		monitor.setup_monitoring(agents=[(vendors.QLearningCEAgent, ['mymodel.dat'])])
-	assert 'the specified modelfile does not exist' in str(assertion_message.value)
-	# some valid options that should pass
-	monitor.setup_monitoring(agents=[(vendors.QLearningCEAgent, [])])
-	monitor.setup_monitoring(agents=[(vendors.QLearningCEAgent, ['new_name'])])
-	monitor.setup_monitoring(agents=[(vendors.QLearningCEAgent, ['CircularEconomyMonopolyScenario_QLearningCEAgent.dat'])])
-	monitor.setup_monitoring(agents=[(vendors.QLearningCEAgent, ['CircularEconomyMonopolyScenario_QLearningCEAgent.dat', 'new_name'])])
-	monitor.setup_monitoring(agents=[(vendors.QLearningCEAgent, [f'{type(monitor.marketplace).__name__}_{vendors.QLearningCEAgent.__name__}.dat'])])
-
-
-def test_get_modelfile_path():
-	with pytest.raises(AssertionError) as assertion_message:
-		monitor.get_modelfile_path('wrong_extension.png')
-	assert 'the modelfile must be a .dat file' in str(assertion_message.value)
-	with pytest.raises(AssertionError) as assertion_message:
-		monitor.get_modelfile_path('non_existing_modelfile.dat')
-	assert 'the specified modelfile does not exist' in str(assertion_message.value)
-
-
-# Test once for a Linear, Circular and RebuyPrice Economy
-def test_get_action_space():
-	monitor.setup_monitoring(agents=[(vendors.QLearningLEAgent, [])], marketplace=sim_market.ClassicScenario)
-	monitor.setup_monitoring(agents=[(vendors.QLearningCEAgent, [])], marketplace=sim_market.CircularEconomyMonopolyScenario)
-	monitor.setup_monitoring(agents=[(vendors.QLearningCERebuyAgent, [])], marketplace=sim_market.CircularEconomyRebuyPriceMonopolyScenario)
-
-
-def test_setting_market_not_agents():
-	monitor.setup_monitoring(marketplace=sim_market.CircularEconomyMonopolyScenario)
-
-
-def test_setup_with_invalid_agents():
-	with pytest.raises(AssertionError):
-		monitor.setup_monitoring(agents=[vendors.FixedPriceLEAgent, vendors.FixedPriceCERebuyAgent])
-
-
-def test_setup_with_valid_agents():
-	monitor.setup_monitoring(agents=[(vendors.FixedPriceCERebuyAgent, []), (vendors.FixedPriceCEAgent, [])])
+# def test_get_episode_reward():
+# 	json = ut_t.create_mock_json_sim_market(episode_size='2')
+# 	with patch('builtins.open', mock_open(read_data=json)) as mock_file:
+# 		ut_t.check_mock_file_sim_market(mock_file, json)
+# 		reload(ut)
+# 		all_steps_reward = [[1, 2, 3, 4], [4, 5, 6, 7], [1, 3, 4, 5]]
+# 		assert [[3, 7], [9, 13], [4, 9]] == monitor.get_episode_rewards(all_steps_reward)
+	# reload(ut)
 
 
 def test_metrics_average():
@@ -196,30 +216,12 @@ def test_metrics_minimum():
 	assert 1 == monitor.metrics_minimum(ut_t.create_mock_rewards(12))
 
 
-def test_round_up():
-	assert monitor.round_up(999, -3) == 1000
-
-
-def test_round_down():
-	assert monitor.round_down(999, -3) == 0
-
-
 # all arrays in rewards must be of the same size
-def test_rewards_array_size():
-	# Numpy doesn't like nested arrays of different sizes, need to specify dtype=object
-	rewards_wrong = np.array([[1, 2], [1, 2, 3]], dtype=object)
-	with pytest.raises(Exception):
+def test_incorrect_create_histogram():
+	rewards_wrong = np.array([[1, 2], [1, 2, 3]])
+	with pytest.raises(AssertionError) as assertion_message:
 		monitor.create_histogram(rewards_wrong)
-
-
-# def test_get_episode_reward():
-# 	json = ut_t.create_mock_json_sim_market(episode_size='2')
-# 	with patch('builtins.open', mock_open(read_data=json)) as mock_file:
-# 		ut_t.check_mock_file_sim_market(mock_file, json)
-# 		reload(ut)
-# 		all_steps_reward = [[1, 2, 3, 4], [4, 5, 6, 7], [1, 3, 4, 5]]
-# 		assert [[3, 7], [9, 13], [4, 9]] == monitor.get_episode_rewards(all_steps_reward)
-	# reload(ut)
+	assert 'all rewards-arrays must be of the same size' in str(assertion_message.value)
 
 
 agent_rewards_histogram = [
@@ -261,19 +263,6 @@ def test_run_marketplace():
 	print(agent_rewards)
 	assert 1 == len(monitor.agents)
 	assert monitor.episodes == len(agent_rewards[0])
-
-
-def test_get_configuration():
-	monitor.setup_monitoring(enable_live_draw=False, episodes=10, plot_interval=2, marketplace=sim_market.CircularEconomyMonopolyScenario, agents=[(vendors.HumanPlayerCERebuy, ['reptiloid']), (vendors.QLearningCERebuyAgent, ['CircularEconomyMonopolyScenario_QLearningCEAgent.dat', 'q_learner'])], subfolder_name='subfoldername')
-	current_configuration = monitor.get_configuration()
-	assert len(current_configuration) == 7, 'parameters were updated in agent_monitoring.py, but not updated in the tests!'
-	assert 'enable_live_draw' in current_configuration
-	assert 'episodes' in current_configuration
-	assert 'plot_interval' in current_configuration
-	assert 'marketplace' in current_configuration
-	assert 'agents' in current_configuration
-	assert 'agent_colors' in current_configuration
-	assert 'folder_path' in current_configuration
 
 
 def test_run_monitoring_session():

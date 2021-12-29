@@ -283,6 +283,8 @@ class Monitor():
 			rewards (array of arrays of int): An array containing an array of ints for each monitored agent.
 			filename (str, optional): The name of the output file, format will be .svg. Defaults to 'default'.
 		"""
+		assert all(len(curr_reward) == len(rewards[0]) for curr_reward in rewards), 'all rewards-arrays must be of the same size'
+
 		plt.clf()
 		plt.xlabel('Reward', fontsize='18')
 		plt.ylabel('Episodes', fontsize='18')
