@@ -8,7 +8,7 @@ def get_default_dict() -> dict:
 	Return a default dictionary to be used with `replace_values()`.
 
 	Contains some pre-filled information from e.g. utils_sim_market.py.
-	Non-default values will equal their key.
+	Non-default values will be left empty.
 
 	Returns:
 		dict: The default dictionary.
@@ -42,7 +42,7 @@ def get_default_dict() -> dict:
 		'b_resources_in_use',
 		'b_garbage'
 	]
-	output_dict = dict(zip(keys, keys))
+	output_dict = dict.fromkeys(keys, '')
 	output_dict['simulation_name'] = 'Market Simulation'
 	output_dict['simulation_episode_length'] = str(ut.EPISODE_LENGTH)
 	return output_dict
