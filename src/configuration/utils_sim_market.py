@@ -143,8 +143,36 @@ def add_content_of_two_dicts(dict1, dict2) -> dict:
 	return newdict
 
 
-def write_content_of_dict_to_overview_svg(manipulator, dictionary, episode):
-	for key in dictionary:
-		print(key, dictionary[key])
+def write_content_of_dict_to_overview_svg(manipulator, dictionary, episode) -> None:
+	# for key in dictionary:
+	# 	print(key, dictionary[key])
+	manipulator.replace_one_value('simulation_episode_length', str(EPISODE_LENGTH))
 	manipulator.replace_one_value('simulation_current_episode', str(episode))
+	manipulator.replace_one_value('consumer_total_arrivals', str(episode * NUMBER_OF_CUSTOMERS))
+	manipulator.replace_one_value('consumer_total_sales', str(0))
+	manipulator.replace_one_value('a_competitor_name', 'vendor_0')
+	manipulator.replace_one_value('a_garbage', str(0))
+	manipulator.replace_one_value('a_inventory', str(0))
+	manipulator.replace_one_value('a_price_new', str(0))
+	manipulator.replace_one_value('a_price_used', str(0))
+	manipulator.replace_one_value('a_rebuy_price', str(0))
+	manipulator.replace_one_value('a_repurchases', str(0))
+	manipulator.replace_one_value('a_resource_cost', str(0))
+	manipulator.replace_one_value('a_resource_purchases', str(0))
+	manipulator.replace_one_value('a_resources_in_use', str(0))
+	manipulator.replace_one_value('a_sales_new', str(0))
+	manipulator.replace_one_value('a_sales_used', str(0))
+	manipulator.replace_one_value('b_competitor_name', 'vendor_1')
+	manipulator.replace_one_value('b_garbage', str(0))
+	manipulator.replace_one_value('b_inventory', str(0))
+	manipulator.replace_one_value('b_price_new', str(0))
+	manipulator.replace_one_value('b_price_used', str(0))
+	manipulator.replace_one_value('b_rebuy_price', str(0))
+	manipulator.replace_one_value('b_repurchases', str(0))
+	manipulator.replace_one_value('b_resource_cost', str(0))
+	manipulator.replace_one_value('b_resource_purchases', str(0))
+	manipulator.replace_one_value('b_resources_in_use', str(0))
+	manipulator.replace_one_value('b_sales_new', str(0))
+	manipulator.replace_one_value('b_sales_used', str(0))
+
 	# manipulator.save_overview_svg(filename='test'+str(episode)+'.svg')

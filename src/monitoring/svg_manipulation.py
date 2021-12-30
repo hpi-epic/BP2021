@@ -18,27 +18,29 @@ def get_default_dict() -> dict:
 		'consumer_total_arrivals',
 		'consumer_total_sales',
 		'a_competitor_name',
-		'a_resource_cost',
-		'a_resource_purchases',
+		'a_garbage',
+		'a_inventory',
 		'a_price_new',
-		'a_sales_new',
 		'a_price_used',
-		'a_sales_used',
 		'a_rebuy_price',
 		'a_repurchases',
+		'a_resource_cost',
+		'a_resource_purchases',
 		'a_resources_in_use',
-		'a_garbage',
+		'a_sales_new',
+		'a_sales_used',
 		'b_competitor_name',
-		'b_resource_cost',
-		'b_resource_purchases',
+		'b_garbage',
+		'b_inventory',
 		'b_price_new',
-		'b_sales_new',
 		'b_price_used',
-		'b_sales_used',
 		'b_rebuy_price',
 		'b_repurchases',
+		'b_resource_cost',
+		'b_resource_purchases',
 		'b_resources_in_use',
-		'b_garbage'
+		'b_sales_new',
+		'b_sales_used'
 	]
 	output_dict = dict.fromkeys(keys, '')
 	output_dict['simulation_name'] = 'Market Simulation'
@@ -49,8 +51,10 @@ def get_default_dict() -> dict:
 class SVGManipulator():
 	def __init__(self) -> None:
 		self.value_dictionary = get_default_dict()
+		# do not change the values in svg_template
 		with open('./monitoring/MarketOverview_template.svg', 'r') as template_svg:
-			self.svg_data = template_svg.read()
+			self.svg_template = template_svg.read()
+		self.output_svg = None
 
 	def replace_one_value(self, target_key, value):
 		"""
@@ -63,11 +67,11 @@ class SVGManipulator():
 		assert target_key in self.value_dictionary
 		assert isinstance(value, str)
 		self.value_dictionary[target_key] = value
-		self.replace_all_values_with_dict(self, target_dictionary=self.value_dictionary)
+		self.write_dict_to_svg(target_dictionary=self.value_dictionary)
 
 	def save_overview_svg(self, filename: str = 'MarketOverview_copy.svg') -> None:
 		"""
-		Save the stored svg data to a svg-file in BP2021/monitoring. If file already exists it will throw an error
+		Save the stored svg data to a svg-file in BP2021/monitoring. If file already exists it will throw an error.
 
 		Args:
 			filename (str, optional): The target file name of the copy. Defaults to `MarketOverview_copy.svg`.
@@ -76,10 +80,11 @@ class SVGManipulator():
 		filename = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring' + os.sep + filename
 		assert not os.path.exists(filename), f'the specified file already exists: {os.path.abspath(filename)}'
 
+		self.write_dict_to_svg(target_dictionary=self.value_dictionary)
 		with open(filename, 'w') as target_svg:
-			target_svg.write(self.svg_data)
+			target_svg.write(self.output_svg)
 
-	def replace_all_values_with_dict(self, filename: str = 'MarketOverview_copy.svg', target_dictionary: dict = get_default_dict()) -> str:
+	def write_dict_to_svg(self, target_dictionary: dict = get_default_dict()) -> str:
 		"""
 		Replaces all values in the current svg with a given dictionary
 
@@ -91,8 +96,10 @@ class SVGManipulator():
 		"""
 		assert all(isinstance(value, str) for _, value in target_dictionary.items()), f'the dictionary should only contain strings: {target_dictionary}'
 
+		# reset the output svg to the template to be able to replace the placeholders by actual values
+		self.output_svg = self.svg_template
 		for key, value in target_dictionary.items():
-			self.svg_data = self.svg_data.replace(key, value)
+			self.output_svg = self.output_svg.replace(key, value)
 
 
 def main():  # pragma: no cover

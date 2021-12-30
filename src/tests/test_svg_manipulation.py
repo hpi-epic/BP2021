@@ -29,7 +29,7 @@ def test_replace_values():
 		svg_manipulator.save_overview_svg('test_svg_replace_values')
 	assert 'the passed filename must end in .svg: ' in str(assertion_message.value)
 	with pytest.raises(AssertionError) as assertion_message:
-		svg_manipulator.replace_all_values_with_dict('test_svg_replace_values1.svg', {'simulation_name': 0})
+		svg_manipulator.write_dict_to_svg({'simulation_name': 0})
 	assert 'the dictionary should only contain strings: ' in str(assertion_message.value)
 	with pytest.raises(AssertionError) as assertion_message:
 		svg_manipulator.save_overview_svg('test_svg_replace_values2.svg')
