@@ -13,7 +13,7 @@ import configuration.utils_sim_market as ut
 
 
 # Gets the profit array of all vendors and returns the necessary dict for direct comparison in tb
-def direct_comparison_dict(profits):
+def direct_comparison_dict(profits) -> dict:
 	comparison_dict = {}
 	n_vendors = len(profits[0])
 	for i in range(n_vendors):
@@ -23,7 +23,16 @@ def direct_comparison_dict(profits):
 	return comparison_dict
 
 
-def train_QLearning_agent(RL_agent, environment, maxsteps=2 * ut_rl.EPSILON_DECAY_LAST_FRAME, log_dir_prepend=''):
+def train_QLearning_agent(RL_agent, environment, maxsteps=2 * ut_rl.EPSILON_DECAY_LAST_FRAME, log_dir_prepend='') -> None:
+	"""
+	Train a QLearningAgent on a market environment.
+
+	Args:
+		RL_agent (agents.vendors instance): The agent that should be trained.
+		environment (market.sim_market instance): The market environment used for the training.
+		maxsteps (int, optional): The maximum number of steps the training will run for. Defaults to 2*ut_rl.EPSILON_DECAY_LAST_FRAME.
+		log_dir_prepend (str, optional): A string that is prepended to the log directory created by Tensorboard. Defaults to ''.
+	"""
 	assert isinstance(RL_agent, vendors.QLearningAgent)
 	state = environment.reset()
 
