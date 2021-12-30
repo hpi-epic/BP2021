@@ -141,3 +141,10 @@ def add_content_of_two_dicts(dict1, dict2) -> dict:
 		else:
 			newdict[key] = dict1[key] + dict2[key]
 	return newdict
+
+
+def write_content_of_dict_to_overview_svg(manipulator, dictionary, episode):
+	for key in dictionary:
+		print(key, dictionary[key])
+	manipulator.replace_one_value('simulation_current_episode', str(episode))
+	# manipulator.save_overview_svg(filename='test'+str(episode)+'.svg')

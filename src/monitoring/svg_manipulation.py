@@ -1,13 +1,11 @@
 import os
 
-import configuration.utils_sim_market as ut
-
 
 def get_default_dict() -> dict:
 	"""
 	Return a default dictionary to be used with `replace_values()`.
 
-	Contains some pre-filled information from e.g. utils_sim_market.py.
+	Contains some pre-filled information.
 	Non-default values will be left empty.
 
 	Returns:
@@ -44,46 +42,66 @@ def get_default_dict() -> dict:
 	]
 	output_dict = dict.fromkeys(keys, '')
 	output_dict['simulation_name'] = 'Market Simulation'
-	output_dict['simulation_episode_length'] = str(ut.EPISODE_LENGTH)
+	# output_dict['simulation_episode_length'] = str(ut.EPISODE_LENGTH)
 	return output_dict
 
 
-def replace_values(filename: str = 'MarketOverview_copy.svg', target_dictionary: dict = get_default_dict()) -> str:
-	"""
-	Create a copy of the template `MarketOverview.svg` file and replace the placeholder values with the given ones.
+class SVGManipulator():
+	def __init__(self) -> None:
+		self.value_dictionary = get_default_dict()
+		with open('./monitoring/MarketOverview_template.svg', 'r') as template_svg:
+			self.svg_data = template_svg.read()
 
-	Args:
-		filename (str, optional): The target file name of the copy. Defaults to `MarketOverview_copy.svg`.
-		target_dictionary (dict, optional): Dictionary containing the values that should be replaced in the copy. Defaults to `get_default_dict()`.
+	def replace_one_value(self, target_key, value):
+		"""
+		Replaces one value for a key in the dictionary
 
-	Returns:
-		str: The full path to the copied file.
-	"""
-	assert filename.endswith('.svg'), f'the passed filename must end in .svg: {filename}'
-	filename = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring' + os.sep + filename
-	assert not os.path.exists(filename), f'the specified file already exists: {os.path.abspath(filename)}'
+		Args:
+			target_key (str): a key in svg dictionary
+			value (str): value for the provided key
+		"""
+		assert target_key in self.value_dictionary
+		assert isinstance(value, str)
+		self.value_dictionary[target_key] = value
+		self.replace_all_values_with_dict(self, target_dictionary=self.value_dictionary)
 
-	assert all(isinstance(value, str) for key, value in target_dictionary.items()), f'the dictionary should only contain strings: {target_dictionary}'
+	def save_overview_svg(self, filename: str = 'MarketOverview_copy.svg') -> None:
+		"""
+		Save the stored svg data to a svg-file in BP2021/monitoring. If file already exists it will throw an error
 
-	template_file = open('./monitoring/MarketOverview_template.svg', 'r')
-	data = template_file.read()
-	template_file.close()
+		Args:
+			filename (str, optional): The target file name of the copy. Defaults to `MarketOverview_copy.svg`.
+		"""
+		assert filename.endswith('.svg'), f'the passed filename must end in .svg: {filename}'
+		filename = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring' + os.sep + filename
+		assert not os.path.exists(filename), f'the specified file already exists: {os.path.abspath(filename)}'
 
-	for key, value in target_dictionary.items():
-		data = data.replace(key, value)
+		with open(filename, 'w') as target_svg:
+			target_svg.write(self.svg_data)
 
-	target_file = open(filename, 'w')
-	target_file.write(data)
-	target_file.close()
-	return os.path.abspath(filename)
+	def replace_all_values_with_dict(self, filename: str = 'MarketOverview_copy.svg', target_dictionary: dict = get_default_dict()) -> str:
+		"""
+		Replaces all values in the current svg with a given dictionary
+
+		Args:
+			target_dictionary (dict, optional): Dictionary containing the values that should be replaced in the copy. Defaults to `get_default_dict()`.
+
+		Returns:
+			str: The full path to the copied file.
+		"""
+		assert all(isinstance(value, str) for _, value in target_dictionary.items()), f'the dictionary should only contain strings: {target_dictionary}'
+
+		for key, value in target_dictionary.items():
+			self.svg_data = self.svg_data.replace(key, value)
 
 
 def main():  # pragma: no cover
 	"""
 	This should be used for testing purposes only and is a way to quickly check if a configuration resulted in the correct `.svg`-output.
 	"""
+	manipulator = SVGManipulator()
 	get_default_dict()
-	replace_values()
+	manipulator.replace_all_values_with_dict()
 
 
 if __name__ == '__main__':  # pragma: no cover

@@ -9,6 +9,7 @@ from torch.utils.tensorboard import SummaryWriter
 import agents.vendors as vendors
 import configuration.utils_sim_market as ut
 import market.sim_market as sim_market
+from monitoring.svg_manipulation import SVGManipulator
 
 
 def run_example(environment=sim_market.CircularEconomyRebuyPriceOneCompetitor(), agent=vendors.RuleBasedCERebuyAgent(), log_dir_prepend='') -> int:
@@ -28,6 +29,7 @@ def run_example(environment=sim_market.CircularEconomyRebuyPriceOneCompetitor(),
 	is_done = False
 	state = environment.reset()
 	writer = SummaryWriter(log_dir='runs/' + log_dir_prepend + time.strftime('%Y%m%d-%H%M%S') + f'_{type(environment).__name__}_{type(agent).__name__}_exampleprinter')
+	svg_manipulator = SVGManipulator()
 	cumulative_dict = None
 
 	with torch.no_grad():
@@ -41,6 +43,7 @@ def run_example(environment=sim_market.CircularEconomyRebuyPriceOneCompetitor(),
 				cumulative_dict = copy.deepcopy(logdict)
 			ut.write_dict_to_tensorboard(writer, logdict, counter)
 			ut.write_dict_to_tensorboard(writer, cumulative_dict, counter, is_cumulative=True)
+			ut.write_content_of_dict_to_overview_svg(svg_manipulator, cumulative_dict, counter)
 			our_profit += reward
 			counter += 1
 	return our_profit
