@@ -28,7 +28,8 @@ def run_example(environment=sim_market.CircularEconomyRebuyPriceOneCompetitor(),
 	our_profit = 0
 	is_done = False
 	state = environment.reset()
-	writer = SummaryWriter(log_dir='runs/' + log_dir_prepend + time.strftime('%Y%m%d-%H%M%S') + f'_{type(environment).__name__}_{type(agent).__name__}_exampleprinter')
+	signature = time.strftime('%Y%m%d-%H%M%S') + f'_{type(environment).__name__}_{type(agent).__name__}_exampleprinter'
+	writer = SummaryWriter(log_dir='runs/' + log_dir_prepend + signature)
 	svg_manipulator = SVGManipulator()
 	cumulative_dict = None
 
@@ -46,6 +47,7 @@ def run_example(environment=sim_market.CircularEconomyRebuyPriceOneCompetitor(),
 			ut.write_content_of_dict_to_overview_svg(svg_manipulator, cumulative_dict, counter)
 			our_profit += reward
 			counter += 1
+	svg_manipulator.save_overview_svg(filename='MarketOverview_' + signature + '.svg')
 	return our_profit
 
 
