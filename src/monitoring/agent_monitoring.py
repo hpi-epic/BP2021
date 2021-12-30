@@ -110,7 +110,7 @@ class Monitor():
 		if isinstance(self.marketplace.action_space, gym.spaces.Discrete):
 			n_actions = self.marketplace.action_space.n
 		else:
-			for id in range(0, len(self.marketplace.action_space)):
+			for id in range(len(self.marketplace.action_space)):
 				n_actions *= self.marketplace.action_space[id].n
 		return n_actions
 
@@ -138,7 +138,7 @@ class Monitor():
 		for current_agent in agents:
 			if issubclass(current_agent[0], vendors.RuleBasedAgent):
 				self.agents.append(vendors.Agent.custom_init(vendors.Agent, current_agent[0], current_agent[1]))
-			elif not issubclass(current_agent[0], vendors.RuleBasedAgent):
+			elif issubclass(current_agent[0], vendors.QLearningAgent):
 				try:
 					assert (0 <= len(current_agent[1]) <= 2), 'the argument list for a RL-agent must have length between 0 and 2'
 					assert all(isinstance(argument, str) for argument in current_agent[1]), 'the arguments for a RL-agent must be of type str'
@@ -176,6 +176,7 @@ class Monitor():
 		self.agent_colors = [color_map(agent_id) for agent_id in range(len(self.agents))]
 
 	def setup_monitoring(self, enable_live_draw: bool = None, episodes: int = None, plot_interval: int = None, marketplace: sim_market.SimMarket = None, agents: list = None, subfolder_name: str = None) -> None:
+		# sourcery skip: extract-duplicate-method
 		"""
 		Configure the current monitoring session.
 
@@ -196,9 +197,12 @@ class Monitor():
 			self.enable_live_draw = enable_live_draw
 		if(episodes is not None):
 			assert isinstance(episodes, int), 'episodes must be of type int'
+			assert episodes > 0, 'episodes must not be 0'
 			self.episodes = episodes
 		if(plot_interval is not None):
 			assert isinstance(plot_interval, int), 'plot_interval must be of type int'
+			assert plot_interval > 0, 'plot_interval must not be 0'
+			assert plot_interval <= self.episodes, f'plot_interval must be <= episodes, or no plots can be generated. Episodes: {self.episodes}. Plot_interval: {plot_interval}'
 			self.plot_interval = plot_interval
 
 		if(marketplace is not None):
@@ -225,15 +229,15 @@ class Monitor():
 		Returns:
 			dict: A dict containing the configuration (=class variables)
 		"""
-		configuration = {}
-		configuration['enable_live_draw'] = self.enable_live_draw
-		configuration['episodes'] = self.episodes
-		configuration['plot_interval'] = self.plot_interval
-		configuration['marketplace'] = self.marketplace
-		configuration['agents'] = self.agents
-		configuration['agent_colors'] = self.agent_colors
-		configuration['folder_path'] = self.folder_path
-		return configuration
+		return {
+			'enable_live_draw': self.enable_live_draw,
+			'episodes': self.episodes,
+			'plot_interval': self.plot_interval,
+			'marketplace': self.marketplace,
+			'agents': self.agents,
+			'agent_colors': self.agent_colors,
+			'folder_path': self.folder_path,
+		}
 
 	# def get_episode_rewards(self, all_step_rewards) -> list:
 	# 	"""
@@ -290,7 +294,7 @@ class Monitor():
 		plt.title('Cumulative Reward per Episode')
 		# find the number of bins needed, we only use steps of 1000, assuming our agents are good bois :)
 		plot_range = self.round_down(int(self.metrics_minimum(rewards)), -3), self.round_up(int(self.metrics_maximum(rewards)), -3)
-		plot_bins = int(int(np.abs(plot_range[0]) + plot_range[1]) / 1000)
+		plot_bins = int(np.abs(plot_range[0]) + plot_range[1]) // 1000
 		x_ticks = np.arange(plot_range[0], plot_range[1] + 1, 1000)
 
 		plt.hist(rewards, bins=plot_bins, color=self.agent_colors, range=plot_range, edgecolor='black')
@@ -327,7 +331,7 @@ class Monitor():
 				for starting_index in range(int(len(rewards[agent_rewards_id]) / self.plot_interval)):
 					if metric_types[function] == 'Overall':
 						metric_rewards[agent_rewards_id].append(
-							metric_functions[function](rewards[agent_rewards_id][0:self.plot_interval * (starting_index + 1)]))
+							metric_functions[function](rewards[agent_rewards_id][:self.plot_interval * (starting_index + 1)]))
 					elif metric_types[function] == 'Episode':
 						metric_rewards[agent_rewards_id].append(
 							metric_functions[function](rewards[agent_rewards_id][self.plot_interval * (starting_index):self.plot_interval * (starting_index + 1)]))
@@ -342,6 +346,7 @@ class Monitor():
 			x_values (list of ints): Defines x-values of datapoints. Must have same length as y_values.
 			y_values (list of list of ints): Defines y-values of datapoints, one array per monitored agent. Must have same length as episodes.
 			metric_name (str): Used for naming the y-axis, diagram and output file.
+			metric_type (str): What kind of "message" should be displayed at the top of the diagram.
 		"""
 		assert len(x_values) == int(self.episodes / self.plot_interval), 'x_values must have self.episodes / self.plot_interval many items'
 		assert len(y_values) == len(self.agents), 'y_values must have one entry per agent'
@@ -355,8 +360,7 @@ class Monitor():
 			plt.plot(x_values, y_values[index], marker='o', color=self.agent_colors[index])
 
 		plt.xlabel('Episodes', fontsize='18')
-		# array containing the values to be plotted on the x axis, equally spaced each self.plot_interval
-		plt.xticks(np.arange(0, self.episodes + 1, self.plot_interval))
+
 		plt.ylabel(f'{metric_name} Reward', fontsize='18')
 		if metric_type == 'Overall':
 			plt.title(f'Overall {metric_name} Reward calculated each {self.plot_interval} episodes')
@@ -382,10 +386,7 @@ class Monitor():
 		"""
 
 		# initialize the rewards list with a list for each agent
-		rewards = []
-		for i in range(len(self.agents)):
-			rewards.append([])
-
+		rewards = [[] for _ in range(len(self.agents))]
 		# all_steps_rewards = []
 		# for i in range(len(self.agents)):
 		# 	all_steps_rewards.append([])
@@ -394,7 +395,7 @@ class Monitor():
 			# reset the state once to be used by all agents
 			default_state = self.marketplace.reset()
 
-			for i in range(0, len(self.agents)):
+			for i in range(len(self.agents)):
 				# reset marketplace, bit hacky, if you find a better solution feel free
 				self.marketplace.reset()
 				self.marketplace.state = default_state
@@ -434,6 +435,14 @@ def run_monitoring_session(monitor: Monitor = Monitor()) -> None:
 		monitor (Monitor instance, optional): The monitor to run the session on. Defaults to a default Monitor() instance.
 	"""
 	# monitor.setup_monitoring(agents=[(vendors.QLearningCEAgent, []), (vendors.FixedPriceCEAgent, [(4, 6)])])
+	if monitor.episodes / monitor.plot_interval > 50:
+		print('The ratio of episodes/plot_interval is over 50. In order for the plots to be more readable we recommend a lower ratio.')
+		print(f'Episodes: {monitor.episodes}\nPlot Interval: {monitor.plot_interval}\nRatio: {int(monitor.episodes / monitor.plot_interval)}')
+		answer = input('Continue anyway? [y]/n: ')
+		if answer == 'n':
+			print('Stopping monitoring session...')
+			return
+
 	print('Running a monitoring session with the following configuration:')
 	print(str.ljust('Live Drawing enabled:', 25) + str(monitor.enable_live_draw))
 	print(str.ljust('Episodes:', 25) + str(monitor.episodes))
@@ -448,10 +457,10 @@ def run_monitoring_session(monitor: Monitor = Monitor()) -> None:
 
 	for current_reward in enumerate(rewards):
 		print(f'Statistics for agent: {monitor.agents[current_reward[0]].name}')
-		print(f'The average reward over {monitor.episodes} episodes is:  {str(monitor.metrics_average(current_reward[1]))}')
-		print(f'The median reward over {monitor.episodes} episodes is:   {str(monitor.metrics_median(current_reward[1]))}')
-		print(f'The maximum reward over {monitor.episodes} episodes is:  {str(monitor.metrics_maximum(current_reward[1]))}')
-		print(f'The minimum reward over {monitor.episodes} episodes is:  {str(monitor.metrics_minimum(current_reward[1]))}')
+		print(f'The average reward over {monitor.episodes} episodes is:  {monitor.metrics_average(current_reward[1])}')
+		print(f'The median reward over {monitor.episodes} episodes is:   {monitor.metrics_median(current_reward[1])}')
+		print(f'The maximum reward over {monitor.episodes} episodes is:  {monitor.metrics_maximum(current_reward[1])}')
+		print(f'The minimum reward over {monitor.episodes} episodes is:  {monitor.metrics_minimum(current_reward[1])}')
 
 	monitor.create_statistics_plots(rewards)
 	print(f'All plots were saved to {monitor.get_folder()}')

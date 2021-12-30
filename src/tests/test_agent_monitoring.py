@@ -1,6 +1,7 @@
 import os
 import re
 import shutil
+from unittest import mock
 
 import numpy as np
 import pytest
@@ -144,10 +145,19 @@ def test_incorrect_setup_monitoring():
 	with pytest.raises(AssertionError) as assertion_message:
 		monitor.setup_monitoring(episodes='Hello World')
 	assert 'episodes must be of type int' in str(assertion_message.value)
+	with pytest.raises(AssertionError) as assertion_message:
+		monitor.setup_monitoring(episodes=0)
+	assert 'episodes must not be 0' in str(assertion_message.value)
 
 	with pytest.raises(AssertionError) as assertion_message:
 		monitor.setup_monitoring(plot_interval='1')
 	assert 'plot_interval must be of type int' in str(assertion_message.value)
+	with pytest.raises(AssertionError) as assertion_message:
+		monitor.setup_monitoring(plot_interval=0)
+	assert 'plot_interval must not be 0' in str(assertion_message.value)
+	with pytest.raises(AssertionError) as assertion_message:
+		monitor.setup_monitoring(episodes=4, plot_interval=5)
+	assert 'plot_interval must be <= episodes, or no plots can be generated.' in str(assertion_message.value)
 
 	with pytest.raises(AssertionError) as assertion_message:
 		monitor.setup_monitoring(marketplace=vendors.RuleBasedCEAgent)
@@ -290,8 +300,16 @@ def test_run_marketplace():
 
 
 def test_run_monitoring_session():
-	monitor.setup_monitoring(enable_live_draw=False, episodes=10, plot_interval=10)
+	monitor.setup_monitoring(episodes=10, plot_interval=10)
 	current_configuration = monitor.get_configuration()
 	am.run_monitoring_session(monitor)
-	assert current_configuration == monitor.get_configuration(), 'the monitor configuration should not be changed within main'
+	assert current_configuration == monitor.get_configuration(), 'the monitor configuration should not be changed within run_monitoring()'
 	assert os.path.exists(monitor.folder_path)
+
+
+@mock.patch('monitoring.agent_monitoring.input', create=True)
+def test_run_monitoring_ratio(mocked_input):
+	# ratio is over 50, program should ask if we want to continue. We answer 'no'
+	mocked_input.side_effect = ['n']
+	monitor.setup_monitoring(episodes=51, plot_interval=1)
+	am.run_monitoring_session(monitor)
