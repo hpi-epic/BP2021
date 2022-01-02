@@ -6,9 +6,7 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 
-import configuration.utils_sim_market as ut
-
-# import random
+import src.configuration.utils_sim_market as ut
 
 
 class Customer(ABC):

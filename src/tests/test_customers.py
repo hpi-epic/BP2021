@@ -1,13 +1,13 @@
 import pytest
 
-import configuration.utils_sim_market as ut
-import market.customer as customer
-from market.customer import CustomerCircular as CCircular
-from market.customer import CustomerLinear as CLinear
-from market.sim_market import CircularEconomyMonopolyScenario as CEMonopoly
-from market.sim_market import CircularEconomyRebuyPriceMonopolyScenario
-from market.sim_market import ClassicScenario as SClassic
-from market.sim_market import MultiCompetitorScenario as SMulti
+import src.configuration.utils_sim_market as ut
+import src.market.customer as customer
+from src.market.customer import CustomerCircular as CCircular
+from src.market.customer import CustomerLinear as CLinear
+from src.market.sim_market import CircularEconomyMonopolyScenario as CEMonopoly
+from src.market.sim_market import CircularEconomyRebuyPriceMonopolyScenario
+from src.market.sim_market import ClassicScenario as SClassic
+from src.market.sim_market import MultiCompetitorScenario as SMulti
 
 
 # Helper function that creates a random offer (state that includes the agent's price) to test customer behaviour. This is dependent on the sim_market working!

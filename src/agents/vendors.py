@@ -7,11 +7,11 @@ from abc import ABC, abstractmethod
 import numpy as np
 import torch
 
-import configuration.utils_rl as ut_rl
-import configuration.utils_sim_market as ut
-import rl.model as model
-from market.customer import CustomerCircular
-from rl.experience_buffer import ExperienceBuffer
+import src.configuration.utils_rl as ut_rl
+import src.configuration.utils_sim_market as ut
+import src.rl.model as model
+from src.market.customer import CustomerCircular
+from src.rl.experience_buffer import ExperienceBuffer
 
 
 class Agent(ABC):

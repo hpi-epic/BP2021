@@ -3,7 +3,7 @@ import os
 import pstats
 import time
 
-import monitoring.exampleprinter
+import src.monitoring.exampleprinter
 
 
 def remove_files() -> None:

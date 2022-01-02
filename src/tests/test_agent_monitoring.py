@@ -5,11 +5,11 @@ import shutil
 import numpy as np
 import pytest
 
-import agents.vendors as vendors
-import market.sim_market as sim_market
-import monitoring.agent_monitoring as am
-import tests.utils_tests as ut_t
-from monitoring.agent_monitoring import Monitor
+import src.agents.vendors as vendors
+import src.market.sim_market as sim_market
+import src.monitoring.agent_monitoring as am
+import src.tests.utils_tests as ut_t
+from src.monitoring.agent_monitoring import Monitor
 
 monitor = Monitor()
 

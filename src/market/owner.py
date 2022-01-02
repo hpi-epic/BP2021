@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 import numpy as np
 
 # helpers
-import configuration.utils_sim_market as ut
+import src.configuration.utils_sim_market as ut
 
 
 class Owner(ABC):

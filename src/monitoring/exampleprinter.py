@@ -6,9 +6,9 @@ import time
 import torch
 from torch.utils.tensorboard import SummaryWriter
 
-import agents.vendors as vendors
-import configuration.utils_sim_market as ut
-import market.sim_market as sim_market
+import src.agents.vendors as vendors
+import src.configuration.utils_sim_market as ut
+import src.market.sim_market as sim_market
 
 
 def run_example(environment=sim_market.CircularEconomyRebuyPriceOneCompetitor(), agent=vendors.RuleBasedCERebuyAgent(), log_dir_prepend='') -> int:

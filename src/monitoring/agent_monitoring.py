@@ -5,8 +5,8 @@ import gym
 import matplotlib.pyplot as plt
 import numpy as np
 
-import agents.vendors as vendors
-import market.sim_market as sim_market
+import src.agents.vendors as vendors
+import src.market.sim_market as sim_market
 
 
 class Monitor():

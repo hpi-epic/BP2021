@@ -7,9 +7,9 @@ import time
 import numpy as np
 from torch.utils.tensorboard import SummaryWriter
 
-import agents.vendors as vendors
-import configuration.utils_rl as ut_rl
-import configuration.utils_sim_market as ut
+import src.agents.vendors as vendors
+import src.configuration.utils_rl as ut_rl
+import src.configuration.utils_sim_market as ut
 
 
 # Gets the profit array of all vendors and returns the necessary dict for direct comparison in tb

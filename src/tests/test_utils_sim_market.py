@@ -3,8 +3,8 @@ from unittest.mock import mock_open, patch
 
 import pytest
 
-import configuration.utils_sim_market as ut
-import tests.utils_tests as ut_t
+import src.configuration.utils_sim_market as ut
+import src.tests.utils_tests as ut_t
 
 
 # mock format taken from: https://stackoverflow.com/questions/1289894/how-do-i-mock-an-open-used-in-a-with-statement-using-the-mock-framework-in-pyth
