@@ -17,6 +17,3 @@ dependencies:
   - tensorboard=2.7.0
   - snakeviz=2.1.1
   - pywin32=302  # This version fixes a DeprecationWarning
-  - pip=21.2.4
-  - pip:
-    - -e ./src  # This installs our project as a package
