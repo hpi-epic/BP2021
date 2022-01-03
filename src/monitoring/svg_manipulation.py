@@ -58,10 +58,10 @@ class SVGManipulator():
 
 	def replace_one_value(self, target_key, value):
 		"""
-		Replaces one value for a key in the dictionary
+		Replace one value for a key in the dictionary.
 
 		Args:
-			target_key (str): a key in svg dictionary
+			target_key (str): a key in `self.value_dictionary`
 			value (str): value for the provided key
 		"""
 		assert target_key in self.value_dictionary
@@ -86,7 +86,7 @@ class SVGManipulator():
 
 	def write_dict_to_svg(self, target_dictionary: dict = get_default_dict()) -> str:
 		"""
-		Replaces all values in the current svg with a given dictionary
+		Replace all placeholder values in the current svg with a given dictionary.
 
 		Args:
 			target_dictionary (dict, optional): Dictionary containing the values that should be replaced in the copy. Defaults to `get_default_dict()`.
@@ -107,8 +107,8 @@ def main():  # pragma: no cover
 	This should be used for testing purposes only and is a way to quickly check if a configuration resulted in the correct `.svg`-output.
 	"""
 	manipulator = SVGManipulator()
-	get_default_dict()
-	manipulator.replace_all_values_with_dict()
+	manipulator.write_dict_to_svg()
+	manipulator.save_overview_svg()
 
 
 if __name__ == '__main__':  # pragma: no cover
