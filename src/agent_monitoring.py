@@ -307,7 +307,8 @@ class Monitor():
 			self.create_line_plot(x_axis_episodes, metric_rewards, metrics_names[function])
 
 	def create_line_plot(self, x_values, y_values, metric_name='no name provided') -> None:
-		"""Create a line plot with the given rewards data.
+		"""
+		Create a line plot with the given rewards data.
 
 		Args:
 			x_values (list of ints): Defines x-values of datapoints. Must have same length as y_values.
