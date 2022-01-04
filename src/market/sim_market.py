@@ -210,7 +210,8 @@ class SimMarket(gym.Env, ABC):
 
 	@abstractmethod
 	def reset_vendor_actions(self):
-		"""Reset the price(s) in an economy.
+		"""
+		Reset the price(s) in an economy.
 
 		Returns:
 			int or tuple: Price(s) of the new product.
@@ -403,7 +404,8 @@ class CircularEconomy(SimMarket):
 		return np.array([self.in_circulation])
 
 	def reset_vendor_actions(self) -> tuple:
-		"""Reset the prices in the circular economy (without rebuy price)
+		"""
+		Reset the prices in the circular economy (without rebuy price)
 
 		Returns:
 			tuple: (refurbished_price, new_price)
@@ -417,14 +419,14 @@ class CircularEconomy(SimMarket):
 		return owner.UniformDistributionOwner()
 
 	def throw_away(self) -> None:
-		"""The call of this method will decrease the in_circulation counter by one.
-		Call it if one of your owners decided to throw away his product.
-		"""
+		"""The call of this method will decrease the in_circulation counter by one.Call it if one of your owners decided to throw away his product."""
+
 		self.output_dict['owner/throw_away'] += 1
 		self.in_circulation -= 1
 
 	def transfer_product_to_storage(self, vendor, profits=None, rebuy_price=0) -> None:
-		"""Handles the transfer of a used product to the storage after it got bought by the vendor. It respects the storage capacity and adjusts the profit the vendor makes.
+		"""
+		Handles the transfer of a used product to the storage after it got bought by the vendor. It respects the storage capacity and adjusts the profit the vendor makes.
 
 		Args:
 			vendor (int): The index of the vendor that bought the product.
@@ -440,7 +442,8 @@ class CircularEconomy(SimMarket):
 			profits[vendor] -= rebuy_price
 
 	def simulate_owners(self, profits, offer) -> None:
-		"""The process of owners selling their used products to the vendor. It is prepared for multiple vendor scenarios but is still part of a monopoly.
+		"""
+		The process of owners selling their used products to the vendor. It is prepared for multiple vendor scenarios but is still part of a monopoly.
 
 		Args:
 			profits (np.array(int)): The profits of the vendor.
@@ -465,7 +468,8 @@ class CircularEconomy(SimMarket):
 		return 0
 
 	def complete_purchase(self, profits, customer_decision) -> None:
-		"""The method handles the customer's decision by raising the profit by the price paid minus the produtcion price.
+		"""
+		The method handles the customer's decision by raising the profit by the price paid minus the produtcion price.
 		It also handles the storage of used products.
 
 		Args:
@@ -494,7 +498,8 @@ class CircularEconomy(SimMarket):
 			self.in_circulation = min(self.in_circulation + 1, self.max_circulation)
 
 	def consider_storage_costs(self, profits) -> None:
-		"""The method handles the storage costs. they depend on the amount of refurbished products in storage.
+		"""
+		The method handles the storage costs. they depend on the amount of refurbished products in storage.
 
 		Args:
 			profits (np.array(int)): The profits of all vendors.
@@ -540,7 +545,8 @@ class CircularEconomyRebuyPrice(CircularEconomy):
 		self.action_space = gym.spaces.Tuple((gym.spaces.Discrete(ut.MAX_PRICE), gym.spaces.Discrete(ut.MAX_PRICE), gym.spaces.Discrete(ut.MAX_PRICE)))
 
 	def reset_vendor_actions(self) -> tuple:
-		"""Resets the prices in the circular economy with rebuy prices.
+		"""
+		Resets the prices in the circular economy with rebuy prices.
 
 		Returns:
 			tuple: (refurbished_price, new_price, rebuy_price)
