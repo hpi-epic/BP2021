@@ -296,13 +296,15 @@ class QLearningAgent(ReinforcementLearningAgent, ABC):
 		torch.save(self.net.state_dict(), f'./trainedModels/{path_name}/{model_name}')
 
 		full_directory = os.walk(f'./trainedModels/{path_name}')
-		for dirpath, dirnames, filenames in full_directory:
+		for _, _, filenames in full_directory:
 			if len(filenames) > 10:
-				# sort lexicographically to delete the smallest rewards
 				# TODO: Should we instead delete the oldest files?
+				# sort numbers by value to delete the smallest rewards
+				filenames = [float(reward[:-4]) for reward in filenames]
 				filenames = sorted(filenames)
+
 				for file in range(len(filenames) - 10):
-					os.remove(f'./trainedModels/{path_name}/{filenames[file]}')
+					os.remove(f'./trainedModels/{path_name}/{filenames[file]:.3f}.dat')
 
 
 class QLearningLEAgent(QLearningAgent, LinearAgent):
