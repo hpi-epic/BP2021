@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import copy
 
 import torch
@@ -8,8 +6,6 @@ from torch.utils.tensorboard import SummaryWriter
 import agents.vendors as vendors
 import configuration.utils_sim_market as ut
 import market.sim_market as sim_market
-
-# import time
 
 
 def run_example(environment=sim_market.CircularEconomyRebuyPriceOneCompetitor(), agent=vendors.RuleBasedCERebuyAgent(), log_dir_prepend='') -> int:
