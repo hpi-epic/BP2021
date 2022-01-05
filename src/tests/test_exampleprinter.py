@@ -4,10 +4,9 @@ import shutil
 
 import pytest
 
+import exampleprinter
 import sim_market as sim
 import vendors
-
-from .context import exampleprinter
 
 
 def teardown_module(module):

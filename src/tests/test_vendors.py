@@ -4,12 +4,12 @@ from unittest.mock import mock_open, patch
 import pytest
 from numpy import random
 
-from .context import CompetitorJust2Players as C2Players
-from .context import CompetitorLinearRatio1 as CLinear1
-from .context import CompetitorRandom as CRandom
-from .context import utils_sim_market as ut
-from .context import utils_tests as ut_t
-from .context import vendors
+import tests.utils_tests as ut_t
+import utils_sim_market as ut
+import vendors
+from vendors import CompetitorJust2Players as C2Players
+from vendors import CompetitorLinearRatio1 as CLinear1
+from vendors import CompetitorRandom as CRandom
 
 
 def test_abstract_agent_classes():
