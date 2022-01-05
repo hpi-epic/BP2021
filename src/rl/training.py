@@ -38,7 +38,9 @@ def train_QLearning_agent(RL_agent, environment, maxsteps=2 * ut_rl.EPSILON_DECA
 	best_m_reward = 0
 
 	# tensorboard init
-	writer = SummaryWriter(log_dir='runs/' + log_dir_prepend + time.strftime('%Y%m%d-%H%M%S') + f'_{type(environment).__name__}_{type(RL_agent).__name__}_training')
+	# Setting log_dir causes some problems that are yet to be solved.
+	# writer = SummaryWriter(log_dir='runs/' + log_dir_prepend + time.strftime('%Y%m%d-%H%M%S') + f'_{type(environment).__name__}_{type(RL_agent).__name__}_training')
+	writer = SummaryWriter()
 	for frame_idx in range(maxsteps):
 		epsilon = max(ut_rl.EPSILON_FINAL, ut_rl.EPSILON_START - frame_idx / ut_rl.EPSILON_DECAY_LAST_FRAME)
 
