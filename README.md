@@ -50,17 +50,26 @@ This will first uninstall all packages and then re-install them from the `enviro
 
 ## The `AlphaBusiness` package
 
-You may have noticed the following in the `environment.yml`:
+You may have noticed the following line in the `environment.yml`:
 ```
   - pip:
     - -e ./src
 ```
 
-This installs the `src` folder (and its subdirectories) as a pip dependency. The `-e` flag indicates to pip that the package should be installed in an editable state, meaning that any changes to `.py` files in the package will be integrated into the package immediately (meaning no re-install is necessary). In order to install the package, pip looks into the `setup.py` file where name, version and packages of the new package are set.
+This installs the `src` folder (and its subdirectories) as a local pip package. The `-e` flag indicates to pip that the package should be installed in an editable state, meaning that any changes to `.py` files in the package will be integrated into the package immediately (meaning no re-install is necessary). In order to install the package, pip looks into the `setup.py` file where name, version and packages of the new package are set.
 You can confirm that the install was successfull if there is a folder called `AlphaBusiness.egg-info` within the `src`-directory, or by checking `pip freeze` for the following line: 
+
 ```
 -e git+https://github.com/hpi-epic/BP2021.git@da8868467690a1300ff4e11245417ec384aae15b#egg=AlphaBusiness&subdirectory=src
 ```
+
+If you do not see the `AlphaBusiness`-package in the resulting list, perform the following command while in the top-level-folder of the repository (e.g. `BP2021`):
+
+```console
+pip install -e ./src
+```
+
+Check `pip freeze` again to make sure the package was installed.
 
 Installing our project as a package enables us to perform [relative imports](https://realpython.com/absolute-vs-relative-python-imports/) from within subdirectories to parent directories. The most prominent example of this would be importing the tested files from within the test-files in the `tests/` subdirectory.
 Package installation adapted from [this post](https://stackoverflow.com/a/50194143).
