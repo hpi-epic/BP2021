@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-
-# helper
 import json
 import os
 import random
@@ -15,8 +12,6 @@ MEAN_REWARD_BOUND = None
 NUMBER_OF_CUSTOMERS = None
 PRODUCTION_PRICE = None
 EPISODE_LENGTH = None
-
-config = {}
 
 
 def load_config(path_sim_market=os.path.dirname(__file__) + os.sep + '../..' + os.sep + 'config_sim_market.json'):
@@ -33,30 +28,48 @@ def load_config(path_sim_market=os.path.dirname(__file__) + os.sep + '../..' + o
 		return json.load(config_file)
 
 
+def check_config_completeness(config: dict) -> None:
+	"""
+	Check if the passed config dictionary contains all values.
+
+	Args:
+		config (dict): The dictionary to be checked.
+	"""
+	# ordered alphabetically in the config_sim_market.json
+	assert 'episode_size' in config, 'your config is missing episode_size'
+	assert 'max_price' in config, 'your config is missing max_price'
+	assert 'max_quality' in config, 'your config is missing max_quality'
+	assert 'number_of_customers' in config, 'your config is missing number_of_customers'
+	assert 'production_price' in config, 'your config is missing production_price'
+
+
+def update_sim_market_variables(config: dict) -> None:
+	"""
+	Update the global variables with new values provided by the config.
+
+	Args:
+		config (dict): The dictionary from which to read the new values.
+	"""
+	listOfGlobals = globals()
+	listOfGlobals['EPISODE_LENGTH'] = int(config['episode_size'])
+
+	listOfGlobals['MAX_PRICE'] = int(config['max_price'])
+	listOfGlobals['MAX_QUALITY'] = int(config['max_quality'])
+	listOfGlobals['NUMBER_OF_CUSTOMERS'] = int(config['number_of_customers'])
+	listOfGlobals['PRODUCTION_PRICE'] = int(config['production_price'])
+
+	assert listOfGlobals['NUMBER_OF_CUSTOMERS'] > 0 and listOfGlobals['NUMBER_OF_CUSTOMERS'] % 2 == 0, 'number_of_customers should be even and positive'
+	assert listOfGlobals['PRODUCTION_PRICE'] <= listOfGlobals['MAX_PRICE'] and listOfGlobals['PRODUCTION_PRICE'] >= 0, 'production_price needs to smaller than max_price and positive or zero'
+	assert listOfGlobals['MAX_QUALITY'] > 0, 'max_quality should be positive'
+	assert listOfGlobals['MAX_PRICE'] > 0, 'max_price should be positive'
+	assert listOfGlobals['EPISODE_LENGTH'] > 0, 'episode_size should be positive'
+
+	listOfGlobals['MEAN_REWARD_BOUND'] = listOfGlobals['EPISODE_LENGTH'] * listOfGlobals['MAX_PRICE'] * listOfGlobals['NUMBER_OF_CUSTOMERS']
+
+
 config = load_config()
-
-# ordered alphabetically in the config_sim_market.json
-assert 'episode_size' in config, 'your config is missing episode_size'
-assert 'max_price' in config, 'your config is missing max_price'
-assert 'max_quality' in config, 'your config is missing max_quality'
-assert 'number_of_customers' in config, 'your config is missing number_of_customers'
-assert 'production_price' in config, 'your config is missing production_price'
-
-EPISODE_LENGTH = int(config['episode_size'])
-
-MAX_PRICE = int(config['max_price'])
-MAX_QUALITY = int(config['max_quality'])
-NUMBER_OF_CUSTOMERS = int(config['number_of_customers'])
-PRODUCTION_PRICE = int(config['production_price'])
-
-
-assert NUMBER_OF_CUSTOMERS > 0 and NUMBER_OF_CUSTOMERS % 2 == 0, 'number_of_customers should be even and positive'
-assert PRODUCTION_PRICE <= MAX_PRICE and PRODUCTION_PRICE >= 0, 'production_price needs to smaller than max_price and positive or zero'
-assert MAX_QUALITY > 0, 'max_quality should be positive'
-assert MAX_PRICE > 0, 'max_price should be positive'
-assert EPISODE_LENGTH > 0, 'episode_size should be positive'
-
-MEAN_REWARD_BOUND = EPISODE_LENGTH * MAX_PRICE * NUMBER_OF_CUSTOMERS
+check_config_completeness(config)
+update_sim_market_variables(config)
 
 
 def shuffle_quality() -> int:
