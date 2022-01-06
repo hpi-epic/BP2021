@@ -44,11 +44,13 @@ def run_example(environment=sim_market.CircularEconomyRebuyPriceOneCompetitor(),
 				cumulative_dict = copy.deepcopy(logdict)
 			ut.write_dict_to_tensorboard(writer, logdict, counter)
 			ut.write_dict_to_tensorboard(writer, cumulative_dict, counter, is_cumulative=True)
-			ut.write_content_of_dict_to_overview_svg(svg_manipulator, counter, logdict, cumulative_dict)
+			if isinstance(environment, sim_market.CircularEconomyRebuyPriceOneCompetitor):
+				ut.write_content_of_dict_to_overview_svg(svg_manipulator, counter, logdict, cumulative_dict)
 			our_profit += reward
 			counter += 1
 			svg_manipulator.save_overview_svg(filename=('MarketOverview_%.3d.svg' % counter))
-	svg_manipulator.convert_svg_sequence_to_gif()
+	if isinstance(environment, sim_market.CircularEconomyRebuyPriceOneCompetitor):
+		svg_manipulator.convert_svg_sequence_to_gif()
 	return our_profit
 
 
