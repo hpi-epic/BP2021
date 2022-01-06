@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import copy
-import time
 
 import torch
 from torch.utils.tensorboard import SummaryWriter
@@ -9,6 +8,8 @@ from torch.utils.tensorboard import SummaryWriter
 import agents.vendors as vendors
 import configuration.utils_sim_market as ut
 import market.sim_market as sim_market
+
+# import time
 
 
 def run_example(environment=sim_market.CircularEconomyRebuyPriceOneCompetitor(), agent=vendors.RuleBasedCERebuyAgent(), log_dir_prepend='') -> int:
@@ -27,7 +28,9 @@ def run_example(environment=sim_market.CircularEconomyRebuyPriceOneCompetitor(),
 	our_profit = 0
 	is_done = False
 	state = environment.reset()
-	writer = SummaryWriter(log_dir='runs/' + log_dir_prepend + time.strftime('%Y%m%d-%H%M%S') + f'_{type(environment).__name__}_{type(agent).__name__}_exampleprinter')
+	# Setting log_dir causes some problems that are yet to be solved.
+	# writer = SummaryWriter(log_dir='runs/' + log_dir_prepend + time.strftime('%Y%m%d-%H%M%S') + f'_{type(environment).__name__}_{type(agent).__name__}_exampleprinter')
+	writer = SummaryWriter()
 	cumulative_dict = None
 
 	with torch.no_grad():

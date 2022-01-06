@@ -38,7 +38,9 @@ def train_QLearning_agent(RL_agent, environment, maxsteps=2 * ut_rl.EPSILON_DECA
 	best_m_reward = 0
 
 	# tensorboard init
-	writer = SummaryWriter(log_dir='runs/' + log_dir_prepend + time.strftime('%Y%m%d-%H%M%S') + f'_{type(environment).__name__}_{type(RL_agent).__name__}_training')
+	# Setting log_dir causes some problems that are yet to be solved.
+	# writer = SummaryWriter(log_dir='runs/' + log_dir_prepend + time.strftime('%Y%m%d-%H%M%S') + f'_{type(environment).__name__}_{type(RL_agent).__name__}_training')
+	writer = SummaryWriter()
 	for frame_idx in range(maxsteps):
 		epsilon = max(ut_rl.EPSILON_FINAL, ut_rl.EPSILON_START - frame_idx / ut_rl.EPSILON_DECAY_LAST_FRAME)
 
@@ -80,17 +82,15 @@ def train_QLearning_agent(RL_agent, environment, maxsteps=2 * ut_rl.EPSILON_DECA
 					frame_idx / ut.EPISODE_LENGTH,
 				)
 			writer.add_scalar('epsilon', epsilon, frame_idx / ut.EPISODE_LENGTH)
-			print('%d: done %d games, this episode return %.3f, mean return %.3f, eps %.2f, speed %.2f f/s' % (frame_idx, len(all_dicts), all_dicts[-1]['profits/all']['vendor_0'], m_reward, epsilon, speed))
+			print(f'''{frame_idx}: done {len(all_dicts)} games, this episode return {all_dicts[-1]['profits/all']['vendor_0']:.3f}, mean return {m_reward:.3f}, eps {epsilon:.2f}, speed {speed:.2f} f/s''')
 
-			if (
-				best_m_reward is None or best_m_reward < m_reward
-			) and frame_idx > ut_rl.EPSILON_DECAY_LAST_FRAME + 101:
-				RL_agent.save(type(environment).__name__ + '_' + type(RL_agent).__name__ + '_%.2f.dat' % m_reward)
+			if (best_m_reward is None or best_m_reward < m_reward) and frame_idx > ut_rl.EPSILON_DECAY_LAST_FRAME + 101:
+				RL_agent.save(f'{type(environment).__name__}_{type(RL_agent).__name__}', f'{m_reward:.3f}.dat')
 				if best_m_reward is not None:
-					print('Best reward updated %.3f -> %.3f' % (best_m_reward, m_reward))
+					print(f'Best reward updated {best_m_reward:.3f} -> {m_reward:.3f}')
 				best_m_reward = m_reward
 			if m_reward > ut.MEAN_REWARD_BOUND:
-				print('Solved in %d frames!' % frame_idx)
+				print(f'Solved in {frame_idx} frames!')
 				break
 
 			vendors_cumulated_info = None
