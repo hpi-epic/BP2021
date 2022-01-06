@@ -4,8 +4,9 @@
 		<path stroke="#007A9E" stroke-width="2.667" stroke-linejoin="round" stroke-miterlimit="10" fill="#FFF" d="M81.5 172.5h87v55h-87z" />
 		<text fill="#323232" font-family="Verdana,Verdana_MSFontService,sans-serif" font-weight="700" font-size="11" transform="translate(99.324 204)">Supplier</text>
 		<path stroke="#007A9E" stroke-width="2.667" stroke-linejoin="round" stroke-miterlimit="10" fill="#FFF" d="M272.5 172.5h88v55h-88z" />
-		<text fill="#323232" font-family="Verdana,Verdana_MSFontService,sans-serif" font-weight="700" font-size="11" transform="translate(296.526 195)">a_competitor_name
-			<tspan font-style="italic" font-size="8" x="-12.747" y="18"> Inventory: a_inventory</tspan>
+		<text fill="#323232" font-family="Verdana,Verdana_MSFontService,sans-serif" font-weight="700" font-size="11" transform="translate(284 195)">a_competitor_name
+			<tspan font-style="italic" font-size="8" x="0" y="12"> Inventory: a_inventory</tspan>
+			<tspan font-style="italic" font-size="8" x="0" y="24"> Profit: a_profit</tspan>
 		</text>
 		<path stroke="#007A9E" stroke-width="2.667" stroke-linejoin="round" stroke-miterlimit="10" fill="#FFF" d="M848.5 253.5h88v55h-88z" />
 		<text fill="#323232" font-family="Verdana,Verdana_MSFontService,sans-serif" font-weight="700" font-size="11" transform="translate(866.611 269)">Garbage
@@ -23,7 +24,9 @@
 		<path d="M177.5 201.216l83.163-.049-.001-1.333-83.162.048zm75.501 4.531l8.984-5.247-8.99-5.238a.667.667 0 00-.671 1.152l8.003 4.662v-1.151l-7.998 4.671a.667.667 0 00.672 1.151z" fill="#313131" />
 		<text fill="#323232" font-family="Verdana,Verdana_MSFontService,sans-serif" font-style="italic" font-weight="700" font-size="8" transform="translate(180.11 193)">Resource cost: a_resource_cost
 		</text>
-		<path d="M758.502 280.833l1.334.005-.005 1.333-1.333-.004zm2.667.009l1.333.005-.004 1.333-1.334-.004zm2.667.009l1.333.005-.005 1.333-1.333-.005zm2.666.009l1.334.004-.005 1.334-1.333-.005zm2.667.009l1.333.004-.004 1.334-1.334-.005zm2.667.009l1.333.004-.005 1.334-1.333-.005zm2.666.009l1.334.004-.005 1.333-1.333-.004zm2.667.009l1.333.004-.004 1.333-1.334-.004zm2.667.008l1.333.005-.005 1.333-1.333-.004zm2.666.009l1.333.005-.004 1.333-1.333-.004zm2.667.009l1.333.005-.004 1.333-1.334-.004zm2.666.009l1.334.005-.005 1.333-1.333-.005zm2.667.009l1.333.004-.004 1.334-1.333-.005zm2.667.009l1.333.004-.004 1.334-1.334-.005zm2.666.009l1.334.004-.005 1.334-1.333-.005zm2.667.009l1.333.004-.004 1.333-1.333-.004zm2.667.008l1.333.005-.004 1.333-1.334-.004zm2.666.009l1.334.005-.005 1.333-1.333-.004zm2.667.009l1.333.005-.004 1.333-1.333-.004zm2.667.009l1.333.005-.004 1.333-1.334-.005zm2.666.009l1.334.004-.005 1.334-1.333-.005zm2.667.009l1.333.004-.004 1.334-1.333-.005zm2.667.009l1.333.004-.004 1.334-1.334-.005zm2.666.009l1.334.004-.005 1.333-1.333-.004zm2.667.009l1.333.004-.004 1.333-1.334-.004zm2.667.008l1.333.005-.005 1.333-1.333-.004zm2.666.009l1.334.005-.005 1.333-1.333-.004zm2.667.009l1.333.005-.004 1.333-1.334-.004zm2.667.009l1.333.005-.005 1.333-1.333-.005zm2.666.009l1.334.004-.005 1.334-1.333-.005zm2.667.009h.157l-.004 1.334-.158-.001zm-7.491-4.601l8.969 5.272-9.004 5.213a.667.667 0 11-.668-1.154l8.015-4.64-.004 1.152-7.984-4.694a.666.666 0 11.676-1.149z" fill="#313131" />
+        <text fill="#323232" font-family="Verdana,Verdana_MSFontService,sans-serif" font-style="italic" font-weight="700" font-size="8" transform="translate(760 275)">thrown_away: a_throw_away
+		</text>
+        <path d="M758.502 280.833l1.334.005-.005 1.333-1.333-.004zm2.667.009l1.333.005-.004 1.333-1.334-.004zm2.667.009l1.333.005-.005 1.333-1.333-.005zm2.666.009l1.334.004-.005 1.334-1.333-.005zm2.667.009l1.333.004-.004 1.334-1.334-.005zm2.667.009l1.333.004-.005 1.334-1.333-.005zm2.666.009l1.334.004-.005 1.333-1.333-.004zm2.667.009l1.333.004-.004 1.333-1.334-.004zm2.667.008l1.333.005-.005 1.333-1.333-.004zm2.666.009l1.333.005-.004 1.333-1.333-.004zm2.667.009l1.333.005-.004 1.333-1.334-.004zm2.666.009l1.334.005-.005 1.333-1.333-.005zm2.667.009l1.333.004-.004 1.334-1.333-.005zm2.667.009l1.333.004-.004 1.334-1.334-.005zm2.666.009l1.334.004-.005 1.334-1.333-.005zm2.667.009l1.333.004-.004 1.333-1.333-.004zm2.667.008l1.333.005-.004 1.333-1.334-.004zm2.666.009l1.334.005-.005 1.333-1.333-.004zm2.667.009l1.333.005-.004 1.333-1.333-.004zm2.667.009l1.333.005-.004 1.333-1.334-.005zm2.666.009l1.334.004-.005 1.334-1.333-.005zm2.667.009l1.333.004-.004 1.334-1.333-.005zm2.667.009l1.333.004-.004 1.334-1.334-.005zm2.666.009l1.334.004-.005 1.333-1.333-.004zm2.667.009l1.333.004-.004 1.333-1.334-.004zm2.667.008l1.333.005-.005 1.333-1.333-.004zm2.666.009l1.334.005-.005 1.333-1.333-.004zm2.667.009l1.333.005-.004 1.333-1.334-.004zm2.667.009l1.333.005-.005 1.333-1.333-.005zm2.666.009l1.334.004-.005 1.334-1.333-.005zm2.667.009h.157l-.004 1.334-.158-.001zm-7.491-4.601l8.969 5.272-9.004 5.213a.667.667 0 11-.668-1.154l8.015-4.64-.004 1.152-7.984-4.694a.666.666 0 11.676-1.149z" fill="#313131" />
 		<path d="M643.411 275.258L319.5 274.5" stroke="#313131" stroke-width="1.333" stroke-linejoin="round" stroke-miterlimit="10" fill="none" />
 		<path d="M320.167 274.3v-36.48h-1.334v36.48zm4.576-28.816l-5.243-8.987-5.242 8.987a.667.667 0 101.151.672l4.667-8h-1.152l4.667 8a.667.667 0 101.152-.672zM508.167 118.486l.819 39.778-1.333.028-.819-39.778zm5.236 32.022l-5.056 9.093-5.427-8.877a.667.667 0 011.138-.696l4.83 7.902-1.151.024 4.501-8.094a.666.666 0 111.165.648z" fill="#313131" />
 		<path stroke="#007A9E" stroke-width="2.667" stroke-linejoin="round" stroke-miterlimit="10" fill="#FFF" d="M464.5 83.5h88v27h-88z" />
@@ -44,8 +47,9 @@
 		<path stroke="#007A9E" stroke-width="2.667" stroke-linejoin="round" stroke-miterlimit="10" fill="#FFF" d="M81.5 333.5h87v55h-87z" />
 		<text fill="#323232" font-family="Verdana,Verdana_MSFontService,sans-serif" font-weight="700" font-size="11" transform="translate(99.324 365)">Supplier</text>
 		<path stroke="#007A9E" stroke-width="2.667" stroke-linejoin="round" stroke-miterlimit="10" fill="#FFF" d="M272.5 333.5h88v55h-88z" />
-		<text fill="#323232" font-family="Verdana,Verdana_MSFontService,sans-serif" font-weight="700" font-size="11" transform="translate(296.612 356)">b_competitor_name
-			<tspan font-style="italic" font-size="8" x="-12.833" y="18">Inventory: b_inventory</tspan>
+		<text fill="#323232" font-family="Verdana,Verdana_MSFontService,sans-serif" font-weight="700" font-size="11" transform="translate(284 356)">b_competitor_name
+			<tspan font-style="italic" font-size="8" x="0" y="12">Inventory: b_inventory</tspan>
+			<tspan font-style="italic" font-size="8" x="0" y="24">Profit: b_profit</tspan>
 		</text>
 		<path stroke="#007A9E" stroke-width="2.667" stroke-linejoin="round" stroke-miterlimit="10" fill="#FFF" d="M464.5 333.5h88v55h-88z" />
 		<text fill="#323232" font-family="Verdana,Verdana_MSFontService,sans-serif" font-weight="700" font-size="11" transform="translate(484.601 359)">Market-
@@ -62,8 +66,8 @@
 			<tspan x="0" y="-39">Sales new: b_sales_new</tspan>
 			<tspan x="-36.425" y="47">Rebuy price: b_rebuy_price</tspan>
 			<tspan x="-36.425" y="61">Repurchases: b_repurchases</tspan>
-			<tspan fill="#000" font-weight="400" x="418.467" y="54">All quantities are averaged over all </tspan>
-			<tspan fill="#000" font-weight="400" x="418.467" y="64">time periods of the current episode.</tspan>
+			<!-- <tspan fill="#000" font-weight="400" x="418.467" y="54">All quantities are averaged over all </tspan>
+			<tspan fill="#000" font-weight="400" x="418.467" y="64">time periods of the current episode.</tspan> -->
 		</text>
 	</g>
 </svg>
