@@ -110,7 +110,7 @@ class SVGManipulator():
 	def convert_svg_sequence_to_gif(self):
 		onlyfiles = [f for f in os.listdir(self.save_dir) if os.path.isfile(os.path.join(self.save_dir, f))]
 		img, *imgs = [renderPM.drawToPIL(svg2rlg(os.path.join(self.save_dir, f))) for f in onlyfiles]
-		img.save(fp=os.path.join(self.save_dir, 'my_gif.gif'), format='GIF', append_images=imgs, save_all=True, duration=500, loop=0)
+		img.save(fp=os.path.join(self.save_dir, 'examplerun.gif'), format='GIF', append_images=imgs, save_all=True, duration=500, loop=0)
 
 
 def main():  # pragma: no cover
