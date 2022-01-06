@@ -38,7 +38,14 @@ def test_reading_file_values():
 # The following variables are input mock-json strings for the test_invalid_values test
 # These tests have invalid values in their input file, the import should throw a specific error message
 learning_rate_larger_one = (ut_t.create_mock_json_rl(learning_rate='1.5'), 'learning_rate should be between 0 and 1 (excluded)')
-neg_learning_rate = (ut_t.create_mock_json_rl(learning_rate='0'), 'learning_rate should be between 0 and 1 (excluded)')
+negative_learning_rate = (ut_t.create_mock_json_rl(learning_rate='0'), 'learning_rate should be between 0 and 1 (excluded)')
+large_gamma = (ut_t.create_mock_json_rl(gamma='1'), 'gamma should be between 0 (included) and 1 (excluded)')
+negative_gamma = ((ut_t.create_mock_json_rl(gamma='-1'), 'gamma should be between 0 (included) and 1 (excluded)'))
+negative_batch_size = (ut_t.create_mock_json_rl(batch_size='-5'), 'batch_size should be greater than 0')
+negative_replay_size = (ut_t.create_mock_json_rl(replay_size='-5'), 'replay_size should be greater than 0')
+negative_sync_target_frames = (ut_t.create_mock_json_rl(sync_target_frames='-5'), 'sync_target_frames should be greater than 0')
+negative_replay_start_size = (ut_t.create_mock_json_rl(replay_start_size='-5'), 'replay_start_size should be greater than 0')
+negative_epsilon_decay_last_frame = (ut_t.create_mock_json_rl(epsilon_decay_last_frame='-5'), 'epsilon_decay_last_frame should not be negative')
 
 # These tests are missing a line in the config file, the import should throw a specific error message
 missing_gamma = (ut_t.remove_line(0, ut_t.create_mock_json_rl()), 'your config_rl is missing gamma')
@@ -51,10 +58,10 @@ missing_epsilon_decay_last_frame = (ut_t.remove_line(6, ut_t.create_mock_json_rl
 missing_epsilon_start = (ut_t.remove_line(7, ut_t.create_mock_json_rl()), 'your config_rl is missing epsilon_start')
 missing_epsilon_final = (ut_t.remove_line(8, ut_t.create_mock_json_rl()), 'your config_rl is missing epsilon_final')
 
-
 # All pairs concerning themselves with invalid config.json values should be added to this array to get tested in test_invalid_values
 array_testing = [
-	missing_gamma, missing_batch_size, missing_replay_size, missing_learning_rate, missing_sync_target_frames, missing_replay_start_size, missing_epsilon_decay_last_frame, missing_epsilon_start, missing_epsilon_final, learning_rate_larger_one, neg_learning_rate
+	missing_gamma, missing_batch_size, missing_replay_size, missing_learning_rate, missing_sync_target_frames, missing_replay_start_size, missing_epsilon_decay_last_frame, missing_epsilon_start, missing_epsilon_final,
+	learning_rate_larger_one, negative_learning_rate, large_gamma, negative_gamma, negative_batch_size, negative_replay_size, negative_sync_target_frames, negative_replay_start_size, negative_epsilon_decay_last_frame
 ]
 
 

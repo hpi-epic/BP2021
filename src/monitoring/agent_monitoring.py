@@ -305,7 +305,8 @@ class Monitor():
 			self.create_line_plot(x_axis_episodes, metric_rewards, metrics_names[function])
 
 	def create_line_plot(self, x_values, y_values, metric_name='no name provided') -> None:
-		"""Create a line plot with the given rewards data.
+		"""
+		Create a line plot with the given rewards data.
 
 		Args:
 			x_values (list of ints): Defines x-values of datapoints. Must have same length as y_values.
@@ -397,7 +398,7 @@ def main(monitor=Monitor()) -> None:
 	Args:
 		monitor (Monitor instance, optional): The monitor to run the session on. Defaults to a default Monitor() instance.
 	"""
-	# monitor.setup_monitoring(enable_live_draw=False, agents=[(vendors.QLearningCEAgent, ['CircularEconomy_QLearningCEAgent.dat']), (vendors.FixedPriceCEAgent, [(4,6)])])
+	# monitor.setup_monitoring(enable_live_draw=False, agents=[(vendors.FixedPriceCEAgent, [])], marketplace=sim_market.CircularEconomyMonopolyScenario)
 	print('Live Drawing enabled:', monitor.enable_live_draw)
 	print('Episodes:', monitor.episodes)
 	print(f'Plot interval: {monitor.plot_interval}')

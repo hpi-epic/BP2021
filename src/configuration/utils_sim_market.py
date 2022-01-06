@@ -51,7 +51,7 @@ PRODUCTION_PRICE = int(config['production_price'])
 
 
 assert NUMBER_OF_CUSTOMERS > 0 and NUMBER_OF_CUSTOMERS % 2 == 0, 'number_of_customers should be even and positive'
-assert PRODUCTION_PRICE <= MAX_PRICE and PRODUCTION_PRICE >= 0, 'production_price needs to smaller than max_price and positive or zero'
+assert PRODUCTION_PRICE <= MAX_PRICE and PRODUCTION_PRICE >= 0, 'production_price needs to be <= max_price and >= 0'
 assert MAX_QUALITY > 0, 'max_quality should be positive'
 assert MAX_PRICE > 0, 'max_price should be positive'
 assert EPISODE_LENGTH > 0, 'episode_size should be positive'
@@ -113,12 +113,12 @@ def divide_content_of_dict(dict1, divisor) -> dict:
 	Returns:
 		dict: the dictionary containing the divided numbers
 	"""
-	# TODO: assert dictionary contains only numbers
 	newdict = {}
 	for key in dict1:
 		if isinstance(dict1[key], dict):
 			newdict[key] = divide_content_of_dict(dict1[key], divisor)
 		else:
+			assert isinstance(dict1[key], int) or isinstance(dict1[key], float), 'the dictionary should only contain numbers (int or float)'
 			newdict[key] = dict1[key] / divisor
 	return newdict
 
@@ -133,12 +133,14 @@ def add_content_of_two_dicts(dict1, dict2) -> dict:
 	Returns:
 		dict: same structure as dict1 and dict2, each entry contains the sum of the entries of dict1 and dict2
 	"""
-	# TODO: assert dicts have the same structure, dictionary contains only numbers
+	# TODO: assert dicts have the same structure
 	newdict = {}
 	for key in dict1:
 		if isinstance(dict1[key], dict):
 			newdict[key] = add_content_of_two_dicts(dict1[key], dict2[key])
 		else:
+			assert isinstance(dict1[key], int) or isinstance(dict1[key], float), 'dict1 should only contain numbers (int or float)'
+			assert isinstance(dict2[key], int) or isinstance(dict2[key], float), 'dict2 should only contain numbers (int or float)'
 			newdict[key] = dict1[key] + dict2[key]
 	return newdict
 

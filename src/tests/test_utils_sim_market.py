@@ -42,21 +42,21 @@ def test_reading_file_values():
 # These tests have invalid values in their input file, the import should throw a specific error message
 odd_number_of_customers = (ut_t.create_mock_json_sim_market('50', '50', '80', '21', '10'), 'number_of_customers should be even and positive')
 negative_number_of_customers = (ut_t.create_mock_json_sim_market('50', '50', '80', '-10', '10'), 'number_of_customers should be even and positive')
-prod_price_higher_max_price = (ut_t.create_mock_json_sim_market('50', '10', '80', '20', '50'), 'production_price needs to smaller than max_price and positive or zero')
-neg_prod_price = (ut_t.create_mock_json_sim_market('50', '50', '80', '20', '-10'), 'production_price needs to smaller than max_price and positive or zero')
-neg_max_quality = (ut_t.create_mock_json_sim_market('20', '15', '-80', '30', '5'), 'max_quality should be positive')
+prod_price_higher_max_price = (ut_t.create_mock_json_sim_market('50', '10', '80', '20', '50'), 'production_price needs to be <= max_price and >= 0')
+negative_prod_price = (ut_t.create_mock_json_sim_market('50', '50', '80', '20', '-10'), 'production_price needs to be <= max_price and >= 0')
+negative_max_quality = (ut_t.create_mock_json_sim_market('20', '15', '-80', '30', '5'), 'max_quality should be positive')
 
 # These tests are missing a line in the config file, the import should throw a specific error message
 missing_episode_size = (ut_t.remove_line(0, ut_t.create_mock_json_sim_market()), 'your config is missing episode_size')
 missing_max_price = (ut_t.remove_line(1, ut_t.create_mock_json_sim_market()), 'your config is missing max_price')
 missing_max_quality = (ut_t.remove_line(2, ut_t.create_mock_json_sim_market()), 'your config is missing max_quality')
 missing_number_of_customers = (ut_t.remove_line(3, ut_t.create_mock_json_sim_market()), 'your config is missing number_of_customers')
-missing_prod_price = (ut_t.remove_line(4, ut_t.create_mock_json_sim_market()), 'your config is missing production_price')
+missing_production_price = (ut_t.remove_line(4, ut_t.create_mock_json_sim_market()), 'your config is missing production_price')
 
 # All pairs concerning themselves with invalid config.json values should be added to this array to get tested in test_invalid_values
 array_invalid_values = [
-	odd_number_of_customers, negative_number_of_customers, prod_price_higher_max_price, neg_prod_price, neg_max_quality,
-	missing_episode_size, missing_max_price, missing_max_quality, missing_number_of_customers, missing_prod_price
+	odd_number_of_customers, negative_number_of_customers, prod_price_higher_max_price, negative_prod_price, negative_max_quality,
+	missing_episode_size, missing_max_price, missing_max_quality, missing_number_of_customers, missing_production_price
 ]
 
 
