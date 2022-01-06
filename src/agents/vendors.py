@@ -278,10 +278,33 @@ class QLearningAgent(ReinforcementLearningAgent, ABC):
 		expected_state_action_values = next_state_values * ut_rl.GAMMA + rewards_v
 		return torch.nn.MSELoss()(state_action_values, expected_state_action_values), state_action_values.mean()
 
-	def save(self, path='QLearning_parameters'):
+	def save(self, path_name, model_name) -> None:
+		"""
+		Save a trained model to the specified folder within 'trainedModels'.
+
+		Also caps the amount of models in the folder to a maximum of 10.
+
+		Args:
+			path_name (str): The name of the folder within 'trainedModels' where the model should be saved.
+			model_name (str): The name of the .dat file of this specific model.
+		"""
+		assert str.endswith(model_name, '.dat'), 'model_name must end in \'.dat\''
 		if not os.path.isdir('trainedModels'):
 			os.mkdir('trainedModels')
-		torch.save(self.net.state_dict(), './trainedModels/' + path)
+		if not os.path.isdir(f'trainedModels/{path_name}'):
+			os.mkdir(f'trainedModels/{path_name}')
+		torch.save(self.net.state_dict(), f'./trainedModels/{path_name}/{model_name}')
+
+		full_directory = os.walk(f'./trainedModels/{path_name}')
+		for _, _, filenames in full_directory:
+			if len(filenames) > 10:
+				# TODO: Should we instead delete the oldest files?
+				# sort numbers by value to delete the smallest rewards
+				filenames = [float(reward[:-4]) for reward in filenames]
+				filenames = sorted(filenames)
+
+				for file in range(len(filenames) - 10):
+					os.remove(f'./trainedModels/{path_name}/{filenames[file]:.3f}.dat')
 
 
 class QLearningLEAgent(QLearningAgent, LinearAgent):
