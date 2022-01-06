@@ -1,3 +1,4 @@
+import numpy as np
 import pytest
 
 import configuration.utils_sim_market as ut
@@ -20,9 +21,26 @@ def random_offer(market_scenario):
 
 # Test the Customer parent class, i.e. make sure it cannot be used
 def test_customer_parent_class():
+	with pytest.raises(NotImplementedError) as assertion_message:
+		customer.Customer.generate_purchase_probabilities_from_offer(CLinear, random_offer(SClassic), 1)
+	assert 'This method is abstract. Use a subclass' in str(assertion_message.value)
+
+
+# the following list contains invalid parameters for generate_purchase_probabilities_from_offer and the expected error messages
+invalid_values = [
+	(CLinear(), [20, 20], 1, 'offer_length_per_vendor must be two: one field for the price and one for the quality!'),
+	(CCircular(), [20, 20], 1, 'offers must be a np.ndarray'),
+	(CCircular(), np.array([20, 20, 20, 20]), 4, 'there must be exactly one field for common state (in_circulation)'),
+	(CCircular(), np.array([20, 20, 20, 20, 20, 20]), 5, 'offer_length_per_vendor needs to be 3 or 4'),
+	(CCircular(), np.array([-20, -20, -20, -20]), 3, 'price_refurbished and price_new need to be >= 1')
+]
+
+
+@pytest.mark.parametrize('customer, offers, offer_length_per_vendor, expected_error_msg', invalid_values)
+def test_generate_purchase_probabilities_from_offer_assertions(customer, offers, offer_length_per_vendor, expected_error_msg):
 	with pytest.raises(AssertionError) as assertion_info:
-		customer.Customer.generate_purchase_probabilities_from_offer(CLinear, *random_offer(SClassic))
-	assert str(assertion_info.value) == 'This class should not be used.'
+		customer.generate_purchase_probabilities_from_offer(offers, offer_length_per_vendor)
+	assert str(assertion_info.value) == expected_error_msg
 
 
 array_customer_action_range = [

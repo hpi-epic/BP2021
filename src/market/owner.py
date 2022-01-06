@@ -20,7 +20,7 @@ class Owner(ABC):
 		Returns:
 			np.array: The first entry is the probability that the holds his product. The second entry is the probability that the owner throws away his product. Afterwards, for all vendors the probabilities of returning the product to him follows.
 		"""
-		raise NotImplementedError
+		raise NotImplementedError('This method is abstract. Use a subclass')
 
 
 class UniformDistributionOwner(Owner):
@@ -34,7 +34,8 @@ class UniformDistributionOwner(Owner):
 		Returns:
 			np.array: a uniform distribution over all possible actions
 		"""
-		assert isinstance(offers, np.ndarray) and len(offers) % offer_length_per_vendor == 1
+		assert isinstance(offers, np.ndarray), 'offers needs to be an np.ndarray'
+		assert len(offers) % offer_length_per_vendor == 1, 'there must be exactly one field for common state (in_circulation)'
 		number_of_options = np.floor(len(offers) / 3) + 2
 		return np.array([1 / number_of_options] * int(number_of_options))
 
@@ -52,7 +53,8 @@ class OwnerRebuy(Owner):
 		Returns:
 			np.array: probability distribution over all possible actions.
 		"""
-		assert isinstance(offers, np.ndarray) and len(offers) % offer_length_per_vendor == 1
+		assert isinstance(offers, np.ndarray), 'offers needs to be an ndarray'
+		assert len(offers) % offer_length_per_vendor == 1, 'there must be exactly one field for common state (in_circulation)'
 
 		holding_preference = 1
 		discard_preference = 20
