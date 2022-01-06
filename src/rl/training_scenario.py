@@ -1,10 +1,10 @@
 import torch
 
-import sim_market as sim
-import training
-import vendors
+import agents.vendors as vendors
+import market.sim_market as sim_market
+import rl.training as training
 
-economy = sim.CircularEconomyRebuyPriceOneCompetitor()
+economy = sim_market.CircularEconomyRebuyPriceOneCompetitor()
 n_actions = 1
 for id in range(0, len(economy.action_space)):
 	n_actions *= economy.action_space[id].n

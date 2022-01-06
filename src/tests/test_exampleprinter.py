@@ -4,9 +4,9 @@ import shutil
 
 import pytest
 
-import exampleprinter
-import sim_market as sim
-import vendors
+import agents.vendors as vendors
+import market.sim_market as sim
+import monitoring.exampleprinter as exampleprinter
 
 
 def teardown_module(module):

@@ -3,19 +3,7 @@ import os
 import pstats
 import time
 
-# all of our files, so that you can monitor anything you want
-import agent_monitoring
-import customer
-import exampleprinter
-import experience_buffer
-import model
-import owner
-import sim_market
-import training
-import training_scenario
-import utils_rl
-import utils_sim_market
-import vendors
+import monitoring.exampleprinter
 
 
 def remove_files() -> None:
@@ -27,12 +15,12 @@ def remove_files() -> None:
 			os.remove('./performance/' + file_name)
 
 
-def run_profiling(function='exampleprinter.main()') -> None:
+def run_profiling(function='monitoring.exampleprinter.run_example()') -> None:
 	"""
 	Run the profiler on a specified function. Automatically starts a web server to visualize the results.
 
 	Args:
-		function (str, optional): The function to be run. The format must be module.function. Defaults to 'exampleprinter.main()'.
+		function (str, optional): The function to be run. The format must be module.function. Defaults to 'monitoring.exampleprinter.run_example()'.
 	"""
 	if not os.path.isdir('performance'):
 		os.mkdir('performance')

@@ -7,11 +7,11 @@
 # import pytest
 # import torch
 
-# import agent
-# import sim_market
+# import agents.vendors as vendors
+# import market.sim_market as sim_market
 # import tests.utils_tests as ut_t
-# import training
-# import utils_rl as ut_rl
+# import rl.training as training
+# import configuration.utils_rl as ut_rl
 
 
 # # teardown after each test

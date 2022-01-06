@@ -6,12 +6,12 @@ from typing import Tuple
 import gym
 import numpy as np
 
-import customer
-import owner
-import utils_sim_market as ut
-import vendors
-from customer import Customer
-from owner import Owner
+import agents.vendors as vendors
+import configuration.utils_sim_market as ut
+import market.customer as customer
+import market.owner as owner
+from market.customer import Customer
+from market.owner import Owner
 
 # An offer is a market state that contains all prices and qualities
 

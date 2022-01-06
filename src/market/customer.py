@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 
-import utils_sim_market as ut
+import configuration.utils_sim_market as ut
 
 # import random
 

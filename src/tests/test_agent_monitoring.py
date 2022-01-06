@@ -5,11 +5,11 @@ import shutil
 import numpy as np
 import pytest
 
-import agent_monitoring as am
-import sim_market
+import agents.vendors as vendors
+import market.sim_market as sim_market
+import monitoring.agent_monitoring as am
 import tests.utils_tests as ut_t
-import vendors
-from agent_monitoring import Monitor
+from monitoring.agent_monitoring import Monitor
 
 monitor = Monitor()
 
@@ -24,9 +24,9 @@ def setup_function(function):
 
 def teardown_module(module):
 	print('***TEARDOWN***')
-	for f in os.listdir('./monitoring'):
+	for f in os.listdir(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring/'):
 		if re.match('test_plots_*', f):
-			shutil.rmtree('./monitoring/' + f)
+			shutil.rmtree(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring/' + f)
 
 
 def test_init_default_values():

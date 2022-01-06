@@ -7,11 +7,11 @@ from abc import ABC, abstractmethod
 import numpy as np
 import torch
 
-import model
-import utils_rl as ut_rl
-import utils_sim_market as ut
-from customer import CustomerCircular
-from experience_buffer import ExperienceBuffer
+import configuration.utils_rl as ut_rl
+import configuration.utils_sim_market as ut
+import rl.model as model
+from market.customer import CustomerCircular
+from rl.experience_buffer import ExperienceBuffer
 
 
 class Agent(ABC):
@@ -294,7 +294,7 @@ class QLearningCEAgent(QLearningAgent, CircularAgent):
 		return (int(step % 10), int(step / 10))
 
 
-class QLearningCERebuyAgent(QLearningCEAgent):
+class QLearningCERebuyAgent(QLearningAgent, CircularAgent):
 	def policy(self, observation, epsilon=0) -> int:
 		step = super().policy(observation, epsilon)
 		return (int(step / 100), int(step / 10 % 10), int(step % 10))

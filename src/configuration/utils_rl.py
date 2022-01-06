@@ -18,7 +18,7 @@ EPSILON_FINAL = 0.1
 config = {}
 
 
-def load_config(path_rl=os.path.dirname(__file__) + os.sep + '..' + os.sep + 'config_rl.json') -> dict:
+def load_config(path_rl=os.path.dirname(__file__) + os.sep + '../..' + os.sep + 'config_rl.json') -> dict:
 	"""
 	Load the Reinforcement Learning json file from the specified path.
 
