@@ -49,7 +49,8 @@ def run_example(environment=sim_market.CircularEconomyRebuyPriceOneCompetitor(),
 				ut.write_content_of_dict_to_overview_svg(svg_manipulator, counter, logdict, cumulative_dict)
 			our_profit += reward
 			counter += 1
-			svg_manipulator.save_overview_svg(filename=('MarketOverview_%.3d.svg' % counter))
+			if isinstance(environment, sim_market.CircularEconomyRebuyPriceOneCompetitor):
+				svg_manipulator.save_overview_svg(filename=('MarketOverview_%.3d.svg' % counter))
 	if isinstance(environment, sim_market.CircularEconomyRebuyPriceOneCompetitor):
 		svg_manipulator.convert_svg_sequence_to_gif()
 	return our_profit
