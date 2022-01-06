@@ -3,6 +3,7 @@ import os
 import pstats
 import time
 
+import actorcritic
 # all of our files, so that you can monitor anything you want
 import agent_monitoring
 import customer
@@ -12,7 +13,6 @@ import model
 import owner
 import sim_market
 import training
-import training_scenario
 import utils_rl
 import utils_sim_market
 import vendors
@@ -54,7 +54,7 @@ def run_profiling(function='exampleprinter.main()') -> None:
 
 
 def main() -> None:  # pragma: no cover
-	run_profiling()
+	run_profiling(function='actorcritic.trainactorcritic()')
 
 
 if __name__ == '__main__':  # pragma: no cover
