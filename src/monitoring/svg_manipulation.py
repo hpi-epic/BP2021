@@ -1,5 +1,8 @@
 import os
 
+from reportlab.graphics import renderPM
+from svglib.svglib import svg2rlg
+
 
 def get_default_dict() -> dict:
 	"""
@@ -25,20 +28,16 @@ def get_default_dict() -> dict:
 		'a_rebuy_price',
 		'a_repurchases',
 		'a_resource_cost',
-		'a_resource_purchases',
 		'a_resources_in_use',
 		'a_sales_new',
 		'a_sales_used',
 		'b_competitor_name',
-		'b_garbage',
 		'b_inventory',
 		'b_price_new',
 		'b_price_used',
 		'b_rebuy_price',
 		'b_repurchases',
 		'b_resource_cost',
-		'b_resource_purchases',
-		'b_resources_in_use',
 		'b_sales_new',
 		'b_sales_used'
 	]
@@ -49,12 +48,13 @@ def get_default_dict() -> dict:
 
 
 class SVGManipulator():
-	def __init__(self) -> None:
+	def __init__(self, save_directory='svg') -> None:
 		self.value_dictionary = get_default_dict()
 		# do not change the values in svg_template
 		with open('./monitoring/MarketOverview_template.svg', 'r') as template_svg:
 			self.svg_template = template_svg.read()
 		self.output_svg = None
+		self.save_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring' + os.sep + save_directory
 
 	def replace_one_value(self, target_key, value):
 		"""
@@ -77,7 +77,10 @@ class SVGManipulator():
 			filename (str, optional): The target file name of the copy. Defaults to `MarketOverview_copy.svg`.
 		"""
 		assert filename.endswith('.svg'), f'the passed filename must end in .svg: {filename}'
-		filename = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring' + os.sep + filename
+		if not os.path.isdir(self.save_dir):
+			os.mkdir(self.save_dir)
+			print(self.save_dir)
+		filename = self.save_dir + os.sep + filename
 		assert not os.path.exists(filename), f'the specified file already exists: {os.path.abspath(filename)}'
 
 		self.write_dict_to_svg(target_dictionary=self.value_dictionary)
@@ -100,6 +103,11 @@ class SVGManipulator():
 		self.output_svg = self.svg_template
 		for key, value in target_dictionary.items():
 			self.output_svg = self.output_svg.replace(key, value)
+
+	def convert_svg_sequence_to_gif(self):
+		onlyfiles = [f for f in os.listdir(self.save_dir) if os.path.isfile(os.path.join(self.save_dir, f))]
+		img, *imgs = [renderPM.drawToPIL(svg2rlg(os.path.join(self.save_dir, f))) for f in onlyfiles]
+		img.save(fp=os.path.join(self.save_dir, 'my_gif.gif'), format='GIF', append_images=imgs, save_all=True, duration=500, loop=0)
 
 
 def main():  # pragma: no cover
