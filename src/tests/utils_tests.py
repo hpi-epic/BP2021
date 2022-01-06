@@ -40,7 +40,7 @@ def check_mock_file_rl(mock_file, json) -> None:
 		json (str): The mock JSON string to be checked.
 	"""
 	path = os.path.dirname(__file__) + os.sep + '...' + os.sep + 'config_rl.json'
-	assert (open(path).read() == json)
+	assert open(path).read() == json, 'the mock did not work correctly, as the read file was not equal to the set mock-json'
 	mock_file.assert_called_with(path)
 
 
@@ -74,7 +74,7 @@ def check_mock_file_sim_market(mock_file, json) -> None:
 		json (str): The mock JSON string to be checked.
 	"""
 	path = os.path.dirname(__file__) + os.sep + '...' + os.sep + 'config_sim_market.json'
-	assert (open(path).read() == json)
+	assert open(path).read() == json, 'the mock did not work correctly, as the read file was not equal to the set mock-json'
 	mock_file.assert_called_with(path)
 
 
