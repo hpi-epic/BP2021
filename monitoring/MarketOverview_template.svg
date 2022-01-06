@@ -1,4 +1,5 @@
-<svg width="891" height="421" xmlns="http://www.w3.org/2000/svg" overflow="hidden">
+<!-- <svg width="891" height="421" xmlns="http://www.w3.org/2000/svg" overflow="hidden"> -->
+<svg width="4455" height="2105" xmlns="http://www.w3.org/2000/svg" overflow="hidden">
 	<g transform="translate(-68 -72)">
 		<path stroke="#007A9E" stroke-width="3" stroke-miterlimit="8" stroke-dasharray="12 9" fill="#BDD7EE" d="M649.5 165.5h103v232h-103zM457.5 164.5h102v233h-102z" />
 		<path stroke="#007A9E" stroke-width="2.667" stroke-linejoin="round" stroke-miterlimit="10" fill="#FFF" d="M81.5 172.5h87v55h-87z" />
