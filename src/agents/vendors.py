@@ -33,8 +33,8 @@ class Agent(ABC):
 		return class_name(*args)
 
 	@abstractmethod
-	def policy(self, observation, epsilon=0):
-		raise NotImplementedError
+	def policy(self, observation, epsilon=0):  # pragma: no cover
+		raise NotImplementedError('This method is abstract. Use a subclass')
 
 
 class CircularAgent(Agent, ABC):
@@ -55,8 +55,8 @@ class ReinforcementLearningAgent(Agent, ABC):
 
 class HumanPlayer(RuleBasedAgent, ABC):
 	@abstractmethod
-	def policy(self, observation, *_) -> int:
-		raise NotImplementedError
+	def policy(self, observation, *_) -> int:  # pragma: no cover
+		raise NotImplementedError('This method is abstract. Use a subclass')
 
 
 class HumanPlayerLE(LinearAgent, HumanPlayer):
@@ -98,7 +98,7 @@ class FixedPriceAgent(RuleBasedAgent, ABC):
 
 class FixedPriceLEAgent(LinearAgent, FixedPriceAgent):
 	def __init__(self, fixed_price=ut.PRODUCTION_PRICE + 3, name='fixed_price_le'):
-		assert isinstance(fixed_price, int), 'The fixed_price must be an integer'
+		assert isinstance(fixed_price, int), 'the fixed_price must be an integer'
 		self.name = name
 		self.fixed_price = fixed_price
 
@@ -108,7 +108,9 @@ class FixedPriceLEAgent(LinearAgent, FixedPriceAgent):
 
 class FixedPriceCEAgent(CircularAgent, FixedPriceAgent):
 	def __init__(self, fixed_price=(2, 4), name='fixed_price_ce'):
-		assert isinstance(fixed_price, tuple) and len(fixed_price) == 2, 'The fixed_price must be a tuple of integers'
+		assert isinstance(fixed_price, tuple), 'fixed_price must be a tuple'
+		assert len(fixed_price) == 2, 'fixed_price must contain two values'
+		assert all(isinstance(price, int) for price in fixed_price), 'the prices in fixed_price must be integers'
 		self.name = name
 		self.fixed_price = fixed_price
 
@@ -118,7 +120,9 @@ class FixedPriceCEAgent(CircularAgent, FixedPriceAgent):
 
 class FixedPriceCERebuyAgent(FixedPriceCEAgent):
 	def __init__(self, fixed_price=(3, 6, 2), name='fixed_price_ce_rebuy'):
-		assert isinstance(fixed_price, tuple) and len(fixed_price) == 3, 'The fixed_price must be a triple of integers'
+		assert isinstance(fixed_price, tuple), 'fixed_price must be a tuple'
+		assert len(fixed_price) == 3, 'fixed_price must contain three values'
+		assert all(isinstance(price, int) for price in fixed_price), 'the prices in fixed_price must be integers'
 		self.name = name
 		self.fixed_price = fixed_price
 
@@ -163,7 +167,7 @@ class RuleBasedCEAgent(RuleBasedAgent, CircularAgent):
 			rebuy_price = 0
 
 		price_new = min(9, price_new)
-		assert price_old <= price_new
+		assert price_old <= price_new, 'The price for used products should be lower or equal to the price of new products'
 		return self.return_prices(price_old, price_new, rebuy_price)
 
 	def greedy_policy(self, observation) -> int:
@@ -175,8 +179,8 @@ class RuleBasedCEAgent(RuleBasedAgent, CircularAgent):
 			customers += [CustomerCircular()]
 
 		max_profit = -9999999999999  # we have not found a better solution yet
-		max_price_n = 0
-		max_price_u = 0
+		max_price_new = 0
+		max_price_used = 0
 		for p_u in range(1, ut.MAX_PRICE):
 			for p_n in range(1, ut.MAX_PRICE):
 				storage = observation[0]
@@ -197,11 +201,11 @@ class RuleBasedCEAgent(RuleBasedAgent, CircularAgent):
 				exp_profit = (p_n * exp_sales_new + p_u * exp_sales_old) - ((storage + exp_return_prod) * 2)
 				if exp_profit > max_profit:
 					max_profit = exp_profit
-					max_price_n = p_n
-					max_price_u = p_u
-		print(max_price_u, max_price_n)
-		assert max_price_n > 0 and max_price_u > 0
-		return (max_price_u, max_price_n)
+					max_price_new = p_n
+					max_price_used = p_u
+		print(max_price_used, max_price_new)
+		assert max_price_new > 0 and max_price_used > 0, 'both max_prices must be greater 0'
+		return (max_price_used, max_price_new)
 
 
 class RuleBasedCERebuyAgent(RuleBasedCEAgent):
@@ -234,7 +238,7 @@ class QLearningAgent(ReinforcementLearningAgent, ABC):
 
 	@torch.no_grad()
 	def policy(self, observation, epsilon=0):
-		assert self.buffer_for_feedback is None or self.optimizer is None
+		assert self.buffer_for_feedback is None or self.optimizer is None, 'one of buffer_for_feedback or optimizer must be None'
 		if np.random.random() < epsilon:
 			action = random.randint(0, self.n_actions - 1)
 		else:
@@ -388,5 +392,5 @@ class CompetitorJust2Players(LinearAgent, RuleBasedAgent):
 		elif new_price >= ut.MAX_PRICE:
 			new_price = ut.MAX_PRICE - 1
 		new_price = int(new_price)
-		assert isinstance(new_price, int)
+		assert isinstance(new_price, int), 'new_price must be an int'
 		return new_price
