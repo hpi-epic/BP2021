@@ -30,7 +30,7 @@ class Monitor():
 		self.folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring' + os.sep + self.subfolder_name
 
 	# helper functions
-	def round_up(self, number, decimals=0) -> np.float64:
+	def _round_up(self, number, decimals=0) -> np.float64:
 		"""
 		Round the number up to the specified ceiling.
 
@@ -44,7 +44,7 @@ class Monitor():
 		multiplier = 10 ** decimals
 		return np.ceil(number * multiplier) / multiplier
 
-	def round_down(self, number, decimals=0) -> np.float64:
+	def _round_down(self, number, decimals=0) -> np.float64:
 		"""
 		Round the number down to the specified floor.
 
@@ -58,7 +58,7 @@ class Monitor():
 		multiplier = 10 ** decimals
 		return np.floor(number * multiplier) / multiplier
 
-	def get_cmap(self, n, name='hsv') -> plt.cm.colors.LinearSegmentedColormap:
+	def _get_cmap(self, n, name='hsv') -> plt.cm.colors.LinearSegmentedColormap:
 		"""
 		Return a colormap containing a distinct color for each monitored agent to be used in the diagrams.
 
@@ -69,7 +69,7 @@ class Monitor():
 		Returns:
 			plt.cm.colors.LinearSegmentedColormap: The filled colormap.
 		"""
-		return plt.cm.get_cmap(name, n + 1)
+		return plt.cm._get_cmap(name, n + 1)
 
 	def get_folder(self) -> str:
 		"""
@@ -114,7 +114,7 @@ class Monitor():
 				n_actions *= self.marketplace.action_space[id].n
 		return n_actions
 
-	def update_agents(self, agents) -> None:
+	def _update_agents(self, agents) -> None:
 		"""
 		Update the self.agents to the new agents provided.
 
@@ -151,7 +151,7 @@ class Monitor():
 				assert False, current_agent[0] + 'is neither a rule_based nor a reinforcement_learning agent'
 
 		# set a color for each agent
-		color_map = self.get_cmap(len(self.agents))
+		color_map = self._get_cmap(len(self.agents))
 		self.agent_colors = []
 		for agent_id in range(0, len(self.agents)):
 			self.agent_colors.append(color_map(agent_id))
@@ -190,11 +190,11 @@ class Monitor():
 			if(agents is None):
 				print('Warning: Your agents are being overwritten by new instances of themselves!')
 				agents = [(type(current_agent), [f'{type(self.marketplace).__name__}_{type(current_agent).__name__}.dat']) for current_agent in self.agents]
-			self.update_agents(agents)
+			self._update_agents(agents)
 
 		# marketplace has not changed but agents have
 		elif(agents is not None):
-			self.update_agents(agents)
+			self._update_agents(agents)
 
 		if(subfolder_name is not None):
 			assert isinstance(subfolder_name, str), 'subfolder_name must be of type string'
@@ -270,8 +270,11 @@ class Monitor():
 		plt.xlabel('Reward', fontsize='18')
 		plt.ylabel('Episodes', fontsize='18')
 		plt.title('Cumulative Reward per Episode')
+
 		# find the number of bins needed, we only use steps of 1000, assuming our agents are good bois :)
-		plot_range = self.round_down(int(self.metrics_minimum(rewards)), -3), self.round_up(int(self.metrics_maximum(rewards)), -3)
+
+		plot_range = self._round_down(int(self.metrics_minimum(rewards)), -3), self._round_up(int(self.metrics_maximum(rewards)), -3)
+
 		plot_bins = int(int(np.abs(plot_range[0]) + plot_range[1]) / 1000)
 
 		plt.hist(rewards, bins=plot_bins, color=self.agent_colors, rwidth=0.9, range=plot_range)

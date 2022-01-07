@@ -181,11 +181,11 @@ def test_metrics_minimum():
 
 
 def test_round_up():
-	assert monitor.round_up(999, -3) == 1000
+	assert monitor._round_up(999, -3) == 1000
 
 
 def test_round_down():
-	assert monitor.round_down(999, -3) == 0
+	assert monitor._round_down(999, -3) == 0
 
 
 # all arrays in rewards must be of the same size
