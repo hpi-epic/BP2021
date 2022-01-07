@@ -50,21 +50,21 @@ def update_sim_market_variables(config: dict) -> None:
 	Args:
 		config (dict): The dictionary from which to read the new values.
 	"""
-	listOfGlobals = globals()
-	listOfGlobals['EPISODE_LENGTH'] = int(config['episode_size'])
+	global_variables = globals()
+	global_variables['EPISODE_LENGTH'] = int(config['episode_size'])
 
-	listOfGlobals['MAX_PRICE'] = int(config['max_price'])
-	listOfGlobals['MAX_QUALITY'] = int(config['max_quality'])
-	listOfGlobals['NUMBER_OF_CUSTOMERS'] = int(config['number_of_customers'])
-	listOfGlobals['PRODUCTION_PRICE'] = int(config['production_price'])
+	global_variables['MAX_PRICE'] = int(config['max_price'])
+	global_variables['MAX_QUALITY'] = int(config['max_quality'])
+	global_variables['NUMBER_OF_CUSTOMERS'] = int(config['number_of_customers'])
+	global_variables['PRODUCTION_PRICE'] = int(config['production_price'])
 
-	assert listOfGlobals['NUMBER_OF_CUSTOMERS'] > 0 and listOfGlobals['NUMBER_OF_CUSTOMERS'] % 2 == 0, 'number_of_customers should be even and positive'
-	assert listOfGlobals['PRODUCTION_PRICE'] <= listOfGlobals['MAX_PRICE'] and listOfGlobals['PRODUCTION_PRICE'] >= 0, 'production_price needs to smaller than max_price and positive or zero'
-	assert listOfGlobals['MAX_QUALITY'] > 0, 'max_quality should be positive'
-	assert listOfGlobals['MAX_PRICE'] > 0, 'max_price should be positive'
-	assert listOfGlobals['EPISODE_LENGTH'] > 0, 'episode_size should be positive'
+	assert global_variables['NUMBER_OF_CUSTOMERS'] > 0 and global_variables['NUMBER_OF_CUSTOMERS'] % 2 == 0, 'number_of_customers should be even and positive'
+	assert global_variables['PRODUCTION_PRICE'] <= global_variables['MAX_PRICE'] and global_variables['PRODUCTION_PRICE'] >= 0, 'production_price needs to smaller than max_price and positive or zero'
+	assert global_variables['MAX_QUALITY'] > 0, 'max_quality should be positive'
+	assert global_variables['MAX_PRICE'] > 0, 'max_price should be positive'
+	assert global_variables['EPISODE_LENGTH'] > 0, 'episode_size should be positive'
 
-	listOfGlobals['MEAN_REWARD_BOUND'] = listOfGlobals['EPISODE_LENGTH'] * listOfGlobals['MAX_PRICE'] * listOfGlobals['NUMBER_OF_CUSTOMERS']
+	global_variables['MEAN_REWARD_BOUND'] = global_variables['EPISODE_LENGTH'] * global_variables['MAX_PRICE'] * global_variables['NUMBER_OF_CUSTOMERS']
 
 
 config = load_config()
