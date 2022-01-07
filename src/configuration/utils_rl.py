@@ -21,7 +21,7 @@ def load_config(path_rl=os.path.join(os.path.dirname(__file__), os.pardir, os.pa
 	Load the Reinforcement Learning json file from the specified path.
 
 	Args:
-		path_rl (str, optional): The path to the json file containing the configuration values. Defaults to os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'config_rl.json')).
+		path_rl (str, optional): The path to the json file containing the configuration values. Defaults to os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'config_rl.json').
 
 	Returns:
 		dict: A dictionary containing the configuration values.

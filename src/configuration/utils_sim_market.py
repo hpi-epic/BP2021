@@ -19,7 +19,7 @@ def load_config(path_sim_market=os.path.join(os.path.dirname(__file__), os.pardi
 	Load the SimMarket json file from the specified path.
 
 	Args:
-		path_sim_market (str, optional): The path to the json file containing the configuration values. Defaults to os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'config_sim_market.json')).
+		path_sim_market (str, optional): The path to the json file containing the configuration values. Defaults to os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'config_sim_market.json').
 
 	Returns:
 		dict: A dictionary containing the configuration values.
