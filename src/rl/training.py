@@ -41,7 +41,7 @@ def train_QLearning_agent(RL_agent, environment, maxsteps=2 * ut_rl.EPSILON_DECA
 	losses = []
 	rmse_losses = []
 	selected_q_vals = []
-	best_m_reward = 0
+	best_mean_reward = None
 
 	# tensorboard init
 	# Setting log_dir causes some problems that are yet to be solved.
@@ -71,9 +71,9 @@ def train_QLearning_agent(RL_agent, environment, maxsteps=2 * ut_rl.EPSILON_DECA
 					averaged_info = ut.add_content_of_two_dicts(averaged_info, next_dict)
 			averaged_info = ut.divide_content_of_dict(averaged_info, len(sliced_dicts))
 
-			m_reward = averaged_info['profits/all']['vendor_0']
+			mean_reward = averaged_info['profits/all']['vendor_0']
 
-			writer.add_scalar('Profit_mean/agent', m_reward, frame_idx / ut.EPISODE_LENGTH)
+			writer.add_scalar('Profit_mean/agent', mean_reward, frame_idx / ut.EPISODE_LENGTH)
 			ut.write_dict_to_tensorboard(writer, averaged_info, frame_idx / ut.EPISODE_LENGTH, is_cumulative=True)
 			if frame_idx > ut_rl.REPLAY_START_SIZE:
 				writer.add_scalar(
@@ -88,14 +88,14 @@ def train_QLearning_agent(RL_agent, environment, maxsteps=2 * ut_rl.EPSILON_DECA
 					frame_idx / ut.EPISODE_LENGTH,
 				)
 			writer.add_scalar('epsilon', epsilon, frame_idx / ut.EPISODE_LENGTH)
-			print(f'''{frame_idx}: done {len(all_dicts)} games, this episode return {all_dicts[-1]['profits/all']['vendor_0']:.3f}, mean return {m_reward:.3f}, eps {epsilon:.2f}, speed {speed:.2f} f/s''')
+			print(f'''{frame_idx}: done {len(all_dicts)} games, this episode return {all_dicts[-1]['profits/all']['vendor_0']:.3f}, mean return {mean_reward:.3f}, eps {epsilon:.2f}, speed {speed:.2f} f/s''')
 
-			if (best_m_reward is None or best_m_reward < m_reward) and frame_idx > ut_rl.EPSILON_DECAY_LAST_FRAME + 101:
-				RL_agent.save(f'{type(environment).__name__}_{type(RL_agent).__name__}', f'{m_reward:.3f}.dat')
-				if best_m_reward is not None:
-					print(f'Best reward updated {best_m_reward:.3f} -> {m_reward:.3f}')
-				best_m_reward = m_reward
-			if m_reward > ut.MEAN_REWARD_BOUND:
+			if (best_mean_reward is None or best_mean_reward < mean_reward) and frame_idx > ut_rl.EPSILON_DECAY_LAST_FRAME + 101:
+				RL_agent.save(f'{type(environment).__name__}_{type(RL_agent).__name__}', f'{mean_reward:.3f}.dat')
+				if best_mean_reward is not None:
+					print(f'Best reward updated {best_mean_reward:.3f} -> {mean_reward:.3f}')
+				best_mean_reward = mean_reward
+			if mean_reward > ut.MEAN_REWARD_BOUND:
 				print(f'Solved in {frame_idx} frames!')
 				break
 
