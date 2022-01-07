@@ -30,33 +30,33 @@ class Monitor():
 		self.folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring' + os.sep + self.subfolder_name
 
 	# helper functions
-	def _round_up(self, number, decimals=0) -> np.float64:
-		"""
-		Round the number up to the specified ceiling.
+	# def _round_up(self, number, decimals=0) -> np.float64:
+	# 	"""
+	# 	Round the number up to the specified ceiling.
 
-		Args:
-			number (int): The number to round up.
-			decimals (int, optional): The decimal places (inverse) to use for rounding. I.e. -3 rounds to thousands. Defaults to 0.
+	# 	Args:
+	# 		number (int): The number to round up.
+	# 		decimals (int, optional): The decimal places (inverse) to use for rounding. I.e. -3 rounds to thousands. Defaults to 0.
 
-		Returns:
-			np.float64: The rounded number.
-		"""
-		multiplier = 10 ** decimals
-		return np.ceil(number * multiplier) / multiplier
+	# 	Returns:
+	# 		np.float64: The rounded number.
+	# 	"""
+	# 	multiplier = 10 ** decimals
+	# 	return np.ceil(number * multiplier) / multiplier
 
-	def _round_down(self, number, decimals=0) -> np.float64:
-		"""
-		Round the number down to the specified floor.
+	# def _round_down(self, number, decimals=0) -> np.float64:
+	# 	"""
+	# 	Round the number down to the specified floor.
 
-		Args:
-			number (int): The number to round down.
-			decimals (int, optional): The decimal places (inverse) to use for rounding. I.e. -3 rounds to thousands. Defaults to 0.
+	# 	Args:
+	# 		number (int): The number to round down.
+	# 		decimals (int, optional): The decimal places (inverse) to use for rounding. I.e. -3 rounds to thousands. Defaults to 0.
 
-		Returns:
-			np.float64: The rounded number.
-		"""
-		multiplier = 10 ** decimals
-		return np.floor(number * multiplier) / multiplier
+	# 	Returns:
+	# 		np.float64: The rounded number.
+	# 	"""
+	# 	multiplier = 10 ** decimals
+	# 	return np.floor(number * multiplier) / multiplier
 
 	# def get_cmap(self, n, name='hsv') -> plt.cm.colors.LinearSegmentedColormap:
 	# 	"""
@@ -241,18 +241,18 @@ class Monitor():
 	# 				curr_sum = 0
 	# 	return episode_rewards
 
-	# metrics
-	def metrics_average(self, rewards) -> np.float64:
-		return np.mean(np.array(rewards))
+	# metrics: replaced with the methods they parse on
+	# def metrics_average(self, rewards) -> np.float64:
+	# 	return np.mean(np.array(rewards))
 
-	def metrics_median(self, rewards) -> np.float64:
-		return np.median(np.array(rewards))
+	# def metrics_median(self, rewards) -> np.float64:
+	# 	return np.median(np.array(rewards))
 
-	def metrics_maximum(self, rewards) -> np.float64:
-		return np.max(np.array(rewards))
+	# def metrics_maximum(self, rewards) -> np.float64:
+	# 	return np.max(np.array(rewards))
 
-	def metrics_minimum(self, rewards) -> np.float64:
-		return np.min(np.array(rewards))
+	# def metrics_minimum(self, rewards) -> np.float64:
+	# 	return np.min(np.array(rewards))
 
 	# def metrics_average_in_episode(self, rewards) -> np.float64:
 	# 	return sum(rewards) / (len(rewards) * ut.EPISODE_LENGTH)
@@ -272,8 +272,8 @@ class Monitor():
 		plt.title('Cumulative Reward per Episode')
 
 		# find the number of bins needed, we only use steps of 1000, assuming our agents are good bois :)
-		plot_lower_bound = np.floor(int(self.metrics_minimum(rewards)) * 1e-3) / 1e-3
-		plot_upper_bound = np.ceil(int(self.metrics_maximum(rewards)) * 1e-3) / 1e-3
+		plot_lower_bound = np.floor(int(np.min(rewards)) * 1e-3) / 1e-3
+		plot_upper_bound = np.ceil(int(np.max(rewards)) * 1e-3) / 1e-3
 		# plot_range = self.round_down(int(self.metrics_minimum(rewards)), -3), self.round_up(int(self.metrics_maximum(rewards)), -3)
 		plot_bins = int(int(np.abs(plot_lower_bound) + plot_upper_bound) / 1000)
 
@@ -294,7 +294,8 @@ class Monitor():
 		Args:
 			rewards ([list of list of float]): An array containing an array of ints for each monitored agent.
 		"""
-		metrics_functions = [self.metrics_average, self.metrics_maximum, self.metrics_median, self.metrics_minimum]  # , self.metrics_average_in_episode
+		# metrics_functions = [self.metrics_average, self.metrics_maximum, self.metrics_median, self.metrics_minimum]  # , self.metrics_average_in_episode
+		metrics_functions = [np.mean, np.max, np.median, np.min]
 		metrics_names = ['Average', 'Maximum', 'Median', 'Minimum']  # , 'Average in episode'
 		x_axis_episodes = np.arange(self.plot_interval, self.episodes + 1, self.plot_interval)
 
@@ -414,10 +415,10 @@ def main(monitor=Monitor()) -> None:
 
 	for i in range(len(rewards)):
 		print(f'Statistics for agent: {monitor.agents[i].name}')
-		print(f'The average reward over {monitor.episodes} episodes is: {str(monitor.metrics_average(rewards[i]))}')
-		print(f'The median reward over {monitor.episodes} episodes is: {str(monitor.metrics_median(rewards[i]))}')
-		print(f'The maximum reward over {monitor.episodes} episodes is: {str(monitor.metrics_maximum(rewards[i]))}')
-		print(f'The minimum reward over {monitor.episodes} episodes is: {str(monitor.metrics_minimum(rewards[i]))}')
+		print(f'The average reward over {monitor.episodes} episodes is: {str(np.mean(rewards[i]))}')
+		print(f'The median reward over {monitor.episodes} episodes is: {str(np.median(rewards[i]))}')
+		print(f'The maximum reward over {monitor.episodes} episodes is: {str(np.max(rewards[i]))}')
+		print(f'The minimum reward over {monitor.episodes} episodes is: {str(np.min(rewards[i]))}')
 
 	monitor.create_statistics_plots(rewards)
 	print(f'All plots were saved to {monitor.get_folder()}')
