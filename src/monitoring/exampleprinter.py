@@ -51,8 +51,11 @@ def run_example(environment=sim_market.CircularEconomyRebuyPriceOneCompetitor(),
 			counter += 1
 			if isinstance(environment, sim_market.CircularEconomyRebuyPriceOneCompetitor):
 				svg_manipulator.save_overview_svg(filename=('MarketOverview_%.3d.svg' % counter))
+
 	if isinstance(environment, sim_market.CircularEconomyRebuyPriceOneCompetitor):
-		svg_manipulator.convert_svg_sequence_to_gif()
+		svg_manipulator.to_html()
+		# svg_manipulator.convert_svg_sequence_to_gif()
+
 	return our_profit
 
 

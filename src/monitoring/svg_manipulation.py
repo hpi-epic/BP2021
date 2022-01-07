@@ -117,6 +117,40 @@ class SVGManipulator():
 		img, *imgs = [renderPM.drawToPIL(d) for d in drawings]
 		img.save(fp=os.path.join(self.save_dir, 'examplerun.gif'), format='GIF', append_images=imgs, save_all=True, duration=500, loop=0)
 
+	def construct_slideshow_html(self, images, time=1000):
+		# slideshow view from: https://stackoverflow.com/questions/52478683/display-a-sequence-of-images-in-1-position-stored-in-an-object-js
+		html = '<!doctype html>\n' + \
+			'<html lang="de">\n' + \
+			'	<head><meta charset="utf-8"/></head>\n' + \
+			'	<img id="slideshow" src=""/>\n' + \
+			'	<script>\n' + \
+			'		images = [\n' + images + \
+			'		];\n' + \
+			'	imgIndex = 0;\n' + \
+			'	function changeImg(){\n' + \
+			'		document.getElementById("slideshow").src = images[imgIndex].src;\n' + \
+			'			if(images.length > imgIndex+1){\n' + \
+			'				imgIndex++;\n' + \
+			'			} else {\n' + \
+			'				imgIndex = 0;\n' + \
+			'			}\n' + \
+			'		}\n' + \
+			'	changeImg();\n' + \
+			'	setInterval(changeImg, ' + str(time) + ')\n' + \
+			'	</script>\n' + \
+			'</html>\n'
+		return html
+
+	def to_html(self, time=1000, html_name='preview_svg.html'):
+		all_svgs = [f for f in os.listdir(self.save_dir) if os.path.isfile(os.path.join(self.save_dir, f))]
+		print(all_svgs)
+		svg_array_for_js = ''
+		for image in all_svgs:
+			svg_array_for_js += '{"name":"' + image[:-4] + '", "src":"./' + image + '"},\n'
+		print(self.construct_slideshow_html(svg_array_for_js[:-2]))
+		with open(os.path.join(self.save_dir, html_name), 'w') as out_file:
+			out_file.write(self.construct_slideshow_html(svg_array_for_js[:-2], time))
+
 
 def main():  # pragma: no cover
 	"""
