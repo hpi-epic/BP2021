@@ -56,25 +56,25 @@ def update_rl_variables(config: dict) -> None:
 	Args:
 		config (dict): The dictionary from which to read the new values.
 	"""
-	listOfGlobals = globals()
-	listOfGlobals['GAMMA'] = float(config['gamma'])
-	listOfGlobals['LEARNING_RATE'] = float(config['learning_rate'])
-	listOfGlobals['BATCH_SIZE'] = int(config['batch_size'])
-	listOfGlobals['REPLAY_SIZE'] = int(config['replay_size'])
-	listOfGlobals['SYNC_TARGET_FRAMES'] = int(config['sync_target_frames'])
-	listOfGlobals['REPLAY_START_SIZE'] = int(config['replay_start_size'])
+	global_variables = globals()
+	global_variables['GAMMA'] = float(config['gamma'])
+	global_variables['LEARNING_RATE'] = float(config['learning_rate'])
+	global_variables['BATCH_SIZE'] = int(config['batch_size'])
+	global_variables['REPLAY_SIZE'] = int(config['replay_size'])
+	global_variables['SYNC_TARGET_FRAMES'] = int(config['sync_target_frames'])
+	global_variables['REPLAY_START_SIZE'] = int(config['replay_start_size'])
 
-	listOfGlobals['EPSILON_DECAY_LAST_FRAME'] = int(config['epsilon_decay_last_frame'])
-	listOfGlobals['EPSILON_START'] = float(config['epsilon_start'])
-	listOfGlobals['EPSILON_FINAL'] = float(config['epsilon_final'])
+	global_variables['EPSILON_DECAY_LAST_FRAME'] = int(config['epsilon_decay_last_frame'])
+	global_variables['EPSILON_START'] = float(config['epsilon_start'])
+	global_variables['EPSILON_FINAL'] = float(config['epsilon_final'])
 
-	assert listOfGlobals['LEARNING_RATE'] > 0 and listOfGlobals['LEARNING_RATE'] < 1, 'learning_rate should be between 0 and 1 (excluded)'
-	assert listOfGlobals['GAMMA'] >= 0 and listOfGlobals['GAMMA'] < 1, 'gamma should be between 0 (included) and 1 (excluded)'
-	assert listOfGlobals['BATCH_SIZE'] > 0, 'batch_size should be greater than 0'
-	assert listOfGlobals['REPLAY_SIZE'] > 0, 'replay_size should be greater than 0'
-	assert listOfGlobals['SYNC_TARGET_FRAMES'] > 0, 'sync_target_frames should be greater than 0'
-	assert listOfGlobals['REPLAY_START_SIZE'] > 0, 'replay_start_size should be greater than 0'
-	assert listOfGlobals['EPSILON_DECAY_LAST_FRAME'] >= 0, 'epsilon_decay_last_frame should not be negative'
+	assert global_variables['LEARNING_RATE'] > 0 and global_variables['LEARNING_RATE'] < 1, 'learning_rate should be between 0 and 1 (excluded)'
+	assert global_variables['GAMMA'] >= 0 and global_variables['GAMMA'] < 1, 'gamma should be between 0 (included) and 1 (excluded)'
+	assert global_variables['BATCH_SIZE'] > 0, 'batch_size should be greater than 0'
+	assert global_variables['REPLAY_SIZE'] > 0, 'replay_size should be greater than 0'
+	assert global_variables['SYNC_TARGET_FRAMES'] > 0, 'sync_target_frames should be greater than 0'
+	assert global_variables['REPLAY_START_SIZE'] > 0, 'replay_start_size should be greater than 0'
+	assert global_variables['EPSILON_DECAY_LAST_FRAME'] >= 0, 'epsilon_decay_last_frame should not be negative'
 
 
 config = load_config()
