@@ -58,18 +58,18 @@ class Monitor():
 		multiplier = 10 ** decimals
 		return np.floor(number * multiplier) / multiplier
 
-	def _get_cmap(self, n, name='hsv') -> plt.cm.colors.LinearSegmentedColormap:
-		"""
-		Return a colormap containing a distinct color for each monitored agent to be used in the diagrams.
+	# def get_cmap(self, n, name='hsv') -> plt.cm.colors.LinearSegmentedColormap:
+	# 	"""
+	# 	Return a colormap containing a distinct color for each monitored agent to be used in the diagrams.
 
-		Args:
-			n (int): How many colors should be generated.
-			name (str, optional): The type of colormap that should be generated. Defaults to 'hsv'.
+	# 	Args:
+	# 		n (int): How many colors should be generated.
+	# 		name (str, optional): The type of colormap that should be generated. Defaults to 'hsv'.
 
-		Returns:
-			plt.cm.colors.LinearSegmentedColormap: The filled colormap.
-		"""
-		return plt.cm._get_cmap(name, n + 1)
+	# 	Returns:
+	# 		plt.cm.colors.LinearSegmentedColormap: The filled colormap.
+	# 	"""
+	# 	return plt.cm.get_cmap(name, n + 1)
 
 	def get_folder(self) -> str:
 		"""
@@ -151,7 +151,7 @@ class Monitor():
 				assert False, current_agent[0] + 'is neither a rule_based nor a reinforcement_learning agent'
 
 		# set a color for each agent
-		color_map = self._get_cmap(len(self.agents))
+		color_map = plt.cm.get_cmap('hsv', len(self.agents) + 1)
 		self.agent_colors = []
 		for agent_id in range(0, len(self.agents)):
 			self.agent_colors.append(color_map(agent_id))
@@ -272,12 +272,12 @@ class Monitor():
 		plt.title('Cumulative Reward per Episode')
 
 		# find the number of bins needed, we only use steps of 1000, assuming our agents are good bois :)
+		plot_lower_bound = np.floor(int(self.metrics_minimum(rewards)) * 1e-3) / 1e-3
+		plot_upper_bound = np.ceil(int(self.metrics_maximum(rewards)) * 1e-3) / 1e-3
+		# plot_range = self.round_down(int(self.metrics_minimum(rewards)), -3), self.round_up(int(self.metrics_maximum(rewards)), -3)
+		plot_bins = int(int(np.abs(plot_lower_bound) + plot_upper_bound) / 1000)
 
-		plot_range = self._round_down(int(self.metrics_minimum(rewards)), -3), self._round_up(int(self.metrics_maximum(rewards)), -3)
-
-		plot_bins = int(int(np.abs(plot_range[0]) + plot_range[1]) / 1000)
-
-		plt.hist(rewards, bins=plot_bins, color=self.agent_colors, rwidth=0.9, range=plot_range)
+		plt.hist(rewards, bins=plot_bins, color=self.agent_colors, rwidth=0.9, range=(plot_lower_bound, plot_upper_bound))
 		plt.legend([a.name for a in self.agents])
 
 		if self.enable_live_draw:  # pragma: no cover
