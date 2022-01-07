@@ -1,4 +1,5 @@
 import math
+import os
 import time
 
 import numpy as np
@@ -41,7 +42,7 @@ def train_QLearning_agent(RL_agent, environment, maxsteps=2 * ut_rl.EPSILON_DECA
 	losses = []
 	rmse_losses = []
 	selected_q_vals = []
-	best_mean_reward = None
+	best_mean_reward = 0
 
 	# tensorboard init
 	# Setting log_dir causes some problems that are yet to be solved.
@@ -90,9 +91,9 @@ def train_QLearning_agent(RL_agent, environment, maxsteps=2 * ut_rl.EPSILON_DECA
 			writer.add_scalar('epsilon', epsilon, frame_idx / ut.EPISODE_LENGTH)
 			print(f'''{frame_idx}: done {len(all_dicts)} games, this episode return {all_dicts[-1]['profits/all']['vendor_0']:.3f}, mean return {mean_reward:.3f}, eps {epsilon:.2f}, speed {speed:.2f} f/s''')
 
-			if (best_mean_reward is None or best_mean_reward < mean_reward) and frame_idx > ut_rl.EPSILON_DECAY_LAST_FRAME + 101:
+			if (frame_idx > ut_rl.EPSILON_DECAY_LAST_FRAME + 101) and (best_mean_reward < mean_reward):
 				RL_agent.save(f'{type(environment).__name__}_{type(RL_agent).__name__}', f'{mean_reward:.3f}.dat')
-				if best_mean_reward is not None:
+				if best_mean_reward != 0:
 					print(f'Best reward updated {best_mean_reward:.3f} -> {mean_reward:.3f}')
 				best_mean_reward = mean_reward
 			if mean_reward > ut.MEAN_REWARD_BOUND:
@@ -112,3 +113,10 @@ def train_QLearning_agent(RL_agent, environment, maxsteps=2 * ut_rl.EPSILON_DECA
 		losses.append(loss)
 		rmse_losses.append(math.sqrt(loss))
 		selected_q_vals.append(selected_q_val_mean)
+
+	if best_mean_reward == 0:
+		print('The mean reward of the agent was never higher than 0, so no models were saved!')
+	else:
+		print(f'The best mean reward reached by the agent was {best_mean_reward:.3f}')
+		print('The models were saved to:')
+		print(os.path.abspath(os.path.join('trainedModels', f'{type(environment).__name__}_{type(RL_agent).__name__}')))
