@@ -1,10 +1,7 @@
-#!/usr/bin/env python3
-
 from abc import ABC, abstractmethod
 
 import numpy as np
 
-# helpers
 import configuration.utils_sim_market as ut
 
 

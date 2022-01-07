@@ -3,6 +3,7 @@ import os
 import pstats
 import time
 
+# include the file you want to run the performance check on here!
 import monitoring.exampleprinter
 
 
