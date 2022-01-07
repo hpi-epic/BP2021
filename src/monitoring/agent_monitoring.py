@@ -411,13 +411,13 @@ def main(monitor=Monitor()) -> None:
 
 	for i in range(len(rewards)):
 		print(f'Statistics for agent: {monitor.agents[i].name}')
-		print(f'The average reward over {monitor.episodes} episodes is: {str(monitor.metrics_average(rewards[i]))}')
-		print(f'The median reward over {monitor.episodes} episodes is: {str(monitor.metrics_median(rewards[i]))}')
-		print(f'The maximum reward over {monitor.episodes} episodes is: {str(monitor.metrics_maximum(rewards[i]))}')
-		print(f'The minimum reward over {monitor.episodes} episodes is: {str(monitor.metrics_minimum(rewards[i]))}')
+		print(f'The average reward over {monitor.episodes} episodes is: {monitor.metrics_average(rewards[i])}')
+		print(f'The median reward over {monitor.episodes} episodes is: {monitor.metrics_median(rewards[i])}')
+		print(f'The maximum reward over {monitor.episodes} episodes is: {monitor.metrics_maximum(rewards[i])}')
+		print(f'The minimum reward over {monitor.episodes} episodes is: {monitor.metrics_minimum(rewards[i])}')
 
 	monitor.create_statistics_plots(rewards)
-	print(f'All plots were saved to {monitor.get_folder()}')
+	print(f'All plots were saved to {os.path.abspath(monitor.get_folder())}')
 
 
 if __name__ == '__main__':  # pragma: no cover
