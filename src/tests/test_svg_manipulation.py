@@ -5,17 +5,16 @@ import pytest
 
 # import monitoring.exampleprinter as exampleprinter
 import monitoring.svg_manipulation as svg_manipulation
+
 # import tests.utils_tests as ut_t
-from monitoring.svg_manipulation import SVGManipulator
 
-svg_manipulator = SVGManipulator()
+svg_manipulator = svg_manipulation.SVGManipulator()
 
 
-# def teardown_function(function):
-# 	print('***TEARDOWN***')
-# 	for f in os.listdir(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring'):
-# 		if re.match('test_svg_*', f):
-# 			os.remove(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring' + os.sep + f)
+def setup_function(function):
+	print('***SETUP***')
+	global svg_manipulator
+	svg_manipulator = svg_manipulation.SVGManipulator()
 
 
 def test_get_default_dict():
@@ -25,23 +24,44 @@ def test_get_default_dict():
 			assert val == ''
 
 
-def test_replace_values():
+# test save_overview_svg
+def test_file_name_for_save_ends_with_svg():
+	global svg_manipulator
 	with pytest.raises(AssertionError) as assertion_message:
 		svg_manipulator.save_overview_svg('test_svg_replace_values')
 	assert 'the passed filename must end in .svg: ' in str(assertion_message.value)
-	with pytest.raises(AssertionError) as assertion_message:
-		svg_manipulator.write_dict_to_svg({'simulation_name': 0})
-	assert 'the dictionary should only contain strings: ' in str(assertion_message.value)
-	with pytest.raises(AssertionError) as assertion_message:
-		svg_manipulator.save_overview_svg('test_svg_replace_values2.svg')
-		svg_manipulator.save_overview_svg('test_svg_replace_values2.svg')
-	assert 'the specified file already exists: ' in str(assertion_message.value)
+
+
+def test_file_file_should_not_exist():
+	global svg_manipulator
+	with patch('monitoring.svg_manipulation.os.path.exists') as mock_exists, \
+		patch('monitoring.svg_manipulation.os.path.isdir') as mock_isdir, \
+		patch('builtins.open', mock_open()):
+		mock_isdir.return_value = True
+		mock_exists.return_value = False
+		with pytest.raises(AssertionError) as assertion_message:
+			svg_manipulator.save_overview_svg('test_svg_replace_values2.svg')
+			mock_exists.return_value = True
+			svg_manipulator.save_overview_svg('test_svg_replace_values2.svg')
+		assert 'the specified file already exists: ' in str(assertion_message.value)
+
+
+def test_write_to_dict_only_strings():
+	global svg_manipulator
+	with patch('monitoring.svg_manipulation.os.path.exists') as mock_exists, \
+		patch('monitoring.svg_manipulation.os.path.isdir') as mock_isdir:
+		mock_isdir.return_value = True
+		mock_exists.return_value = False
+
+		with pytest.raises(AssertionError) as assertion_message:
+			svg_manipulator.write_dict_to_svg({'simulation_name': 0})
+		assert 'the dictionary should only contain strings: ' in str(assertion_message.value)
 
 
 correct_html = '<!doctype html>\n' + \
 	'<html lang="de">\n' + \
 	'	<head><meta charset="utf-8"/></head>\n' + \
-	'	<img id="slideshow" src=""/>\n' + \
+	'	<img id="slideshow" src="" style="width:100%"/>\n' + \
 	'	<script>\n' + \
 	'		images = [\n' + \
 	'			{"name":"MarketOverview_001", "src":"./MarketOverview_001.svg"},\n' + \
@@ -72,8 +92,10 @@ def test_correct_html():
 		mock_isfile.return_value = True
 		mock_list_dir.return_value = ['MarketOverview_001.svg', 'MarketOverview_002.svg', 'MarketOverview_003.svg']
 
+		# run the convertion to html
 		svg_manipulator.to_html()
 
+	# assert that file would exsist and the content would be correct
 	mock_file.assert_called_once_with(os.path.join(svg_manipulator.save_directory, 'preview_svg.html'), 'w')
 	handle = mock_file()
 	handle.write.assert_called_once_with(correct_html)
