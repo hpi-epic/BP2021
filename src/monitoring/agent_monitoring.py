@@ -219,44 +219,6 @@ class Monitor():
 		configuration['folder_path'] = self.folder_path
 		return configuration
 
-	# def get_episode_rewards(self, all_step_rewards) -> list:
-	# 	"""
-	# 	Accumulates all rewards per episode
-
-	# 	Args:
-	# 		all_step_rewards (list of list of floats): Contains a list per agent containing float rewards for the episode
-
-	# 	Returns:
-	# 		list of list of floats: List of accumulated rewards per episode per agent
-	# 	"""
-	# 	episode_rewards = []
-	# 	for agent_reward in all_step_rewards:
-	# 		episode_rewards.append([])
-	# 		curr_sum = 0
-	# 		for reward_index in range(len(agent_reward)):
-	# 			curr_sum += agent_reward[reward_index]
-	# 			if(reward_index % ut.EPISODE_LENGTH == ut.EPISODE_LENGTH - 1):
-	# 				# one episode is over
-	# 				episode_rewards[-1] += [curr_sum]
-	# 				curr_sum = 0
-	# 	return episode_rewards
-
-	# metrics: replaced with the methods they parse on
-	# def metrics_average(self, rewards) -> np.float64:
-	# 	return np.mean(np.array(rewards))
-
-	# def metrics_median(self, rewards) -> np.float64:
-	# 	return np.median(np.array(rewards))
-
-	# def metrics_maximum(self, rewards) -> np.float64:
-	# 	return np.max(np.array(rewards))
-
-	# def metrics_minimum(self, rewards) -> np.float64:
-	# 	return np.min(np.array(rewards))
-
-	# def metrics_average_in_episode(self, rewards) -> np.float64:
-	# 	return sum(rewards) / (len(rewards) * ut.EPISODE_LENGTH)
-
 	# visualize metrics
 	def create_histogram(self, rewards, filename='default') -> None:
 		"""

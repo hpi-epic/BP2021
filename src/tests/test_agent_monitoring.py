@@ -8,7 +8,6 @@ import pytest
 import agents.vendors as vendors
 import market.sim_market as sim_market
 import monitoring.agent_monitoring as am
-import tests.utils_tests as ut_t
 from monitoring.agent_monitoring import Monitor
 
 monitor = Monitor()
@@ -162,30 +161,6 @@ def test_setup_with_invalid_agents():
 
 def test_setup_with_valid_agents():
 	monitor.setup_monitoring(agents=[(vendors.FixedPriceCERebuyAgent, []), (vendors.FixedPriceCEAgent, [])])
-
-
-def test_metrics_average():
-	assert 6 == monitor.metrics_average(ut_t.create_mock_rewards(12))
-
-
-def test_metrics_median():
-	assert 6 == monitor.metrics_median(ut_t.create_mock_rewards(12))
-
-
-def test_metrics_maximum():
-	assert 11 == monitor.metrics_maximum(ut_t.create_mock_rewards(12))
-
-
-def test_metrics_minimum():
-	assert 1 == monitor.metrics_minimum(ut_t.create_mock_rewards(12))
-
-
-def test_round_up():
-	assert monitor._round_up(999, -3) == 1000
-
-
-def test_round_down():
-	assert monitor._round_down(999, -3) == 0
 
 
 # all arrays in rewards must be of the same size
