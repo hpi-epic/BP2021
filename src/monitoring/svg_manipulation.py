@@ -117,7 +117,7 @@ class SVGManipulator():
 			list: List of svgs in this directory
 		"""
 		all_svg_files = [file for file in os.listdir(directory) if os.path.isfile(os.path.join(directory, file))]
-		assert all('.svg' == file[:-4] for file in all_svg_files)
+		assert all('.svg' == file[-4:] for file in all_svg_files)
 		return all_svg_files
 
 	def to_gif(self, time=500) -> None:
@@ -157,19 +157,19 @@ class SVGManipulator():
 			'	<head><meta charset="utf-8"/></head>\n' + \
 			'	<img id="slideshow" src=""/>\n' + \
 			'	<script>\n' + \
-			'		images = [\n' + images + \
+			'		images = [\n' + images + '\n'\
 			'		];\n' + \
-			'	imgIndex = 0;\n' + \
-			'	function changeImg(){\n' + \
-			'		document.getElementById("slideshow").src = images[imgIndex].src;\n' + \
-			'			if(images.length > imgIndex+1){\n' + \
-			'				imgIndex++;\n' + \
-			'			} else {\n' + \
-			'				imgIndex = 0;\n' + \
+			'		imgIndex = 0;\n' + \
+			'		function changeImg(){\n' + \
+			'			document.getElementById("slideshow").src = images[imgIndex].src;\n' + \
+			'				if(images.length > imgIndex+1){\n' + \
+			'					imgIndex++;\n' + \
+			'				} else {\n' + \
+			'					imgIndex = 0;\n' + \
+			'				}\n' + \
 			'			}\n' + \
-			'		}\n' + \
-			'	changeImg();\n' + \
-			'	setInterval(changeImg, ' + str(time) + ')\n' + \
+			'		changeImg();\n' + \
+			'		setInterval(changeImg, ' + str(time) + ')\n' + \
 			'	</script>\n' + \
 			'</html>\n'
 
@@ -186,7 +186,7 @@ class SVGManipulator():
 		# construct image array for js
 		svg_array_for_js = ''
 		for image in all_svgs:
-			svg_array_for_js += '{"name":"' + image[:-4] + '", "src":"./' + image + '"},\n'
+			svg_array_for_js += '\t\t\t{"name":"' + image[:-4] + '", "src":"./' + image + '"},\n'
 
 		# write html to file
 		with open(os.path.join(self.save_directory, html_name), 'w') as out_file:
