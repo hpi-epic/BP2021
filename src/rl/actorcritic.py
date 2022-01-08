@@ -1,14 +1,13 @@
 import random
 import time
 
+import model
 import numpy as np
 import torch
-from torch.utils.tensorboard import SummaryWriter
-
-import model
 import utils_rl as utrl
 import utils_sim_market as ut
 from sim_market import CircularEconomyRebuyPriceOneCompetitor
+from torch.utils.tensorboard import SummaryWriter
 from vendors import Agent
 
 
