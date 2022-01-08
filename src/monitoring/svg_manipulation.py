@@ -71,6 +71,23 @@ class SVGManipulator():
 		self.value_dictionary[target_key] = value
 		self.write_dict_to_svg(target_dictionary=self.value_dictionary)
 
+	def write_dict_to_svg(self, target_dictionary: dict = get_default_dict()) -> str:
+		"""
+		Replace all placeholder values in the current svg with a given dictionary.
+
+		Args:
+			target_dictionary (dict, optional): Dictionary containing the values that should be replaced in the copy. Defaults to `get_default_dict()`.
+
+		Returns:
+			str: The full path to the copied file.
+		"""
+		assert all(isinstance(value, str) for _, value in target_dictionary.items()), f'the dictionary should only contain strings: {target_dictionary}'
+
+		# reset the output svg to the template to be able to replace the placeholders by actual values
+		self.output_svg = self.svg_template
+		for key, value in target_dictionary.items():
+			self.output_svg = self.output_svg.replace(key, value)
+
 	def save_overview_svg(self, filename: str = 'MarketOverview_copy.svg') -> None:
 		"""
 		Save the stored svg data to a svg-file in BP2021/monitoring. If file already exists it will throw an error.
@@ -89,23 +106,6 @@ class SVGManipulator():
 		self.write_dict_to_svg(target_dictionary=self.value_dictionary)
 		with open(file_path, 'w') as target_svg:
 			target_svg.write(self.output_svg)
-
-	def write_dict_to_svg(self, target_dictionary: dict = get_default_dict()) -> str:
-		"""
-		Replace all placeholder values in the current svg with a given dictionary.
-
-		Args:
-			target_dictionary (dict, optional): Dictionary containing the values that should be replaced in the copy. Defaults to `get_default_dict()`.
-
-		Returns:
-			str: The full path to the copied file.
-		"""
-		assert all(isinstance(value, str) for _, value in target_dictionary.items()), f'the dictionary should only contain strings: {target_dictionary}'
-
-		# reset the output svg to the template to be able to replace the placeholders by actual values
-		self.output_svg = self.svg_template
-		for key, value in target_dictionary.items():
-			self.output_svg = self.output_svg.replace(key, value)
 
 	def get_all_svg_from_directory(self, directory: str) -> list:
 		"""
