@@ -42,8 +42,8 @@ def test_reading_file_values():
 # These tests have invalid values in their input file, the import should throw a specific error message
 odd_number_of_customers = (ut_t.create_mock_json_sim_market('50', '50', '80', '21', '10'), 'number_of_customers should be even and positive')
 negative_number_of_customers = (ut_t.create_mock_json_sim_market('50', '50', '80', '-10', '10'), 'number_of_customers should be even and positive')
-prod_price_higher_max_price = (ut_t.create_mock_json_sim_market('50', '10', '80', '20', '50'), 'production_price needs to be <= max_price and >= 0')
-negative_prod_price = (ut_t.create_mock_json_sim_market('50', '50', '80', '20', '-10'), 'production_price needs to be <= max_price and >= 0')
+prod_price_higher_max_price = (ut_t.create_mock_json_sim_market('50', '10', '80', '20', '50'), 'production_price needs to smaller than max_price and positive or zero')
+negative_production_price = (ut_t.create_mock_json_sim_market('50', '50', '80', '20', '-10'), 'production_price needs to smaller than max_price and positive or zero')
 negative_max_quality = (ut_t.create_mock_json_sim_market('20', '15', '-80', '30', '5'), 'max_quality should be positive')
 
 # These tests are missing a line in the config file, the import should throw a specific error message
@@ -55,7 +55,7 @@ missing_production_price = (ut_t.remove_line(4, ut_t.create_mock_json_sim_market
 
 # All pairs concerning themselves with invalid config.json values should be added to this array to get tested in test_invalid_values
 array_invalid_values = [
-	odd_number_of_customers, negative_number_of_customers, prod_price_higher_max_price, negative_prod_price, negative_max_quality,
+	odd_number_of_customers, negative_number_of_customers, prod_price_higher_max_price, negative_production_price, negative_max_quality,
 	missing_episode_size, missing_max_price, missing_max_quality, missing_number_of_customers, missing_production_price
 ]
 
@@ -63,7 +63,7 @@ array_invalid_values = [
 # This defines how the tests are named. Usually they would be "test_invalid_values[whole_json_here]". This ensures they are named after the actual thing they are testing
 def get_invalid_test_ids():
 	return [
-		'odd_number_of_customers', 'negative_number_of_customers', 'prod_price_higher_max_price', 'neg_prod_price', 'neg_max_quality',
+		'odd_number_of_customers', 'negative_number_of_customers', 'production_price_higher_max_price', 'negative_production_price', 'negative_max_quality',
 		'missing_episode_size', 'missing_max_price', 'missing_max_quality', 'missing_number_of_customers', 'missing_prod_price'
 	]
 

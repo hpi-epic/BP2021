@@ -1,13 +1,9 @@
-#!/usr/bin/env python3
-
 import math
 from abc import ABC, abstractmethod
 
 import numpy as np
 
 import configuration.utils_sim_market as ut
-
-# import random
 
 
 class Customer(ABC):

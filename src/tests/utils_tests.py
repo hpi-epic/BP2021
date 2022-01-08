@@ -90,7 +90,7 @@ def remove_line(number, json) -> str:
 		str: The JSON string with the missing line.
 	"""
 	lines = json.split('\n')
-	final_lines = lines[0:number + 1]
+	final_lines = lines[:number + 1]
 	final_lines += lines[number + 2:len(lines)]
 	final_lines[-2] = final_lines[-2].replace(',', '')
 	return '\n'.join(final_lines)
