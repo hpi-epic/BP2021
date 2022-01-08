@@ -174,5 +174,3 @@ def write_content_of_dict_to_overview_svg(manipulator, episode, episode_dictiona
 	manipulator.replace_one_value('b_resource_cost', str(PRODUCTION_PRICE))
 	manipulator.replace_one_value('b_sales_new', str(episode_dictionary['customer/purchases_new']['vendor_1']))
 	manipulator.replace_one_value('b_sales_used', str(episode_dictionary['customer/purchases_refurbished']['vendor_1']))
-
-	# manipulator.save_overview_svg(filename='test'+str(episode)+'.svg')

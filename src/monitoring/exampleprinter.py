@@ -54,7 +54,7 @@ def run_example(environment=sim_market.CircularEconomyRebuyPriceOneCompetitor(),
 
 	if isinstance(environment, sim_market.CircularEconomyRebuyPriceOneCompetitor):
 		svg_manipulator.to_html()
-		# svg_manipulator.convert_svg_sequence_to_gif()
+		# svg_manipulator.to_gif()
 
 	return our_profit
 

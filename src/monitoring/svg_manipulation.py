@@ -45,19 +45,17 @@ def get_default_dict() -> dict:
 		'b_sales_used'
 	]
 	output_dict = dict.fromkeys(keys, '')
-	output_dict['simulation_name'] = 'Market Simulation'
-	# output_dict['simulation_episode_length'] = str(ut.EPISODE_LENGTH)
 	return output_dict
 
 
 class SVGManipulator():
-	def __init__(self, save_directory='svg') -> None:
+	def __init__(self, save_dir='svg') -> None:
 		self.value_dictionary = get_default_dict()
 		# do not change the values in svg_template
 		with open('./monitoring/MarketOverview_template.svg', 'r') as template_svg:
 			self.svg_template = template_svg.read()
 		self.output_svg = None
-		self.save_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring' + os.sep + save_directory
+		self.save_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..', 'monitoring', save_dir))
 
 	def replace_one_value(self, target_key, value):
 		"""
@@ -80,10 +78,11 @@ class SVGManipulator():
 			filename (str, optional): The target file name of the copy. Defaults to `MarketOverview_copy.svg`.
 		"""
 		assert filename.endswith('.svg'), f'the passed filename must end in .svg: {filename}'
-		if not os.path.isdir(self.save_dir):
-			os.mkdir(self.save_dir)
-			print(self.save_dir)
-		filename = self.save_dir + os.sep + filename
+
+		if not os.path.isdir(self.save_directory):
+			os.mkdir(self.save_directory)
+
+		filename = self.save_directory + os.sep + filename
 		assert not os.path.exists(filename), f'the specified file already exists: {os.path.abspath(filename)}'
 
 		self.write_dict_to_svg(target_dictionary=self.value_dictionary)
@@ -107,19 +106,53 @@ class SVGManipulator():
 		for key, value in target_dictionary.items():
 			self.output_svg = self.output_svg.replace(key, value)
 
-	def convert_svg_sequence_to_gif(self):
-		onlyfiles = [f for f in os.listdir(self.save_dir) if os.path.isfile(os.path.join(self.save_dir, f))]
-		drawings = [svg2rlg(os.path.join(self.save_dir, f)) for f in onlyfiles]
-		print(type(drawings[0]))
-		for d in drawings:
-			d.translate(0, -8420)
-			d.scale(5, 5)
-		img, *imgs = [renderPM.drawToPIL(d) for d in drawings]
-		img.save(fp=os.path.join(self.save_dir, 'examplerun.gif'), format='GIF', append_images=imgs, save_all=True, duration=500, loop=0)
+	def get_all_svg_from_directory(self, directory: str) -> list:
+		"""
+		Lists all svg files from a given directory and asserts, that they are all svgs.
 
-	def construct_slideshow_html(self, images, time=1000):
+		Args:
+			Directory (str): Directory to get the svgs from
+
+		Returns:
+			list: List of svgs in this directory
+		"""
+		all_svg_files = [file for file in os.listdir(directory) if os.path.isfile(os.path.join(directory, file))]
+		assert all('.svg' == file[:-4] for file in all_svg_files)
+		return all_svg_files
+
+	def to_gif(self, time=500) -> None:
+		"""
+		Converts all files in self.save_directory to one gif. All files in self.save_directory must be of type svg.
+		If the number of files is large, this function will take a while.
+
+		Args:
+			time (int, optional): Time in ms for images to change. Defaults to 500.
+		"""
+		all_svg_files = self.get_all_svg_from_directory(self.save_directory)
+
+		# we need to convert svg to another format, because converting to gif does not work with svg
+		all_drawings = [svg2rlg(os.path.join(self.save_directory, svg)) for svg in all_svg_files]
+		for svg in all_drawings:
+			svg.translate(0, -8420)
+			svg.scale(5, 5)
+		img, *imgs = [renderPM.drawToPIL(d) for d in all_drawings]
+
+		# finally save it to gif
+		img.save(fp=os.path.join(self.save_directory, 'examplerun.gif'), format='GIF', append_images=imgs, save_all=True, duration=time, loop=0)
+
+	def construct_slideshow_html(self, images: list, time=1000) -> str:
+		"""
+		returns the string to an html document with a slideshow of the given images on it
+
+		Args:
+			images (list): All images which should be in the slideshow
+			time (int, optional): Duration of one image in the slideshow in ms. Defaults to 1000.
+
+		Returns:
+			str: The final full html document
+		"""
 		# slideshow view from: https://stackoverflow.com/questions/52478683/display-a-sequence-of-images-in-1-position-stored-in-an-object-js
-		html = '<!doctype html>\n' + \
+		return '<!doctype html>\n' + \
 			'<html lang="de">\n' + \
 			'	<head><meta charset="utf-8"/></head>\n' + \
 			'	<img id="slideshow" src=""/>\n' + \
@@ -139,16 +172,24 @@ class SVGManipulator():
 			'	setInterval(changeImg, ' + str(time) + ')\n' + \
 			'	</script>\n' + \
 			'</html>\n'
-		return html
 
-	def to_html(self, time=1000, html_name='preview_svg.html'):
-		all_svgs = [f for f in os.listdir(self.save_dir) if os.path.isfile(os.path.join(self.save_dir, f))]
-		print(all_svgs)
+	def to_html(self, time=1000, html_name='preview_svg.html') -> None:
+		"""
+		Writes an html document including a slideshow of all svgs in self.save_directory.
+
+		Args:
+			time (int, optional): Time in ms for images to change. Defaults to 500.. Defaults to 1000.
+			html_name (str, optional): Name for the html doument. Defaults to 'preview_svg.html'.
+		"""
+		all_svgs = self.get_all_svg_from_directory(self.save_directory)
+
+		# construct image array for js
 		svg_array_for_js = ''
 		for image in all_svgs:
 			svg_array_for_js += '{"name":"' + image[:-4] + '", "src":"./' + image + '"},\n'
-		print(self.construct_slideshow_html(svg_array_for_js[:-2]))
-		with open(os.path.join(self.save_dir, html_name), 'w') as out_file:
+
+		# write html to file
+		with open(os.path.join(self.save_directory, html_name), 'w') as out_file:
 			out_file.write(self.construct_slideshow_html(svg_array_for_js[:-2], time))
 
 
