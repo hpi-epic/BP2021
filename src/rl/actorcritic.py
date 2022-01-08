@@ -15,18 +15,18 @@ import market.sim_market as sim_market
 class ActorCriticAgent(vendors.Agent):
 	def __init__(self, n_observation, n_actions):
 		self.device = 'cpu'
-		self.policy_net = model.simple_network(n_observation, n_actions).to(self.device)
-		self.policy_optimizer = torch.optim.Adam(self.policy_net.parameters(), lr=0.0000025)
-		self.v_net = model.simple_network(n_observation, 1).to(self.device)
-		self.v_optimizer = torch.optim.Adam(self.v_net.parameters(), lr=0.00025)
+		self.policy_net = model.very_simple_network(n_observation, n_actions).to(self.device)
+		self.policy_optimizer = torch.optim.Adam(self.policy_net.parameters(), lr=0.001)
+		self.v_net = model.very_simple_network(n_observation, 1).to(self.device)
+		self.v_optimizer = torch.optim.Adam(self.v_net.parameters(), lr=0.002)
 
 	def train_batch(self, states, actions, rewards, states_dash):
-		print('Diese Mittelwerte hat das Netz vor dem Training vorgeschlagen:')
-		print(self.policy_net(states))
 		print('Das waren die Aktionen: ')
 		print(actions)
 		print('Das waren die Rewards: ')
 		print(rewards)
+		print('Diese Mittelwerte hat das Netz vor dem Training vorgeschlagen:')
+		print(self.policy_net(states.detach()))
 		states = states.to(self.device)
 		actions = actions.to(self.device)
 		rewards = rewards.to(self.device)
@@ -41,11 +41,14 @@ class ActorCriticAgent(vendors.Agent):
 		valueloss.backward()
 
 		with torch.no_grad():
-			baseline = 0  # v_estimates.squeeze()[31].item()
+			baseline = v_estimates.squeeze()[31].item()
 			constant = (v_expected - baseline).detach()
-		# print("Seine Konstante war", constant)
-		log_policy = torch.log(self.probability_given_action(states, actions))
-		policyloss = torch.sum(constant * log_policy)
+		print('Seine Konstante war', constant)
+		prob = self.probability_given_action(states.detach(), actions.detach())
+		# print("Die Wahrscheinlichkeit war ", prob)
+		# print("Die abzuleitende Log-Wahrscheinlichkeit war ", torch.log(prob))
+		log_policy = torch.log(prob)
+		policyloss = -torch.sum(constant * log_policy)
 		policyloss.backward()
 
 		self.v_optimizer.step()
@@ -79,17 +82,22 @@ class SoftActorCriticAgent(ActorCriticAgent):
 			mean = self.policy_net(observation)
 			v_estimat = self.v_net(observation).view(-1)
 
-		action = torch.normal(mean, torch.ones(mean.shape)).to('cpu').item()
+		if np.random.random() < 0.02:
+			print('observation mean und sample:')
+			print(observation)
+			print(mean)
+			print(torch.normal(mean, torch.ones(mean.shape)))
+		action = int(np.round(torch.normal(mean, torch.ones(mean.shape)).to('cpu').item()))
 		action = max(action, 0)
 		action = min(action, 9)
-		return action, v_estimat.to('cpu').item()
+		return action, self.probability_given_action(observation, torch.Tensor([action])).detach(), v_estimat.to('cpu').item()
 
 	def probability_given_action(self, states, actions):
-		return torch.exp(-torch.square(actions - self.policy_net(states))) / (torch.sqrt(2 * np.pi * torch.ones(states.shape())))
+		return torch.exp(-torch.square(actions.view(-1, 1) - self.policy_net(states))) / (np.sqrt(2 * np.pi))
 
 
 def trainactorcritic():
-	agent = SoftActorCriticAgent(6, 1)
+	agent = SoftActorCriticAgent(3, 1)
 	all_dicts = []
 	all_probs = []
 	all_vestim = []
@@ -117,9 +125,9 @@ def trainactorcritic():
 		for env in chosen_envs:
 			state = environments[env].observation()
 			step, prob, v_estimat = agent.policy(state)
-			all_probs.append(prob)
+			all_probs.append(prob.item())
 			all_vestim.append(v_estimat)
-			state_dash, reward, isdone, info = environments[env].step((int(step / 100), int(step / 10 % 10), int(step % 10)))
+			state_dash, reward, isdone, info = environments[env].step(step)  # ((int(step / 100), int(step / 10 % 10), int(step % 10)))
 
 			states.append(state)
 			actions.append(step)

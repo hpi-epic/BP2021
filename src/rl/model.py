@@ -1,6 +1,14 @@
 from torch import nn
 
 
+def very_simple_network(input_size, output_size) -> nn.modules.container.Sequential:
+	return nn.Sequential(
+		nn.Linear(input_size, 64),
+		nn.ReLU(),
+		nn.Linear(64, output_size),
+	)
+
+
 def simple_network(input_size, output_size) -> nn.modules.container.Sequential:
 	"""A network with one small hidden layer and user-defined input and output sizes.
 
