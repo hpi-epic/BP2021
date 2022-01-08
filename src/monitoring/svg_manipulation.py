@@ -52,10 +52,11 @@ class SVGManipulator():
 	def __init__(self, save_dir='svg') -> None:
 		self.value_dictionary = get_default_dict()
 		# do not change the values in svg_template
-		with open('./monitoring/MarketOverview_template.svg', 'r') as template_svg:
+		path_to_monitoring = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..', 'monitoring'))
+		with open(os.path.join(path_to_monitoring, 'MarketOverview_template.svg'), 'r') as template_svg:
 			self.svg_template = template_svg.read()
 		self.output_svg = None
-		self.save_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..', 'monitoring', save_dir))
+		self.save_directory = os.path.join(path_to_monitoring, save_dir)
 
 	def replace_one_value(self, target_key, value):
 		"""
@@ -82,11 +83,11 @@ class SVGManipulator():
 		if not os.path.isdir(self.save_directory):
 			os.mkdir(self.save_directory)
 
-		filename = self.save_directory + os.sep + filename
-		assert not os.path.exists(filename), f'the specified file already exists: {os.path.abspath(filename)}'
+		file_path = os.path.join(self.save_directory, filename)
+		assert not os.path.exists(file_path), f'the specified file already exists: {os.path.abspath(file_path)}'
 
 		self.write_dict_to_svg(target_dictionary=self.value_dictionary)
-		with open(filename, 'w') as target_svg:
+		with open(file_path, 'w') as target_svg:
 			target_svg.write(self.output_svg)
 
 	def write_dict_to_svg(self, target_dictionary: dict = get_default_dict()) -> str:
