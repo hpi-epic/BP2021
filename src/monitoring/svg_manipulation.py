@@ -156,7 +156,7 @@ class SVGManipulator():
 		return '<!doctype html>\n' + \
 			'<html lang="de">\n' + \
 			'	<head><meta charset="utf-8"/></head>\n' + \
-			'	<img id="slideshow" src=""/>\n' + \
+			'	<img id="slideshow" src="" style="width:100%"/>\n' + \
 			'	<script>\n' + \
 			'		images = [\n' + images + '\n'\
 			'		];\n' + \
