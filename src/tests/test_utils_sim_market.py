@@ -3,8 +3,8 @@ from unittest.mock import mock_open, patch
 
 import pytest
 
-from .context import utils_sim_market as ut
-from .context import utils_tests as ut_t
+import configuration.utils_sim_market as ut
+import tests.utils_tests as ut_t
 
 
 # mock format taken from: https://stackoverflow.com/questions/1289894/how-do-i-mock-an-open-used-in-a-with-statement-using-the-mock-framework-in-pyth
@@ -43,27 +43,27 @@ def test_reading_file_values():
 odd_number_of_customers = (ut_t.create_mock_json_sim_market('50', '50', '80', '21', '10'), 'number_of_customers should be even and positive')
 negative_number_of_customers = (ut_t.create_mock_json_sim_market('50', '50', '80', '-10', '10'), 'number_of_customers should be even and positive')
 prod_price_higher_max_price = (ut_t.create_mock_json_sim_market('50', '10', '80', '20', '50'), 'production_price needs to smaller than max_price and positive or zero')
-neg_prod_price = (ut_t.create_mock_json_sim_market('50', '50', '80', '20', '-10'), 'production_price needs to smaller than max_price and positive or zero')
-neg_max_quality = (ut_t.create_mock_json_sim_market('20', '15', '-80', '30', '5'), 'max_quality should be positive')
+negative_production_price = (ut_t.create_mock_json_sim_market('50', '50', '80', '20', '-10'), 'production_price needs to smaller than max_price and positive or zero')
+negative_max_quality = (ut_t.create_mock_json_sim_market('20', '15', '-80', '30', '5'), 'max_quality should be positive')
 
 # These tests are missing a line in the config file, the import should throw a specific error message
 missing_episode_size = (ut_t.remove_line(0, ut_t.create_mock_json_sim_market()), 'your config is missing episode_size')
 missing_max_price = (ut_t.remove_line(1, ut_t.create_mock_json_sim_market()), 'your config is missing max_price')
 missing_max_quality = (ut_t.remove_line(2, ut_t.create_mock_json_sim_market()), 'your config is missing max_quality')
 missing_number_of_customers = (ut_t.remove_line(3, ut_t.create_mock_json_sim_market()), 'your config is missing number_of_customers')
-missing_prod_price = (ut_t.remove_line(4, ut_t.create_mock_json_sim_market()), 'your config is missing production_price')
+missing_production_price = (ut_t.remove_line(4, ut_t.create_mock_json_sim_market()), 'your config is missing production_price')
 
 # All pairs concerning themselves with invalid config.json values should be added to this array to get tested in test_invalid_values
 array_invalid_values = [
-	odd_number_of_customers, negative_number_of_customers, prod_price_higher_max_price, neg_prod_price, neg_max_quality,
-	missing_episode_size, missing_max_price, missing_max_quality, missing_number_of_customers, missing_prod_price
+	odd_number_of_customers, negative_number_of_customers, prod_price_higher_max_price, negative_production_price, negative_max_quality,
+	missing_episode_size, missing_max_price, missing_max_quality, missing_number_of_customers, missing_production_price
 ]
 
 
 # This defines how the tests are named. Usually they would be "test_invalid_values[whole_json_here]". This ensures they are named after the actual thing they are testing
 def get_invalid_test_ids():
 	return [
-		'odd_number_of_customers', 'negative_number_of_customers', 'prod_price_higher_max_price', 'neg_prod_price', 'neg_max_quality',
+		'odd_number_of_customers', 'negative_number_of_customers', 'production_price_higher_max_price', 'negative_production_price', 'negative_max_quality',
 		'missing_episode_size', 'missing_max_price', 'missing_max_quality', 'missing_number_of_customers', 'missing_prod_price'
 	]
 

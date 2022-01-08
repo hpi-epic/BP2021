@@ -5,10 +5,8 @@ import gym
 import matplotlib.pyplot as plt
 import numpy as np
 
-import sim_market
-import vendors
-
-# import utils_sim_market as ut
+import agents.vendors as vendors
+import market.sim_market as sim_market
 
 
 class Monitor():
@@ -29,7 +27,7 @@ class Monitor():
 		self.agents = [vendors.QLearningCEAgent(self.marketplace.observation_space.shape[0], self.get_action_space(), load_path=self.get_modelfile_path('CircularEconomy_QLearningCEAgent.dat'))]
 		self.agent_colors = ['#0000ff']
 		self.subfolder_name = 'plots_' + time.strftime('%Y%m%d-%H%M%S')
-		self.folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + os.sep + 'monitoring' + os.sep + self.subfolder_name
+		self.folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring' + os.sep + self.subfolder_name
 
 	# helper functions
 	def round_up(self, number, decimals=0) -> np.float64:
@@ -88,7 +86,7 @@ class Monitor():
 
 	def get_modelfile_path(self, model_name) -> str:
 		"""
-		Get the full path to a modelfile in the \'monitoring\' folder.
+		Get the full path to a modelfile in the 'monitoring' folder.
 
 		Args:
 			model_name (str): The name of the .dat modelfile.
@@ -97,7 +95,7 @@ class Monitor():
 			str: The full path to the modelfile.
 		"""
 		assert str.endswith(model_name, '.dat'), 'the modelfile must be a .dat file'
-		full_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + os.sep + 'monitoring' + os.sep + model_name
+		full_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring' + os.sep + model_name
 		assert os.path.exists(full_path), 'the specified modelfile does not exist'
 		return full_path
 
@@ -201,7 +199,7 @@ class Monitor():
 		if(subfolder_name is not None):
 			assert isinstance(subfolder_name, str), 'subfolder_name must be of type string'
 			self.subfolder_name = subfolder_name
-			self.folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + os.sep + 'monitoring' + os.sep + self.subfolder_name
+			self.folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring' + os.sep + self.subfolder_name
 
 	def get_configuration(self) -> dict:
 		"""
@@ -307,7 +305,8 @@ class Monitor():
 			self.create_line_plot(x_axis_episodes, metric_rewards, metrics_names[function])
 
 	def create_line_plot(self, x_values, y_values, metric_name='no name provided') -> None:
-		"""Create a line plot with the given rewards data.
+		"""
+		Create a line plot with the given rewards data.
 
 		Args:
 			x_values (list of ints): Defines x-values of datapoints. Must have same length as y_values.
@@ -399,7 +398,7 @@ def main(monitor=Monitor()) -> None:
 	Args:
 		monitor (Monitor instance, optional): The monitor to run the session on. Defaults to a default Monitor() instance.
 	"""
-	# monitor.setup_monitoring(enable_live_draw=False, agents=[(vendors.QLearningCEAgent, ['CircularEconomy_QLearningCEAgent.dat']), (vendors.FixedPriceCEAgent, [(4,6)])])
+	# monitor.setup_monitoring(enable_live_draw=False, agents=[(vendors.FixedPriceCEAgent, [])], marketplace=sim_market.CircularEconomyMonopolyScenario)
 	print('Live Drawing enabled:', monitor.enable_live_draw)
 	print('Episodes:', monitor.episodes)
 	print(f'Plot interval: {monitor.plot_interval}')

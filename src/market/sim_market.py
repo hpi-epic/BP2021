@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import copy
 from abc import ABC, abstractmethod
 from typing import Tuple
@@ -6,12 +5,12 @@ from typing import Tuple
 import gym
 import numpy as np
 
-import customer
-import owner
-import utils_sim_market as ut
-import vendors
-from customer import Customer
-from owner import Owner
+import agents.vendors as vendors
+import configuration.utils_sim_market as ut
+import market.customer as customer
+import market.owner as owner
+from market.customer import Customer
+from market.owner import Owner
 
 # An offer is a market state that contains all prices and qualities
 
@@ -22,8 +21,19 @@ from owner import Owner
 
 
 class SimMarket(gym.Env, ABC):
+	"""
+	The superclass to all market environments.
+
+	Abstract class that cannot be instantiated.
+	Inherits from `gym.env`.
+	"""
 
 	def __init__(self) -> None:
+		"""
+		Initialize a SimMarket instance.
+
+		Set up needed values such as competitors and action/observation-space and reset the environment.
+		"""
 		self.competitors = self.get_competitor_list()
 		# The agent's price does not belong to the observation_space any more because an agent should not depend on it
 		self.setup_action_observation_space()
@@ -34,18 +44,20 @@ class SimMarket(gym.Env, ABC):
 		# Make sure that variables such as state, customer are known
 		self.reset()
 
-	# The number of competitors plus the agent
 	def get_number_of_vendors(self) -> int:
-		"""This method returns the number of competitors plus the agent.
+		"""
+		Return the number of competitors plus the agent.
 
 		Returns:
-			int: number of competitors plus the agent
+			int: Number of competitors plus the agent.
 		"""
 		return len(self.competitors) + 1
 
 	def reset(self) -> np.array:
-		"""This method is required by the gym library.
-		It is called to reset the market before each episode.
+		"""
+		Reset the market before each episode.
+
+		This method is required by the gym library.
 
 		Returns:
 			np.array: The initial observation of the market.
@@ -63,7 +75,9 @@ class SimMarket(gym.Env, ABC):
 		return self.observation()
 
 	def simulate_customers(self, profits, offers, number_of_customers) -> None:
-		"""Here customers are simulated, the procducts offered by the vendors get sold to n customers.
+		"""
+		Simulate the customers, the products offered by the vendors get sold to n customers.
+
 		The profits for each vendor get saved to the profits array.
 
 		Args:
@@ -72,7 +86,7 @@ class SimMarket(gym.Env, ABC):
 			number_of_customers (int): the number of customers eager to buy each step.
 		"""
 		probability_distribution = self.customer.generate_purchase_probabilities_from_offer(offers, self.get_offer_length_per_vendor())
-		assert isinstance(probability_distribution, np.ndarray), 'Your method in customer must return a np.array!'
+		assert isinstance(probability_distribution, np.ndarray), 'generate_purchase_probabilities_from_offer must return an np.ndarray'
 		assert len(probability_distribution) == 1 + (1 if isinstance(self, LinearEconomy) else 2) * self.get_number_of_vendors(), 'The probability distribution must have one entry for buy_nothing and one or two entries for every vendor. One entry if it is a linear economy (with only one price) or a circular economy with the option to buy refurbished or new.'
 
 		for _ in range(number_of_customers):
@@ -83,7 +97,9 @@ class SimMarket(gym.Env, ABC):
 				self.output_dict['customer/buy_nothing'] += 1
 
 	def step(self, action) -> Tuple[np.array, np.float64, bool, dict]:
-		"""This method is called to simulate the market between actions by the agent.
+		"""
+		Simulate the market between actions by the agent.
+
 		It is part of the gym library for reinforcement learning.
 		It is pretty generic and configured by overwriting the abstract and empty methods.
 
@@ -124,7 +140,9 @@ class SimMarket(gym.Env, ABC):
 		return self.observation(), profits[0], is_done, copy.deepcopy(self.output_dict)
 
 	def observation(self, vendor_view=0) -> np.array:
-		"""This method creates a different view of the market for every vendor.
+		"""
+		Create a different view of the market for every vendor.
+
 		Each one sees every others vendors specific state, their actions and the global state.
 		At the beginning of the array you have the common state.
 		Afterwards you have the vendor specific state for the vendor with index vendor_view but NOT its actions from prior steps.
@@ -138,7 +156,7 @@ class SimMarket(gym.Env, ABC):
 		"""
 		# observaton is the array containing the global state. We concatenate everything relevant to it, then return it.
 		observation = self.get_common_state_array()
-		assert isinstance(observation, np.ndarray), 'get_common_state_array must return a np-Array'
+		assert isinstance(observation, np.ndarray), 'get_common_state_array must return an np.ndarray'
 
 		# first the action and state of the of the vendor whose view we create will be added
 		if self.vendor_specific_state[vendor_view] is not None:
@@ -157,13 +175,15 @@ class SimMarket(gym.Env, ABC):
 		return observation
 
 	def generate_customer_offer(self) -> np.array:
-		"""This methods maps the internal state to an array which is presented to the customers.
+		"""
+		Map the internal state to an array which is presented to the customers.
+
 		It includes all information customers will use for their decisions.
 		At the beginning of the array you have the common state.
 		Afterwards you have the action and vendor specific state for all vendors.
 		"""
 		offer = self.get_common_state_array()
-		assert isinstance(offer, np.ndarray), 'get_common_state_array must return a np-Array'
+		assert isinstance(offer, np.ndarray), 'get_common_state_array must return an np.ndarray'
 		for vendor_index in range(self.get_number_of_vendors()):
 			offer = np.concatenate((offer, np.array(self.vendor_actions[vendor_index], ndmin=1)), dtype=np.float64)
 			if self.vendor_specific_state[vendor_index] is not None:
@@ -176,28 +196,92 @@ class SimMarket(gym.Env, ABC):
 	def get_common_state_array(self) -> np.array:
 		return np.array([])
 
+	@abstractmethod
 	def reset_vendor_specific_state(self) -> None:
-		return None
+		"""
+		The implementation of this function varies between Economy types.
+
+		See also:
+			`<market.sim_market.LinearEconomy.reset_vendor_specific_state>`
+			`<market.sim_market.CircularEconomy.reset_vendor_specific_state>`
+		"""
+		raise NotImplementedError
+
+	@abstractmethod
+	def reset_vendor_actions(self):
+		"""
+		Reset the price(s) in an economy.
+
+		Returns:
+			int or tuple: Price(s) of the new product.
+		"""
+		raise NotImplementedError
 
 	@abstractmethod
 	def setup_action_observation_space(self) -> None:  # pragma: no cover
-		raise NotImplementedError
+		raise NotImplementedError('This method is abstract. Use a subclass')
 
 	@abstractmethod
 	def get_competitor_list(self) -> list:  # pragma: no cover
-		raise NotImplementedError
+		"""
+		Get a list of all competitors in the current market scenario.
 
-	def consider_storage_costs(self, profits) -> None:
-		pass
-
-	def choose_owner(self):
-		return None
-
-	def get_offer_length_per_vendor(self) -> int:
-		"""This methods generates the number of fields each vendor takes in the offer array
+		TODO: This should get reworked since there no longer is a formal definition of 'competitor', since we see all vendors as agents.
 
 		Returns:
-			int: The offer lenght is the sum of the number of fields required to encode the action and the length of the encoding of vendor specific state.
+			list: List containing instances of the competitors.
+		"""
+		raise NotImplementedError('This method is abstract. Use a subclass')
+
+	def consider_storage_costs(self, profits) -> None:
+		return None
+
+	@abstractmethod
+	def choose_customer(self) -> None:
+		"""
+		Return the customer for this market scenario.
+
+		Returns:
+			Customer: An instance of a customer class from `<market.customer>`
+		"""
+		raise NotImplementedError
+
+	def choose_owner(self) -> None:
+		"""
+		Return the owner for this market scenario.
+
+		Returns:
+			Owner: An instance of an owner class from `<market.owner>`
+			or
+			None: If the market scenario does not support owners.
+		"""
+		return None
+
+	@abstractmethod
+	def complete_purchase(self):
+		"""The method handles the customer's decision by raising the profit by the price paid minus the produtcion price.
+
+		Args:
+			profits (np.array(int)): An array containing the profits of all vendors.
+			chosen_vendor (int): Indicates the customer's decision.
+		"""
+		raise NotImplementedError
+
+	@abstractmethod
+	def initialize_output_dict(self):
+		"""
+		Initialize the entries in the output dict for an economy.
+		"""
+		raise NotImplementedError
+
+	def get_offer_length_per_vendor(self) -> int:
+		"""
+		Generate the number of fields each vendor takes in the offers array.
+
+		The offer length is the sum of the number of fields required to encode the action and the length of the encoding of vendor specific state.
+
+		Returns:
+			int: The offer length.
 		"""
 		action_encoding_length = 1 if isinstance(self.action_space, gym.spaces.Discrete) else len(self.action_space)
 		if self.vendor_specific_state[0] is None:
@@ -207,15 +291,17 @@ class SimMarket(gym.Env, ABC):
 		return action_encoding_length + vendor_specific_state_encoding_length
 
 	def ensure_output_dict_has(self, name, init_for_all_vendors=None) -> None:
-		"""Ensures that the output_dict has an entry with the given name and creates an entry otherwise.
-		If you pass a parameter for init_for_all_vendors, that will be interpreted as creating a dict with the passed array as content.
+		"""
+		Ensure that the output_dict has an entry with the given name and create an entry otherwise.
+
+		If a parameter for init_for_all_vendors is passed, it will be interpreted as creating a dict with the passed array as content.
 
 		Args:
-			name (string): name of the dict entry which should be checked
+			name (string): name of the dict entry which should be checked.
 			init_for_all_vendors (list, optional): initialization values for all vendors in this entry. Defaults to None.
 		"""
 		if init_for_all_vendors is not None:
-			assert isinstance(init_for_all_vendors, list) and len(init_for_all_vendors) == self.get_number_of_vendors(), 'make sure you pass an array with length of number of vendors'
+			assert isinstance(init_for_all_vendors, list) and len(init_for_all_vendors) == self.get_number_of_vendors(), 'make sure you pass a list with length of number of vendors'
 		if name not in self.output_dict:
 			if init_for_all_vendors is None:
 				self.output_dict[name] = 0
@@ -226,7 +312,8 @@ class SimMarket(gym.Env, ABC):
 class LinearEconomy(SimMarket, ABC):
 
 	def setup_action_observation_space(self) -> None:
-		"""The observation array has the following format:
+		"""
+		The observation array has the following format:
 		cell 0: quality of that vendor from whose perspective the observation is generated.
 		following odd cells: price of an other vendor
 		following even cells: quality of an other competitor
@@ -241,33 +328,34 @@ class LinearEconomy(SimMarket, ABC):
 		self.action_space = gym.spaces.Discrete(ut.MAX_PRICE)
 
 	def reset_vendor_specific_state(self) -> list:
+		"""
+		Return a list containing a randomized quality value of the product the vendor is selling.
+
+		Returns:
+			list: a list containing the quality value of the product.
+
+		See also:
+			`configuration.utils_sim_market.shuffle_quality`
+		"""
 		return [ut.shuffle_quality()]
 
 	def choose_customer(self) -> Customer:
 		return customer.CustomerLinear()
 
 	def reset_vendor_actions(self) -> int:
-		"""Resets the price in the linear economy
+		"""
+		Reset the price in the linear economy.
 
 		Returns:
-			int: price of the new product
+			int: The new price.
 		"""
 		return ut.PRODUCTION_PRICE + 1
 
 	def complete_purchase(self, profits, chosen_vendor) -> None:
-		"""The method handles the customer's decision by raising the profit by the price paid minus the produtcion price.
-
-		Args:
-			profits (np.array(int)): An array containing the profits of all vendors.
-			chosen_vendor (int): Indicates the customer's decision.
-		"""
-
 		profits[chosen_vendor] += self.vendor_actions[chosen_vendor] - ut.PRODUCTION_PRICE
 		self.output_dict['customer/purchases']['vendor_' + str(chosen_vendor)] += 1
 
 	def initialize_output_dict(self):
-		"""Initializes the entries for state and quality in the output dict for the linear economy
-		"""
 		self.ensure_output_dict_has('state/quality', [self.vendor_specific_state[i][0] for i in range(self.get_number_of_vendors())])
 
 		self.ensure_output_dict_has('customer/purchases', [0] * self.get_number_of_vendors())
@@ -291,7 +379,6 @@ class MultiCompetitorScenario(LinearEconomy):
 
 class CircularEconomy(SimMarket):
 
-	# currently monopoly
 	def setup_action_observation_space(self) -> None:
 		# cell 0: number of products in the used storage, cell 1: number of products in circulation
 		self.max_storage = 1e2
@@ -300,11 +387,12 @@ class CircularEconomy(SimMarket):
 		self.action_space = gym.spaces.Tuple((gym.spaces.Discrete(ut.MAX_PRICE), gym.spaces.Discrete(ut.MAX_PRICE)))
 
 	def reset_vendor_specific_state(self) -> list:
-		"""In the circular economy, the vendor specific state contains the number of products in storage for each vendor
+		"""
+		Return a list containing a randomized number of products in storage.
 
 		Returns:
-			list: a list with only one item which contains the number of elements in the storage of one specific vendor.
-			It is chosen randomly between 0 and max_storage
+			list: a list with only the number of elements in the storage of one specific vendor.
+			It is chosen randomly between 0 and `max_storage`.
 		"""
 		return [int(np.random.rand() * self.max_storage)]
 
@@ -315,7 +403,8 @@ class CircularEconomy(SimMarket):
 		return np.array([self.in_circulation])
 
 	def reset_vendor_actions(self) -> tuple:
-		"""Resets the prices in the circular economy (without rebuy price)
+		"""
+		Reset the prices in the circular economy (without rebuy price)
 
 		Returns:
 			tuple: (refurbished_price, new_price)
@@ -329,14 +418,14 @@ class CircularEconomy(SimMarket):
 		return owner.UniformDistributionOwner()
 
 	def throw_away(self) -> None:
-		"""The call of this method will decrease the in_circulation counter by one.
-		Call it if one of your owners decided to throw away his product.
-		"""
+		"""The call of this method will decrease the in_circulation counter by one.Call it if one of your owners decided to throw away his product."""
+
 		self.output_dict['owner/throw_away'] += 1
 		self.in_circulation -= 1
 
 	def transfer_product_to_storage(self, vendor, profits=None, rebuy_price=0) -> None:
-		"""Handles the transfer of a used product to the storage after it got bought by the vendor. It respects the storage capacity and adjusts the profit the vendor makes.
+		"""
+		Handles the transfer of a used product to the storage after it got bought by the vendor. It respects the storage capacity and adjusts the profit the vendor makes.
 
 		Args:
 			vendor (int): The index of the vendor that bought the product.
@@ -352,15 +441,17 @@ class CircularEconomy(SimMarket):
 			profits[vendor] -= rebuy_price
 
 	def simulate_owners(self, profits, offer) -> None:
-		"""The process of owners selling their used products to the vendor. It is prepared for multiple vendor scenarios but is still part of a monopoly.
+		"""
+		The process of owners selling their used products to the vendor. It is prepared for multiple vendor scenarios but is still part of a monopoly.
 
 		Args:
 			profits (np.array(int)): The profits of the vendor.
 			offer (np.array): The offers of the vendor.
 		"""
-		assert self.owner is not None, 'please choose an owner'
+		assert self.owner is not None, 'an owner must be set'
 		return_probabilities = self.owner.generate_return_probabilities_from_offer(offer, self.get_offer_length_per_vendor())
-		assert isinstance(return_probabilities, np.ndarray) and len(return_probabilities) == 2 + self.get_number_of_vendors()
+		assert isinstance(return_probabilities, np.ndarray), 'return_probabilities must be an np.ndarray'
+		assert len(return_probabilities) == 2 + self.get_number_of_vendors(), 'the length of return_probabilities must be the number of vendors plus 2'
 
 		number_of_owners = int(0.05 * self.in_circulation / self.get_number_of_vendors())
 		for _ in range(number_of_owners):
@@ -377,14 +468,15 @@ class CircularEconomy(SimMarket):
 		return 0
 
 	def complete_purchase(self, profits, customer_decision) -> None:
-		"""The method handles the customer's decision by raising the profit by the price paid minus the produtcion price.
+		"""
+		The method handles the customer's decision by raising the profit by the price paid minus the produtcion price.
 		It also handles the storage of used products.
 
 		Args:
 			profits (np.array(int)): The profits of all vendors.
 			customer_decision (int): Indicates the customer's decision.
 		"""
-		assert 0 <= customer_decision and customer_decision < 2 * self.get_number_of_vendors(), 'Invalid action of the customer! Note that you have two options per vendor!'
+		assert customer_decision >= 0 and customer_decision < 2 * self.get_number_of_vendors(), 'the customer_decision must be between 0 and 2 * the number of vendors, as each vendor offers a new and a refurbished product'
 
 		chosen_vendor = int(np.floor(customer_decision / 2))
 		if customer_decision % 2 == 0:
@@ -406,7 +498,8 @@ class CircularEconomy(SimMarket):
 			self.in_circulation = min(self.in_circulation + 1, self.max_circulation)
 
 	def consider_storage_costs(self, profits) -> None:
-		"""The method handles the storage costs. they depend on the amount of refurbished products in storage.
+		"""
+		The method handles the storage costs. they depend on the amount of refurbished products in storage.
 
 		Args:
 			profits (np.array(int)): The profits of all vendors.
@@ -417,7 +510,9 @@ class CircularEconomy(SimMarket):
 			self.output_dict['profits/storage_cost']['vendor_' + str(vendor)] = storage_cost_per_timestep / 2
 
 	def initialize_output_dict(self):
-		"""Initialize the output_dict with the state of the environment and the actions the agents takes.
+		"""
+		Initialize the output_dict with the state of the environment and the actions the agents takes.
+
 		Furthermore, the dictionary entries for all events which shall be monitored in the market are initialized.
 		"""
 		self.output_dict['state/in_circulation'] = self.in_circulation
@@ -450,7 +545,8 @@ class CircularEconomyRebuyPrice(CircularEconomy):
 		self.action_space = gym.spaces.Tuple((gym.spaces.Discrete(ut.MAX_PRICE), gym.spaces.Discrete(ut.MAX_PRICE), gym.spaces.Discrete(ut.MAX_PRICE)))
 
 	def reset_vendor_actions(self) -> tuple:
-		"""Resets the prices in the circular economy with rebuy prices.
+		"""
+		Resets the prices in the circular economy with rebuy prices.
 
 		Returns:
 			tuple: (refurbished_price, new_price, rebuy_price)
@@ -461,7 +557,11 @@ class CircularEconomyRebuyPrice(CircularEconomy):
 		return owner.OwnerRebuy()
 
 	def initialize_output_dict(self) -> None:
-		"""Extends the the output_dict initialized by the of the superclass with entries concerning the rebuy price and cost.
+		"""
+		Initialize the output_dict with the state of the environment and the actions the agents takes.
+
+		Furthermore, the dictionary entries for all events which shall be monitored in the market are initialized.
+		Also extend the the output_dict initialized by the superclass with entries concerning the rebuy price and cost.
 		"""
 		super().initialize_output_dict()
 		self.ensure_output_dict_has('actions/price_rebuy', [self.vendor_actions[vendor][2] for vendor in range(self.get_number_of_vendors())])

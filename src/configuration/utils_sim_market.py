@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-
-# helper
 import json
 import os
 import random
@@ -16,10 +13,8 @@ NUMBER_OF_CUSTOMERS = None
 PRODUCTION_PRICE = None
 EPISODE_LENGTH = None
 
-config = {}
 
-
-def load_config(path_sim_market=os.path.dirname(__file__) + os.sep + '..' + os.sep + 'config_sim_market.json'):
+def load_config(path_sim_market=os.path.dirname(__file__) + os.sep + '../..' + os.sep + 'config_sim_market.json'):
 	"""
 	Load the SimMarket json file from the specified path.
 
@@ -33,30 +28,48 @@ def load_config(path_sim_market=os.path.dirname(__file__) + os.sep + '..' + os.s
 		return json.load(config_file)
 
 
+def check_config_completeness(config: dict) -> None:
+	"""
+	Check if the passed config dictionary contains all values.
+
+	Args:
+		config (dict): The dictionary to be checked.
+	"""
+	# ordered alphabetically in the config_sim_market.json
+	assert 'episode_size' in config, 'your config is missing episode_size'
+	assert 'max_price' in config, 'your config is missing max_price'
+	assert 'max_quality' in config, 'your config is missing max_quality'
+	assert 'number_of_customers' in config, 'your config is missing number_of_customers'
+	assert 'production_price' in config, 'your config is missing production_price'
+
+
+def update_sim_market_variables(config: dict) -> None:
+	"""
+	Update the global variables with new values provided by the config.
+
+	Args:
+		config (dict): The dictionary from which to read the new values.
+	"""
+	global_variables = globals()
+	global_variables['EPISODE_LENGTH'] = int(config['episode_size'])
+
+	global_variables['MAX_PRICE'] = int(config['max_price'])
+	global_variables['MAX_QUALITY'] = int(config['max_quality'])
+	global_variables['NUMBER_OF_CUSTOMERS'] = int(config['number_of_customers'])
+	global_variables['PRODUCTION_PRICE'] = int(config['production_price'])
+
+	assert global_variables['NUMBER_OF_CUSTOMERS'] > 0 and global_variables['NUMBER_OF_CUSTOMERS'] % 2 == 0, 'number_of_customers should be even and positive'
+	assert global_variables['PRODUCTION_PRICE'] <= global_variables['MAX_PRICE'] and global_variables['PRODUCTION_PRICE'] >= 0, 'production_price needs to smaller than max_price and positive or zero'
+	assert global_variables['MAX_QUALITY'] > 0, 'max_quality should be positive'
+	assert global_variables['MAX_PRICE'] > 0, 'max_price should be positive'
+	assert global_variables['EPISODE_LENGTH'] > 0, 'episode_size should be positive'
+
+	global_variables['MEAN_REWARD_BOUND'] = global_variables['EPISODE_LENGTH'] * global_variables['MAX_PRICE'] * global_variables['NUMBER_OF_CUSTOMERS']
+
+
 config = load_config()
-
-# ordered alphabetically in the config_sim_market.json
-assert 'episode_size' in config, 'your config is missing episode_size'
-assert 'max_price' in config, 'your config is missing max_price'
-assert 'max_quality' in config, 'your config is missing max_quality'
-assert 'number_of_customers' in config, 'your config is missing number_of_customers'
-assert 'production_price' in config, 'your config is missing production_price'
-
-EPISODE_LENGTH = int(config['episode_size'])
-
-MAX_PRICE = int(config['max_price'])
-MAX_QUALITY = int(config['max_quality'])
-NUMBER_OF_CUSTOMERS = int(config['number_of_customers'])
-PRODUCTION_PRICE = int(config['production_price'])
-
-
-assert NUMBER_OF_CUSTOMERS > 0 and NUMBER_OF_CUSTOMERS % 2 == 0, 'number_of_customers should be even and positive'
-assert PRODUCTION_PRICE <= MAX_PRICE and PRODUCTION_PRICE >= 0, 'production_price needs to smaller than max_price and positive or zero'
-assert MAX_QUALITY > 0, 'max_quality should be positive'
-assert MAX_PRICE > 0, 'max_price should be positive'
-assert EPISODE_LENGTH > 0, 'episode_size should be positive'
-
-MEAN_REWARD_BOUND = EPISODE_LENGTH * MAX_PRICE * NUMBER_OF_CUSTOMERS
+check_config_completeness(config)
+update_sim_market_variables(config)
 
 
 def shuffle_quality() -> int:
@@ -113,12 +126,12 @@ def divide_content_of_dict(dict1, divisor) -> dict:
 	Returns:
 		dict: the dictionary containing the divided numbers
 	"""
-	# TODO: assert dictionary contains only numbers
 	newdict = {}
 	for key in dict1:
 		if isinstance(dict1[key], dict):
 			newdict[key] = divide_content_of_dict(dict1[key], divisor)
 		else:
+			assert isinstance(dict1[key], int) or isinstance(dict1[key], float), 'the dictionary should only contain numbers (int or float)'
 			newdict[key] = dict1[key] / divisor
 	return newdict
 
@@ -133,11 +146,13 @@ def add_content_of_two_dicts(dict1, dict2) -> dict:
 	Returns:
 		dict: same structure as dict1 and dict2, each entry contains the sum of the entries of dict1 and dict2
 	"""
-	# TODO: assert dicts have the same structure, dictionary contains only numbers
+	# TODO: assert dicts have the same structure
 	newdict = {}
 	for key in dict1:
 		if isinstance(dict1[key], dict):
 			newdict[key] = add_content_of_two_dicts(dict1[key], dict2[key])
 		else:
+			assert isinstance(dict1[key], int) or isinstance(dict1[key], float), 'dict1 should only contain numbers (int or float)'
+			assert isinstance(dict2[key], int) or isinstance(dict2[key], float), 'dict2 should only contain numbers (int or float)'
 			newdict[key] = dict1[key] + dict2[key]
 	return newdict

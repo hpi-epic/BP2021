@@ -5,16 +5,11 @@ import shutil
 import numpy as np
 import pytest
 
-# from .context import utils_sim_market as ut
-from .context import Monitor
-from .context import agent_monitoring as am
-from .context import sim_market
-from .context import utils_tests as ut_t
-from .context import vendors
-
-# from importlib import reload
-# from unittest.mock import mock_open, patch
-
+import agents.vendors as vendors
+import market.sim_market as sim_market
+import monitoring.agent_monitoring as am
+import tests.utils_tests as ut_t
+from monitoring.agent_monitoring import Monitor
 
 monitor = Monitor()
 
@@ -29,9 +24,9 @@ def setup_function(function):
 
 def teardown_module(module):
 	print('***TEARDOWN***')
-	for f in os.listdir('./monitoring'):
+	for f in os.listdir(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring/'):
 		if re.match('test_plots_*', f):
-			shutil.rmtree('./monitoring/' + f)
+			shutil.rmtree(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring/' + f)
 
 
 def test_init_default_values():
@@ -44,7 +39,7 @@ def test_init_default_values():
 	assert 1 == len(test_monitor.agents)
 	assert ['#0000ff'] == test_monitor.agent_colors
 	assert test_monitor.subfolder_name.startswith('plots_')
-	assert os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring' + os.sep + test_monitor.subfolder_name == test_monitor.folder_path
+	assert os.path.normcase(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring' + os.sep + test_monitor.subfolder_name) == os.path.normcase(test_monitor.folder_path)
 
 
 def test_correct_setup_monitoring():

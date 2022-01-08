@@ -4,8 +4,5 @@
 ignore = E501, W191
 
 # F401: module imported but unused
-# E402: module level import not at top of file (sys.path append needs to happen first)
-# F403: from module import * used; unable to detect undefined names
 per-file-ignores =
-	src/tests/context.py:F401, E402, F403
-	src/performance.py:F401
+	src/monitoring/performance.py:F401
