@@ -8,10 +8,10 @@
 # import torch
 
 # import agents.vendors as vendors
-# import market.sim_market as sim_market
-# import tests.utils_tests as ut_t
-# import rl.training as training
 # import configuration.utils_rl as ut_rl
+# import market.sim_market as sim_market
+# import rl.training as training
+# import tests.utils_tests as ut_t
 
 
 # # teardown after each test
