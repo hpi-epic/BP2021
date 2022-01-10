@@ -370,9 +370,6 @@ class Monitor():
 			raise RuntimeError(f'this metric_type is unknown: {metric_type}')
 		plt.legend([a.name for a in self.agents])
 		plt.grid(True)
-		if self.enable_live_draw:  # pragma: no cover
-			plt.draw()
-			plt.pause(0.001)
 		plt.savefig(fname=self.get_folder() + os.sep + filename)
 
 	def run_marketplace(self) -> list:
@@ -434,12 +431,11 @@ def run_monitoring_session(monitor: Monitor = Monitor()) -> None:
 	Args:
 		monitor (Monitor instance, optional): The monitor to run the session on. Defaults to a default Monitor() instance.
 	"""
-	# monitor.setup_monitoring(agents=[(vendors.QLearningCEAgent, []), (vendors.FixedPriceCEAgent, [(4, 6)])])
+	# monitor.setup_monitoring(agents=[(vendors.QLearningLEAgent, ['QLearning Agent']), (vendors.FixedPriceLEAgent, [(6), 'Rulebased Agent'])], marketplace=sim_market.ClassicScenario)
 	if monitor.episodes / monitor.plot_interval > 50:
 		print('The ratio of episodes/plot_interval is over 50. In order for the plots to be more readable we recommend a lower ratio.')
 		print(f'Episodes: {monitor.episodes}\nPlot Interval: {monitor.plot_interval}\nRatio: {int(monitor.episodes / monitor.plot_interval)}')
-		answer = input('Continue anyway? [y]/n: ')
-		if answer == 'n':
+		if input('Continue anyway? [y]/n: ') == 'n':
 			print('Stopping monitoring session...')
 			return
 
