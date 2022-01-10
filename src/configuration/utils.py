@@ -2,11 +2,11 @@ import random
 
 import numpy as np
 
-import configuration.config as ut
+import configuration.config as config
 
 
 def shuffle_quality() -> int:
-	return min(max(int(np.random.normal(ut.MAX_QUALITY / 2, 2 * ut.MAX_QUALITY / 5)), 1), ut.MAX_QUALITY)
+	return min(max(int(np.random.normal(config.MAX_QUALITY / 2, 2 * config.MAX_QUALITY / 5)), 1), config.MAX_QUALITY)
 
 
 # The following methods should be library calls in the future.
