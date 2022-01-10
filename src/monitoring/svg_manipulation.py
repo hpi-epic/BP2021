@@ -44,21 +44,20 @@ def get_default_dict() -> dict:
 		'b_sales_new',
 		'b_sales_used'
 	]
-	output_dict = dict.fromkeys(keys, '')
-	return output_dict
+	return dict.fromkeys(keys, '')
 
 
 class SVGManipulator():
 	def __init__(self, save_dir: str = 'svg') -> None:
 		self.value_dictionary = get_default_dict()
 		# do not change the values in svg_template
-		path_to_monitoring = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'monitoring'))
+		path_to_monitoring = os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'monitoring')
 		with open(os.path.join(path_to_monitoring, 'MarketOverview_template.svg'), 'r') as template_svg:
 			self.svg_template = template_svg.read()
 		self.output_svg = None
 		self.save_directory = os.path.join(path_to_monitoring, save_dir)
 
-	def replace_one_value(self, target_key: str, value: str):
+	def replace_one_value(self, target_key: str, value: str) -> None:
 		"""
 		Replace one value for a key in the dictionary.
 
@@ -66,8 +65,8 @@ class SVGManipulator():
 			target_key (str): a key in `self.value_dictionary`
 			value (str): value for the provided key
 		"""
-		assert target_key in self.value_dictionary, 'Your specified key is not in the svg'
-		assert isinstance(value, str), 'Please use strings as key values only'
+		assert target_key in self.value_dictionary, f'the provided key does not exist in the dictionary: {target_key}'
+		assert isinstance(value, str), f'the provided value must be of type str but was {type(value)}: {value}'
 		self.value_dictionary[target_key] = value
 		self.write_dict_to_svg(target_dictionary=self.value_dictionary)
 
@@ -83,14 +82,14 @@ class SVGManipulator():
 		"""
 		assert all(isinstance(value, str) for _, value in target_dictionary.items()), f'the dictionary should only contain strings: {target_dictionary}'
 
-		# reset the output svg to the template to be able to replace the placeholders by actual values
+		# reset the output svg to the template to be able to replace the placeholders with actual values
 		self.output_svg = self.svg_template
 		for key, value in target_dictionary.items():
 			self.output_svg = self.output_svg.replace(key, value)
 
 	def save_overview_svg(self, filename: str = 'MarketOverview_copy.svg') -> None:
 		"""
-		Save the stored svg data to a svg-file in BP2021/monitoring. If file already exists it will throw an error.
+		Save the stored svg data to a svg-file in BP2021/monitoring. If the file already exists, this will throw an error.
 
 		Args:
 			filename (str, optional): The target file name of the copy. Defaults to `MarketOverview_copy.svg`.
@@ -109,19 +108,19 @@ class SVGManipulator():
 
 	def get_all_svg_from_directory(self, directory: str) -> list:
 		"""
-		Lists all svg files from a given directory and asserts, that they are all svgs.
+		List all svg files from a given directory and assert that they are all svgs.
 
 		Args:
-			Directory (str): Directory to get the svgs from
+			directory (str): Directory to get the svgs from.
 
 		Returns:
-			list: List of svgs in this directory
+			list: List of svgs in this directory.
 		"""
 		all_svg_files = [file for file in os.listdir(directory) if os.path.isfile(os.path.join(directory, file))]
-		assert all(file.endswith('.svg') for file in all_svg_files), 'All files in given directory (' + directory + ') must be svgs'
+		assert all(file.endswith('.svg') for file in all_svg_files), f'all files in given directory ({os.path.abspath(directory)}) must be svgs'
 		return all_svg_files
 
-	def to_gif(self, time : int = 500, gif_name: str = 'examplerun.gif') -> None:
+	def to_gif(self, time: int = 500, gif_name: str = 'examplerun.gif') -> None:
 		"""
 		Converts all files in self.save_directory to one gif. All files in self.save_directory must be of type svg.
 		If the number of files is large, this function will take a while.
@@ -146,14 +145,14 @@ class SVGManipulator():
 
 	def construct_slideshow_html(self, images: list, time: int = 1000) -> str:
 		"""
-		returns the string to an html document with a slideshow of the given images on it
+		Create a html-slideshow of all the given images and return it as a string.
 
 		Args:
-			images (list): All images which should be in the slideshow
+			images (list): All images which should be in the slideshow.
 			time (int, optional): Duration of one image in the slideshow in ms. Defaults to 1000.
 
 		Returns:
-			str: The final full html document
+			str: The final full html document.
 		"""
 		# slideshow view from: https://stackoverflow.com/questions/52478683/display-a-sequence-of-images-in-1-position-stored-in-an-object-js
 		return '<!doctype html>\n' + \
@@ -190,15 +189,12 @@ class SVGManipulator():
 		all_svgs = self.get_all_svg_from_directory(self.save_directory)
 
 		# construct image array for js
-		svg_array_for_js = ''
-		for image in all_svgs:
-			svg_array_for_js += '\t\t\t{"name":"' + image[:-4] + '", "src":"./' + image + '"},\n'
-
+		svg_array_for_js = ''.join('\t\t\t{"name":"' + image[:-4] + '", "src":"./' + image + '"},\n' for image in all_svgs)
 		# write html to file
 		html_path = os.path.join(self.save_directory, html_name)
 		with open(html_path, 'w') as out_file:
 			out_file.write(self.construct_slideshow_html(svg_array_for_js[:-2], time))
-		print('You can find an animated overview at: ', html_path)
+		print(f'You can find an animated overview at: {os.path.abspath(html_path)}')
 
 
 def main():  # pragma: no cover

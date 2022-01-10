@@ -51,8 +51,7 @@ def test_correct_template():
 
 def test_replace_one_value():
 	global svg_manipulator
-	bevor_dict = svg_manipulator.value_dictionary
-	assert '' == bevor_dict['simulation_name']
+	assert '' == svg_manipulator.value_dictionary['simulation_name']
 	svg_manipulator.replace_one_value('simulation_name', 'new_name')
 	assert 'new_name' == svg_manipulator.value_dictionary['simulation_name']
 
