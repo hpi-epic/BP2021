@@ -76,7 +76,7 @@ def test_write_dict_to_svg():
 	assert correct_svg == svg_manipulator.output_svg
 
 
-# test save_overview_svg
+# tests below test save_overview_svg()
 def test_file_name_for_save_ends_with_svg():
 	with pytest.raises(AssertionError) as assertion_message:
 		svg_manipulator.save_overview_svg('test_svg_replace_values')
