@@ -27,7 +27,8 @@ def run_example(environment=sim_market.CircularEconomyRebuyPriceOneCompetitor(),
 	is_done = False
 	state = environment.reset()
 	signature = time.strftime('%Y%m%d-%H%M%S') + f'_{type(environment).__name__}_{type(agent).__name__}_exampleprinter'
-	writer = SummaryWriter(log_dir='runs/' + log_dir_prepend + signature)
+	# writer = SummaryWriter(log_dir='runs/' + log_dir_prepend + signature)
+	writer = SummaryWriter()
 	if isinstance(environment, sim_market.CircularEconomyRebuyPriceOneCompetitor):
 		svg_manipulator = SVGManipulator(signature)
 	cumulative_dict = None
