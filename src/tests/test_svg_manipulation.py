@@ -92,7 +92,7 @@ def test_file_name_for_save_ends_with_svg():
 	assert 'the passed filename must end in .svg: ' in str(assertion_message.value)
 
 
-def test_file_file_should_not_exist():
+def test_file_should_not_exist():
 	global svg_manipulator
 	# initialize all functions to be mocked
 	with patch('monitoring.svg_manipulation.os.path.exists') as mock_exists, \
