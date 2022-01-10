@@ -61,7 +61,7 @@ def test_key_not_in_dict():
 
 	with pytest.raises(AssertionError) as assertion_info:
 		svg_manipulator.replace_one_value('not_in_dict', 'none')
-	assert 'Your specified key is not in the svg' in str(assertion_info.value)
+	assert 'the provided key does not exist in the dictionary:' in str(assertion_info.value)
 
 
 def test_value_not_string():
@@ -69,7 +69,7 @@ def test_value_not_string():
 
 	with pytest.raises(AssertionError) as assertion_info:
 		svg_manipulator.replace_one_value('simulation_name', 1)
-	assert 'Please use strings as key values only' in str(assertion_info.value)
+	assert 'the provided value must be of type str but was' in str(assertion_info.value)
 
 
 def test_write_dict_to_svg():
@@ -155,7 +155,7 @@ def test_files_are_svgs():
 
 		with pytest.raises(AssertionError) as assertion_info:
 			svg_manipulator.get_all_svg_from_directory('./test_dir')
-		assert 'All files in given directory (./test_dir) must be svgs' in str(assertion_info.value)
+		assert 'all files in given directory must be svgs:' in str(assertion_info.value)
 
 
 correct_html = '<!doctype html>\n' + \
