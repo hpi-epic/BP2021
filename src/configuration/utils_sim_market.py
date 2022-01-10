@@ -160,6 +160,7 @@ def add_content_of_two_dicts(dict1, dict2) -> dict:
 
 def write_content_of_dict_to_overview_svg(manipulator, episode, episode_dictionary, cumulated_dictionary) -> None:
 	episode += 1
+	manipulator.replace_one_value('simulation_name', 'Market Simulation')
 	manipulator.replace_one_value('simulation_episode_length', str(EPISODE_LENGTH))
 	manipulator.replace_one_value('simulation_current_episode', str(episode))
 	manipulator.replace_one_value('consumer_total_arrivals', str(episode * NUMBER_OF_CUSTOMERS))

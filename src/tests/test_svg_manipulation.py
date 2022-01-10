@@ -23,8 +23,6 @@ def test_get_default_dict():
 
 
 def test_correct_template():
-	global svg_manipulator
-	correct_template = ''
 	with open(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'monitoring', 'MarketOverview_template.svg')), 'r') as template:
 		correct_template = template.read()
 	assert correct_template == svg_manipulator.svg_template
@@ -50,30 +48,24 @@ def test_correct_template():
 
 
 def test_replace_one_value():
-	global svg_manipulator
 	assert '' == svg_manipulator.value_dictionary['simulation_name']
 	svg_manipulator.replace_one_value('simulation_name', 'new_name')
 	assert 'new_name' == svg_manipulator.value_dictionary['simulation_name']
 
 
 def test_key_not_in_dict():
-	global svg_manipulator
-
 	with pytest.raises(AssertionError) as assertion_info:
 		svg_manipulator.replace_one_value('not_in_dict', 'none')
 	assert 'the provided key does not exist in the dictionary:' in str(assertion_info.value)
 
 
 def test_value_not_string():
-	global svg_manipulator
-
 	with pytest.raises(AssertionError) as assertion_info:
 		svg_manipulator.replace_one_value('simulation_name', 1)
 	assert 'the provided value must be of type str but was' in str(assertion_info.value)
 
 
 def test_write_dict_to_svg():
-	global svg_manipulator
 	test_dict = svg_manipulation.get_default_dict()
 	for key in test_dict:
 		test_dict[key] = 'test'
@@ -86,14 +78,12 @@ def test_write_dict_to_svg():
 
 # test save_overview_svg
 def test_file_name_for_save_ends_with_svg():
-	global svg_manipulator
 	with pytest.raises(AssertionError) as assertion_message:
 		svg_manipulator.save_overview_svg('test_svg_replace_values')
 	assert 'the passed filename must end in .svg: ' in str(assertion_message.value)
 
 
 def test_file_should_not_exist():
-	global svg_manipulator
 	# initialize all functions to be mocked
 	with patch('monitoring.svg_manipulation.os.path.exists') as mock_exists, \
 		patch('monitoring.svg_manipulation.os.path.isdir') as mock_isdir, \
@@ -109,7 +99,6 @@ def test_file_should_not_exist():
 
 
 def test_write_to_dict_only_strings():
-	global svg_manipulator
 	# initialize all functions to be mocked
 	with patch('monitoring.svg_manipulation.os.path.exists') as mock_exists, \
 		patch('monitoring.svg_manipulation.os.path.isdir') as mock_isdir:
@@ -122,7 +111,6 @@ def test_write_to_dict_only_strings():
 
 
 def test_replace_values():
-	global svg_manipulator
 	svg_manipulator.output_svg = 'Hello World!'
 	# initialize all functions to be mocked
 	with patch('monitoring.svg_manipulation.os.path.isdir') as mock_isdir, \
@@ -141,7 +129,6 @@ def test_replace_values():
 
 
 def test_files_are_svgs():
-	global svg_manipulator
 	files_in_dir = ['MarketOverview_001.svg', 'MarketOverview_002.svg', 'MarketOverview_003.svg']
 	with patch('monitoring.svg_manipulation.os.path.isfile') as mock_isfile, \
 		patch('monitoring.svg_manipulation.os.listdir') as mock_list_dir:
@@ -184,8 +171,6 @@ correct_html = '<!doctype html>\n' + \
 
 
 def test_correct_html():
-	global correct_html
-	global svg_manipulator
 	# initialize all functions to be mocked
 	with patch('monitoring.svg_manipulation.os.path.isfile') as mock_isfile, \
 		patch('monitoring.svg_manipulation.os.listdir') as mock_list_dir, \
@@ -202,22 +187,18 @@ def test_correct_html():
 
 
 def test_html_name_ends_with_html():
-	global svg_manipulator
 	with pytest.raises(AssertionError) as assertion_message:
 		svg_manipulator.to_html(html_name='test_svg_replace_values')
 	assert 'the passed filename must end in .html: ' in str(assertion_message.value)
 
 
 def test_time_not_int():
-	global svg_manipulator
 	with pytest.raises(AssertionError) as assertion_message:
 		svg_manipulator.to_html(time='test_svg_replace_values')
 	assert 'time must be an int in ms' in str(assertion_message.value)
 
 
 def test_one_exampleprinter_run():
-	global correct_html
-
 	# use only three episodes for reusing the correct_html
 	json = ut_t.create_mock_json_sim_market(episode_size='3')
 	with patch('builtins.open', mock_open(read_data=json)) as utils_mock_file:

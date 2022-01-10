@@ -1,8 +1,5 @@
 import os
 
-from reportlab.graphics import renderPM
-from svglib.svglib import svg2rlg
-
 
 def get_default_dict() -> dict:
 	"""
@@ -120,29 +117,6 @@ class SVGManipulator():
 		assert all(file.endswith('.svg') for file in all_svg_files), f'all files in given directory must be svgs: {os.path.abspath(directory)}'
 		return all_svg_files
 
-	def to_gif(self, time: int = 500, gif_name: str = 'examplerun.gif') -> None:
-		"""
-		Converts all files in self.save_directory to one gif. All files in self.save_directory must be of type svg.
-		If the number of files is large, this function will take a while.
-
-		Args:
-			time (int, optional): Time in ms for images to change. Defaults to 500.
-		"""
-		# this function is not tested, because it takes very long, we should discuss if we really need it
-		all_svg_files = self.get_all_svg_from_directory(self.save_directory)
-
-		# we need to convert svg to another format, because converting to gif does not work with svg
-		all_drawings = [svg2rlg(os.path.join(self.save_directory, svg)) for svg in all_svg_files]
-		for svg in all_drawings:
-			svg.translate(0, -8420)
-			svg.scale(5, 5)
-		img, *imgs = [renderPM.drawToPIL(d) for d in all_drawings]
-
-		# finally save it to gif
-		gif_path = os.path.join(self.save_directory, gif_name)
-		img.save(fp=gif_path, format='GIF', append_images=imgs, save_all=True, duration=time, loop=0)
-		print('You can find an animated overview at: ', gif_path)
-
 	def construct_slideshow_html(self, images: list, time: int = 1000) -> str:
 		"""
 		Create a html-slideshow of all the given images and return it as a string.
@@ -188,23 +162,10 @@ class SVGManipulator():
 		assert isinstance(time, int), 'time must be an int in ms'
 		all_svgs = self.get_all_svg_from_directory(self.save_directory)
 
-		# construct image array for js
+		# construct image array for javascript
 		svg_array_for_js = ''.join('\t\t\t{"name":"' + image[:-4] + '", "src":"./' + image + '"},\n' for image in all_svgs)
 		# write html to file
 		html_path = os.path.join(self.save_directory, html_name)
 		with open(html_path, 'w') as out_file:
 			out_file.write(self.construct_slideshow_html(svg_array_for_js[:-2], time))
 		print(f'You can find an animated overview at: {os.path.abspath(html_path)}')
-
-
-def main():  # pragma: no cover
-	"""
-	This should be used for testing purposes only and is a way to quickly check if a configuration resulted in the correct `.svg`-output.
-	"""
-	manipulator = SVGManipulator()
-	manipulator.write_dict_to_svg()
-	manipulator.save_overview_svg()
-
-
-if __name__ == '__main__':  # pragma: no cover
-	main()
