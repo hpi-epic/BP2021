@@ -18,8 +18,35 @@ def setup_function(function):
 
 def test_get_default_dict():
 	default_dict = svg_manipulation.get_default_dict()
-	for key, val in default_dict.items():
+	for _, val in default_dict.items():
 		assert val == ''
+
+
+def test_correct_template():
+	global svg_manipulator
+	correct_template = ''
+	with open(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'monitoring', 'MarketOverview_template.svg')), 'r') as template:
+		correct_template = template.read()
+	assert correct_template == svg_manipulator.svg_template
+
+	# run one exampleprinter and to make sure the template does not get changed
+	json = ut_t.create_mock_json_sim_market(episode_size='3')
+	with patch('builtins.open', mock_open(read_data=json)) as utils_mock_file:
+		ut_t.check_mock_file_sim_market(utils_mock_file, json)
+		# initialize all functions to be mocked
+		with patch('monitoring.exampleprinter.ut.write_dict_to_tensorboard'), \
+			patch('monitoring.svg_manipulation.os.path.isfile') as mock_isfile, \
+			patch('monitoring.svg_manipulation.os.path.isdir') as mock_isdir, \
+			patch('monitoring.svg_manipulation.os.listdir') as mock_list_dir, \
+			patch('monitoring.svg_manipulation.os.path.exists') as mock_exists, \
+			patch('builtins.open', mock_open()):
+			mock_isfile.return_value = True
+			mock_isdir.return_value = True
+			mock_exists.return_value = False
+			mock_list_dir.return_value = ['MarketOverview_001.svg', 'MarketOverview_002.svg', 'MarketOverview_003.svg']
+
+			exampleprinter.run_example()
+		assert correct_template == svg_manipulator.svg_template
 
 
 def test_replace_one_value():
@@ -28,6 +55,22 @@ def test_replace_one_value():
 	assert '' == bevor_dict['simulation_name']
 	svg_manipulator.replace_one_value('simulation_name', 'new_name')
 	assert 'new_name' == svg_manipulator.value_dictionary['simulation_name']
+
+
+def test_key_not_in_dict():
+	global svg_manipulator
+
+	with pytest.raises(AssertionError) as assertion_info:
+		svg_manipulator.replace_one_value('not_in_dict', 'none')
+	assert 'Your specified key is not in the svg' in str(assertion_info.value)
+
+
+def test_value_not_string():
+	global svg_manipulator
+
+	with pytest.raises(AssertionError) as assertion_info:
+		svg_manipulator.replace_one_value('simulation_name', 1)
+	assert 'Please use strings as key values only' in str(assertion_info.value)
 
 
 def test_write_dict_to_svg():
@@ -98,6 +141,24 @@ def test_replace_values():
 	mock_file().write.assert_called_once_with('Hello World!')
 
 
+def test_files_are_svgs():
+	global svg_manipulator
+	files_in_dir = ['MarketOverview_001.svg', 'MarketOverview_002.svg', 'MarketOverview_003.svg']
+	with patch('monitoring.svg_manipulation.os.path.isfile') as mock_isfile, \
+		patch('monitoring.svg_manipulation.os.listdir') as mock_list_dir:
+		mock_isfile.return_value = True
+		mock_list_dir.return_value = files_in_dir
+
+		listed_files = svg_manipulator.get_all_svg_from_directory('./test_dir')
+		assert files_in_dir == listed_files
+
+		files_in_dir += 'test.png'
+
+		with pytest.raises(AssertionError) as assertion_info:
+			svg_manipulator.get_all_svg_from_directory('./test_dir')
+		assert 'All files in given directory (./test_dir) must be svgs' in str(assertion_info.value)
+
+
 correct_html = '<!doctype html>\n' + \
 	'<html lang="de">\n' + \
 	'	<head><meta charset="utf-8"/></head>\n' + \
@@ -139,6 +200,20 @@ def test_correct_html():
 	# assert that file would exsist and the content would be correct
 	mock_file.assert_called_once_with(os.path.join(svg_manipulator.save_directory, 'preview_svg.html'), 'w')
 	mock_file().write.assert_called_once_with(correct_html)
+
+
+def test_html_name_ends_with_html():
+	global svg_manipulator
+	with pytest.raises(AssertionError) as assertion_message:
+		svg_manipulator.to_html(html_name='test_svg_replace_values')
+	assert 'the passed filename must end in .html: ' in str(assertion_message.value)
+
+
+def test_time_not_int():
+	global svg_manipulator
+	with pytest.raises(AssertionError) as assertion_message:
+		svg_manipulator.to_html(time='test_svg_replace_values')
+	assert 'time must be an int in ms' in str(assertion_message.value)
 
 
 def test_one_exampleprinter_run():
