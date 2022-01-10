@@ -49,16 +49,16 @@ def get_default_dict() -> dict:
 
 
 class SVGManipulator():
-	def __init__(self, save_dir='svg') -> None:
+	def __init__(self, save_dir: str = 'svg') -> None:
 		self.value_dictionary = get_default_dict()
 		# do not change the values in svg_template
-		path_to_monitoring = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..', 'monitoring'))
+		path_to_monitoring = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'monitoring'))
 		with open(os.path.join(path_to_monitoring, 'MarketOverview_template.svg'), 'r') as template_svg:
 			self.svg_template = template_svg.read()
 		self.output_svg = None
 		self.save_directory = os.path.join(path_to_monitoring, save_dir)
 
-	def replace_one_value(self, target_key, value):
+	def replace_one_value(self, target_key: str, value: str):
 		"""
 		Replace one value for a key in the dictionary.
 
@@ -66,8 +66,8 @@ class SVGManipulator():
 			target_key (str): a key in `self.value_dictionary`
 			value (str): value for the provided key
 		"""
-		assert target_key in self.value_dictionary
-		assert isinstance(value, str)
+		assert target_key in self.value_dictionary, 'Your specified key is not in the svg'
+		assert isinstance(value, str), 'Please use strings as key values only'
 		self.value_dictionary[target_key] = value
 		self.write_dict_to_svg(target_dictionary=self.value_dictionary)
 
@@ -118,10 +118,10 @@ class SVGManipulator():
 			list: List of svgs in this directory
 		"""
 		all_svg_files = [file for file in os.listdir(directory) if os.path.isfile(os.path.join(directory, file))]
-		assert all('.svg' == file[-4:] for file in all_svg_files)
+		assert all(file.endswith('.svg') for file in all_svg_files), 'All files in given directory (' + directory + ') must be svgs'
 		return all_svg_files
 
-	def to_gif(self, time=500) -> None:
+	def to_gif(self, time : int = 500, gif_name: str = 'examplerun.gif') -> None:
 		"""
 		Converts all files in self.save_directory to one gif. All files in self.save_directory must be of type svg.
 		If the number of files is large, this function will take a while.
@@ -129,6 +129,7 @@ class SVGManipulator():
 		Args:
 			time (int, optional): Time in ms for images to change. Defaults to 500.
 		"""
+		# this function is not tested, because it takes very long, we should discuss if we really need it
 		all_svg_files = self.get_all_svg_from_directory(self.save_directory)
 
 		# we need to convert svg to another format, because converting to gif does not work with svg
@@ -139,9 +140,11 @@ class SVGManipulator():
 		img, *imgs = [renderPM.drawToPIL(d) for d in all_drawings]
 
 		# finally save it to gif
-		img.save(fp=os.path.join(self.save_directory, 'examplerun.gif'), format='GIF', append_images=imgs, save_all=True, duration=time, loop=0)
+		gif_path = os.path.join(self.save_directory, gif_name)
+		img.save(fp=gif_path, format='GIF', append_images=imgs, save_all=True, duration=time, loop=0)
+		print('You can find an animated overview at: ', gif_path)
 
-	def construct_slideshow_html(self, images: list, time=1000) -> str:
+	def construct_slideshow_html(self, images: list, time: int = 1000) -> str:
 		"""
 		returns the string to an html document with a slideshow of the given images on it
 
@@ -174,14 +177,16 @@ class SVGManipulator():
 			'	</script>\n' + \
 			'</html>\n'
 
-	def to_html(self, time=1000, html_name='preview_svg.html') -> None:
+	def to_html(self, time: int = 1000, html_name: str = 'preview_svg.html') -> None:
 		"""
 		Writes an html document including a slideshow of all svgs in self.save_directory.
 
 		Args:
-			time (int, optional): Time in ms for images to change. Defaults to 500.. Defaults to 1000.
+			time (int, optional): Time in ms for images to change. Defaults to 1000.
 			html_name (str, optional): Name for the html doument. Defaults to 'preview_svg.html'.
 		"""
+		assert html_name.endswith('.html'), f'the passed filename must end in .html: {html_name}'
+		assert isinstance(time, int), 'time must be an int in ms'
 		all_svgs = self.get_all_svg_from_directory(self.save_directory)
 
 		# construct image array for js
@@ -190,8 +195,10 @@ class SVGManipulator():
 			svg_array_for_js += '\t\t\t{"name":"' + image[:-4] + '", "src":"./' + image + '"},\n'
 
 		# write html to file
-		with open(os.path.join(self.save_directory, html_name), 'w') as out_file:
+		html_path = os.path.join(self.save_directory, html_name)
+		with open(html_path, 'w') as out_file:
 			out_file.write(self.construct_slideshow_html(svg_array_for_js[:-2], time))
+		print('You can find an animated overview at: ', html_path)
 
 
 def main():  # pragma: no cover
