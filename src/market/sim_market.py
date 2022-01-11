@@ -7,6 +7,7 @@ import numpy as np
 
 import agents.vendors as vendors
 import configuration.config as config
+import configuration.utils as ut
 import market.customer as customer
 import market.owner as owner
 from market.customer import Customer
@@ -90,7 +91,7 @@ class SimMarket(gym.Env, ABC):
 		assert len(probability_distribution) == 1 + (1 if isinstance(self, LinearEconomy) else 2) * self._get_number_of_vendors(), 'The probability distribution must have one entry for buy_nothing and one or two entries for every vendor. One entry if it is a linear economy (with only one price) or a circular economy with the option to buy refurbished or new.'
 
 		for _ in range(number_of_customers):
-			customer_decision = config.shuffle_from_probabilities(probability_distribution)
+			customer_decision = ut.shuffle_from_probabilities(probability_distribution)
 			if customer_decision != 0:
 				self._complete_purchase(profits, customer_decision - 1)
 			else:
@@ -337,7 +338,7 @@ class LinearEconomy(SimMarket, ABC):
 		See also:
 			`configuration.utils.shuffle_quality`
 		"""
-		return [config.shuffle_quality()]
+		return [ut.shuffle_quality()]
 
 	def _choose_customer(self) -> Customer:
 		return customer.CustomerLinear()
@@ -455,7 +456,7 @@ class CircularEconomy(SimMarket):
 
 		number_of_owners = int(0.05 * self.in_circulation / self._get_number_of_vendors())
 		for _ in range(number_of_owners):
-			owner_action = config.shuffle_from_probabilities(return_probabilities)
+			owner_action = ut.shuffle_from_probabilities(return_probabilities)
 
 			# owner_action 0 means holding the product, so nothing happens
 			if owner_action == 1:

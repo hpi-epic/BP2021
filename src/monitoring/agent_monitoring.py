@@ -23,7 +23,7 @@ class Monitor():
 		self.episodes = 500
 		self.plot_interval = 50
 		self.marketplace = sim_market.CircularEconomyMonopolyScenario()
-		self.agents = [vendors.QLearningCEAgent(self.marketplace.observation_space.shape[0], self.get_action_space(), load_path=self.get_modelfile_path('CircularEconomy_QLearningCEAgent'))]
+		self.agents = [vendors.QLearningCEAgent(self.marketplace.observation_space.shape[0], self._get_action_space(), load_path=self._get_modelfile_path('CircularEconomy_QLearningCEAgent'))]
 		self.agent_colors = ['#0000ff']
 		self.subfolder_name = 'plots_' + time.strftime('%Y%m%d-%H%M%S')
 		self.folder_path = os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'monitoring', self.subfolder_name)
