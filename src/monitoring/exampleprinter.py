@@ -49,7 +49,7 @@ def run_example(environment=sim_market.CircularEconomyRebuyPriceOneCompetitor(),
 			our_profit += reward
 			counter += 1
 			if isinstance(environment, sim_market.CircularEconomyRebuyPriceOneCompetitor):
-				svg_manipulator.save_overview_svg(filename=('MarketOverview_%.3d.svg' % counter))
+				svg_manipulator.save_overview_svg(filename=('MarketOverview_%.3d' % counter))
 
 	if isinstance(environment, sim_market.CircularEconomyRebuyPriceOneCompetitor):
 		svg_manipulator.to_html()

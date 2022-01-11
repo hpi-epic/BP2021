@@ -84,19 +84,17 @@ class SVGManipulator():
 		for key, value in target_dictionary.items():
 			self.output_svg = self.output_svg.replace(key, value)
 
-	def save_overview_svg(self, filename: str = 'MarketOverview_copy.svg') -> None:
+	def save_overview_svg(self, filename: str = 'MarketOverview_copy') -> None:
 		"""
 		Save the stored svg data to a svg-file in BP2021/monitoring. If the file already exists, this will throw an error.
 
 		Args:
 			filename (str, optional): The target file name of the copy. Defaults to `MarketOverview_copy.svg`.
 		"""
-		assert filename.endswith('.svg'), f'the passed filename must end in .svg: {filename}'
-
 		if not os.path.isdir(self.save_directory):
 			os.mkdir(self.save_directory)
 
-		file_path = os.path.join(self.save_directory, filename)
+		file_path = os.path.join(self.save_directory, filename + '.svg')
 		assert not os.path.exists(file_path), f'the specified file already exists: {os.path.abspath(file_path)}'
 
 		self.write_dict_to_svg(target_dictionary=self.value_dictionary)
@@ -150,7 +148,7 @@ class SVGManipulator():
 			'	</script>\n' + \
 			'</html>\n'
 
-	def to_html(self, time: int = 1000, html_name: str = 'preview_svg.html') -> None:
+	def to_html(self, time: int = 1000, html_name: str = 'preview_svg') -> None:
 		"""
 		Writes an html document including a slideshow of all svgs in self.save_directory.
 
@@ -158,14 +156,13 @@ class SVGManipulator():
 			time (int, optional): Time in ms for images to change. Defaults to 1000.
 			html_name (str, optional): Name for the html doument. Defaults to 'preview_svg.html'.
 		"""
-		assert html_name.endswith('.html'), f'the passed filename must end in .html: {html_name}'
 		assert isinstance(time, int), 'time must be an int in ms'
 		all_svgs = self.get_all_svg_from_directory(self.save_directory)
 
 		# construct image array for javascript
 		svg_array_for_js = ''.join('\t\t\t{"name":"' + image[:-4] + '", "src":"./' + image + '"},\n' for image in all_svgs)
 		# write html to file
-		html_path = os.path.join(self.save_directory, html_name)
+		html_path = os.path.join(self.save_directory, html_name + '.html')
 		with open(html_path, 'w') as out_file:
 			out_file.write(self.construct_slideshow_html(svg_array_for_js[:-2], time))
 		print(f'You can find an animated overview at: {os.path.abspath(html_path)}')

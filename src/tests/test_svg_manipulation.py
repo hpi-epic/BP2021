@@ -77,12 +77,6 @@ def test_write_dict_to_svg():
 
 
 # tests below test save_overview_svg()
-def test_file_name_for_save_ends_with_svg():
-	with pytest.raises(AssertionError) as assertion_message:
-		svg_manipulator.save_overview_svg('test_svg_replace_values')
-	assert 'the passed filename must end in .svg: ' in str(assertion_message.value)
-
-
 def test_file_should_not_exist():
 	# initialize all functions to be mocked
 	with patch('monitoring.svg_manipulation.os.path.exists') as mock_exists, \
@@ -121,7 +115,7 @@ def test_replace_values():
 		mock_exists.return_value = False
 
 		# run saving process
-		svg_manipulator.save_overview_svg('my_test_file.svg')
+		svg_manipulator.save_overview_svg('my_test_file')
 
 	# assert that file would exsist and the content would be the wanted content
 	mock_file.assert_called_once_with(os.path.join(svg_manipulator.save_directory, 'my_test_file.svg'), 'w')
@@ -184,12 +178,6 @@ def test_correct_html():
 	# assert that file would exsist and the content would be correct
 	mock_file.assert_called_once_with(os.path.join(svg_manipulator.save_directory, 'preview_svg.html'), 'w')
 	mock_file().write.assert_called_once_with(correct_html)
-
-
-def test_html_name_ends_with_html():
-	with pytest.raises(AssertionError) as assertion_message:
-		svg_manipulator.to_html(html_name='test_svg_replace_values')
-	assert 'the passed filename must end in .html: ' in str(assertion_message.value)
 
 
 def test_time_not_int():
