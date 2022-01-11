@@ -20,13 +20,13 @@ class ActorCriticAgent(vendors.Agent):
 		self.v_net = model.very_simple_network(n_observation, 1).to(self.device)
 		self.v_optimizer = torch.optim.Adam(self.v_net.parameters(), lr=0.002)
 
-	def train_batch(self, states, actions, rewards, states_dash):
-		print('Das waren die Aktionen: ')
-		print(actions)
-		print('Das waren die Rewards: ')
-		print(rewards)
-		print('Diese Mittelwerte hat das Netz vor dem Training vorgeschlagen:')
-		print(self.policy_net(states.detach()))
+	def train_batch(self, states, actions, rewards, states_dash, regularization=False):
+		# print('Das waren die Aktionen: ')
+		# print(actions)
+		# print('Das waren die Rewards: ')
+		# print(rewards)
+		# print('Diese Mittelwerte hat das Netz vor dem Training vorgeschlagen:')
+		# print(self.policy_net(states.detach()))
 		states = states.to(self.device)
 		actions = actions.to(self.device)
 		rewards = rewards.to(self.device)
@@ -43,19 +43,21 @@ class ActorCriticAgent(vendors.Agent):
 		with torch.no_grad():
 			baseline = v_estimates.squeeze()[31].item()
 			constant = (v_expected - baseline).detach()
-		print('Seine Konstante war', constant)
+		# print('Seine Konstante war', constant)
 		prob = self.probability_given_action(states.detach(), actions.detach())
 		# print("Die Wahrscheinlichkeit war ", prob)
 		# print("Die abzuleitende Log-Wahrscheinlichkeit war ", torch.log(prob))
-		log_policy = torch.log(prob)
-		policyloss = -torch.sum(constant * log_policy)
+		log_policy = -torch.log(prob)
+		policyloss = torch.sum(constant * log_policy)
+		if regularization:
+			policyloss += 50000 * torch.nn.MSELoss()(self.policy_net(states), 3.5 * torch.ones(states.shape))
 		policyloss.backward()
 
 		self.v_optimizer.step()
 		self.policy_optimizer.step()
-		print('Diese Mittelwerte schlägt das Netz nach dem Training vor:')
-		print(self.policy_net(states))
-		print('\n\n\n')
+		# print('Diese Mittelwerte schlägt das Netz nach dem Training vor:')
+		# print(self.policy_net(states))
+		# print('\n\n\n')
 
 		return valueloss.to('cpu').item(), policyloss.to('cpu').item()
 
@@ -79,7 +81,7 @@ class SoftActorCriticAgent(ActorCriticAgent):
 	def policy(self, observation):
 		observation = torch.Tensor(observation).to(self.device)
 		with torch.no_grad():
-			mean = self.policy_net(observation)
+			mean = torch.nn.Softplus()(self.policy_net(observation))
 			v_estimat = self.v_net(observation).view(-1)
 
 		if np.random.random() < 0.02:
@@ -93,7 +95,7 @@ class SoftActorCriticAgent(ActorCriticAgent):
 		return action, self.probability_given_action(observation, torch.Tensor([action])).detach(), v_estimat.to('cpu').item()
 
 	def probability_given_action(self, states, actions):
-		return torch.exp(-torch.square(actions.view(-1, 1) - self.policy_net(states))) / (np.sqrt(2 * np.pi))
+		return torch.exp(-torch.square(actions.view(-1, 1) - torch.nn.Softplus()(self.policy_net(states)))) / (np.sqrt(2 * np.pi))
 
 
 def trainactorcritic():
@@ -159,7 +161,7 @@ def trainactorcritic():
 				environments[env].reset()
 				info_accumulators[env] = None
 
-		valueloss, policyloss = agent.train_batch(torch.Tensor(np.array(states)), torch.from_numpy(np.array(actions, dtype=np.int64)), torch.Tensor(np.array(rewards)), torch.Tensor(np.array(state_dash)))
+		valueloss, policyloss = agent.train_batch(torch.Tensor(np.array(states)), torch.from_numpy(np.array(actions, dtype=np.int64)), torch.Tensor(np.array(rewards)), torch.Tensor(np.array(state_dash)), episodes_accomplished <= 250)
 		all_value_losses.append(valueloss)
 		all_policy_losses.append(policyloss)
 
