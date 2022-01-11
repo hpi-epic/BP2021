@@ -123,9 +123,9 @@ class SimMarket(gym.Env, ABC):
 
 		customers_per_vendor_iteration = int(np.floor(ut.NUMBER_OF_CUSTOMERS / self._get_number_of_vendors()))
 		for i in range(self._get_number_of_vendors()):
-			self._simulate_customers(profits, self.generate_customer_offer(), customers_per_vendor_iteration)
+			self._simulate_customers(profits, self._generate_customer_offer(), customers_per_vendor_iteration)
 			if self.owner is not None:
-				self.simulate_owners(profits, self.generate_customer_offer())
+				self._simulate_owners(profits, self._generate_customer_offer())
 
 			# the competitor, which turn it is, will update its pricing
 			if i < len(self.competitors):
@@ -156,7 +156,7 @@ class SimMarket(gym.Env, ABC):
 		"""
 		# observaton is the array containing the global state. We concatenate everything relevant to it, then return it.
 		observation = self._get_common_state_array()
-		assert isinstance(observation, np.ndarray), 'get_common_state_array must return an np.ndarray'
+		assert isinstance(observation, np.ndarray), '_get_common_state_array must return an np.ndarray'
 
 		# first the action and state of the of the vendor whose view we create will be added
 		if self.vendor_specific_state[vendor_view] is not None:
@@ -174,7 +174,7 @@ class SimMarket(gym.Env, ABC):
 		assert self.observation_space.contains(observation), f'{observation} ({type(observation)}) invalid observation'
 		return observation
 
-	def generate_customer_offer(self) -> np.array:
+	def _generate_customer_offer(self) -> np.array:
 		"""
 		Map the internal state to an array which is presented to the customers.
 
@@ -183,7 +183,7 @@ class SimMarket(gym.Env, ABC):
 		Afterwards you have the action and vendor specific state for all vendors.
 		"""
 		offer = self._get_common_state_array()
-		assert isinstance(offer, np.ndarray), 'get_common_state_array must return an np.ndarray'
+		assert isinstance(offer, np.ndarray), '_get_common_state_array must return an np.ndarray'
 		for vendor_index in range(self._get_number_of_vendors()):
 			offer = np.concatenate((offer, np.array(self.vendor_actions[vendor_index], ndmin=1)), dtype=np.float64)
 			if self.vendor_specific_state[vendor_index] is not None:
@@ -396,10 +396,10 @@ class CircularEconomy(SimMarket):
 		"""
 		return [int(np.random.rand() * self.max_storage)]
 
-	def reset_common_state(self) -> None:
+	def _reset_common_state(self) -> None:
 		self.in_circulation = int(5 * np.random.rand() * self.max_storage)
 
-	def get_common_state_array(self) -> np.array:
+	def _get_common_state_array(self) -> np.array:
 		return np.array([self.in_circulation])
 
 	def _reset_vendor_actions(self) -> tuple:
@@ -414,16 +414,16 @@ class CircularEconomy(SimMarket):
 	def _choose_customer(self) -> Customer:
 		return customer.CustomerCircular()
 
-	def choose_owner(self) -> Owner:
+	def _choose_owner(self) -> Owner:
 		return owner.UniformDistributionOwner()
 
-	def throw_away(self) -> None:
+	def _throw_away(self) -> None:
 		"""The call of this method will decrease the in_circulation counter by one.Call it if one of your owners decided to throw away his product."""
 
 		self.output_dict['owner/throw_away'] += 1
 		self.in_circulation -= 1
 
-	def transfer_product_to_storage(self, vendor, profits=None, rebuy_price=0) -> None:
+	def _transfer_product_to_storage(self, vendor, profits=None, rebuy_price=0) -> None:
 		"""
 		Handles the transfer of a used product to the storage after it got bought by the vendor. It respects the storage capacity and adjusts the profit the vendor makes.
 
@@ -440,7 +440,7 @@ class CircularEconomy(SimMarket):
 			self.output_dict['profits/rebuy_cost']['vendor_' + str(vendor)] -= rebuy_price
 			profits[vendor] -= rebuy_price
 
-	def simulate_owners(self, profits, offer) -> None:
+	def _simulate_owners(self, profits, offer) -> None:
 		"""
 		The process of owners selling their used products to the vendor. It is prepared for multiple vendor scenarios but is still part of a monopoly.
 
@@ -459,12 +459,12 @@ class CircularEconomy(SimMarket):
 
 			# owner_action 0 means holding the product, so nothing happens
 			if owner_action == 1:
-				self.throw_away()
+				self._throw_away()
 			elif owner_action >= 2:
-				rebuy_price = self.get_rebuy_price(owner_action - 2)
-				self.transfer_product_to_storage(owner_action - 2, profits, rebuy_price)
+				rebuy_price = self._get_rebuy_price(owner_action - 2)
+				self._transfer_product_to_storage(owner_action - 2, profits, rebuy_price)
 
-	def get_rebuy_price(self, _) -> int:
+	def _get_rebuy_price(self, _) -> int:
 		return 0
 
 	def _complete_purchase(self, profits, customer_decision) -> None:
@@ -497,7 +497,7 @@ class CircularEconomy(SimMarket):
 			# One more product is in circulation now, but only 10 times the amount of storage space we have
 			self.in_circulation = min(self.in_circulation + 1, self.max_circulation)
 
-	def consider_storage_costs(self, profits) -> None:
+	def _consider_storage_costs(self, profits) -> None:
 		"""
 		The method handles the storage costs. they depend on the amount of refurbished products in storage.
 
@@ -553,7 +553,7 @@ class CircularEconomyRebuyPrice(CircularEconomy):
 		"""
 		return (ut.PRODUCTION_PRICE, ut.PRODUCTION_PRICE + 1, 1)
 
-	def choose_owner(self) -> Owner:
+	def _choose_owner(self) -> Owner:
 		return owner.OwnerRebuy()
 
 	def _initialize_output_dict(self) -> None:
@@ -568,7 +568,7 @@ class CircularEconomyRebuyPrice(CircularEconomy):
 
 		self._ensure_output_dict_has('profits/rebuy_cost', [0] * self._get_number_of_vendors())
 
-	def get_rebuy_price(self, vendor_idx) -> int:
+	def _get_rebuy_price(self, vendor_idx) -> int:
 		return self.vendor_actions[vendor_idx][2]
 
 
