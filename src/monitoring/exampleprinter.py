@@ -4,7 +4,7 @@ import torch
 from torch.utils.tensorboard import SummaryWriter
 
 import agents.vendors as vendors
-import configuration.utils_sim_market as ut
+import configuration.utils as ut
 import market.sim_market as sim_market
 
 

@@ -3,39 +3,45 @@ from unittest.mock import mock_open, patch
 
 import pytest
 
-import configuration.utils_sim_market as ut
+import configuration.config as config
 import tests.utils_tests as ut_t
+
+
+def teardown_module(module):
+	print('***TEARDOWN***')
+	reload(config)
 
 
 # mock format taken from: https://stackoverflow.com/questions/1289894/how-do-i-mock-an-open-used-in-a-with-statement-using-the-mock-framework-in-pyth
 # Test that checks if the config.json is read correctly
 def test_reading_file_values():
-	json = ut_t.create_mock_json_sim_market()
+	json = ut_t.create_mock_json(sim_market=ut_t.create_mock_json_sim_market())
 	with patch('builtins.open', mock_open(read_data=json)) as mock_file:
-		ut_t.check_mock_file_sim_market(mock_file, json)
+		ut_t.check_mock_file(mock_file, json)
 
 		# Include utils again to make sure the file is read again
-		reload(ut)
+		reload(config)
 
 		# Test all imported values. Extend this test as new values get added!
-		assert len(ut.config) == 5, 'utils has more or less values than expected. Check this test for the missing values'
-		assert ut.EPISODE_LENGTH == 20
-		assert ut.MAX_PRICE == 15
-		assert ut.MAX_QUALITY == 100
-		assert ut.NUMBER_OF_CUSTOMERS == 30
-		assert ut.PRODUCTION_PRICE == 5
+		assert len(config.config) == 2, 'the config is being tested for "rl" and "sim_market". Has another type been added?'
+		assert len(config.config['sim_market']) == 5, 'config["sim_market"] has more or less values than expected. Check this test for the missing values'
+		assert config.EPISODE_LENGTH == 20
+		assert config.MAX_PRICE == 15
+		assert config.MAX_QUALITY == 100
+		assert config.NUMBER_OF_CUSTOMERS == 30
+		assert config.PRODUCTION_PRICE == 5
 
 	# Test a second time with other values to ensure, that the values are read correctly
-	json2 = ut_t.create_mock_json_sim_market('50', '50', '80', '20', '10')
+	json2 = ut_t.create_mock_json(sim_market=ut_t.create_mock_json_sim_market('50', '50', '80', '20', '10'))
 	with patch('builtins.open', mock_open(read_data=json2)) as mock_file:
-		ut_t.check_mock_file_sim_market(mock_file, json2)
-		reload(ut)
+		ut_t.check_mock_file(mock_file, json2)
+		reload(config)
 
-		assert ut.EPISODE_LENGTH == 50
-		assert ut.MAX_PRICE == 50
-		assert ut.MAX_QUALITY == 80
-		assert ut.NUMBER_OF_CUSTOMERS == 20
-		assert ut.PRODUCTION_PRICE == 10
+		assert config.EPISODE_LENGTH == 50
+		assert config.MAX_PRICE == 50
+		assert config.MAX_QUALITY == 80
+		assert config.NUMBER_OF_CUSTOMERS == 20
+		assert config.PRODUCTION_PRICE == 10
 
 
 # The following variables are input mock-json strings for the test_invalid_values test
@@ -69,11 +75,11 @@ def get_invalid_test_ids():
 
 
 # Test that checks that an invalid/broken config.json gets detected correctly
-@pytest.mark.parametrize('json_values, expected_error_msg', array_invalid_values, ids=get_invalid_test_ids())
-def test_invalid_values(json_values, expected_error_msg):
-	json = json_values
+@pytest.mark.parametrize('sim_market_json, expected_error_msg', array_invalid_values, ids=get_invalid_test_ids())
+def test_invalid_values(sim_market_json, expected_error_msg):
+	json = ut_t.create_mock_json(sim_market=sim_market_json)
 	with patch('builtins.open', mock_open(read_data=json)) as mock_file:
-		ut_t.check_mock_file_sim_market(mock_file, json)
+		ut_t.check_mock_file(mock_file, json)
 		with pytest.raises(AssertionError) as assertion_info:
-			reload(ut)
+			reload(config)
 		assert expected_error_msg in str(assertion_info.value)
