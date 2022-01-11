@@ -35,9 +35,11 @@ class ActorCriticAgent(vendors.Agent):
 			baseline = v_estimates.squeeze()[31].item()
 			constant = (v_expected - baseline).detach()
 		log_prob = -self.log_probability_given_action(states.detach(), actions.detach())
+		# print(constant)
+		# print(log_prob)
 		policyloss = torch.mean(constant * log_prob)
 		if regularization:
-			policyloss += self.regularizate(states)
+			policyloss += self.regularizate(states, actions)
 		policyloss.backward()
 
 		self.v_optimizer.step()
@@ -89,30 +91,31 @@ class SoftActorCriticAgent(ActorCriticAgent):
 	softplus = torch.nn.Softplus()
 
 	def initialize_models_and_optimizer(self, n_observations, n_actions):
-		self.policy_net = model.very_simple_network(n_observations, n_actions).to(self.device)
-		self.policy_optimizer = torch.optim.Adam(self.policy_net.parameters(), lr=0.0001)
-		self.v_net = model.very_simple_network(n_observations, 1).to(self.device)
+		self.n_actions = n_actions
+		self.policy_net = model.simple_network(n_observations, self.n_actions).to(self.device)
+		self.policy_optimizer = torch.optim.Adam(self.policy_net.parameters(), lr=0.00005)
+		self.v_net = model.simple_network(n_observations, 1).to(self.device)
 		self.v_optimizer = torch.optim.Adam(self.v_net.parameters(), lr=0.002)
 
 	def policy(self, observation):
-		observation = torch.Tensor(observation).to(self.device)
+		observation = torch.Tensor([observation]).to(self.device)
 		with torch.no_grad():
 			mean = self.softplus(self.policy_net(observation))
 			v_estimat = self.v_net(observation).view(-1)
 
-		action = int(np.round(torch.normal(mean, torch.ones(mean.shape)).to('cpu').item()))
-		action = max(action, 0)
-		action = min(action, 9)
-		return action, self.log_probability_given_action(observation, torch.Tensor([action])).detach().item(), v_estimat.to('cpu').item()
+		action = torch.round(torch.normal(mean, torch.ones(mean.shape)))
+		action = torch.max(action, torch.zeros(action.shape))
+		action = torch.min(action, 9 * torch.ones(action.shape))
+		return action.squeeze().type(torch.LongTensor).to('cpu').numpy(), self.log_probability_given_action(observation, action).mean().detach().item(), v_estimat.to('cpu').item()
 
 	def log_probability_given_action(self, states, actions):
-		return torch.distributions.Normal(self.softplus(self.policy_net(states)), 1).log_prob(actions.view(-1, 1))
+		return torch.distributions.Normal(self.softplus(self.policy_net(states)), 1).log_prob(actions.view(-1, self.n_actions)).sum(dim=1).unsqueeze(-1)
 
-	def regularizate(self, states):
-		return 50000 * torch.nn.MSELoss()(self.policy_net(states), 3.5 * torch.ones(states.shape))
+	def regularizate(self, states, actions):
+		return 50000 * torch.nn.MSELoss()(self.policy_net(states), 3.5 * torch.ones(actions.shape))
 
 	def agent_output_to_market_form(self, step):
-		return step
+		return step.tolist()
 
 
 def trainactorcritic(Scenario, Agent, outputs):
@@ -177,9 +180,9 @@ def trainactorcritic(Scenario, Agent, outputs):
 				environments[env].reset()
 				info_accumulators[env] = None
 
-		valueloss, policyloss = agent.train_batch(torch.Tensor(np.array(states)), torch.from_numpy(np.array(actions, dtype=np.int64)), torch.Tensor(np.array(rewards)), torch.Tensor(np.array(state_dash)))
+		valueloss, policyloss = agent.train_batch(torch.Tensor(np.array(states)), torch.from_numpy(np.array(actions, dtype=np.int64)), torch.Tensor(np.array(rewards)), torch.Tensor(np.array(state_dash)), episodes_accomplished <= 500)
 		all_value_losses.append(valueloss)
 		all_policy_losses.append(policyloss)
 
 
-trainactorcritic(sim_market.CircularEconomyRebuyPriceOneCompetitor, DiscreteACACircularEconomyRebuy, 1000)
+trainactorcritic(sim_market.CircularEconomyRebuyPriceOneCompetitor, SoftActorCriticAgent, 3)
