@@ -292,7 +292,7 @@ class QLearningAgent(ReinforcementLearningAgent, ABC):
 			path_name (str): The name of the folder within 'trainedModels' where the model should be saved.
 			model_name (str): The name of the .dat file of this specific model.
 		"""
-		assert str.endswith(model_name, '.dat'), 'model_name must end in \'.dat\''
+		model_name += '.dat'
 		if not os.path.isdir('trainedModels'):
 			os.mkdir('trainedModels')
 		if not os.path.isdir(f'trainedModels/{path_name}'):
@@ -355,7 +355,9 @@ class CompetitorRandom(LinearAgent, RuleBasedAgent):
 
 class CompetitorJust2Players(LinearAgent, RuleBasedAgent):
 	def policy(self, state, epsilon=0) -> int:
-		"""	This competitor is based on quality and agents actions.
+		"""
+		This competitor is based on quality and agents actions.
+
 		While he can act in every linear economy, you should not expect good performance in a multicompetitor setting.
 
 		Args:

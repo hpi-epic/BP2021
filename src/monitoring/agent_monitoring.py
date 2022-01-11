@@ -1,7 +1,6 @@
 import os
 import time
 
-import gym
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -19,12 +18,12 @@ class Monitor():
 
 	def __init__(self) -> None:
 		# Do not change the values in here! They are assumed in tests. Instead use setup_monitoring()!
-		assert os.path.exists(self.get_modelfile_path('CircularEconomy_QLearningCEAgent.dat')), 'the default modelfile \'CircularEconomy_QLearningCEAgent.dat\' does not exist'
+		assert os.path.exists(self.get_modelfile_path('CircularEconomy_QLearningCEAgent')), 'the default modelfile \'CircularEconomy_QLearningCEAgent.dat\' does not exist'
 		self.enable_live_draw = True
 		self.episodes = 500
 		self.plot_interval = 50
 		self.marketplace = sim_market.CircularEconomyMonopolyScenario()
-		self.agents = [vendors.QLearningCEAgent(self.marketplace.observation_space.shape[0], self.get_action_space(), load_path=self.get_modelfile_path('CircularEconomy_QLearningCEAgent.dat'))]
+		self.agents = [vendors.QLearningCEAgent(self.marketplace.observation_space.shape[0], self.get_action_space(), load_path=self.get_modelfile_path('CircularEconomy_QLearningCEAgent'))]
 		self.agent_colors = ['#0000ff']
 		self.subfolder_name = 'plots_' + time.strftime('%Y%m%d-%H%M%S')
 		self.folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring' + os.sep + self.subfolder_name
@@ -52,9 +51,9 @@ class Monitor():
 		Returns:
 			str: The full path to the modelfile.
 		"""
-		assert str.endswith(model_name, '.dat'), 'the modelfile must be a .dat file'
+		model_name += '.dat'
 		full_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring' + os.sep + model_name
-		assert os.path.exists(full_path), 'the specified modelfile does not exist'
+		assert os.path.exists(full_path), f'the specified modelfile does not exist: {full_path}'
 		return full_path
 
 	def get_action_space(self) -> int:
@@ -65,11 +64,11 @@ class Monitor():
 			int: The size of the action space
 		"""
 		n_actions = 1
-		if isinstance(self.marketplace.action_space, gym.spaces.Discrete):
-			n_actions = self.marketplace.action_space.n
-		else:
+		if isinstance(self.marketplace, sim_market.CircularEconomy):
 			for id in range(len(self.marketplace.action_space)):
 				n_actions *= self.marketplace.action_space[id].n
+		else:
+			n_actions = self.marketplace.action_space.n
 		return n_actions
 
 	def _update_agents(self, agents) -> None:
@@ -147,7 +146,7 @@ class Monitor():
 			# The agents have not been changed, we reuse the old agents
 			if(agents is None):
 				print('Warning: Your agents are being overwritten by new instances of themselves!')
-				agents = [(type(current_agent), [f'{type(self.marketplace).__name__}_{type(current_agent).__name__}.dat']) for current_agent in self.agents]
+				agents = [(type(current_agent), [f'{type(self.marketplace).__name__}_{type(current_agent).__name__}']) for current_agent in self.agents]
 			self._update_agents(agents)
 
 		# marketplace has not changed but agents have
@@ -186,6 +185,7 @@ class Monitor():
 			rewards (array of arrays of int): An array containing an array of ints for each monitored agent.
 			filename (str, optional): The name of the output file, format will be .svg. Defaults to 'default'.
 		"""
+		filename += '.svg'
 		plt.clf()
 		plt.xlabel('Reward', fontsize='18')
 		plt.ylabel('Episodes', fontsize='18')
@@ -202,7 +202,7 @@ class Monitor():
 		if self.enable_live_draw:  # pragma: no cover
 			plt.draw()
 			plt.pause(0.001)
-		plt.savefig(fname=self.get_folder() + os.sep + 'histograms' + os.sep + filename + '.svg')
+		plt.savefig(fname=self.get_folder() + os.sep + 'histograms' + os.sep + filename)
 
 	def create_statistics_plots(self, rewards) -> None:
 		"""
