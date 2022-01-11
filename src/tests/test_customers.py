@@ -16,7 +16,7 @@ def random_offer(market_scenario):
 	market = market_scenario()
 	market.reset()
 	market.vendor_actions[0] = market.action_space.sample()
-	return market.generate_customer_offer(), market.get_offer_length_per_vendor()
+	return market.generate_customer_offer(), market._get_offer_length_per_vendor()
 
 
 # Test the Customer parent class, i.e. make sure it cannot be used

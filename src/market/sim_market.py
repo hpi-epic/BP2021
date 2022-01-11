@@ -202,8 +202,8 @@ class SimMarket(gym.Env, ABC):
 		The implementation of this function varies between Economy types.
 
 		See also:
-			`<market.sim_market.LinearEconomy.reset_vendor_specific_state>`
-			`<market.sim_market.CircularEconomy.reset_vendor_specific_state>`
+			`<market.sim_market.LinearEconomy._reset_vendor_specific_state>`
+			`<market.sim_market.CircularEconomy._reset_vendor_specific_state>`
 		"""
 		raise NotImplementedError
 
@@ -311,7 +311,7 @@ class SimMarket(gym.Env, ABC):
 
 class LinearEconomy(SimMarket, ABC):
 
-	def setup_action_observation_space(self) -> None:
+	def _setup_action_observation_space(self) -> None:
 		"""
 		The observation array has the following format:
 		cell 0: quality of that vendor from whose perspective the observation is generated.
@@ -327,7 +327,7 @@ class LinearEconomy(SimMarket, ABC):
 
 		self.action_space = gym.spaces.Discrete(ut.MAX_PRICE)
 
-	def reset_vendor_specific_state(self) -> list:
+	def _reset_vendor_specific_state(self) -> list:
 		"""
 		Return a list containing a randomized quality value of the product the vendor is selling.
 
@@ -339,10 +339,10 @@ class LinearEconomy(SimMarket, ABC):
 		"""
 		return [ut.shuffle_quality()]
 
-	def choose_customer(self) -> Customer:
+	def _choose_customer(self) -> Customer:
 		return customer.CustomerLinear()
 
-	def reset_vendor_actions(self) -> int:
+	def _reset_vendor_actions(self) -> int:
 		"""
 		Reset the price in the linear economy.
 
@@ -351,11 +351,11 @@ class LinearEconomy(SimMarket, ABC):
 		"""
 		return ut.PRODUCTION_PRICE + 1
 
-	def complete_purchase(self, profits, chosen_vendor) -> None:
+	def _complete_purchase(self, profits, chosen_vendor) -> None:
 		profits[chosen_vendor] += self.vendor_actions[chosen_vendor] - ut.PRODUCTION_PRICE
 		self.output_dict['customer/purchases']['vendor_' + str(chosen_vendor)] += 1
 
-	def initialize_output_dict(self):
+	def _initialize_output_dict(self):
 		self._ensure_output_dict_has('state/quality', [self.vendor_specific_state[i][0] for i in range(self._get_number_of_vendors())])
 
 		self._ensure_output_dict_has('customer/purchases', [0] * self._get_number_of_vendors())
@@ -363,13 +363,13 @@ class LinearEconomy(SimMarket, ABC):
 
 class ClassicScenario(LinearEconomy):
 
-	def get_competitor_list(self) -> list:
+	def _get_competitor_list(self) -> list:
 		return [vendors.CompetitorLinearRatio1()]
 
 
 class MultiCompetitorScenario(LinearEconomy):
 
-	def get_competitor_list(self) -> list:
+	def _get_competitor_list(self) -> list:
 		return [
 			vendors.CompetitorLinearRatio1(),
 			vendors.CompetitorRandom(),
@@ -379,14 +379,14 @@ class MultiCompetitorScenario(LinearEconomy):
 
 class CircularEconomy(SimMarket):
 
-	def setup_action_observation_space(self) -> None:
+	def _setup_action_observation_space(self) -> None:
 		# cell 0: number of products in the used storage, cell 1: number of products in circulation
 		self.max_storage = 1e2
 		self.max_circulation = 10 * self.max_storage
 		self.observation_space = gym.spaces.Box(np.array([0, 0] + [0, 0, 0] * len(self.competitors)), np.array([self.max_circulation, self.max_storage] + [ut.MAX_PRICE, ut.MAX_PRICE, self.max_storage] * len(self.competitors)), dtype=np.float64)
 		self.action_space = gym.spaces.Tuple((gym.spaces.Discrete(ut.MAX_PRICE), gym.spaces.Discrete(ut.MAX_PRICE)))
 
-	def reset_vendor_specific_state(self) -> list:
+	def _reset_vendor_specific_state(self) -> list:
 		"""
 		Return a list containing a randomized number of products in storage.
 
@@ -402,7 +402,7 @@ class CircularEconomy(SimMarket):
 	def get_common_state_array(self) -> np.array:
 		return np.array([self.in_circulation])
 
-	def reset_vendor_actions(self) -> tuple:
+	def _reset_vendor_actions(self) -> tuple:
 		"""
 		Reset the prices in the circular economy (without rebuy price)
 
@@ -411,7 +411,7 @@ class CircularEconomy(SimMarket):
 		"""
 		return (ut.PRODUCTION_PRICE, ut.PRODUCTION_PRICE + 1)
 
-	def choose_customer(self) -> Customer:
+	def _choose_customer(self) -> Customer:
 		return customer.CustomerCircular()
 
 	def choose_owner(self) -> Owner:
@@ -467,7 +467,7 @@ class CircularEconomy(SimMarket):
 	def get_rebuy_price(self, _) -> int:
 		return 0
 
-	def complete_purchase(self, profits, customer_decision) -> None:
+	def _complete_purchase(self, profits, customer_decision) -> None:
 		"""
 		The method handles the customer's decision by raising the profit by the price paid minus the produtcion price.
 		It also handles the storage of used products.
@@ -509,7 +509,7 @@ class CircularEconomy(SimMarket):
 			profits[vendor] += storage_cost_per_timestep
 			self.output_dict['profits/storage_cost']['vendor_' + str(vendor)] = storage_cost_per_timestep / 2
 
-	def initialize_output_dict(self):
+	def _initialize_output_dict(self):
 		"""
 		Initialize the output_dict with the state of the environment and the actions the agents takes.
 
@@ -533,18 +533,18 @@ class CircularEconomy(SimMarket):
 
 
 class CircularEconomyMonopolyScenario(CircularEconomy):
-	def get_competitor_list(self) -> list:
+	def _get_competitor_list(self) -> list:
 		return []
 
 
 class CircularEconomyRebuyPrice(CircularEconomy):
 
-	def setup_action_observation_space(self) -> None:
-		super().setup_action_observation_space()
+	def _setup_action_observation_space(self) -> None:
+		super()._setup_action_observation_space()
 		self.observation_space = gym.spaces.Box(np.array([0, 0] + [0, 0, 0, 0] * len(self.competitors)), np.array([self.max_circulation, self.max_storage] + [ut.MAX_PRICE, ut.MAX_PRICE, ut.MAX_PRICE, self.max_storage] * len(self.competitors)), dtype=np.float64)
 		self.action_space = gym.spaces.Tuple((gym.spaces.Discrete(ut.MAX_PRICE), gym.spaces.Discrete(ut.MAX_PRICE), gym.spaces.Discrete(ut.MAX_PRICE)))
 
-	def reset_vendor_actions(self) -> tuple:
+	def _reset_vendor_actions(self) -> tuple:
 		"""
 		Resets the prices in the circular economy with rebuy prices.
 
@@ -556,14 +556,14 @@ class CircularEconomyRebuyPrice(CircularEconomy):
 	def choose_owner(self) -> Owner:
 		return owner.OwnerRebuy()
 
-	def initialize_output_dict(self) -> None:
+	def _initialize_output_dict(self) -> None:
 		"""
 		Initialize the output_dict with the state of the environment and the actions the agents takes.
 
 		Furthermore, the dictionary entries for all events which shall be monitored in the market are initialized.
 		Also extend the the output_dict initialized by the superclass with entries concerning the rebuy price and cost.
 		"""
-		super().initialize_output_dict()
+		super()._initialize_output_dict()
 		self._ensure_output_dict_has('actions/price_rebuy', [self.vendor_actions[vendor][2] for vendor in range(self._get_number_of_vendors())])
 
 		self._ensure_output_dict_has('profits/rebuy_cost', [0] * self._get_number_of_vendors())
@@ -573,10 +573,10 @@ class CircularEconomyRebuyPrice(CircularEconomy):
 
 
 class CircularEconomyRebuyPriceMonopolyScenario(CircularEconomyRebuyPrice):
-	def get_competitor_list(self) -> list:
+	def _get_competitor_list(self) -> list:
 		return []
 
 
 class CircularEconomyRebuyPriceOneCompetitor(CircularEconomyRebuyPrice):
-	def get_competitor_list(self) -> list:
+	def _get_competitor_list(self) -> list:
 		return [vendors.RuleBasedCERebuyAgent()]
