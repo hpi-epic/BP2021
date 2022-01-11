@@ -31,7 +31,7 @@ def load_config(filename='config') -> dict:
 	Load the configuration json file from the specified path.
 
 	Args:
-		path (str, optional): The path to the json file containing the configuration values. Defaults to os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'config.json').
+		filename (str, optional): The name of the json file containing the configuration values. Must be located in the BP2021/ folder. Defaults to 'config'.
 
 	Returns:
 		dict: A dictionary containing the configuration values.
