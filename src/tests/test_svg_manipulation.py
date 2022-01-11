@@ -30,7 +30,7 @@ def test_correct_template():
 	# run one exampleprinter and to make sure the template does not get changed
 	json = ut_t.create_mock_json_sim_market(episode_size='3')
 	with patch('builtins.open', mock_open(read_data=json)) as utils_mock_file:
-		ut_t.check_mock_file_sim_market(utils_mock_file, json)
+		ut_t.check_mock_file(utils_mock_file, json)
 		# initialize all functions to be mocked
 		with patch('monitoring.exampleprinter.ut.write_dict_to_tensorboard'), \
 			patch('monitoring.svg_manipulation.os.path.isfile') as mock_isfile, \
@@ -191,7 +191,7 @@ def test_one_exampleprinter_run():
 	# use only three episodes for reusing the correct_html
 	json = ut_t.create_mock_json_sim_market(episode_size='3')
 	with patch('builtins.open', mock_open(read_data=json)) as utils_mock_file:
-		ut_t.check_mock_file_sim_market(utils_mock_file, json)
+		ut_t.check_mock_file(utils_mock_file, json)
 		# initialize all functions to be mocked
 		with patch('monitoring.exampleprinter.ut.write_dict_to_tensorboard'), \
 			patch('monitoring.svg_manipulation.os.path.isfile') as mock_isfile, \

@@ -107,10 +107,10 @@ def write_content_of_dict_to_overview_svg(manipulator, episode, episode_dictiona
 	episode += 1
 	translated_dict = {}
 	translated_dict['simulation_name'] = 'Market Simulation'
-	translated_dict['simulation_episode_length'] = str(EPISODE_LENGTH)
+	translated_dict['simulation_episode_length'] = str(config.EPISODE_LENGTH)
 	translated_dict['simulation_current_episode'] = str(episode)
-	translated_dict['consumer_total_arrivals'] = str(episode * NUMBER_OF_CUSTOMERS)
-	translated_dict['consumer_total_sales'] = str(episode * NUMBER_OF_CUSTOMERS - cumulated_dictionary['customer/buy_nothing'])
+	translated_dict['consumer_total_arrivals'] = str(episode * config.NUMBER_OF_CUSTOMERS)
+	translated_dict['consumer_total_sales'] = str(episode * config.NUMBER_OF_CUSTOMERS - cumulated_dictionary['customer/buy_nothing'])
 	translated_dict['a_competitor_name'] = 'vendor_0'
 	translated_dict['a_throw_away'] = str(episode_dictionary['owner/throw_away'])
 	translated_dict['a_garbage'] = str(cumulated_dictionary['owner/throw_away'])
@@ -120,7 +120,7 @@ def write_content_of_dict_to_overview_svg(manipulator, episode, episode_dictiona
 	translated_dict['a_price_used'] = str(episode_dictionary['actions/price_refurbished']['vendor_0'] + 1)
 	translated_dict['a_rebuy_price'] = str(episode_dictionary['actions/price_rebuy']['vendor_0'] + 1)
 	translated_dict['a_repurchases'] = str(episode_dictionary['owner/rebuys']['vendor_0'])
-	translated_dict['a_resource_cost'] = str(PRODUCTION_PRICE)
+	translated_dict['a_resource_cost'] = str(config.PRODUCTION_PRICE)
 	translated_dict['a_resources_in_use'] = str(episode_dictionary['state/in_circulation'])
 	translated_dict['a_sales_new'] = str(episode_dictionary['customer/purchases_new']['vendor_0'])
 	translated_dict['a_sales_used'] = str(episode_dictionary['customer/purchases_refurbished']['vendor_0'])
@@ -131,7 +131,7 @@ def write_content_of_dict_to_overview_svg(manipulator, episode, episode_dictiona
 	translated_dict['b_price_used'] = str(episode_dictionary['actions/price_refurbished']['vendor_1'] + 1)
 	translated_dict['b_rebuy_price'] = str(episode_dictionary['actions/price_rebuy']['vendor_1'] + 1)
 	translated_dict['b_repurchases'] = str(episode_dictionary['owner/rebuys']['vendor_1'])
-	translated_dict['b_resource_cost'] = str(PRODUCTION_PRICE)
+	translated_dict['b_resource_cost'] = str(config.PRODUCTION_PRICE)
 	translated_dict['b_sales_new'] = str(episode_dictionary['customer/purchases_new']['vendor_1'])
 	translated_dict['b_sales_used'] = str(episode_dictionary['customer/purchases_refurbished']['vendor_1'])
 	manipulator.write_dict_to_svg(target_dictionary=translated_dict)
