@@ -1,7 +1,6 @@
 import os
 import time
 
-import gym
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -52,7 +51,7 @@ class Monitor():
 		Returns:
 			str: The full path to the modelfile.
 		"""
-		assert str.endswith(model_name, '.dat'), 'the modelfile must be a .dat file'
+		model_name += '.dat'
 		full_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring' + os.sep + model_name
 		assert os.path.exists(full_path), 'the specified modelfile does not exist'
 		return full_path
@@ -65,11 +64,11 @@ class Monitor():
 			int: The size of the action space
 		"""
 		n_actions = 1
-		if isinstance(self.marketplace.action_space, gym.spaces.Discrete):
-			n_actions = self.marketplace.action_space.n
-		else:
+		if isinstance(self.marketplace, sim_market.CircularEconomy):
 			for id in range(len(self.marketplace.action_space)):
 				n_actions *= self.marketplace.action_space[id].n
+		else:
+			n_actions = self.marketplace.action_space.n
 		return n_actions
 
 	def _update_agents(self, agents) -> None:
@@ -186,6 +185,7 @@ class Monitor():
 			rewards (array of arrays of int): An array containing an array of ints for each monitored agent.
 			filename (str, optional): The name of the output file, format will be .svg. Defaults to 'default'.
 		"""
+		filename += '.svg'
 		plt.clf()
 		plt.xlabel('Reward', fontsize='18')
 		plt.ylabel('Episodes', fontsize='18')
@@ -202,7 +202,7 @@ class Monitor():
 		if self.enable_live_draw:  # pragma: no cover
 			plt.draw()
 			plt.pause(0.001)
-		plt.savefig(fname=self.get_folder() + os.sep + 'histograms' + os.sep + filename + '.svg')
+		plt.savefig(fname=self.get_folder() + os.sep + 'histograms' + os.sep + filename)
 
 	def create_statistics_plots(self, rewards) -> None:
 		"""
