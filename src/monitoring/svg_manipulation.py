@@ -47,10 +47,10 @@ def get_default_dict() -> dict:
 class SVGManipulator():
 	def __init__(self, save_dir: str = 'svg') -> None:
 		self.value_dictionary = get_default_dict()
-		# do not change the values in svg_template
+		# do not change the values in template_svg
 		path_to_monitoring = os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'monitoring')
 		with open(os.path.join(path_to_monitoring, 'MarketOverview_template.svg'), 'r') as template_svg:
-			self.svg_template = template_svg.read()
+			self.template_svg = template_svg.read()
 		self.output_svg = None
 		self.save_directory = os.path.join(path_to_monitoring, save_dir)
 
@@ -81,7 +81,7 @@ class SVGManipulator():
 		self.value_dictionary = target_dictionary
 
 		# reset the output svg to the template to be able to replace the placeholders with actual values
-		self.output_svg = self.svg_template
+		self.output_svg = self.template_svg
 		for key, value in target_dictionary.items():
 			self.output_svg = self.output_svg.replace(key, value)
 
