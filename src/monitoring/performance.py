@@ -30,16 +30,18 @@ def run_profiling(function='monitoring.exampleprinter.run_example()') -> None:
 	start_time = time.perf_counter()
 
 	cProfile.run(function, filename='./performance/' + function + '_' + date_time, sort=3)
+	p = pstats.Stats('./performance/' + function + '_' + date_time)
+
 	# Estimate of how long the function took to run for the filename
 	time_frame = str(round(time.perf_counter() - start_time, 3))
+	filename = './performance/' + function + '_' + time_frame + '_secs_' + date_time + '.prof'
 
-	p = pstats.Stats('./performance/' + function + '_' + date_time)
-	p.sort_stats('cumulative').dump_stats(filename='./performance/' + function + '_' + time_frame + '_secs_' + date_time + '.prof')
+	p.sort_stats('cumulative').dump_stats(filename)
 
 	# Remove the initial file created by cProfile, not the .prof file used for snakeviz
 	_remove_files()
 	# Visualize the results
-	os.system('snakeviz ./performance/' + function + '_' + time_frame + '_secs_' + date_time + '.prof')
+	os.system('snakeviz ' + filename)
 
 
 if __name__ == '__main__':  # pragma: no cover

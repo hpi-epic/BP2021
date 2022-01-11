@@ -168,16 +168,6 @@ def test_rewards_array_size():
 		monitor.create_histogram(rewards_wrong)
 
 
-# def test_get_episode_reward():
-# 	json = ut_t.create_mock_json_sim_market(episode_size='2')
-# 	with patch('builtins.open', mock_open(read_data=json)) as mock_file:
-# 		ut_t.check_mock_file_sim_market(mock_file, json)
-# 		reload(ut)
-# 		all_steps_reward = [[1, 2, 3, 4], [4, 5, 6, 7], [1, 3, 4, 5]]
-# 		assert [[3, 7], [9, 13], [4, 9]] == monitor.get_episode_rewards(all_steps_reward)
-	# reload(ut)
-
-
 agent_rewards_histogram = [
 	([(vendors.RuleBasedCEAgent, [])], [[100, 0]]),
 	([(vendors.RuleBasedCEAgent, []), (vendors.RuleBasedCEAgent, [])], [[100, 0], [10, 5]]),

@@ -534,6 +534,7 @@ class CircularEconomy(SimMarket):
 
 
 class CircularEconomyMonopolyScenario(CircularEconomy):
+
 	def _get_competitor_list(self) -> list:
 		return []
 
@@ -574,10 +575,12 @@ class CircularEconomyRebuyPrice(CircularEconomy):
 
 
 class CircularEconomyRebuyPriceMonopolyScenario(CircularEconomyRebuyPrice):
+
 	def _get_competitor_list(self) -> list:
 		return []
 
 
 class CircularEconomyRebuyPriceOneCompetitor(CircularEconomyRebuyPrice):
+
 	def _get_competitor_list(self) -> list:
 		return [vendors.RuleBasedCERebuyAgent()]
