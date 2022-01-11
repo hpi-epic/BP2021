@@ -4,6 +4,7 @@ import shutil
 
 import numpy as np
 import pytest
+from unittest.mock import mock_open, patch
 
 import agents.vendors as vendors
 import market.sim_market as sim_market
@@ -18,14 +19,14 @@ def setup_function(function):
 	print('***SETUP***')
 	global monitor
 	monitor = Monitor()
-	monitor.setup_monitoring(enable_live_draw=False, subfolder_name='test_plots_' + function.__name__)
+	monitor.setup_monitoring(enable_live_draw=True, subfolder_name='test_plots_' + function.__name__)
 
 
-def teardown_module(module):
-	print('***TEARDOWN***')
-	for f in os.listdir(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring/'):
-		if re.match('test_plots_*', f):
-			shutil.rmtree(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring/' + f)
+# def teardown_module(module):
+# 	print('***TEARDOWN***')
+# 	for f in os.listdir(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring/'):
+# 		if re.match('test_plots_*', f):
+# 			shutil.rmtree(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring/' + f)
 
 
 def test_init_default_values():
@@ -135,16 +136,24 @@ def test_RL_agents_need_modelfile():
 
 
 def test_get_modelfile_path():
-	with pytest.raises(AssertionError) as assertion_message:
-		monitor.get_modelfile_path('non_existing_modelfile.dat')
-	assert 'the specified modelfile does not exist' in str(assertion_message.value)
+	with patch('monitoring.agent_monitoring.os.path.exists') as mock_exists:
+		mock_exists.return_value = False
+		with pytest.raises(AssertionError) as assertion_message:
+			monitor.get_modelfile_path('non_existing_modelfile.dat')
+		assert 'the specified modelfile does not exist' in str(assertion_message.value)
 
 
 # Test once for a Linear, Circular and RebuyPrice Economy
-def test_get_action_space():
-	monitor.setup_monitoring(agents=[(vendors.QLearningLEAgent, ['ClassicScenario_QLearningLEAgent'])], marketplace=sim_market.ClassicScenario)
-	monitor.setup_monitoring(agents=[(vendors.QLearningCEAgent, ['CircularEconomy_QLearningCEAgent'])], marketplace=sim_market.CircularEconomyMonopolyScenario)
-	monitor.setup_monitoring(agents=[(vendors.QLearningCERebuyAgent, ['CircularEconomyRebuyPrice_QLearningCERebuyAgent'])], marketplace=sim_market.CircularEconomyRebuyPriceMonopolyScenario)
+vendor_market = [
+	((vendors.QLearningLEAgent, ['ClassicScenario_QLearningLEAgent']), sim_market.ClassicScenario),
+	((vendors.QLearningCEAgent, ['CircularEconomy_QLearningCEAgent']), sim_market.CircularEconomyMonopolyScenario),
+	((vendors.QLearningCERebuyAgent, ['CircularEconomyRebuyPrice_QLearningCERebuyAgent']), sim_market.CircularEconomyRebuyPriceMonopolyScenario)
+]
+
+
+@pytest.mark.parametrize('agent, market', vendor_market)
+def test_get_action_space(agent, market):
+	monitor.setup_monitoring(agents=[agent], marketplace=market)
 
 
 def test_setting_market_not_agents():
@@ -164,9 +173,9 @@ def test_setup_with_valid_agents():
 def test_rewards_array_size():
 	# Numpy doesn't like nested arrays of different sizes, need to specify dtype=object
 	rewards_wrong = np.array([[1, 2], [1, 2, 3]], dtype=object)
-	with pytest.raises(Exception):
-		monitor.create_histogram(rewards_wrong)
-
+	with patch('monitoring.agent_monitoring.plt'):
+		with pytest.raises(Exception):
+			monitor.create_histogram(rewards_wrong)
 
 # def test_get_episode_reward():
 # 	json = ut_t.create_mock_json_sim_market(episode_size='2')
@@ -179,49 +188,68 @@ def test_rewards_array_size():
 
 
 agent_rewards_histogram = [
-	([(vendors.RuleBasedCEAgent, [])], [[100, 0]]),
-	([(vendors.RuleBasedCEAgent, []), (vendors.RuleBasedCEAgent, [])], [[100, 0], [10, 5]]),
+	([(vendors.RuleBasedCEAgent, [])], [[100, 0]], 1, [(1.0, 0.0, 0.0, 1.0)], (0.0, 1000.0)),
+	([(vendors.RuleBasedCEAgent, []), (vendors.RuleBasedCEAgent, [])], [[100, 0], [10, 5]], 1, [(1.0, 0.0, 0.0, 1.0), (0.0, 1.0, 0.9531223422015865, 1.0)], (0.0, 1000.0)),
 	([(vendors.RuleBasedCEAgent, []), (vendors.RuleBasedCEAgent, []), (vendors.RuleBasedCEAgent, []), (vendors.RuleBasedCEAgent, [])],
-		[[100, 0], [10, 5], [100, 10000], [10, 1000]])
+	 	[[100, 0], [10, 5], [100, 10000], [10, 1000]], 
+		10, [(1.0, 0.0, 0.0, 1.0), (0.5234360234360234, 1.0, 0.0, 1.0), (0.0, 1.0, 0.9531223422015865, 1.0), (0.4296860234360234, 0.0, 1.0, 1.0)], (0.0, 10000.0))
 ]
 
 
-@pytest.mark.parametrize('agents, rewards', agent_rewards_histogram)
-def test_create_histogram(agents, rewards):
-	monitor.setup_monitoring(agents=agents)
-	monitor.create_histogram(rewards)
+@pytest.mark.parametrize('agents, rewards, plot_bins, agent_color, lower_upper_range', agent_rewards_histogram)
+def test_create_histogram(agents, rewards, plot_bins, agent_color, lower_upper_range):
+	monitor.setup_monitoring(agents=agents, enable_live_draw=True)
+	print(rewards)
+	print('-----------------------')
+	with patch('monitoring.agent_monitoring.plt.clf'), \
+		patch('monitoring.agent_monitoring.plt.xlabel'), \
+		patch('monitoring.agent_monitoring.plt.title'), \
+		patch('monitoring.agent_monitoring.plt.hist') as hist_mock, \
+		patch('monitoring.agent_monitoring.plt.legend') as plt_legend, \
+		patch('monitoring.agent_monitoring.plt.pause'), \
+		patch('monitoring.agent_monitoring.plt.draw'), \
+		patch('monitoring.agent_monitoring.plt.savefig') as save_mock:
+		
+		monitor.create_histogram(rewards)
+		# assert False
+		hist_mock.assert_called_once_with(rewards, bins=plot_bins, color=agent_color, rwidth=0.9, range=lower_upper_range)
+		
+
+# plt.draw()
+# 			plt.pause(0.001)
+# 		plt.savefig(fname=self.get_folder
 
 
-@pytest.mark.parametrize('agents, rewards', agent_rewards_histogram)
-def test_create_statistics_plots(agents, rewards):
-	monitor.setup_monitoring(agents=agents, episodes=len(rewards[0]), plot_interval=1)
-	monitor.create_statistics_plots(rewards)
+# @pytest.mark.parametrize('agents, rewards', agent_rewards_histogram)
+# def test_create_statistics_plots(agents, rewards):
+# 	monitor.setup_monitoring(agents=agents, episodes=len(rewards[0]), plot_interval=1)
+# 	monitor.create_statistics_plots(rewards)
 
 
-def test_create_line_plot():
-	monitor.setup_monitoring(episodes=4, plot_interval=2)
-	with pytest.raises(AssertionError) as assertion_message:
-		monitor.create_line_plot([1, 2, 3], [[2], [1]])
-	assert 'x_values must have self.episodes / self.plot_interval many items' in str(assertion_message.value)
-	with pytest.raises(AssertionError) as assertion_message:
-		monitor.create_line_plot([1, 2], [[2], [1]])
-	assert 'y_values must have one entry per agent' in str(assertion_message.value)
-	with pytest.raises(AssertionError) as assertion_message:
-		monitor.create_line_plot([1, 2], [[2]])
-	assert 'y_values must have self.episodes / self.plot_interval many items' in str(assertion_message.value)
+# def test_create_line_plot():
+# 	monitor.setup_monitoring(episodes=4, plot_interval=2)
+# 	with pytest.raises(AssertionError) as assertion_message:
+# 		monitor.create_line_plot([1, 2, 3], [[2], [1]])
+# 	assert 'x_values must have self.episodes / self.plot_interval many items' in str(assertion_message.value)
+# 	with pytest.raises(AssertionError) as assertion_message:
+# 		monitor.create_line_plot([1, 2], [[2], [1]])
+# 	assert 'y_values must have one entry per agent' in str(assertion_message.value)
+# 	with pytest.raises(AssertionError) as assertion_message:
+# 		monitor.create_line_plot([1, 2], [[2]])
+# 	assert 'y_values must have self.episodes / self.plot_interval many items' in str(assertion_message.value)
 
 
-def test_run_marketplace():
-	monitor.setup_monitoring(episodes=100, plot_interval=100, agents=[(vendors.FixedPriceCEAgent, [(5, 2)])])
-	agent_rewards = monitor.run_marketplace()
-	print(agent_rewards)
-	assert 1 == len(monitor.agents)
-	assert monitor.episodes == len(agent_rewards[0])
+# def test_run_marketplace():
+# 	monitor.setup_monitoring(episodes=100, plot_interval=100, agents=[(vendors.FixedPriceCEAgent, [(5, 2)])])
+# 	agent_rewards = monitor.run_marketplace()
+# 	print(agent_rewards)
+# 	assert 1 == len(monitor.agents)
+# 	assert monitor.episodes == len(agent_rewards[0])
 
 
-def test_main():
-	monitor.setup_monitoring(enable_live_draw=False, episodes=10, plot_interval=10, subfolder_name='test_plots_')
-	current_configuration = monitor.get_configuration()
-	am.main(monitor)
-	assert current_configuration == monitor.get_configuration(), 'the monitor configuration should not be changed within main'
-	assert os.path.exists(monitor.folder_path)
+# def test_main():
+# 	monitor.setup_monitoring(enable_live_draw=False, episodes=10, plot_interval=10, subfolder_name='test_plots_')
+# 	current_configuration = monitor.get_configuration()
+# 	am.main(monitor)
+# 	assert current_configuration == monitor.get_configuration(), 'the monitor configuration should not be changed within main'
+# 	assert os.path.exists(monitor.folder_path)

@@ -177,7 +177,7 @@ class Monitor():
 		}
 
 	# visualize metrics
-	def create_histogram(self, rewards, filename='default') -> None:
+	def create_histogram(self, rewards, filename='default') -> None: ##WARNING mkdir
 		"""
 		Create a histogram sorting rewards into bins of 1000.
 
@@ -195,7 +195,10 @@ class Monitor():
 		plot_lower_bound = np.floor(int(np.min(rewards)) * 1e-3) / 1e-3
 		plot_upper_bound = np.ceil(int(np.max(rewards)) * 1e-3) / 1e-3
 		plot_bins = int(np.abs(plot_lower_bound) + plot_upper_bound) // 1000
-
+		print(rewards)
+		print(plot_bins)
+		print(self.agent_colors)
+		print(plot_lower_bound, plot_upper_bound)
 		plt.hist(rewards, bins=plot_bins, color=self.agent_colors, rwidth=0.9, range=(plot_lower_bound, plot_upper_bound))
 		plt.legend([a.name for a in self.agents])
 
@@ -227,7 +230,7 @@ class Monitor():
 					metric_rewards[agent_rewards_id].append(metrics_functions[function](rewards[agent_rewards_id][:self.plot_interval * starting_index + self.plot_interval]))
 			self.create_line_plot(x_axis_episodes, metric_rewards, metrics_names[function])
 
-	def create_line_plot(self, x_values, y_values, metric_name='no name provided') -> None:
+	def create_line_plot(self, x_values, y_values, metric_name='no name provided') -> None: ## WARNING mkdir
 		"""
 		Create a line plot with the given rewards data.
 
@@ -311,7 +314,7 @@ class Monitor():
 		return rewards
 
 
-def main(monitor=Monitor()) -> None:
+def main(monitor=Monitor()) -> None:	## WARNING mkdir
 	"""
 	Run a monitoring session with a configured Monitor() and display and save metrics.
 
