@@ -42,7 +42,7 @@ def test_init_default_values():
 
 
 def test_correct_setup_monitoring():
-	monitor.setup_monitoring(enable_live_draw=False, episodes=10, plot_interval=2, marketplace=sim_market.CircularEconomyMonopolyScenario, agents=[(vendors.HumanPlayerCERebuy, ['reptiloid']), (vendors.QLearningCERebuyAgent, ['CircularEconomy_QLearningCEAgent.dat', 'q_learner'])], subfolder_name='subfoldername')
+	monitor.setup_monitoring(enable_live_draw=False, episodes=10, plot_interval=2, marketplace=sim_market.CircularEconomyMonopolyScenario, agents=[(vendors.HumanPlayerCERebuy, ['reptiloid']), (vendors.QLearningCERebuyAgent, ['CircularEconomy_QLearningCEAgent', 'q_learner'])], subfolder_name='subfoldername')
 	assert monitor.enable_live_draw is False
 	assert 10 == monitor.episodes
 	assert 2 == monitor.plot_interval
@@ -136,18 +136,15 @@ def test_RL_agents_need_modelfile():
 
 def test_get_modelfile_path():
 	with pytest.raises(AssertionError) as assertion_message:
-		monitor.get_modelfile_path('wrong_extension.png')
-	assert 'the modelfile must be a .dat file' in str(assertion_message.value)
-	with pytest.raises(AssertionError) as assertion_message:
 		monitor.get_modelfile_path('non_existing_modelfile.dat')
 	assert 'the specified modelfile does not exist' in str(assertion_message.value)
 
 
 # Test once for a Linear, Circular and RebuyPrice Economy
 def test_get_action_space():
-	monitor.setup_monitoring(agents=[(vendors.QLearningLEAgent, ['ClassicScenario_QLearningLEAgent.dat'])], marketplace=sim_market.ClassicScenario)
-	monitor.setup_monitoring(agents=[(vendors.QLearningCEAgent, ['CircularEconomy_QLearningCEAgent.dat'])], marketplace=sim_market.CircularEconomyMonopolyScenario)
-	monitor.setup_monitoring(agents=[(vendors.QLearningCERebuyAgent, ['CircularEconomyRebuyPrice_QLearningCERebuyAgent.dat'])], marketplace=sim_market.CircularEconomyRebuyPriceMonopolyScenario)
+	monitor.setup_monitoring(agents=[(vendors.QLearningLEAgent, ['ClassicScenario_QLearningLEAgent'])], marketplace=sim_market.ClassicScenario)
+	monitor.setup_monitoring(agents=[(vendors.QLearningCEAgent, ['CircularEconomy_QLearningCEAgent'])], marketplace=sim_market.CircularEconomyMonopolyScenario)
+	monitor.setup_monitoring(agents=[(vendors.QLearningCERebuyAgent, ['CircularEconomyRebuyPrice_QLearningCERebuyAgent'])], marketplace=sim_market.CircularEconomyRebuyPriceMonopolyScenario)
 
 
 def test_setting_market_not_agents():
