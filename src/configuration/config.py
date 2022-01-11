@@ -26,7 +26,7 @@ PRODUCTION_PRICE = None
 EPISODE_LENGTH = None
 
 
-def load_config(path=os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'config.json')) -> dict:
+def load_config(filename='config') -> dict:
 	"""
 	Load the configuration json file from the specified path.
 
@@ -36,6 +36,8 @@ def load_config(path=os.path.join(os.path.dirname(__file__), os.pardir, os.pardi
 	Returns:
 		dict: A dictionary containing the configuration values.
 	"""
+	filename += '.json'
+	path = os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, filename)
 	with open(path) as config_file:
 		return json.load(config_file)
 
