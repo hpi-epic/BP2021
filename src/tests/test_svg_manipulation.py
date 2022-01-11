@@ -74,6 +74,7 @@ def test_write_dict_to_svg():
 	with open(os.path.join(os.path.dirname(__file__), 'output_test_svg.svg')) as file:
 		correct_svg = file.read()
 	assert correct_svg == svg_manipulator.output_svg
+	assert test_dict == svg_manipulator.value_dictionary
 
 
 # tests below test save_overview_svg()

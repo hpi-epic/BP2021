@@ -78,6 +78,7 @@ class SVGManipulator():
 			str: The full path to the copied file.
 		"""
 		assert all(isinstance(value, str) for _, value in target_dictionary.items()), f'the dictionary should only contain strings: {target_dictionary}'
+		self.value_dictionary = target_dictionary
 
 		# reset the output svg to the template to be able to replace the placeholders with actual values
 		self.output_svg = self.svg_template
