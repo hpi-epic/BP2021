@@ -136,10 +136,10 @@ def test_RL_agents_need_modelfile():
 
 def test_get_modelfile_path():
 	with pytest.raises(AssertionError) as assertion_message:
-		monitor.get_modelfile_path('wrong_extension.png')
+		monitor._get_modelfile_path('wrong_extension.png')
 	assert 'the modelfile must be a .dat file' in str(assertion_message.value)
 	with pytest.raises(AssertionError) as assertion_message:
-		monitor.get_modelfile_path('non_existing_modelfile.dat')
+		monitor._get_modelfile_path('non_existing_modelfile.dat')
 	assert 'the specified modelfile does not exist' in str(assertion_message.value)
 
 

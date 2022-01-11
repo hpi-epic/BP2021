@@ -19,17 +19,18 @@ class Monitor():
 
 	def __init__(self) -> None:
 		# Do not change the values in here! They are assumed in tests. Instead use setup_monitoring()!
-		assert os.path.exists(self.get_modelfile_path('CircularEconomy_QLearningCEAgent.dat')), 'the default modelfile \'CircularEconomy_QLearningCEAgent.dat\' does not exist'
+		model_path = self._get_modelfile_path('CircularEconomy_QLearningCEAgent.dat')
+		assert os.path.exists(model_path), 'the default modelfile \'CircularEconomy_QLearningCEAgent.dat\' does not exist'
 		self.enable_live_draw = True
 		self.episodes = 500
 		self.plot_interval = 50
 		self.marketplace = sim_market.CircularEconomyMonopolyScenario()
-		self.agents = [vendors.QLearningCEAgent(self.marketplace.observation_space.shape[0], self.get_action_space(), load_path=self.get_modelfile_path('CircularEconomy_QLearningCEAgent.dat'))]
+		self.agents = [vendors.QLearningCEAgent(self.marketplace.observation_space.shape[0], self._get_action_space(), load_path=model_path)]
 		self.agent_colors = ['#0000ff']
 		self.subfolder_name = 'plots_' + time.strftime('%Y%m%d-%H%M%S')
 		self.folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring' + os.sep + self.subfolder_name
 
-	def get_folder(self) -> str:
+	def _get_folder(self) -> str:
 		"""
 		Return the folder where all diagrams of the current run are saved.
 
@@ -42,7 +43,7 @@ class Monitor():
 			os.mkdir(self.folder_path + os.sep + 'histograms')
 		return self.folder_path
 
-	def get_modelfile_path(self, model_name) -> str:
+	def _get_modelfile_path(self, model_name) -> str:
 		"""
 		Get the full path to a modelfile in the 'monitoring' folder.
 
@@ -57,7 +58,7 @@ class Monitor():
 		assert os.path.exists(full_path), 'the specified modelfile does not exist'
 		return full_path
 
-	def get_action_space(self) -> int:
+	def _get_action_space(self) -> int:
 		"""
 		Return the size of the action space in the self.marketplace.
 
@@ -102,7 +103,7 @@ class Monitor():
 					assert isinstance(current_agent[1][0], str), 'the modelfile must be of type str'
 
 					agent_name = 'q_learning' if len(current_agent[1]) == 1 else current_agent[1][1]
-					self.agents.append(current_agent[0](self.marketplace.observation_space.shape[0], self.get_action_space(), load_path=self.get_modelfile_path(current_agent[1][0]), name=agent_name))
+					self.agents.append(current_agent[0](self.marketplace.observation_space.shape[0], self._get_action_space(), load_path=self._get_modelfile_path(current_agent[1][0]), name=agent_name))
 				except RuntimeError:  # pragma: no cover
 					raise RuntimeError('the modelfile is not compatible with the agent you tried to instantiate')
 			else:  # pragma: no cover
@@ -202,7 +203,7 @@ class Monitor():
 		if self.enable_live_draw:  # pragma: no cover
 			plt.draw()
 			plt.pause(0.001)
-		plt.savefig(fname=self.get_folder() + os.sep + 'histograms' + os.sep + filename + '.svg')
+		plt.savefig(fname=self._get_folder() + os.sep + 'histograms' + os.sep + filename + '.svg')
 
 	def create_statistics_plots(self, rewards) -> None:
 		"""
@@ -257,7 +258,7 @@ class Monitor():
 		if self.enable_live_draw:  # pragma: no cover
 			plt.draw()
 			plt.pause(0.001)
-		plt.savefig(fname=self.get_folder() + os.sep + filename)
+		plt.savefig(fname=self._get_folder() + os.sep + filename)
 
 	def run_marketplace(self) -> list:
 		"""
@@ -337,7 +338,7 @@ def main(monitor=Monitor()) -> None:
 		print(f'The minimum reward over {monitor.episodes} episodes is: {np.min(rewards[i])}')
 
 	monitor.create_statistics_plots(rewards)
-	print(f'All plots were saved to {monitor.get_folder()}')
+	print(f'All plots were saved to {monitor._get_folder()}')
 
 
 if __name__ == '__main__':  # pragma: no cover

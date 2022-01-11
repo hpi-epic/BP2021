@@ -7,7 +7,7 @@ import time
 import monitoring.exampleprinter
 
 
-def remove_files() -> None:
+def _remove_files() -> None:
 	"""
 	Remove the unneeded result files created by the performance runs.
 	"""
@@ -37,7 +37,7 @@ def run_profiling(function='monitoring.exampleprinter.run_example()') -> None:
 	p.sort_stats('cumulative').dump_stats(filename='./performance/' + function + '_' + time_frame + '_secs_' + date_time + '.prof')
 
 	# Remove the initial file created by cProfile, not the .prof file used for snakeviz
-	remove_files()
+	_remove_files()
 	# Visualize the results
 	os.system('snakeviz ./performance/' + function + '_' + time_frame + '_secs_' + date_time + '.prof')
 
