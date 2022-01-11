@@ -26,7 +26,7 @@ class Monitor():
 		self.agents = [vendors.QLearningCEAgent(self.marketplace.observation_space.shape[0], self.get_action_space(), load_path=self.get_modelfile_path('CircularEconomy_QLearningCEAgent'))]
 		self.agent_colors = ['#0000ff']
 		self.subfolder_name = 'plots_' + time.strftime('%Y%m%d-%H%M%S')
-		self.folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring' + os.sep + self.subfolder_name
+		self.folder_path = os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'monitoring', self.subfolder_name)
 
 	def get_folder(self) -> str:
 		"""
@@ -38,7 +38,7 @@ class Monitor():
 		# create folder with current timestamp to save diagrams at
 		if not os.path.exists(self.folder_path):
 			os.mkdir(self.folder_path)
-			os.mkdir(self.folder_path + os.sep + 'histograms')
+			os.mkdir(os.path.join(self.folder_path, 'histograms'))
 		return self.folder_path
 
 	def get_modelfile_path(self, model_name) -> str:
@@ -52,7 +52,7 @@ class Monitor():
 			str: The full path to the modelfile.
 		"""
 		model_name += '.dat'
-		full_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring' + os.sep + model_name
+		full_path = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'monitoring', model_name))
 		assert os.path.exists(full_path), f'the specified modelfile does not exist: {full_path}'
 		return full_path
 
@@ -156,7 +156,7 @@ class Monitor():
 		if(subfolder_name is not None):
 			assert isinstance(subfolder_name, str), 'subfolder_name must be of type string'
 			self.subfolder_name = subfolder_name
-			self.folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring' + os.sep + self.subfolder_name
+			self.folder_path = os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'monitoring', self.subfolder_name)
 
 	def get_configuration(self) -> dict:
 		"""
@@ -202,7 +202,7 @@ class Monitor():
 		if self.enable_live_draw:  # pragma: no cover
 			plt.draw()
 			plt.pause(0.001)
-		plt.savefig(fname=self.get_folder() + os.sep + 'histograms' + os.sep + filename)
+		plt.savefig(fname=os.path.join(self.get_folder(), 'histograms', filename))
 
 	def create_statistics_plots(self, rewards) -> None:
 		"""
@@ -257,7 +257,7 @@ class Monitor():
 		if self.enable_live_draw:  # pragma: no cover
 			plt.draw()
 			plt.pause(0.001)
-		plt.savefig(fname=self.get_folder() + os.sep + filename)
+		plt.savefig(fname=os.path.join(self.get_folder(), filename))
 
 	def run_marketplace(self) -> list:
 		"""
@@ -337,7 +337,7 @@ def main(monitor=Monitor()) -> None:
 		print(f'The minimum reward over {monitor.episodes} episodes is: {np.min(rewards[i])}')
 
 	monitor.create_statistics_plots(rewards)
-	print(f'All plots were saved to {monitor.get_folder()}')
+	print(f'All plots were saved to {os.path.abspath(monitor.get_folder())}')
 
 
 if __name__ == '__main__':  # pragma: no cover
