@@ -8,7 +8,6 @@ import pytest
 import agents.vendors as vendors
 import market.sim_market as sim_market
 import monitoring.agent_monitoring as am
-import tests.utils_tests as ut_t
 from monitoring.agent_monitoring import Monitor
 
 monitor = Monitor()
@@ -24,9 +23,9 @@ def setup_function(function):
 
 def teardown_module(module):
 	print('***TEARDOWN***')
-	for f in os.listdir(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring/'):
+	for f in os.listdir(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'monitoring')):
 		if re.match('test_plots_*', f):
-			shutil.rmtree(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring/' + f)
+			shutil.rmtree(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'monitoring', f))
 
 
 def test_init_default_values():
@@ -39,11 +38,11 @@ def test_init_default_values():
 	assert 1 == len(test_monitor.agents)
 	assert ['#0000ff'] == test_monitor.agent_colors
 	assert test_monitor.subfolder_name.startswith('plots_')
-	assert os.path.normcase(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring' + os.sep + test_monitor.subfolder_name) == os.path.normcase(test_monitor.folder_path)
+	assert os.path.normcase(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'monitoring', test_monitor.subfolder_name))) == os.path.normcase(os.path.abspath(test_monitor.folder_path))
 
 
 def test_correct_setup_monitoring():
-	monitor.setup_monitoring(enable_live_draw=False, episodes=10, plot_interval=2, marketplace=sim_market.CircularEconomyMonopolyScenario, agents=[(vendors.HumanPlayerCERebuy, ['reptiloid']), (vendors.QLearningCERebuyAgent, ['CircularEconomy_QLearningCEAgent.dat', 'q_learner'])], subfolder_name='subfoldername')
+	monitor.setup_monitoring(enable_live_draw=False, episodes=10, plot_interval=2, marketplace=sim_market.CircularEconomyMonopolyScenario, agents=[(vendors.HumanPlayerCERebuy, ['reptiloid']), (vendors.QLearningCERebuyAgent, ['CircularEconomy_QLearningCEAgent', 'q_learner'])], subfolder_name='subfoldername')
 	assert monitor.enable_live_draw is False
 	assert 10 == monitor.episodes
 	assert 2 == monitor.plot_interval
@@ -137,18 +136,15 @@ def test_RL_agents_need_modelfile():
 
 def test_get_modelfile_path():
 	with pytest.raises(AssertionError) as assertion_message:
-		monitor.get_modelfile_path('wrong_extension.png')
-	assert 'the modelfile must be a .dat file' in str(assertion_message.value)
-	with pytest.raises(AssertionError) as assertion_message:
 		monitor.get_modelfile_path('non_existing_modelfile.dat')
 	assert 'the specified modelfile does not exist' in str(assertion_message.value)
 
 
 # Test once for a Linear, Circular and RebuyPrice Economy
 def test_get_action_space():
-	monitor.setup_monitoring(agents=[(vendors.QLearningLEAgent, ['ClassicScenario_QLearningLEAgent.dat'])], marketplace=sim_market.ClassicScenario)
-	monitor.setup_monitoring(agents=[(vendors.QLearningCEAgent, ['CircularEconomy_QLearningCEAgent.dat'])], marketplace=sim_market.CircularEconomyMonopolyScenario)
-	monitor.setup_monitoring(agents=[(vendors.QLearningCERebuyAgent, ['CircularEconomyRebuyPrice_QLearningCERebuyAgent.dat'])], marketplace=sim_market.CircularEconomyRebuyPriceMonopolyScenario)
+	monitor.setup_monitoring(agents=[(vendors.QLearningLEAgent, ['ClassicScenario_QLearningLEAgent'])], marketplace=sim_market.ClassicScenario)
+	monitor.setup_monitoring(agents=[(vendors.QLearningCEAgent, ['CircularEconomy_QLearningCEAgent'])], marketplace=sim_market.CircularEconomyMonopolyScenario)
+	monitor.setup_monitoring(agents=[(vendors.QLearningCERebuyAgent, ['CircularEconomyRebuyPrice_QLearningCERebuyAgent'])], marketplace=sim_market.CircularEconomyRebuyPriceMonopolyScenario)
 
 
 def test_setting_market_not_agents():
@@ -162,30 +158,6 @@ def test_setup_with_invalid_agents():
 
 def test_setup_with_valid_agents():
 	monitor.setup_monitoring(agents=[(vendors.FixedPriceCERebuyAgent, []), (vendors.FixedPriceCEAgent, [])])
-
-
-def test_metrics_average():
-	assert 6 == monitor.metrics_average(ut_t.create_mock_rewards(12))
-
-
-def test_metrics_median():
-	assert 6 == monitor.metrics_median(ut_t.create_mock_rewards(12))
-
-
-def test_metrics_maximum():
-	assert 11 == monitor.metrics_maximum(ut_t.create_mock_rewards(12))
-
-
-def test_metrics_minimum():
-	assert 1 == monitor.metrics_minimum(ut_t.create_mock_rewards(12))
-
-
-def test_round_up():
-	assert monitor.round_up(999, -3) == 1000
-
-
-def test_round_down():
-	assert monitor.round_down(999, -3) == 0
 
 
 # all arrays in rewards must be of the same size
