@@ -37,8 +37,8 @@ class SimMarket(gym.Env, ABC):
 		self.competitors = self._get_competitor_list()
 		# The agent's price does not belong to the observation_space any more because an agent should not depend on it
 		self._setup_action_observation_space()
-		self.owner = None
-		self.customer = None
+		self._owner = None
+		self._customer = None
 		# TODO: Better testing for the observation and action space
 		assert (self.observation_space and self.action_space), 'Your observation or action space is not defined'
 		# Make sure that variables such as state, customer are known
@@ -69,8 +69,8 @@ class SimMarket(gym.Env, ABC):
 		self.vendor_specific_state = [self._reset_vendor_specific_state() for _ in range(self._get_number_of_vendors())]
 		self.vendor_actions = [self._reset_vendor_actions() for _ in range(self._get_number_of_vendors())]
 
-		self.customer = self._choose_customer()
-		self.owner = self._choose_owner()
+		self._customer = self._choose_customer()
+		self._owner = self._choose_owner()
 
 		return self._observation()
 
@@ -85,7 +85,7 @@ class SimMarket(gym.Env, ABC):
 			offers (np.array): this array contains the offers of the vendors. It has to be compatible with the customers used.
 			number_of_customers (int): the number of customers eager to buy each step.
 		"""
-		probability_distribution = self.customer.generate_purchase_probabilities_from_offer(offers, self._get_offer_length_per_vendor())
+		probability_distribution = self._customer.generate_purchase_probabilities_from_offer(offers, self._get_offer_length_per_vendor())
 		assert isinstance(probability_distribution, np.ndarray), 'generate_purchase_probabilities_from_offer must return an np.ndarray'
 		assert len(probability_distribution) == 1 + (1 if isinstance(self, LinearEconomy) else 2) * self._get_number_of_vendors(), 'The probability distribution must have one entry for buy_nothing and one or two entries for every vendor. One entry if it is a linear economy (with only one price) or a circular economy with the option to buy refurbished or new.'
 
@@ -124,7 +124,7 @@ class SimMarket(gym.Env, ABC):
 		customers_per_vendor_iteration = int(np.floor(ut.NUMBER_OF_CUSTOMERS / self._get_number_of_vendors()))
 		for i in range(self._get_number_of_vendors()):
 			self._simulate_customers(profits, self._generate_customer_offer(), customers_per_vendor_iteration)
-			if self.owner is not None:
+			if self._owner is not None:
 				self._simulate_owners(profits, self._generate_customer_offer())
 
 			# the competitor, which turn it is, will update its pricing
@@ -199,7 +199,7 @@ class SimMarket(gym.Env, ABC):
 	@abstractmethod
 	def _reset_vendor_specific_state(self) -> None:
 		"""
-		The implementation of this function varies between Economy types.
+		The implementation of this function varies between economy types.
 
 		See also:
 			`<market.sim_market.LinearEconomy._reset_vendor_specific_state>`
@@ -448,8 +448,8 @@ class CircularEconomy(SimMarket):
 			profits (np.array(int)): The profits of the vendor.
 			offer (np.array): The offers of the vendor.
 		"""
-		assert self.owner is not None, 'an owner must be set'
-		return_probabilities = self.owner.generate_return_probabilities_from_offer(offer, self._get_offer_length_per_vendor())
+		assert self._owner is not None, 'an owner must be set'
+		return_probabilities = self._owner.generate_return_probabilities_from_offer(offer, self._get_offer_length_per_vendor())
 		assert isinstance(return_probabilities, np.ndarray), 'return_probabilities must be an np.ndarray'
 		assert len(return_probabilities) == 2 + self._get_number_of_vendors(), 'the length of return_probabilities must be the number of vendors plus 2'
 
