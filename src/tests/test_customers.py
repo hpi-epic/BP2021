@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-import configuration.utils_sim_market as ut
+import configuration.utils as ut
 import market.customer as customer
 from market.customer import CustomerCircular as CCircular
 from market.customer import CustomerLinear as CLinear

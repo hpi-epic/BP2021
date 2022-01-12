@@ -5,6 +5,7 @@ runs/
 # output-plots from agent_monitoring.py
 monitoring/*
 !monitoring/*.dat
+!monitoring/MarketOverview_template.svg
 
 # result files from performance.py
 performance/

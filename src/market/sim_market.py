@@ -6,7 +6,8 @@ import gym
 import numpy as np
 
 import agents.vendors as vendors
-import configuration.utils_sim_market as ut
+import configuration.config as config
+import configuration.utils as ut
 import market.customer as customer
 import market.owner as owner
 from market.customer import Customer
@@ -121,7 +122,7 @@ class SimMarket(gym.Env, ABC):
 		self.output_dict = {'customer/buy_nothing': 0}
 		self.initialize_output_dict()
 
-		customers_per_vendor_iteration = int(np.floor(ut.NUMBER_OF_CUSTOMERS / self.get_number_of_vendors()))
+		customers_per_vendor_iteration = int(np.floor(config.NUMBER_OF_CUSTOMERS / self.get_number_of_vendors()))
 		for i in range(self.get_number_of_vendors()):
 			self.simulate_customers(profits, self.generate_customer_offer(), customers_per_vendor_iteration)
 			if self.owner is not None:
@@ -136,7 +137,7 @@ class SimMarket(gym.Env, ABC):
 		self.consider_storage_costs(profits)
 
 		self.ensure_output_dict_has('profits/all', profits)
-		is_done = self.step_counter >= ut.EPISODE_LENGTH
+		is_done = self.step_counter >= config.EPISODE_LENGTH
 		return self.observation(), profits[0], is_done, copy.deepcopy(self.output_dict)
 
 	def observation(self, vendor_view=0) -> np.array:
@@ -322,10 +323,10 @@ class LinearEconomy(SimMarket, ABC):
 		"""
 		self.observation_space = gym.spaces.Box(
 			np.array([0.0] * (len(self.competitors) * 2 + 1)),
-			np.array([ut.MAX_QUALITY] + [ut.MAX_PRICE, ut.MAX_QUALITY] * len(self.competitors)),
+			np.array([config.MAX_QUALITY] + [config.MAX_PRICE, config.MAX_QUALITY] * len(self.competitors)),
 			dtype=np.float64)
 
-		self.action_space = gym.spaces.Discrete(ut.MAX_PRICE)
+		self.action_space = gym.spaces.Discrete(config.MAX_PRICE)
 
 	def reset_vendor_specific_state(self) -> list:
 		"""
@@ -335,7 +336,7 @@ class LinearEconomy(SimMarket, ABC):
 			list: a list containing the quality value of the product.
 
 		See also:
-			`configuration.utils_sim_market.shuffle_quality`
+			`configuration.utils.shuffle_quality`
 		"""
 		return [ut.shuffle_quality()]
 
@@ -349,10 +350,10 @@ class LinearEconomy(SimMarket, ABC):
 		Returns:
 			int: The new price.
 		"""
-		return ut.PRODUCTION_PRICE + 1
+		return config.PRODUCTION_PRICE + 1
 
 	def complete_purchase(self, profits, chosen_vendor) -> None:
-		profits[chosen_vendor] += self.vendor_actions[chosen_vendor] - ut.PRODUCTION_PRICE
+		profits[chosen_vendor] += self.vendor_actions[chosen_vendor] - config.PRODUCTION_PRICE
 		self.output_dict['customer/purchases']['vendor_' + str(chosen_vendor)] += 1
 
 	def initialize_output_dict(self):
@@ -383,8 +384,8 @@ class CircularEconomy(SimMarket):
 		# cell 0: number of products in the used storage, cell 1: number of products in circulation
 		self.max_storage = 1e2
 		self.max_circulation = 10 * self.max_storage
-		self.observation_space = gym.spaces.Box(np.array([0, 0] + [0, 0, 0] * len(self.competitors)), np.array([self.max_circulation, self.max_storage] + [ut.MAX_PRICE, ut.MAX_PRICE, self.max_storage] * len(self.competitors)), dtype=np.float64)
-		self.action_space = gym.spaces.Tuple((gym.spaces.Discrete(ut.MAX_PRICE), gym.spaces.Discrete(ut.MAX_PRICE)))
+		self.observation_space = gym.spaces.Box(np.array([0, 0] + [0, 0, 0] * len(self.competitors)), np.array([self.max_circulation, self.max_storage] + [config.MAX_PRICE, config.MAX_PRICE, self.max_storage] * len(self.competitors)), dtype=np.float64)
+		self.action_space = gym.spaces.Tuple((gym.spaces.Discrete(config.MAX_PRICE), gym.spaces.Discrete(config.MAX_PRICE)))
 
 	def reset_vendor_specific_state(self) -> list:
 		"""
@@ -409,7 +410,7 @@ class CircularEconomy(SimMarket):
 		Returns:
 			tuple: (refurbished_price, new_price)
 		"""
-		return (ut.PRODUCTION_PRICE, ut.PRODUCTION_PRICE + 1)
+		return (config.PRODUCTION_PRICE, config.PRODUCTION_PRICE + 1)
 
 	def choose_customer(self) -> Customer:
 		return customer.CustomerCircular()
@@ -488,12 +489,12 @@ class CircularEconomy(SimMarket):
 				self.vendor_specific_state[chosen_vendor][0] -= 1
 			else:
 				# Punish the agent for not having enough second-hand-products
-				profits[chosen_vendor] -= 2 * ut.MAX_PRICE
-				self.output_dict['profits/by_selling_refurbished']['vendor_' + str(chosen_vendor)] -= 2 * ut.MAX_PRICE
+				profits[chosen_vendor] -= 2 * config.MAX_PRICE
+				self.output_dict['profits/by_selling_refurbished']['vendor_' + str(chosen_vendor)] -= 2 * config.MAX_PRICE
 		else:
 			self.output_dict['customer/purchases_new']['vendor_' + str(chosen_vendor)] += 1
-			profits[chosen_vendor] += self.vendor_actions[chosen_vendor][1] - ut.PRODUCTION_PRICE
-			self.output_dict['profits/by_selling_new']['vendor_' + str(chosen_vendor)] += self.vendor_actions[chosen_vendor][1] - ut.PRODUCTION_PRICE
+			profits[chosen_vendor] += self.vendor_actions[chosen_vendor][1] - config.PRODUCTION_PRICE
+			self.output_dict['profits/by_selling_new']['vendor_' + str(chosen_vendor)] += self.vendor_actions[chosen_vendor][1] - config.PRODUCTION_PRICE
 			# One more product is in circulation now, but only 10 times the amount of storage space we have
 			self.in_circulation = min(self.in_circulation + 1, self.max_circulation)
 
@@ -541,8 +542,8 @@ class CircularEconomyRebuyPrice(CircularEconomy):
 
 	def setup_action_observation_space(self) -> None:
 		super().setup_action_observation_space()
-		self.observation_space = gym.spaces.Box(np.array([0, 0] + [0, 0, 0, 0] * len(self.competitors)), np.array([self.max_circulation, self.max_storage] + [ut.MAX_PRICE, ut.MAX_PRICE, ut.MAX_PRICE, self.max_storage] * len(self.competitors)), dtype=np.float64)
-		self.action_space = gym.spaces.Tuple((gym.spaces.Discrete(ut.MAX_PRICE), gym.spaces.Discrete(ut.MAX_PRICE), gym.spaces.Discrete(ut.MAX_PRICE)))
+		self.observation_space = gym.spaces.Box(np.array([0, 0] + [0, 0, 0, 0] * len(self.competitors)), np.array([self.max_circulation, self.max_storage] + [config.MAX_PRICE, config.MAX_PRICE, config.MAX_PRICE, self.max_storage] * len(self.competitors)), dtype=np.float64)
+		self.action_space = gym.spaces.Tuple((gym.spaces.Discrete(config.MAX_PRICE), gym.spaces.Discrete(config.MAX_PRICE), gym.spaces.Discrete(config.MAX_PRICE)))
 
 	def reset_vendor_actions(self) -> tuple:
 		"""
@@ -551,7 +552,7 @@ class CircularEconomyRebuyPrice(CircularEconomy):
 		Returns:
 			tuple: (refurbished_price, new_price, rebuy_price)
 		"""
-		return (ut.PRODUCTION_PRICE, ut.PRODUCTION_PRICE + 1, 1)
+		return (config.PRODUCTION_PRICE, config.PRODUCTION_PRICE + 1, 1)
 
 	def choose_owner(self) -> Owner:
 		return owner.OwnerRebuy()
