@@ -13,6 +13,9 @@ import rl.model as model
 
 
 class ActorCriticAgent(vendors.Agent, ABC):
+	"""
+	This is an implementation of an (one step) actor critic agent as proposed in Richard Suttons textbook on page 332.
+	"""
 	def __init__(self, n_observations, n_actions):
 		self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
 		print(f'I initiate an ActorCriticAgent using {self.device} device')
@@ -80,6 +83,10 @@ class ActorCriticAgent(vendors.Agent, ABC):
 
 
 class DiscreteActorCriticAgent(ActorCriticAgent):
+	"""
+	This is an actor critic agent with continuos action space.
+	It generates preferences and uses softmax to gain the probabilities.
+	"""
 	def initialize_models_and_optimizer(self, n_observations, n_actions):
 		self.actor_net = model.simple_network(n_observations, n_actions).to(self.device)
 		self.actor_optimizer = torch.optim.Adam(self.actor_net.parameters(), lr=0.0000025)
@@ -117,6 +124,10 @@ class DiscreteACACircularEconomyRebuy(DiscreteActorCriticAgent):
 
 
 class ContinuosActorCriticAgent(ActorCriticAgent):
+	"""
+	This is an actor critic agent with continuos action space.
+	It's parametrization is a normal distribution with fixed mean.
+	"""
 	softplus = torch.nn.Softplus()
 
 	def initialize_models_and_optimizer(self, n_observations, n_actions):
