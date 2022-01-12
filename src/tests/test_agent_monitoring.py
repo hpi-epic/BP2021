@@ -49,10 +49,7 @@ def test_get_folder():
 
 def test_get_modelfile_path():
 	with pytest.raises(AssertionError) as assertion_message:
-		monitor.get_modelfile_path('wrong_extension.png')
-	assert 'the modelfile must be a .dat file' in str(assertion_message.value)
-	with pytest.raises(AssertionError) as assertion_message:
-		monitor.get_modelfile_path('non_existing_modelfile.dat')
+		monitor.get_modelfile_path('non_existing_modelfile')
 	assert 'the specified modelfile does not exist' in str(assertion_message.value)
 
 
@@ -101,7 +98,7 @@ def test_correct_setup_monitoring():
 	assert isinstance(monitor.agents[1], vendors.QLearningCERebuyAgent)
 	assert 'reptiloid' == monitor.agents[0].name
 	assert 'q_learner' == monitor.agents[1].name
-	assert os.path.normcase(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring' + os.sep + 'subfoldername') == os.path.normcase(monitor.folder_path)
+	assert os.path.normcase(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'monitoring', 'subfoldername'))) == os.path.normcase(os.path.abspath(monitor.folder_path))
 	assert 2 == len(monitor.agent_colors)
 
 
@@ -199,21 +196,6 @@ def test_get_configuration():
 	assert 'agents' in current_configuration
 	assert 'agent_colors' in current_configuration
 	assert 'folder_path' in current_configuration
-
-
-def test_RL_agents_need_modelfile():
-	with pytest.raises(AssertionError) as assertion_message:
-		monitor.setup_monitoring(marketplace=sim_market.CircularEconomyMonopolyScenario, agents=[(vendors.QLearningCEAgent, [])])
-	assert 'the first argument for an reinforcement lerner needs to be a modelfile, the second one is an optional name (str)' in str(assertion_message.value)
-	with pytest.raises(AssertionError) as assertion_message:
-		monitor.setup_monitoring(marketplace=sim_market.CircularEconomyMonopolyScenario, agents=[(vendors.QLearningCEAgent, ['modelfile.dat', 35])])
-	assert 'the first argument for an reinforcement lerner needs to be a modelfile, the second one is an optional name (str)' in str(assertion_message.value)
-	with pytest.raises(AssertionError) as assertion_message:
-		monitor.setup_monitoring(marketplace=sim_market.CircularEconomyMonopolyScenario, agents=[(vendors.QLearningCEAgent, [25])])
-	assert 'the modelfile must be of type str' in str(assertion_message.value)
-	with pytest.raises(AssertionError) as assertion_message:
-		monitor.setup_monitoring(marketplace=sim_market.CircularEconomyMonopolyScenario, agents=[(vendors.QLearningCEAgent, ['mymodel.dat'])])
-	assert 'the specified modelfile does not exist' in str(assertion_message.value)
 
 
 def test_setup_with_invalid_agents():

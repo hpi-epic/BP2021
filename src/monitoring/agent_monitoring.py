@@ -18,13 +18,12 @@ class Monitor():
 
 	def __init__(self) -> None:
 		# Do not change the values in here when setting up a session! They are assumed in tests. Instead use setup_monitoring()!
-		assert os.path.exists(self.get_modelfile_path('CircularEconomy_QLearningCEAgent')), 'the default modelfile \'CircularEconomy_QLearningCEAgent.dat\' does not exist'
 		self.enable_live_draw = True
 		self.episodes = 500
 		self.plot_interval = 50
 		self.marketplace = sim_market.CircularEconomyMonopolyScenario()
 		default_agent = vendors.QLearningCEAgent
-		default_modelfile = f'{type(self.marketplace).__name__}_{default_agent.__name__}.dat'
+		default_modelfile = f'{type(self.marketplace).__name__}_{default_agent.__name__}'
 		assert os.path.exists(self.get_modelfile_path(default_modelfile)), f'the default modelfile does not exist: {default_modelfile}'
 		self.agents = [default_agent(self.marketplace.observation_space.shape[0], self.get_action_space(), load_path=self.get_modelfile_path(default_modelfile))]
 		self.agent_colors = [(0.0, 0.0, 1.0, 1.0)]
@@ -102,7 +101,7 @@ class Monitor():
 					assert (0 <= len(current_agent[1]) <= 2), 'the argument list for a RL-agent must have length between 0 and 2'
 					assert all(isinstance(argument, str) for argument in current_agent[1]), 'the arguments for a RL-agent must be of type str'
 
-					agent_modelfile = f'{type(self.marketplace).__name__}_{current_agent[0].__name__}.dat'
+					agent_modelfile = f'{type(self.marketplace).__name__}_{current_agent[0].__name__}'
 					agent_name = 'q_learning'
 					# no arguments
 					if len(current_agent[1]) == 0:
@@ -113,11 +112,11 @@ class Monitor():
 						agent_name = current_agent[1][0]
 					# only modelfile argument
 					elif len(current_agent[1]) == 1 and str.endswith(current_agent[1][0], '.dat'):
-						agent_modelfile = current_agent[1][0]
+						agent_modelfile = current_agent[1][0][:-4]
 					# both arguments
 					elif len(current_agent[1]) == 2:
 						assert str.endswith(current_agent[1][0], '.dat'), f'if two arguments are provided, the first one must be the modelfile. Arg1: {current_agent[1][0]}, Arg2: {current_agent[1][1]}'
-						agent_modelfile = current_agent[1][0]
+						agent_modelfile = current_agent[1][0][:-4]
 						agent_name = current_agent[1][1]
 					# this should never happen due to the asserts before, but you never know
 					else:  # pragma: no cover
@@ -132,9 +131,7 @@ class Monitor():
 
 		# set a color for each agent
 		color_map = plt.cm.get_cmap('hsv', len(self.agents) + 1)
-		self.agent_colors = [color_map(agent_id) for agent_id in self.agents]
-		for agent_id in range(len(self.agents)):
-			self.agent_colors.append(color_map(agent_id))
+		self.agent_colors = [color_map(agent_id) for agent_id in range(len(self.agents))]
 
 	def setup_monitoring(self, enable_live_draw: bool = None, episodes: int = None, plot_interval: int = None, marketplace: sim_market.SimMarket = None, agents: list = None, subfolder_name: str = None) -> None:
 		# sourcery skip: extract-duplicate-method

@@ -1,19 +1,17 @@
-#!/usr/bin/env python3
-
-# helper
 import math
+import os
 import time
 
 import numpy as np
 from torch.utils.tensorboard import SummaryWriter
 
 import agents.vendors as vendors
-import configuration.utils_rl as ut_rl
-import configuration.utils_sim_market as ut
+import configuration.config as config
+import configuration.utils as ut
 
 
 # Gets the profit array of all vendors and returns the necessary dict for direct comparison in tb
-def direct_comparison_dict(profits):
+def direct_comparison_dict(profits) -> dict:
 	comparison_dict = {}
 	n_vendors = len(profits[0])
 	for i in range(n_vendors):
@@ -23,8 +21,16 @@ def direct_comparison_dict(profits):
 	return comparison_dict
 
 
-def train_QLearning_agent(RL_agent, environment, maxsteps=2 * ut_rl.EPSILON_DECAY_LAST_FRAME, log_dir_prepend=''):
-	assert isinstance(RL_agent, vendors.QLearningAgent)
+def train_QLearning_agent(RL_agent, environment, maxsteps=2 * config.EPSILON_DECAY_LAST_FRAME, log_dir_prepend='') -> None:
+	"""
+	Train a QLearningAgent on a market environment.
+	Args:
+		RL_agent (agents.vendors instance): The agent that should be trained.
+		environment (market.sim_market instance): The market environment used for the training.
+		maxsteps (int, optional): The maximum number of steps the training will run for. Defaults to 2*config.EPSILON_DECAY_LAST_FRAME.
+		log_dir_prepend (str, optional): A string that is prepended to the log directory created by Tensorboard. Defaults to ''.
+	"""
+	assert isinstance(RL_agent, vendors.QLearningAgent), f'the passed agent must be a QLearningAgent: {RL_agent}'
 	state = environment.reset()
 
 	frame_number_last_speed_update = 0
@@ -35,12 +41,12 @@ def train_QLearning_agent(RL_agent, environment, maxsteps=2 * ut_rl.EPSILON_DECA
 	losses = []
 	rmse_losses = []
 	selected_q_vals = []
-	best_m_reward = 0
+	best_mean_reward = 0
 
 	# tensorboard init
-	writer = SummaryWriter(log_dir='runs/' + log_dir_prepend + time.strftime('%Y%m%d-%H%M%S') + f'_{type(environment).__name__}_{type(RL_agent).__name__}_training')
+	writer = SummaryWriter()
 	for frame_idx in range(maxsteps):
-		epsilon = max(ut_rl.EPSILON_FINAL, ut_rl.EPSILON_START - frame_idx / ut_rl.EPSILON_DECAY_LAST_FRAME)
+		epsilon = max(config.EPSILON_FINAL, config.EPSILON_START - frame_idx / config.EPSILON_DECAY_LAST_FRAME)
 
 		action = RL_agent.policy(state, epsilon)
 		state, reward, is_done, info = environment.step(action)
@@ -63,46 +69,51 @@ def train_QLearning_agent(RL_agent, environment, maxsteps=2 * ut_rl.EPSILON_DECA
 					averaged_info = ut.add_content_of_two_dicts(averaged_info, next_dict)
 			averaged_info = ut.divide_content_of_dict(averaged_info, len(sliced_dicts))
 
-			m_reward = averaged_info['profits/all']['vendor_0']
+			mean_reward = averaged_info['profits/all']['vendor_0']
 
-			writer.add_scalar('Profit_mean/agent', m_reward, frame_idx / ut.EPISODE_LENGTH)
-			ut.write_dict_to_tensorboard(writer, averaged_info, frame_idx / ut.EPISODE_LENGTH, is_cumulative=True)
-			if frame_idx > ut_rl.REPLAY_START_SIZE:
+			writer.add_scalar('Profit_mean/agent', mean_reward, frame_idx / config.EPISODE_LENGTH)
+			ut.write_dict_to_tensorboard(writer, averaged_info, frame_idx / config.EPISODE_LENGTH, is_cumulative=True)
+			if frame_idx > config.REPLAY_START_SIZE:
 				writer.add_scalar(
-					'Loss/MSE', np.mean(losses[-1000:]), frame_idx / ut.EPISODE_LENGTH
+					'Loss/MSE', np.mean(losses[-1000:]), frame_idx / config.EPISODE_LENGTH
 				)
 				writer.add_scalar(
-					'Loss/RMSE', np.mean(rmse_losses[-1000:]), frame_idx / ut.EPISODE_LENGTH
+					'Loss/RMSE', np.mean(rmse_losses[-1000:]), frame_idx / config.EPISODE_LENGTH
 				)
 				writer.add_scalar(
 					'Loss/selected_q_vals',
 					np.mean(selected_q_vals[-1000:]),
-					frame_idx / ut.EPISODE_LENGTH,
+					frame_idx / config.EPISODE_LENGTH,
 				)
-			writer.add_scalar('epsilon', epsilon, frame_idx / ut.EPISODE_LENGTH)
-			print('%d: done %d games, this episode return %.3f, mean return %.3f, eps %.2f, speed %.2f f/s' % (frame_idx, len(all_dicts), all_dicts[-1]['profits/all']['vendor_0'], m_reward, epsilon, speed))
+			writer.add_scalar('epsilon', epsilon, frame_idx / config.EPISODE_LENGTH)
+			print(f'''{frame_idx}: done {len(all_dicts)} games, this episode return {all_dicts[-1]['profits/all']['vendor_0']:.3f}, mean return {mean_reward:.3f}, eps {epsilon:.2f}, speed {speed:.2f} f/s''')
 
-			if (
-				best_m_reward is None or best_m_reward < m_reward
-			) and frame_idx > ut_rl.EPSILON_DECAY_LAST_FRAME + 101:
-				RL_agent.save(type(environment).__name__ + '_' + type(RL_agent).__name__ + '_%.2f.dat' % m_reward)
-				if best_m_reward is not None:
-					print('Best reward updated %.3f -> %.3f' % (best_m_reward, m_reward))
-				best_m_reward = m_reward
-			if m_reward > ut.MEAN_REWARD_BOUND:
-				print('Solved in %d frames!' % frame_idx)
+			if (frame_idx > config.EPSILON_DECAY_LAST_FRAME + 101) and (best_mean_reward < mean_reward):
+				RL_agent.save(f'{type(environment).__name__}_{type(RL_agent).__name__}', f'{mean_reward:.3f}.dat')
+				if best_mean_reward != 0:
+					print(f'Best reward updated {best_mean_reward:.3f} -> {mean_reward:.3f}')
+				best_mean_reward = mean_reward
+			if mean_reward > config.MEAN_REWARD_BOUND:
+				print(f'Solved in {frame_idx} frames!')
 				break
 
 			vendors_cumulated_info = None
 			environment.reset()
 
-		if len(RL_agent.buffer) < ut_rl.REPLAY_START_SIZE:
+		if len(RL_agent.buffer) < config.REPLAY_START_SIZE:
 			continue
 
-		if frame_idx % ut_rl.SYNC_TARGET_FRAMES == 0:
+		if frame_idx % config.SYNC_TARGET_FRAMES == 0:
 			RL_agent.synchronize_tgt_net()
 
 		loss, selected_q_val_mean = RL_agent.train_batch()
 		losses.append(loss)
 		rmse_losses.append(math.sqrt(loss))
 		selected_q_vals.append(selected_q_val_mean)
+
+	if best_mean_reward == 0:
+		print('The mean reward of the agent was never higher than 0, so no models were saved!')
+	else:
+		print(f'The best mean reward reached by the agent was {best_mean_reward:.3f}')
+		print('The models were saved to:')
+		print(os.path.abspath(os.path.join('trainedModels', f'{type(environment).__name__}_{type(RL_agent).__name__}')))

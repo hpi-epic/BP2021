@@ -2,7 +2,8 @@ from torch import nn
 
 
 def simple_network(input_size, output_size) -> nn.modules.container.Sequential:
-	"""A network with one small hidden layer and user-defined input and output sizes.
+	"""
+	A network with one small hidden layer and user-defined input and output sizes.
 
 	Args:
 		input_size (int): Number of input nodes.
