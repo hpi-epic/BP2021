@@ -129,7 +129,7 @@ def train_actorcritic(Scenario=sim_market.CircularEconomyRebuyPriceOneCompetitor
 	all_policy_losses = []
 	writer = SummaryWriter()
 
-	episodes_accomplished = 0
+	finished_episodes = 0
 	total_envs = 128
 	environments = [Scenario() for _ in range(total_envs)]
 	info_accumulators = [None for _ in range(total_envs)]
@@ -161,9 +161,9 @@ def train_actorcritic(Scenario=sim_market.CircularEconomyRebuyPriceOneCompetitor
 			info_accumulators[env] = info if info_accumulators[env] is None else ut.add_content_of_two_dicts(info_accumulators[env], info)
 
 			if is_done:
-				episodes_accomplished += 1
-				if episodes_accomplished % 10 == 0:
-					print('I accomplished', episodes_accomplished, 'episodes')
+				finished_episodes += 1
+				if finished_episodes % 10 == 0:
+					print(f'Finished {finished_episodes} episodes')
 				all_dicts.append(info_accumulators[env])
 
 				# calculate the average of the last 100 items
@@ -173,17 +173,17 @@ def train_actorcritic(Scenario=sim_market.CircularEconomyRebuyPriceOneCompetitor
 					if i != 0:
 						averaged_info = ut.add_content_of_two_dicts(averaged_info, next_dict)
 				averaged_info = ut.divide_content_of_dict(averaged_info, len(sliced_dicts))
-				ut.write_dict_to_tensorboard(writer, averaged_info, episodes_accomplished, is_cumulative=True)
+				ut.write_dict_to_tensorboard(writer, averaged_info, finished_episodes, is_cumulative=True)
 				if verbose:
-					writer.add_scalar('training/prob_mean', np.mean(all_probs[-1000:]), episodes_accomplished)
-					writer.add_scalar('training/v_estimate', np.mean(all_v_estimates[-1000:]), episodes_accomplished)
-				writer.add_scalar('loss/value', np.mean(all_value_losses[-1000:]), episodes_accomplished)
-				writer.add_scalar('loss/policy', np.mean(all_policy_losses[-1000:]), episodes_accomplished)
+					writer.add_scalar('training/prob_mean', np.mean(all_probs[-1000:]), finished_episodes)
+					writer.add_scalar('training/v_estimate', np.mean(all_v_estimates[-1000:]), finished_episodes)
+				writer.add_scalar('loss/value', np.mean(all_value_losses[-1000:]), finished_episodes)
+				writer.add_scalar('loss/policy', np.mean(all_policy_losses[-1000:]), finished_episodes)
 
 				environments[env].reset()
 				info_accumulators[env] = None
 
-		valueloss, policy_loss = agent.train_batch(torch.Tensor(np.array(states)), torch.from_numpy(np.array(actions, dtype=np.int64)), torch.Tensor(np.array(rewards)), torch.Tensor(np.array(state_dash)), episodes_accomplished <= 500)
+		valueloss, policy_loss = agent.train_batch(torch.Tensor(np.array(states)), torch.from_numpy(np.array(actions, dtype=np.int64)), torch.Tensor(np.array(rewards)), torch.Tensor(np.array(state_dash)), finished_episodes <= 500)
 		all_value_losses.append(valueloss)
 		all_policy_losses.append(policy_loss)
 
