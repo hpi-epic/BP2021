@@ -86,7 +86,7 @@ class DiscreteACACircularEconomyRebuy(DiscreteActorCriticAgent):
 		return (int(step / 100), int(step / 10 % 10), int(step % 10))
 
 
-class SoftActorCriticAgent(ActorCriticAgent):
+class ContinuosActorCriticAgent(ActorCriticAgent):
 	softplus = torch.nn.Softplus()
 
 	def initialize_models_and_optimizer(self, n_observations, n_actions):
@@ -118,7 +118,7 @@ class SoftActorCriticAgent(ActorCriticAgent):
 		return step.tolist()
 
 
-def train_actorcritic(marketplace_class=sim_market.CircularEconomyRebuyPriceOneCompetitor, agent_class=SoftActorCriticAgent, outputs=3, verbose=False):
+def train_actorcritic(marketplace_class=sim_market.CircularEconomyRebuyPriceOneCompetitor, agent_class=ContinuosActorCriticAgent, outputs=3, verbose=False):
 	assert issubclass(agent_class, ActorCriticAgent), f'the agent_class must be a subclass of ActorCriticAgent: {agent_class}'
 	agent = agent_class(marketplace_class().observation_space.shape[0], outputs)
 
