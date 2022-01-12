@@ -7,8 +7,7 @@ from abc import ABC, abstractmethod
 import numpy as np
 import torch
 
-import configuration.utils_rl as ut_rl
-import configuration.utils_sim_market as ut
+import configuration.config as config
 import rl.model as model
 from market.customer import CustomerCircular
 from rl.experience_buffer import ExperienceBuffer
@@ -33,8 +32,8 @@ class Agent(ABC):
 		return class_name(*args)
 
 	@abstractmethod
-	def policy(self, observation, epsilon=0):
-		raise NotImplementedError
+	def policy(self, observation, epsilon=0):  # pragma: no cover
+		raise NotImplementedError('This method is abstract. Use a subclass')
 
 
 class CircularAgent(Agent, ABC):
@@ -55,8 +54,8 @@ class ReinforcementLearningAgent(Agent, ABC):
 
 class HumanPlayer(RuleBasedAgent, ABC):
 	@abstractmethod
-	def policy(self, observation, *_) -> int:
-		raise NotImplementedError
+	def policy(self, observation, *_) -> int:  # pragma: no cover
+		raise NotImplementedError('This method is abstract. Use a subclass')
 
 
 class HumanPlayerLE(LinearAgent, HumanPlayer):
@@ -97,8 +96,8 @@ class FixedPriceAgent(RuleBasedAgent, ABC):
 
 
 class FixedPriceLEAgent(LinearAgent, FixedPriceAgent):
-	def __init__(self, fixed_price=ut.PRODUCTION_PRICE + 3, name='fixed_price_le'):
-		assert isinstance(fixed_price, int), 'The fixed_price must be an integer'
+	def __init__(self, fixed_price=config.PRODUCTION_PRICE + 3, name='fixed_price_le'):
+		assert isinstance(fixed_price, int), 'the fixed_price must be an integer'
 		self.name = name
 		self.fixed_price = fixed_price
 
@@ -108,7 +107,9 @@ class FixedPriceLEAgent(LinearAgent, FixedPriceAgent):
 
 class FixedPriceCEAgent(CircularAgent, FixedPriceAgent):
 	def __init__(self, fixed_price=(2, 4), name='fixed_price_ce'):
-		assert isinstance(fixed_price, tuple) and len(fixed_price) == 2, 'The fixed_price must be a tuple of integers'
+		assert isinstance(fixed_price, tuple), 'fixed_price must be a tuple'
+		assert len(fixed_price) == 2, 'fixed_price must contain two values'
+		assert all(isinstance(price, int) for price in fixed_price), 'the prices in fixed_price must be integers'
 		self.name = name
 		self.fixed_price = fixed_price
 
@@ -118,7 +119,9 @@ class FixedPriceCEAgent(CircularAgent, FixedPriceAgent):
 
 class FixedPriceCERebuyAgent(FixedPriceCEAgent):
 	def __init__(self, fixed_price=(3, 6, 2), name='fixed_price_ce_rebuy'):
-		assert isinstance(fixed_price, tuple) and len(fixed_price) == 3, 'The fixed_price must be a triple of integers'
+		assert isinstance(fixed_price, tuple), 'fixed_price must be a tuple'
+		assert len(fixed_price) == 3, 'fixed_price must contain three values'
+		assert all(isinstance(price, int) for price in fixed_price), 'the prices in fixed_price must be integers'
 		self.name = name
 		self.fixed_price = fixed_price
 
@@ -137,33 +140,33 @@ class RuleBasedCEAgent(RuleBasedAgent, CircularAgent):
 		# this policy sets the prices according to the amount of available storage
 		products_in_storage = observation[1]
 		price_old = 0
-		price_new = ut.PRODUCTION_PRICE
+		price_new = config.PRODUCTION_PRICE
 		rebuy_price = 0
-		if products_in_storage < ut.MAX_STORAGE / 15:
+		if products_in_storage < config.MAX_STORAGE / 15:
 			# fill up the storage immediately
-			price_old = int(ut.MAX_PRICE * 6 / 10)
-			price_new += int(ut.MAX_PRICE * 6 / 10)
+			price_old = int(config.MAX_PRICE * 6 / 10)
+			price_new += int(config.MAX_PRICE * 6 / 10)
 			rebuy_price = price_old - 1
 
-		elif products_in_storage < ut.MAX_STORAGE / 10:
+		elif products_in_storage < config.MAX_STORAGE / 10:
 			# fill up the storage
-			price_old = int(ut.MAX_PRICE * 5 / 10)
-			price_new += int(ut.MAX_PRICE * 5 / 10)
+			price_old = int(config.MAX_PRICE * 5 / 10)
+			price_new += int(config.MAX_PRICE * 5 / 10)
 			rebuy_price = price_old - 2
 
-		elif products_in_storage < ut.MAX_STORAGE / 8:
+		elif products_in_storage < config.MAX_STORAGE / 8:
 			# storage content is ok
-			price_old = int(ut.MAX_PRICE * 4 / 10)
-			price_new += int(ut.MAX_PRICE * 4 / 10)
+			price_old = int(config.MAX_PRICE * 4 / 10)
+			price_new += int(config.MAX_PRICE * 4 / 10)
 			rebuy_price = int(price_old / 2)
 		else:
 			# storage too full, we need to get rid of some refurbished products
-			price_old = int(ut.MAX_PRICE * 2 / 10)
-			price_new += int(ut.MAX_PRICE * 7 / 10)
+			price_old = int(config.MAX_PRICE * 2 / 10)
+			price_new += int(config.MAX_PRICE * 7 / 10)
 			rebuy_price = 0
 
 		price_new = min(9, price_new)
-		assert price_old <= price_new
+		assert price_old <= price_new, 'The price for used products should be lower or equal to the price of new products'
 		return self.return_prices(price_old, price_new, rebuy_price)
 
 	def greedy_policy(self, observation) -> int:
@@ -171,14 +174,14 @@ class RuleBasedCEAgent(RuleBasedAgent, CircularAgent):
 		# and trying each used_price, new_price combination
 		# Warning, this strategy is not very good or optimal
 		customers = []
-		for _ in range(0, ut.NUMBER_OF_CUSTOMERS * 10):
+		for _ in range(0, config.NUMBER_OF_CUSTOMERS * 10):
 			customers += [CustomerCircular()]
 
 		max_profit = -9999999999999  # we have not found a better solution yet
-		max_price_n = 0
-		max_price_u = 0
-		for p_u in range(1, ut.MAX_PRICE):
-			for p_n in range(1, ut.MAX_PRICE):
+		max_price_new = 0
+		max_price_used = 0
+		for p_u in range(1, config.MAX_PRICE):
+			for p_n in range(1, config.MAX_PRICE):
 				storage = observation[0]
 				exp_sales_new = 0
 				exp_sales_old = 0
@@ -197,11 +200,11 @@ class RuleBasedCEAgent(RuleBasedAgent, CircularAgent):
 				exp_profit = (p_n * exp_sales_new + p_u * exp_sales_old) - ((storage + exp_return_prod) * 2)
 				if exp_profit > max_profit:
 					max_profit = exp_profit
-					max_price_n = p_n
-					max_price_u = p_u
-		print(max_price_u, max_price_n)
-		assert max_price_n > 0 and max_price_u > 0
-		return (max_price_u, max_price_n)
+					max_price_new = p_n
+					max_price_used = p_u
+		print(max_price_used, max_price_new)
+		assert max_price_new > 0 and max_price_used > 0, 'both max_prices must be greater 0'
+		return (max_price_used, max_price_new)
 
 
 class RuleBasedCERebuyAgent(RuleBasedCEAgent):
@@ -221,20 +224,20 @@ class QLearningAgent(ReinforcementLearningAgent, ABC):
 		self.buffer_for_feedback = None
 		self.optimizer = None
 		self.name = name
-		# print(f'I initiate a QLearningAgent using {self.device} device')
+		print(f'I initiate a QLearningAgent using {self.device} device')
 		self.net = model.simple_network(n_observation, n_actions).to(self.device)
 		if load_path:
 			self.net.load_state_dict(torch.load(load_path, map_location=self.device))
 		if optim:
-			self.optimizer = optim(self.net.parameters(), lr=ut_rl.LEARNING_RATE)
+			self.optimizer = optim(self.net.parameters(), lr=config.LEARNING_RATE)
 			self.tgt_net = model.simple_network(n_observation, n_actions).to(self.device)
 			if load_path:
 				self.tgt_net.load_state_dict(torch.load(load_path), map_location=self.device)
-			self.buffer = ExperienceBuffer(ut_rl.REPLAY_SIZE)
+			self.buffer = ExperienceBuffer(config.REPLAY_SIZE)
 
 	@torch.no_grad()
 	def policy(self, observation, epsilon=0):
-		assert self.buffer_for_feedback is None or self.optimizer is None
+		assert self.buffer_for_feedback is None or self.optimizer is None, 'one of buffer_for_feedback or optimizer must be None'
 		if np.random.random() < epsilon:
 			action = random.randint(0, self.n_actions - 1)
 		else:
@@ -250,7 +253,7 @@ class QLearningAgent(ReinforcementLearningAgent, ABC):
 
 	def train_batch(self):
 		self.optimizer.zero_grad()
-		batch = self.buffer.sample(ut_rl.BATCH_SIZE)
+		batch = self.buffer.sample(config.BATCH_SIZE)
 		loss_t, selected_q_val_mean = self.calc_loss(batch, self.device)
 		loss_t.backward()
 		self.optimizer.step()
@@ -275,13 +278,36 @@ class QLearningAgent(ReinforcementLearningAgent, ABC):
 			next_state_values[done_mask] = 0.0
 			next_state_values = next_state_values.detach()
 
-		expected_state_action_values = next_state_values * ut_rl.GAMMA + rewards_v
+		expected_state_action_values = next_state_values * config.GAMMA + rewards_v
 		return torch.nn.MSELoss()(state_action_values, expected_state_action_values), state_action_values.mean()
 
-	def save(self, path='QLearning_parameters'):
+	def save(self, path_name, model_name) -> None:
+		"""
+		Save a trained model to the specified folder within 'trainedModels'.
+
+		Also caps the amount of models in the folder to a maximum of 10.
+
+		Args:
+			path_name (str): The name of the folder within 'trainedModels' where the model should be saved.
+			model_name (str): The name of the .dat file of this specific model.
+		"""
+		model_name += '.dat'
 		if not os.path.isdir('trainedModels'):
 			os.mkdir('trainedModels')
-		torch.save(self.net.state_dict(), './trainedModels/' + path)
+		if not os.path.isdir(f'trainedModels/{path_name}'):
+			os.mkdir(f'trainedModels/{path_name}')
+		torch.save(self.net.state_dict(), f'./trainedModels/{path_name}/{model_name}')
+
+		full_directory = os.walk(f'./trainedModels/{path_name}')
+		for _, _, filenames in full_directory:
+			if len(filenames) > 10:
+				# TODO: Should we instead delete the oldest files?
+				# sort numbers by value to delete the smallest rewards
+				filenames = [float(reward[:-4]) for reward in filenames]
+				filenames = sorted(filenames)
+
+				for file in range(len(filenames) - 10):
+					os.remove(f'./trainedModels/{path_name}/{filenames[file]:.3f}.dat')
 
 
 class QLearningLEAgent(QLearningAgent, LinearAgent):
@@ -316,19 +342,21 @@ class CompetitorLinearRatio1(LinearAgent, RuleBasedAgent):
 
 		ratio = max_competing_ratio / ratios[0]
 		intended = math.floor(1 / max_competing_ratio * state[0]) - 1
-		actual_price = min(max(ut.PRODUCTION_PRICE + 1, intended), ut.MAX_PRICE - 1)
+		actual_price = min(max(config.PRODUCTION_PRICE + 1, intended), config.MAX_PRICE - 1)
 		# print('price from the competitor:', actual_price)
 		return actual_price
 
 
 class CompetitorRandom(LinearAgent, RuleBasedAgent):
 	def policy(self, state, epsilon=0):
-		return random.randint(ut.PRODUCTION_PRICE + 1, ut.MAX_PRICE - 1)
+		return random.randint(config.PRODUCTION_PRICE + 1, config.MAX_PRICE - 1)
 
 
 class CompetitorJust2Players(LinearAgent, RuleBasedAgent):
 	def policy(self, state, epsilon=0) -> int:
-		"""	This competitor is based on quality and agents actions.
+		"""
+		This competitor is based on quality and agents actions.
+
 		While he can act in every linear economy, you should not expect good performance in a multicompetitor setting.
 
 		Args:
@@ -360,10 +388,10 @@ class CompetitorJust2Players(LinearAgent, RuleBasedAgent):
 		elif comp_quality == agent_quality:
 			# same quality
 			new_price = agent_price
-		if new_price < ut.PRODUCTION_PRICE:
-			new_price = ut.PRODUCTION_PRICE + 1
-		elif new_price >= ut.MAX_PRICE:
-			new_price = ut.MAX_PRICE - 1
+		if new_price < config.PRODUCTION_PRICE:
+			new_price = config.PRODUCTION_PRICE + 1
+		elif new_price >= config.MAX_PRICE:
+			new_price = config.MAX_PRICE - 1
 		new_price = int(new_price)
-		assert isinstance(new_price, int)
+		assert isinstance(new_price, int), 'new_price must be an int'
 		return new_price

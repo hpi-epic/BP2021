@@ -1,7 +1,6 @@
 import os
 import time
 
-import gym
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -19,6 +18,7 @@ class Monitor():
 
 	def __init__(self) -> None:
 		# Do not change the values in here when setting up a session! They are assumed in tests. Instead use setup_monitoring()!
+		assert os.path.exists(self.get_modelfile_path('CircularEconomy_QLearningCEAgent')), 'the default modelfile \'CircularEconomy_QLearningCEAgent.dat\' does not exist'
 		self.enable_live_draw = True
 		self.episodes = 500
 		self.plot_interval = 50
@@ -30,47 +30,6 @@ class Monitor():
 		self.agent_colors = [(0.0, 0.0, 1.0, 1.0)]
 		self.folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring' + os.sep + 'plots_' + time.strftime('%Y%m%d-%H%M%S')
 
-	# helper functions
-	def round_up(self, number: int, decimals: int = 0) -> np.float64:
-		"""
-		Round the number up to the specified ceiling.
-
-		Args:
-			number (int): The number to round up.
-			decimals (int, optional): The decimal places (inverse) to use for rounding. I.e. -3 rounds to thousands. Defaults to 0.
-
-		Returns:
-			np.float64: The rounded number.
-		"""
-		multiplier = 10 ** decimals
-		return np.ceil(number * multiplier) / multiplier
-
-	def round_down(self, number: int, decimals: int = 0) -> np.float64:
-		"""
-		Round the number down to the specified floor.
-
-		Args:
-			number (int): The number to round down.
-			decimals (int, optional): The decimal places (inverse) to use for rounding. I.e. -3 rounds to thousands. Defaults to 0.
-
-		Returns:
-			np.float64: The rounded number.
-		"""
-		multiplier = 10 ** decimals
-		return np.floor(number * multiplier) / multiplier
-
-	def get_cmap(self, number_of_agents: int) -> plt.cm.colors.LinearSegmentedColormap:
-		"""
-		Return a colormap containing a distinct color for each monitored agent to be used in the diagrams.
-
-		Args:
-			number_of_agents (int): How many colors should be generated.
-
-		Returns:
-			plt.cm.colors.LinearSegmentedColormap: The filled colormap.
-		"""
-		return plt.cm.get_cmap('hsv', number_of_agents + 1)
-
 	def get_folder(self) -> str:
 		"""
 		Return the folder where all diagrams of the current run are saved.
@@ -81,7 +40,7 @@ class Monitor():
 		# create folder with current timestamp to save diagrams at
 		if not os.path.exists(self.folder_path):
 			os.mkdir(self.folder_path)
-			os.mkdir(self.folder_path + os.sep + 'histograms')
+			os.mkdir(os.path.join(self.folder_path, 'histograms'))
 		return self.folder_path
 
 	def get_modelfile_path(self, model_name: str) -> str:
@@ -94,8 +53,8 @@ class Monitor():
 		Returns:
 			str: The full path to the modelfile.
 		"""
-		assert str.endswith(model_name, '.dat'), 'the modelfile must be a .dat file'
-		full_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring' + os.sep + model_name
+		model_name += '.dat'
+		full_path = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'monitoring', model_name))
 		assert os.path.exists(full_path), f'the specified modelfile does not exist: {full_path}'
 		return full_path
 
@@ -107,14 +66,14 @@ class Monitor():
 			int: The size of the action space
 		"""
 		n_actions = 1
-		if isinstance(self.marketplace.action_space, gym.spaces.Discrete):
-			n_actions = self.marketplace.action_space.n
-		else:
+		if isinstance(self.marketplace, sim_market.CircularEconomy):
 			for id in range(len(self.marketplace.action_space)):
 				n_actions *= self.marketplace.action_space[id].n
+		else:
+			n_actions = self.marketplace.action_space.n
 		return n_actions
 
-	def update_agents(self, agents: list) -> None:
+	def _update_agents(self, agents: list) -> None:
 		"""
 		Update the self.agents to the new agents provided.
 
@@ -169,11 +128,13 @@ class Monitor():
 				except RuntimeError:  # pragma: no cover
 					raise RuntimeError('the modelfile is not compatible with the agent you tried to instantiate')
 			else:  # pragma: no cover
-				raise RuntimeError(f'{current_agent[0]} is neither a rule_based nor a reinforcement_learning agent')
+				assert False, f'{current_agent[0]} is neither a RuleBased nor a QLearning agent'
 
 		# set a color for each agent
-		color_map = self.get_cmap(len(self.agents))
-		self.agent_colors = [color_map(agent_id) for agent_id in range(len(self.agents))]
+		color_map = plt.cm.get_cmap('hsv', len(self.agents) + 1)
+		self.agent_colors = [color_map(agent_id) for agent_id in self.agents]
+		for agent_id in range(len(self.agents)):
+			self.agent_colors.append(color_map(agent_id))
 
 	def setup_monitoring(self, enable_live_draw: bool = None, episodes: int = None, plot_interval: int = None, marketplace: sim_market.SimMarket = None, agents: list = None, subfolder_name: str = None) -> None:
 		# sourcery skip: extract-duplicate-method
@@ -211,16 +172,16 @@ class Monitor():
 			# If the agents have not been changed, we reuse the old agents
 			if(agents is None):
 				print('Warning: Your agents are being overwritten by new instances of themselves!')
-				agents = [(type(current_agent), [f'{type(self.marketplace).__name__}_{type(current_agent).__name__}.dat']) for current_agent in self.agents]
-			self.update_agents(agents)
+				agents = [(type(current_agent), [f'{type(self.marketplace).__name__}_{type(current_agent).__name__}']) for current_agent in self.agents]
+			self._update_agents(agents)
 
 		# marketplace has not changed but agents have
 		elif(agents is not None):
-			self.update_agents(agents)
+			self._update_agents(agents)
 
 		if(subfolder_name is not None):
-			assert isinstance(subfolder_name, str), 'subfolder_name must be of type str'
-			self.folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring' + os.sep + subfolder_name
+			assert isinstance(subfolder_name, str), f'subfolder_name must be of type str: {type(subfolder_name)}, {subfolder_name}'
+			self.folder_path = os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'monitoring', subfolder_name)
 
 	def get_configuration(self) -> dict:
 		"""
@@ -239,44 +200,6 @@ class Monitor():
 			'folder_path': self.folder_path,
 		}
 
-	# def get_episode_rewards(self, all_step_rewards) -> list:
-	# 	"""
-	# 	Accumulates all rewards per episode
-
-	# 	Args:
-	# 		all_step_rewards (list of list of floats): Contains a list per agent containing float rewards for the episode
-
-	# 	Returns:
-	# 		list of list of floats: List of accumulated rewards per episode per agent
-	# 	"""
-	# 	episode_rewards = []
-	# 	for agent_reward in all_step_rewards:
-	# 		episode_rewards.append([])
-	# 		curr_sum = 0
-	# 		for reward_index in range(len(agent_reward)):
-	# 			curr_sum += agent_reward[reward_index]
-	# 			if(reward_index % ut.EPISODE_LENGTH == ut.EPISODE_LENGTH - 1):
-	# 				# one episode is over
-	# 				episode_rewards[-1] += [curr_sum]
-	# 				curr_sum = 0
-	# 	return episode_rewards
-
-	# metrics
-	def metrics_average(self, rewards: list) -> np.float64:
-		return np.mean(np.array(rewards))
-
-	def metrics_median(self, rewards: list) -> np.float64:
-		return np.median(np.array(rewards))
-
-	def metrics_maximum(self, rewards: list) -> np.float64:
-		return np.max(np.array(rewards))
-
-	def metrics_minimum(self, rewards: list) -> np.float64:
-		return np.min(np.array(rewards))
-
-	# def metrics_average_in_episode(self, rewards) -> np.float64:
-	# 	return sum(rewards) / (len(rewards) * ut.EPISODE_LENGTH)
-
 	# visualize metrics
 	def create_histogram(self, rewards: list, filename: str) -> None:
 		"""
@@ -288,23 +211,26 @@ class Monitor():
 		"""
 		assert all(len(curr_reward) == len(rewards[0]) for curr_reward in rewards), 'all rewards-arrays must be of the same size'
 
+		filename += '.svg'
 		plt.clf()
 		plt.xlabel('Reward', fontsize='18')
 		plt.ylabel('Episodes', fontsize='18')
 		plt.title('Cumulative Reward per Episode')
-		# find the number of bins needed, we only use steps of 1000, assuming our agents are good bois :)
-		plot_range = self.round_down(int(self.metrics_minimum(rewards)), -3), self.round_up(int(self.metrics_maximum(rewards)), -3)
-		plot_bins = int(np.abs(plot_range[0]) + plot_range[1]) // 1000
-		x_ticks = np.arange(plot_range[0], plot_range[1] + 1, 1000)
 
-		plt.hist(rewards, bins=plot_bins, color=self.agent_colors, range=plot_range, edgecolor='black')
+		# find the number of bins needed, we only use steps of 1000, assuming our agents are good bois :)
+		plot_lower_bound = np.floor(int(np.min(rewards)) * 1e-3) / 1e-3
+		plot_upper_bound = np.ceil(int(np.max(rewards)) * 1e-3) / 1e-3
+		plot_bins = int(np.abs(plot_lower_bound) + plot_upper_bound) // 1000
+		x_ticks = np.arange(plot_lower_bound, plot_upper_bound + 1, 1000)
+
+		plt.hist(rewards, bins=plot_bins, color=self.agent_colors, rwidth=0.9, range=(plot_lower_bound, plot_upper_bound))
 		plt.xticks(x_ticks)
 		plt.legend([a.name for a in self.agents])
 
 		if self.enable_live_draw:  # pragma: no cover
 			plt.draw()
 			plt.pause(0.001)
-		plt.savefig(fname=self.get_folder() + os.sep + 'histograms' + os.sep + filename + '.svg')
+		plt.savefig(fname=os.path.join(self.get_folder(), 'histograms', filename))
 
 	def create_statistics_plots(self, rewards: list) -> None:
 		"""
@@ -316,11 +242,12 @@ class Monitor():
 			rewards ([list of list of float]): An array containing an array of ints for each monitored agent.
 		"""
 		# the functions that should be called to calculate the given metric
-		metric_functions = [self.metrics_average, self.metrics_median, self.metrics_maximum, self.metrics_minimum]  # , self.metrics_average_in_episode
+		metric_functions = [np.mean, np.max, np.median, np.min]
 		# the name both the file as well as the plot title will have
 		metric_names = ['Average', 'Median', 'Maximum', 'Minimum']  # , 'Average in episode'
 		# what kind of metric it is: Overall means the values are calculated from 0-episode, Episode means from previousEpisode-Episode
 		metric_types = ['Overall', 'Overall', 'Episode', 'Episode']
+
 		x_axis_episodes = np.arange(self.plot_interval, self.episodes + 1, self.plot_interval)
 
 		for function in range(len(metric_functions)):
@@ -360,17 +287,18 @@ class Monitor():
 			plt.plot(x_values, y_values[index], marker='o', color=self.agent_colors[index])
 
 		plt.xlabel('Episodes', fontsize='18')
-
 		plt.ylabel(f'{metric_name} Reward', fontsize='18')
+
 		if metric_type == 'Overall':
 			plt.title(f'Overall {metric_name} Reward calculated each {self.plot_interval} episodes')
 		elif metric_type == 'Episode':
 			plt.title(f'{metric_name} Reward within each previous {self.plot_interval} episodes')
 		else:  # pragma: no cover
 			raise RuntimeError(f'this metric_type is unknown: {metric_type}')
+
 		plt.legend([a.name for a in self.agents])
 		plt.grid(True)
-		plt.savefig(fname=self.get_folder() + os.sep + filename)
+		plt.savefig(fname=os.path.join(self.get_folder(), filename))
 
 	def run_marketplace(self) -> list:
 		"""
@@ -384,9 +312,6 @@ class Monitor():
 
 		# initialize the rewards list with a list for each agent
 		rewards = [[] for _ in range(len(self.agents))]
-		# all_steps_rewards = []
-		# for i in range(len(self.agents)):
-		# 	all_steps_rewards.append([])
 
 		for episode in range(1, self.episodes + 1):
 			# reset the state once to be used by all agents
@@ -407,8 +332,6 @@ class Monitor():
 					action = self.agents[i].policy(state)
 					state, step_reward, is_done, _ = self.marketplace.step(action)
 					episode_reward += step_reward
-					# this gives us a higher flexibility in terms of what metrics we would like to use
-					# all_steps_rewards[i] += [step_reward]
 
 				# removing this will decrease our performance when we still want to do live drawing
 				# could think about a caching strategy for live drawing
@@ -451,15 +374,15 @@ def run_monitoring_session(monitor: Monitor = Monitor()) -> None:
 	print('\nStarting monitoring session...')
 	rewards = monitor.run_marketplace()
 
-	for current_reward in enumerate(rewards):
-		print(f'Statistics for agent: {monitor.agents[current_reward[0]].name}')
-		print(f'The average reward over {monitor.episodes} episodes is:  {monitor.metrics_average(current_reward[1])}')
-		print(f'The median reward over {monitor.episodes} episodes is:   {monitor.metrics_median(current_reward[1])}')
-		print(f'The maximum reward over {monitor.episodes} episodes is:  {monitor.metrics_maximum(current_reward[1])}')
-		print(f'The minimum reward over {monitor.episodes} episodes is:  {monitor.metrics_minimum(current_reward[1])}')
+	for i in range(len(rewards)):
+		print(f'Statistics for agent: {monitor.agents[i].name}')
+		print(f'The average reward over {monitor.episodes} episodes is: {np.mean(rewards[i])}')
+		print(f'The median reward over {monitor.episodes} episodes is: {np.median(rewards[i])}')
+		print(f'The maximum reward over {monitor.episodes} episodes is: {np.max(rewards[i])}')
+		print(f'The minimum reward over {monitor.episodes} episodes is: {np.min(rewards[i])}')
 
 	monitor.create_statistics_plots(rewards)
-	print(f'All plots were saved to {monitor.get_folder()}')
+	print(f'All plots were saved to {os.path.abspath(monitor.get_folder())}')
 
 
 if __name__ == '__main__':  # pragma: no cover

@@ -9,7 +9,6 @@ import pytest
 import agents.vendors as vendors
 import market.sim_market as sim_market
 import monitoring.agent_monitoring as am
-import tests.utils_tests as ut_t
 from monitoring.agent_monitoring import Monitor
 
 monitor = Monitor()
@@ -25,9 +24,9 @@ def setup_function(function):
 
 def teardown_module(module):
 	print('***TEARDOWN***')
-	for f in os.listdir(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring' + os.sep):
+	for f in os.listdir(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'monitoring')):
 		if re.match('test_plots_*', f):
-			shutil.rmtree(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring' + os.sep + f)
+			shutil.rmtree(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'monitoring', f))
 
 
 def test_init_default_values():
@@ -40,28 +39,6 @@ def test_init_default_values():
 	assert 1 == len(test_monitor.agents)
 	assert [(0.0, 0.0, 1.0, 1.0)] == test_monitor.agent_colors
 	# folder_path can hardly be tested due to the default involving the current DateTime
-
-
-def test_round_up():
-	assert monitor.round_up(999, -3) == 1000
-
-
-def test_round_down():
-	assert monitor.round_down(999, -3) == 0
-
-
-def test_get_cmap():
-	# should have TWO (n+1) entries, but the way that get_cmap works you can call color_map() with higher numbers,
-	# but all higher colors are the same, so we test for that to find out if it worked
-	color_map = monitor.get_cmap(1)
-	assert color_map(0) != color_map(1)
-	assert color_map(1) == color_map(2)
-
-	color_map = monitor.get_cmap(3)
-	assert color_map(0) != color_map(1)
-	assert color_map(1) != color_map(2)
-	assert color_map(2) != color_map(3)
-	assert color_map(3) == color_map(4)
 
 
 def test_get_folder():
@@ -224,6 +201,26 @@ def test_get_configuration():
 	assert 'folder_path' in current_configuration
 
 
+def test_RL_agents_need_modelfile():
+	with pytest.raises(AssertionError) as assertion_message:
+		monitor.setup_monitoring(marketplace=sim_market.CircularEconomyMonopolyScenario, agents=[(vendors.QLearningCEAgent, [])])
+	assert 'the first argument for an reinforcement lerner needs to be a modelfile, the second one is an optional name (str)' in str(assertion_message.value)
+	with pytest.raises(AssertionError) as assertion_message:
+		monitor.setup_monitoring(marketplace=sim_market.CircularEconomyMonopolyScenario, agents=[(vendors.QLearningCEAgent, ['modelfile.dat', 35])])
+	assert 'the first argument for an reinforcement lerner needs to be a modelfile, the second one is an optional name (str)' in str(assertion_message.value)
+	with pytest.raises(AssertionError) as assertion_message:
+		monitor.setup_monitoring(marketplace=sim_market.CircularEconomyMonopolyScenario, agents=[(vendors.QLearningCEAgent, [25])])
+	assert 'the modelfile must be of type str' in str(assertion_message.value)
+	with pytest.raises(AssertionError) as assertion_message:
+		monitor.setup_monitoring(marketplace=sim_market.CircularEconomyMonopolyScenario, agents=[(vendors.QLearningCEAgent, ['mymodel.dat'])])
+	assert 'the specified modelfile does not exist' in str(assertion_message.value)
+
+
+def test_setup_with_invalid_agents():
+	with pytest.raises(AssertionError):
+		monitor.setup_monitoring(agents=[vendors.FixedPriceLEAgent, vendors.FixedPriceCERebuyAgent])
+
+
 # def test_get_episode_reward():
 # 	json = ut_t.create_mock_json_sim_market(episode_size='2')
 # 	with patch('builtins.open', mock_open(read_data=json)) as mock_file:
@@ -232,22 +229,6 @@ def test_get_configuration():
 # 		all_steps_reward = [[1, 2, 3, 4], [4, 5, 6, 7], [1, 3, 4, 5]]
 # 		assert [[3, 7], [9, 13], [4, 9]] == monitor.get_episode_rewards(all_steps_reward)
 	# reload(ut)
-
-
-def test_metrics_average():
-	assert 6 == monitor.metrics_average(ut_t.create_mock_rewards(12))
-
-
-def test_metrics_median():
-	assert 6 == monitor.metrics_median(ut_t.create_mock_rewards(12))
-
-
-def test_metrics_maximum():
-	assert 11 == monitor.metrics_maximum(ut_t.create_mock_rewards(12))
-
-
-def test_metrics_minimum():
-	assert 1 == monitor.metrics_minimum(ut_t.create_mock_rewards(12))
 
 
 # all arrays in rewards must be of the same size
