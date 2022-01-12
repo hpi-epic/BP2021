@@ -351,7 +351,7 @@ def run_monitoring_session(monitor: Monitor = Monitor()) -> None:
 	Args:
 		monitor (Monitor instance, optional): The monitor to run the session on. Defaults to a default Monitor() instance.
 	"""
-	monitor.setup_monitoring(agents=[(vendors.QLearningLEAgent, ['QLearning Agent']), (vendors.FixedPriceLEAgent, [(6), 'Rulebased Agent'])], marketplace=sim_market.ClassicScenario)
+	# monitor.setup_monitoring(agents=[(vendors.QLearningLEAgent, ['QLearning Agent']), (vendors.FixedPriceLEAgent, [(6), 'Rulebased Agent'])], marketplace=sim_market.ClassicScenario)
 	if monitor.episodes / monitor.plot_interval > 50:
 		print('The ratio of episodes/plot_interval is over 50. In order for the plots to be more readable we recommend a lower ratio.')
 		print(f'Episodes: {monitor.episodes}\nPlot Interval: {monitor.plot_interval}\nRatio: {int(monitor.episodes / monitor.plot_interval)}')
