@@ -13,10 +13,12 @@ from monitoring.svg_manipulation import SVGManipulator
 def run_example(environment=sim_market.CircularEconomyRebuyPriceOneCompetitor(), agent=vendors.RuleBasedCERebuyAgent(), log_dir_prepend='') -> int:
 	"""
 	Run a specified marketplace with a (pre-trained, if RL) agent and record various statistics using TensorBoard.
+
 	Args:
 		env (sim_market instance, optional): The market environment to run the simulation on. Defaults to sim_market.CircularEconomyRebuyPriceOneCompetitor().
 		agent (agent instance, optional): The agent to run the simulation on. Defaults to vendors.RuleBasedCERebuyAgent().
 		log_dir_prepend (str, optional): What to prepend to the log_dir folder name. Defaults to ''.
+
 	Returns:
 		int: The profit made.
 	"""

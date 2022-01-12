@@ -24,6 +24,7 @@ def direct_comparison_dict(profits) -> dict:
 def train_QLearning_agent(RL_agent, environment, maxsteps=2 * config.EPSILON_DECAY_LAST_FRAME, log_dir_prepend='') -> None:
 	"""
 	Train a QLearningAgent on a market environment.
+
 	Args:
 		RL_agent (agents.vendors instance): The agent that should be trained.
 		environment (market.sim_market instance): The market environment used for the training.

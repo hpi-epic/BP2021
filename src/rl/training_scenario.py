@@ -8,6 +8,7 @@ import rl.training as training
 def run_training_session(marketplace_class=sim_market.CircularEconomyRebuyPriceOneCompetitor, RL_agent_class=vendors.QLearningCERebuyAgent):
 	"""
 	Run a training session with the passed marketplace and QLearningAgent.
+
 	Args:
 		marketplace_class (SimMarket subclass, optional): What marketplace to run the training session on. Defaults to sim_market.CircularEconomyRebuyPriceOneCompetitor.
 		RL_agent_class (QLearningAgent subclass, optional): What kind of QLearningAgent to train. Defaults to vendors.QLearningCERebuyAgent.
