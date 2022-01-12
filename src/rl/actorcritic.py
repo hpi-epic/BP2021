@@ -49,7 +49,7 @@ class ActorCriticAgent(vendors.Agent, ABC):
 		log_prob = -self.log_probability_given_action(states.detach(), actions.detach())
 		policy_loss = torch.mean(constant * log_prob)
 		if regularization:
-			policy_loss += self.regularizate(states, actions)
+			policy_loss += self.regularizate(states)
 		policy_loss.backward()
 
 		self.critic_optimizer.step()
@@ -57,7 +57,7 @@ class ActorCriticAgent(vendors.Agent, ABC):
 
 		return valueloss.to('cpu').item(), policy_loss.to('cpu').item()
 
-	def regularizate(self, states, actions):
+	def regularizate(self, states):
 		"""
 		Via regulation you can add punishment for unintended behaviour besides the reward.
 		Use it to give "hints" to the agent or to improve stability.
@@ -66,7 +66,6 @@ class ActorCriticAgent(vendors.Agent, ABC):
 
 		Args:
 			states (torch.Tensor): A tensor of the states the agent is in range
-			actions (torch.Tensor): A tensor of the actions the policy proposes
 
 		Returns:
 			torch.Tensor or 0: The punishment for the agent
@@ -152,8 +151,19 @@ class ContinuosActorCriticAgent(ActorCriticAgent):
 	def log_probability_given_action(self, states, actions):
 		return torch.distributions.Normal(self.softplus(self.actor_net(states)), 1).log_prob(actions.view(-1, self.n_actions)).sum(dim=1).unsqueeze(-1)
 
-	def regularizate(self, states, actions):
-		return 50000 * torch.nn.MSELoss()(self.actor_net(states), 3.5 * torch.ones(actions.shape))
+	def regularizate(self, states):
+		"""
+		This regularization pushes the actor with very high priority towards a mean price of 3.5.
+		Use it at the beginning to avoid 0 pricing which gets only horrible negative reward.
+
+		Args:
+			states (torch.Tensor): The current states the agent is in at the moment
+
+		Returns:
+			torch.Tensor: the malus of the regularization
+		"""
+		proposed_actions = self.actor_net(states.detach())
+		return 50000 * torch.nn.MSELoss()(proposed_actions, 3.5 * torch.ones(proposed_actions.shape))
 
 	def agent_output_to_market_form(self, action):
 		return action.tolist()
