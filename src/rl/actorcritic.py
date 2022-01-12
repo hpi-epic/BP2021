@@ -1,7 +1,6 @@
 import random
 import time
 
-import model
 import numpy as np
 import torch
 from torch.utils.tensorboard import SummaryWriter
@@ -10,6 +9,7 @@ import agents.vendors as vendors
 import configuration.utils_rl as ut_rl
 import configuration.utils_sim_market as ut
 import market.sim_market as sim_market
+import rl.model as model
 
 
 class ActorCriticAgent(vendors.Agent):
@@ -93,7 +93,7 @@ class SoftActorCriticAgent(ActorCriticAgent):
 	def initialize_models_and_optimizer(self, n_observations, n_actions):
 		self.n_actions = n_actions
 		self.policy_net = model.simple_network(n_observations, self.n_actions).to(self.device)
-		self.policy_optimizer = torch.optim.Adam(self.policy_net.parameters(), lr=0.00005)
+		self.policy_optimizer = torch.optim.Adam(self.policy_net.parameters(), lr=0.0002)
 		self.v_net = model.simple_network(n_observations, 1).to(self.device)
 		self.v_optimizer = torch.optim.Adam(self.v_net.parameters(), lr=0.002)
 
@@ -101,12 +101,12 @@ class SoftActorCriticAgent(ActorCriticAgent):
 		observation = torch.Tensor([observation]).to(self.device)
 		with torch.no_grad():
 			mean = self.softplus(self.policy_net(observation))
-			v_estimat = self.v_net(observation).view(-1)
+			# v_estimat = self.v_net(observation).view(-1)
 
 		action = torch.round(torch.normal(mean, torch.ones(mean.shape)))
 		action = torch.max(action, torch.zeros(action.shape))
 		action = torch.min(action, 9 * torch.ones(action.shape))
-		return action.squeeze().type(torch.LongTensor).to('cpu').numpy(), self.log_probability_given_action(observation, action).mean().detach().item(), v_estimat.to('cpu').item()
+		return action.squeeze().type(torch.LongTensor).to('cpu').numpy()  # , self.log_probability_given_action(observation, action).mean().detach().item(), v_estimat.to('cpu').item()
 
 	def log_probability_given_action(self, states, actions):
 		return torch.distributions.Normal(self.softplus(self.policy_net(states)), 1).log_prob(actions.view(-1, self.n_actions)).sum(dim=1).unsqueeze(-1)
@@ -118,12 +118,12 @@ class SoftActorCriticAgent(ActorCriticAgent):
 		return step.tolist()
 
 
-def trainactorcritic(Scenario, Agent, outputs):
+def trainactorcritic(Scenario=sim_market.CircularEconomyRebuyPriceOneCompetitor, Agent=SoftActorCriticAgent, outputs=3):
 	agent = Agent(Scenario().observation_space.shape[0], outputs)
 	assert isinstance(agent, ActorCriticAgent)
 	all_dicts = []
-	all_probs = []
-	all_vestim = []
+	# all_probs = []
+	# all_vestim = []
 	all_value_losses = []
 	all_policy_losses = []
 	writer = SummaryWriter(log_dir='runs/' + time.strftime('%Y%m%d-%H%M%S'))
@@ -132,7 +132,7 @@ def trainactorcritic(Scenario, Agent, outputs):
 	total_envs = 128
 	environments = [Scenario() for _ in range(total_envs)]
 	info_accumulators = [None for _ in range(total_envs)]
-	for i in range(10000):
+	for i in range(1000):
 		# choose 32 environments
 		chosen_envs = set()
 		# chosen_envs.add(127)
@@ -147,9 +147,9 @@ def trainactorcritic(Scenario, Agent, outputs):
 		states_dash = []
 		for env in chosen_envs:
 			state = environments[env].observation()
-			step, prob, v_estimat = agent.policy(state)
-			all_probs.append(prob)
-			all_vestim.append(v_estimat)
+			step = agent.policy(state)
+			# all_probs.append(prob)
+			# all_vestim.append(v_estimat)
 			state_dash, reward, isdone, info = environments[env].step(agent.agent_output_to_market_form(step))
 
 			states.append(state)
@@ -172,8 +172,8 @@ def trainactorcritic(Scenario, Agent, outputs):
 						averaged_info = ut.add_content_of_two_dicts(averaged_info, next_dict)
 				averaged_info = ut.divide_content_of_dict(averaged_info, len(sliced_dicts))
 				ut.write_dict_to_tensorboard(writer, averaged_info, episodes_accomplished, is_cumulative=True)
-				writer.add_scalar('training/prob_mean', np.mean(all_probs[-1000:]), episodes_accomplished)
-				writer.add_scalar('training/v_estim', np.mean(all_vestim[-1000:]), episodes_accomplished)
+				# writer.add_scalar('training/prob_mean', np.mean(all_probs[-1000:]), episodes_accomplished)
+				# writer.add_scalar('training/v_estim', np.mean(all_vestim[-1000:]), episodes_accomplished)
 				writer.add_scalar('loss/value', np.mean(all_value_losses[-1000:]), episodes_accomplished)
 				writer.add_scalar('loss/policy', np.mean(all_policy_losses[-1000:]), episodes_accomplished)
 
@@ -185,4 +185,4 @@ def trainactorcritic(Scenario, Agent, outputs):
 		all_policy_losses.append(policyloss)
 
 
-trainactorcritic(sim_market.CircularEconomyRebuyPriceOneCompetitor, SoftActorCriticAgent, 3)
+# trainactorcritic(sim_market.CircularEconomyRebuyPriceOneCompetitor, SoftActorCriticAgent, 3)
