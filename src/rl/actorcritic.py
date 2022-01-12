@@ -85,6 +85,7 @@ class DiscreteActorCriticAgent(ActorCriticAgent):
 	"""
 	This is an actor critic agent with continuos action space.
 	It generates preferences and uses softmax to gain the probabilities.
+	For our three markets we have three kinds of specific agents you must use.
 	"""
 	def initialize_models_and_optimizer(self, n_observations, n_actions):
 		self.actor_net = model.simple_network(n_observations, n_actions).to(self.device)
@@ -126,6 +127,7 @@ class ContinuosActorCriticAgent(ActorCriticAgent):
 	"""
 	This is an actor critic agent with continuos action space.
 	It's parametrization is a normal distribution with fixed mean.
+	It works on any sort of market we have so far, just the number of action values must be given.
 	"""
 	softplus = torch.nn.Softplus()
 
