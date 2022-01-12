@@ -304,13 +304,18 @@ class QLearningAgent(ReinforcementLearningAgent, ABC):
 		full_directory = os.walk(model_path)
 		for _, _, filenames in full_directory:
 			if len(filenames) > 10:
-				# TODO: Should we instead delete the oldest files?
-				# sort numbers by value to delete the smallest rewards
-				filenames = [float(reward[:-4]) for reward in filenames]
-				filenames = sorted(filenames)
+				# split the filenames to isolate the reward-part
+				split_filenames = [file.rsplit('_', 1) for file in filenames]
+				# preserve the signature for later
+				signature = split_filenames[0][0]
+				# isolate the reward and convert it to float
+				rewards = [file[1] for file in split_filenames]
+				rewards = [float(reward.rsplit('.', 1)[0]) for reward in rewards]
+				# sort the rewards to keep only the best ones
+				rewards = sorted(rewards)
 
-				for file in range(len(filenames) - 10):
-					os.remove(os.path.join(model_path, f'{filenames[file]:.3f}.dat'))
+				for reward in range(len(rewards) - 10):
+					os.remove(os.path.join(model_path, f'{signature}_{rewards[reward]:.3f}.dat'))
 
 
 class QLearningLEAgent(QLearningAgent, LinearAgent):
