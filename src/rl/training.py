@@ -44,10 +44,7 @@ def train_QLearning_agent(RL_agent, environment, maxsteps=2 * config.EPSILON_DEC
 	selected_q_vals = []
 	best_mean_reward = 0
 
-	# tensorboard init
-	# Setting log_dir causes some problems that are yet to be solved.
-	# writer = SummaryWriter(log_dir='runs/' + log_dir_prepend + time.strftime('%Y%m%d-%H%M%S') + f'_{type(environment).__name__}_{type(RL_agent).__name__}_training')
-	writer = SummaryWriter()
+	writer = SummaryWriter(log_dir=f'results/runs/{log_dir_prepend}{time.strftime("%b%d_%H-%M-%S")}')
 	for frame_idx in range(maxsteps):
 		epsilon = max(config.EPSILON_FINAL, config.EPSILON_START - frame_idx / config.EPSILON_DECAY_LAST_FRAME)
 
@@ -92,7 +89,7 @@ def train_QLearning_agent(RL_agent, environment, maxsteps=2 * config.EPSILON_DEC
 			print(f'''{frame_idx}: done {len(all_dicts)} games, this episode return {all_dicts[-1]['profits/all']['vendor_0']:.3f}, mean return {mean_reward:.3f}, eps {epsilon:.2f}, speed {speed:.2f} f/s''')
 
 			if (frame_idx > config.EPSILON_DECAY_LAST_FRAME + 101) and (best_mean_reward < mean_reward):
-				RL_agent.save(f'{type(environment).__name__}_{type(RL_agent).__name__}', f'{mean_reward:.3f}.dat')
+				RL_agent.save(f'{type(environment).__name__}_{type(RL_agent).__name__}', f'{mean_reward:.3f}')
 				if best_mean_reward != 0:
 					print(f'Best reward updated {best_mean_reward:.3f} -> {mean_reward:.3f}')
 				best_mean_reward = mean_reward
@@ -119,4 +116,4 @@ def train_QLearning_agent(RL_agent, environment, maxsteps=2 * config.EPSILON_DEC
 	else:
 		print(f'The best mean reward reached by the agent was {best_mean_reward:.3f}')
 		print('The models were saved to:')
-		print(os.path.abspath(os.path.join('trainedModels', f'{type(environment).__name__}_{type(RL_agent).__name__}')))
+		print(os.path.abspath(os.path.join('results', 'trainedModels', f'{type(environment).__name__}_{type(RL_agent).__name__}')))

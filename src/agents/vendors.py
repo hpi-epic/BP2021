@@ -292,13 +292,16 @@ class QLearningAgent(ReinforcementLearningAgent, ABC):
 			model_name (str): The name of the .dat file of this specific model.
 		"""
 		model_name += '.dat'
-		if not os.path.isdir('trainedModels'):
-			os.mkdir('trainedModels')
-		if not os.path.isdir(f'trainedModels/{path_name}'):
-			os.mkdir(f'trainedModels/{path_name}')
-		torch.save(self.net.state_dict(), f'./trainedModels/{path_name}/{model_name}')
+		if not os.path.isdir(os.path.abspath(os.path.join('results', 'trainedModels'))):
+			os.mkdir(os.path.abspath(os.path.join('results', 'trainedModels')))
 
-		full_directory = os.walk(f'./trainedModels/{path_name}')
+		model_path = os.path.join('results', 'trainedModels', path_name)
+		if not os.path.isdir(os.path.abspath(model_path)):
+			os.mkdir(os.path.abspath(model_path))
+
+		torch.save(self.net.state_dict(), os.path.join(model_path, model_name))
+
+		full_directory = os.walk(model_path)
 		for _, _, filenames in full_directory:
 			if len(filenames) > 10:
 				# TODO: Should we instead delete the oldest files?
@@ -307,7 +310,7 @@ class QLearningAgent(ReinforcementLearningAgent, ABC):
 				filenames = sorted(filenames)
 
 				for file in range(len(filenames) - 10):
-					os.remove(f'./trainedModels/{path_name}/{filenames[file]:.3f}.dat')
+					os.remove(os.path.join(model_path, f'{filenames[file]:.3f}.dat'))
 
 
 class QLearningLEAgent(QLearningAgent, LinearAgent):

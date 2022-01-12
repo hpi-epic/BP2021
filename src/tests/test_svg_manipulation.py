@@ -1,4 +1,6 @@
 import os
+import re
+import shutil
 from unittest.mock import mock_open, patch
 
 import pytest
@@ -16,6 +18,16 @@ def setup_function(function):
 	svg_manipulator = svg_manipulation.SVGManipulator()
 
 
+def teardown_module(module):
+	print('***TEARDOWN***')
+	for f in os.listdir(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'results', 'runs')):
+		if re.match('test_*', f):
+			shutil.rmtree(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'results', 'runs', f))
+	for f in os.listdir(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'results', 'monitoring')):
+		if re.match('test_*', f):
+			shutil.rmtree(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'results', 'monitoring', f))
+
+
 def test_get_default_dict():
 	default_dict = svg_manipulation.get_default_dict()
 	for _, val in default_dict.items():
@@ -23,7 +35,7 @@ def test_get_default_dict():
 
 
 def test_correct_template():
-	with open(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'monitoring', 'MarketOverview_template.svg')), 'r') as template:
+	with open(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'results', 'monitoring', 'MarketOverview_template.svg')), 'r') as template:
 		correct_template = template.read()
 	assert correct_template == svg_manipulator.template_svg
 
@@ -43,7 +55,7 @@ def test_correct_template():
 			mock_exists.return_value = False
 			mock_list_dir.return_value = ['MarketOverview_001.svg', 'MarketOverview_002.svg', 'MarketOverview_003.svg']
 
-			exampleprinter.run_example()
+			exampleprinter.run_example(log_dir_prepend='test_')
 		assert correct_template == svg_manipulator.template_svg
 
 
@@ -204,6 +216,6 @@ def test_one_exampleprinter_run():
 			mock_exists.return_value = False
 			mock_list_dir.return_value = ['MarketOverview_001.svg', 'MarketOverview_002.svg', 'MarketOverview_003.svg']
 
-			exampleprinter.run_example()
+			exampleprinter.run_example(log_dir_prepend='test_')
 		# asserts that the html has been written
 		mock_file().write.assert_called_with(correct_html)

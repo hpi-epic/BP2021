@@ -1,6 +1,7 @@
 import os
 import re
 import shutil
+import time
 
 import pytest
 
@@ -11,12 +12,23 @@ import monitoring.exampleprinter as exampleprinter
 
 def teardown_module(module):
 	print('***TEARDOWN***')
-	for f in os.listdir('./runs'):
+	# we need to sleep because sometimes the runs folder is still being used when we try to remove it
+	time.sleep(0.001)
+	for f in os.listdir(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'results', 'runs')):
 		if re.match('test_*', f):
-			shutil.rmtree('./runs/' + f)
+			shutil.rmtree(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'results', 'runs', f))
 
 
-test_cases = [(sim.ClassicScenario(), vendors.FixedPriceLEAgent()), (sim.MultiCompetitorScenario(), vendors.FixedPriceLEAgent()), (sim.CircularEconomyMonopolyScenario(), vendors.FixedPriceCEAgent()), (sim.CircularEconomyMonopolyScenario(), vendors.RuleBasedCEAgent()), (sim.CircularEconomyRebuyPriceMonopolyScenario(), vendors.FixedPriceCERebuyAgent()), (sim.CircularEconomyRebuyPriceMonopolyScenario(), vendors.RuleBasedCERebuyAgent()), (sim.CircularEconomyRebuyPriceOneCompetitor(), vendors.FixedPriceCERebuyAgent()), (sim.CircularEconomyRebuyPriceOneCompetitor(), vendors.RuleBasedCERebuyAgent())]
+test_cases = [
+	(sim.ClassicScenario(), vendors.FixedPriceLEAgent()),
+	(sim.MultiCompetitorScenario(), vendors.FixedPriceLEAgent()),
+	(sim.CircularEconomyMonopolyScenario(), vendors.FixedPriceCEAgent()),
+	(sim.CircularEconomyMonopolyScenario(), vendors.RuleBasedCEAgent()),
+	(sim.CircularEconomyRebuyPriceMonopolyScenario(), vendors.FixedPriceCERebuyAgent()),
+	(sim.CircularEconomyRebuyPriceMonopolyScenario(), vendors.RuleBasedCERebuyAgent()),
+	(sim.CircularEconomyRebuyPriceOneCompetitor(), vendors.FixedPriceCERebuyAgent()),
+	(sim.CircularEconomyRebuyPriceOneCompetitor(), vendors.RuleBasedCERebuyAgent())
+]
 
 
 @pytest.mark.parametrize('environment, agent', test_cases)
