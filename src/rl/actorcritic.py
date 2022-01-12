@@ -6,15 +6,16 @@ import torch
 from torch.utils.tensorboard import SummaryWriter
 
 import agents.vendors as vendors
-import configuration.utils_rl as ut_rl
-import configuration.utils_sim_market as ut
+import configuration.config as config
+import configuration.utils as ut
 import market.sim_market as sim_market
 import rl.model as model
 
 
 class ActorCriticAgent(vendors.Agent):
 	def __init__(self, n_observations, n_actions):
-		self.device = 'cpu'
+		self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+		print(f'I initiate an ActorCriticAgent using {self.device} device')
 		self.initialize_models_and_optimizer(n_observations, n_actions)
 
 	def train_batch(self, states, actions, rewards, states_dash, regularization=False):
@@ -27,7 +28,7 @@ class ActorCriticAgent(vendors.Agent):
 
 		v_estimates = self.v_net(states)
 		with torch.no_grad():
-			v_expected = (rewards + ut_rl.GAMMA * self.v_net(states_dash).detach()).view(-1, 1)
+			v_expected = (rewards + config.GAMMA * self.v_net(states_dash).detach()).view(-1, 1)
 		valueloss = torch.nn.MSELoss()(v_estimates, v_expected)
 		valueloss.backward()
 
@@ -35,20 +36,18 @@ class ActorCriticAgent(vendors.Agent):
 			baseline = v_estimates.squeeze()[31].item()
 			constant = (v_expected - baseline).detach()
 		log_prob = -self.log_probability_given_action(states.detach(), actions.detach())
-		# print(constant)
-		# print(log_prob)
-		policyloss = torch.mean(constant * log_prob)
+		policy_loss = torch.mean(constant * log_prob)
 		if regularization:
-			policyloss += self.regularizate(states, actions)
-		policyloss.backward()
+			policy_loss += self.regularizate(states, actions)
+		policy_loss.backward()
 
 		self.v_optimizer.step()
 		self.policy_optimizer.step()
 
-		return valueloss.to('cpu').item(), policyloss.to('cpu').item()
+		return valueloss.to('cpu').item(), policy_loss.to('cpu').item()
 
-	def regularization(self, *_):
-		pass
+	def regularizate(self, *_):
+		return 0
 
 
 class DiscreteActorCriticAgent(ActorCriticAgent):
@@ -58,15 +57,16 @@ class DiscreteActorCriticAgent(ActorCriticAgent):
 		self.v_net = model.simple_network(n_observations, 1).to(self.device)
 		self.v_optimizer = torch.optim.Adam(self.v_net.parameters(), lr=0.00025)
 
-	def policy(self, observation):
+	def policy(self, observation, verbose=False):
 		observation = torch.Tensor(observation).to(self.device)
 		with torch.no_grad():
 			distribution = torch.softmax(self.policy_net(observation).view(-1), dim=0)
-			v_estimat = self.v_net(observation).view(-1)
+			if verbose:
+				v_estimat = self.v_net(observation).view(-1)
 
 		distribution = distribution.to('cpu').detach().numpy()
 		action = ut.shuffle_from_probabilities(distribution)
-		return action, distribution[action], v_estimat.to('cpu').item()
+		return action, distribution[action], v_estimat.to('cpu').item() if verbose else None
 
 	def log_probability_given_action(self, states, actions):
 		return -torch.log(torch.softmax(self.policy_net(states), dim=0).gather(1, actions.unsqueeze(-1)))
@@ -97,16 +97,17 @@ class SoftActorCriticAgent(ActorCriticAgent):
 		self.v_net = model.simple_network(n_observations, 1).to(self.device)
 		self.v_optimizer = torch.optim.Adam(self.v_net.parameters(), lr=0.002)
 
-	def policy(self, observation):
+	def policy(self, observation, verbose=False):
 		observation = torch.Tensor([observation]).to(self.device)
 		with torch.no_grad():
 			mean = self.softplus(self.policy_net(observation))
-			# v_estimat = self.v_net(observation).view(-1)
+			if verbose:
+				v_estimat = self.v_net(observation).view(-1)
 
 		action = torch.round(torch.normal(mean, torch.ones(mean.shape)))
 		action = torch.max(action, torch.zeros(action.shape))
 		action = torch.min(action, 9 * torch.ones(action.shape))
-		return action.squeeze().type(torch.LongTensor).to('cpu').numpy()  # , self.log_probability_given_action(observation, action).mean().detach().item(), v_estimat.to('cpu').item()
+		return action.squeeze().type(torch.LongTensor).to('cpu').numpy(), *((self.log_probability_given_action(observation, action).mean().detach().item(), v_estimat.to('cpu').item()) if verbose else (None, None))
 
 	def log_probability_given_action(self, states, actions):
 		return torch.distributions.Normal(self.softplus(self.policy_net(states)), 1).log_prob(actions.view(-1, self.n_actions)).sum(dim=1).unsqueeze(-1)
@@ -118,12 +119,13 @@ class SoftActorCriticAgent(ActorCriticAgent):
 		return step.tolist()
 
 
-def trainactorcritic(Scenario=sim_market.CircularEconomyRebuyPriceOneCompetitor, Agent=SoftActorCriticAgent, outputs=3):
+def train_actorcritic(Scenario=sim_market.CircularEconomyRebuyPriceOneCompetitor, Agent=SoftActorCriticAgent, outputs=3, verbose=False):
 	agent = Agent(Scenario().observation_space.shape[0], outputs)
 	assert isinstance(agent, ActorCriticAgent)
 	all_dicts = []
-	# all_probs = []
-	# all_vestim = []
+	if verbose:
+		all_probs = []
+		all_vestim = []
 	all_value_losses = []
 	all_policy_losses = []
 	writer = SummaryWriter(log_dir='runs/' + time.strftime('%Y%m%d-%H%M%S'))
@@ -132,7 +134,7 @@ def trainactorcritic(Scenario=sim_market.CircularEconomyRebuyPriceOneCompetitor,
 	total_envs = 128
 	environments = [Scenario() for _ in range(total_envs)]
 	info_accumulators = [None for _ in range(total_envs)]
-	for i in range(1000):
+	for i in range(10000):
 		# choose 32 environments
 		chosen_envs = set()
 		# chosen_envs.add(127)
@@ -147,9 +149,10 @@ def trainactorcritic(Scenario=sim_market.CircularEconomyRebuyPriceOneCompetitor,
 		states_dash = []
 		for env in chosen_envs:
 			state = environments[env].observation()
-			step = agent.policy(state)
-			# all_probs.append(prob)
-			# all_vestim.append(v_estimat)
+			step, prob, v_estimat = agent.policy(state, verbose)
+			if verbose:
+				all_probs.append(prob)
+				all_vestim.append(v_estimat)
 			state_dash, reward, isdone, info = environments[env].step(agent.agent_output_to_market_form(step))
 
 			states.append(state)
@@ -172,17 +175,18 @@ def trainactorcritic(Scenario=sim_market.CircularEconomyRebuyPriceOneCompetitor,
 						averaged_info = ut.add_content_of_two_dicts(averaged_info, next_dict)
 				averaged_info = ut.divide_content_of_dict(averaged_info, len(sliced_dicts))
 				ut.write_dict_to_tensorboard(writer, averaged_info, episodes_accomplished, is_cumulative=True)
-				# writer.add_scalar('training/prob_mean', np.mean(all_probs[-1000:]), episodes_accomplished)
-				# writer.add_scalar('training/v_estim', np.mean(all_vestim[-1000:]), episodes_accomplished)
+				if verbose:
+					writer.add_scalar('training/prob_mean', np.mean(all_probs[-1000:]), episodes_accomplished)
+					writer.add_scalar('training/v_estim', np.mean(all_vestim[-1000:]), episodes_accomplished)
 				writer.add_scalar('loss/value', np.mean(all_value_losses[-1000:]), episodes_accomplished)
 				writer.add_scalar('loss/policy', np.mean(all_policy_losses[-1000:]), episodes_accomplished)
 
 				environments[env].reset()
 				info_accumulators[env] = None
 
-		valueloss, policyloss = agent.train_batch(torch.Tensor(np.array(states)), torch.from_numpy(np.array(actions, dtype=np.int64)), torch.Tensor(np.array(rewards)), torch.Tensor(np.array(state_dash)), episodes_accomplished <= 500)
+		valueloss, policy_loss = agent.train_batch(torch.Tensor(np.array(states)), torch.from_numpy(np.array(actions, dtype=np.int64)), torch.Tensor(np.array(rewards)), torch.Tensor(np.array(state_dash)), episodes_accomplished <= 500)
 		all_value_losses.append(valueloss)
-		all_policy_losses.append(policyloss)
+		all_policy_losses.append(policy_loss)
 
 
-# trainactorcritic(sim_market.CircularEconomyRebuyPriceOneCompetitor, SoftActorCriticAgent, 3)
+train_actorcritic(Agent=DiscreteACACircularEconomyRebuy, outputs=1000, verbose=True)
