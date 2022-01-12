@@ -71,7 +71,11 @@ class ActorCriticAgent(vendors.Agent, ABC):
 		return 0
 
 	@abstractmethod
-	def log_probability_given_action(self) -> None:  # pragma: no cover
+	def log_probability_given_action(self, states, actions) -> None:  # pragma: no cover
+		raise NotImplementedError('This method is abstract. Use a subclass')
+
+	@abstractmethod
+	def agent_output_to_market_form(self) -> None:  # pragma: no cover
 		raise NotImplementedError('This method is abstract. Use a subclass')
 
 
@@ -216,4 +220,4 @@ def train_actorcritic(marketplace_class=sim_market.CircularEconomyRebuyPriceOneC
 
 
 if __name__ == '__main__':
-	train_actorcritic(agent_class=DiscreteACACircularEconomyRebuy, outputs=1000, number_of_training_steps=10000)
+	train_actorcritic()
