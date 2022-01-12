@@ -220,7 +220,7 @@ class Monitor():
 		plot_bins = int(np.abs(plot_lower_bound) + plot_upper_bound) // 1000
 		x_ticks = np.arange(plot_lower_bound, plot_upper_bound + 1, 1000)
 
-		plt.hist(rewards, bins=plot_bins, color=self.agent_colors, rwidth=0.9, range=(plot_lower_bound, plot_upper_bound))
+		plt.hist(rewards, bins=plot_bins, color=self.agent_colors, rwidth=0.9, range=(plot_lower_bound, plot_upper_bound), edgecolor='black')
 		plt.xticks(x_ticks)
 		plt.legend([a.name for a in self.agents])
 
@@ -239,10 +239,10 @@ class Monitor():
 			rewards ([list of list of float]): An array containing an array of ints for each monitored agent.
 		"""
 		# the functions that should be called to calculate the given metric
-		metric_functions = [np.mean, np.max, np.median, np.min]
+		metric_functions = [np.mean, np.median, np.max, np.min]
 		# the name both the file as well as the plot title will have
-		metric_names = ['Average', 'Median', 'Maximum', 'Minimum']  # , 'Average in episode'
-		# what kind of metric it is: Overall means the values are calculated from 0-episode, Episode means from previousEpisode-Episode
+		metric_names = ['Average', 'Median', 'Maximum', 'Minimum']
+		# what kind of metric it is: Overall means the values are calculated from 0-episode, Episode means from previous episode-episode
 		metric_types = ['Overall', 'Overall', 'Episode', 'Episode']
 
 		x_axis_episodes = np.arange(self.plot_interval, self.episodes + 1, self.plot_interval)
@@ -351,7 +351,7 @@ def run_monitoring_session(monitor: Monitor = Monitor()) -> None:
 	Args:
 		monitor (Monitor instance, optional): The monitor to run the session on. Defaults to a default Monitor() instance.
 	"""
-	# monitor.setup_monitoring(agents=[(vendors.QLearningLEAgent, ['QLearning Agent']), (vendors.FixedPriceLEAgent, [(6), 'Rulebased Agent'])], marketplace=sim_market.ClassicScenario)
+	monitor.setup_monitoring(agents=[(vendors.QLearningLEAgent, ['QLearning Agent']), (vendors.FixedPriceLEAgent, [(6), 'Rulebased Agent'])], marketplace=sim_market.ClassicScenario)
 	if monitor.episodes / monitor.plot_interval > 50:
 		print('The ratio of episodes/plot_interval is over 50. In order for the plots to be more readable we recommend a lower ratio.')
 		print(f'Episodes: {monitor.episodes}\nPlot Interval: {monitor.plot_interval}\nRatio: {int(monitor.episodes / monitor.plot_interval)}')
