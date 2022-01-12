@@ -1,4 +1,5 @@
 import random
+from abc import ABC, abstractmethod
 
 import numpy as np
 import torch
@@ -11,23 +12,31 @@ import market.sim_market as sim_market
 import rl.model as model
 
 
-class ActorCriticAgent(vendors.Agent):
+class ActorCriticAgent(vendors.Agent, ABC):
 	def __init__(self, n_observations, n_actions):
 		self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
 		print(f'I initiate an ActorCriticAgent using {self.device} device')
 		self.initialize_models_and_optimizer(n_observations, n_actions)
+
+	@abstractmethod
+	def initialize_models_and_optimizer(self, n_observations, n_actions) -> None:  # pragma: no cover
+		raise NotImplementedError('This method is abstract. Use a subclass')
+
+	@abstractmethod
+	def policy(self, observation, verbose=False) -> None:  # pragma: no cover
+		raise NotImplementedError('This method is abstract. Use a subclass')
 
 	def train_batch(self, states, actions, rewards, states_dash, regularization=False):
 		states = states.to(self.device)
 		actions = actions.to(self.device)
 		rewards = rewards.to(self.device)
 		states_dash = states_dash.to(self.device)
-		self.v_optimizer.zero_grad()
-		self.policy_optimizer.zero_grad()
+		self.critic_optimizer.zero_grad()
+		self.actor_optimizer.zero_grad()
 
-		v_estimates = self.v_net(states)
+		v_estimates = self.critic_net(states)
 		with torch.no_grad():
-			v_expected = (rewards + config.GAMMA * self.v_net(states_dash).detach()).view(-1, 1)
+			v_expected = (rewards + config.GAMMA * self.critic_net(states_dash).detach()).view(-1, 1)
 		valueloss = torch.nn.MSELoss()(v_estimates, v_expected)
 		valueloss.backward()
 
@@ -40,50 +49,67 @@ class ActorCriticAgent(vendors.Agent):
 			policy_loss += self.regularizate(states, actions)
 		policy_loss.backward()
 
-		self.v_optimizer.step()
-		self.policy_optimizer.step()
+		self.critic_optimizer.step()
+		self.actor_optimizer.step()
 
 		return valueloss.to('cpu').item(), policy_loss.to('cpu').item()
 
-	def regularize(self, *_):
+	def regularizate(self, states, actions):
+		"""
+		Via regulation you can add punishment for unintended behaviour besides the reward.
+		Use it to give "hints" to the agent or to improve stability.
+		But be careful while using it.
+		It could make the agent fulfill the regulation goals instead of maximizing the reward.
+
+		Args:
+			states (torch.Tensor): A tensor of the states the agent is in range
+			actions (torch.Tensor): A tensor of the actions the policy proposes
+
+		Returns:
+			torch.Tensor or 0: The punishment for the agent
+		"""
 		return 0
+
+	@abstractmethod
+	def log_probability_given_action(self) -> None:  # pragma: no cover
+		raise NotImplementedError('This method is abstract. Use a subclass')
 
 
 class DiscreteActorCriticAgent(ActorCriticAgent):
 	def initialize_models_and_optimizer(self, n_observations, n_actions):
-		self.policy_net = model.simple_network(n_observations, n_actions).to(self.device)
-		self.policy_optimizer = torch.optim.Adam(self.policy_net.parameters(), lr=0.0000025)
-		self.v_net = model.simple_network(n_observations, 1).to(self.device)
-		self.v_optimizer = torch.optim.Adam(self.v_net.parameters(), lr=0.00025)
+		self.actor_net = model.simple_network(n_observations, n_actions).to(self.device)
+		self.actor_optimizer = torch.optim.Adam(self.actor_net.parameters(), lr=0.0000025)
+		self.critic_net = model.simple_network(n_observations, 1).to(self.device)
+		self.critic_optimizer = torch.optim.Adam(self.critic_net.parameters(), lr=0.00025)
 
 	def policy(self, observation, verbose=False):
-		observation = torch.Tensor(observation).to(self.device)
+		observation = torch.Tensor(np.array(observation)).to(self.device)
 		with torch.no_grad():
-			distribution = torch.softmax(self.policy_net(observation).view(-1), dim=0)
+			distribution = torch.softmax(self.actor_net(observation).view(-1), dim=0)
 			if verbose:
-				v_estimat = self.v_net(observation).view(-1)
+				v_estimat = self.critic_net(observation).view(-1)
 
 		distribution = distribution.to('cpu').detach().numpy()
 		action = ut.shuffle_from_probabilities(distribution)
 		return action, distribution[action], v_estimat.to('cpu').item() if verbose else None
 
 	def log_probability_given_action(self, states, actions):
-		return -torch.log(torch.softmax(self.policy_net(states), dim=0).gather(1, actions.unsqueeze(-1)))
+		return -torch.log(torch.softmax(self.actor_net(states), dim=0).gather(1, actions.unsqueeze(-1)))
 
 
 class DiscreteACALinear(DiscreteActorCriticAgent):
-	def agent_output_to_market_form(self, step):
-		return step
+	def agent_output_to_market_form(self, action):
+		return action
 
 
 class DiscreteACACircularEconomy(DiscreteActorCriticAgent):
-	def agent_output_to_market_form(self, step):
-		return (int(step % 10), int(step / 10))
+	def agent_output_to_market_form(self, action):
+		return (int(action % 10), int(action / 10))
 
 
 class DiscreteACACircularEconomyRebuy(DiscreteActorCriticAgent):
-	def agent_output_to_market_form(self, step):
-		return (int(step / 100), int(step / 10 % 10), int(step % 10))
+	def agent_output_to_market_form(self, action):
+		return (int(action / 100), int(action / 10 % 10), int(action % 10))
 
 
 class ContinuosActorCriticAgent(ActorCriticAgent):
@@ -91,17 +117,17 @@ class ContinuosActorCriticAgent(ActorCriticAgent):
 
 	def initialize_models_and_optimizer(self, n_observations, n_actions):
 		self.n_actions = n_actions
-		self.policy_net = model.simple_network(n_observations, self.n_actions).to(self.device)
-		self.policy_optimizer = torch.optim.Adam(self.policy_net.parameters(), lr=0.0002)
-		self.v_net = model.simple_network(n_observations, 1).to(self.device)
-		self.v_optimizer = torch.optim.Adam(self.v_net.parameters(), lr=0.002)
+		self.actor_net = model.simple_network(n_observations, self.n_actions).to(self.device)
+		self.actor_optimizer = torch.optim.Adam(self.actor_net.parameters(), lr=0.0002)
+		self.critic_net = model.simple_network(n_observations, 1).to(self.device)
+		self.critic_optimizer = torch.optim.Adam(self.critic_net.parameters(), lr=0.002)
 
 	def policy(self, observation, verbose=False):
 		observation = torch.Tensor([observation]).to(self.device)
 		with torch.no_grad():
-			mean = self.softplus(self.policy_net(observation))
+			mean = self.softplus(self.actor_net(observation))
 			if verbose:
-				v_estimat = self.v_net(observation).view(-1)
+				v_estimat = self.critic_net(observation).view(-1)
 
 		action = torch.round(torch.normal(mean, torch.ones(mean.shape)))
 		action = torch.max(action, torch.zeros(action.shape))
@@ -109,16 +135,16 @@ class ContinuosActorCriticAgent(ActorCriticAgent):
 		return action.squeeze().type(torch.LongTensor).to('cpu').numpy(), *((self.log_probability_given_action(observation, action).mean().detach().item(), v_estimat.to('cpu').item()) if verbose else (None, None))
 
 	def log_probability_given_action(self, states, actions):
-		return torch.distributions.Normal(self.softplus(self.policy_net(states)), 1).log_prob(actions.view(-1, self.n_actions)).sum(dim=1).unsqueeze(-1)
+		return torch.distributions.Normal(self.softplus(self.actor_net(states)), 1).log_prob(actions.view(-1, self.n_actions)).sum(dim=1).unsqueeze(-1)
 
 	def regularizate(self, states, actions):
-		return 50000 * torch.nn.MSELoss()(self.policy_net(states), 3.5 * torch.ones(actions.shape))
+		return 50000 * torch.nn.MSELoss()(self.actor_net(states), 3.5 * torch.ones(actions.shape))
 
-	def agent_output_to_market_form(self, step):
-		return step.tolist()
+	def agent_output_to_market_form(self, action):
+		return action.tolist()
 
 
-def train_actorcritic(marketplace_class=sim_market.CircularEconomyRebuyPriceOneCompetitor, agent_class=ContinuosActorCriticAgent, outputs=3, verbose=False):
+def train_actorcritic(marketplace_class=sim_market.CircularEconomyRebuyPriceOneCompetitor, agent_class=ContinuosActorCriticAgent, outputs=3, number_of_training_steps=1000, verbose=False):
 	assert issubclass(agent_class, ActorCriticAgent), f'the agent_class must be a subclass of ActorCriticAgent: {agent_class}'
 	agent = agent_class(marketplace_class().observation_space.shape[0], outputs)
 
@@ -134,7 +160,7 @@ def train_actorcritic(marketplace_class=sim_market.CircularEconomyRebuyPriceOneC
 	total_envs = 128
 	environments = [marketplace_class() for _ in range(total_envs)]
 	info_accumulators = [None for _ in range(total_envs)]
-	for i in range(10000):
+	for i in range(number_of_training_steps):
 		# choose 32 environments
 		chosen_envs = set()
 		# chosen_envs.add(127)
@@ -149,14 +175,14 @@ def train_actorcritic(marketplace_class=sim_market.CircularEconomyRebuyPriceOneC
 		states_dash = []
 		for env in chosen_envs:
 			state = environments[env].observation()
-			step, prob, v_estimate = agent.policy(state, verbose)
+			action, prob, v_estimate = agent.policy(state, verbose)
 			if verbose:
 				all_probs.append(prob)
 				all_v_estimates.append(v_estimate)
-			state_dash, reward, is_done, info = environments[env].step(agent.agent_output_to_market_form(step))
+			state_dash, reward, is_done, info = environments[env].step(agent.agent_output_to_market_form(action))
 
 			states.append(state)
-			actions.append(step)
+			actions.append(action)
 			rewards.append(reward)
 			states_dash.append(state_dash)
 			info_accumulators[env] = info if info_accumulators[env] is None else ut.add_content_of_two_dicts(info_accumulators[env], info)
@@ -190,4 +216,4 @@ def train_actorcritic(marketplace_class=sim_market.CircularEconomyRebuyPriceOneC
 
 
 if __name__ == '__main__':
-	train_actorcritic(agent_class=DiscreteACACircularEconomyRebuy, outputs=1000, verbose=True)
+	train_actorcritic(agent_class=DiscreteACACircularEconomyRebuy, outputs=1000, number_of_training_steps=10000)
