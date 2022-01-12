@@ -118,9 +118,10 @@ class SoftActorCriticAgent(ActorCriticAgent):
 		return step.tolist()
 
 
-def train_actorcritic(Scenario=sim_market.CircularEconomyRebuyPriceOneCompetitor, Agent=SoftActorCriticAgent, outputs=3, verbose=False):
-	agent = Agent(Scenario().observation_space.shape[0], outputs)
-	assert isinstance(agent, ActorCriticAgent)
+def train_actorcritic(marketplace_class=sim_market.CircularEconomyRebuyPriceOneCompetitor, agent_class=SoftActorCriticAgent, outputs=3, verbose=False):
+	assert issubclass(agent_class, ActorCriticAgent), f'the agent_class must be a subclass of ActorCriticAgent: {agent_class}'
+	agent = agent_class(marketplace_class().observation_space.shape[0], outputs)
+
 	all_dicts = []
 	if verbose:
 		all_probs = []
@@ -131,7 +132,7 @@ def train_actorcritic(Scenario=sim_market.CircularEconomyRebuyPriceOneCompetitor
 
 	finished_episodes = 0
 	total_envs = 128
-	environments = [Scenario() for _ in range(total_envs)]
+	environments = [marketplace_class() for _ in range(total_envs)]
 	info_accumulators = [None for _ in range(total_envs)]
 	for i in range(10000):
 		# choose 32 environments
