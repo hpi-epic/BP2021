@@ -18,7 +18,7 @@ class Monitor():
 	"""
 
 	def __init__(self) -> None:
-		# Do not change the values in here! They are assumed in tests. Instead use setup_monitoring()!
+		# Do not change the values in here when setting up a session! They are assumed in tests. Instead use setup_monitoring()!
 		self.enable_live_draw = True
 		self.episodes = 500
 		self.plot_interval = 50
