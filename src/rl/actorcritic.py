@@ -45,7 +45,7 @@ class ActorCriticAgent(vendors.Agent):
 
 		return valueloss.to('cpu').item(), policy_loss.to('cpu').item()
 
-	def regularizate(self, *_):
+	def regularize(self, *_):
 		return 0
 
 
@@ -190,4 +190,4 @@ def train_actorcritic(marketplace_class=sim_market.CircularEconomyRebuyPriceOneC
 
 
 if __name__ == '__main__':
-	train_actorcritic(Agent=DiscreteACACircularEconomyRebuy, outputs=1000, verbose=True)
+	train_actorcritic(agent_class=DiscreteACACircularEconomyRebuy, outputs=1000, verbose=True)
