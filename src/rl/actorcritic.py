@@ -125,7 +125,7 @@ def train_actorcritic(Scenario=sim_market.CircularEconomyRebuyPriceOneCompetitor
 	all_dicts = []
 	if verbose:
 		all_probs = []
-		all_vestim = []
+		all_v_estimates = []
 	all_value_losses = []
 	all_policy_losses = []
 	writer = SummaryWriter(log_dir='runs/' + time.strftime('%Y%m%d-%H%M%S'))
@@ -149,10 +149,10 @@ def train_actorcritic(Scenario=sim_market.CircularEconomyRebuyPriceOneCompetitor
 		states_dash = []
 		for env in chosen_envs:
 			state = environments[env].observation()
-			step, prob, v_estimat = agent.policy(state, verbose)
+			step, prob, v_estimate = agent.policy(state, verbose)
 			if verbose:
 				all_probs.append(prob)
-				all_vestim.append(v_estimat)
+				all_v_estimates.append(v_estimate)
 			state_dash, reward, isdone, info = environments[env].step(agent.agent_output_to_market_form(step))
 
 			states.append(state)
@@ -177,7 +177,7 @@ def train_actorcritic(Scenario=sim_market.CircularEconomyRebuyPriceOneCompetitor
 				ut.write_dict_to_tensorboard(writer, averaged_info, episodes_accomplished, is_cumulative=True)
 				if verbose:
 					writer.add_scalar('training/prob_mean', np.mean(all_probs[-1000:]), episodes_accomplished)
-					writer.add_scalar('training/v_estim', np.mean(all_vestim[-1000:]), episodes_accomplished)
+					writer.add_scalar('training/v_estimate', np.mean(all_v_estimates[-1000:]), episodes_accomplished)
 				writer.add_scalar('loss/value', np.mean(all_value_losses[-1000:]), episodes_accomplished)
 				writer.add_scalar('loss/policy', np.mean(all_policy_losses[-1000:]), episodes_accomplished)
 
@@ -189,4 +189,5 @@ def train_actorcritic(Scenario=sim_market.CircularEconomyRebuyPriceOneCompetitor
 		all_policy_losses.append(policy_loss)
 
 
-train_actorcritic(Agent=DiscreteACACircularEconomyRebuy, outputs=1000, verbose=True)
+if __name__ == '__main__':
+	train_actorcritic(Agent=DiscreteACACircularEconomyRebuy, outputs=1000, verbose=True)
