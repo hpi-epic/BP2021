@@ -1,5 +1,4 @@
 import random
-import time
 
 import numpy as np
 import torch
@@ -128,7 +127,7 @@ def train_actorcritic(Scenario=sim_market.CircularEconomyRebuyPriceOneCompetitor
 		all_v_estimates = []
 	all_value_losses = []
 	all_policy_losses = []
-	writer = SummaryWriter(log_dir='runs/' + time.strftime('%Y%m%d-%H%M%S'))
+	writer = SummaryWriter()
 
 	episodes_accomplished = 0
 	total_envs = 128
@@ -153,7 +152,7 @@ def train_actorcritic(Scenario=sim_market.CircularEconomyRebuyPriceOneCompetitor
 			if verbose:
 				all_probs.append(prob)
 				all_v_estimates.append(v_estimate)
-			state_dash, reward, isdone, info = environments[env].step(agent.agent_output_to_market_form(step))
+			state_dash, reward, is_done, info = environments[env].step(agent.agent_output_to_market_form(step))
 
 			states.append(state)
 			actions.append(step)
@@ -161,7 +160,7 @@ def train_actorcritic(Scenario=sim_market.CircularEconomyRebuyPriceOneCompetitor
 			states_dash.append(state_dash)
 			info_accumulators[env] = info if info_accumulators[env] is None else ut.add_content_of_two_dicts(info_accumulators[env], info)
 
-			if isdone:
+			if is_done:
 				episodes_accomplished += 1
 				if episodes_accomplished % 10 == 0:
 					print('I accomplished', episodes_accomplished, 'episodes')
