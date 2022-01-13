@@ -1,6 +1,4 @@
 import os
-import re
-import shutil
 from unittest.mock import mock_open, patch
 
 import pytest

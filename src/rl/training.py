@@ -118,4 +118,4 @@ def train_QLearning_agent(RL_agent, environment, maxsteps=2 * config.EPSILON_DEC
 	else:
 		print(f'The best mean reward reached by the agent was {best_mean_reward:.3f}')
 		print('The models were saved to:')
-		print(os.path.abspath(os.path.join('results', 'trainedModels', f'{type(environment).__name__}_{type(RL_agent).__name__}')))
+		print(os.path.abspath(os.path.join('results', 'trainedModels', f'{type(environment).__name__}_{type(RL_agent).__name__}_{curr_time}')))
