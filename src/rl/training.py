@@ -34,11 +34,11 @@ class RLTrainer():
 			print('The models were saved to:')
 			print(os.path.abspath(os.path.join('trainedModels', f'{type(self.environment).__name__}_{type(self.RL_agent).__name__}')))
 
-	def signal_handler(self, signum, frame):
+	def signal_handler(self, signum, frame):  # pragma: no cover
 		"""
 		Handle any interruptions to the running process, such as a `KeyboardInterrupt`-event.
 		"""
-		print('Aborting training')
+		print('\nAborting training...')
 		self.end_of_training()
 		sys.exit(0)
 

@@ -1,4 +1,6 @@
 import os
+import signal
+import sys
 import time
 
 import matplotlib.pyplot as plt
@@ -27,6 +29,16 @@ class Monitor():
 		self.agent_colors = ['#0000ff']
 		self.subfolder_name = 'plots_' + time.strftime('%Y%m%d-%H%M%S')
 		self.folder_path = os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'monitoring', self.subfolder_name)
+		# Signal handler for e.g. KeyboardInterrupt
+		signal.signal(signal.SIGINT, self.signal_handler)
+
+	def signal_handler(self, signum, frame):  # pragma: no cover
+		"""
+		Handle any interruptions to the running process, such as a `KeyboardInterrupt`-event.
+		"""
+		print('\nAborting monitoring session...')
+		print(f'All histograms were saved to {os.path.abspath(self.get_folder())}')
+		sys.exit(0)
 
 	def get_folder(self) -> str:
 		"""

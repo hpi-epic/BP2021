@@ -214,7 +214,6 @@ def test_create_line_plot():
 def test_run_marketplace():
 	monitor.setup_monitoring(episodes=100, plot_interval=100, agents=[(vendors.FixedPriceCEAgent, [(5, 2)])])
 	agent_rewards = monitor.run_marketplace()
-	print(agent_rewards)
 	assert 1 == len(monitor.agents)
 	assert monitor.episodes == len(agent_rewards[0])
 
