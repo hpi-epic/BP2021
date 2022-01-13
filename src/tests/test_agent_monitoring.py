@@ -1,7 +1,5 @@
 import os
 from unittest.mock import patch
-import re
-import shutil
 
 import numpy as np
 import pytest
@@ -20,13 +18,6 @@ def setup_function(function):
 	global monitor
 	monitor = Monitor()
 	monitor.setup_monitoring(enable_live_draw=False, subfolder_name='test_plots_' + function.__name__)
-
-
-def teardown_module(module):
-	print('***TEARDOWN***')
-	for f in os.listdir(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'monitoring')):
-		if re.match('test_plots_*', f):
-			shutil.rmtree(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'monitoring', f))
 
 
 def test_init_default_values():
@@ -176,15 +167,6 @@ def test_rewards_array_size():
 	with patch('monitoring.agent_monitoring.plt'):
 		with pytest.raises(Exception):
 			monitor.create_histogram(rewards_wrong)
-
-# def test_get_episode_reward():
-# 	json = ut_t.create_mock_json_sim_market(episode_size='2')
-# 	with patch('builtins.open', mock_open(read_data=json)) as mock_file:
-# 		ut_t.check_mock_file_sim_market(mock_file, json)
-# 		reload(ut)
-# 		all_steps_reward = [[1, 2, 3, 4], [4, 5, 6, 7], [1, 3, 4, 5]]
-# 		assert [[3, 7], [9, 13], [4, 9]] == monitor.get_episode_rewards(all_steps_reward)
-	# reload(ut)
 
 
 agent_rewards_histogram = [
