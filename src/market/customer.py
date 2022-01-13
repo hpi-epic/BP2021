@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 
-import configuration.utils_sim_market as ut
+import configuration.utils as ut
 
 
 class Customer(ABC):
@@ -41,7 +41,7 @@ class CustomerLinear(Customer):
 		assert offer_length_per_vendor == 2, 'offer_length_per_vendor must be two: one field for the price and one for the quality!'
 		nothingpreference = 1
 		ratios = [nothingpreference]
-		for offer in range(int(len(offers) / 2)):
+		for offer in range(len(offers) // 2):
 			quality = offers[2 * offer + 1]
 			price = offers[2 * offer] + 1
 			ratio = quality / price
@@ -68,7 +68,7 @@ class CustomerCircular(Customer):
 		"""
 		assert isinstance(offers, np.ndarray), 'offers must be a np.ndarray'
 		assert len(offers) % offer_length_per_vendor == 1, 'there must be exactly one field for common state (in_circulation)'
-		assert offer_length_per_vendor == 3 or offer_length_per_vendor == 4, 'offer_length_per_vendor needs to be 3 or 4'
+		assert offer_length_per_vendor in [3, 4], 'offer_length_per_vendor needs to be 3 or 4'
 		nothingpreference = 1
 		preferences = [nothingpreference]
 		for offer in range(int(np.floor(len(offers) / offer_length_per_vendor))):

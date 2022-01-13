@@ -1,5 +1,7 @@
 import os
 from unittest.mock import patch
+import re
+import shutil
 
 import numpy as np
 import pytest
@@ -17,7 +19,14 @@ def setup_function(function):
 	print('***SETUP***')
 	global monitor
 	monitor = Monitor()
-	monitor.setup_monitoring(enable_live_draw=True, subfolder_name='test_plots_' + function.__name__)
+	monitor.setup_monitoring(enable_live_draw=False, subfolder_name='test_plots_' + function.__name__)
+
+
+def teardown_module(module):
+	print('***TEARDOWN***')
+	for f in os.listdir(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'monitoring')):
+		if re.match('test_plots_*', f):
+			shutil.rmtree(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'monitoring', f))
 
 
 def test_init_default_values():
@@ -30,7 +39,7 @@ def test_init_default_values():
 	assert 1 == len(test_monitor.agents)
 	assert ['#0000ff'] == test_monitor.agent_colors
 	assert test_monitor.subfolder_name.startswith('plots_')
-	assert os.path.normcase(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring' + os.sep + test_monitor.subfolder_name) == os.path.normcase(test_monitor.folder_path)
+	assert os.path.normcase(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'monitoring', test_monitor.subfolder_name))) == os.path.normcase(os.path.abspath(test_monitor.folder_path))
 
 
 def test_correct_setup_monitoring():
