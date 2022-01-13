@@ -6,7 +6,7 @@ import pytest
 
 import agents.vendors as vendors
 import market.sim_market as sim
-import monitoring.exampleprinter as exampleprinter
+from monitoring.exampleprinter import ExamplePrinter
 
 
 def teardown_module(module):
@@ -21,4 +21,4 @@ test_cases = [(sim.ClassicScenario(), vendors.FixedPriceLEAgent()), (sim.MultiCo
 
 @pytest.mark.parametrize('environment, agent', test_cases)
 def test_full_episode(environment, agent):
-	assert exampleprinter.run_example(environment, agent, log_dir_prepend='test_') >= -5000
+	assert ExamplePrinter(environment, agent).run_example(log_dir_prepend='test_') >= -5000

@@ -3,9 +3,9 @@ from unittest.mock import mock_open, patch
 
 import pytest
 
-import monitoring.exampleprinter as exampleprinter
 import monitoring.svg_manipulation as svg_manipulation
 import tests.utils_tests as ut_t
+from monitoring.exampleprinter import ExamplePrinter
 
 svg_manipulator = svg_manipulation.SVGManipulator()
 
@@ -43,7 +43,7 @@ def test_correct_template():
 			mock_exists.return_value = False
 			mock_list_dir.return_value = ['MarketOverview_001.svg', 'MarketOverview_002.svg', 'MarketOverview_003.svg']
 
-			exampleprinter.run_example()
+			ExamplePrinter().run_example()
 		assert correct_template == svg_manipulator.template_svg
 
 
@@ -204,6 +204,6 @@ def test_one_exampleprinter_run():
 			mock_exists.return_value = False
 			mock_list_dir.return_value = ['MarketOverview_001.svg', 'MarketOverview_002.svg', 'MarketOverview_003.svg']
 
-			exampleprinter.run_example()
+			ExamplePrinter().run_example()
 		# asserts that the html has been written
 		mock_file().write.assert_called_with(correct_html)
