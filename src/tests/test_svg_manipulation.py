@@ -37,6 +37,7 @@ def test_correct_template():
 			patch('monitoring.svg_manipulation.os.path.isdir') as mock_isdir, \
 			patch('monitoring.svg_manipulation.os.listdir') as mock_list_dir, \
 			patch('monitoring.svg_manipulation.os.path.exists') as mock_exists, \
+			patch('monitoring.exampleprinter.SummaryWriter'), \
 			patch('builtins.open', mock_open()):
 			mock_isfile.return_value = True
 			mock_isdir.return_value = True
@@ -198,6 +199,7 @@ def test_one_exampleprinter_run():
 			patch('monitoring.svg_manipulation.os.path.isdir') as mock_isdir, \
 			patch('monitoring.svg_manipulation.os.listdir') as mock_list_dir, \
 			patch('monitoring.svg_manipulation.os.path.exists') as mock_exists, \
+			patch('monitoring.exampleprinter.SummaryWriter'), \
 			patch('builtins.open', mock_open()) as mock_file:
 			mock_isfile.return_value = True
 			mock_isdir.return_value = True
