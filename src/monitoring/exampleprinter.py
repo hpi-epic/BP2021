@@ -1,4 +1,5 @@
 import copy
+import os
 import time
 
 import torch
@@ -26,9 +27,10 @@ def run_example(environment=sim_market.CircularEconomyRebuyPriceOneCompetitor(),
 	our_profit = 0
 	is_done = False
 	state = environment.reset()
-	signature = f'{log_dir_prepend}{time.strftime("%b%d_%H-%M-%S")}_exampleprinter'
 
-	writer = SummaryWriter(log_dir=f'results/runs/{signature}')
+	signature = f'{log_dir_prepend}exampleprinter_{time.strftime("%b%d_%H-%M-%S")}'
+	writer = SummaryWriter(log_dir=os.path.join('results', 'runs', signature))
+
 	if isinstance(environment, sim_market.CircularEconomyRebuyPriceOneCompetitor):
 		svg_manipulator = SVGManipulator(signature)
 	cumulative_dict = None

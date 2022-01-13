@@ -36,7 +36,7 @@
 # 	json = ut_t.create_mock_json(rl=ut_t.create_mock_json_rl(replay_start_size='500', sync_target_frames='100'))
 # 	with patch('builtins.open', mock_open(read_data=json)) as mock_file:
 # 		ut_t.check_mock_file(mock_file, json)
-# 		# Include utils_rl again to make sure the file is read again
+# 		# Include config again to make sure the file is read again
 # 		reload(config)
 # 		environment = environment()
 # 		agent = agent(environment.observation_space.shape[0], n_actions=n_actions, optim=torch.optim.Adam)
