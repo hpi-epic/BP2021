@@ -27,8 +27,9 @@ def run_training_session(marketplace_class=sim_market.CircularEconomyRebuyPriceO
 		n_actions = marketplace.action_space.n
 
 	RL_agent = RL_agent_class(n_observation=marketplace.observation_space.shape[0], n_actions=n_actions, optim=torch.optim.Adam)
-	training.train_QLearning_agent(RL_agent, marketplace)
+	trainer = training.RLTrainer(marketplace, RL_agent)
+	trainer.train_QLearning_agent()
 
 
 if __name__ == '__main__':
-	run_training_session()
+	run_training_session(marketplace_class=sim_market.ClassicScenario, RL_agent_class=vendors.QLearningLEAgent)

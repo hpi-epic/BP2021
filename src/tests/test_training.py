@@ -40,4 +40,5 @@
 # 		reload(config)
 # 		environment = environment()
 # 		agent = agent(environment.observation_space.shape[0], n_actions=n_actions, optim=torch.optim.Adam)
-# 		training.train_QLearning_agent(agent, environment, int(config.REPLAY_START_SIZE * 1.2), log_dir_prepend='test_')
+# 		trainer = training.RLTrainer(environment, agent)
+# 		trainer.train_QLearning_agent(int(config.REPLAY_START_SIZE * 1.2), 'test_')
