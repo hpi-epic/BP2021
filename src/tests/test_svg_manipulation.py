@@ -18,16 +18,6 @@ def setup_function(function):
 	svg_manipulator = svg_manipulation.SVGManipulator()
 
 
-def teardown_module(module):
-	print('***TEARDOWN***')
-	for f in os.listdir(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'results', 'runs')):
-		if re.match('test_*', f):
-			shutil.rmtree(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'results', 'runs', f))
-	for f in os.listdir(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'results', 'monitoring')):
-		if re.match('test_*', f):
-			shutil.rmtree(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'results', 'monitoring', f))
-
-
 def test_get_default_dict():
 	default_dict = svg_manipulation.get_default_dict()
 	for _, val in default_dict.items():
@@ -49,13 +39,14 @@ def test_correct_template():
 			patch('monitoring.svg_manipulation.os.path.isdir') as mock_isdir, \
 			patch('monitoring.svg_manipulation.os.listdir') as mock_list_dir, \
 			patch('monitoring.svg_manipulation.os.path.exists') as mock_exists, \
+			patch('monitoring.exampleprinter.SummaryWriter'), \
 			patch('builtins.open', mock_open()):
 			mock_isfile.return_value = True
 			mock_isdir.return_value = True
 			mock_exists.return_value = False
 			mock_list_dir.return_value = ['MarketOverview_001.svg', 'MarketOverview_002.svg', 'MarketOverview_003.svg']
 
-			exampleprinter.run_example(log_dir_prepend='test_')
+			exampleprinter.run_example()
 		assert correct_template == svg_manipulator.template_svg
 
 
@@ -210,12 +201,13 @@ def test_one_exampleprinter_run():
 			patch('monitoring.svg_manipulation.os.path.isdir') as mock_isdir, \
 			patch('monitoring.svg_manipulation.os.listdir') as mock_list_dir, \
 			patch('monitoring.svg_manipulation.os.path.exists') as mock_exists, \
+			patch('monitoring.exampleprinter.SummaryWriter'), \
 			patch('builtins.open', mock_open()) as mock_file:
 			mock_isfile.return_value = True
 			mock_isdir.return_value = True
 			mock_exists.return_value = False
 			mock_list_dir.return_value = ['MarketOverview_001.svg', 'MarketOverview_002.svg', 'MarketOverview_003.svg']
 
-			exampleprinter.run_example(log_dir_prepend='test_')
+			exampleprinter.run_example()
 		# asserts that the html has been written
 		mock_file().write.assert_called_with(correct_html)
