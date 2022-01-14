@@ -15,9 +15,9 @@ class PerformanceMonitor():
 		self.function = function
 		# Signal handler for e.g. KeyboardInterrupt
 		self.abort_counter = 0
-		signal.signal(signal.SIGINT, self.signal_handler)
+		signal.signal(signal.SIGINT, self._signal_handler)
 
-	def signal_handler(self, signum, frame):  # pragma: no cover
+	def _signal_handler(self, signum, frame):  # pragma: no cover
 		"""
 		Handle any interruptions to the running process, such as a `KeyboardInterrupt`-event.
 		"""

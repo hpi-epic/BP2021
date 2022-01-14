@@ -30,9 +30,9 @@ class Monitor():
 		self.subfolder_name = 'plots_' + time.strftime('%Y%m%d-%H%M%S')
 		self.folder_path = os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'monitoring', self.subfolder_name)
 		# Signal handler for e.g. KeyboardInterrupt
-		signal.signal(signal.SIGINT, self.signal_handler)
+		signal.signal(signal.SIGINT, self._signal_handler)
 
-	def signal_handler(self, signum, frame):  # pragma: no cover
+	def _signal_handler(self, signum, frame):  # pragma: no cover
 		"""
 		Handle any interruptions to the running process, such as a `KeyboardInterrupt`-event.
 		"""

@@ -21,9 +21,9 @@ class RLTrainer():
 		self.environment = environment
 		self.RL_agent = RL_agent
 		# Signal handler for e.g. KeyboardInterrupt
-		signal.signal(signal.SIGINT, self.signal_handler)
+		signal.signal(signal.SIGINT, self._signal_handler)
 
-	def end_of_training(self):
+	def _end_of_training(self):
 		"""
 		Inform the user of the best_mean_reward the agent achieved during training.
 		"""
@@ -34,12 +34,12 @@ class RLTrainer():
 			print('The models were saved to:')
 			print(os.path.abspath(os.path.join('trainedModels', f'{type(self.environment).__name__}_{type(self.RL_agent).__name__}')))
 
-	def signal_handler(self, signum, frame):  # pragma: no cover
+	def _signal_handler(self, signum, frame):  # pragma: no cover
 		"""
 		Handle any interruptions to the running process, such as a `KeyboardInterrupt`-event.
 		"""
 		print('\nAborting training...')
-		self.end_of_training()
+		self._end_of_training()
 		sys.exit(0)
 
 	# Gets the profit array of all vendors and returns the necessary dict for direct comparison in tensorboard
@@ -144,4 +144,4 @@ class RLTrainer():
 			rmse_losses.append(math.sqrt(loss))
 			selected_q_vals.append(selected_q_val_mean)
 
-		self.end_of_training()
+		self._end_of_training()
