@@ -42,16 +42,6 @@ class RLTrainer():
 		self._end_of_training()
 		sys.exit(0)
 
-	# Gets the profit array of all vendors and returns the necessary dict for direct comparison in tensorboard
-	def direct_comparison_dict(self, profits) -> dict:
-		comparison_dict = {}
-		n_vendors = len(profits[0])
-		for i in range(n_vendors):
-			last = profits[-100:]
-			matrix = np.concatenate(last).reshape(-1, n_vendors)
-			comparison_dict['vendor_' + str(i)] = np.mean(matrix[:, i])
-		return comparison_dict
-
 	def train_QLearning_agent(self, maxsteps=2 * config.EPSILON_DECAY_LAST_FRAME, log_dir_prepend='') -> None:
 		"""
 		Train a QLearningAgent on a market environment.
