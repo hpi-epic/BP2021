@@ -44,7 +44,7 @@ def test_init_default_values():
 def test_get_folder():
 	# if you change the name of this function, change it in the assert as well!
 	monitor.get_folder()
-	assert os.path.exists(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring' + os.sep + 'test_plots_test_get_folder')
+	assert os.path.exists(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'results', 'monitoring', 'test_plots_test_get_folder')))
 
 
 def test_get_modelfile_path():
@@ -98,7 +98,7 @@ def test_correct_setup_monitoring():
 	assert isinstance(monitor.agents[1], vendors.QLearningCERebuyAgent)
 	assert 'reptiloid' == monitor.agents[0].name
 	assert 'q_learner' == monitor.agents[1].name
-	assert os.path.normcase(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'monitoring', 'subfoldername'))) == os.path.normcase(os.path.abspath(monitor.folder_path))
+	assert os.path.normcase(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'results', 'monitoring', 'subfoldername'))) == os.path.normcase(os.path.abspath(monitor.folder_path))
 	assert 2 == len(monitor.agent_colors)
 
 
