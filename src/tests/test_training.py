@@ -17,9 +17,9 @@
 # # teardown after each test
 # def teardown_module(module):
 # 	print('***TEARDOWN***')
-# 	for f in os.listdir('./runs'):
+# 	for f in os.listdir(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'results', 'runs')):
 # 		if re.match('test_*', f):
-# 			shutil.rmtree('./runs/' + f)
+# 			shutil.rmtree(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'results', 'runs', f))
 
 
 # test_scenarios = [

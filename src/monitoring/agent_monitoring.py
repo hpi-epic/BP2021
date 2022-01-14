@@ -12,7 +12,7 @@ class Monitor():
 	"""
 	A Monitor() monitors given agents on a marketplace, recording metrics such as median and maximum rewards.
 
-	When the run is finished, diagrams will be created in the 'monitoring' folder. \\
+	When the run is finished, diagrams will be created in the 'results/monitoring' folder. \\
 	The Monitor() can be customized using setup_monitoring().
 	"""
 
@@ -27,7 +27,7 @@ class Monitor():
 		assert os.path.exists(self.get_modelfile_path(default_modelfile)), f'the default modelfile does not exist: {default_modelfile}'
 		self.agents = [default_agent(self.marketplace.observation_space.shape[0], self.get_action_space(), load_path=self.get_modelfile_path(default_modelfile))]
 		self.agent_colors = [(0.0, 0.0, 1.0, 1.0)]
-		self.folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')) + os.sep + 'monitoring' + os.sep + 'plots_' + time.strftime('%Y%m%d-%H%M%S')
+		self.folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'results', 'monitoring', 'plots_' + time.strftime('%b%d_%H-%M-%S')))
 
 	def get_folder(self) -> str:
 		"""
@@ -44,7 +44,7 @@ class Monitor():
 
 	def get_modelfile_path(self, model_name: str) -> str:
 		"""
-		Get the full path to a modelfile in the 'monitoring' folder.
+		Get the full path to a modelfile in the 'results/monitoring' folder.
 
 		Args:
 			model_name (str): The name of the .dat modelfile.
@@ -53,7 +53,7 @@ class Monitor():
 			str: The full path to the modelfile.
 		"""
 		model_name += '.dat'
-		full_path = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'monitoring', model_name))
+		full_path = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'results', 'monitoring', model_name))
 		assert os.path.exists(full_path), f'the specified modelfile does not exist: {full_path}'
 		return full_path
 
@@ -178,7 +178,7 @@ class Monitor():
 
 		if(subfolder_name is not None):
 			assert isinstance(subfolder_name, str), f'subfolder_name must be of type str: {type(subfolder_name)}, {subfolder_name}'
-			self.folder_path = os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'monitoring', subfolder_name)
+			self.folder_path = os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'results', 'monitoring', subfolder_name)
 
 	def get_configuration(self) -> dict:
 		"""
