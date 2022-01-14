@@ -23,7 +23,7 @@ def test_get_default_dict():
 
 
 def test_correct_template():
-	with open(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'monitoring', 'MarketOverview_template.svg')), 'r') as template:
+	with open(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'results', 'monitoring', 'MarketOverview_template.svg')), 'r') as template:
 		correct_template = template.read()
 	assert correct_template == svg_manipulator.template_svg
 

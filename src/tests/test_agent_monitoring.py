@@ -30,7 +30,7 @@ def test_init_default_values():
 	assert 1 == len(test_monitor.agents)
 	assert ['#0000ff'] == test_monitor.agent_colors
 	assert test_monitor.subfolder_name.startswith('plots_')
-	assert os.path.normcase(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'monitoring', test_monitor.subfolder_name))) == os.path.normcase(os.path.abspath(test_monitor.folder_path))
+	assert os.path.normcase(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'results', 'monitoring', test_monitor.subfolder_name))) == os.path.normcase(os.path.abspath(test_monitor.folder_path))
 
 
 def test_correct_setup_monitoring():

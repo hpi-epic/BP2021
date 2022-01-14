@@ -2,6 +2,7 @@ import os
 import re
 import shutil
 from unittest.mock import patch
+import time
 
 import pytest
 
@@ -9,7 +10,17 @@ import agents.vendors as vendors
 import market.sim_market as sim
 import monitoring.exampleprinter as exampleprinter
 
-test_cases = [(sim.ClassicScenario(), vendors.FixedPriceLEAgent()), (sim.MultiCompetitorScenario(), vendors.FixedPriceLEAgent()), (sim.CircularEconomyMonopolyScenario(), vendors.FixedPriceCEAgent()), (sim.CircularEconomyMonopolyScenario(), vendors.RuleBasedCEAgent()), (sim.CircularEconomyRebuyPriceMonopolyScenario(), vendors.FixedPriceCERebuyAgent()), (sim.CircularEconomyRebuyPriceMonopolyScenario(), vendors.RuleBasedCERebuyAgent()), (sim.CircularEconomyRebuyPriceOneCompetitor(), vendors.FixedPriceCERebuyAgent()), (sim.CircularEconomyRebuyPriceOneCompetitor(), vendors.RuleBasedCERebuyAgent())]
+
+test_cases = [
+	(sim.ClassicScenario(), vendors.FixedPriceLEAgent()),
+	(sim.MultiCompetitorScenario(), vendors.FixedPriceLEAgent()),
+	(sim.CircularEconomyMonopolyScenario(), vendors.FixedPriceCEAgent()),
+	(sim.CircularEconomyMonopolyScenario(), vendors.RuleBasedCEAgent()),
+	(sim.CircularEconomyRebuyPriceMonopolyScenario(), vendors.FixedPriceCERebuyAgent()),
+	(sim.CircularEconomyRebuyPriceMonopolyScenario(), vendors.RuleBasedCERebuyAgent()),
+	(sim.CircularEconomyRebuyPriceOneCompetitor(), vendors.FixedPriceCERebuyAgent()),
+	(sim.CircularEconomyRebuyPriceOneCompetitor(), vendors.RuleBasedCERebuyAgent())
+]
 
 
 @pytest.mark.parametrize('environment, agent', test_cases)
