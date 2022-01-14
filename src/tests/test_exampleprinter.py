@@ -1,6 +1,7 @@
 import os
 import re
 import shutil
+from unittest.mock import patch
 
 import pytest
 
@@ -21,4 +22,6 @@ test_cases = [(sim.ClassicScenario(), vendors.FixedPriceLEAgent()), (sim.MultiCo
 
 @pytest.mark.parametrize('environment, agent', test_cases)
 def test_full_episode(environment, agent):
-	assert exampleprinter.run_example(environment, agent, log_dir_prepend='test_') >= -5000
+	with patch('monitoring.exampleprinter.SVGManipulator'):
+		# patch('monitoring.exampleprinter.SummaryWriter'):
+		assert exampleprinter.run_example(environment, agent, log_dir_prepend='test_') >= -5000
