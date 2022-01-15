@@ -1,4 +1,5 @@
 import copy
+import os
 import signal
 import sys
 import time
@@ -43,9 +44,10 @@ class ExamplePrinter():
 		our_profit = 0
 		is_done = False
 		state = self.environment.reset()
-		signature = time.strftime('%Y%m%d-%H%M%S') + f'_{type(self.environment).__name__}_{type(self.agent).__name__}_exampleprinter'
-		# writer = SummaryWriter(log_dir='runs/' + log_dir_prepend + signature)
-		writer = SummaryWriter()
+
+		signature = f'{log_dir_prepend}exampleprinter_{time.strftime("%b%d_%H-%M-%S")}'
+		writer = SummaryWriter(log_dir=os.path.join('results', 'runs', signature))
+
 		if isinstance(self.environment, sim_market.CircularEconomyRebuyPriceOneCompetitor):
 			svg_manipulator = SVGManipulator(signature)
 		cumulative_dict = None

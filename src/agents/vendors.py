@@ -292,22 +292,30 @@ class QLearningAgent(ReinforcementLearningAgent, ABC):
 			model_name (str): The name of the .dat file of this specific model.
 		"""
 		model_name += '.dat'
-		if not os.path.isdir('trainedModels'):
-			os.mkdir('trainedModels')
-		if not os.path.isdir(f'trainedModels/{path_name}'):
-			os.mkdir(f'trainedModels/{path_name}')
-		torch.save(self.net.state_dict(), f'./trainedModels/{path_name}/{model_name}')
+		if not os.path.isdir(os.path.abspath(os.path.join('results', 'trainedModels'))):
+			os.mkdir(os.path.abspath(os.path.join('results', 'trainedModels')))
 
-		full_directory = os.walk(f'./trainedModels/{path_name}')
+		model_path = os.path.join('results', 'trainedModels', path_name)
+		if not os.path.isdir(os.path.abspath(model_path)):
+			os.mkdir(os.path.abspath(model_path))
+
+		torch.save(self.net.state_dict(), os.path.join(model_path, model_name))
+
+		full_directory = os.walk(model_path)
 		for _, _, filenames in full_directory:
 			if len(filenames) > 10:
-				# TODO: Should we instead delete the oldest files?
-				# sort numbers by value to delete the smallest rewards
-				filenames = [float(reward[:-4]) for reward in filenames]
-				filenames = sorted(filenames)
+				# split the filenames to isolate the reward-part
+				split_filenames = [file.rsplit('_', 1) for file in filenames]
+				# preserve the signature for later
+				signature = split_filenames[0][0]
+				# isolate the reward and convert it to float
+				rewards = [file[1] for file in split_filenames]
+				rewards = [float(reward.rsplit('.', 1)[0]) for reward in rewards]
+				# sort the rewards to keep only the best ones
+				rewards = sorted(rewards)
 
-				for file in range(len(filenames) - 10):
-					os.remove(f'./trainedModels/{path_name}/{filenames[file]:.3f}.dat')
+				for reward in range(len(rewards) - 10):
+					os.remove(os.path.join(model_path, f'{signature}_{rewards[reward]:.3f}.dat'))
 
 
 class QLearningLEAgent(QLearningAgent, LinearAgent):

@@ -47,8 +47,6 @@ class RLTrainer():
 		Train a QLearningAgent on a market environment.
 
 		Args:
-			RL_agent (agents.vendors instance): The agent that should be trained.
-			environment (market.sim_market instance): The market environment used for the training.
 			maxsteps (int, optional): The maximum number of steps the training will run for. Defaults to 2*config.EPSILON_DECAY_LAST_FRAME.
 			log_dir_prepend (str, optional): A string that is prepended to the log directory created by Tensorboard. Defaults to ''.
 		"""
@@ -64,10 +62,10 @@ class RLTrainer():
 		selected_q_vals = []
 		self.best_mean_reward = 0
 
-		# tensorboard init
-		# Setting log_dir causes some problems that are yet to be solved.
-		# writer = SummaryWriter(log_dir='runs/' + log_dir_prepend + time.strftime('%Y%m%d-%H%M%S') + f'_{type(environment).__name__}_{type(RL_agent).__name__}_training')
-		writer = SummaryWriter()
+		curr_time = time.strftime('%b%d_%H-%M-%S')
+		signature = f'{type(self.environment).__name__}_{type(self.RL_agent).__name__}'
+		writer = SummaryWriter(log_dir=os.path.join('results', 'runs', f'{log_dir_prepend}training_{curr_time}'))
+
 		for frame_idx in range(maxsteps):
 			epsilon = max(config.EPSILON_FINAL, config.EPSILON_START - frame_idx / config.EPSILON_DECAY_LAST_FRAME)
 
@@ -112,7 +110,7 @@ class RLTrainer():
 				print(f'''{frame_idx}: done {len(all_dicts)} games, this episode return {all_dicts[-1]['profits/all']['vendor_0']:.3f}, mean return {mean_reward:.3f}, eps {epsilon:.2f}, speed {speed:.2f} f/s''')
 
 				if (frame_idx > config.EPSILON_DECAY_LAST_FRAME + 101) and (self.best_mean_reward < mean_reward):
-					self.RL_agent.save(f'{type(self.environment).__name__}_{type(self.RL_agent).__name__}', f'{mean_reward:.3f}.dat')
+					self.RL_agent.save(path_name=f'{signature}_{curr_time}', model_name=f'{signature}_{mean_reward:.3f}')
 					if self.best_mean_reward != 0:
 						print(f'Best reward updated {self.best_mean_reward:.3f} -> {mean_reward:.3f}')
 					self.best_mean_reward = mean_reward
