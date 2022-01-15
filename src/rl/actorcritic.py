@@ -206,12 +206,12 @@ def train_actorcritic(marketplace_class=sim_market.CircularEconomyRebuyPriceOneC
 			if verbose:
 				all_probs.append(prob)
 				all_v_estimates.append(v_estimate)
-			state_dash, reward, is_done, info = environments[env].step(agent.agent_output_to_market_form(action))
+			next_state, reward, is_done, info = environments[env].step(agent.agent_output_to_market_form(action))
 
 			states.append(state)
 			actions.append(action)
 			rewards.append(reward)
-			states_dash.append(state_dash)
+			states_dash.append(next_state)
 			info_accumulators[env] = info if info_accumulators[env] is None else ut.add_content_of_two_dicts(info_accumulators[env], info)
 
 			if is_done:
@@ -237,7 +237,7 @@ def train_actorcritic(marketplace_class=sim_market.CircularEconomyRebuyPriceOneC
 				environments[env].reset()
 				info_accumulators[env] = None
 
-		valueloss, policy_loss = agent.train_batch(torch.Tensor(np.array(states)), torch.from_numpy(np.array(actions, dtype=np.int64)), torch.Tensor(np.array(rewards)), torch.Tensor(np.array(state_dash)), finished_episodes <= 500)
+		valueloss, policy_loss = agent.train_batch(torch.Tensor(np.array(states)), torch.from_numpy(np.array(actions, dtype=np.int64)), torch.Tensor(np.array(rewards)), torch.Tensor(np.array(next_state)), finished_episodes <= 500)
 		all_value_losses.append(valueloss)
 		all_policy_losses.append(policy_loss)
 
