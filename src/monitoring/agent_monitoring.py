@@ -195,10 +195,7 @@ class Monitor():
 		plot_lower_bound = np.floor(int(np.min(rewards)) * 1e-3) / 1e-3
 		plot_upper_bound = np.ceil(int(np.max(rewards)) * 1e-3) / 1e-3
 		plot_bins = int(np.abs(plot_lower_bound) + plot_upper_bound) // 1000
-		print(rewards)
-		print(plot_bins)
-		print(self.agent_colors)
-		print(plot_lower_bound, plot_upper_bound)
+
 		plt.hist(rewards, bins=plot_bins, color=self.agent_colors, rwidth=0.9, range=(plot_lower_bound, plot_upper_bound))
 		plt.legend([a.name for a in self.agents])
 
