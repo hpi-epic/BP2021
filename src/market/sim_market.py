@@ -20,7 +20,6 @@ from market.owner import Owner
 # Second: a state specific to one vendor
 # Third: vendor's actions from the former round which needs to be saved and influence the other's decision e.g. prices
 
-
 class SimMarket(gym.Env, ABC):
 	"""
 	The superclass to all market environments.
