@@ -12,11 +12,11 @@ from market.sim_market import MultiCompetitorScenario as SMulti
 
 
 # Helper function that creates a random offer (state that includes the agent's price) to test customer behaviour. This is dependent on the sim_market working!
-def random_offer(market_scenario):
-	market = market_scenario()
-	market.reset()
-	market.vendor_actions[0] = market.action_space.sample()
-	return market.generate_customer_offer(), market.get_offer_length_per_vendor()
+def random_offer(marketplace):
+	marketplace = marketplace()
+	marketplace.reset()
+	marketplace.vendor_actions[0] = marketplace.action_space.sample()
+	return marketplace.generate_customer_offer(), marketplace.get_offer_length_per_vendor()
 
 
 # Test the Customer parent class, i.e. make sure it cannot be used
