@@ -41,7 +41,7 @@ class SimMarket(gym.Env, ABC):
 		self._owner = None
 		self._customer = None
 		# TODO: Better testing for the observation and action space
-		assert (self.observation_space and self.action_space), 'Your observation or action space is not defined'
+		assert (self.observation_space and self._action_space), 'Your observation or action space is not defined'
 		# Make sure that variables such as state, customer are known
 		self.reset()
 
@@ -111,7 +111,7 @@ class SimMarket(gym.Env, ABC):
 		Returns:
 			Tuple[np.array, np.float64, bool, dict]: A Tuple, containing the observation the agents makes right before his next action, the reward he made between these actions, a flag indicating if the market closes and information about the market for logging purposes.
 		"""
-		assert self.action_space.contains(action), f'{action} ({type(action)}) invalid'
+		assert self._action_space.contains(action), f'{action} ({type(action)}) invalid'
 
 		self.vendor_actions[0] = action
 
@@ -131,7 +131,7 @@ class SimMarket(gym.Env, ABC):
 			# the competitor, which turn it is, will update its pricing
 			if i < len(self.competitors):
 				action_competitor_i = self.competitors[i].policy(self._observation(i + 1))
-				assert self.action_space.contains(action_competitor_i), 'This vendor does not deliver a suitable action'
+				assert self._action_space.contains(action_competitor_i), 'This vendor does not deliver a suitable action'
 				self.vendor_actions[i + 1] = action_competitor_i
 
 		self._consider_storage_costs(profits)
@@ -284,7 +284,7 @@ class SimMarket(gym.Env, ABC):
 		Returns:
 			int: The offer length.
 		"""
-		action_encoding_length = 1 if isinstance(self.action_space, gym.spaces.Discrete) else len(self.action_space)
+		action_encoding_length = 1 if isinstance(self._action_space, gym.spaces.Discrete) else len(self._action_space)
 		if self.vendor_specific_state[0] is None:
 			vendor_specific_state_encoding_length = 0
 		else:
@@ -326,7 +326,7 @@ class LinearEconomy(SimMarket, ABC):
 			np.array([config.MAX_QUALITY] + [config.MAX_PRICE, config.MAX_QUALITY] * len(self.competitors)),
 			dtype=np.float64)
 
-		self.action_space = gym.spaces.Discrete(config.MAX_PRICE)
+		self._action_space = gym.spaces.Discrete(config.MAX_PRICE)
 
 	def _reset_vendor_specific_state(self) -> list:
 		"""
@@ -385,7 +385,7 @@ class CircularEconomy(SimMarket):
 		self.max_storage = 1e2
 		self.max_circulation = 10 * self.max_storage
 		self.observation_space = gym.spaces.Box(np.array([0, 0] + [0, 0, 0] * len(self.competitors)), np.array([self.max_circulation, self.max_storage] + [config.MAX_PRICE, config.MAX_PRICE, self.max_storage] * len(self.competitors)), dtype=np.float64)
-		self.action_space = gym.spaces.Tuple((gym.spaces.Discrete(config.MAX_PRICE), gym.spaces.Discrete(config.MAX_PRICE)))
+		self._action_space = gym.spaces.Tuple((gym.spaces.Discrete(config.MAX_PRICE), gym.spaces.Discrete(config.MAX_PRICE)))
 
 	def _reset_vendor_specific_state(self) -> list:
 		"""
@@ -544,7 +544,7 @@ class CircularEconomyRebuyPrice(CircularEconomy):
 	def _setup_action_observation_space(self) -> None:
 		super()._setup_action_observation_space()
 		self.observation_space = gym.spaces.Box(np.array([0, 0] + [0, 0, 0, 0] * len(self.competitors)), np.array([self.max_circulation, self.max_storage] + [config.MAX_PRICE, config.MAX_PRICE, config.MAX_PRICE, self.max_storage] * len(self.competitors)), dtype=np.float64)
-		self.action_space = gym.spaces.Tuple((gym.spaces.Discrete(config.MAX_PRICE), gym.spaces.Discrete(config.MAX_PRICE), gym.spaces.Discrete(config.MAX_PRICE)))
+		self._action_space = gym.spaces.Tuple((gym.spaces.Discrete(config.MAX_PRICE), gym.spaces.Discrete(config.MAX_PRICE), gym.spaces.Discrete(config.MAX_PRICE)))
 
 	def _reset_vendor_actions(self) -> tuple:
 		"""

@@ -65,10 +65,10 @@ class Monitor():
 		"""
 		n_actions = 1
 		if isinstance(self.marketplace, sim_market.CircularEconomy):
-			for id in range(len(self.marketplace.action_space)):
-				n_actions *= self.marketplace.action_space[id].n
+			for id in range(len(self.marketplace._action_space)):
+				n_actions *= self.marketplace._action_space[id].n
 		else:
-			n_actions = self.marketplace.action_space.n
+			n_actions = self.marketplace._action_space.n
 		return n_actions
 
 	def _update_agents(self, agents) -> None:
