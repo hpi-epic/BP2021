@@ -15,11 +15,24 @@ from monitoring.svg_manipulation import SVGManipulator
 
 class ExamplePrinter():
 
-	def __init__(self, environment=sim_market.CircularEconomyRebuyPriceOneCompetitor(), agent=vendors.RuleBasedCERebuyAgent()):
-		self.environment = environment
-		self.agent = agent
+	def __init__(self):
+		self.marketplace = sim_market.CircularEconomyRebuyPriceOneCompetitor()
+		self.agent = vendors.RuleBasedCERebuyAgent()
 		# Signal handler for e.g. KeyboardInterrupt
 		signal.signal(signal.SIGINT, self._signal_handler)
+
+	def setup_exampleprinter(self, marketplace=None, agent=None):
+		"""
+		Configure the current exampleprinter session.
+
+		Args:
+			marketplace (SimMarket instance, optional): What marketplace to run the session on.
+			agent (Agent instance, optional): What agent ot run the session on..
+		"""
+		if(marketplace is not None):
+			self.marketplace = marketplace
+		if(agent is not None):
+			self.agent = agent
 
 	def _signal_handler(self, signum, frame):  # pragma: no cover
 		"""
@@ -33,8 +46,6 @@ class ExamplePrinter():
 		Run a specified marketplace with a (pre-trained, if RL) agent and record various statistics using TensorBoard.
 
 		Args:
-			env (sim_market instance, optional): The market environment to run the simulation on. Defaults to sim_market.CircularEconomyRebuyPriceOneCompetitor().
-			agent (agent instance, optional): The agent to run the simulation on. Defaults to vendors.RuleBasedCERebuyAgent().
 			log_dir_prepend (str, optional): What to prepend to the log_dir folder name. Defaults to ''.
 
 		Returns:
@@ -43,12 +54,12 @@ class ExamplePrinter():
 		counter = 0
 		our_profit = 0
 		is_done = False
-		state = self.environment.reset()
+		state = self.marketplace.reset()
 
 		signature = f'{log_dir_prepend}exampleprinter_{time.strftime("%b%d_%H-%M-%S")}'
 		writer = SummaryWriter(log_dir=os.path.join('results', 'runs', signature))
 
-		if isinstance(self.environment, sim_market.CircularEconomyRebuyPriceOneCompetitor):
+		if isinstance(self.marketplace, sim_market.CircularEconomyRebuyPriceOneCompetitor):
 			svg_manipulator = SVGManipulator(signature)
 		cumulative_dict = None
 
@@ -56,21 +67,21 @@ class ExamplePrinter():
 			while not is_done:
 				action = self.agent.policy(state)
 				print(state)
-				state, reward, is_done, logdict = self.environment.step(action)
+				state, reward, is_done, logdict = self.marketplace.step(action)
 				if cumulative_dict is not None:
 					cumulative_dict = ut.add_content_of_two_dicts(cumulative_dict, logdict)
 				else:
 					cumulative_dict = copy.deepcopy(logdict)
 				ut.write_dict_to_tensorboard(writer, logdict, counter)
 				ut.write_dict_to_tensorboard(writer, cumulative_dict, counter, is_cumulative=True)
-				if isinstance(self.environment, sim_market.CircularEconomyRebuyPriceOneCompetitor):
+				if isinstance(self.marketplace, sim_market.CircularEconomyRebuyPriceOneCompetitor):
 					ut.write_content_of_dict_to_overview_svg(svg_manipulator, counter, logdict, cumulative_dict)
 				our_profit += reward
 				counter += 1
-				if isinstance(self.environment, sim_market.CircularEconomyRebuyPriceOneCompetitor):
+				if isinstance(self.marketplace, sim_market.CircularEconomyRebuyPriceOneCompetitor):
 					svg_manipulator.save_overview_svg(filename=('MarketOverview_%.3d' % counter))
 
-		if isinstance(self.environment, sim_market.CircularEconomyRebuyPriceOneCompetitor):
+		if isinstance(self.marketplace, sim_market.CircularEconomyRebuyPriceOneCompetitor):
 			svg_manipulator.to_html()
 
 		return our_profit
