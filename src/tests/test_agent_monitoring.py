@@ -34,7 +34,7 @@ def test_init_default_values():
 
 def test_get_folder():
 	# if you change the name of this function, change it in the assert as well!
-	monitor.get_folder()
+	monitor._get_folder()
 	assert os.path.exists(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'results', 'monitoring', 'test_plots_test_get_folder')))
 
 
@@ -42,7 +42,7 @@ def test_get_modelfile_path():
 	with patch('monitoring.agent_monitoring.os.path.exists') as mock_exists:
 		mock_exists.return_value = False
 		with pytest.raises(AssertionError) as assertion_message:
-			monitor.get_modelfile_path('non_existing_modelfile')
+			monitor._get_modelfile_path('non_existing_modelfile')
 		assert 'the specified modelfile does not exist' in str(assertion_message.value)
 
 
