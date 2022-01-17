@@ -8,7 +8,7 @@ import monitoring.exampleprinter
 import rl.actorcritic
 
 
-def remove_files() -> None:
+def _remove_files() -> None:
 	"""
 	Remove the unneeded result files created by the performance runs.
 	"""
@@ -30,18 +30,22 @@ def run_profiling(function='monitoring.exampleprinter.run_example()') -> None:
 	date_time = time.strftime('%b%d_%H-%M-%S')
 	filename = os.path.join('results', 'performance', f'{function}_{date_time}')
 
+
 	start_time = time.perf_counter()
 	cProfile.run(function, filename=filename, sort=3)
 	# Estimate of how long the function took to run for the filename
 	time_frame = str(round(time.perf_counter() - start_time, 3))
+	filename = './performance/' + function + '_' + time_frame + '_secs_' + date_time + '.prof'
 
 	p = pstats.Stats(filename)
 	dumped_filename = os.path.join('results', 'performance', f'{function}_{time_frame}_secs_{date_time}.prof')
 	p.sort_stats('cumulative').dump_stats(filename=dumped_filename)
 
+
 	# Remove the initial file created by cProfile, not the .prof file used for snakeviz
-	remove_files()
+	_remove_files()
 	# Visualize the results
+
 	os.system(f'snakeviz {dumped_filename}')
 
 

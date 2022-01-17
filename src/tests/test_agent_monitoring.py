@@ -206,6 +206,7 @@ def test_setup_with_invalid_agents():
 def test_rewards_array_size():
 	# Numpy doesn't like nested arrays of different sizes, need to specify dtype=object
 	rewards_wrong = np.array([[1, 2], [1, 2, 3]], dtype=object)
+
 	with patch('monitoring.agent_monitoring.plt'):
 		with pytest.raises(AssertionError) as assertion_message:
 			monitor.create_histogram(rewards_wrong)
