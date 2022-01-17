@@ -26,7 +26,9 @@ test_cases = [
 def test_full_episode(environment, agent):
 	with patch('monitoring.exampleprinter.SVGManipulator'),\
 		patch('monitoring.exampleprinter.SummaryWriter'):
-		assert ExamplePrinter(environment, agent).run_example(log_dir_prepend='test_') >= -5000
+		printer = ExamplePrinter()
+		printer.setup_exampleprinter(environment, agent)
+		assert printer.run_example(log_dir_prepend='test_') >= -5000
 
 
 def test_exampleprinter_with_tensorboard():
