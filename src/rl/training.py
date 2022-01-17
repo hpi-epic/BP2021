@@ -64,7 +64,7 @@ class RLTrainer():
 
 		curr_time = time.strftime('%b%d_%H-%M-%S')
 		signature = f'{type(self.marketplace).__name__}_{type(self.RL_agent).__name__}'
-		writer = SummaryWriter(log_dir=os.path.join('results', 'runs', f'{log_dir_prepend}training_{curr_time}'))
+		writer = SummaryWriter(log_dir=os.path.join('results', 'runs', f'{log_dir_prepend}training_QL_{curr_time}'))
 
 		for frame_idx in range(maxsteps):
 			epsilon = max(config.EPSILON_FINAL, config.EPSILON_START - frame_idx / config.EPSILON_DECAY_LAST_FRAME)

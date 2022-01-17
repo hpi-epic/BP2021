@@ -325,13 +325,13 @@ class QLearningLEAgent(QLearningAgent, LinearAgent):
 class QLearningCEAgent(QLearningAgent, CircularAgent):
 	def policy(self, observation, epsilon=0) -> int:
 		step = super().policy(observation, epsilon)
-		return (int(step % 10), int(step / 10))
+		return (int(step % config.MAX_PRICE), int(step / config.MAX_PRICE))
 
 
 class QLearningCERebuyAgent(QLearningAgent, CircularAgent):
 	def policy(self, observation, epsilon=0) -> int:
 		step = super().policy(observation, epsilon)
-		return (int(step / 100), int(step / 10 % 10), int(step % 10))
+		return (int(step / (config.MAX_PRICE * config.MAX_PRICE)), int(step / config.MAX_PRICE % config.MAX_PRICE), int(step % config.MAX_PRICE))
 
 
 class CompetitorLinearRatio1(LinearAgent, RuleBasedAgent):

@@ -26,7 +26,7 @@ def test_reading_file_values():
 		assert len(config.config) == 2, 'the config is being tested for "rl" and "sim_market". Has another type been added?'
 		assert len(config.config['sim_market']) == 5, 'config["sim_market"] has more or less values than expected. Check this test for the missing values'
 		assert config.EPISODE_LENGTH == 20
-		assert config.MAX_PRICE == 10
+		assert config.MAX_PRICE == 15
 		assert config.MAX_QUALITY == 100
 		assert config.NUMBER_OF_CUSTOMERS == 30
 		assert config.PRODUCTION_PRICE == 5
