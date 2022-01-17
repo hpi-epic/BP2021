@@ -290,7 +290,7 @@ class Monitor():
 			plt.title(f'Overall {metric_name} Reward calculated each {self.plot_interval} episodes')
 		elif metric_type == 'Episode':
 			plt.title(f'{metric_name} Reward within each previous {self.plot_interval} episodes')
-		else:  # pragma: no cover
+		else:
 			raise RuntimeError(f'this metric_type is unknown: {metric_type}')
 
 		plt.legend([a.name for a in self.agents])

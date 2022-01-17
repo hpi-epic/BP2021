@@ -264,6 +264,9 @@ def test_incorrect_create_line_plot():
 	with pytest.raises(AssertionError) as assertion_message:
 		monitor.create_line_plot([1, 2], [[2]], 'test_plot', 'Overall')
 	assert 'y_values must have self.episodes / self.plot_interval many items' in str(assertion_message.value)
+	with pytest.raises(RuntimeError) as assertion_message:
+		monitor.create_line_plot([1, 2], [[1, 3]], 'test_plot', 'Unknown_metric_type')
+	assert 'this metric_type is unknown: Unknown_metric_type' in str(assertion_message.value)
 
 
 def test_run_marketplace():
@@ -290,9 +293,9 @@ def test_run_monitoring_session():
 @patch('monitoring.agent_monitoring.input', create=True)
 def test_run_monitoring_ratio(mocked_input):
 	# ratio is over 50, program should ask if we want to continue. We answer 'no'
-	# with patch('monitoring.agent_monitoring.plt'), \
-	# 	patch('monitoring.agent_monitoring.os.path.exists') as exists_mock:
-	# 	exists_mock.return_value = True
-	mocked_input.side_effect = ['n']
-	monitor.setup_monitoring(episodes=51, plot_interval=1)
-	am.run_monitoring_session(monitor)
+	with patch('monitoring.agent_monitoring.plt'), \
+		patch('monitoring.agent_monitoring.os.path.exists') as exists_mock:
+		exists_mock.return_value = True
+		mocked_input.side_effect = ['n']
+		monitor.setup_monitoring(episodes=51, plot_interval=1)
+		am.run_monitoring_session(monitor)
