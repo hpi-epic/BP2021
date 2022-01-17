@@ -31,4 +31,4 @@ def run_training_session(marketplace_class=sim_market.CircularEconomyRebuyPriceO
 
 
 if __name__ == '__main__':
-	run_training_session()
+	run_training_session(sim_market.ClassicScenario, vendors.QLearningLEAgent)

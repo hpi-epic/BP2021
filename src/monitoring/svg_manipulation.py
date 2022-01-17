@@ -48,7 +48,7 @@ class SVGManipulator():
 	def __init__(self, save_dir: str = 'svg') -> None:
 		self.value_dictionary = get_default_dict()
 		# do not change the values in template_svg
-		path_to_monitoring = os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'monitoring')
+		path_to_monitoring = os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'results', 'monitoring')
 		with open(os.path.join(path_to_monitoring, 'MarketOverview_template.svg'), 'r') as template_svg:
 			self.template_svg = template_svg.read()
 		self.output_svg = None
@@ -87,7 +87,7 @@ class SVGManipulator():
 
 	def save_overview_svg(self, filename: str = 'MarketOverview_copy') -> None:
 		"""
-		Save the stored svg data to a svg-file in BP2021/monitoring. If the file already exists, this will throw an error.
+		Save the stored svg data to a svg-file in results/monitoring. If the file already exists, this will throw an error.
 
 		Args:
 			filename (str, optional): The target file name of the copy. Defaults to `MarketOverview_copy.svg`.
