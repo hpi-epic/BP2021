@@ -130,7 +130,7 @@ def test_get_modelfile_path():
 	with patch('monitoring.agent_monitoring.os.path.exists') as mock_exists:
 		mock_exists.return_value = False
 		with pytest.raises(AssertionError) as assertion_message:
-			monitor.get_modelfile_path('non_existing_modelfile.dat')
+			monitor._get_modelfile_path('non_existing_modelfile.dat')
 		assert 'the specified modelfile does not exist' in str(assertion_message.value)
 
 
@@ -164,6 +164,7 @@ def test_setup_with_valid_agents():
 def test_rewards_array_size():
 	# Numpy doesn't like nested arrays of different sizes, need to specify dtype=object
 	rewards_wrong = np.array([[1, 2], [1, 2, 3]], dtype=object)
+
 	with patch('monitoring.agent_monitoring.plt'):
 		with pytest.raises(Exception):
 			monitor.create_histogram(rewards_wrong)
