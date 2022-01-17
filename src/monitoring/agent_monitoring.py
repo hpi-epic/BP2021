@@ -198,13 +198,13 @@ class Monitor():
 		}
 
 	# visualize metrics
-	def create_histogram(self, rewards: list, filename: str) -> None:
+	def create_histogram(self, rewards: list, filename: str = 'default') -> None:
 		"""
 		Create a histogram sorting rewards into bins of 1000.
 
 		Args:
 			rewards (array of arrays of int): An array containing an array of ints for each monitored agent.
-			filename (str): The name of the output file, format will be .svg.
+			filename (str): The name of the output file, format will be .svg. Defaults to 'default'.
 		"""
 		assert all(len(curr_reward) == len(rewards[0]) for curr_reward in rewards), 'all rewards-arrays must be of the same size'
 
