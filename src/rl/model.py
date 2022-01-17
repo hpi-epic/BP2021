@@ -19,7 +19,8 @@ def very_simple_network(input_size, output_size) -> nn.modules.container.Sequent
 
 
 def simple_network(input_size, output_size) -> nn.modules.container.Sequential:
-	"""A network with two small hidden layers (128 neurons) and user-defined input and output sizes.
+	"""
+  A network with two small hidden layers (128 neurons) and user-defined input and output sizes.
 
 	Args:
 		input_size (int): Number of input nodes.
