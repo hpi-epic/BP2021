@@ -15,8 +15,8 @@ from market.sim_market import MultiCompetitorScenario as SMulti
 def random_offer(marketplace):
 	marketplace = marketplace()
 	marketplace.reset()
-	marketplace.vendor_actions[0] = marketplace.action_space.sample()
-	return marketplace.generate_customer_offer(), marketplace.get_offer_length_per_vendor()
+	marketplace.vendor_actions[0] = marketplace._action_space.sample()
+	return marketplace._generate_customer_offer(), marketplace._get_offer_length_per_vendor()
 
 
 # Test the Customer parent class, i.e. make sure it cannot be used

@@ -18,7 +18,7 @@ def test_reading_file_values():
 	json = ut_t.create_mock_json()
 	with patch('builtins.open', mock_open(read_data=json)) as mock_file:
 		ut_t.check_mock_file(mock_file, json)
-		# Include utils_rl again to make sure the file is read again
+		# Include config again to make sure the file is read again
 		reload(config)
 		# Test all imported values. Extend this test as new values get added!
 		assert len(config.config) == 2, 'the config is being tested for "rl" and "sim_market". Has another type been added?'
