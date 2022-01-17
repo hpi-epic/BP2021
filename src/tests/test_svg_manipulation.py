@@ -27,6 +27,11 @@ def test_correct_template():
 		correct_template = template.read()
 	assert correct_template == svg_manipulator.template_svg
 
+
+def test_template_not_changed():
+	with open(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'results', 'monitoring', 'MarketOverview_template.svg')), 'r') as template:
+		correct_template = template.read()
+
 	# run one exampleprinter and to make sure the template does not get changed
 	json = ut_t.create_mock_json_sim_market(episode_size='3')
 	with patch('builtins.open', mock_open(read_data=json)) as utils_mock_file:
@@ -78,6 +83,7 @@ def test_write_dict_to_svg():
 	assert test_dict == svg_manipulator.value_dictionary
 
 
+###################
 # tests below test save_overview_svg()
 def test_file_should_not_exist():
 	# initialize all functions to be mocked
@@ -94,7 +100,7 @@ def test_file_should_not_exist():
 		assert 'the specified file already exists: ' in str(assertion_message.value)
 
 
-def test_write_to_dict_only_strings():
+def test_write_only_strings_to_dict():
 	# initialize all functions to be mocked
 	with patch('monitoring.svg_manipulation.os.path.exists') as mock_exists, \
 		patch('monitoring.svg_manipulation.os.path.isdir') as mock_isdir:
@@ -189,7 +195,7 @@ def test_time_not_int():
 
 
 def test_one_exampleprinter_run():
-	# use only three episodes for reusing the correct_html
+	# run only three episodes to be able to reuse the correct_html
 	json = ut_t.create_mock_json_sim_market(episode_size='3')
 	with patch('builtins.open', mock_open(read_data=json)) as utils_mock_file:
 		ut_t.check_mock_file(utils_mock_file, json)
@@ -209,3 +215,6 @@ def test_one_exampleprinter_run():
 			ExamplePrinter().run_example()
 		# asserts that the html has been written
 		mock_file().write.assert_called_with(correct_html)
+
+# tests above test save_overview_svg()
+###################
