@@ -2,7 +2,8 @@ from torch import nn
 
 
 def very_simple_network(input_size, output_size) -> nn.modules.container.Sequential:
-	"""A network with one hidden layer (64 neurons) and user-defined input and output sizes.
+	"""
+	A network with one hidden layer (64 neurons) and user-defined input and output sizes.
 
 	Args:
 		input_size (int): Number of input nodes.
@@ -20,7 +21,7 @@ def very_simple_network(input_size, output_size) -> nn.modules.container.Sequent
 
 def simple_network(input_size, output_size) -> nn.modules.container.Sequential:
 	"""
-  A network with two small hidden layers (128 neurons) and user-defined input and output sizes.
+	A network with two small hidden layers (128 neurons) and user-defined input and output sizes.
 
 	Args:
 		input_size (int): Number of input nodes.
@@ -39,7 +40,8 @@ def simple_network(input_size, output_size) -> nn.modules.container.Sequential:
 
 
 def medium_network(input_size, output_size) -> nn.modules.container.Sequential:
-	"""A network with three medium sized hidden layers (512 neurons) and user-defined input and output sizes.
+	"""
+	A network with three medium sized hidden layers (512 neurons) and user-defined input and output sizes.
 
 	Args:
 		input_size (int): Number of input nodes.

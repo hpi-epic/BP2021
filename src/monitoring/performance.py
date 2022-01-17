@@ -1,53 +1,66 @@
 import cProfile
 import os
 import pstats
+import signal
+import sys
 import time
 
 # include the file you want to run the performance check on here!
-import monitoring.exampleprinter
-import rl.actorcritic
+import monitoring.agent_monitoring
 
 
-def _remove_files() -> None:
-	"""
-	Remove the unneeded result files created by the performance runs.
-	"""
-	for file_name in os.listdir(os.path.join('results', 'performance')):
-		if not file_name.endswith('.prof'):
-			os.remove(os.path.join('results', 'performance', file_name))
+class PerformanceMonitor():
 
+	def __init__(self, function='monitoring.agent_monitoring.main()'):
+		self.function = function
+		# Signal handler for e.g. KeyboardInterrupt
+		self.abort_counter = 0
+		signal.signal(signal.SIGINT, self._signal_handler)
 
-def run_profiling(function='monitoring.exampleprinter.run_example()') -> None:
-	"""
-	Run the profiler on a specified function. Automatically starts a web server to visualize the results.
+	def _signal_handler(self, signum, frame):  # pragma: no cover
+		"""
+		Handle any interruptions to the running process, such as a `KeyboardInterrupt`-event.
+		"""
+		if self.abort_counter == 0:
+			print(f'\nStopping performance monitoring of {self.function}...\n')
+		self.abort_counter += 1
+		sys.exit(0)
 
-	Args:
-		function (str, optional): The function to be run. The format must be module.function. Defaults to 'monitoring.exampleprinter.run_example()'.
-	"""
-	if not os.path.isdir(os.path.join('results', 'performance')):
-		os.mkdir(os.path.join('results', 'performance'))
+	def _remove_files(self) -> None:
+		"""
+		Remove the unneeded result files created by the performance runs.
+		"""
+		for file_name in os.listdir(os.path.join('results', 'performance')):
+			if not file_name.endswith('.prof'):
+				os.remove(os.path.join('results', 'performance', file_name))
 
-	date_time = time.strftime('%b%d_%H-%M-%S')
-	filename = os.path.join('results', 'performance', f'{function}_{date_time}')
+	def run_profiling(self) -> None:
+		"""
+		Run the profiler on a specified function. Automatically starts a web server to visualize the results.
 
+		Args:
+			function (str, optional): The function to be run. The format must be module.function. Defaults to 'monitoring.exampleprinter.run_example()'.
+		"""
+		if not os.path.isdir(os.path.join('results', 'performance')):
+			os.mkdir(os.path.join('results', 'performance'))
 
-	start_time = time.perf_counter()
-	cProfile.run(function, filename=filename, sort=3)
-	# Estimate of how long the function took to run for the filename
-	time_frame = str(round(time.perf_counter() - start_time, 3))
-	filename = './performance/' + function + '_' + time_frame + '_secs_' + date_time + '.prof'
+		date_time = time.strftime('%b%d_%H-%M-%S')
+		filename = os.path.join('results', 'performance', f'{self.function}_{date_time}')
 
-	p = pstats.Stats(filename)
-	dumped_filename = os.path.join('results', 'performance', f'{function}_{time_frame}_secs_{date_time}.prof')
-	p.sort_stats('cumulative').dump_stats(filename=dumped_filename)
+		start_time = time.perf_counter()
+		cProfile.run(self.function, filename=filename, sort=3)
+		# Estimate of how long the function took to run for the filename
+		time_frame = str(round(time.perf_counter() - start_time, 3))
 
+		p = pstats.Stats(filename)
+		dumped_filename = os.path.join('results', 'performance', f'{self.function}_{time_frame}_secs_{date_time}.prof')
+		p.sort_stats('cumulative').dump_stats(filename=dumped_filename)
 
-	# Remove the initial file created by cProfile, not the .prof file used for snakeviz
-	_remove_files()
-	# Visualize the results
-
-	os.system(f'snakeviz {dumped_filename}')
+		# Remove the initial file created by cProfile, not the .prof file used for snakeviz
+		self._remove_files()
+		# Visualize the results
+		os.system(f'snakeviz {dumped_filename}')
 
 
 if __name__ == '__main__':  # pragma: no cover
-	run_profiling(function='rl.actorcritic.trainactorcritic()')
+	PerformanceMonitor().run_profiling()

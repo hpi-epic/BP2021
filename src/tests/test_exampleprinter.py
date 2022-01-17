@@ -7,18 +7,26 @@ from unittest.mock import patch
 import pytest
 
 import agents.vendors as vendors
-import market.sim_market as sim
-import monitoring.exampleprinter as exampleprinter
+import market.sim_market as sim_market
+from monitoring.exampleprinter import ExamplePrinter
+
+
+def test_setup_exampleprinter():
+	printer = ExamplePrinter()
+	printer.setup_exampleprinter(marketplace=sim_market.ClassicScenario(), agent=vendors.FixedPriceLEAgent())
+	assert isinstance(printer.marketplace, sim_market.ClassicScenario)
+	assert isinstance(printer.agent, vendors.FixedPriceLEAgent)
+
 
 test_cases = [
-	(sim.ClassicScenario(), vendors.FixedPriceLEAgent()),
-	(sim.MultiCompetitorScenario(), vendors.FixedPriceLEAgent()),
-	(sim.CircularEconomyMonopolyScenario(), vendors.FixedPriceCEAgent()),
-	(sim.CircularEconomyMonopolyScenario(), vendors.RuleBasedCEAgent()),
-	(sim.CircularEconomyRebuyPriceMonopolyScenario(), vendors.FixedPriceCERebuyAgent()),
-	(sim.CircularEconomyRebuyPriceMonopolyScenario(), vendors.RuleBasedCERebuyAgent()),
-	(sim.CircularEconomyRebuyPriceOneCompetitor(), vendors.FixedPriceCERebuyAgent()),
-	(sim.CircularEconomyRebuyPriceOneCompetitor(), vendors.RuleBasedCERebuyAgent())
+	(sim_market.ClassicScenario(), vendors.FixedPriceLEAgent()),
+	(sim_market.MultiCompetitorScenario(), vendors.FixedPriceLEAgent()),
+	(sim_market.CircularEconomyMonopolyScenario(), vendors.FixedPriceCEAgent()),
+	(sim_market.CircularEconomyMonopolyScenario(), vendors.RuleBasedCEAgent()),
+	(sim_market.CircularEconomyRebuyPriceMonopolyScenario(), vendors.FixedPriceCERebuyAgent()),
+	(sim_market.CircularEconomyRebuyPriceMonopolyScenario(), vendors.RuleBasedCERebuyAgent()),
+	(sim_market.CircularEconomyRebuyPriceOneCompetitor(), vendors.FixedPriceCERebuyAgent()),
+	(sim_market.CircularEconomyRebuyPriceOneCompetitor(), vendors.RuleBasedCERebuyAgent())
 ]
 
 
@@ -26,12 +34,14 @@ test_cases = [
 def test_full_episode(environment, agent):
 	with patch('monitoring.exampleprinter.SVGManipulator'),\
 		patch('monitoring.exampleprinter.SummaryWriter'):
-		assert exampleprinter.run_example(environment, agent, log_dir_prepend='test_') >= -5000
+		printer = ExamplePrinter()
+		printer.setup_exampleprinter(environment, agent)
+		assert printer.run_example(log_dir_prepend='test_') >= -5000
 
 
 def test_exampleprinter_with_tensorboard():
 	with patch('monitoring.exampleprinter.SVGManipulator'):
-		assert exampleprinter.run_example(log_dir_prepend='test_') >= -5000
+		assert ExamplePrinter().run_example(log_dir_prepend='test_') >= -5000
 
 	print('***TEARDOWN***')
 	# we need to sleep because sometimes the runs folder is still being used when we try to remove it
