@@ -5,6 +5,7 @@ import time
 
 # include the file you want to run the performance check on here!
 import monitoring.exampleprinter
+import rl.actorcritic
 
 
 def remove_files() -> None:
@@ -45,4 +46,4 @@ def run_profiling(function='monitoring.exampleprinter.run_example()') -> None:
 
 
 if __name__ == '__main__':  # pragma: no cover
-	run_profiling()
+	run_profiling(function='rl.actorcritic.trainactorcritic()')
