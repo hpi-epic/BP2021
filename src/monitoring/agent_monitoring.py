@@ -23,7 +23,7 @@ class Monitor():
 		self.episodes = 500
 		self.plot_interval = 50
 		self.marketplace = sim_market.CircularEconomyMonopolyScenario()
-		self.agents = [vendors.QLearningCEAgent(self.marketplace.observation_space.shape[0], self.get_action_space(), load_path=self.get_modelfile_path('CircularEconomy_QLearningCEAgent'))]
+		self.agents = [vendors.QLearningCEAgent(self.marketplace.observation_space.shape[0], self.marketplace.get_n_actions(), load_path=self.get_modelfile_path('CircularEconomy_QLearningCEAgent'))]
 		self.agent_colors = ['#0000ff']
 		self.subfolder_name = 'plots_' + time.strftime('%b%d_%H-%M-%S')
 		self.folder_path = os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'results', 'monitoring', self.subfolder_name)
@@ -56,21 +56,6 @@ class Monitor():
 		assert os.path.exists(full_path), f'the specified modelfile does not exist: {full_path}'
 		return full_path
 
-	def get_action_space(self) -> int:
-		"""
-		Return the size of the action space in the self.marketplace.
-
-		Returns:
-			int: The size of the action space
-		"""
-		n_actions = 1
-		if isinstance(self.marketplace, sim_market.CircularEconomy):
-			for id in range(len(self.marketplace.action_space)):
-				n_actions *= self.marketplace.action_space[id].n
-		else:
-			n_actions = self.marketplace.action_space.n
-		return n_actions
-
 	def _update_agents(self, agents) -> None:
 		"""
 		Update the self.agents to the new agents provided.
@@ -101,7 +86,7 @@ class Monitor():
 					assert isinstance(current_agent[1][0], str), 'the modelfile must be of type str'
 
 					agent_name = 'q_learning' if len(current_agent[1]) == 1 else current_agent[1][1]
-					self.agents.append(current_agent[0](self.marketplace.observation_space.shape[0], self.get_action_space(), load_path=self.get_modelfile_path(current_agent[1][0]), name=agent_name))
+					self.agents.append(current_agent[0](self.marketplace.observation_space.shape[0], self.marketplace.get_n_actions(), load_path=self.get_modelfile_path(current_agent[1][0]), name=agent_name))
 				except RuntimeError:  # pragma: no cover
 					raise RuntimeError('the modelfile is not compatible with the agent you tried to instantiate')
 			else:  # pragma: no cover

@@ -31,13 +31,13 @@ def create_mock_json_rl(gamma='0.99', batch_size='32', replay_size='100000', lea
 		'\t}'
 
 
-def create_mock_json_sim_market(episode_size='20', max_price='15', max_quality='100', number_of_customers='30', production_price='5') -> str:
+def create_mock_json_sim_market(episode_size='20', max_price='10', max_quality='100', number_of_customers='30', production_price='5') -> str:
 	"""
 	Create a string in JSON format that can be used to mock the config_sim_market.json file.
 
 	Args:
 		episode_size (str, optional): Defaults to '20'.
-		max_price (str, optional): Defaults to '15'.
+		max_price (str, optional): Defaults to '10'.
 		max_quality (str, optional): Defaults to '100'.
 		number_of_customers (str, optional): Defaults to '30'.
 		production_price (str, optional): Defaults to '5'.

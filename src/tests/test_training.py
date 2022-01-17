@@ -23,21 +23,21 @@
 
 
 # test_scenarios = [
-# 	(sim_market.ClassicScenario, vendors.QLearningAgent, 10),
-# 	(sim_market.MultiCompetitorScenario, vendors.QLearningAgent, 10),
-# 	(sim_market.CircularEconomyMonopolyScenario, vendors.QLearningCEAgent, 100),
-# 	(sim_market.CircularEconomyRebuyPriceMonopolyScenario, vendors.QLearningCERebuyAgent, 100),
-# 	(sim_market.CircularEconomyRebuyPriceOneCompetitor, vendors.QLearningCERebuyAgent, 100)
+# 	(sim_market.ClassicScenario, vendors.QLearningAgent),
+# 	(sim_market.MultiCompetitorScenario, vendors.QLearningAgent),
+# 	(sim_market.CircularEconomyMonopolyScenario, vendors.QLearningCEAgent),
+# 	(sim_market.CircularEconomyRebuyPriceMonopolyScenario, vendors.QLearningCERebuyAgent),
+# 	(sim_market.CircularEconomyRebuyPriceOneCompetitor, vendors.QLearningCERebuyAgent)
 # ]
 
 
-# @pytest.mark.parametrize('environment, agent, n_actions', test_scenarios)
-# def test_market_scenario(environment, agent, n_actions):
+# @pytest.mark.parametrize('environment, agent', test_scenarios)
+# def test_market_scenario(environment, agent):
 # 	json = ut_t.create_mock_json(rl=ut_t.create_mock_json_rl(replay_start_size='500', sync_target_frames='100'))
 # 	with patch('builtins.open', mock_open(read_data=json)) as mock_file:
 # 		ut_t.check_mock_file(mock_file, json)
 # 		# Include config again to make sure the file is read again
 # 		reload(config)
 # 		environment = environment()
-# 		agent = agent(environment.observation_space.shape[0], n_actions=n_actions, optim=torch.optim.Adam)
+# 		agent = agent(environment.observation_space.shape[0], n_actions=environment.get_n_actions(), optim=torch.optim.Adam)
 # 		training.train_QLearning_agent(agent, environment, int(config.REPLAY_START_SIZE * 1.2), log_dir_prepend='test_')
