@@ -60,26 +60,18 @@ missing_number_of_customers = (ut_t.remove_line(3, ut_t.create_mock_json_sim_mar
 missing_production_price = (ut_t.remove_line(4, ut_t.create_mock_json_sim_market()), 'your config is missing production_price')
 
 # All pairs concerning themselves with invalid config.json values should be added to this array to get tested in test_invalid_values
-array_invalid_values = [
+invalid_values_testcases = [
 	odd_number_of_customers, negative_number_of_customers, prod_price_higher_max_price, negative_production_price, negative_max_quality,
 	missing_episode_size, missing_max_price, missing_max_quality, missing_number_of_customers, missing_production_price
 ]
 
 
-# This defines how the tests are named. Usually they would be "test_invalid_values[whole_json_here]". This ensures they are named after the actual thing they are testing
-def get_invalid_test_ids():
-	return [
-		'odd_number_of_customers', 'negative_number_of_customers', 'production_price_higher_max_price', 'negative_production_price', 'negative_max_quality',
-		'missing_episode_size', 'missing_max_price', 'missing_max_quality', 'missing_number_of_customers', 'missing_prod_price'
-	]
-
-
 # Test that checks that an invalid/broken config.json gets detected correctly
-@pytest.mark.parametrize('sim_market_json, expected_error_msg', array_invalid_values, ids=get_invalid_test_ids())
-def test_invalid_values(sim_market_json, expected_error_msg):
+@pytest.mark.parametrize('sim_market_json, expected_message', invalid_values_testcases)
+def test_invalid_values(sim_market_json, expected_message):
 	json = ut_t.create_mock_json(sim_market=sim_market_json)
 	with patch('builtins.open', mock_open(read_data=json)) as mock_file:
 		ut_t.check_mock_file(mock_file, json)
-		with pytest.raises(AssertionError) as assertion_info:
+		with pytest.raises(AssertionError) as assertion_message:
 			reload(config)
-		assert expected_error_msg in str(assertion_info.value)
+		assert expected_message in str(assertion_message.value)
