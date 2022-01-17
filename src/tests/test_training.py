@@ -33,7 +33,7 @@ def test_market_scenario(environment, agent, n_actions):
 		reload(config)
 		environment = environment()
 		agent = agent(environment.observation_space.shape[0], n_actions=n_actions, optim=torch.optim.Adam)
-		training.train_QLearning_agent(agent, environment, int(config.REPLAY_START_SIZE * 1.2))
+		training.RLTrainer(environment, agent).train_QLearning_agent(int(config.REPLAY_START_SIZE * 1.2))
 
 
 def test_training_with_tensorboard():
