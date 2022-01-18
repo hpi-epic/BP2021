@@ -92,4 +92,4 @@ def train_actorcritic(marketplace_class=sim_market.CircularEconomyRebuyPriceOneC
 
 
 if __name__ == '__main__':
-	train_actorcritic(total_envs=64, number_of_training_steps=120)
+	train_actorcritic()
