@@ -27,7 +27,7 @@ class Monitor():
 		default_agent = vendors.QLearningCEAgent
 		default_modelfile = f'{type(self.marketplace).__name__}_{default_agent.__name__}'
 		assert os.path.exists(self._get_modelfile_path(default_modelfile)), f'the default modelfile does not exist: {default_modelfile}'
-		self.agents = [default_agent(self.marketplace.observation_space.shape[0], self._get_action_space(), load_path=self._get_modelfile_path(default_modelfile))]
+		self.agents = [default_agent(n_observation=self.marketplace.observation_space.shape[0], n_actions=self.marketplace.get_n_actions(), load_path=self._get_modelfile_path(default_modelfile))]
 		self.agent_colors = [(0.0, 0.0, 1.0, 1.0)]
 		self.folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'results', 'monitoring', 'plots_' + time.strftime('%b%d_%H-%M-%S')))
 		# Signal handler for e.g. KeyboardInterrupt
@@ -69,22 +69,7 @@ class Monitor():
 		assert os.path.exists(full_path), f'the specified modelfile does not exist: {full_path}'
 		return full_path
 
-	def _get_action_space(self) -> int:
-		"""
-		Return the size of the action space in the self.marketplace.
-
-		Returns:
-			int: The size of the action space
-		"""
-		n_actions = 1
-		if isinstance(self.marketplace, sim_market.CircularEconomy):
-			for id in range(len(self.marketplace._action_space)):
-				n_actions *= self.marketplace._action_space[id].n
-		else:
-			n_actions = self.marketplace._action_space.n
-		return n_actions
-
-	def _update_agents(self, agents: list) -> None:
+	def _update_agents(self, agents) -> None:
 		"""
 		Update the self.agents to the new agents provided.
 
@@ -135,7 +120,7 @@ class Monitor():
 						raise RuntimeError('invalid arguments provided')
 
 					# create the agent
-					self.agents.append(current_agent[0](self.marketplace.observation_space.shape[0], self._get_action_space(), load_path=self._get_modelfile_path(agent_modelfile), name=agent_name))
+					self.agents.append(current_agent[0](n_observation=self.marketplace.observation_space.shape[0], n_actions=self.marketplace.get_n_actions(), load_path=self._get_modelfile_path(agent_modelfile), name=agent_name))
 				except RuntimeError:  # pragma: no cover
 					raise RuntimeError('the modelfile is not compatible with the agent you tried to instantiate')
 			else:  # pragma: no cover

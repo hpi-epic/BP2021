@@ -14,11 +14,11 @@ import configuration.utils as ut
 
 class RLTrainer():
 
-	def __init__(self, environment, RL_agent):
+	def __init__(self, marketplace, RL_agent):
 		assert isinstance(RL_agent, vendors.QLearningAgent), f'the passed agent must be a QLearningAgent: {RL_agent}'
-		# TODO: assert Agent and environment fit together
+		# TODO: assert Agent and marketplace fit together
 		self.best_mean_reward = None
-		self.environment = environment
+		self.marketplace = marketplace
 		self.RL_agent = RL_agent
 		# Signal handler for e.g. KeyboardInterrupt
 		signal.signal(signal.SIGINT, self._signal_handler)
@@ -32,7 +32,7 @@ class RLTrainer():
 		else:
 			print(f'The best mean reward reached by the agent was {self.best_mean_reward:.3f}')
 			print('The models were saved to:')
-			print(os.path.abspath(os.path.join('trainedModels', f'{type(self.environment).__name__}_{type(self.RL_agent).__name__}')))
+			print(os.path.abspath(os.path.join('trainedModels', f'{type(self.marketplace).__name__}_{type(self.RL_agent).__name__}')))
 
 	def _signal_handler(self, signum, frame):  # pragma: no cover
 		"""
@@ -44,13 +44,13 @@ class RLTrainer():
 
 	def train_QLearning_agent(self, maxsteps=2 * config.EPSILON_DECAY_LAST_FRAME, log_dir_prepend='') -> None:
 		"""
-		Train a QLearningAgent on a market environment.
+		Train a QLearningAgent on a marketplace.
 
 		Args:
 			maxsteps (int, optional): The maximum number of steps the training will run for. Defaults to 2*config.EPSILON_DECAY_LAST_FRAME.
 			log_dir_prepend (str, optional): A string that is prepended to the log directory created by Tensorboard. Defaults to ''.
 		"""
-		state = self.environment.reset()
+		state = self.marketplace.reset()
 
 		frame_number_last_speed_update = 0
 		time_last_speed_update = time.time()
@@ -63,14 +63,14 @@ class RLTrainer():
 		self.best_mean_reward = 0
 
 		curr_time = time.strftime('%b%d_%H-%M-%S')
-		signature = f'{type(self.environment).__name__}_{type(self.RL_agent).__name__}'
-		writer = SummaryWriter(log_dir=os.path.join('results', 'runs', f'{log_dir_prepend}training_{curr_time}'))
+		signature = f'{type(self.marketplace).__name__}_{type(self.RL_agent).__name__}'
+		writer = SummaryWriter(log_dir=os.path.join('results', 'runs', f'{log_dir_prepend}training_QL_{curr_time}'))
 
 		for frame_idx in range(maxsteps):
 			epsilon = max(config.EPSILON_FINAL, config.EPSILON_START - frame_idx / config.EPSILON_DECAY_LAST_FRAME)
 
 			action = self.RL_agent.policy(state, epsilon)
-			state, reward, is_done, info = self.environment.step(action)
+			state, reward, is_done, info = self.marketplace.step(action)
 			self.RL_agent.set_feedback(reward, is_done, state)
 			vendors_cumulated_info = info if vendors_cumulated_info is None else ut.add_content_of_two_dicts(vendors_cumulated_info, info)
 
@@ -119,7 +119,7 @@ class RLTrainer():
 					break
 
 				vendors_cumulated_info = None
-				self.environment.reset()
+				self.marketplace.reset()
 
 			if len(self.RL_agent.buffer) < config.REPLAY_START_SIZE:
 				continue

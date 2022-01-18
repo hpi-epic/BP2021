@@ -1,4 +1,6 @@
+import os
 import random
+import time
 from abc import ABC, abstractmethod
 
 import numpy as np
@@ -115,12 +117,12 @@ class DiscreteACALinear(DiscreteActorCriticAgent):
 
 class DiscreteACACircularEconomy(DiscreteActorCriticAgent):
 	def agent_output_to_market_form(self, action):
-		return (int(action % 10), int(action / 10))
+		return (int(action % config.MAX_PRICE), int(action / config.MAX_PRICE))
 
 
 class DiscreteACACircularEconomyRebuy(DiscreteActorCriticAgent):
 	def agent_output_to_market_form(self, action):
-		return (int(action / 100), int(action / 10 % 10), int(action % 10))
+		return (int(action / (config.MAX_PRICE * config.MAX_PRICE)), int(action / config.MAX_PRICE % config.MAX_PRICE), int(action % config.MAX_PRICE))
 
 
 class ContinuosActorCriticAgent(ActorCriticAgent):
@@ -139,7 +141,7 @@ class ContinuosActorCriticAgent(ActorCriticAgent):
 		self.critic_optimizer = torch.optim.Adam(self.critic_net.parameters(), lr=0.002)
 
 	def policy(self, observation, verbose=False):
-		observation = torch.Tensor([observation]).to(self.device)
+		observation = torch.Tensor(np.array(observation)).to(self.device)
 		with torch.no_grad():
 			mean = self.softplus(self.actor_net(observation))
 			if verbose:
@@ -181,7 +183,9 @@ def train_actorcritic(marketplace_class=sim_market.CircularEconomyRebuyPriceOneC
 		all_v_estimates = []
 	all_value_losses = []
 	all_policy_losses = []
-	writer = SummaryWriter()
+
+	curr_time = time.strftime('%b%d_%H-%M-%S')
+	writer = SummaryWriter(log_dir=os.path.join('results', 'runs', f'training_AC_{curr_time}'))
 
 	finished_episodes = 0
 	total_envs = 128
@@ -201,7 +205,7 @@ def train_actorcritic(marketplace_class=sim_market.CircularEconomyRebuyPriceOneC
 		rewards = []
 		states_dash = []
 		for env in chosen_envs:
-			state = environments[env].observation()
+			state = environments[env]._observation()
 			action, prob, v_estimate = agent.policy(state, verbose)
 			if verbose:
 				all_probs.append(prob)

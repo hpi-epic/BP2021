@@ -223,6 +223,18 @@ class SimMarket(gym.Env, ABC):
 		raise NotImplementedError('This method is abstract. Use a subclass')
 
 	@abstractmethod
+	def get_n_actions(self) -> int:  # pragma: no cover
+		"""
+		Return the number of actions agents should return in this marketplace.
+
+		Depends on the `self.action_space`.
+
+		Returns:
+			int: The number of actions the agents should take in this marketplace.
+		"""
+		raise NotImplementedError('This method is abstract. Use a subclass')
+
+	@abstractmethod
 	def _get_competitor_list(self) -> list:  # pragma: no cover
 		"""
 		Get a list of all competitors in the current market scenario.
@@ -360,6 +372,9 @@ class LinearEconomy(SimMarket, ABC):
 		self._ensure_output_dict_has('state/quality', [self.vendor_specific_state[i][0] for i in range(self._get_number_of_vendors())])
 
 		self._ensure_output_dict_has('customer/purchases', [0] * self._get_number_of_vendors())
+
+	def get_n_actions(self):
+		return self._action_space.n
 
 
 class ClassicScenario(LinearEconomy):
@@ -531,6 +546,12 @@ class CircularEconomy(SimMarket):
 		self._ensure_output_dict_has('profits/by_selling_new', [0] * self._get_number_of_vendors())
 
 		self._ensure_output_dict_has('profits/storage_cost', [0] * self._get_number_of_vendors())
+
+	def get_n_actions(self):
+		n_actions = 1
+		for id in range(len(self._action_space)):
+			n_actions *= self._action_space[id].n
+		return n_actions
 
 
 class CircularEconomyMonopolyScenario(CircularEconomy):
