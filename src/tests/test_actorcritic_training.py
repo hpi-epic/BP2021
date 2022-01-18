@@ -10,19 +10,19 @@ def test_standard_setup():
 
 
 test_scenarios = [
-    (sim_market.ClassicScenario, a2c_agent.DiscreteACALinear),
-    (sim_market.ClassicScenario, a2c_agent.ContinuosActorCriticAgent),
-    (sim_market.MultiCompetitorScenario, a2c_agent.DiscreteACALinear),
-    (sim_market.MultiCompetitorScenario, a2c_agent.ContinuosActorCriticAgent),
-    (sim_market.CircularEconomyMonopolyScenario, a2c_agent.DiscreteACACircularEconomy),
-    (sim_market.CircularEconomyMonopolyScenario, a2c_agent.ContinuosActorCriticAgent),
-    (sim_market.CircularEconomyRebuyPriceMonopolyScenario, a2c_agent.DiscreteACACircularEconomyRebuy),
-    (sim_market.CircularEconomyRebuyPriceMonopolyScenario, a2c_agent.ContinuosActorCriticAgent),
-    (sim_market.CircularEconomyRebuyPriceOneCompetitor, a2c_agent.DiscreteACACircularEconomyRebuy),
-    (sim_market.CircularEconomyRebuyPriceOneCompetitor, a2c_agent.ContinuosActorCriticAgent)
+    (sim_market.ClassicScenario, a2c_agent.DiscreteACALinear, True),
+    (sim_market.ClassicScenario, a2c_agent.ContinuosActorCriticAgent, True),
+    (sim_market.MultiCompetitorScenario, a2c_agent.DiscreteACALinear, False),
+    (sim_market.MultiCompetitorScenario, a2c_agent.ContinuosActorCriticAgent, False),
+    (sim_market.CircularEconomyMonopolyScenario, a2c_agent.DiscreteACACircularEconomy, True),
+    (sim_market.CircularEconomyMonopolyScenario, a2c_agent.ContinuosActorCriticAgent, False),
+    (sim_market.CircularEconomyRebuyPriceMonopolyScenario, a2c_agent.DiscreteACACircularEconomyRebuy, True),
+    (sim_market.CircularEconomyRebuyPriceMonopolyScenario, a2c_agent.ContinuosActorCriticAgent, False),
+    (sim_market.CircularEconomyRebuyPriceOneCompetitor, a2c_agent.DiscreteACACircularEconomyRebuy, False),
+    (sim_market.CircularEconomyRebuyPriceOneCompetitor, a2c_agent.ContinuosActorCriticAgent, True)
 ]
 
 
-@pytest.mark.parametrize('marketplace, agent', test_scenarios)
-def test_training_configurations(marketplace, agent):
-    a2c_training.train_actorcritic(marketplace_class=marketplace, agent_class=agent, number_of_training_steps=120, total_envs=64)
+@pytest.mark.parametrize('marketplace, agent, verbose', test_scenarios)
+def test_training_configurations(marketplace, agent, verbose):
+    a2c_training.train_actorcritic(marketplace_class=marketplace, agent_class=agent, verbose=verbose, number_of_training_steps=120, total_envs=64)
