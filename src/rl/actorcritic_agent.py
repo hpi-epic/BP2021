@@ -130,25 +130,32 @@ class ContinuosActorCriticAgent(ActorCriticAgent):
 
 	def initialize_models_and_optimizer(self, n_observations, n_actions):
 		self.n_actions = n_actions
-		self.actor_net = model.simple_network(n_observations, self.n_actions).to(self.device)
-		self.actor_optimizer = torch.optim.Adam(self.actor_net.parameters(), lr=0.0002)
+		self.actor_net = model.simple_network(n_observations, 2 * self.n_actions).to(self.device)
+		self.actor_optimizer = torch.optim.Adam(self.actor_net.parameters(), lr=0.00002)
 		self.critic_net = model.simple_network(n_observations, 1).to(self.device)
 		self.critic_optimizer = torch.optim.Adam(self.critic_net.parameters(), lr=0.002)
 
 	def policy(self, observation, verbose=False):
 		observation = torch.Tensor(np.array(observation)).to(self.device)
 		with torch.no_grad():
-			mean = self.softplus(self.actor_net(observation))
+			network_result = self.softplus(self.actor_net(observation))
+			network_result = network_result.view(2, -1)
+			mean = network_result[0, :]
+			std = network_result[1, :]
 			if verbose:
 				v_estimat = self.critic_net(observation).view(-1)
 
-		action = torch.round(torch.normal(mean, torch.ones(mean.shape).to(self.device)))
+		action = torch.round(torch.normal(mean, std))
 		action = torch.max(action, torch.zeros(action.shape).to(self.device))
 		action = torch.min(action, 9 * torch.ones(action.shape).to(self.device))
 		return action.squeeze().type(torch.LongTensor).to('cpu').numpy(), *((self.log_probability_given_action(observation, action).mean().detach().item(), v_estimat.to('cpu').item()) if verbose else (None, None))
 
 	def log_probability_given_action(self, states, actions):
-		return torch.distributions.Normal(self.softplus(self.actor_net(states)), 1).log_prob(actions.view(-1, self.n_actions)).sum(dim=1).unsqueeze(-1)
+		network_result = self.softplus(self.actor_net(states))
+		network_result = network_result.view(network_result.shape[0], 2, -1)
+		mean = network_result[:, 0, :]
+		std = network_result[:, 1, :]
+		return torch.distributions.Normal(mean, std).log_prob(actions.view(-1, self.n_actions)).sum(dim=1).unsqueeze(-1)
 
 	def regularize(self, states):
 		"""
@@ -162,7 +169,7 @@ class ContinuosActorCriticAgent(ActorCriticAgent):
 			torch.Tensor: the malus of the regularization
 		"""
 		proposed_actions = self.actor_net(states.detach())
-		return 50000 * torch.nn.MSELoss()(proposed_actions, 3.5 * torch.ones(proposed_actions.shape).to(self.device))
+		return 10000 * torch.nn.MSELoss()(proposed_actions, 3.5 * torch.ones(proposed_actions.shape).to(self.device))
 
 	def agent_output_to_market_form(self, action):
 		return action.tolist()
