@@ -11,10 +11,10 @@ import monitoring.agent_monitoring.evaluation as evaluation
 
 class Monitor():
 	"""
-	A Monitor() monitors given agents on a marketplace, recording metrics such as median and maximum rewards.
+	A Monitor() monitors given agents on a marketplace, recording the rewards achieved by the agents.
 
-	When the run is finished, diagrams will be created in the 'results/monitoring' folder. \\
-	The Monitor() can be customized using setup_monitoring().
+	When the run is finished, diagrams will be created in the 'results/monitoring' folder by the Evaluator. \\
+	The Monitor() can be customized using its Configurator() with configurator.setup_monitoring().
 	"""
 	def __init__(self):
 		self.configurator = configurator.Configurator()

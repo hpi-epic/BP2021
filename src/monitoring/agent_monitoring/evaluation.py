@@ -12,7 +12,6 @@ class Evaluator():
 	"""
 	def __init__(self, configuration: configurator.Configurator):
 		self.configurator = configuration
-		self.rewards = None
 
 	def evaluate_session(self, rewards: list):
 		"""
