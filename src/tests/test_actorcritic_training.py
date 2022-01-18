@@ -10,11 +10,11 @@ def test_standard_setup():
 
 
 test_scenarios = [
-    (sim_market.ClassicScenario, a2c_agent.DiscreteACALinear, 10),
-    (sim_market.ClassicScenario, a2c_agent.ContinuosActorCriticAgent, 1)
+    (sim_market.ClassicScenario, a2c_agent.DiscreteACALinear),
+    (sim_market.ClassicScenario, a2c_agent.ContinuosActorCriticAgent)
 ]
 
 
-@pytest.mark.parametrize('marketplace, agent, outputs', test_scenarios)
-def test_training_configurations(marketplace, agent, outputs):
-    a2c_training.train_actorcritic(marketplace_class=marketplace, agent_class=agent, outputs=outputs)
+@pytest.mark.parametrize('marketplace, agent', test_scenarios)
+def test_training_configurations(marketplace, agent):
+    a2c_training.train_actorcritic(marketplace_class=marketplace, agent_class=agent)

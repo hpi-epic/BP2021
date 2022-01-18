@@ -11,8 +11,15 @@ import market.sim_market as sim_market
 import rl.actorcritic_agent as a2cagent
 
 
-def train_actorcritic(marketplace_class=sim_market.CircularEconomyRebuyPriceOneCompetitor, agent_class=a2cagent.ContinuosActorCriticAgent, outputs=3, number_of_training_steps=200, verbose=False):
+def train_actorcritic(marketplace_class=sim_market.CircularEconomyRebuyPriceOneCompetitor, agent_class=a2cagent.ContinuosActorCriticAgent, number_of_training_steps=200, verbose=False):
 	assert issubclass(agent_class, a2cagent.ActorCriticAgent), f'the agent_class must be a subclass of ActorCriticAgent: {agent_class}'
+	if issubclass(agent_class, a2cagent.ContinuosActorCriticAgent):
+		if marketplace_class()._action_space.shape is not None:
+			outputs = 1
+		else:
+			outputs = len(marketplace_class()._action_space)
+	else:
+		outputs = marketplace_class().get_n_actions()
 	agent = agent_class(marketplace_class().observation_space.shape[0], outputs)
 
 	all_dicts = []
@@ -85,4 +92,4 @@ def train_actorcritic(marketplace_class=sim_market.CircularEconomyRebuyPriceOneC
 
 
 if __name__ == '__main__':
-	train_actorcritic(number_of_training_steps=10000, agent_class=a2cagent.DiscreteACACircularEconomyRebuy, outputs=1000)
+	train_actorcritic(number_of_training_steps=10000, agent_class=a2cagent.DiscreteACACircularEconomyRebuy)
