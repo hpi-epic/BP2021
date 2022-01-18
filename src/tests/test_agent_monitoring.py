@@ -1,4 +1,5 @@
 import os
+import shutil
 from unittest.mock import patch
 
 import numpy as np
@@ -33,9 +34,11 @@ def test_init_default_values():
 
 
 def test_get_folder():
-	# if you change the name of this function, change it in the assert as well!
+	# if you change the name of this function, change it here as well!
+	foldername = 'test_plots_test_get_folder'
 	monitor._get_folder()
-	assert os.path.exists(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'results', 'monitoring', 'test_plots_test_get_folder')))
+	assert os.path.exists(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'results', 'monitoring', foldername)))
+	shutil.rmtree(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'results', 'monitoring', foldername))
 
 
 def test_get_modelfile_path():
@@ -44,19 +47,6 @@ def test_get_modelfile_path():
 		with pytest.raises(AssertionError) as assertion_message:
 			monitor._get_modelfile_path('non_existing_modelfile')
 		assert 'the specified modelfile does not exist' in str(assertion_message.value)
-
-
-# Test once for a Linear, Circular and RebuyPrice Economy
-get_action_space_testcases = [
-	([(vendors.QLearningLEAgent, ['ClassicScenario_QLearningLEAgent'])], sim_market.ClassicScenario),
-	([(vendors.QLearningCEAgent, ['CircularEconomy_QLearningCEAgent'])], sim_market.CircularEconomyMonopolyScenario),
-	([(vendors.QLearningCERebuyAgent, ['CircularEconomyRebuyPrice_QLearningCERebuyAgent'])], sim_market.CircularEconomyRebuyPriceMonopolyScenario)
-]
-
-
-@pytest.mark.parametrize('agents, marketplace', get_action_space_testcases)
-def test_get_action_space(agents, marketplace):
-	monitor.setup_monitoring(agents=agents, marketplace=marketplace)
 
 
 incorrect_update_agents_testcases = [
@@ -161,9 +151,13 @@ def test_incorrect_setup_monitoring(parameters, expected_message):
 
 	with pytest.raises(AssertionError) as assertion_message:
 		monitor.setup_monitoring(
-			enable_live_draw=dict['enable_live_draw'], episodes=dict['episodes'],
-			plot_interval=dict['plot_interval'], marketplace=dict['marketplace'],
-			agents=dict['agents'], subfolder_name=dict['subfolder_name'])
+			enable_live_draw=dict['enable_live_draw'],
+			episodes=dict['episodes'],
+			plot_interval=dict['plot_interval'],
+			marketplace=dict['marketplace'],
+			agents=dict['agents'],
+			subfolder_name=dict['subfolder_name']
+		)
 	assert expected_message in str(assertion_message.value)
 
 
@@ -190,9 +184,13 @@ def test_incorrect_setup_monitoring_type_errors(parameters):
 
 	with pytest.raises(TypeError):
 		monitor.setup_monitoring(
-			enable_live_draw=dict['enable_live_draw'], episodes=dict['episodes'],
-			plot_interval=dict['plot_interval'], marketplace=dict['marketplace'],
-			agents=dict['agents'], subfolder_name=dict['subfolder_name'])
+			enable_live_draw=dict['enable_live_draw'],
+			episodes=dict['episodes'],
+			plot_interval=dict['plot_interval'],
+			marketplace=dict['marketplace'],
+			agents=dict['agents'],
+			subfolder_name=dict['subfolder_name']
+		)
 
 
 def test_get_configuration():
@@ -303,7 +301,6 @@ def test_run_monitoring_session():
 		assert os.path.exists(monitor.folder_path)
 
 
-# @patch('monitoring.agent_monitoring.input', create=True)
 def test_run_monitoring_ratio():
 	# ratio is over 50, program should ask if we want to continue. We answer 'no'
 	with patch('monitoring.agent_monitoring.plt'), \

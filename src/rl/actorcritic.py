@@ -117,7 +117,7 @@ class DiscreteACALinear(DiscreteActorCriticAgent):
 
 class DiscreteACACircularEconomy(DiscreteActorCriticAgent):
 	def agent_output_to_market_form(self, action):
-		return (int(action % config.MAX_PRICE), int(action / 10))
+		return (int(action % config.MAX_PRICE), int(action / config.MAX_PRICE))
 
 
 class DiscreteACACircularEconomyRebuy(DiscreteActorCriticAgent):
