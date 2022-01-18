@@ -7,45 +7,48 @@ import pytest
 
 import agents.vendors as vendors
 import market.sim_market as sim_market
-import monitoring.agent_monitoring as am
-from monitoring.agent_monitoring import Monitor
+import monitoring.agent_monitoring.configurator as configurator
+import monitoring.agent_monitoring.monitor as monitoring
 
-monitor = Monitor()
+monitor = monitoring.Monitor()
 
 
 # setup before each test
 def setup_function(function):
 	print('***SETUP***')
 	global monitor
-	monitor = Monitor()
-	monitor.setup_monitoring(enable_live_draw=False, subfolder_name=f'test_plots_{function.__name__}')
+	monitor = monitoring.Monitor()
+	monitor.configurator.setup_monitoring(enable_live_draw=False, subfolder_name=f'test_plots_{function.__name__}')
 
 
+# configurator
 def test_init_default_values():
-	test_monitor = am.Monitor()
-	assert test_monitor.enable_live_draw is True
-	assert 500 == test_monitor.episodes
-	assert 50 == test_monitor.plot_interval
-	assert isinstance(test_monitor.marketplace, sim_market.CircularEconomyMonopolyScenario)
-	assert isinstance(test_monitor.agents[0], vendors.QLearningCEAgent)
-	assert 1 == len(test_monitor.agents)
-	assert [(0.0, 0.0, 1.0, 1.0)] == test_monitor.agent_colors
+	test_configurator = configurator.Configurator()
+	assert test_configurator.enable_live_draw is True
+	assert 500 == test_configurator.episodes
+	assert 50 == test_configurator.plot_interval
+	assert isinstance(test_configurator.marketplace, sim_market.CircularEconomyMonopolyScenario)
+	assert isinstance(test_configurator.agents[0], vendors.QLearningCEAgent)
+	assert 1 == len(test_configurator.agents)
+	assert [(0.0, 0.0, 1.0, 1.0)] == test_configurator.agent_colors
 	# folder_path can hardly be tested due to the default involving the current DateTime
 
 
+# configurator
 def test_get_folder():
 	# if you change the name of this function, change it here as well!
 	foldername = 'test_plots_test_get_folder'
-	monitor._get_folder()
+	monitor.configurator.get_folder()
 	assert os.path.exists(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'results', 'monitoring', foldername)))
 	shutil.rmtree(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'results', 'monitoring', foldername))
 
 
+# configurator
 def test_get_modelfile_path():
-	with patch('monitoring.agent_monitoring.os.path.exists') as mock_exists:
+	with patch('monitoring.agent_monitoring.configurator.os.path.exists') as mock_exists:
 		mock_exists.return_value = False
 		with pytest.raises(AssertionError) as assertion_message:
-			monitor._get_modelfile_path('non_existing_modelfile')
+			monitor.configurator._get_modelfile_path('non_existing_modelfile')
 		assert 'the specified modelfile does not exist' in str(assertion_message.value)
 
 
@@ -59,10 +62,11 @@ incorrect_update_agents_testcases = [
 ]
 
 
+# configurator
 @pytest.mark.parametrize('agents, expected_message', incorrect_update_agents_testcases)
 def test_incorrect_update_agents(agents, expected_message):
 	with pytest.raises(AssertionError) as assertion_message:
-		monitor.setup_monitoring(agents=agents)
+		monitor.configurator.setup_monitoring(agents=agents)
 	assert expected_message in str(assertion_message.value)
 
 
@@ -71,28 +75,30 @@ correct_update_agents_testcases = [
 	[(vendors.QLearningCEAgent, ['new_name'])],
 	[(vendors.QLearningCEAgent, ['CircularEconomyMonopolyScenario_QLearningCEAgent.dat'])],
 	[(vendors.QLearningCEAgent, ['CircularEconomyMonopolyScenario_QLearningCEAgent.dat', 'new_name'])],
-	[(vendors.QLearningCEAgent, [f'{type(monitor.marketplace).__name__}_{vendors.QLearningCEAgent.__name__}.dat'])]
+	[(vendors.QLearningCEAgent, [f'{type(monitor.configurator.marketplace).__name__}_{vendors.QLearningCEAgent.__name__}.dat'])]
 ]
 
 
+# configurator
 @pytest.mark.parametrize('agents', correct_update_agents_testcases)
 def test_correct_update_agents(agents):
-	monitor.setup_monitoring(agents=agents)
+	monitor.configurator.setup_monitoring(agents=agents)
 
 
+# configurator
 def test_correct_setup_monitoring():
-	monitor.setup_monitoring(enable_live_draw=False, episodes=10, plot_interval=2, marketplace=sim_market.CircularEconomyMonopolyScenario, agents=[(vendors.HumanPlayerCERebuy, ['reptiloid']), (vendors.QLearningCERebuyAgent, ['CircularEconomyMonopolyScenario_QLearningCEAgent.dat', 'q_learner'])], subfolder_name='subfoldername')
-	assert monitor.enable_live_draw is False
-	assert 10 == monitor.episodes
-	assert 2 == monitor.plot_interval
-	assert isinstance(monitor.marketplace, sim_market.CircularEconomyMonopolyScenario)
-	assert 2 == len(monitor.agents)
-	assert isinstance(monitor.agents[0], vendors.HumanPlayerCERebuy)
-	assert isinstance(monitor.agents[1], vendors.QLearningCERebuyAgent)
-	assert 'reptiloid' == monitor.agents[0].name
-	assert 'q_learner' == monitor.agents[1].name
-	assert os.path.normcase(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'results', 'monitoring', 'subfoldername'))) == os.path.normcase(os.path.abspath(monitor.folder_path))
-	assert 2 == len(monitor.agent_colors)
+	monitor.configurator.setup_monitoring(enable_live_draw=False, episodes=10, plot_interval=2, marketplace=sim_market.CircularEconomyMonopolyScenario, agents=[(vendors.HumanPlayerCERebuy, ['reptiloid']), (vendors.QLearningCERebuyAgent, ['CircularEconomyMonopolyScenario_QLearningCEAgent.dat', 'q_learner'])], subfolder_name='subfoldername')
+	assert monitor.configurator.enable_live_draw is False
+	assert 10 == monitor.configurator.episodes
+	assert 2 == monitor.configurator.plot_interval
+	assert isinstance(monitor.configurator.marketplace, sim_market.CircularEconomyMonopolyScenario)
+	assert 2 == len(monitor.configurator.agents)
+	assert isinstance(monitor.configurator.agents[0], vendors.HumanPlayerCERebuy)
+	assert isinstance(monitor.configurator.agents[1], vendors.QLearningCERebuyAgent)
+	assert 'reptiloid' == monitor.configurator.agents[0].name
+	assert 'q_learner' == monitor.configurator.agents[1].name
+	assert os.path.normcase(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'results', 'monitoring', 'subfoldername'))) == os.path.normcase(os.path.abspath(monitor.configurator.folder_path))
+	assert 2 == len(monitor.configurator.agent_colors)
 
 
 setting_multiple_agents_testcases = [
@@ -101,13 +107,15 @@ setting_multiple_agents_testcases = [
 ]
 
 
+# configurator
 @pytest.mark.parametrize('agents', setting_multiple_agents_testcases)
 def test_setting_multiple_agents(agents):
-	monitor.setup_monitoring(agents=agents)
+	monitor.configurator.setup_monitoring(agents=agents)
 
 
+# configurator
 def test_setting_market_not_agents():
-	monitor.setup_monitoring(marketplace=sim_market.CircularEconomyMonopolyScenario)
+	monitor.configurator.setup_monitoring(marketplace=sim_market.CircularEconomyMonopolyScenario)
 
 
 incorrect_setup_monitoring_testcases = [
@@ -135,6 +143,7 @@ incorrect_setup_monitoring_testcases = [
 ]
 
 
+# configurator
 @pytest.mark.parametrize('parameters, expected_message', incorrect_setup_monitoring_testcases)
 def test_incorrect_setup_monitoring(parameters, expected_message):
 	dict = {
@@ -150,7 +159,7 @@ def test_incorrect_setup_monitoring(parameters, expected_message):
 		dict[key] = val
 
 	with pytest.raises(AssertionError) as assertion_message:
-		monitor.setup_monitoring(
+		monitor.configurator.setup_monitoring(
 			enable_live_draw=dict['enable_live_draw'],
 			episodes=dict['episodes'],
 			plot_interval=dict['plot_interval'],
@@ -168,6 +177,7 @@ incorrect_setup_monitoring_type_errors_testcases = [
 ]
 
 
+# configurator
 @pytest.mark.parametrize('parameters', incorrect_setup_monitoring_type_errors_testcases)
 def test_incorrect_setup_monitoring_type_errors(parameters):
 	dict = {
@@ -183,7 +193,7 @@ def test_incorrect_setup_monitoring_type_errors(parameters):
 		dict[key] = val
 
 	with pytest.raises(TypeError):
-		monitor.setup_monitoring(
+		monitor.configurator.setup_monitoring(
 			enable_live_draw=dict['enable_live_draw'],
 			episodes=dict['episodes'],
 			plot_interval=dict['plot_interval'],
@@ -193,9 +203,10 @@ def test_incorrect_setup_monitoring_type_errors(parameters):
 		)
 
 
+# configurator
 def test_get_configuration():
-	monitor.setup_monitoring(enable_live_draw=False, episodes=10, plot_interval=2, marketplace=sim_market.CircularEconomyMonopolyScenario, agents=[(vendors.HumanPlayerCERebuy, ['reptiloid']), (vendors.QLearningCERebuyAgent, ['CircularEconomyMonopolyScenario_QLearningCEAgent.dat', 'q_learner'])], subfolder_name='subfoldername')
-	current_configuration = monitor.get_configuration()
+	monitor.configurator.setup_monitoring(enable_live_draw=False, episodes=10, plot_interval=2, marketplace=sim_market.CircularEconomyMonopolyScenario, agents=[(vendors.HumanPlayerCERebuy, ['reptiloid']), (vendors.QLearningCERebuyAgent, ['CircularEconomyMonopolyScenario_QLearningCEAgent.dat', 'q_learner'])], subfolder_name='subfoldername')
+	current_configuration = monitor.configurator.get_configuration()
 	assert len(current_configuration) == 7, 'parameters were updated in agent_monitoring.py, but not updated in the tests!'
 	assert 'enable_live_draw' in current_configuration
 	assert 'episodes' in current_configuration
@@ -206,14 +217,15 @@ def test_get_configuration():
 	assert 'folder_path' in current_configuration
 
 
+# evaluator
 # all arrays in rewards must be of the same size
 def test_rewards_array_size():
 	# Numpy doesn't like nested arrays of different sizes, need to specify dtype=object
 	rewards_wrong = np.array([[1, 2], [1, 2, 3]], dtype=object)
 
-	with patch('monitoring.agent_monitoring.plt'):
+	with patch('monitoring.agent_monitoring.evaluation.plt'):
 		with pytest.raises(AssertionError) as assertion_message:
-			monitor.create_histogram(rewards_wrong)
+			monitor.evaluator.create_histogram(rewards_wrong)
 		assert 'all rewards-arrays must be of the same size' in str(assertion_message.value)
 
 
@@ -226,36 +238,38 @@ create_histogram_statistics_plots_testcases = [
 ]
 
 
+# evaluator
 @pytest.mark.parametrize('agents, rewards, plot_bins, agent_color, lower_upper_range', create_histogram_statistics_plots_testcases)
 def test_create_histogram(agents, rewards, plot_bins, agent_color, lower_upper_range):
-	monitor.setup_monitoring(enable_live_draw=True, agents=agents)
-	name_list = [agent.name for agent in monitor.agents]
-	with patch('monitoring.agent_monitoring.plt.clf'), \
-		patch('monitoring.agent_monitoring.plt.xlabel'), \
-		patch('monitoring.agent_monitoring.plt.title'), \
-		patch('monitoring.agent_monitoring.plt.hist') as hist_mock, \
-		patch('monitoring.agent_monitoring.plt.legend') as legend_mock, \
-		patch('monitoring.agent_monitoring.plt.pause'), \
-		patch('monitoring.agent_monitoring.plt.draw') as draw_mock, \
-		patch('monitoring.agent_monitoring.plt.savefig') as save_mock, \
-		patch('monitoring.agent_monitoring.os.path.exists') as exists_mock:
+	monitor.configurator.setup_monitoring(enable_live_draw=True, agents=agents)
+	name_list = [agent.name for agent in monitor.configurator.agents]
+	with patch('monitoring.agent_monitoring.evaluation.plt.clf'), \
+		patch('monitoring.agent_monitoring.evaluation.plt.xlabel'), \
+		patch('monitoring.agent_monitoring.evaluation.plt.title'), \
+		patch('monitoring.agent_monitoring.evaluation.plt.hist') as hist_mock, \
+		patch('monitoring.agent_monitoring.evaluation.plt.legend') as legend_mock, \
+		patch('monitoring.agent_monitoring.evaluation.plt.pause'), \
+		patch('monitoring.agent_monitoring.evaluation.plt.draw') as draw_mock, \
+		patch('monitoring.agent_monitoring.evaluation.plt.savefig') as save_mock, \
+		patch('monitoring.agent_monitoring.configurator.os.path.exists') as exists_mock:
 		exists_mock.return_value = True
 
-		monitor.create_histogram(rewards)
+		monitor.evaluator.create_histogram(rewards)
 		hist_mock.assert_called_once_with(rewards, bins=plot_bins, color=agent_color, rwidth=0.9, range=lower_upper_range, edgecolor='black')
 		legend_mock.assert_called_once_with(name_list)
 		draw_mock.assert_called_once()
-		save_mock.assert_called_once_with(fname=os.path.join(monitor.folder_path, 'histograms', 'default.svg'))
+		save_mock.assert_called_once_with(fname=os.path.join(monitor.configurator.folder_path, 'histograms', 'default.svg'))
 
 
+# evaluator
 @pytest.mark.parametrize('agents, rewards, plot_bins, agent_color, lower_upper_range', create_histogram_statistics_plots_testcases)
 def test_create_statistics_plots(agents, rewards, plot_bins, agent_color, lower_upper_range):
-	monitor.setup_monitoring(agents=agents, episodes=len(rewards[0]), plot_interval=1)
-	with patch('monitoring.agent_monitoring.plt'), \
-		patch('monitoring.agent_monitoring.os.path.exists') as exists_mock:
+	monitor.configurator.setup_monitoring(agents=agents, episodes=len(rewards[0]), plot_interval=1)
+	with patch('monitoring.agent_monitoring.evaluation.plt'), \
+		patch('monitoring.agent_monitoring.configurator.os.path.exists') as exists_mock:
 		exists_mock.return_value = True
 
-		monitor.create_statistics_plots(rewards)
+		monitor.evaluator._create_statistics_plots(rewards)
 
 
 incorrect_create_line_plot_testcases = [
@@ -265,48 +279,52 @@ incorrect_create_line_plot_testcases = [
 ]
 
 
+# evaluator
 @pytest.mark.parametrize('x_values, y_values, plot_type, expected_message', incorrect_create_line_plot_testcases)
 def test_incorrect_create_line_plot(x_values, y_values, plot_type, expected_message):
-	monitor.setup_monitoring(episodes=4, plot_interval=2)
+	monitor.configurator.setup_monitoring(episodes=4, plot_interval=2)
 	with pytest.raises(AssertionError) as assertion_message:
-		monitor.create_line_plot(x_values, y_values, 'test_plot', plot_type)
+		monitor.evaluator._create_line_plot(x_values, y_values, 'test_plot', plot_type)
 	assert expected_message in str(assertion_message.value)
 
 
+# evaluator
 def test_incorrect_create_line_plot_runtime_errors():
-	monitor.setup_monitoring(episodes=4, plot_interval=2)
+	monitor.configurator.setup_monitoring(episodes=4, plot_interval=2)
 	with pytest.raises(RuntimeError) as assertion_message:
-		monitor.create_line_plot([1, 2], [[1, 3]], 'test_plot', 'Unknown_metric_type')
+		monitor.evaluator._create_line_plot([1, 2], [[1, 3]], 'test_plot', 'Unknown_metric_type')
 	assert 'this metric_type is unknown: Unknown_metric_type' in str(assertion_message.value)
 
 
+# monitor
 def test_run_marketplace():
-	monitor.setup_monitoring(episodes=100, plot_interval=100, agents=[(vendors.FixedPriceCEAgent, [(5, 2)])])
-	with patch('monitoring.agent_monitoring.plt'), \
-		patch('monitoring.agent_monitoring.os.path.exists') as exists_mock:
+	monitor.configurator.setup_monitoring(episodes=100, plot_interval=100, agents=[(vendors.FixedPriceCEAgent, [(5, 2)])])
+	with patch('monitoring.agent_monitoring.evaluation.plt'), \
+		patch('monitoring.agent_monitoring.configurator.os.path.exists') as exists_mock:
 		exists_mock.return_value = True
 		agent_rewards = monitor.run_marketplace()
 		assert 1 == len(agent_rewards)
-		assert monitor.episodes == len(agent_rewards[0])
+		assert monitor.configurator.episodes == len(agent_rewards[0])
 
 
+# monitor
 def test_run_monitoring_session():
-	monitor.setup_monitoring(episodes=10, plot_interval=10)
-	current_configuration = monitor.get_configuration()
-	with patch('monitoring.agent_monitoring.plt'), \
-		patch('monitoring.agent_monitoring.os.path.exists') as exists_mock:
+	monitor.configurator.setup_monitoring(episodes=10, plot_interval=10)
+	current_configuration = monitor.configurator.get_configuration()
+	with patch('monitoring.agent_monitoring.evaluation.plt'), \
+		patch('monitoring.agent_monitoring.configurator.os.path.exists') as exists_mock:
 		exists_mock.return_value = True
-		am.run_monitoring_session(monitor)
-		assert current_configuration == monitor.get_configuration(), 'the monitor configuration should not be changed within run_monitoring()'
-		assert os.path.exists(monitor.folder_path)
+		monitoring.run_monitoring_session(monitor)
+		assert current_configuration == monitor.configurator.get_configuration(), 'the monitor configuration should not be changed within run_monitoring()'
+		assert os.path.exists(monitor.configurator.folder_path)
 
 
 def test_run_monitoring_ratio():
 	# ratio is over 50, program should ask if we want to continue. We answer 'no'
-	with patch('monitoring.agent_monitoring.plt'), \
-		patch('monitoring.agent_monitoring.input', create=True) as mocked_input, \
-		patch('monitoring.agent_monitoring.os.path.exists') as exists_mock:
+	with patch('monitoring.agent_monitoring.evaluation.plt'), \
+		patch('monitoring.agent_monitoring.configurator.input', create=True) as mocked_input, \
+		patch('monitoring.agent_monitoring.configurator.os.path.exists') as exists_mock:
 		mocked_input.side_effect = ['n']
 		exists_mock.return_value = True
-		monitor.setup_monitoring(episodes=51, plot_interval=1)
-		am.run_monitoring_session(monitor)
+		monitor.configurator.setup_monitoring(episodes=51, plot_interval=1)
+		monitoring.run_monitoring_session(monitor)
