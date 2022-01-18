@@ -26,6 +26,15 @@ def shuffle_from_probabilities(probabilities) -> int:
 	return len(probabilities) - 1  # pragma: no cover
 
 
+def cartesian_product(list_a, list_b):
+	assert isinstance(list_a, list) and isinstance(list_b, list), 'You must give to lists'
+	output_list = []
+	for a in list_a:
+		for b in list_b:
+			output_list.append((a, b))
+	return output_list
+
+
 def write_dict_to_tensorboard(writer, dictionary, counter, is_cumulative=False) -> None:
 	"""
 	This function takes a dictionary of data with data from one step and adds it at the specified time to the tensorboard.
