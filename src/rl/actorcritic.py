@@ -147,9 +147,9 @@ class ContinuosActorCriticAgent(ActorCriticAgent):
 			if verbose:
 				v_estimat = self.critic_net(observation).view(-1)
 
-		action = torch.round(torch.normal(mean, torch.ones(mean.shape)))
-		action = torch.max(action, torch.zeros(action.shape))
-		action = torch.min(action, 9 * torch.ones(action.shape))
+		action = torch.round(torch.normal(mean, torch.ones(mean.shape).to(self.device)))
+		action = torch.max(action, torch.zeros(action.shape).to(self.device))
+		action = torch.min(action, 9 * torch.ones(action.shape).to(self.device))
 		return action.squeeze().type(torch.LongTensor).to('cpu').numpy(), *((self.log_probability_given_action(observation, action).mean().detach().item(), v_estimat.to('cpu').item()) if verbose else (None, None))
 
 	def log_probability_given_action(self, states, actions):
@@ -167,13 +167,13 @@ class ContinuosActorCriticAgent(ActorCriticAgent):
 			torch.Tensor: the malus of the regularization
 		"""
 		proposed_actions = self.actor_net(states.detach())
-		return 50000 * torch.nn.MSELoss()(proposed_actions, 3.5 * torch.ones(proposed_actions.shape))
+		return 50000 * torch.nn.MSELoss()(proposed_actions, 3.5 * torch.ones(proposed_actions.shape).to(self.device))
 
 	def agent_output_to_market_form(self, action):
 		return action.tolist()
 
 
-def train_actorcritic(marketplace_class=sim_market.CircularEconomyRebuyPriceOneCompetitor, agent_class=ContinuosActorCriticAgent, outputs=3, number_of_training_steps=1000, verbose=False):
+def train_actorcritic(marketplace_class=sim_market.CircularEconomyRebuyPriceOneCompetitor, agent_class=ContinuosActorCriticAgent, outputs=3, number_of_training_steps=200, verbose=False):
 	assert issubclass(agent_class, ActorCriticAgent), f'the agent_class must be a subclass of ActorCriticAgent: {agent_class}'
 	agent = agent_class(marketplace_class().observation_space.shape[0], outputs)
 
@@ -247,4 +247,4 @@ def train_actorcritic(marketplace_class=sim_market.CircularEconomyRebuyPriceOneC
 
 
 if __name__ == '__main__':
-	train_actorcritic()
+	train_actorcritic(number_of_training_steps=10000, agent_class=DiscreteACACircularEconomyRebuy, outputs=1000)
