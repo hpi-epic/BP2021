@@ -6,7 +6,8 @@ import market.customer as customer
 import market.sim_market as sim_market
 
 
-# Helper function that creates a random offer (state that includes the agent's price) to test customer behaviour. This is dependent on the sim_market working!
+# Helper function that creates a random offer (state that includes the agent's price) to test customer behaviour.
+# This is dependent on the sim_market working!
 def random_offer(marketplace):
 	marketplace = marketplace()
 	marketplace.reset()
@@ -31,7 +32,9 @@ generate_purchase_probabilities_from_offer_testcases = [
 ]
 
 
-@pytest.mark.parametrize('customer, offers, offer_length_per_vendor, expected_message', generate_purchase_probabilities_from_offer_testcases)
+@pytest.mark.parametrize(
+	'customer, offers, offer_length_per_vendor, expected_message',
+	generate_purchase_probabilities_from_offer_testcases)
 def test_generate_purchase_probabilities_from_offer(customer, offers, offer_length_per_vendor, expected_message):
 	with pytest.raises(AssertionError) as assertion_message:
 		customer.generate_purchase_probabilities_from_offer(offers, offer_length_per_vendor)
