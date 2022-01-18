@@ -2,13 +2,13 @@ import os
 import random
 import time
 
-import actorcritic_agent as a2cagent
 import numpy as np
 import torch
 from torch.utils.tensorboard import SummaryWriter
 
 import configuration.utils as ut
 import market.sim_market as sim_market
+import rl.actorcritic_agent as a2cagent
 
 
 def train_actorcritic(marketplace_class=sim_market.CircularEconomyRebuyPriceOneCompetitor, agent_class=a2cagent.ContinuosActorCriticAgent, outputs=3, number_of_training_steps=200, verbose=False):
