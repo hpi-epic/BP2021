@@ -11,7 +11,15 @@ def test_standard_setup():
 
 test_scenarios = [
     (sim_market.ClassicScenario, a2c_agent.DiscreteACALinear),
-    (sim_market.ClassicScenario, a2c_agent.ContinuosActorCriticAgent)
+    (sim_market.ClassicScenario, a2c_agent.ContinuosActorCriticAgent),
+    (sim_market.MultiCompetitorScenario, a2c_agent.DiscreteACALinear),
+    (sim_market.MultiCompetitorScenario, a2c_agent.ContinuosActorCriticAgent),
+    (sim_market.CircularEconomyMonopolyScenario, a2c_agent.DiscreteACACircularEconomy),
+    (sim_market.CircularEconomyMonopolyScenario, a2c_agent.ContinuosActorCriticAgent),
+    (sim_market.CircularEconomyRebuyPriceMonopolyScenario, a2c_agent.DiscreteACACircularEconomyRebuy),
+    (sim_market.CircularEconomyRebuyPriceMonopolyScenario, a2c_agent.ContinuosActorCriticAgent),
+    (sim_market.CircularEconomyRebuyPriceOneCompetitor, a2c_agent.DiscreteACACircularEconomyRebuy),
+    (sim_market.CircularEconomyRebuyPriceOneCompetitor, a2c_agent.ContinuosActorCriticAgent)
 ]
 
 
