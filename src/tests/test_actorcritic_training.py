@@ -25,4 +25,4 @@ test_scenarios = [
 
 @pytest.mark.parametrize('marketplace, agent', test_scenarios)
 def test_training_configurations(marketplace, agent):
-    a2c_training.train_actorcritic(marketplace_class=marketplace, agent_class=agent)
+    a2c_training.train_actorcritic(marketplace_class=marketplace, agent_class=agent, number_of_training_steps=120, total_envs=64)

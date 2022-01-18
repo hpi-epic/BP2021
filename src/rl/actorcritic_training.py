@@ -10,8 +10,10 @@ import configuration.utils as ut
 import market.sim_market as sim_market
 import rl.actorcritic_agent as a2cagent
 
+BATCH_SIZE = 32
 
-def train_actorcritic(marketplace_class=sim_market.CircularEconomyRebuyPriceOneCompetitor, agent_class=a2cagent.ContinuosActorCriticAgent, number_of_training_steps=200, verbose=False):
+
+def train_actorcritic(marketplace_class=sim_market.CircularEconomyRebuyPriceOneCompetitor, agent_class=a2cagent.ContinuosActorCriticAgent, number_of_training_steps=200, verbose=False, total_envs=128):
 	assert issubclass(agent_class, a2cagent.ActorCriticAgent), f'the agent_class must be a subclass of ActorCriticAgent: {agent_class}'
 	if issubclass(agent_class, a2cagent.ContinuosActorCriticAgent):
 		if marketplace_class()._action_space.shape is not None:
@@ -33,14 +35,12 @@ def train_actorcritic(marketplace_class=sim_market.CircularEconomyRebuyPriceOneC
 	writer = SummaryWriter(log_dir=os.path.join('results', 'runs', f'training_AC_{curr_time}'))
 
 	finished_episodes = 0
-	total_envs = 128
 	environments = [marketplace_class() for _ in range(total_envs)]
 	info_accumulators = [None for _ in range(total_envs)]
 	for i in range(number_of_training_steps):
-		# choose 32 environments
+		# choose BATCH_SIZE environments
 		chosen_envs = set()
-		# chosen_envs.add(127)
-		while len(chosen_envs) < 32:
+		while len(chosen_envs) < BATCH_SIZE:
 			number = random.randint(0, total_envs - 1)
 			if number not in chosen_envs:
 				chosen_envs.add(number)
@@ -92,4 +92,4 @@ def train_actorcritic(marketplace_class=sim_market.CircularEconomyRebuyPriceOneC
 
 
 if __name__ == '__main__':
-	train_actorcritic(number_of_training_steps=10000, agent_class=a2cagent.DiscreteACACircularEconomyRebuy)
+	train_actorcritic(total_envs=64, number_of_training_steps=120)
