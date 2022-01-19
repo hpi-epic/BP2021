@@ -165,6 +165,7 @@ class ContinuosActorCriticAgent(ActorCriticAgent):
 		"""
 		This regularization pushes the actor with very high priority towards a mean price of 3.5.
 		Use it at the beginning to avoid 0 pricing which gets only horrible negative reward.
+		The magic number is a suitable constant to enforce quick movement to 3.5.
 
 		Args:
 			states (torch.Tensor): The current states the agent is in at the moment
