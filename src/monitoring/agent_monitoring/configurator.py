@@ -20,9 +20,11 @@ class Configurator():
 		default_agent = vendors.QLearningCEAgent
 		default_modelfile = f'{type(self.marketplace).__name__}_{default_agent.__name__}'
 		assert os.path.exists(self._get_modelfile_path(default_modelfile)), f'the default modelfile does not exist: {default_modelfile}'
-		self.agents = [default_agent(n_observation=self.marketplace.observation_space.shape[0], n_actions=self.marketplace.get_n_actions(), load_path=self._get_modelfile_path(default_modelfile))]
+		self.agents = [default_agent(n_observation=self.marketplace.observation_space.shape[0],
+			n_actions=self.marketplace.get_n_actions(), load_path=self._get_modelfile_path(default_modelfile))]
 		self.agent_colors = [(0.0, 0.0, 1.0, 1.0)]
-		self.folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir, 'results', 'monitoring', 'plots_' + time.strftime('%b%d_%H-%M-%S')))
+		self.folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir,
+			'results', 'monitoring', 'plots_' + time.strftime('%b%d_%H-%M-%S')))
 
 	def get_folder(self) -> str:
 		"""
@@ -57,7 +59,10 @@ class Configurator():
 		Update the self.agents to the new agents provided.
 
 		Args:
-			agents (list of tuples of agent classes and lists): What agents to monitor. Must be tuples where the first entry is the class of the agent and the second entry is an optional list of arguments for its initialization. Each agent will generate data points in the diagrams. See `setup_monitoring()` for more info. Defaults to None.
+			agents (list of tuples of agent classes and lists): What agents to monitor.
+				Must be tuples where the first entry is the class of the agent and the second entry is an optional list
+				of arguments for its initialization.
+				Each agent will generate data points in the diagrams. See `setup_monitoring()` for more info. Defaults to None.
 
 		Raises:
 			RuntimeError: Raised if the modelfile provided does not match the Market/Agent-type provided.
@@ -65,10 +70,13 @@ class Configurator():
 		# All agents must be of the same type
 		assert all(isinstance(agent_tuple, tuple) for agent_tuple in agents), 'agents must be a list of tuples'
 		assert all(len(agent_tuple) == 2 for agent_tuple in agents), 'the list entries in agents must have size 2 ([agent_class, arguments])'
-		assert all(issubclass(agent_tuple[0], vendors.Agent) for agent_tuple in agents), 'the first entry in each agent-tuple must be an agent class in `vendors.py`'
+		assert all(issubclass(agent_tuple[0], vendors.Agent) for agent_tuple in agents), \
+			'the first entry in each agent-tuple must be an agent class in `vendors.py`'
 		assert all(isinstance(agent_tuple[1], list) for agent_tuple in agents), 'the second entry in each agent-tuple must be a list'
-		assert all(issubclass(agent_tuple[0], vendors.CircularAgent) == issubclass(agents[0][0], vendors.CircularAgent) for agent_tuple in agents), 'the agents must all be of the same type (Linear/Circular)'
-		assert issubclass(agents[0][0], vendors.CircularAgent) == isinstance(self.marketplace, sim_market.CircularEconomy), 'the agent and marketplace must be of the same economy type (Linear/Circular)'
+		assert all(issubclass(agent[0], vendors.CircularAgent) == issubclass(agents[0][0], vendors.CircularAgent) for agent in agents), \
+			'the agents must all be of the same type (Linear/Circular)'
+		assert issubclass(agents[0][0], vendors.CircularAgent) == isinstance(self.marketplace, sim_market.CircularEconomy), \
+			'the agent and marketplace must be of the same economy type (Linear/Circular)'
 
 		self.agents = []
 
@@ -95,7 +103,8 @@ class Configurator():
 						agent_modelfile = current_agent[1][0][:-4]
 					# both arguments
 					elif len(current_agent[1]) == 2:
-						assert str.endswith(current_agent[1][0], '.dat'), f'if two arguments are provided, the first one must be the modelfile. Arg1: {current_agent[1][0]}, Arg2: {current_agent[1][1]}'
+						assert str.endswith(current_agent[1][0], '.dat'), \
+							f'if two arguments are provided, the first one must be the modelfile. Arg1: {current_agent[1][0]}, Arg2: {current_agent[1][1]}'
 						agent_modelfile = current_agent[1][0][:-4]
 						agent_name = current_agent[1][1]
 					# this should never happen due to the asserts before, but you never know
@@ -103,7 +112,8 @@ class Configurator():
 						raise RuntimeError('invalid arguments provided')
 
 					# create the agent
-					self.agents.append(current_agent[0](n_observation=self.marketplace.observation_space.shape[0], n_actions=self.marketplace.get_n_actions(), load_path=self._get_modelfile_path(agent_modelfile), name=agent_name))
+					self.agents.append(current_agent[0](n_observation=self.marketplace.observation_space.shape[0],
+						n_actions=self.marketplace.get_n_actions(), load_path=self._get_modelfile_path(agent_modelfile), name=agent_name))
 				except RuntimeError:  # pragma: no cover
 					raise RuntimeError('the modelfile is not compatible with the agent you tried to instantiate')
 			else:  # pragma: no cover
@@ -113,7 +123,8 @@ class Configurator():
 		color_map = plt.cm.get_cmap('hsv', len(self.agents) + 1)
 		self.agent_colors = [color_map(agent_id) for agent_id in range(len(self.agents))]
 
-	def setup_monitoring(self, enable_live_draw: bool = None, episodes: int = None, plot_interval: int = None, marketplace: sim_market.SimMarket = None, agents: list = None, subfolder_name: str = None) -> None:
+	def setup_monitoring(self, enable_live_draw: bool = None, episodes: int = None, plot_interval: int = None,
+		marketplace: sim_market.SimMarket = None, agents: list = None, subfolder_name: str = None) -> None:
 		"""
 		Configure the current monitoring session.
 
@@ -122,7 +133,9 @@ class Configurator():
 			episodes (int, optional): The number of episodes to run. Defaults to None.
 			plot_interval (int, optional): After how many episodes a new data point/plot should be generated. Defaults to None.
 			marketplace (sim_market class, optional): What marketplace to run the monitoring on. Defaults to None.
-			agents (list of tuples of agent classes and lists): What agents to monitor. Each entry must be a tuple of a valid agent class and a list of optional arguments, where a .dat modelfile and/or a name for the agent can be specified. Modelfile defaults to \'marketplaceClass_AgentClass.dat\', Name defaults to \'q_learning\'
+			agents (list of tuples of agent classes and lists): What agents to monitor. Each entry must be a tuple of a valid agent class and a list
+				of optional arguments, where a .dat modelfile and/or a name for the agent can be specified.
+				Modelfile defaults to \'marketplaceClass_AgentClass.dat\', Name defaults to \'q_learning\'
 			Must be tuples where the first entry is the class of the agent and the second entry is a list of arguments for its initialization.
 			Arguments are read left to right, arguments cannot be skipped.
 			The first argument must exist and be the path to the modelfile for the agent, the second is optional and the name the agent should have.
@@ -139,7 +152,8 @@ class Configurator():
 		if(plot_interval is not None):
 			assert isinstance(plot_interval, int), 'plot_interval must be of type int'
 			assert plot_interval > 0, 'plot_interval must not be 0'
-			assert plot_interval <= self.episodes, f'plot_interval must be <= episodes, or no plots can be generated. Episodes: {self.episodes}. Plot_interval: {plot_interval}'
+			assert plot_interval <= self.episodes, \
+				f'plot_interval must be <= episodes, or no plots can be generated. Episodes: {self.episodes}. Plot_interval: {plot_interval}'
 			self.plot_interval = plot_interval
 
 		if(marketplace is not None):

@@ -84,7 +84,9 @@ def run_monitoring_session(monitor: Monitor = Monitor()) -> None:
 	Args:
 		monitor (Monitor instance, optional): The monitor to run the session on. Defaults to a default Monitor() instance.
 	"""
-	# monitor.configurator.setup_monitoring(agents=[(vendors.QLearningLEAgent, ['QLearning Agent']), (vendors.FixedPriceLEAgent, [(6), 'Rulebased Agent'])], marketplace=sim_market.ClassicScenario)
+	# monitor.configurator.setup_monitoring(
+	# 	agents=[(vendors.QLearningLEAgent, ['QLearning Agent']), (vendors.FixedPriceLEAgent, [(6), 'Rulebased Agent'])],
+	# 	marketplace=sim_market.ClassicScenario)
 	monitor.configurator.print_configuration()
 
 	print('\nStarting monitoring session...')

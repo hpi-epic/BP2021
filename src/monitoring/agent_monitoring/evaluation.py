@@ -55,7 +55,8 @@ class Evaluator():
 		plot_bins = int(np.abs(plot_lower_bound) + plot_upper_bound) // 1000
 		x_ticks = np.arange(plot_lower_bound, plot_upper_bound + 1, 1000)
 
-		plt.hist(rewards, bins=plot_bins, color=self.configurator.agent_colors, rwidth=0.9, range=(plot_lower_bound, plot_upper_bound), edgecolor='black')
+		plt.hist(rewards, bins=plot_bins, color=self.configurator.agent_colors, rwidth=0.9,
+			range=(plot_lower_bound, plot_upper_bound), edgecolor='black')
 		plt.xticks(x_ticks)
 		plt.legend([a.name for a in self.configurator.agents])
 
@@ -87,13 +88,14 @@ class Evaluator():
 			metric_rewards = []
 			for agent_rewards_id in range(len(rewards)):
 				metric_rewards.append([])
-				for starting_index in range(int(len(rewards[agent_rewards_id]) / self.configurator.plot_interval)):
+				for start_index in range(int(len(rewards[agent_rewards_id]) / self.configurator.plot_interval)):
 					if metric_types[function] == 'Overall':
 						metric_rewards[agent_rewards_id].append(
-							metric_functions[function](rewards[agent_rewards_id][:self.configurator.plot_interval * (starting_index + 1)]))
+							metric_functions[function](rewards[agent_rewards_id][:self.configurator.plot_interval * (start_index + 1)]))
 					elif metric_types[function] == 'Episode':
 						metric_rewards[agent_rewards_id].append(
-							metric_functions[function](rewards[agent_rewards_id][self.configurator.plot_interval * (starting_index):self.configurator.plot_interval * (starting_index + 1)]))
+							metric_functions[function](
+								rewards[agent_rewards_id][self.configurator.plot_interval * (start_index):self.configurator.plot_interval * (start_index + 1)]))
 					else:  # pragma: no cover
 						raise RuntimeError(f'this metric_type is unknown: {metric_types[function]}')
 			self._create_line_plot(x_axis_episodes, metric_rewards, metric_names[function], metric_types[function])
@@ -107,9 +109,11 @@ class Evaluator():
 			metric_name (str): Used for naming the y-axis, diagram and output file.
 			metric_type (str): What kind of "message" should be displayed at the top of the diagram.
 		"""
-		assert len(x_values) == int(self.configurator.episodes / self.configurator.plot_interval), 'x_values must have self.episodes / self.plot_interval many items'
+		assert len(x_values) == int(self.configurator.episodes / self.configurator.plot_interval), \
+			'x_values must have self.episodes / self.plot_interval many items'
 		assert len(y_values) == len(self.configurator.agents), 'y_values must have one entry per agent'
-		assert all(len(agent_y_value) == int(self.configurator.episodes / self.configurator.plot_interval) for agent_y_value in y_values), 'y_values must have self.episodes / self.plot_interval many items'
+		assert all(len(agent_y_value) == int(self.configurator.episodes / self.configurator.plot_interval) for agent_y_value in y_values), \
+			'y_values must have self.episodes / self.plot_interval many items'
 		print(f'Creating line plot for {metric_name} rewards...')
 
 		plt.clf()
