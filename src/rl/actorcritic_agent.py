@@ -18,7 +18,12 @@ class ActorCriticAgent(vendors.Agent, ABC):
 		print(f'I initiate an ActorCriticAgent using {self.device} device')
 		self.initialize_models_and_optimizer(n_observations, n_actions)
 
-	def synchronize_tgt_net(self):
+	def synchronize_critic_tgt_net(self):
+		"""
+		This method writes the parameter from the critic net to it's target net.
+		Call this method regularly during training.
+		Having a target net solves problems occuring due to oscillation.
+		"""
 		print('Now I synchronize the tgt net')
 		self.critic_tgt_net.load_state_dict(self.critic_net.state_dict())
 

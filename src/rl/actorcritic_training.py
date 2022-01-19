@@ -88,8 +88,8 @@ def train_actorcritic(marketplace_class=sim_market.CircularEconomyRebuyPriceOneC
 		valueloss, policy_loss = agent.train_batch(torch.Tensor(np.array(states)), torch.from_numpy(np.array(actions, dtype=np.int64)), torch.Tensor(np.array(rewards)), torch.Tensor(np.array(next_state)), finished_episodes <= 500)
 		all_value_losses.append(valueloss)
 		all_policy_losses.append(policy_loss)
-		if i % config.SYNC_TARGET_FRAMES == 0:
-			agent.synchronize_tgt_net()
+		if (i + 1) % config.SYNC_TARGET_FRAMES == 0:
+			agent.synchronize_critic_tgt_net()
 
 
 if __name__ == '__main__':
