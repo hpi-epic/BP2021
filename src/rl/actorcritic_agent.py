@@ -18,6 +18,10 @@ class ActorCriticAgent(vendors.Agent, ABC):
 		print(f'I initiate an ActorCriticAgent using {self.device} device')
 		self.initialize_models_and_optimizer(n_observations, n_actions)
 
+	def synchronize_tgt_net(self):
+		print('Now I synchronize the tgt net')
+		self.critic_tgt_net.load_state_dict(self.critic_net.state_dict())
+
 	@abstractmethod
 	def initialize_models_and_optimizer(self, n_observations, n_actions) -> None:  # pragma: no cover
 		raise NotImplementedError('This method is abstract. Use a subclass')
@@ -36,12 +40,12 @@ class ActorCriticAgent(vendors.Agent, ABC):
 
 		v_estimates = self.critic_net(states)
 		with torch.no_grad():
-			v_expected = (rewards + config.GAMMA * self.critic_net(states_dash).detach()).view(-1, 1)
+			v_expected = (rewards + config.GAMMA * self.critic_tgt_net(states_dash).detach()).view(-1, 1)
 		valueloss = torch.nn.MSELoss()(v_estimates, v_expected)
 		valueloss.backward()
 
 		with torch.no_grad():
-			baseline = v_estimates.squeeze()[31].item()
+			baseline = v_estimates  # .squeeze()[31].item()
 			constant = (v_expected - baseline).detach()
 		log_prob = -self.log_probability_given_action(states.detach(), actions.detach())
 		policy_loss = torch.mean(constant * log_prob)
@@ -89,6 +93,7 @@ class DiscreteActorCriticAgent(ActorCriticAgent):
 		self.actor_optimizer = torch.optim.Adam(self.actor_net.parameters(), lr=0.0000025)
 		self.critic_net = model.simple_network(n_observations, 1).to(self.device)
 		self.critic_optimizer = torch.optim.Adam(self.critic_net.parameters(), lr=0.00025)
+		self.critic_tgt_net = model.simple_network(n_observations, 1).to(self.device)
 
 	def policy(self, observation, verbose=False):
 		observation = torch.Tensor(np.array(observation)).to(self.device)
@@ -134,6 +139,7 @@ class ContinuosActorCriticAgent(ActorCriticAgent):
 		self.actor_optimizer = torch.optim.Adam(self.actor_net.parameters(), lr=0.0002)
 		self.critic_net = model.simple_network(n_observations, 1).to(self.device)
 		self.critic_optimizer = torch.optim.Adam(self.critic_net.parameters(), lr=0.002)
+		self.critic_tgt_net = model.simple_network(n_observations, 1).to(self.device)
 
 	def policy(self, observation, verbose=False):
 		observation = torch.Tensor(np.array(observation)).to(self.device)

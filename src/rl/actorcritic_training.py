@@ -6,11 +6,10 @@ import numpy as np
 import torch
 from torch.utils.tensorboard import SummaryWriter
 
+import configuration.config as config
 import configuration.utils as ut
 import market.sim_market as sim_market
 import rl.actorcritic_agent as a2cagent
-
-BATCH_SIZE = 32
 
 
 def train_actorcritic(marketplace_class=sim_market.CircularEconomyRebuyPriceOneCompetitor, agent_class=a2cagent.ContinuosActorCriticAgent, number_of_training_steps=200, verbose=False, total_envs=128):
@@ -38,9 +37,9 @@ def train_actorcritic(marketplace_class=sim_market.CircularEconomyRebuyPriceOneC
 	environments = [marketplace_class() for _ in range(total_envs)]
 	info_accumulators = [None for _ in range(total_envs)]
 	for i in range(number_of_training_steps):
-		# choose BATCH_SIZE environments
+		# choose config.BATCH_SIZE environments
 		chosen_envs = set()
-		while len(chosen_envs) < BATCH_SIZE:
+		while len(chosen_envs) < config.BATCH_SIZE:
 			number = random.randint(0, total_envs - 1)
 			if number not in chosen_envs:
 				chosen_envs.add(number)
@@ -89,7 +88,9 @@ def train_actorcritic(marketplace_class=sim_market.CircularEconomyRebuyPriceOneC
 		valueloss, policy_loss = agent.train_batch(torch.Tensor(np.array(states)), torch.from_numpy(np.array(actions, dtype=np.int64)), torch.Tensor(np.array(rewards)), torch.Tensor(np.array(next_state)), finished_episodes <= 500)
 		all_value_losses.append(valueloss)
 		all_policy_losses.append(policy_loss)
+		if i % config.SYNC_TARGET_FRAMES == 0:
+			agent.synchronize_tgt_net()
 
 
 if __name__ == '__main__':
-	train_actorcritic()
+	train_actorcritic(number_of_training_steps=10000)
