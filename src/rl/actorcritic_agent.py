@@ -45,7 +45,7 @@ class ActorCriticAgent(vendors.Agent, ABC):
 		valueloss.backward()
 
 		with torch.no_grad():
-			baseline = v_estimates  # .squeeze()[31].item()
+			baseline = v_estimates
 			constant = (v_expected - baseline).detach()
 		log_prob = -self.log_probability_given_action(states.detach(), actions.detach())
 		policy_loss = torch.mean(constant * log_prob)
