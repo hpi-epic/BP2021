@@ -27,6 +27,16 @@ def shuffle_from_probabilities(probabilities) -> int:
 
 
 def cartesian_product(list_a, list_b):
+	"""
+	This helper function takes to lists and generates the cartesian product
+
+	Args:
+		list_a (list): The first list of objects
+		list_b (list): The second list of objects
+
+	Returns:
+		list: List of tuples containing all combinations of list_a entries and list_b entries
+	"""
 	assert isinstance(list_a, list) and isinstance(list_b, list), 'You must give to lists'
 	output_list = []
 	for a in list_a:
