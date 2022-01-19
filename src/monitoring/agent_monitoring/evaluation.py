@@ -60,7 +60,7 @@ class Evaluator():
 		plt.xticks(x_ticks)
 		plt.legend([a.name for a in self.configurator.agents])
 
-		if self.configurator.enable_live_draw:  # pragma: no cover
+		if self.configurator.enable_live_draw:
 			plt.draw()
 			plt.pause(0.001)
 		plt.savefig(fname=os.path.join(self.configurator.get_folder(), 'histograms', filename))
