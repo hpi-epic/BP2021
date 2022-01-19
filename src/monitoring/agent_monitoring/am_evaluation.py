@@ -137,5 +137,5 @@ class Evaluator():
 		plt.savefig(fname=os.path.join(self.configurator.get_folder(), filename))
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # pragma: no cover
 	raise RuntimeError('agent_monitoring can only be run from `monitor.py`')
