@@ -3,14 +3,14 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 
-import monitoring.agent_monitoring.configurator as configurator
+import monitoring.agent_monitoring.am_configuration as am_configuration
 
 
 class Evaluator():
 	"""
 	The Evaluator is used together with the `agent_monitoring.Monitor()` and is able to create different graphs from rewards it gets from it.
 	"""
-	def __init__(self, configuration: configurator.Configurator):
+	def __init__(self, configuration: am_configuration.Configurator):
 		self.configurator = configuration
 
 	def evaluate_session(self, rewards: list):

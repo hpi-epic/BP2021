@@ -2,8 +2,8 @@ import os
 import signal
 import sys
 
-import monitoring.agent_monitoring.configurator as configurator
-import monitoring.agent_monitoring.evaluation as evaluation
+import monitoring.agent_monitoring.am_configuration as am_configuration
+import monitoring.agent_monitoring.am_evaluation as am_evaluation
 
 # import agents.vendors as vendors
 # import market.sim_market as sim_market
@@ -17,8 +17,8 @@ class Monitor():
 	The Monitor() can be customized using its Configurator() with configurator.setup_monitoring().
 	"""
 	def __init__(self):
-		self.configurator = configurator.Configurator()
-		self.evaluator = evaluation.Evaluator(self.configurator)
+		self.configurator = am_configuration.Configurator()
+		self.evaluator = am_evaluation.Evaluator(self.configurator)
 		# Signal handler for e.g. KeyboardInterrupt
 		signal.signal(signal.SIGINT, self._signal_handler)
 

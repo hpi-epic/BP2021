@@ -6,7 +6,7 @@ import sys
 import time
 
 # include the file you want to run the performance check on here!
-import monitoring.agent_monitoring.monitor
+import monitoring.agent_monitoring.am_monitoring
 
 
 class PerformanceMonitor():

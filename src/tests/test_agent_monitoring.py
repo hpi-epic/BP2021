@@ -7,8 +7,8 @@ import pytest
 
 import agents.vendors as vendors
 import market.sim_market as sim_market
-import monitoring.agent_monitoring.configurator as configurator
-import monitoring.agent_monitoring.monitor as monitoring
+import monitoring.agent_monitoring.am_configuration as am_configuration
+import monitoring.agent_monitoring.am_monitoring as monitoring
 
 monitor = monitoring.Monitor()
 
@@ -23,7 +23,7 @@ def setup_function(function):
 
 # configurator
 def test_init_default_values():
-	test_configurator = configurator.Configurator()
+	test_configurator = am_configuration.Configurator()
 	assert test_configurator.enable_live_draw is True
 	assert 500 == test_configurator.episodes
 	assert 50 == test_configurator.plot_interval
@@ -45,7 +45,7 @@ def test_get_folder():
 
 # configurator
 def test_get_modelfile_path():
-	with patch('monitoring.agent_monitoring.configurator.os.path.exists') as mock_exists:
+	with patch('monitoring.agent_monitoring.am_configuration.os.path.exists') as mock_exists:
 		mock_exists.return_value = False
 		with pytest.raises(AssertionError) as assertion_message:
 			monitor.configurator._get_modelfile_path('non_existing_modelfile')
@@ -223,7 +223,7 @@ def test_rewards_array_size():
 	# Numpy doesn't like nested arrays of different sizes, need to specify dtype=object
 	rewards_wrong = np.array([[1, 2], [1, 2, 3]], dtype=object)
 
-	with patch('monitoring.agent_monitoring.evaluation.plt'):
+	with patch('monitoring.agent_monitoring.am_evaluation.plt'):
 		with pytest.raises(AssertionError) as assertion_message:
 			monitor.evaluator.create_histogram(rewards_wrong)
 		assert 'all rewards-arrays must be of the same size' in str(assertion_message.value)
@@ -243,15 +243,15 @@ create_histogram_statistics_plots_testcases = [
 def test_create_histogram(agents, rewards, plot_bins, agent_color, lower_upper_range):
 	monitor.configurator.setup_monitoring(enable_live_draw=True, agents=agents)
 	name_list = [agent.name for agent in monitor.configurator.agents]
-	with patch('monitoring.agent_monitoring.evaluation.plt.clf'), \
-		patch('monitoring.agent_monitoring.evaluation.plt.xlabel'), \
-		patch('monitoring.agent_monitoring.evaluation.plt.title'), \
-		patch('monitoring.agent_monitoring.evaluation.plt.hist') as hist_mock, \
-		patch('monitoring.agent_monitoring.evaluation.plt.legend') as legend_mock, \
-		patch('monitoring.agent_monitoring.evaluation.plt.pause'), \
-		patch('monitoring.agent_monitoring.evaluation.plt.draw') as draw_mock, \
-		patch('monitoring.agent_monitoring.evaluation.plt.savefig') as save_mock, \
-		patch('monitoring.agent_monitoring.configurator.os.path.exists') as exists_mock:
+	with patch('monitoring.agent_monitoring.am_evaluation.plt.clf'), \
+		patch('monitoring.agent_monitoring.am_evaluation.plt.xlabel'), \
+		patch('monitoring.agent_monitoring.am_evaluation.plt.title'), \
+		patch('monitoring.agent_monitoring.am_evaluation.plt.hist') as hist_mock, \
+		patch('monitoring.agent_monitoring.am_evaluation.plt.legend') as legend_mock, \
+		patch('monitoring.agent_monitoring.am_evaluation.plt.pause'), \
+		patch('monitoring.agent_monitoring.am_evaluation.plt.draw') as draw_mock, \
+		patch('monitoring.agent_monitoring.am_evaluation.plt.savefig') as save_mock, \
+		patch('monitoring.agent_monitoring.am_configuration.os.path.exists') as exists_mock:
 		exists_mock.return_value = True
 
 		monitor.evaluator.create_histogram(rewards)
@@ -265,8 +265,8 @@ def test_create_histogram(agents, rewards, plot_bins, agent_color, lower_upper_r
 @pytest.mark.parametrize('agents, rewards, plot_bins, agent_color, lower_upper_range', create_histogram_statistics_plots_testcases)
 def test_create_statistics_plots(agents, rewards, plot_bins, agent_color, lower_upper_range):
 	monitor.configurator.setup_monitoring(agents=agents, episodes=len(rewards[0]), plot_interval=1)
-	with patch('monitoring.agent_monitoring.evaluation.plt'), \
-		patch('monitoring.agent_monitoring.configurator.os.path.exists') as exists_mock:
+	with patch('monitoring.agent_monitoring.am_evaluation.plt'), \
+		patch('monitoring.agent_monitoring.am_configuration.os.path.exists') as exists_mock:
 		exists_mock.return_value = True
 
 		monitor.evaluator._create_statistics_plots(rewards)
@@ -299,8 +299,8 @@ def test_incorrect_create_line_plot_runtime_errors():
 # monitor
 def test_run_marketplace():
 	monitor.configurator.setup_monitoring(episodes=100, plot_interval=100, agents=[(vendors.FixedPriceCEAgent, [(5, 2)])])
-	with patch('monitoring.agent_monitoring.evaluation.plt'), \
-		patch('monitoring.agent_monitoring.configurator.os.path.exists') as exists_mock:
+	with patch('monitoring.agent_monitoring.am_evaluation.plt'), \
+		patch('monitoring.agent_monitoring.am_configuration.os.path.exists') as exists_mock:
 		exists_mock.return_value = True
 		agent_rewards = monitor.run_marketplace()
 		assert 1 == len(agent_rewards)
@@ -311,8 +311,8 @@ def test_run_marketplace():
 def test_run_monitoring_session():
 	monitor.configurator.setup_monitoring(episodes=10, plot_interval=10)
 	current_configuration = monitor.configurator.get_configuration()
-	with patch('monitoring.agent_monitoring.evaluation.plt'), \
-		patch('monitoring.agent_monitoring.configurator.os.path.exists') as exists_mock:
+	with patch('monitoring.agent_monitoring.am_evaluation.plt'), \
+		patch('monitoring.agent_monitoring.am_configuration.os.path.exists') as exists_mock:
 		exists_mock.return_value = True
 		monitoring.run_monitoring_session(monitor)
 		assert current_configuration == monitor.configurator.get_configuration(), 'the monitor configuration should not be changed within run_monitoring()'
@@ -321,9 +321,9 @@ def test_run_monitoring_session():
 
 def test_run_monitoring_ratio():
 	# ratio is over 50, program should ask if we want to continue. We answer 'no'
-	with patch('monitoring.agent_monitoring.evaluation.plt'), \
-		patch('monitoring.agent_monitoring.configurator.input', create=True) as mocked_input, \
-		patch('monitoring.agent_monitoring.configurator.os.path.exists') as exists_mock:
+	with patch('monitoring.agent_monitoring.am_evaluation.plt'), \
+		patch('monitoring.agent_monitoring.am_configuration.input', create=True) as mocked_input, \
+		patch('monitoring.agent_monitoring.am_configuration.os.path.exists') as exists_mock:
 		mocked_input.side_effect = ['n']
 		exists_mock.return_value = True
 		monitor.configurator.setup_monitoring(episodes=51, plot_interval=1)
