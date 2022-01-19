@@ -12,24 +12,29 @@ class Owner(ABC):
 
 	@abstractmethod
 	def generate_return_probabilities_from_offer(self, offers, offer_length_per_vendor) -> np.array:
-		"""This abstract method receives offers and generates the probabilities for the possible owner actions. An owner can throw away his product, he can hold his product or return it to one of the vendors
+		"""This abstract method receives offers and generates the probabilities for the possible owner actions.
+		An owner can throw away his product, he can hold his product or return it to one of the vendors
 
 		Args:
 			offers (np.array): a rebuy offer an owner receives
 
 		Returns:
-			np.array: The first entry is the probability that the holds his product. The second entry is the probability that the owner throws away his product. Afterwards, for all vendors the probabilities of returning the product to him follows.
+			np.array: The first entry is the probability that the holds his product.
+			The second entry is the probability that the owner throws away his product.
+			Afterwards, for all vendors the probabilities of returning the product to him follows.
 		"""
 		raise NotImplementedError('This method is abstract. Use a subclass')
 
 
 class UniformDistributionOwner(Owner):
 	def generate_return_probabilities_from_offer(self, offers, offer_length_per_vendor) -> np.array:
-		"""This method generates a uniform distribution over all vendors to return the product without considering the rebuy price and the overall market situation.
+		"""This method generates a uniform distribution over all vendors
+		to return the product without considering the rebuy price and the overall market situation.
 		It assumes three entries per vendor (refurbished price, new price and in_storage but NO rebuy price)
 
 		Args:
-			offers (np.array): The content is ignored in this method. It is just used to determine the number of options which is the number of vendors plus 2 (throw away, hold the product).
+			offers (np.array): The content is ignored in this method.
+			It is just used to determine the number of options which is the number of vendors plus 2 (throw away, hold the product).
 
 		Returns:
 			np.array: a uniform distribution over all possible actions
@@ -48,7 +53,8 @@ class OwnerRebuy(Owner):
 		If the rebuy price is very low, the owner will just throw away his product more often. Holding the product is the fallback option.
 
 		Args:
-			offers (np.array): The method assumes one entry for the number of products in circulation and four entries for each vendor (refurbished price, new price, rebuy price and in_storage)
+			offers (np.array): The method assumes one entry for the number of products in circulation and four entries for each vendor
+			(refurbished price, new price, rebuy price and in_storage)
 
 		Returns:
 			np.array: probability distribution over all possible actions.

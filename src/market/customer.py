@@ -51,7 +51,8 @@ class CustomerLinear(Customer):
 
 class CustomerCircular(Customer):
 	def generate_purchase_probabilities_from_offer(self, offers, offer_length_per_vendor) -> np.array:
-		"""This method receives a list of offers for a circular economy and returns the purchase probability for the refurbished and new product of all vendors.
+		"""This method receives a list of offers for a circular economy and
+		returns the purchase probability for the refurbished and new product of all vendors.
 		It is assumed that all vendors do have the same quality and same reputation.
 		The customer values a second-hand-product 55% compared to a new one.
 

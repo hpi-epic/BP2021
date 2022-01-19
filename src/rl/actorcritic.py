@@ -122,7 +122,9 @@ class DiscreteACACircularEconomy(DiscreteActorCriticAgent):
 
 class DiscreteACACircularEconomyRebuy(DiscreteActorCriticAgent):
 	def agent_output_to_market_form(self, action):
-		return (int(action / (config.MAX_PRICE * config.MAX_PRICE)), int(action / config.MAX_PRICE % config.MAX_PRICE), int(action % config.MAX_PRICE))
+		return (int(action / (config.MAX_PRICE * config.MAX_PRICE)),
+			int(action / config.MAX_PRICE % config.MAX_PRICE),
+			int(action % config.MAX_PRICE))
 
 
 class ContinuosActorCriticAgent(ActorCriticAgent):
@@ -150,10 +152,14 @@ class ContinuosActorCriticAgent(ActorCriticAgent):
 		action = torch.round(torch.normal(mean, torch.ones(mean.shape)))
 		action = torch.max(action, torch.zeros(action.shape))
 		action = torch.min(action, 9 * torch.ones(action.shape))
-		return action.squeeze().type(torch.LongTensor).to('cpu').numpy(), *((self.log_probability_given_action(observation, action).mean().detach().item(), v_estimat.to('cpu').item()) if verbose else (None, None))
+		return (action.squeeze().type(torch.LongTensor).to('cpu').numpy(),
+			*((self.log_probability_given_action(observation,
+			action).mean().detach().item(),
+			v_estimat.to('cpu').item()) if verbose else (None, None)))
 
 	def log_probability_given_action(self, states, actions):
-		return torch.distributions.Normal(self.softplus(self.actor_net(states)), 1).log_prob(actions.view(-1, self.n_actions)).sum(dim=1).unsqueeze(-1)
+		return (torch.distributions.Normal(self.softplus(self.actor_net(states)),
+			1).log_prob(actions.view(-1, self.n_actions)).sum(dim=1).unsqueeze(-1))
 
 	def regularize(self, states):
 		"""
@@ -173,7 +179,12 @@ class ContinuosActorCriticAgent(ActorCriticAgent):
 		return action.tolist()
 
 
-def train_actorcritic(marketplace_class=sim_market.CircularEconomyRebuyPriceOneCompetitor, agent_class=ContinuosActorCriticAgent, outputs=3, number_of_training_steps=1000, verbose=False):
+def train_actorcritic(
+	marketplace_class=sim_market.CircularEconomyRebuyPriceOneCompetitor,
+	agent_class=ContinuosActorCriticAgent,
+	outputs=3,
+	number_of_training_steps=1000,
+	verbose=False):
 	assert issubclass(agent_class, ActorCriticAgent), f'the agent_class must be a subclass of ActorCriticAgent: {agent_class}'
 	agent = agent_class(marketplace_class().observation_space.shape[0], outputs)
 
@@ -241,7 +252,11 @@ def train_actorcritic(marketplace_class=sim_market.CircularEconomyRebuyPriceOneC
 				environments[env].reset()
 				info_accumulators[env] = None
 
-		valueloss, policy_loss = agent.train_batch(torch.Tensor(np.array(states)), torch.from_numpy(np.array(actions, dtype=np.int64)), torch.Tensor(np.array(rewards)), torch.Tensor(np.array(next_state)), finished_episodes <= 500)
+		valueloss, policy_loss = agent.train_batch(torch.Tensor(np.array(states)),
+			torch.from_numpy(np.array(actions, dtype=np.int64)),
+			torch.Tensor(np.array(rewards)),
+			torch.Tensor(np.array(next_state)),
+			finished_episodes <= 500)
 		all_value_losses.append(valueloss)
 		all_policy_losses.append(policy_loss)
 
