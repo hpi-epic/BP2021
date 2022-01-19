@@ -1,4 +1,5 @@
 import os
+import re
 from unittest.mock import patch
 
 import numpy as np
@@ -18,6 +19,12 @@ def setup_function(function):
 	monitor.configurator.setup_monitoring(enable_live_draw=False, subfolder_name=f'test_plots_{function.__name__}')
 
 
+def teardown_module(module):
+	for file_name in os.listdir(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir, 'results', 'monitoring')):
+		if re.match('test_*', file_name):
+			assert False, 'file writing was not mocked or a created file was not removed after the test!'
+
+
 evaluate_session_testcases = [
 	([(vendors.RuleBasedCEAgent, [])], [[5, 10, 0, -5]]),
 	([(vendors.RuleBasedCEAgent, []), (vendors.FixedPriceCEAgent, [])], [[5, 10, 0, -5], [5, -10, 60, 5]])
@@ -26,8 +33,17 @@ evaluate_session_testcases = [
 
 @pytest.mark.parametrize('agents, rewards', evaluate_session_testcases)
 def test_evaluate_session(agents, rewards):
-	monitor.configurator.setup_monitoring(episodes=4, plot_interval=1, agents=agents)
-	monitor.evaluator.evaluate_session(rewards)
+	with patch('monitoring.agent_monitoring.am_evaluation.plt.clf'), \
+		patch('monitoring.agent_monitoring.am_evaluation.plt.xlabel'), \
+		patch('monitoring.agent_monitoring.am_evaluation.plt.title'), \
+		patch('monitoring.agent_monitoring.am_evaluation.plt.legend'), \
+		patch('monitoring.agent_monitoring.am_evaluation.plt.pause'), \
+		patch('monitoring.agent_monitoring.am_evaluation.plt.draw'), \
+		patch('monitoring.agent_monitoring.am_evaluation.plt.savefig'), \
+		patch('monitoring.agent_monitoring.am_configuration.os.path.exists') as exists_mock:
+		exists_mock.return_value = True
+		monitor.configurator.setup_monitoring(episodes=4, plot_interval=1, agents=agents)
+		monitor.evaluator.evaluate_session(rewards)
 
 
 # all arrays in rewards must be of the same size

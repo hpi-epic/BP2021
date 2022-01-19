@@ -1,4 +1,5 @@
 import os
+import re
 from unittest.mock import patch
 
 import agents.vendors as vendors
@@ -13,6 +14,12 @@ def setup_function(function):
 	global monitor
 	monitor = monitoring.Monitor()
 	monitor.configurator.setup_monitoring(enable_live_draw=False, subfolder_name=f'test_plots_{function.__name__}')
+
+
+def teardown_module(module):
+	for file_name in os.listdir(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir, 'results', 'monitoring')):
+		if re.match('test_*', file_name):
+			assert False, 'file writing was not mocked or a created file was not removed after the test!'
 
 
 def test_run_marketplace():
