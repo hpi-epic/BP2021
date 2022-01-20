@@ -3,6 +3,7 @@ FROM continuumio/miniconda3
 WORKDIR /app
 EXPOSE 6006
 # Create the environment:
+COPY ./src ./src
 COPY environment.yml .
 RUN conda env create -f environment.yml -n dockervenv
 SHELL ["conda", "run", "-n", "dockervenv", "/bin/bash", "-c"]
@@ -15,7 +16,7 @@ RUN echo "Make sure numpy is installed:"
 RUN python -c "import numpy"
 
 # copy all relevant files to the container
-COPY ./src ./src
+
 COPY config.json .
 
 # The code to run when container is started:
