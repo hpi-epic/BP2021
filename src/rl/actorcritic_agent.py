@@ -18,6 +18,15 @@ class ActorCriticAgent(vendors.Agent, ABC):
 		print(f'I initiate an ActorCriticAgent using {self.device} device')
 		self.initialize_models_and_optimizer(n_observations, n_actions)
 
+	def synchronize_critic_tgt_net(self):
+		"""
+		This method writes the parameter from the critic net to it's target net.
+		Call this method regularly during training.
+		Having a target net solves problems occuring due to oscillation.
+		"""
+		print('Now I synchronize the tgt net')
+		self.critic_tgt_net.load_state_dict(self.critic_net.state_dict())
+
 	@abstractmethod
 	def initialize_models_and_optimizer(self, n_observations, n_actions) -> None:  # pragma: no cover
 		raise NotImplementedError('This method is abstract. Use a subclass')
@@ -36,12 +45,12 @@ class ActorCriticAgent(vendors.Agent, ABC):
 
 		v_estimates = self.critic_net(states)
 		with torch.no_grad():
-			v_expected = (rewards + config.GAMMA * self.critic_net(states_dash).detach()).view(-1, 1)
+			v_expected = (rewards + config.GAMMA * self.critic_tgt_net(states_dash).detach()).view(-1, 1)
 		valueloss = torch.nn.MSELoss()(v_estimates, v_expected)
 		valueloss.backward()
 
 		with torch.no_grad():
-			baseline = v_estimates.squeeze()[31].item()
+			baseline = v_estimates
 			constant = (v_expected - baseline).detach()
 		log_prob = -self.log_probability_given_action(states.detach(), actions.detach())
 		policy_loss = torch.mean(constant * log_prob)
@@ -65,9 +74,9 @@ class ActorCriticAgent(vendors.Agent, ABC):
 			states (torch.Tensor): A tensor of the states the agent is in range
 
 		Returns:
-			torch.Tensor or 0: The punishment for the agent
+			torch.Tensor: The punishment for the agent
 		"""
-		return 0
+		return torch.zeros(1).squeeze().to(self.device)
 
 	@abstractmethod
 	def log_probability_given_action(self, states, actions) -> None:  # pragma: no cover
@@ -80,7 +89,7 @@ class ActorCriticAgent(vendors.Agent, ABC):
 
 class DiscreteActorCriticAgent(ActorCriticAgent):
 	"""
-	This is an actor critic agent with continuos action space.
+	This is an actor critic agent with discrete action space.
 	It generates preferences and uses softmax to gain the probabilities.
 	For our three markets we have three kinds of specific agents you must use.
 	"""
@@ -89,6 +98,7 @@ class DiscreteActorCriticAgent(ActorCriticAgent):
 		self.actor_optimizer = torch.optim.Adam(self.actor_net.parameters(), lr=0.0000025)
 		self.critic_net = model.simple_network(n_observations, 1).to(self.device)
 		self.critic_optimizer = torch.optim.Adam(self.critic_net.parameters(), lr=0.00025)
+		self.critic_tgt_net = model.simple_network(n_observations, 1).to(self.device)
 
 	def policy(self, observation, verbose=False):
 		observation = torch.Tensor(np.array(observation)).to(self.device)
@@ -134,6 +144,7 @@ class ContinuosActorCriticAgent(ActorCriticAgent):
 		self.actor_optimizer = torch.optim.Adam(self.actor_net.parameters(), lr=0.00002)
 		self.critic_net = model.simple_network(n_observations, 1).to(self.device)
 		self.critic_optimizer = torch.optim.Adam(self.critic_net.parameters(), lr=0.002)
+		self.critic_tgt_net = model.simple_network(n_observations, 1).to(self.device)
 
 	def policy(self, observation, verbose=False):
 		observation = torch.Tensor(np.array(observation)).to(self.device)
@@ -161,6 +172,7 @@ class ContinuosActorCriticAgent(ActorCriticAgent):
 		"""
 		This regularization pushes the actor with very high priority towards a mean price of 3.5.
 		Use it at the beginning to avoid 0 pricing which gets only horrible negative reward.
+		The magic number is a suitable constant to enforce quick movement to 3.5.
 
 		Args:
 			states (torch.Tensor): The current states the agent is in at the moment
