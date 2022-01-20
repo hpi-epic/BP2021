@@ -12,6 +12,24 @@ import market.sim_market as sim_market
 import rl.actorcritic_agent as a2cagent
 
 
+def choose_random_envs(total_envs):
+	"""
+	This method samples config.BATCH_SIZE distinct numbers out of 0, ..., total_envs - 1
+
+	Args:
+		total_envs (int): The number of envs
+
+	Returns:
+		set: the distinct shuffled numbers
+	"""
+	chosen_envs = set()
+	while len(chosen_envs) < config.BATCH_SIZE:
+		number = random.randint(0, total_envs - 1)
+		if number not in chosen_envs:
+			chosen_envs.add(number)
+	return chosen_envs
+
+
 def train_actorcritic(marketplace_class=sim_market.CircularEconomyRebuyPriceOneCompetitor, agent_class=a2cagent.ContinuosActorCriticAgent, number_of_training_steps=200, verbose=False, total_envs=128):
 	assert issubclass(agent_class, a2cagent.ActorCriticAgent), f'the agent_class must be a subclass of ActorCriticAgent: {agent_class}'
 	if issubclass(agent_class, a2cagent.ContinuosActorCriticAgent):
@@ -36,13 +54,8 @@ def train_actorcritic(marketplace_class=sim_market.CircularEconomyRebuyPriceOneC
 	finished_episodes = 0
 	environments = [marketplace_class() for _ in range(total_envs)]
 	info_accumulators = [None for _ in range(total_envs)]
-	for step_number in range(number_of_training_steps):
-		# choose config.BATCH_SIZE environments
-		chosen_envs = set()
-		while len(chosen_envs) < config.BATCH_SIZE:
-			number = random.randint(0, total_envs - 1)
-			if number not in chosen_envs:
-				chosen_envs.add(number)
+	for i in range(number_of_training_steps):
+		chosen_envs = choose_random_envs(total_envs)
 
 		states = []
 		actions = []
