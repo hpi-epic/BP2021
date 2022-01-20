@@ -159,9 +159,8 @@ class ContinuosActorCriticAgent(ActorCriticAgent):
 
 		mean = torch.max(mean, torch.zeros(mean.shape).to(self.device))
 		mean = torch.min(mean, 9 * torch.ones(mean.shape).to(self.device))
-		if torch.min(std) > -5:
-			std = torch.sqrt(self.softplus(mean))
-		else:
+		std = torch.sqrt(self.softplus(mean))
+		if std < 0.01:
 			print('Now I need the catcher!')
 			std = torch.max(std, 0.1 * torch.ones(std.shape).to(self.device))
 
