@@ -189,7 +189,7 @@ class ContinuosActorCriticAgent(ActorCriticAgent):
 			torch.Tensor: the malus of the regularization
 		"""
 		proposed_actions = self.actor_net(states.detach())
-		return 1000 * torch.nn.MSELoss()(proposed_actions, 5 * torch.ones(proposed_actions.shape).to(self.device))
+		return 1000 * torch.nn.MSELoss()(proposed_actions, 3.5 * torch.ones(proposed_actions.shape).to(self.device))
 
 	def agent_output_to_market_form(self, action):
 		actionlist = action.tolist()
