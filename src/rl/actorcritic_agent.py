@@ -160,7 +160,7 @@ class ContinuosActorCriticAgent(ActorCriticAgent):
 		mean = torch.max(mean, torch.zeros(mean.shape).to(self.device))
 		mean = torch.min(mean, 9 * torch.ones(mean.shape).to(self.device))
 		std = torch.sqrt(self.softplus(mean))
-		if std < 0.01:
+		if torch.min(std) < 0.05:
 			print('Now I need the catcher!')
 			std = torch.max(std, 0.1 * torch.ones(std.shape).to(self.device))
 
@@ -191,7 +191,7 @@ class ContinuosActorCriticAgent(ActorCriticAgent):
 			torch.Tensor: the malus of the regularization
 		"""
 		proposed_actions = self.actor_net(states.detach())
-		return 1000 * torch.nn.MSELoss()(proposed_actions, 3.5 * torch.ones(proposed_actions.shape).to(self.device))
+		return 1000 * torch.nn.MSELoss()(proposed_actions, 1.5 * torch.ones(proposed_actions.shape).to(self.device))
 
 	def agent_output_to_market_form(self, action):
 		actionlist = action.tolist()
