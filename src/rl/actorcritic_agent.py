@@ -148,11 +148,11 @@ class ContinuosActorCriticAgent(ActorCriticAgent):
 
 	def transform_network_output(self, number_outputs, network_result):
 		network_result = network_result.view(number_outputs, 2, -1)
+		network_result = self.softplus(network_result)
 		mean = network_result[:, 0, :]
 		std = network_result[:, 1, :]
-		mean = torch.max(mean, torch.zeros(mean.shape).to(self.device))
 		mean = torch.min(mean, 9 * torch.ones(mean.shape).to(self.device))
-		std = torch.sqrt(self.softplus(std))
+		std = torch.sqrt(std)
 
 		return mean, std
 
