@@ -54,7 +54,7 @@ def train_actorcritic(marketplace_class=sim_market.CircularEconomyRebuyPriceOneC
 	finished_episodes = 0
 	environments = [marketplace_class() for _ in range(total_envs)]
 	info_accumulators = [None for _ in range(total_envs)]
-	for i in range(number_of_training_steps):
+	for step_number in range(number_of_training_steps):
 		chosen_envs = choose_random_envs(total_envs)
 
 		states = []
