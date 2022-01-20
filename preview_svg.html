@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="de">
+	<head><meta charset="utf-8"/></head>
+	<img id="slideshow" src="" style="width:100%"/>
+	<script>
+		images = [
+			{"name":"MarketOverview_006", "src":"./MarketOverview_006.svg"},
+			{"name":"MarketOverview_045", "src":"./MarketOverview_045.svg"},
+			{"name":"MarketOverview_048", "src":"./MarketOverview_048.svg"},
+			{"name":"MarketOverview_033", "src":"./MarketOverview_033.svg"},
+			{"name":"MarketOverview_008", "src":"./MarketOverview_008.svg"},
+			{"name":"MarketOverview_046", "src":"./MarketOverview_046.svg"},
+			{"name":"MarketOverview_017", "src":"./MarketOverview_017.svg"},
+			{"name":"MarketOverview_007", "src":"./MarketOverview_007.svg"},
+			{"name":"MarketOverview_002", "src":"./MarketOverview_002.svg"},
+			{"name":"MarketOverview_050", "src":"./MarketOverview_050.svg"},
+			{"name":"MarketOverview_009", "src":"./MarketOverview_009.svg"},
+			{"name":"MarketOverview_022", "src":"./MarketOverview_022.svg"},
+			{"name":"MarketOverview_027", "src":"./MarketOverview_027.svg"},
+			{"name":"MarketOverview_041", "src":"./MarketOverview_041.svg"},
+			{"name":"MarketOverview_034", "src":"./MarketOverview_034.svg"},
+			{"name":"MarketOverview_005", "src":"./MarketOverview_005.svg"},
+			{"name":"MarketOverview_039", "src":"./MarketOverview_039.svg"},
+			{"name":"MarketOverview_043", "src":"./MarketOverview_043.svg"},
+			{"name":"MarketOverview_011", "src":"./MarketOverview_011.svg"},
+			{"name":"MarketOverview_047", "src":"./MarketOverview_047.svg"},
+			{"name":"MarketOverview_040", "src":"./MarketOverview_040.svg"},
+			{"name":"MarketOverview_029", "src":"./MarketOverview_029.svg"},
+			{"name":"MarketOverview_036", "src":"./MarketOverview_036.svg"},
+			{"name":"MarketOverview_021", "src":"./MarketOverview_021.svg"},
+			{"name":"MarketOverview_042", "src":"./MarketOverview_042.svg"},
+			{"name":"MarketOverview_018", "src":"./MarketOverview_018.svg"},
+			{"name":"MarketOverview_019", "src":"./MarketOverview_019.svg"},
+			{"name":"MarketOverview_015", "src":"./MarketOverview_015.svg"},
+			{"name":"MarketOverview_025", "src":"./MarketOverview_025.svg"},
+			{"name":"MarketOverview_016", "src":"./MarketOverview_016.svg"},
+			{"name":"MarketOverview_023", "src":"./MarketOverview_023.svg"},
+			{"name":"MarketOverview_030", "src":"./MarketOverview_030.svg"},
+			{"name":"MarketOverview_001", "src":"./MarketOverview_001.svg"},
+			{"name":"MarketOverview_010", "src":"./MarketOverview_010.svg"},
+			{"name":"MarketOverview_026", "src":"./MarketOverview_026.svg"},
+			{"name":"MarketOverview_035", "src":"./MarketOverview_035.svg"},
+			{"name":"MarketOverview_003", "src":"./MarketOverview_003.svg"},
+			{"name":"MarketOverview_020", "src":"./MarketOverview_020.svg"},
+			{"name":"MarketOverview_049", "src":"./MarketOverview_049.svg"},
+			{"name":"MarketOverview_044", "src":"./MarketOverview_044.svg"},
+			{"name":"MarketOverview_038", "src":"./MarketOverview_038.svg"},
+			{"name":"MarketOverview_037", "src":"./MarketOverview_037.svg"},
+			{"name":"MarketOverview_013", "src":"./MarketOverview_013.svg"},
+			{"name":"MarketOverview_014", "src":"./MarketOverview_014.svg"},
+			{"name":"MarketOverview_012", "src":"./MarketOverview_012.svg"},
+			{"name":"MarketOverview_024", "src":"./MarketOverview_024.svg"},
+			{"name":"MarketOverview_032", "src":"./MarketOverview_032.svg"},
+			{"name":"MarketOverview_028", "src":"./MarketOverview_028.svg"},
+			{"name":"MarketOverview_031", "src":"./MarketOverview_031.svg"},
+			{"name":"MarketOverview_004", "src":"./MarketOverview_004.svg"}
+		];
+		imgIndex = 0;
+		function changeImg(){
+			document.getElementById("slideshow").src = images[imgIndex].src;
+				if(images.length > imgIndex+1){
+					imgIndex++;
+				} else {
+					imgIndex = 0;
+				}
+			}
+		changeImg();
+		setInterval(changeImg, 1000)
+	</script>
+</html>

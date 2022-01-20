@@ -1,4 +1,4 @@
-FROM continuumio/miniconda3
+FROM gpuci/miniconda-cuda:11.5-devel-ubuntu20.04
 
 WORKDIR /app
 EXPOSE 6006
@@ -19,4 +19,3 @@ COPY config.json .
 COPY ./results ./results
 # The code to run when container is started:
 ENTRYPOINT ["conda", "run", "-n", "dockervenv", "python3", "src/monitoring/exampleprinter.py"]
-RUN "docker "
