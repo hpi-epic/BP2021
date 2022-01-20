@@ -43,7 +43,7 @@ def train_actorcritic(marketplace_class=sim_market.CircularEconomyRebuyPriceOneC
 
 	all_dicts = []
 	if verbose:
-		all_probs = []
+		all_network_outputs = []
 		all_v_estimates = []
 	all_value_losses = []
 	all_policy_losses = []
@@ -63,9 +63,9 @@ def train_actorcritic(marketplace_class=sim_market.CircularEconomyRebuyPriceOneC
 		states_dash = []
 		for env in chosen_envs:
 			state = environments[env]._observation()
-			action, prob, v_estimate = agent.policy(state, verbose)
+			action, net_output, v_estimate = agent.policy(state, verbose)
 			if verbose:
-				all_probs.append(prob)
+				all_network_outputs.append(net_output.reshape(-1))
 				all_v_estimates.append(v_estimate)
 			next_state, reward, is_done, info = environments[env].step(agent.agent_output_to_market_form(action))
 
@@ -90,20 +90,24 @@ def train_actorcritic(marketplace_class=sim_market.CircularEconomyRebuyPriceOneC
 				averaged_info = ut.divide_content_of_dict(averaged_info, len(sliced_dicts))
 				ut.write_dict_to_tensorboard(writer, averaged_info, finished_episodes, is_cumulative=True)
 				if verbose:
-					writer.add_scalar('training/prob_mean', np.mean(all_probs[-1000:]), finished_episodes)
-					writer.add_scalar('training/v_estimate', np.mean(all_v_estimates[-1000:]), finished_episodes)
+					writer.add_scalar('verbose/v_estimate', np.mean(all_v_estimates[-1000:]), finished_episodes)
+					myactions = np.array(all_network_outputs[-1000:])
+					for action_num in range(len(all_network_outputs[0])):
+						writer.add_scalar('verbose/mean/action_' + str(action_num), np.mean(myactions[:, action_num]), finished_episodes)
+						writer.add_scalar('verbose/min/action_' + str(action_num), np.min(myactions[:, action_num]), finished_episodes)
+						writer.add_scalar('verbose/max/action_' + str(action_num), np.max(myactions[:, action_num]), finished_episodes)
 				writer.add_scalar('loss/value', np.mean(all_value_losses[-1000:]), finished_episodes)
 				writer.add_scalar('loss/policy', np.mean(all_policy_losses[-1000:]), finished_episodes)
 
 				environments[env].reset()
 				info_accumulators[env] = None
 
-		valueloss, policy_loss = agent.train_batch(torch.Tensor(np.array(states)), torch.from_numpy(np.array(actions, dtype=np.int64)), torch.Tensor(np.array(rewards)), torch.Tensor(np.array(next_state)), finished_episodes <= 500)
+		valueloss, policy_loss = agent.train_batch(torch.Tensor(np.array(states)), torch.from_numpy(np.array(actions, dtype=np.int64)), torch.Tensor(np.array(rewards)), torch.Tensor(np.array(next_state)), finished_episodes <= 1000)
 		all_value_losses.append(valueloss)
 		all_policy_losses.append(policy_loss)
-		if (step_number + 1) % config.SYNC_TARGET_FRAMES == 0:
+		if (step_number + 1) % 200 == 0:
 			agent.synchronize_critic_tgt_net()
 
 
 if __name__ == '__main__':
-	train_actorcritic(number_of_training_steps=10000)
+	train_actorcritic(number_of_training_steps=10000, verbose=True)
