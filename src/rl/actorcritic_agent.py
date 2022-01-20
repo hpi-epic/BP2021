@@ -146,25 +146,23 @@ class ContinuosActorCriticAgent(ActorCriticAgent):
 		self.critic_optimizer = torch.optim.Adam(self.critic_net.parameters(), lr=0.002)
 		self.critic_tgt_net = model.simple_network(n_observations, 1).to(self.device)
 
+	def transform_network_output(self, number_outputs, network_result):
+		network_result = network_result.view(number_outputs, 2, -1)
+		mean = network_result[:, 0, :]
+		std = network_result[:, 1, :]
+		mean = torch.max(mean, torch.zeros(mean.shape).to(self.device))
+		mean = torch.min(mean, 9 * torch.ones(mean.shape).to(self.device))
+		std = torch.sqrt(self.softplus(std))
+
+		return mean, std
+
 	def policy(self, observation, verbose=False):
 		observation = torch.Tensor(np.array(observation)).to(self.device)
 		with torch.no_grad():
 			network_result = self.actor_net(observation)
+			mean, std = self.transform_network_output(1, network_result)
 			if verbose:
 				v_estimat = self.critic_net(observation).view(-1)
-
-		network_result = network_result.view(2, -1)
-		mean = network_result[0, :]
-		std = network_result[1, :]
-
-		mean = torch.max(mean, torch.zeros(mean.shape).to(self.device))
-		mean = torch.min(mean, 9 * torch.ones(mean.shape).to(self.device))
-		std = torch.sqrt(self.softplus(mean))
-		if torch.min(std) < 0.05:
-			print('Now I need the catcher!')
-			std = torch.max(std, 0.1 * torch.ones(std.shape).to(self.device))
-
-		print(std)
 
 		action = torch.round(torch.normal(mean, std).to(self.device))
 		action = torch.max(action, torch.zeros(action.shape).to(self.device))
@@ -172,10 +170,8 @@ class ContinuosActorCriticAgent(ActorCriticAgent):
 		return action.squeeze().type(torch.LongTensor).to('cpu').numpy(), *((network_result.to('cpu').numpy(), v_estimat.to('cpu').item()) if verbose else (None, None))
 
 	def log_probability_given_action(self, states, actions):
-		network_result = self.softplus(self.actor_net(states))
-		network_result = network_result.view(network_result.shape[0], 2, -1)
-		mean = network_result[:, 0, :]
-		std = network_result[:, 1, :]
+		network_result = self.actor_net(states)
+		mean, std = self.transform_network_output(network_result.shape[0], network_result)
 		return torch.distributions.Normal(mean, std).log_prob(actions.view(-1, self.n_actions)).sum(dim=1).unsqueeze(-1)
 
 	def regularize(self, states):
