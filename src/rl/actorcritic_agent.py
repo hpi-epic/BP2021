@@ -162,7 +162,7 @@ class ContinuosActorCriticAgent(ActorCriticAgent):
 		if torch.min(std) > -2:
 			std = torch.sqrt(self.softplus(mean))
 		else:
-			std = torch.max(std, 0.1 * torch.zeros(std.shape).to(self.device))
+			std = torch.max(std, 0.1 * torch.ones(std.shape).to(self.device))
 
 		action = torch.round(torch.normal(mean, std).to(self.device))
 		action = torch.max(action, torch.zeros(action.shape).to(self.device))
