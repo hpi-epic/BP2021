@@ -34,7 +34,8 @@ def test_agents_initializes_networks_correct_output_greater_zero(agent_class, in
 	assert agent.critic_net is not None
 	test_input = torch.ones(input_size).to(agent.device)
 	actor_output = agent.actor_net(test_input)
-	assert len(actor_output.to('cpu')) == output_size
+	# For each parameter we need two outputs: One for the mean and one for the standard deviation
+	assert len(actor_output.to('cpu')) == 2 * output_size
 	critic_output = agent.critic_net(test_input)
 	assert isinstance(critic_output.to('cpu').item(), float)
 
@@ -46,6 +47,7 @@ def test_agents_initializes_network_correct_output_one(agent_class, input_size):
 	assert agent.critic_net is not None
 	test_input = torch.ones(input_size).to(agent.device)
 	actor_output = agent.actor_net(test_input)
-	assert isinstance(actor_output.to('cpu').item(), float)
+	# We need exactly two outputs: One for the mean and one for the standard deviation
+	assert len(actor_output.to('cpu')) == 2
 	critic_output = agent.critic_net(test_input)
 	assert isinstance(critic_output.to('cpu').item(), float)
