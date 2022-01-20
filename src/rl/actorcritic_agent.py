@@ -141,7 +141,7 @@ class ContinuosActorCriticAgent(ActorCriticAgent):
 	def initialize_models_and_optimizer(self, n_observations, n_actions):
 		self.n_actions = n_actions
 		self.actor_net = model.simple_network(n_observations, 2 * self.n_actions).to(self.device)
-		self.actor_optimizer = torch.optim.Adam(self.actor_net.parameters(), lr=0.00005)
+		self.actor_optimizer = torch.optim.Adam(self.actor_net.parameters(), lr=0.0002)
 		self.critic_net = model.simple_network(n_observations, 1).to(self.device)
 		self.critic_optimizer = torch.optim.Adam(self.critic_net.parameters(), lr=0.002)
 		self.critic_tgt_net = model.simple_network(n_observations, 1).to(self.device)
@@ -167,7 +167,7 @@ class ContinuosActorCriticAgent(ActorCriticAgent):
 		action = torch.round(torch.normal(mean, std).to(self.device))
 		action = torch.max(action, torch.zeros(action.shape).to(self.device))
 		action = torch.min(action, 9 * torch.ones(action.shape).to(self.device))
-		return action.squeeze().type(torch.LongTensor).to('cpu').numpy(), *((np.array([mean.numpy(), std.numpy()]).reshape(-1), v_estimat.to('cpu').item()) if verbose else (None, None))
+		return action.squeeze().type(torch.LongTensor).to('cpu').numpy(), *((np.array([mean.to('cpu').numpy(), std.to('cpu').numpy()]).reshape(-1), v_estimat.to('cpu').item()) if verbose else (None, None))
 
 	def log_probability_given_action(self, states, actions):
 		network_result = self.actor_net(states)
@@ -187,8 +187,7 @@ class ContinuosActorCriticAgent(ActorCriticAgent):
 			torch.Tensor: the malus of the regularization
 		"""
 		proposed_actions = self.actor_net(states.detach())
-		return 1000 * torch.nn.MSELoss()(proposed_actions, 1.5 * torch.ones(proposed_actions.shape).to(self.device))
+		return 50000 * torch.nn.MSELoss()(proposed_actions, 3.5 * torch.ones(proposed_actions.shape).to(self.device))
 
 	def agent_output_to_market_form(self, action):
-		actionlist = action.tolist()
-		return actionlist if isinstance(actionlist, int) else tuple(actionlist)
+		return action.tolist()
