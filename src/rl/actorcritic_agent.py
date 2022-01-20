@@ -149,15 +149,21 @@ class ContinuosActorCriticAgent(ActorCriticAgent):
 	def policy(self, observation, verbose=False):
 		observation = torch.Tensor(np.array(observation)).to(self.device)
 		with torch.no_grad():
-			network_result = self.softplus(self.actor_net(observation))
+			network_result = self.actor_net(observation)
 			if verbose:
 				v_estimat = self.critic_net(observation).view(-1)
 
 		network_result = network_result.view(2, -1)
-		network_result = torch.max(network_result, torch.zeros(network_result.shape).to(self.device))
-		network_result = torch.min(network_result, 9 * torch.ones(network_result.shape).to(self.device))
 		mean = network_result[0, :]
 		std = network_result[1, :]
+
+		mean = torch.max(mean, torch.zeros(mean.shape).to(self.device))
+		mean = torch.min(mean, 9 * torch.ones(mean.shape).to(self.device))
+		if torch.min(std) > -2:
+			std = torch.sqrt(self.softplus(mean))
+		else:
+			std = torch.max(std, 0.1 * torch.zeros(std.shape).to(self.device))
+
 		action = torch.round(torch.normal(mean, std).to(self.device))
 		action = torch.max(action, torch.zeros(action.shape).to(self.device))
 		action = torch.min(action, 9 * torch.ones(action.shape).to(self.device))
