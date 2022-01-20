@@ -74,9 +74,9 @@ class ActorCriticAgent(vendors.Agent, ABC):
 			states (torch.Tensor): A tensor of the states the agent is in range
 
 		Returns:
-			torch.Tensor or 0: The punishment for the agent
+			torch.Tensor: The punishment for the agent
 		"""
-		return 0
+		return torch.zeros(1).squeeze().to(self.device)
 
 	@abstractmethod
 	def log_probability_given_action(self, states, actions) -> None:  # pragma: no cover
@@ -89,7 +89,7 @@ class ActorCriticAgent(vendors.Agent, ABC):
 
 class DiscreteActorCriticAgent(ActorCriticAgent):
 	"""
-	This is an actor critic agent with continuos action space.
+	This is an actor critic agent with discrete action space.
 	It generates preferences and uses softmax to gain the probabilities.
 	For our three markets we have three kinds of specific agents you must use.
 	"""
