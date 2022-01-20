@@ -3,6 +3,8 @@ omit =
 	# ignore __init__.py files
 	*/__init__.py
 	# ignore files in the test folder
-	*/tests/*
-	# ignore training_scenario.py
-	*/training_scenario.py
+	src/tests/*
+	# ignore files only used as helpers
+	src/setup.py
+	src/rl/training_scenario.py
+	src/monitoring/performance.py

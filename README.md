@@ -3,6 +3,7 @@
 ![CI](https://github.com/hpi-epic/BP2021/actions/workflows/CI.yml/badge.svg)
 ![Coverage-Badge](/badges/coverage.svg)
 ![Docstring-Coverage](/badges/docstring_coverage.svg)
+[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 
 Working repository in context of the bachelorproject "Online Marketplace Simulation: A Testbed for Self-Learning Agents" at the research group Enterprise Platform and Integration Concepts.
 
@@ -25,7 +26,7 @@ To activate your created environment use:
 conda activate your_venv_name
 ```
 
-If you have a Nvidia GPU, consider installing cuda to get better training performance:
+If you have a Nvidia GPU, consider installing cuda to get better training performance.
 Note that depending on your specific GPU you might need to change the cudatoolkit version.
 
 ```console
@@ -47,6 +48,32 @@ conda env update -n your_venv_name
 ```
 
 This will first uninstall all packages and then re-install them from the `environment.yml`.
+
+## The `AlphaBusiness` package
+
+You may have noticed the following lines in the `environment.yml`:
+```
+  - pip:
+    - -e ./src
+```
+
+This installs the `src` folder (and its subdirectories) as a local pip package. The `-e` flag indicates to pip that the package should be installed in an editable state, meaning that any changes to `.py` files in the package will be integrated into the package immediately (meaning no re-install is necessary). In order to install the package, pip looks into the `setup.py` file where name, version and packages of the new package are set.
+You can confirm that the install was successfull if there is a folder called `AlphaBusiness.egg-info` within the `src`-directory, or by checking `pip freeze` for the following line: 
+
+```
+-e git+https://github.com/hpi-epic/BP2021.git@da8868467690a1300ff4e11245417ec384aae15b#egg=AlphaBusiness&subdirectory=src
+```
+
+If you do not see the `AlphaBusiness`-package in the resulting list, perform the following command while in the top-level-folder of the repository (e.g. `BP2021`):
+
+```console
+pip install -e ./src
+```
+
+Check `pip freeze` again to make sure the package was installed.
+
+Installing our project as a package enables us to perform [relative imports](https://realpython.com/absolute-vs-relative-python-imports/) from within subdirectories to parent directories. The most prominent example of this would be importing the tested files from within the test-files in the `tests/` subdirectory.
+Package installation adapted from [this post](https://stackoverflow.com/a/50194143).
 
 ## Using Pytest locally
 
@@ -108,8 +135,9 @@ which will install the needed environment.
 
 If you get the following error:
 
-```console
-Git: Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from Settings > Manage App Execution Aliases
+```
+Git: Python was not found; run without arguments to install from the Microsoft Store, 
+or disable this shortcut from Settings > Manage App Execution Aliases
 ```
 
 while trying to commit, the cause is most likely `pre-commit` trying to access a Python version not in your venv.
@@ -122,6 +150,6 @@ If you get an error saying that the `_sqlite3`-module is missing, you are missin
 
 Solution: Go to <https://www.sqlite.org/download.html> to download the `sqlite3.dll` and `sqlite3.def` files and drop them into the following folder:
 
-```console
+```
 C:\Users\your_username\anaconda3\envs\your_venv_name\DLLs
 ```

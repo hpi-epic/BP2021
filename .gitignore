@@ -1,10 +1,16 @@
 # from https://github.com/github/gitignore
 
-trainedModels/
-runs/
-# output-plots from agent monitoring
-monitoring/*
-!monitoring/*.dat
+# any sort of result files
+# yes, the way the .gitignore works here is weird!
+
+!results/monitoring
+results/monitoring/*
+!results/monitoring/*.dat
+!results/monitoring/MarketOverview_template.svg
+
+results/performance
+results/trainedModels
+results/runs
 
 # vscode settings
 .vscode/
