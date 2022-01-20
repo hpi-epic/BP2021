@@ -167,7 +167,7 @@ class ContinuosActorCriticAgent(ActorCriticAgent):
 		action = torch.round(torch.normal(mean, std).to(self.device))
 		action = torch.max(action, torch.zeros(action.shape).to(self.device))
 		action = torch.min(action, 9 * torch.ones(action.shape).to(self.device))
-		return action.squeeze().type(torch.LongTensor).to('cpu').numpy(), *((network_result.to('cpu').numpy(), v_estimat.to('cpu').item()) if verbose else (None, None))
+		return action.squeeze().type(torch.LongTensor).to('cpu').numpy(), *((np.array([mean.numpy(), std.numpy()]).reshape(-1), v_estimat.to('cpu').item()) if verbose else (None, None))
 
 	def log_probability_given_action(self, states, actions):
 		network_result = self.actor_net(states)
