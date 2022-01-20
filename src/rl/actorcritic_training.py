@@ -110,4 +110,4 @@ def train_actorcritic(marketplace_class=sim_market.CircularEconomyRebuyPriceOneC
 
 
 if __name__ == '__main__':
-	train_actorcritic(agent_class=actorcritic_agent.ContinuosActorCriticAgentEstimatingStd, number_of_training_steps=10000, verbose=True)
+	train_actorcritic(number_of_training_steps=10000)
