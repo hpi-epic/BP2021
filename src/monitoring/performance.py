@@ -6,12 +6,12 @@ import sys
 import time
 
 # include the file you want to run the performance check on here!
-import monitoring.agent_monitoring
+import monitoring.agent_monitoring.am_monitoring
 
 
 class PerformanceMonitor():
 
-	def __init__(self, function='monitoring.agent_monitoring.main()'):
+	def __init__(self, function='monitoring.agent_monitoring.am_monitoring.run_monitoring_session()'):
 		self.function = function
 		# Signal handler for e.g. KeyboardInterrupt
 		self.abort_counter = 0
@@ -37,9 +37,6 @@ class PerformanceMonitor():
 	def run_profiling(self) -> None:
 		"""
 		Run the profiler on a specified function. Automatically starts a web server to visualize the results.
-
-		Args:
-			function (str, optional): The function to be run. The format must be module.function. Defaults to 'monitoring.exampleprinter.run_example()'.
 		"""
 		if not os.path.isdir(os.path.join('results', 'performance')):
 			os.mkdir(os.path.join('results', 'performance'))
