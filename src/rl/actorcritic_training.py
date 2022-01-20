@@ -84,8 +84,8 @@ def train_actorcritic(marketplace_class=sim_market.CircularEconomyRebuyPriceOneC
 				# calculate the average of the last 100 items
 				sliced_dicts = all_dicts[-100:]
 				averaged_info = sliced_dicts[0]
-				for i, next_dict in enumerate(sliced_dicts):
-					if i != 0:
+				for dict_number, next_dict in enumerate(sliced_dicts):
+					if dict_number != 0:
 						averaged_info = ut.add_content_of_two_dicts(averaged_info, next_dict)
 				averaged_info = ut.divide_content_of_dict(averaged_info, len(sliced_dicts))
 				ut.write_dict_to_tensorboard(writer, averaged_info, finished_episodes, is_cumulative=True)
@@ -101,7 +101,7 @@ def train_actorcritic(marketplace_class=sim_market.CircularEconomyRebuyPriceOneC
 		valueloss, policy_loss = agent.train_batch(torch.Tensor(np.array(states)), torch.from_numpy(np.array(actions, dtype=np.int64)), torch.Tensor(np.array(rewards)), torch.Tensor(np.array(next_state)), finished_episodes <= 500)
 		all_value_losses.append(valueloss)
 		all_policy_losses.append(policy_loss)
-		if (i + 1) % config.SYNC_TARGET_FRAMES == 0:
+		if (step_number + 1) % config.SYNC_TARGET_FRAMES == 0:
 			agent.synchronize_critic_tgt_net()
 
 
