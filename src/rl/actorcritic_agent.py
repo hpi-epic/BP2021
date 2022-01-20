@@ -140,21 +140,15 @@ class ContinuosActorCriticAgent(ActorCriticAgent):
 
 	def initialize_models_and_optimizer(self, n_observations, n_actions):
 		self.n_actions = n_actions
-		self.actor_net = model.simple_network(n_observations, 2 * self.n_actions).to(self.device)
+		self.actor_net = model.simple_network(n_observations, self.n_actions).to(self.device)
 		self.actor_optimizer = torch.optim.Adam(self.actor_net.parameters(), lr=0.0002)
 		self.critic_net = model.simple_network(n_observations, 1).to(self.device)
 		self.critic_optimizer = torch.optim.Adam(self.critic_net.parameters(), lr=0.002)
 		self.critic_tgt_net = model.simple_network(n_observations, 1).to(self.device)
 
+	@abstractmethod
 	def transform_network_output(self, number_outputs, network_result):
-		network_result = network_result.view(number_outputs, 2, -1)
-		network_result = self.softplus(network_result)
-		mean = network_result[:, 0, :]
-		std = network_result[:, 1, :]
-		mean = torch.min(mean, 9 * torch.ones(mean.shape).to(self.device))
-		std = torch.sqrt(std)
-
-		return mean, std
+		raise NotImplementedError('This method is abstract. Use a subclass')
 
 	def policy(self, observation, verbose=False):
 		observation = torch.Tensor(np.array(observation)).to(self.device)
@@ -191,3 +185,24 @@ class ContinuosActorCriticAgent(ActorCriticAgent):
 
 	def agent_output_to_market_form(self, action):
 		return action.tolist()
+
+
+class ContinuosActorCriticAgentFixedOneStd(ContinuosActorCriticAgent):
+	def transform_network_output(self, number_outputs, network_result):
+		network_result = network_result.view(number_outputs, -1)
+		network_result = self.softplus(network_result)
+		return network_result, torch.ones(number_outputs, 1)
+
+
+class ContinuosActorCriticAgentEstimatingStd(ContinuosActorCriticAgent):
+	def initialize_models_and_optimizer(self, n_observations, n_actions):
+		super.initialize_models_and_optimizer(n_observations, 2 * n_actions)
+
+	def transform_network_output(self, number_outputs, network_result):
+		network_result = network_result.view(number_outputs, 2, -1)
+		network_result = self.softplus(network_result)
+		mean = network_result[:, 0, :]
+		std = network_result[:, 1, :]
+		mean = torch.min(mean, 9 * torch.ones(mean.shape).to(self.device))
+		std = torch.sqrt(std)
+		return mean, std
