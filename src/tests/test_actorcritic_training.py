@@ -14,15 +14,20 @@ def test_standard_setup():
 
 test_scenarios = [
 	(sim_market.ClassicScenario, actorcritic_agent.DiscreteACALinear, True),
-	(sim_market.ClassicScenario, actorcritic_agent.ContinuosActorCriticAgent, True),
+	(sim_market.ClassicScenario, actorcritic_agent.ContinuosActorCriticAgentFixedOneStd, True),
+	(sim_market.ClassicScenario, actorcritic_agent.ContinuosActorCriticAgentEstimatingStd, False),
 	(sim_market.MultiCompetitorScenario, actorcritic_agent.DiscreteACALinear, False),
-	(sim_market.MultiCompetitorScenario, actorcritic_agent.ContinuosActorCriticAgent, False),
+	(sim_market.MultiCompetitorScenario, actorcritic_agent.ContinuosActorCriticAgentFixedOneStd, False),
+	(sim_market.MultiCompetitorScenario, actorcritic_agent.ContinuosActorCriticAgentEstimatingStd, True),
 	(sim_market.CircularEconomyMonopolyScenario, actorcritic_agent.DiscreteACACircularEconomy, True),
-	(sim_market.CircularEconomyMonopolyScenario, actorcritic_agent.ContinuosActorCriticAgent, False),
+	(sim_market.CircularEconomyMonopolyScenario, actorcritic_agent.ContinuosActorCriticAgentFixedOneStd, False),
+	(sim_market.CircularEconomyMonopolyScenario, actorcritic_agent.ContinuosActorCriticAgentEstimatingStd, True),
 	(sim_market.CircularEconomyRebuyPriceMonopolyScenario, actorcritic_agent.DiscreteACACircularEconomyRebuy, True),
-	(sim_market.CircularEconomyRebuyPriceMonopolyScenario, actorcritic_agent.ContinuosActorCriticAgent, False),
+	(sim_market.CircularEconomyRebuyPriceMonopolyScenario, actorcritic_agent.ContinuosActorCriticAgentFixedOneStd, False),
+	(sim_market.CircularEconomyRebuyPriceMonopolyScenario, actorcritic_agent.ContinuosActorCriticAgentEstimatingStd, True),
 	(sim_market.CircularEconomyRebuyPriceOneCompetitor, actorcritic_agent.DiscreteACACircularEconomyRebuy, False),
-	(sim_market.CircularEconomyRebuyPriceOneCompetitor, actorcritic_agent.ContinuosActorCriticAgent, True)
+	(sim_market.CircularEconomyRebuyPriceOneCompetitor, actorcritic_agent.ContinuosActorCriticAgentFixedOneStd, True),
+	(sim_market.CircularEconomyRebuyPriceOneCompetitor, actorcritic_agent.ContinuosActorCriticAgentEstimatingStd, True)
 ]
 
 

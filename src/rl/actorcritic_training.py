@@ -9,7 +9,7 @@ from torch.utils.tensorboard import SummaryWriter
 import configuration.config as config
 import configuration.utils as ut
 import market.sim_market as sim_market
-import rl.actorcritic_agent as a2cagent
+import rl.actorcritic_agent as actorcritic_agent
 
 
 def choose_random_envs(total_envs):
@@ -30,9 +30,9 @@ def choose_random_envs(total_envs):
 	return chosen_envs
 
 
-def train_actorcritic(marketplace_class=sim_market.CircularEconomyRebuyPriceOneCompetitor, agent_class=a2cagent.ContinuosActorCriticAgent, number_of_training_steps=200, verbose=False, total_envs=128):
-	assert issubclass(agent_class, a2cagent.ActorCriticAgent), f'the agent_class must be a subclass of ActorCriticAgent: {agent_class}'
-	if issubclass(agent_class, a2cagent.ContinuosActorCriticAgent):
+def train_actorcritic(marketplace_class=sim_market.CircularEconomyRebuyPriceOneCompetitor, agent_class=actorcritic_agent.ContinuosActorCriticAgentFixedOneStd, number_of_training_steps=200, verbose=False, total_envs=128):
+	assert issubclass(agent_class, actorcritic_agent.ActorCriticAgent), f'the agent_class must be a subclass of ActorCriticAgent: {agent_class}'
+	if issubclass(agent_class, actorcritic_agent.ContinuosActorCriticAgent):
 		if marketplace_class()._action_space.shape is not None:
 			outputs = 1
 		else:
@@ -110,4 +110,4 @@ def train_actorcritic(marketplace_class=sim_market.CircularEconomyRebuyPriceOneC
 
 
 if __name__ == '__main__':
-	train_actorcritic(number_of_training_steps=10000, verbose=True)
+	train_actorcritic(agent_class=actorcritic_agent.ContinuosActorCriticAgentEstimatingStd, number_of_training_steps=10000, verbose=True)

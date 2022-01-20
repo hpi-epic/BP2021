@@ -166,7 +166,7 @@ class ContinuosActorCriticAgent(ActorCriticAgent):
 	def log_probability_given_action(self, states, actions):
 		network_result = self.actor_net(states)
 		mean, std = self.transform_network_output(network_result.shape[0], network_result)
-		return torch.distributions.Normal(mean, std).log_prob(actions.view(-1, self.n_actions)).sum(dim=1).unsqueeze(-1)
+		return torch.distributions.Normal(mean, std).log_prob(actions.view(len(mean), -1)).sum(dim=1).unsqueeze(-1)
 
 	def regularize(self, states):
 		"""
@@ -191,18 +191,19 @@ class ContinuosActorCriticAgentFixedOneStd(ContinuosActorCriticAgent):
 	def transform_network_output(self, number_outputs, network_result):
 		network_result = network_result.view(number_outputs, -1)
 		network_result = self.softplus(network_result)
-		return network_result, torch.ones(number_outputs, 1)
+		return network_result, torch.ones(network_result.shape).to(self.device)
 
 
 class ContinuosActorCriticAgentEstimatingStd(ContinuosActorCriticAgent):
 	def initialize_models_and_optimizer(self, n_observations, n_actions):
-		super.initialize_models_and_optimizer(n_observations, 2 * n_actions)
+		super().initialize_models_and_optimizer(n_observations, 2 * n_actions)
 
 	def transform_network_output(self, number_outputs, network_result):
 		network_result = network_result.view(number_outputs, 2, -1)
 		network_result = self.softplus(network_result)
 		mean = network_result[:, 0, :]
 		std = network_result[:, 1, :]
+		std = torch.max(std, 0.001 * torch.ones(std.shape).to(self.device))
 		mean = torch.min(mean, 9 * torch.ones(mean.shape).to(self.device))
 		std = torch.sqrt(std)
 		return mean, std

@@ -20,7 +20,8 @@ def test_abstract_agent_classes(actorcritic_agent):
 agent_initialization_testcases = [
 	actorcritic_agent.DiscreteACALinear,
 	actorcritic_agent.DiscreteACACircularEconomy,
-	actorcritic_agent.DiscreteACACircularEconomyRebuy
+	actorcritic_agent.DiscreteACACircularEconomyRebuy,
+	actorcritic_agent.ContinuosActorCriticAgentFixedOneStd
 ]
 input_sizes = [1, 3, 7, 19]
 output_sizes_greater_zero = [2, 7, 15, 100, 1234]
@@ -53,7 +54,7 @@ def test_agents_initializes_network_correct_output_one(agent_class, input_size):
 
 @pytest.mark.parametrize('input_size, output_size', ut.cartesian_product(input_sizes, output_sizes_greater_zero))
 def test_std_estimating_agents_initializes_networks_correct_output_greater_zero(input_size, output_size):
-	agent_class = actorcritic_agent.ContinuosActorCriticAgent
+	agent_class = actorcritic_agent.ContinuosActorCriticAgentEstimatingStd
 	agent = agent_class(input_size, output_size)
 	assert agent.actor_net is not None
 	assert agent.critic_net is not None
@@ -67,7 +68,7 @@ def test_std_estimating_agents_initializes_networks_correct_output_greater_zero(
 
 @pytest.mark.parametrize('input_size', input_sizes)
 def test_std_estimating_agents_initializes_network_correct_output_one(input_size):
-	agent_class = actorcritic_agent.ContinuosActorCriticAgent
+	agent_class = actorcritic_agent.ContinuosActorCriticAgentEstimatingStd
 	agent = agent_class(input_size, 1)
 	assert agent.actor_net is not None
 	assert agent.critic_net is not None
