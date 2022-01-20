@@ -165,6 +165,8 @@ class ContinuosActorCriticAgent(ActorCriticAgent):
 			print('Now I need the catcher!')
 			std = torch.max(std, 0.1 * torch.ones(std.shape).to(self.device))
 
+		print(std)
+
 		action = torch.round(torch.normal(mean, std).to(self.device))
 		action = torch.max(action, torch.zeros(action.shape).to(self.device))
 		action = torch.min(action, 9 * torch.ones(action.shape).to(self.device))
