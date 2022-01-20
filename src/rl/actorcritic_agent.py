@@ -156,7 +156,7 @@ class ContinuosActorCriticAgent(ActorCriticAgent):
 			if verbose:
 				v_estimat = self.critic_net(observation).view(-1)
 
-		action = torch.round(torch.normal(mean, std))
+		action = torch.round(torch.normal(mean, std).to(self.device))
 		action = torch.max(action, torch.zeros(action.shape).to(self.device))
 		action = torch.min(action, 9 * torch.ones(action.shape).to(self.device))
 		return action.squeeze().type(torch.LongTensor).to('cpu').numpy(), *((self.log_probability_given_action(observation, action).mean().detach().item(), v_estimat.to('cpu').item()) if verbose else (None, None))
