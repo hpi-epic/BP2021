@@ -33,6 +33,7 @@ def test_agents_initializes_networks_correct_output_greater_zero(agent_class, in
 	agent = agent_class(input_size, output_size)
 	assert agent.actor_net is not None
 	assert agent.critic_net is not None
+	assert agent.critic_tgt_net is not None
 	test_input = torch.ones(input_size).to(agent.device)
 	actor_output = agent.actor_net(test_input)
 	assert len(actor_output.to('cpu')) == output_size
@@ -45,6 +46,7 @@ def test_agents_initializes_network_correct_output_one(agent_class, input_size):
 	agent = agent_class(input_size, 1)
 	assert agent.actor_net is not None
 	assert agent.critic_net is not None
+	assert agent.critic_tgt_net is not None
 	test_input = torch.ones(input_size).to(agent.device)
 	actor_output = agent.actor_net(test_input)
 	assert isinstance(actor_output.to('cpu').item(), float)
@@ -58,6 +60,7 @@ def test_std_estimating_agents_initializes_networks_correct_output_greater_zero(
 	agent = agent_class(input_size, output_size)
 	assert agent.actor_net is not None
 	assert agent.critic_net is not None
+	assert agent.critic_tgt_net is not None
 	test_input = torch.ones(input_size).to(agent.device)
 	actor_output = agent.actor_net(test_input)
 	# For each parameter we need two outputs: One for the mean and one for the standard deviation
@@ -72,6 +75,7 @@ def test_std_estimating_agents_initializes_network_correct_output_one(input_size
 	agent = agent_class(input_size, 1)
 	assert agent.actor_net is not None
 	assert agent.critic_net is not None
+	assert agent.critic_tgt_net is not None
 	test_input = torch.ones(input_size).to(agent.device)
 	actor_output = agent.actor_net(test_input)
 	# We need exactly two outputs: One for the mean and one for the standard deviation
