@@ -27,7 +27,10 @@ input_sizes = [1, 3, 7, 19]
 output_sizes_greater_zero = [2, 7, 15, 100, 1234]
 
 
-@pytest.mark.parametrize('agent_class, input_output', ut.cartesian_product(agent_initialization_testcases, ut.cartesian_product(input_sizes, output_sizes_greater_zero)))
+@pytest.mark.parametrize(
+	'agent_class, input_output',
+	ut.cartesian_product(agent_initialization_testcases,
+	ut.cartesian_product(input_sizes, output_sizes_greater_zero)))
 def test_agents_initializes_networks_correct_output_greater_zero(agent_class, input_output):
 	input_size, output_size = input_output
 	agent = agent_class(input_size, output_size)

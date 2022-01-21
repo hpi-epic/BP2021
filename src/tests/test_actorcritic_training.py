@@ -34,4 +34,9 @@ test_scenarios = [
 @pytest.mark.parametrize('marketplace, agent, verbose', test_scenarios)
 def test_training_configurations(marketplace, agent, verbose):
 	with patch('rl.actorcritic_training.SummaryWriter'):
-		actorcritic_training.train_actorcritic(marketplace_class=marketplace, agent_class=agent, verbose=verbose, number_of_training_steps=120, total_envs=64)
+		actorcritic_training.train_actorcritic(
+			marketplace_class=marketplace,
+			agent_class=agent,
+			verbose=verbose,
+			number_of_training_steps=120,
+			total_envs=64)
