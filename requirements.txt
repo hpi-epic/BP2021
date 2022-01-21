@@ -1,0 +1,2 @@
+pytest-randomly  # each time the tests are run, they are run in a random order to find hidden dependencies
+-e ./src  # This installs our project as a package

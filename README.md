@@ -26,12 +26,10 @@ To activate your created environment use:
 conda activate your_venv_name
 ```
 
-If you have a Nvidia GPU, consider installing cuda to get better training performance.
-Note that depending on your specific GPU you might need to change the cudatoolkit version.
+Additionally, pip dependencies need to be installed using the following command. Make sure you activate your conda environment first!
 
 ```console
-conda uninstall pytorch
-conda install pytorch torchvision torchaudio cudatoolkit=11.3 -c pytorch -c nvidia
+pip install -r requirements.txt
 ```
 
 To update an existing environment with the needed packages run the following command:
@@ -51,10 +49,9 @@ This will first uninstall all packages and then re-install them from the `enviro
 
 ## The `AlphaBusiness` package
 
-You may have noticed the following lines in the `environment.yml`:
+You may have noticed the following lines in the `requirements.txt`:
 ```
-  - pip:
-    - -e ./src
+	-e ./src
 ```
 
 This installs the `src` folder (and its subdirectories) as a local pip package. The `-e` flag indicates to pip that the package should be installed in an editable state, meaning that any changes to `.py` files in the package will be integrated into the package immediately (meaning no re-install is necessary). In order to install the package, pip looks into the `setup.py` file where name, version and packages of the new package are set.
@@ -153,3 +150,23 @@ Solution: Go to <https://www.sqlite.org/download.html> to download the `sqlite3.
 ```
 C:\Users\your_username\anaconda3\envs\your_venv_name\DLLs
 ```
+
+## Docker
+
+To use docker, please install it on your machine. If you did so, you have to build the container with the following command:
+
+```console
+docker build .
+```
+
+This probably will take a while (especially at the first time). It will give you an image id you have to use to run the container you just built:
+
+```console
+docker run IMAGE_ID
+```
+
+This will run the container and execute the command at the end of the dockerfile.
+
+### Troubleshooting
+
+If you get the message containing permission denied, try to run with sudo or google it. there is much help with this.
