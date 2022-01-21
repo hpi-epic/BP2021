@@ -7,10 +7,12 @@
 results/monitoring/*
 !results/monitoring/*.dat
 !results/monitoring/MarketOverview_template.svg
-
 results/performance
 results/trainedModels
 results/runs
+
+# file for Johanns test runner
+tests.sh
 
 # vscode settings
 .vscode/
