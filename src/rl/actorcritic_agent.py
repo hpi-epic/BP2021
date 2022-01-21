@@ -1,11 +1,7 @@
-import os
-import random
-import time
 from abc import ABC, abstractmethod
 
 import numpy as np
 import torch
-from torch.utils.tensorboard import SummaryWriter
 
 import agents.vendors as vendors
 import configuration.config as config
@@ -22,6 +18,15 @@ class ActorCriticAgent(vendors.Agent, ABC):
 		self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
 		print(f'I initiate an ActorCriticAgent using {self.device} device')
 		self.initialize_models_and_optimizer(n_observations, n_actions)
+
+	def synchronize_critic_tgt_net(self):
+		"""
+		This method writes the parameter from the critic net to it's target net.
+		Call this method regularly during training.
+		Having a target net solves problems occuring due to oscillation.
+		"""
+		print('Now I synchronize the tgt net')
+		self.critic_tgt_net.load_state_dict(self.critic_net.state_dict())
 
 	@abstractmethod
 	def initialize_models_and_optimizer(self, n_observations, n_actions) -> None:  # pragma: no cover
@@ -41,12 +46,12 @@ class ActorCriticAgent(vendors.Agent, ABC):
 
 		v_estimates = self.critic_net(states)
 		with torch.no_grad():
-			v_expected = (rewards + config.GAMMA * self.critic_net(states_dash).detach()).view(-1, 1)
+			v_expected = (rewards + config.GAMMA * self.critic_tgt_net(states_dash).detach()).view(-1, 1)
 		valueloss = torch.nn.MSELoss()(v_estimates, v_expected)
 		valueloss.backward()
 
 		with torch.no_grad():
-			baseline = v_estimates.squeeze()[31].item()
+			baseline = v_estimates
 			constant = (v_expected - baseline).detach()
 		log_prob = -self.log_probability_given_action(states.detach(), actions.detach())
 		policy_loss = torch.mean(constant * log_prob)
@@ -70,9 +75,9 @@ class ActorCriticAgent(vendors.Agent, ABC):
 			states (torch.Tensor): A tensor of the states the agent is in range
 
 		Returns:
-			torch.Tensor or 0: The punishment for the agent
+			torch.Tensor: The punishment for the agent
 		"""
-		return 0
+		return torch.zeros(1).squeeze().to(self.device)
 
 	@abstractmethod
 	def log_probability_given_action(self, states, actions) -> None:  # pragma: no cover
@@ -85,7 +90,7 @@ class ActorCriticAgent(vendors.Agent, ABC):
 
 class DiscreteActorCriticAgent(ActorCriticAgent):
 	"""
-	This is an actor critic agent with continuos action space.
+	This is an actor critic agent with discrete action space.
 	It generates preferences and uses softmax to gain the probabilities.
 	For our three markets we have three kinds of specific agents you must use.
 	"""
@@ -94,6 +99,7 @@ class DiscreteActorCriticAgent(ActorCriticAgent):
 		self.actor_optimizer = torch.optim.Adam(self.actor_net.parameters(), lr=0.0000025)
 		self.critic_net = model.simple_network(n_observations, 1).to(self.device)
 		self.critic_optimizer = torch.optim.Adam(self.critic_net.parameters(), lr=0.00025)
+		self.critic_tgt_net = model.simple_network(n_observations, 1).to(self.device)
 
 	def policy(self, observation, verbose=False):
 		observation = torch.Tensor(np.array(observation)).to(self.device)
@@ -141,6 +147,7 @@ class ContinuosActorCriticAgent(ActorCriticAgent):
 		self.actor_optimizer = torch.optim.Adam(self.actor_net.parameters(), lr=0.0002)
 		self.critic_net = model.simple_network(n_observations, 1).to(self.device)
 		self.critic_optimizer = torch.optim.Adam(self.critic_net.parameters(), lr=0.002)
+		self.critic_tgt_net = model.simple_network(n_observations, 1).to(self.device)
 
 	def policy(self, observation, verbose=False):
 		observation = torch.Tensor(np.array(observation)).to(self.device)
@@ -149,13 +156,10 @@ class ContinuosActorCriticAgent(ActorCriticAgent):
 			if verbose:
 				v_estimat = self.critic_net(observation).view(-1)
 
-		action = torch.round(torch.normal(mean, torch.ones(mean.shape)))
-		action = torch.max(action, torch.zeros(action.shape))
-		action = torch.min(action, 9 * torch.ones(action.shape))
-		return (action.squeeze().type(torch.LongTensor).to('cpu').numpy(),
-			*((self.log_probability_given_action(observation,
-			action).mean().detach().item(),
-			v_estimat.to('cpu').item()) if verbose else (None, None)))
+		action = torch.round(torch.normal(mean, torch.ones(mean.shape).to(self.device)))
+		action = torch.max(action, torch.zeros(action.shape).to(self.device))
+		action = torch.min(action, 9 * torch.ones(action.shape).to(self.device))
+		return action.squeeze().type(torch.LongTensor).to('cpu').numpy(), *((self.log_probability_given_action(observation, action).mean().detach().item(), v_estimat.to('cpu').item()) if verbose else (None, None)) # noqa
 
 	def log_probability_given_action(self, states, actions):
 		return (torch.distributions.Normal(self.softplus(self.actor_net(states)),
@@ -165,6 +169,7 @@ class ContinuosActorCriticAgent(ActorCriticAgent):
 		"""
 		This regularization pushes the actor with very high priority towards a mean price of 3.5.
 		Use it at the beginning to avoid 0 pricing which gets only horrible negative reward.
+		The magic number is a suitable constant to enforce quick movement to 3.5.
 
 		Args:
 			states (torch.Tensor): The current states the agent is in at the moment
@@ -173,7 +178,7 @@ class ContinuosActorCriticAgent(ActorCriticAgent):
 			torch.Tensor: the malus of the regularization
 		"""
 		proposed_actions = self.actor_net(states.detach())
-		return 50000 * torch.nn.MSELoss()(proposed_actions, 3.5 * torch.ones(proposed_actions.shape))
+		return 50000 * torch.nn.MSELoss()(proposed_actions, 3.5 * torch.ones(proposed_actions.shape).to(self.device))
 
 	def agent_output_to_market_form(self, action):
 		return action.tolist()
@@ -195,8 +200,8 @@ def train_actorcritic(
 	all_value_losses = []
 	all_policy_losses = []
 
-	curr_time = time.strftime('%b%d_%H-%M-%S')
-	writer = SummaryWriter(log_dir=os.path.join('results', 'runs', f'training_AC_{curr_time}'))
+	# curr_time = time.strftime('%b%d_%H-%M-%S')
+	# writer = SummaryWriter(log_dir=os.path.join('results', 'runs', f'training_AC_{curr_time}'))
 
 	finished_episodes = 0
 	total_envs = 128
@@ -207,7 +212,7 @@ def train_actorcritic(
 		chosen_envs = set()
 		# chosen_envs.add(127)
 		while len(chosen_envs) < 32:
-			number = random.randint(0, total_envs - 1)
+			number = np.random.randint(0, total_envs - 1)
 			if number not in chosen_envs:
 				chosen_envs.add(number)
 
@@ -242,12 +247,12 @@ def train_actorcritic(
 					if i != 0:
 						averaged_info = ut.add_content_of_two_dicts(averaged_info, next_dict)
 				averaged_info = ut.divide_content_of_dict(averaged_info, len(sliced_dicts))
-				ut.write_dict_to_tensorboard(writer, averaged_info, finished_episodes, is_cumulative=True)
-				if verbose:
-					writer.add_scalar('training/prob_mean', np.mean(all_probs[-1000:]), finished_episodes)
-					writer.add_scalar('training/v_estimate', np.mean(all_v_estimates[-1000:]), finished_episodes)
-				writer.add_scalar('loss/value', np.mean(all_value_losses[-1000:]), finished_episodes)
-				writer.add_scalar('loss/policy', np.mean(all_policy_losses[-1000:]), finished_episodes)
+				# ut.write_dict_to_tensorboard(writer, averaged_info, finished_episodes, is_cumulative=True)
+				# if verbose:
+				# writer.add_scalar('training/prob_mean', np.mean(all_probs[-1000:]), finished_episodes)
+				# writer.add_scalar('training/v_estimate', np.mean(all_v_estimates[-1000:]), finished_episodes)
+				# writer.add_scalar('loss/value', np.mean(all_value_losses[-1000:]), finished_episodes)
+				# writer.add_scalar('loss/policy', np.mean(all_policy_losses[-1000:]), finished_episodes)
 
 				environments[env].reset()
 				info_accumulators[env] = None

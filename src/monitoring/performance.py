@@ -6,12 +6,12 @@ import sys
 import time
 
 # include the file you want to run the performance check on here!
-import monitoring.agent_monitoring
+import monitoring.agent_monitoring.am_monitoring
 
 
 class PerformanceMonitor():
 
-	def __init__(self, function='monitoring.agent_monitoring.main()'):
+	def __init__(self, function='monitoring.agent_monitoring.am_monitoring.run_monitoring_session()'):
 		self.function = function
 		# Signal handler for e.g. KeyboardInterrupt
 		self.abort_counter = 0
