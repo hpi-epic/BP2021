@@ -14,6 +14,11 @@ import market.sim_market as sim_market
 import rl.training as training
 import tests.utils_tests as ut_t
 
+
+def teardown_module(module):
+	reload(config)
+
+
 test_scenarios = [
 	(sim_market.ClassicScenario, vendors.QLearningAgent),
 	(sim_market.MultiCompetitorScenario, vendors.QLearningAgent),
