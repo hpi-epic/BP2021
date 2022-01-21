@@ -140,7 +140,10 @@ class DiscreteACACircularEconomy(DiscreteActorCriticAgent):
 
 class DiscreteACACircularEconomyRebuy(DiscreteActorCriticAgent):
 	def agent_output_to_market_form(self, action):
-		return (int(action / (config.MAX_PRICE * config.MAX_PRICE)), int(action / config.MAX_PRICE % config.MAX_PRICE), int(action % config.MAX_PRICE))
+		return (
+			int(action / (config.MAX_PRICE * config.MAX_PRICE)),
+			int(action / config.MAX_PRICE % config.MAX_PRICE),
+			int(action % config.MAX_PRICE))
 
 
 class ContinuosActorCriticAgent(ActorCriticAgent):
@@ -186,7 +189,8 @@ class ContinuosActorCriticAgent(ActorCriticAgent):
 		action = torch.round(torch.normal(mean, std).to(self.device))
 		action = torch.max(action, torch.zeros(action.shape).to(self.device))
 		action = torch.min(action, 9 * torch.ones(action.shape).to(self.device))
-		return action.squeeze().type(torch.LongTensor).to('cpu').numpy(), *((np.array([mean.to('cpu').numpy(), std.to('cpu').numpy()]).reshape(-1), v_estimat.to('cpu').item()) if verbose else (None, None))
+		return action.squeeze().type(torch.LongTensor).to('cpu').numpy(), \
+			*((np.array([mean.to('cpu').numpy(), std.to('cpu').numpy()]).reshape(-1), v_estimat.to('cpu').item()) if verbose else (None, None))
 
 	def log_probability_given_action(self, states, actions):
 		network_result = self.actor_net(states)

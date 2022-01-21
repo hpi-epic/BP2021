@@ -30,14 +30,21 @@ def choose_random_envs(total_envs):
 	return chosen_envs
 
 
-def train_actorcritic(marketplace_class=sim_market.CircularEconomyRebuyPriceOneCompetitor, agent_class=actorcritic_agent.ContinuosActorCriticAgentFixedOneStd, number_of_training_steps=200, verbose=False, total_envs=128):
+def train_actorcritic(
+	marketplace_class=sim_market.CircularEconomyRebuyPriceOneCompetitor,
+	agent_class=actorcritic_agent.ContinuosActorCriticAgentFixedOneStd,
+	number_of_training_steps=200,
+	verbose=False,
+	total_envs=128):
 	"""
 	This is the central method you need to start training of actorcritic_agent.
 	You can customize the training by several parameters.
 
 	Args:
-		marketplace_class (SimMarket, optional): The market scenario you want to train. Defaults to sim_market.CircularEconomyRebuyPriceOneCompetitor.
-		agent_class (ActorCriticAgent, optional): The class of the actor critic agent you want to train. Defaults to actorcritic_agent.ContinuosActorCriticAgentFixedOneStd.
+		marketplace_class (SimMarket, optional): The market scenario you want to train.
+			Defaults to sim_market.CircularEconomyRebuyPriceOneCompetitor.
+		agent_class (ActorCriticAgent, optional): The class of the actor critic agent you want to train.
+			Defaults to actorcritic_agent.ContinuosActorCriticAgentFixedOneStd.
 		number_of_training_steps (int, optional): The number of batches the agent is trained with. Defaults to 200.
 		verbose (bool, optional): Should additional information about agent steps be written to the tensorboard? Defaults to False.
 		total_envs (int, optional): The number of environments you use in parallel to fulfill the iid assumption. Defaults to 128.
@@ -113,7 +120,12 @@ def train_actorcritic(marketplace_class=sim_market.CircularEconomyRebuyPriceOneC
 				environments[env].reset()
 				info_accumulators[env] = None
 
-		policy_loss, valueloss = agent.train_batch(torch.Tensor(np.array(states)), torch.from_numpy(np.array(actions, dtype=np.int64)), torch.Tensor(np.array(rewards)), torch.Tensor(np.array(next_state)), finished_episodes <= 500)
+		policy_loss, valueloss = agent.train_batch(
+			torch.Tensor(np.array(states)),
+			torch.from_numpy(np.array(actions, dtype=np.int64)),
+			torch.Tensor(np.array(rewards)),
+			torch.Tensor(np.array(next_state)),
+			finished_episodes <= 500)
 		all_value_losses.append(valueloss)
 		all_policy_losses.append(policy_loss)
 		if (step_number + 1) % config.SYNC_TARGET_FRAMES == 0:
