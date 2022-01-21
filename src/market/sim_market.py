@@ -88,10 +88,9 @@ class SimMarket(gym.Env, ABC):
 		"""
 		probability_distribution = self._customer.generate_purchase_probabilities_from_offer(offers, self._get_offer_length_per_vendor())
 		assert isinstance(probability_distribution, np.ndarray), 'generate_purchase_probabilities_from_offer must return an np.ndarray'
-		assert len(probability_distribution) == (1 + (
-			1 if isinstance(self, LinearEconomy) else 2) * self._get_number_of_vendors(),
+		assert len(probability_distribution) == 1 + (1 if isinstance(self, LinearEconomy) else 2) * self._get_number_of_vendors(), \
 			"""The probability distribution must have one entry for buy_nothing and one or two entries for every vendor.
-			One entry if it is a linear economy (with only one price) or a circular economy with the option to buy refurbished or new.""")
+			One entry if it is a linear economy (with only one price) or a circular economy with the option to buy refurbished or new."""
 
 		for _ in range(number_of_customers):
 			customer_decision = ut.shuffle_from_probabilities(probability_distribution)
@@ -112,8 +111,10 @@ class SimMarket(gym.Env, ABC):
 			Note that you must add one to this price to get the real price!
 
 		Returns:
-			Tuple[np.array, np.float64, bool, dict]: A Tuple, containing the observation the agents makes right before his next action,
-			the reward he made between these actions, a flag indicating if the market closes and information about the market for logging purposes.
+			Tuple[np.array, np.float64, bool, dict]: A Tuple,
+			containing the observation the agents makes right before his next action,
+			the reward he made between these actions,
+			a flag indicating if the market closes and information about the market for logging purposes.
 		"""
 		assert self._action_space.contains(action), f'{action} ({type(action)}) invalid'
 
@@ -318,8 +319,8 @@ class SimMarket(gym.Env, ABC):
 			init_for_all_vendors (list, optional): initialization values for all vendors in this entry. Defaults to None.
 		"""
 		if init_for_all_vendors is not None:
-			assert isinstance(init_for_all_vendors, list) and len(init_for_all_vendors) == (self._get_number_of_vendors(),
-			'make sure you pass a list with length of number of vendors')
+			assert isinstance(init_for_all_vendors, list) and len(init_for_all_vendors) == self._get_number_of_vendors(), \
+				'make sure you pass a list with length of number of vendors'
 		if name not in self.output_dict:
 			if init_for_all_vendors is None:
 				self.output_dict[name] = 0
@@ -479,8 +480,8 @@ class CircularEconomy(SimMarket):
 		assert self._owner is not None, 'an owner must be set'
 		return_probabilities = self._owner.generate_return_probabilities_from_offer(offer, self._get_offer_length_per_vendor())
 		assert isinstance(return_probabilities, np.ndarray), 'return_probabilities must be an np.ndarray'
-		assert len(return_probabilities) == (2 + self._get_number_of_vendors(),
-			'the length of return_probabilities must be the number of vendors plus 2')
+		assert len(return_probabilities) == 2 + self._get_number_of_vendors(), \
+			'the length of return_probabilities must be the number of vendors plus 2'
 
 		number_of_owners = int(0.05 * self.in_circulation / self._get_number_of_vendors())
 		for _ in range(number_of_owners):
@@ -505,8 +506,8 @@ class CircularEconomy(SimMarket):
 			profits (np.array(int)): The profits of all vendors.
 			customer_decision (int): Indicates the customer's decision.
 		"""
-		assert customer_decision >= 0 and customer_decision < (2 * self._get_number_of_vendors(),
-			'the customer_decision must be between 0 and 2 * the number of vendors, as each vendor offers a new and a refurbished product')
+		assert customer_decision >= 0 and customer_decision < 2 * self._get_number_of_vendors(), \
+			'the customer_decision must be between 0 and 2 * the number of vendors, as each vendor offers a new and a refurbished product'
 
 		chosen_vendor = int(np.floor(customer_decision / 2))
 		if customer_decision % 2 == 0:

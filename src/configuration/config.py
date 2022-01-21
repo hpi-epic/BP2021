@@ -129,7 +129,8 @@ def update_sim_market_variables(config: dict) -> None:
 	assert global_variables['MAX_PRICE'] > 0, 'max_price should be positive'
 	assert global_variables['EPISODE_LENGTH'] > 0, 'episode_size should be positive'
 
-	global_variables['MEAN_REWARD_BOUND'] = (global_variables['EPISODE_LENGTH'] * global_variables['MAX_PRICE'] * global_variables['NUMBER_OF_CUSTOMERS']) # noqa E501
+	global_variables['MEAN_REWARD_BOUND'] = global_variables['EPISODE_LENGTH'] * global_variables['MAX_PRICE'] * \
+		global_variables['NUMBER_OF_CUSTOMERS']
 
 
 config = load_config()
