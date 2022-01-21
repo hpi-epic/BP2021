@@ -47,7 +47,7 @@ class ActorCriticAgent(vendors.Agent, ABC):
 			regularization (bool, optional): Do you want to use the regularization method? Defaults to False.
 
 		Returns:
-			float, float: the loss of your critic network and your actor network during this step
+			float, float: the loss of your actor network and your critic network during this step
 		"""
 		states = states.to(self.device)
 		actions = actions.to(self.device)
@@ -74,7 +74,7 @@ class ActorCriticAgent(vendors.Agent, ABC):
 		self.critic_optimizer.step()
 		self.actor_optimizer.step()
 
-		return critic_loss.to('cpu').item(), actor_loss.to('cpu').item()
+		return actor_loss.to('cpu').item(), critic_loss.to('cpu').item()
 
 	def regularize(self, states):
 		"""
