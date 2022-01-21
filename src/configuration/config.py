@@ -96,8 +96,8 @@ def update_rl_variables(config: dict) -> None:
 	global_variables['EPSILON_START'] = float(config['epsilon_start'])
 	global_variables['EPSILON_FINAL'] = float(config['epsilon_final'])
 
-	assert global_variables['LEARNING_RATE'] > 0 and global_variables['LEARNING_RATE'] < (1,
-		'learning_rate should be between 0 and 1 (excluded)')
+	assert global_variables['LEARNING_RATE'] > 0 and global_variables['LEARNING_RATE'] < 1, \
+		'learning_rate should be between 0 and 1 (excluded)'
 	assert global_variables['GAMMA'] >= 0 and global_variables['GAMMA'] < 1, 'gamma should be between 0 (included) and 1 (excluded)'
 	assert global_variables['BATCH_SIZE'] > 0, 'batch_size should be greater than 0'
 	assert global_variables['REPLAY_SIZE'] > 0, 'replay_size should be greater than 0'
@@ -121,10 +121,10 @@ def update_sim_market_variables(config: dict) -> None:
 	global_variables['NUMBER_OF_CUSTOMERS'] = int(config['number_of_customers'])
 	global_variables['PRODUCTION_PRICE'] = int(config['production_price'])
 
-	assert global_variables['NUMBER_OF_CUSTOMERS'] > 0 and global_variables['NUMBER_OF_CUSTOMERS'] % 2 == (0,
-		'number_of_customers should be even and positive')
-	assert global_variables['PRODUCTION_PRICE'] <= global_variables['MAX_PRICE'] and global_variables['PRODUCTION_PRICE'] >= (0,
-		'production_price needs to smaller than max_price and positive or zero')
+	assert global_variables['NUMBER_OF_CUSTOMERS'] > 0 and global_variables['NUMBER_OF_CUSTOMERS'] % 2 == 0, \
+		'number_of_customers should be even and positive'
+	assert global_variables['PRODUCTION_PRICE'] <= global_variables['MAX_PRICE'] and global_variables['PRODUCTION_PRICE'] >= 0, \
+		'production_price needs to smaller than max_price and positive or zero'
 	assert global_variables['MAX_QUALITY'] > 0, 'max_quality should be positive'
 	assert global_variables['MAX_PRICE'] > 0, 'max_price should be positive'
 	assert global_variables['EPISODE_LENGTH'] > 0, 'episode_size should be positive'

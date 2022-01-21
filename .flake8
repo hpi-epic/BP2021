@@ -1,6 +1,6 @@
 [flake8]
-# E501: Line too long good bye
 # W191: Indentation contains tabs
+# E128: Continuation line under-indented for visual indent
 ignore = W191, E128
 max-line-length = 140
 
