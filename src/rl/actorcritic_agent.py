@@ -35,33 +35,46 @@ class ActorCriticAgent(vendors.Agent, ABC):
 	def policy(self, observation, verbose=False) -> None:  # pragma: no cover
 		raise NotImplementedError('This method is abstract. Use a subclass')
 
-	def train_batch(self, states, actions, rewards, states_dash, regularization=False):
+	def train_batch(self, states, actions, rewards, next_states, regularization=False):
+		"""
+		This is the main method to train both actor and critic network by a new batch.
+
+		Args:
+			states (torch.Tensor): Your current states
+			actions (torch.Tensor): The actions you have taken
+			rewards (torch.Tensor): The rewards you received from the environment
+			next_states (torch.Tensor): The states you got into after your actions have been performed
+			regularization (bool, optional): Do you want to use the regularization method? Defaults to False.
+
+		Returns:
+			float, float: the loss of your critic network and your actor network during this step
+		"""
 		states = states.to(self.device)
 		actions = actions.to(self.device)
 		rewards = rewards.to(self.device)
-		states_dash = states_dash.to(self.device)
+		next_states = next_states.to(self.device)
 		self.critic_optimizer.zero_grad()
 		self.actor_optimizer.zero_grad()
 
 		v_estimates = self.critic_net(states)
 		with torch.no_grad():
-			v_expected = (rewards + config.GAMMA * self.critic_tgt_net(states_dash).detach()).view(-1, 1)
-		valueloss = torch.nn.MSELoss()(v_estimates, v_expected)
-		valueloss.backward()
+			v_expected = (rewards + config.GAMMA * self.critic_tgt_net(next_states).detach()).view(-1, 1)
+		critic_loss = torch.nn.MSELoss()(v_estimates, v_expected)
+		critic_loss.backward()
 
 		with torch.no_grad():
 			baseline = v_estimates
 			constant = (v_expected - baseline).detach()
 		log_prob = -self.log_probability_given_action(states.detach(), actions.detach())
-		policy_loss = torch.mean(constant * log_prob)
+		actor_loss = torch.mean(constant * log_prob)
 		if regularization:
-			policy_loss += self.regularize(states)
-		policy_loss.backward()
+			actor_loss += self.regularize(states)
+		actor_loss.backward()
 
 		self.critic_optimizer.step()
 		self.actor_optimizer.step()
 
-		return valueloss.to('cpu').item(), policy_loss.to('cpu').item()
+		return critic_loss.to('cpu').item(), actor_loss.to('cpu').item()
 
 	def regularize(self, states):
 		"""
@@ -133,8 +146,10 @@ class DiscreteACACircularEconomyRebuy(DiscreteActorCriticAgent):
 class ContinuosActorCriticAgent(ActorCriticAgent):
 	"""
 	This is an actor critic agent with continuos action space.
-	It's parametrization is a normal distribution with fixed mean.
+	It's distribution is a normal distribution parameterized by mean and standard deviation.
 	It works on any sort of market we have so far, just the number of action values must be given.
+	Note that this class is abstract.
+	You must use one of its subclasses.
 	"""
 	softplus = torch.nn.Softplus()
 
@@ -148,6 +163,16 @@ class ContinuosActorCriticAgent(ActorCriticAgent):
 
 	@abstractmethod
 	def transform_network_output(self, number_outputs, network_result):
+		"""
+		This method transforms the raw network output into an agent specific parametrization for mean and standard deviation.
+
+		Args:
+			number_outputs (int): the number of independent network outputs
+			network_result (torch.Tensor): The output of your network. It will be used to generate your means and standard deviations.
+
+		Returns:
+			torch.Tensor, torch.Tensor: A tensor of your means and a tensor of your standard deviations
+		"""
 		raise NotImplementedError('This method is abstract. Use a subclass')
 
 	def policy(self, observation, verbose=False):
@@ -189,6 +214,18 @@ class ContinuosActorCriticAgent(ActorCriticAgent):
 
 class ContinuosActorCriticAgentFixedOneStd(ContinuosActorCriticAgent):
 	def transform_network_output(self, number_outputs, network_result):
+		"""
+		This implementation of transform_network_output uses the full output as mean.
+		The usage of softplus ensures that the means will be non-negative.
+		The standard deviation contains ones of the same shape as mean.
+
+		Args:
+			number_outputs (int): the number of independent network outputs
+			network_result (torch.Tensor): The output of your network. It will be used as your mean.
+
+		Returns:
+			torch.Tensor, torch.Tensor: A tensor of your means and a tensor of your standard deviations
+		"""
 		network_result = network_result.view(number_outputs, -1)
 		network_result = self.softplus(network_result)
 		return network_result, torch.ones(network_result.shape).to(self.device)
@@ -199,6 +236,19 @@ class ContinuosActorCriticAgentEstimatingStd(ContinuosActorCriticAgent):
 		super().initialize_models_and_optimizer(n_observations, 2 * n_actions)
 
 	def transform_network_output(self, number_outputs, network_result):
+		"""
+		This implementation of transform_network_output splits the output into means and standard deviations.
+		The usage of softplus ensures that the means and standard deviations will be non-negative.
+		It is ensured that the standard deviations will be slightly greater that zero.
+		To ensure that high standard deviations will be estimated with care the root of the value will be taken.
+
+		Args:
+			number_outputs (int): the number of independent network outputs
+			network_result (torch.Tensor): The output of your network. It will be split into means and standard deviations.
+
+		Returns:
+			torch.Tensor, torch.Tensor: A tensor of your means and a tensor of your standard deviations
+		"""
 		network_result = network_result.view(number_outputs, 2, -1)
 		network_result = self.softplus(network_result)
 		mean = network_result[:, 0, :]
