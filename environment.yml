@@ -21,3 +21,4 @@ dependencies:
   - pip=21.2.4
   - pip:
     - -e ./src  # This installs our project as a package
+    - pytest-randomly  # each time the tests are run, they are run in a random order to find hidden dependencies
