@@ -118,11 +118,11 @@ class DiscreteActorCriticAgent(ActorCriticAgent):
 		with torch.no_grad():
 			distribution = torch.softmax(self.actor_net(observation).view(-1), dim=0)
 			if verbose:
-				v_estimat = self.critic_net(observation).view(-1)
+				v_estimate = self.critic_net(observation).view(-1)
 
 		distribution = distribution.to('cpu').detach().numpy()
 		action = ut.shuffle_from_probabilities(distribution)
-		return action, distribution[action], v_estimat.to('cpu').item() if verbose else None
+		return action, distribution[action], v_estimate.to('cpu').item() if verbose else None
 
 	def log_probability_given_action(self, states, actions):
 		return -torch.log(torch.softmax(self.actor_net(states), dim=0).gather(1, actions.unsqueeze(-1)))
@@ -184,13 +184,13 @@ class ContinuosActorCriticAgent(ActorCriticAgent):
 			network_result = self.actor_net(observation)
 			mean, std = self.transform_network_output(1, network_result)
 			if verbose:
-				v_estimat = self.critic_net(observation).view(-1)
+				v_estimate = self.critic_net(observation).view(-1)
 
 		action = torch.round(torch.normal(mean, std).to(self.device))
 		action = torch.max(action, torch.zeros(action.shape).to(self.device))
 		action = torch.min(action, 9 * torch.ones(action.shape).to(self.device))
 		return action.squeeze().type(torch.LongTensor).to('cpu').numpy(), \
-			*((np.array([mean.to('cpu').numpy(), std.to('cpu').numpy()]).reshape(-1), v_estimat.to('cpu').item()) if verbose else (None, None))
+			*((np.array([mean.to('cpu').numpy(), std.to('cpu').numpy()]).reshape(-1), v_estimate.to('cpu').item()) if verbose else (None, None))
 
 	def log_probability_given_action(self, states, actions):
 		network_result = self.actor_net(states)
