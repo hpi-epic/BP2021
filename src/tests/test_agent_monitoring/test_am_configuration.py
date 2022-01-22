@@ -43,7 +43,10 @@ def test_get_folder():
 	# if you change the name of this function, change it here as well!
 	foldername = 'test_plots_test_get_folder'
 	monitor.configurator.get_folder()
-	assert os.path.exists(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir, 'results', 'monitoring', foldername)))
+	assert os.path.exists(
+		os.path.abspath(os.path.join(os.path.dirname(__file__),
+		os.pardir, os.pardir, os.pardir,
+		'results', 'monitoring', foldername)))
 	shutil.rmtree(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir, 'results', 'monitoring', foldername))
 
 
@@ -87,7 +90,16 @@ def test_correct_update_agents(agents):
 
 
 def test_correct_setup_monitoring():
-	monitor.configurator.setup_monitoring(enable_live_draw=False, episodes=10, plot_interval=2, marketplace=sim_market.CircularEconomyMonopolyScenario, agents=[(vendors.HumanPlayerCERebuy, ['reptiloid']), (vendors.QLearningCERebuyAgent, ['CircularEconomyMonopolyScenario_QLearningCEAgent.dat', 'q_learner'])], subfolder_name='subfoldername')
+	monitor.configurator.setup_monitoring(
+		enable_live_draw=False,
+		episodes=10,
+		plot_interval=2,
+		marketplace=sim_market.CircularEconomyMonopolyScenario,
+		agents=[(vendors.HumanPlayerCERebuy,
+			['reptiloid']),
+			(vendors.QLearningCERebuyAgent,
+			['CircularEconomyMonopolyScenario_QLearningCEAgent.dat', 'q_learner'])],
+		subfolder_name='subfoldername')
 	assert monitor.configurator.enable_live_draw is False
 	assert 10 == monitor.configurator.episodes
 	assert 2 == monitor.configurator.plot_interval
@@ -97,7 +109,10 @@ def test_correct_setup_monitoring():
 	assert isinstance(monitor.configurator.agents[1], vendors.QLearningCERebuyAgent)
 	assert 'reptiloid' == monitor.configurator.agents[0].name
 	assert 'q_learner' == monitor.configurator.agents[1].name
-	assert os.path.normcase(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir, 'results', 'monitoring', 'subfoldername'))) == os.path.normcase(os.path.abspath(monitor.configurator.folder_path))
+	assert os.path.normcase(os.path.abspath(os.path.join(os.path.dirname(__file__),
+		os.pardir,
+		os.pardir, os.pardir,
+		'results', 'monitoring', 'subfoldername'))) == os.path.normcase(os.path.abspath(monitor.configurator.folder_path))
 	assert 2 == len(monitor.configurator.agent_colors)
 
 
@@ -124,19 +139,25 @@ incorrect_setup_monitoring_testcases = [
 	({'plot_interval': 0}, 'plot_interval must not be 0'),
 	({'episodes': 4, 'plot_interval': 5}, 'plot_interval must be <= episodes, or no plots can be generated.'),
 	({'marketplace': vendors.RuleBasedCEAgent}, 'the marketplace must be a subclass of SimMarket'),
-	({'marketplace': sim_market.ClassicScenario, 'agents': [(vendors.RuleBasedCEAgent, [])]}, 'the agent and marketplace must be of the same economy type'),
+	({'marketplace': sim_market.ClassicScenario, 'agents': [(vendors.RuleBasedCEAgent, [])]},
+		'the agent and marketplace must be of the same economy type'),
 	({'agents': [vendors.RuleBasedCEAgent]}, 'agents must be a list of tuples'),
 	({'agents': [[vendors.RuleBasedCEAgent, 1, '2']]}, 'agents must be a list of tuples'),
 	({'agents': [(vendors.RuleBasedCEAgent)]}, 'agents must be a list of tuples'),
 	({'agents': [vendors.FixedPriceLEAgent, vendors.FixedPriceCERebuyAgent]}, 'agents must be a list of tuples'),
-	({'agents': [(vendors.RuleBasedCEAgent, ['arg'], 'too_much')]}, 'the list entries in agents must have size 2 ([agent_class, arguments])'),
+	({'agents': [(vendors.RuleBasedCEAgent, ['arg'], 'too_much')]},
+		'the list entries in agents must have size 2 ([agent_class, arguments])'),
 	({'agents': [(sim_market.ClassicScenario, [])]}, 'the first entry in each agent-tuple must be an agent class in `vendors.py`'),
 	({'agents': [(vendors.RuleBasedCEAgent, sim_market.ClassicScenario)]}, 'the second entry in each agent-tuple must be a list'),
 	({'agents': [(vendors.RuleBasedCEAgent, 'new_name')]}, 'the second entry in each agent-tuple must be a list'),
-	({'agents': [(vendors.RuleBasedCEAgent, []), (vendors.FixedPriceLEAgent, [])]}, 'the agents must all be of the same type (Linear/Circular)'),
-	({'agents': [(vendors.RuleBasedCEAgent, []), (vendors.FixedPriceLEAgent, []), (vendors.FixedPriceCEAgent, [])]}, 'the agents must all be of the same type (Linear/Circular)'),
-	({'marketplace': sim_market.CircularEconomyRebuyPriceMonopolyScenario, 'agents': [(vendors.FixedPriceLEAgent, [])]}, 'the agent and marketplace must be of the same economy type (Linear/Circular)'),
-	({'marketplace': sim_market.ClassicScenario, 'agents': [(vendors.FixedPriceCEAgent, [])]}, 'the agent and marketplace must be of the same economy type (Linear/Circular)'),
+	({'agents': [(vendors.RuleBasedCEAgent, []), (vendors.FixedPriceLEAgent, [])]},
+		'the agents must all be of the same type (Linear/Circular)'),
+	({'agents': [(vendors.RuleBasedCEAgent, []), (vendors.FixedPriceLEAgent, []), (vendors.FixedPriceCEAgent, [])]},
+		'the agents must all be of the same type (Linear/Circular)'),
+	({'marketplace': sim_market.CircularEconomyRebuyPriceMonopolyScenario, 'agents': [(vendors.FixedPriceLEAgent, [])]},
+		'the agent and marketplace must be of the same economy type (Linear/Circular)'),
+	({'marketplace': sim_market.ClassicScenario, 'agents': [(vendors.FixedPriceCEAgent, [])]},
+		'the agent and marketplace must be of the same economy type (Linear/Circular)'),
 	({'subfolder_name': 1}, 'subfolder_name must be of type str')
 ]
 
@@ -200,7 +221,15 @@ def test_incorrect_setup_monitoring_type_errors(parameters):
 
 
 def test_get_configuration():
-	monitor.configurator.setup_monitoring(enable_live_draw=False, episodes=10, plot_interval=2, marketplace=sim_market.CircularEconomyMonopolyScenario, agents=[(vendors.HumanPlayerCERebuy, ['reptiloid']), (vendors.QLearningCERebuyAgent, ['CircularEconomyMonopolyScenario_QLearningCEAgent.dat', 'q_learner'])], subfolder_name='subfoldername')
+	monitor.configurator.setup_monitoring(
+		enable_live_draw=False,
+		episodes=10,
+		plot_interval=2,
+		marketplace=sim_market.CircularEconomyMonopolyScenario,
+		agents=[(vendors.HumanPlayerCERebuy, ['reptiloid']),
+		(vendors.QLearningCERebuyAgent,
+		['CircularEconomyMonopolyScenario_QLearningCEAgent.dat', 'q_learner'])],
+		subfolder_name='subfoldername')
 	current_configuration = monitor.configurator.get_configuration()
 	assert len(current_configuration) == 7, 'parameters were updated in agent_monitoring.py, but not updated in the tests!'
 	assert 'enable_live_draw' in current_configuration

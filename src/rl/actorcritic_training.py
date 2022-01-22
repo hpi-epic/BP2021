@@ -49,7 +49,8 @@ def train_actorcritic(
 		verbose (bool, optional): Should additional information about agent steps be written to the tensorboard? Defaults to False.
 		total_envs (int, optional): The number of environments you use in parallel to fulfill the iid assumption. Defaults to 128.
 	"""
-	assert issubclass(agent_class, actorcritic_agent.ActorCriticAgent), f'the agent_class must be a subclass of ActorCriticAgent: {agent_class}'
+	assert issubclass(agent_class, actorcritic_agent.ActorCriticAgent), \
+		f'the agent_class must be a subclass of ActorCriticAgent: {agent_class}'
 	if issubclass(agent_class, actorcritic_agent.ContinuosActorCriticAgent):
 		if marketplace_class()._action_space.shape is not None:
 			outputs = 1
