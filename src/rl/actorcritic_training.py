@@ -9,7 +9,7 @@ from torch.utils.tensorboard import SummaryWriter
 import configuration.config as config
 import configuration.utils as ut
 import market.sim_market as sim_market
-import rl.actorcritic_agent as a2cagent
+import rl.actorcritic_agent as actorcritic_agent
 
 
 def choose_random_envs(total_envs):
@@ -30,9 +30,27 @@ def choose_random_envs(total_envs):
 	return chosen_envs
 
 
-def train_actorcritic(marketplace_class=sim_market.CircularEconomyRebuyPriceOneCompetitor, agent_class=a2cagent.ContinuosActorCriticAgent, number_of_training_steps=200, verbose=False, total_envs=128):
-	assert issubclass(agent_class, a2cagent.ActorCriticAgent), f'the agent_class must be a subclass of ActorCriticAgent: {agent_class}'
-	if issubclass(agent_class, a2cagent.ContinuosActorCriticAgent):
+def train_actorcritic(
+	marketplace_class=sim_market.CircularEconomyRebuyPriceOneCompetitor,
+	agent_class=actorcritic_agent.ContinuosActorCriticAgentFixedOneStd,
+	number_of_training_steps=200,
+	verbose=False,
+	total_envs=128):
+	"""
+	This is the central method you need to start training of actorcritic_agent.
+	You can customize the training by several parameters.
+
+	Args:
+		marketplace_class (SimMarket, optional): The market scenario you want to train.
+			Defaults to sim_market.CircularEconomyRebuyPriceOneCompetitor.
+		agent_class (ActorCriticAgent, optional): The class of the actor critic agent you want to train.
+			Defaults to actorcritic_agent.ContinuosActorCriticAgentFixedOneStd.
+		number_of_training_steps (int, optional): The number of batches the agent is trained with. Defaults to 200.
+		verbose (bool, optional): Should additional information about agent steps be written to the tensorboard? Defaults to False.
+		total_envs (int, optional): The number of environments you use in parallel to fulfill the iid assumption. Defaults to 128.
+	"""
+	assert issubclass(agent_class, actorcritic_agent.ActorCriticAgent), f'the agent_class must be a subclass of ActorCriticAgent: {agent_class}'
+	if issubclass(agent_class, actorcritic_agent.ContinuosActorCriticAgent):
 		if marketplace_class()._action_space.shape is not None:
 			outputs = 1
 		else:
@@ -43,7 +61,7 @@ def train_actorcritic(marketplace_class=sim_market.CircularEconomyRebuyPriceOneC
 
 	all_dicts = []
 	if verbose:
-		all_probs = []
+		all_network_outputs = []
 		all_v_estimates = []
 	all_value_losses = []
 	all_policy_losses = []
@@ -63,9 +81,9 @@ def train_actorcritic(marketplace_class=sim_market.CircularEconomyRebuyPriceOneC
 		states_dash = []
 		for env in chosen_envs:
 			state = environments[env]._observation()
-			action, prob, v_estimate = agent.policy(state, verbose)
+			action, net_output, v_estimate = agent.policy(state, verbose)
 			if verbose:
-				all_probs.append(prob)
+				all_network_outputs.append(net_output.reshape(-1))
 				all_v_estimates.append(v_estimate)
 			next_state, reward, is_done, info = environments[env].step(agent.agent_output_to_market_form(action))
 
@@ -90,15 +108,24 @@ def train_actorcritic(marketplace_class=sim_market.CircularEconomyRebuyPriceOneC
 				averaged_info = ut.divide_content_of_dict(averaged_info, len(sliced_dicts))
 				ut.write_dict_to_tensorboard(writer, averaged_info, finished_episodes, is_cumulative=True)
 				if verbose:
-					writer.add_scalar('training/prob_mean', np.mean(all_probs[-1000:]), finished_episodes)
-					writer.add_scalar('training/v_estimate', np.mean(all_v_estimates[-1000:]), finished_episodes)
+					writer.add_scalar('verbose/v_estimate', np.mean(all_v_estimates[-1000:]), finished_episodes)
+					myactions = np.array(all_network_outputs[-1000:])
+					for action_num in range(len(all_network_outputs[0])):
+						writer.add_scalar('verbose/mean/information_' + str(action_num), np.mean(myactions[:, action_num]), finished_episodes)
+						writer.add_scalar('verbose/min/information_' + str(action_num), np.min(myactions[:, action_num]), finished_episodes)
+						writer.add_scalar('verbose/max/information_' + str(action_num), np.max(myactions[:, action_num]), finished_episodes)
 				writer.add_scalar('loss/value', np.mean(all_value_losses[-1000:]), finished_episodes)
 				writer.add_scalar('loss/policy', np.mean(all_policy_losses[-1000:]), finished_episodes)
 
 				environments[env].reset()
 				info_accumulators[env] = None
 
-		valueloss, policy_loss = agent.train_batch(torch.Tensor(np.array(states)), torch.from_numpy(np.array(actions, dtype=np.int64)), torch.Tensor(np.array(rewards)), torch.Tensor(np.array(next_state)), finished_episodes <= 500)
+		policy_loss, valueloss = agent.train_batch(
+			torch.Tensor(np.array(states)),
+			torch.from_numpy(np.array(actions, dtype=np.int64)),
+			torch.Tensor(np.array(rewards)),
+			torch.Tensor(np.array(next_state)),
+			finished_episodes <= 500)
 		all_value_losses.append(valueloss)
 		all_policy_losses.append(policy_loss)
 		if (step_number + 1) % config.SYNC_TARGET_FRAMES == 0:
