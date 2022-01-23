@@ -119,7 +119,8 @@ def test_prices_are_not_higher_than_allowed():
 		assert (9, 9) >= test_agent.policy([50, 60])
 
 
-# Helper function that creates a random offer (state that includes the agent's price) to test customer behaviour. This is dependent on the sim_market working!
+# Helper function that creates a random offer (state that includes the agent's price) to test customer behaviour.
+# This is dependent on the sim_market working!
 # TODO: Make deterministic #174
 def random_offer():
 	return [random.randint(1, config.MAX_QUALITY), random.randint(1, config.MAX_PRICE), random.randint(1, config.MAX_QUALITY)]

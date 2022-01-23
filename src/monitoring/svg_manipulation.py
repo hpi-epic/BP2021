@@ -72,12 +72,14 @@ class SVGManipulator():
 		Replace all placeholder values in the current svg with a given dictionary.
 
 		Args:
-			target_dictionary (dict, optional): Dictionary containing the values that should be replaced in the copy. Defaults to `get_default_dict()`.
+			target_dictionary (dict, optional): Dictionary containing the values that should be replaced in the copy.
+			Defaults to `get_default_dict()`.
 
 		Returns:
 			str: The full path to the copied file.
 		"""
-		assert all(isinstance(value, str) for _, value in target_dictionary.items()), f'the dictionary should only contain strings: {target_dictionary}'
+		assert all(isinstance(value, str) for _, value in target_dictionary.items()), \
+			f'the dictionary should only contain strings: {target_dictionary}'
 		self.value_dictionary = target_dictionary
 
 		# reset the output svg to the template to be able to replace the placeholders with actual values

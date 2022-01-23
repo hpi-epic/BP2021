@@ -87,7 +87,9 @@ class SimMarket(gym.Env, ABC):
 		"""
 		probability_distribution = self._customer.generate_purchase_probabilities_from_offer(offers, self._get_offer_length_per_vendor())
 		assert isinstance(probability_distribution, np.ndarray), 'generate_purchase_probabilities_from_offer must return an np.ndarray'
-		assert len(probability_distribution) == 1 + (1 if isinstance(self, LinearEconomy) else 2) * self._get_number_of_vendors(), 'The probability distribution must have one entry for buy_nothing and one or two entries for every vendor. One entry if it is a linear economy (with only one price) or a circular economy with the option to buy refurbished or new.'
+		assert len(probability_distribution) == 1 + (1 if isinstance(self, LinearEconomy) else 2) * self._get_number_of_vendors(), \
+			"""The probability distribution must have one entry for buy_nothing and one or two entries for every vendor.
+			One entry if it is a linear economy (with only one price) or a circular economy with the option to buy refurbished or new."""
 
 		for _ in range(number_of_customers):
 			customer_decision = ut.shuffle_from_probabilities(probability_distribution)
@@ -108,7 +110,10 @@ class SimMarket(gym.Env, ABC):
 			Note that you must add one to this price to get the real price!
 
 		Returns:
-			Tuple[np.array, np.float64, bool, dict]: A Tuple, containing the observation the agents makes right before his next action, the reward he made between these actions, a flag indicating if the market closes and information about the market for logging purposes.
+			Tuple[np.array, np.float64, bool, dict]: A Tuple,
+			containing the observation the agents makes right before his next action,
+			the reward he made between these actions,
+			a flag indicating if the market closes and information about the market for logging purposes.
 		"""
 		assert self._action_space.contains(action), f'{action} ({type(action)}) invalid'
 
@@ -313,7 +318,8 @@ class SimMarket(gym.Env, ABC):
 			init_for_all_vendors (list, optional): initialization values for all vendors in this entry. Defaults to None.
 		"""
 		if init_for_all_vendors is not None:
-			assert isinstance(init_for_all_vendors, list) and len(init_for_all_vendors) == self._get_number_of_vendors(), 'make sure you pass a list with length of number of vendors'
+			assert isinstance(init_for_all_vendors, list) and len(init_for_all_vendors) == self._get_number_of_vendors(), \
+				'make sure you pass a list with length of number of vendors'
 		if name not in self.output_dict:
 			if init_for_all_vendors is None:
 				self.output_dict[name] = 0
@@ -398,7 +404,10 @@ class CircularEconomy(SimMarket):
 		# cell 0: number of products in the used storage, cell 1: number of products in circulation
 		self.max_storage = 1e2
 		self.max_circulation = 10 * self.max_storage
-		self.observation_space = gym.spaces.Box(np.array([0, 0] + [0, 0, 0] * len(self.competitors)), np.array([self.max_circulation, self.max_storage] + [config.MAX_PRICE, config.MAX_PRICE, self.max_storage] * len(self.competitors)), dtype=np.float64)
+		self.observation_space = gym.spaces.Box(
+			np.array([0, 0] + [0, 0, 0] * len(self.competitors)),
+			np.array([self.max_circulation, self.max_storage] + [config.MAX_PRICE, config.MAX_PRICE, self.max_storage] * len(self.competitors)),
+			dtype=np.float64)
 		self._action_space = gym.spaces.Tuple((gym.spaces.Discrete(config.MAX_PRICE), gym.spaces.Discrete(config.MAX_PRICE)))
 
 	def _reset_vendor_specific_state(self) -> list:
@@ -433,23 +442,27 @@ class CircularEconomy(SimMarket):
 		return owner.UniformDistributionOwner()
 
 	def _throw_away(self) -> None:
-		"""The call of this method will decrease the in_circulation counter by one.Call it if one of your owners decided to throw away his product."""
-
+		"""
+		The call of this method will decrease the in_circulation counter by one.
+		Call it if one of your owners decided to throw away his product.
+		"""
 		self.output_dict['owner/throw_away'] += 1
 		self.in_circulation -= 1
 
 	def _transfer_product_to_storage(self, vendor, profits=None, rebuy_price=0) -> None:
 		"""
-		Handles the transfer of a used product to the storage after it got bought by the vendor. It respects the storage capacity and adjusts the profit the vendor makes.
+		Handles the transfer of a used product to the storage after it got bought by the vendor.
+		It respects the storage capacity and adjusts the profit the vendor makes.
 
 		Args:
 			vendor (int): The index of the vendor that bought the product.
-			profits (np.array(int), optional): The proftits of all vendors. Only the specific proftit of the given vendor is needed. Defaults to None.
+			profits (np.array(int), optional): The proftits of all vendors.
+			Only the specific proftit of the given vendor is needed. Defaults to None.
 			rebuy_price (int, optional): the price to which the used product is bought. Defaults to 0.
 		"""
 		self.output_dict['owner/rebuys']['vendor_' + str(vendor)] += 1
-
-		self.vendor_specific_state[vendor][0] = min(self.vendor_specific_state[vendor][0] + 1, self.max_storage)  # receive the product only if you have space for it. Otherwise throw it away.
+		# receive the product only if you have space for it. Otherwise throw it away.
+		self.vendor_specific_state[vendor][0] = min(self.vendor_specific_state[vendor][0] + 1, self.max_storage)
 		self.in_circulation -= 1
 		if profits is not None:
 			self.output_dict['profits/rebuy_cost']['vendor_' + str(vendor)] -= rebuy_price
@@ -457,7 +470,8 @@ class CircularEconomy(SimMarket):
 
 	def _simulate_owners(self, profits, offer) -> None:
 		"""
-		The process of owners selling their used products to the vendor. It is prepared for multiple vendor scenarios but is still part of a monopoly.
+		The process of owners selling their used products to the vendor.
+		It is prepared for multiple vendor scenarios but is still part of a monopoly.
 
 		Args:
 			profits (np.array(int)): The profits of the vendor.
@@ -466,7 +480,8 @@ class CircularEconomy(SimMarket):
 		assert self._owner is not None, 'an owner must be set'
 		return_probabilities = self._owner.generate_return_probabilities_from_offer(offer, self._get_offer_length_per_vendor())
 		assert isinstance(return_probabilities, np.ndarray), 'return_probabilities must be an np.ndarray'
-		assert len(return_probabilities) == 2 + self._get_number_of_vendors(), 'the length of return_probabilities must be the number of vendors plus 2'
+		assert len(return_probabilities) == 2 + self._get_number_of_vendors(), \
+			'the length of return_probabilities must be the number of vendors plus 2'
 
 		number_of_owners = int(0.05 * self.in_circulation / self._get_number_of_vendors())
 		for _ in range(number_of_owners):
@@ -491,7 +506,8 @@ class CircularEconomy(SimMarket):
 			profits (np.array(int)): The profits of all vendors.
 			customer_decision (int): Indicates the customer's decision.
 		"""
-		assert customer_decision >= 0 and customer_decision < 2 * self._get_number_of_vendors(), 'the customer_decision must be between 0 and 2 * the number of vendors, as each vendor offers a new and a refurbished product'
+		assert customer_decision >= 0 and customer_decision < 2 * self._get_number_of_vendors(), \
+			'the customer_decision must be between 0 and 2 * the number of vendors, as each vendor offers a new and a refurbished product'
 
 		chosen_vendor = int(np.floor(customer_decision / 2))
 		if customer_decision % 2 == 0:
@@ -508,7 +524,8 @@ class CircularEconomy(SimMarket):
 		else:
 			self.output_dict['customer/purchases_new']['vendor_' + str(chosen_vendor)] += 1
 			profits[chosen_vendor] += self.vendor_actions[chosen_vendor][1] - config.PRODUCTION_PRICE
-			self.output_dict['profits/by_selling_new']['vendor_' + str(chosen_vendor)] += self.vendor_actions[chosen_vendor][1] - config.PRODUCTION_PRICE
+			self.output_dict['profits/by_selling_new']['vendor_' + str(chosen_vendor)] += (
+				self.vendor_actions[chosen_vendor][1] - config.PRODUCTION_PRICE)
 			# One more product is in circulation now, but only 10 times the amount of storage space we have
 			self.in_circulation = min(self.in_circulation + 1, self.max_circulation)
 
@@ -531,9 +548,12 @@ class CircularEconomy(SimMarket):
 		Furthermore, the dictionary entries for all events which shall be monitored in the market are initialized.
 		"""
 		self.output_dict['state/in_circulation'] = self.in_circulation
-		self._ensure_output_dict_has('state/in_storage', [self.vendor_specific_state[vendor][0] for vendor in range(self._get_number_of_vendors())])
-		self._ensure_output_dict_has('actions/price_refurbished', [self.vendor_actions[vendor][0] for vendor in range(self._get_number_of_vendors())])
-		self._ensure_output_dict_has('actions/price_new', [self.vendor_actions[vendor][1] for vendor in range(self._get_number_of_vendors())])
+		self._ensure_output_dict_has('state/in_storage',
+			[self.vendor_specific_state[vendor][0] for vendor in range(self._get_number_of_vendors())])
+		self._ensure_output_dict_has('actions/price_refurbished',
+			[self.vendor_actions[vendor][0] for vendor in range(self._get_number_of_vendors())])
+		self._ensure_output_dict_has('actions/price_new',
+			[self.vendor_actions[vendor][1] for vendor in range(self._get_number_of_vendors())])
 
 		self._ensure_output_dict_has('owner/throw_away')
 		self._ensure_output_dict_has('owner/rebuys', [0] * self._get_number_of_vendors())
@@ -563,8 +583,15 @@ class CircularEconomyRebuyPrice(CircularEconomy):
 
 	def _setup_action_observation_space(self) -> None:
 		super()._setup_action_observation_space()
-		self.observation_space = gym.spaces.Box(np.array([0, 0] + [0, 0, 0, 0] * len(self.competitors)), np.array([self.max_circulation, self.max_storage] + [config.MAX_PRICE, config.MAX_PRICE, config.MAX_PRICE, self.max_storage] * len(self.competitors)), dtype=np.float64)
-		self._action_space = gym.spaces.Tuple((gym.spaces.Discrete(config.MAX_PRICE), gym.spaces.Discrete(config.MAX_PRICE), gym.spaces.Discrete(config.MAX_PRICE)))
+		self.observation_space = gym.spaces.Box(
+			np.array([0, 0] + [0, 0, 0, 0] * len(self.competitors)),
+			np.array([self.max_circulation, self.max_storage] + [config.MAX_PRICE,
+			config.MAX_PRICE,
+			config.MAX_PRICE,
+			self.max_storage] * len(self.competitors)),
+			dtype=np.float64)
+		self._action_space = gym.spaces.Tuple(
+			(gym.spaces.Discrete(config.MAX_PRICE), gym.spaces.Discrete(config.MAX_PRICE), gym.spaces.Discrete(config.MAX_PRICE)))
 
 	def _reset_vendor_actions(self) -> tuple:
 		"""

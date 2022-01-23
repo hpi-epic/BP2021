@@ -12,7 +12,8 @@ def teardown_module(module):
 	reload(config)
 
 
-# mock format taken from: https://stackoverflow.com/questions/1289894/how-do-i-mock-an-open-used-in-a-with-statement-using-the-mock-framework-in-pyth
+# mock format taken from:
+# https://stackoverflow.com/questions/1289894/how-do-i-mock-an-open-used-in-a-with-statement-using-the-mock-framework-in-pyth
 # Test that checks if the config.json is read correctly
 def test_reading_file_values():
 	json = ut_t.create_mock_json(sim_market=ut_t.create_mock_json_sim_market())
@@ -24,7 +25,8 @@ def test_reading_file_values():
 
 		# Test all imported values. Extend this test as new values get added!
 		assert len(config.config) == 2, 'the config is being tested for "rl" and "sim_market". Has another type been added?'
-		assert len(config.config['sim_market']) == 5, 'config["sim_market"] has more or less values than expected. Check this test for the missing values'
+		assert len(config.config['sim_market']) == 5, \
+			'config["sim_market"] has more or less values than expected. Check this test for the missing values'
 		assert config.EPISODE_LENGTH == 20
 		assert config.MAX_PRICE == 15
 		assert config.MAX_QUALITY == 100
@@ -46,10 +48,14 @@ def test_reading_file_values():
 
 # The following variables are input mock-json strings for the test_invalid_values test
 # These tests have invalid values in their input file, the import should throw a specific error message
-odd_number_of_customers = (ut_t.create_mock_json_sim_market('50', '50', '80', '21', '10'), 'number_of_customers should be even and positive')
-negative_number_of_customers = (ut_t.create_mock_json_sim_market('50', '50', '80', '-10', '10'), 'number_of_customers should be even and positive')
-prod_price_higher_max_price = (ut_t.create_mock_json_sim_market('50', '10', '80', '20', '50'), 'production_price needs to smaller than max_price and positive or zero')
-negative_production_price = (ut_t.create_mock_json_sim_market('50', '50', '80', '20', '-10'), 'production_price needs to smaller than max_price and positive or zero')
+odd_number_of_customers = (ut_t.create_mock_json_sim_market('50', '50', '80', '21', '10'),
+	'number_of_customers should be even and positive')
+negative_number_of_customers = (ut_t.create_mock_json_sim_market('50', '50', '80', '-10', '10'),
+	'number_of_customers should be even and positive')
+prod_price_higher_max_price = (ut_t.create_mock_json_sim_market('50', '10', '80', '20', '50'),
+	'production_price needs to smaller than max_price and positive or zero')
+negative_production_price = (ut_t.create_mock_json_sim_market('50', '50', '80', '20', '-10'),
+	'production_price needs to smaller than max_price and positive or zero')
 negative_max_quality = (ut_t.create_mock_json_sim_market('20', '15', '-80', '30', '5'), 'max_quality should be positive')
 
 # These tests are missing a line in the config file, the import should throw a specific error message
