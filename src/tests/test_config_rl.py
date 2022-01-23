@@ -12,7 +12,8 @@ def teardown_module(module):
 	reload(config)
 
 
-# mock format taken from: https://stackoverflow.com/questions/1289894/how-do-i-mock-an-open-used-in-a-with-statement-using-the-mock-framework-in-pyth
+# mock format taken from:
+# https://stackoverflow.com/questions/1289894/how-do-i-mock-an-open-used-in-a-with-statement-using-the-mock-framework-in-pyth
 # Test that checks if the config.json is read correctly
 def test_reading_file_values():
 	json = ut_t.create_mock_json()
@@ -51,7 +52,8 @@ negative_batch_size = (ut_t.create_mock_json_rl(batch_size='-5'), 'batch_size sh
 negative_replay_size = (ut_t.create_mock_json_rl(replay_size='-5'), 'replay_size should be greater than 0')
 negative_sync_target_frames = (ut_t.create_mock_json_rl(sync_target_frames='-5'), 'sync_target_frames should be greater than 0')
 negative_replay_start_size = (ut_t.create_mock_json_rl(replay_start_size='-5'), 'replay_start_size should be greater than 0')
-negative_epsilon_decay_last_frame = (ut_t.create_mock_json_rl(epsilon_decay_last_frame='-5'), 'epsilon_decay_last_frame should not be negative')
+negative_epsilon_decay_last_frame = (ut_t.create_mock_json_rl(epsilon_decay_last_frame='-5'),
+	'epsilon_decay_last_frame should not be negative')
 
 
 # These tests are missing a line in the config file, the import should throw a specific error message
@@ -67,8 +69,24 @@ missing_epsilon_final = (ut_t.remove_line(8, ut_t.create_mock_json_rl()), 'your 
 
 
 invalid_values_testcases = [
-	missing_gamma, missing_batch_size, missing_replay_size, missing_learning_rate, missing_sync_target_frames, missing_replay_start_size, missing_epsilon_decay_last_frame, missing_epsilon_start, missing_epsilon_final,
-	learning_rate_larger_one, negative_learning_rate, large_gamma, negative_gamma, negative_batch_size, negative_replay_size, negative_sync_target_frames, negative_replay_start_size, negative_epsilon_decay_last_frame
+	missing_gamma,
+	missing_batch_size,
+	missing_replay_size,
+	missing_learning_rate,
+	missing_sync_target_frames,
+	missing_replay_start_size,
+	missing_epsilon_decay_last_frame,
+	missing_epsilon_start,
+	missing_epsilon_final,
+	learning_rate_larger_one,
+	negative_learning_rate,
+	large_gamma,
+	negative_gamma,
+	negative_batch_size,
+	negative_replay_size,
+	negative_sync_target_frames,
+	negative_replay_start_size,
+	negative_epsilon_decay_last_frame
 ]
 
 

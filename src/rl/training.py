@@ -107,7 +107,9 @@ class RLTrainer():
 						frame_idx / config.EPISODE_LENGTH,
 					)
 				writer.add_scalar('epsilon', epsilon, frame_idx / config.EPISODE_LENGTH)
-				print(f'''{frame_idx}: done {len(all_dicts)} games, this episode return {all_dicts[-1]['profits/all']['vendor_0']:.3f}, mean return {mean_reward:.3f}, eps {epsilon:.2f}, speed {speed:.2f} f/s''')
+				print(f'''{frame_idx}: done {len(all_dicts)} games,
+					this episode return {all_dicts[-1]['profits/all']['vendor_0']:.3f},
+					mean return {mean_reward:.3f}, eps {epsilon:.2f}, speed {speed:.2f} f/s''')
 
 				if (frame_idx > config.EPSILON_DECAY_LAST_FRAME + 101) and (self.best_mean_reward < mean_reward):
 					self.RL_agent.save(path_name=f'{signature}_{curr_time}', model_name=f'{signature}_{mean_reward:.3f}')
