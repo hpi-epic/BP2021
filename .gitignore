@@ -11,6 +11,8 @@ results/performance
 results/trainedModels
 results/runs
 
+webserver/configurations
+
 # file for Johanns test runner
 tests.sh
 
