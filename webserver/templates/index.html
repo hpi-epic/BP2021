@@ -1,11 +1,13 @@
 <!doctype html>
 <html lang="de">
-	<head><meta charset="utf-8"/></head>
+	<head>
+		<meta charset="utf-8"/>
+		<title>Welcome</title>
+	</head>
 	<body>
-		<form method="post" enctype="multipart/form-data">
-			{% csrf_token %}
-			<input type="file" name="upload_config" accept="application/json"/>
-			<button>Submit</button>
-		</form>
+		<h1>Welcome to the Alpha Business simulation</h1>
+		<a class="upload" href="/upload">upload config files</a> <br>
+		<a class="observe" href="/observe">observe running conainer</a> <br>
+		<a class="download" href="/download">download logs and results</a> <br>
 	</body>
 </html>

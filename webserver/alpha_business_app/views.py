@@ -14,3 +14,12 @@ def index(request):
 	else:
 		form = UploadFileForm()
 	return render(request, 'index.html', {'form': form})
+
+def upload(request):
+	return render(request, 'upload.html')
+
+def observe(request):
+	return render(request, 'observe.html')
+
+def download(request):
+	return render(request, 'download.html')
