@@ -1,16 +1,16 @@
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
+from .forms import UploadFileForm
 
+import os
+from .handle_uploading import handle_uploaded_file
 
 def index(request):
-	if request.method == 'POST' and 'run_script' in request.POST:
-		# import function to run
-		from src.monitoring.exampleprinter import run_example
-
-		# call function
-		run_example() 
-
-		# return user to required page
-		return HttpResponse("Hello, world. You're at the polls index.")# HttpResponseRedirect(reverse(app_name:view_name)
+	if request.method == 'POST':
+		form = UploadFileForm(request.POST, request.FILES)
+		# print(request.FILES, request.POST)
+		handle_uploaded_file(request.FILES['upload_config'])
+		return render(request, 'index.html', {'form': form})# HttpResponseRedirect('/success/url/')
 	else:
-		return render(request, 'index.html') # HttpResponse("Hello, world. You're at the polls index.")
+		form = UploadFileForm()
+	return render(request, 'index.html', {'form': form})
