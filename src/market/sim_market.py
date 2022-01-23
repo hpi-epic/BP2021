@@ -443,9 +443,10 @@ class CircularEconomy(SimMarket):
 		return owner.UniformDistributionOwner()
 
 	def _throw_away(self) -> None:
-		"""The call of this method will decrease the in_circulation counter by one.
-		Call it if one of your owners decided to throw away his product."""
-
+		"""
+		The call of this method will decrease the in_circulation counter by one.
+		Call it if one of your owners decided to throw away his product.
+		"""
 		self.output_dict['owner/throw_away'] += 1
 		self.in_circulation -= 1
 

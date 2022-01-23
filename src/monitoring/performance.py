@@ -37,10 +37,6 @@ class PerformanceMonitor():
 	def run_profiling(self) -> None:
 		"""
 		Run the profiler on a specified function. Automatically starts a web server to visualize the results.
-
-		Args:
-			function (str, optional): The function to be run. The format must be module.function.
-			Defaults to 'monitoring.exampleprinter.run_example()'.
 		"""
 		if not os.path.isdir(os.path.join('results', 'performance')):
 			os.mkdir(os.path.join('results', 'performance'))

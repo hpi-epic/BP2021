@@ -95,10 +95,8 @@ def test_correct_setup_monitoring():
 		episodes=10,
 		plot_interval=2,
 		marketplace=sim_market.CircularEconomyMonopolyScenario,
-		agents=[(vendors.HumanPlayerCERebuy,
-			['reptiloid']),
-			(vendors.QLearningCERebuyAgent,
-			['CircularEconomyMonopolyScenario_QLearningCEAgent.dat', 'q_learner'])],
+		agents=[(vendors.HumanPlayerCERebuy, ['reptiloid']),
+			(vendors.QLearningCERebuyAgent, ['CircularEconomyMonopolyScenario_QLearningCEAgent.dat', 'q_learner'])],
 		subfolder_name='subfoldername')
 	assert monitor.configurator.enable_live_draw is False
 	assert 10 == monitor.configurator.episodes
@@ -109,10 +107,15 @@ def test_correct_setup_monitoring():
 	assert isinstance(monitor.configurator.agents[1], vendors.QLearningCERebuyAgent)
 	assert 'reptiloid' == monitor.configurator.agents[0].name
 	assert 'q_learner' == monitor.configurator.agents[1].name
-	assert os.path.normcase(os.path.abspath(os.path.join(os.path.dirname(__file__),
-		os.pardir,
-		os.pardir, os.pardir,
-		'results', 'monitoring', 'subfoldername'))) == os.path.normcase(os.path.abspath(monitor.configurator.folder_path))
+	assert os.path.normcase(
+		os.path.abspath(
+			os.path.join(
+				os.path.dirname(__file__),
+				os.pardir, os.pardir, os.pardir,
+				'results', 'monitoring', 'subfoldername'
+			)
+		)
+	) == os.path.normcase(os.path.abspath(monitor.configurator.folder_path))
 	assert 2 == len(monitor.configurator.agent_colors)
 
 
@@ -227,8 +230,7 @@ def test_get_configuration():
 		plot_interval=2,
 		marketplace=sim_market.CircularEconomyMonopolyScenario,
 		agents=[(vendors.HumanPlayerCERebuy, ['reptiloid']),
-		(vendors.QLearningCERebuyAgent,
-		['CircularEconomyMonopolyScenario_QLearningCEAgent.dat', 'q_learner'])],
+			(vendors.QLearningCERebuyAgent, ['CircularEconomyMonopolyScenario_QLearningCEAgent.dat', 'q_learner'])],
 		subfolder_name='subfoldername')
 	current_configuration = monitor.configurator.get_configuration()
 	assert len(current_configuration) == 7, 'parameters were updated in agent_monitoring.py, but not updated in the tests!'

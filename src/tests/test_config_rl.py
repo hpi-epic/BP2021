@@ -69,15 +69,24 @@ missing_epsilon_final = (ut_t.remove_line(8, ut_t.create_mock_json_rl()), 'your 
 
 
 invalid_values_testcases = [
-	missing_gamma, missing_batch_size,
-	missing_replay_size, missing_learning_rate,
-	missing_sync_target_frames, missing_replay_start_size,
-	missing_epsilon_decay_last_frame, missing_epsilon_start,
-	missing_epsilon_final, learning_rate_larger_one,
-	negative_learning_rate, large_gamma,
-	negative_gamma, negative_batch_size,
-	negative_replay_size, negative_sync_target_frames,
-	negative_replay_start_size, negative_epsilon_decay_last_frame
+	missing_gamma,
+	missing_batch_size,
+	missing_replay_size,
+	missing_learning_rate,
+	missing_sync_target_frames,
+	missing_replay_start_size,
+	missing_epsilon_decay_last_frame,
+	missing_epsilon_start,
+	missing_epsilon_final,
+	learning_rate_larger_one,
+	negative_learning_rate,
+	large_gamma,
+	negative_gamma,
+	negative_batch_size,
+	negative_replay_size,
+	negative_sync_target_frames,
+	negative_replay_start_size,
+	negative_epsilon_decay_last_frame
 ]
 
 

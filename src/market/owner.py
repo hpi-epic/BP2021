@@ -12,7 +12,8 @@ class Owner(ABC):
 
 	@abstractmethod
 	def generate_return_probabilities_from_offer(self, offers, offer_length_per_vendor) -> np.array:
-		"""This abstract method receives offers and generates the probabilities for the possible owner actions.
+		"""
+		This abstract method receives offers and generates the probabilities for the possible owner actions.
 		An owner can throw away his product, he can hold his product or return it to one of the vendors
 
 		Args:
@@ -28,7 +29,8 @@ class Owner(ABC):
 
 class UniformDistributionOwner(Owner):
 	def generate_return_probabilities_from_offer(self, offers, offer_length_per_vendor) -> np.array:
-		"""This method generates a uniform distribution over all vendors
+		"""
+		This method generates a uniform distribution over all vendors
 		to return the product without considering the rebuy price and the overall market situation.
 		It assumes three entries per vendor (refurbished price, new price and in_storage but NO rebuy price)
 
@@ -47,7 +49,8 @@ class UniformDistributionOwner(Owner):
 
 class OwnerRebuy(Owner):
 	def generate_return_probabilities_from_offer(self, offers, offer_length_per_vendor) -> np.array:
-		"""This method tries a more sophisticated version of generating return probabilities.
+		"""
+		This method tries a more sophisticated version of generating return probabilities.
 		The owner likes if the rebuy price is close to the price in the sell offer.
 		That will increase the probability that he will return his product.
 		If the rebuy price is very low, the owner will just throw away his product more often. Holding the product is the fallback option.

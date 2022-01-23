@@ -9,7 +9,8 @@ import configuration.utils as ut
 class Customer(ABC):
 	@abstractmethod
 	def generate_purchase_probabilities_from_offer(self, offers, offer_length_per_vendor) -> np.array:
-		"""This method receives a list of offers from the market and returns probabilities for all possible purchase decisions.
+		"""
+		This method receives a list of offers from the market and returns probabilities for all possible purchase decisions.
 
 		Args:
 			offers (np.array): The list of offers which contains both the market state and information about the actions of all vendors
@@ -27,7 +28,8 @@ class Customer(ABC):
 
 class CustomerLinear(Customer):
 	def generate_purchase_probabilities_from_offer(self, offers, offer_length_per_vendor) -> np.array:
-		"""This method receives a list of offers for a linear economy and returns the purchase probability for all vendors.
+		"""
+		This method receives a list of offers for a linear economy and returns the purchase probability for all vendors.
 
 		Args:
 			offers (np.array): Each vendor comes along with two fiels in the array.
@@ -51,7 +53,8 @@ class CustomerLinear(Customer):
 
 class CustomerCircular(Customer):
 	def generate_purchase_probabilities_from_offer(self, offers, offer_length_per_vendor) -> np.array:
-		"""This method receives a list of offers for a circular economy and
+		"""
+		This method receives a list of offers for a circular economy and
 		returns the purchase probability for the refurbished and new product of all vendors.
 		It is assumed that all vendors do have the same quality and same reputation.
 		The customer values a second-hand-product 55% compared to a new one.
