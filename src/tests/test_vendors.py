@@ -8,6 +8,11 @@ import agents.vendors as vendors
 import configuration.config as config
 import tests.utils_tests as ut_t
 
+
+def teardown_module(module):
+	reload(config)
+
+
 abstract_agent_classes_testcases = [
 	vendors.Agent,
 	vendors.CircularAgent,
