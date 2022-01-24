@@ -10,8 +10,8 @@ import torch
 
 import agents.vendors as vendors
 import configuration.config as config
-import market.linear_market.linear_sim_market as linear_sim_market
 import market.circular_market.circular_sim_market as circular_sim_market
+import market.linear_market.linear_sim_market as linear_sim_market
 import rl.training as training
 import tests.utils_tests as ut_t
 

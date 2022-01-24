@@ -2,8 +2,8 @@ from unittest.mock import patch
 
 import pytest
 
-import market.linear_market.linear_sim_market as linear_sim_market
 import market.circular_market.circular_sim_market as circular_sim_market
+import market.linear_market.linear_sim_market as linear_sim_market
 import rl.actorcritic_agent as actorcritic_agent
 import rl.actorcritic_training as actorcritic_training
 

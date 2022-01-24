@@ -7,8 +7,8 @@ import agents.vendors as vendors
 import configuration.config as config
 import configuration.utils as ut
 import market.customer as customer
-from market.sim_market import SimMarket
 from market.customer import Customer
+from market.sim_market import SimMarket
 
 
 class LinearEconomy(SimMarket, ABC):

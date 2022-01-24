@@ -1,9 +1,9 @@
 import torch
 
 import agents.vendors as vendors
-import market.sim_market as sim_market
-import market.linear_market.linear_sim_market as linear_sim_market
 import market.circular_market.circular_sim_market as circular_sim_market
+import market.linear_market.linear_sim_market as linear_sim_market
+import market.sim_market as sim_market
 import rl.training as training
 
 

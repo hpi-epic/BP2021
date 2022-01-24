@@ -4,10 +4,12 @@ from typing import Tuple
 
 import gym
 import numpy as np
-# from market.linear_market.linear_sim_market import LinearEconomy
 
 import configuration.config as config
 import configuration.utils as ut
+
+# from market.linear_market.linear_sim_market import LinearEconomy
+
 
 # An offer is a market state that contains all prices and qualities
 

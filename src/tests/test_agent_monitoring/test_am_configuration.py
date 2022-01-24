@@ -6,9 +6,9 @@ from unittest.mock import patch
 import pytest
 
 import agents.vendors as vendors
+import market.circular_market.circular_sim_market as circular_sim_market
 # import market.sim_market as sim_market
 import market.linear_market.linear_sim_market as linear_sim_market
-import market.circular_market.circular_sim_market as circular_sim_market
 import monitoring.agent_monitoring.am_configuration as am_configuration
 import monitoring.agent_monitoring.am_monitoring as monitoring
 

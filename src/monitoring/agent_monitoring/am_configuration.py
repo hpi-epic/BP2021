@@ -4,8 +4,8 @@ import time
 import matplotlib.pyplot as plt
 
 import agents.vendors as vendors
-import market.sim_market as sim_market
 import market.circular_market.circular_sim_market as circular_sim_market
+import market.sim_market as sim_market
 
 
 class Configurator():

@@ -2,9 +2,9 @@ import numpy as np
 import pytest
 
 import configuration.utils as ut
+import market.circular_market.circular_sim_market as circular_sim_market
 import market.customer as customer
 import market.linear_market.linear_sim_market as linear_sim_market
-import market.circular_market.circular_sim_market as circular_sim_market
 
 
 # Helper function that creates a random offer (state that includes the agent's price) to test customer behaviour.

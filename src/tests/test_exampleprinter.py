@@ -7,8 +7,8 @@ from unittest.mock import patch
 import pytest
 
 import agents.vendors as vendors
-import market.linear_market.linear_sim_market as linear_sim_market
 import market.circular_market.circular_sim_market as circular_sim_market
+import market.linear_market.linear_sim_market as linear_sim_market
 from monitoring.exampleprinter import ExamplePrinter
 
 
