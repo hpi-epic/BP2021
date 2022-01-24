@@ -52,8 +52,8 @@ class Evaluator():
 		# find the number of bins needed, we only use steps of 1000, assuming our agents are good bois :)
 		plot_lower_bound = np.floor(int(np.min(rewards)) * 1e-3) / 1e-3
 		plot_upper_bound = np.ceil(int(np.max(rewards)) * 1e-3) / 1e-3
-		plot_bins = int(np.abs(plot_lower_bound) + plot_upper_bound) // 1000
-		x_ticks = np.arange(plot_lower_bound, plot_upper_bound + 1, 1000)
+		plot_bins = int(np.abs(plot_lower_bound) + plot_upper_bound) // 250
+		x_ticks = np.arange(plot_lower_bound, plot_upper_bound + 1, 250)
 
 		plt.hist(rewards, bins=plot_bins, color=self.configurator.agent_colors, rwidth=0.9,
 			range=(plot_lower_bound, plot_upper_bound), edgecolor='black')

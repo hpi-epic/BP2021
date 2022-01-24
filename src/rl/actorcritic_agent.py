@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 import torch
+import os
 
 import agents.vendors as vendors
 import configuration.config as config
@@ -34,6 +35,47 @@ class ActorCriticAgent(vendors.Agent, ABC):
 	@abstractmethod
 	def policy(self, observation, verbose=False) -> None:  # pragma: no cover
 		raise NotImplementedError('This method is abstract. Use a subclass')
+
+	def save(self, path_name, model_name) -> None:
+		"""
+		Save a trained model to the specified folder within 'trainedModels'.
+		Also caps the amount of models in the folder to a maximum of 10.
+		This method is copied from our Q-Learning Agent
+
+		Args:
+			path_name (str): The name of the folder within 'trainedModels' where the model should be saved.
+			model_name (str): The name of the .dat file of this specific model.
+		"""
+		model_name += '.dat'
+		if not os.path.isdir(os.path.abspath(os.path.join('results', 'trainedModels'))):
+			os.mkdir(os.path.abspath(os.path.join('results', 'trainedModels')))
+
+		model_path = os.path.join('results', 'trainedModels', path_name)
+		if not os.path.isdir(os.path.abspath(model_path)):
+			os.mkdir(os.path.abspath(model_path))
+
+		torch.save(self.actor_net.state_dict(), os.path.join(model_path, 'actor_parameters' + model_name))
+		torch.save(self.critic_net.state_dict(), os.path.join(model_path, 'critic_parameters' + model_name))
+
+		full_directory = os.walk(model_path)
+		for _, _, filenames in full_directory:
+			if len(filenames) > 10:
+				# split the filenames to isolate the reward-part
+				split_filenames = [file.rsplit('_') for file in filenames]
+				# preserve the signature for later
+				signature = split_filenames[0][1] + '_' + split_filenames[0][2]
+				# isolate the reward and convert it to float
+				rewards = set([file[3] for file in split_filenames])
+				rewards = [float(reward.rsplit('.', 1)[0]) for reward in rewards]
+				# sort the rewards to keep only the best ones
+				rewards = sorted(rewards)
+
+				for reward in range(len(rewards) - 10):
+					os.remove(os.path.join(model_path, f'actor_{signature}_{rewards[reward]:.3f}.dat'))
+					os.remove(os.path.join(model_path, f'critic_{signature}_{rewards[reward]:.3f}.dat'))
+
+	def load_actor(self, load_path):
+		self.actor_net.load_state_dict(torch.load(load_path, map_location=self.device))
 
 	def train_batch(self, states, actions, rewards, next_states, regularization=False):
 		"""
@@ -155,6 +197,7 @@ class ContinuosActorCriticAgent(ActorCriticAgent):
 	You must use one of its subclasses.
 	"""
 	softplus = torch.nn.Softplus()
+	name = "ContinuosActorCriticAgent"
 
 	def initialize_models_and_optimizer(self, n_observations, n_actions):
 		self.n_actions = n_actions

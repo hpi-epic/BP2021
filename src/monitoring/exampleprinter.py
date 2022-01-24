@@ -7,6 +7,7 @@ import time
 import torch
 from torch.utils.tensorboard import SummaryWriter
 
+import rl.actorcritic_agent as actorcritic_agent
 import agents.vendors as vendors
 import configuration.utils as ut
 import market.sim_market as sim_market
@@ -17,7 +18,7 @@ class ExamplePrinter():
 
 	def __init__(self):
 		self.marketplace = sim_market.CircularEconomyRebuyPriceOneCompetitor()
-		self.agent = vendors.RuleBasedCERebuyAgent()
+		# self.agent = vendors.RuleBasedCERebuyAgent()
 		# Signal handler for e.g. KeyboardInterrupt
 		signal.signal(signal.SIGINT, self._signal_handler)
 
@@ -29,9 +30,11 @@ class ExamplePrinter():
 			marketplace (SimMarket instance, optional): What marketplace to run the session on.
 			agent (Agent instance, optional): What agent ot run the session on..
 		"""
+		print(agent)
 		if(marketplace is not None):
 			self.marketplace = marketplace
 		if(agent is not None):
+			print("I set the agent")
 			self.agent = agent
 
 	def _signal_handler(self, signum, frame):  # pragma: no cover
@@ -65,7 +68,7 @@ class ExamplePrinter():
 
 		with torch.no_grad():
 			while not is_done:
-				action = self.agent.policy(state)
+				action = self.agent.policy(state)[0].tolist()
 				print(state)
 				state, reward, is_done, logdict = self.marketplace.step(action)
 				if cumulative_dict is not None:
@@ -88,4 +91,10 @@ class ExamplePrinter():
 
 
 if __name__ == '__main__':  # pragma: no cover
-	print(ExamplePrinter().run_example())
+	mymarket = sim_market.CircularEconomyRebuyPriceOneCompetitor()
+	myagent = actorcritic_agent.ContinuosActorCriticAgentFixedOneStd(mymarket.observation_space.shape[0], 3)
+	myagent.load_actor('results\\monitoring\\actor_parametersCircularEconomyRebuyPriceOneCompetitor_ContinuosActorCriticAgentFixedOneStd_650.340.dat')
+	myexampleprinter = ExamplePrinter()
+	print(myagent)
+	myexampleprinter.setup_exampleprinter(mymarket, myagent)
+	print(myexampleprinter.run_example())

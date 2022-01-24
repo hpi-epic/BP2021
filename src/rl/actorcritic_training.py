@@ -59,6 +59,7 @@ def train_actorcritic(
 	else:
 		outputs = marketplace_class().get_n_actions()
 	agent = agent_class(marketplace_class().observation_space.shape[0], outputs)
+	signature = f'{type(marketplace_class()).__name__}_{type(agent).__name__}'
 
 	all_dicts = []
 	if verbose:
@@ -66,6 +67,7 @@ def train_actorcritic(
 		all_v_estimates = []
 	all_value_losses = []
 	all_policy_losses = []
+	best_mean_reward = 0
 
 	curr_time = time.strftime('%b%d_%H-%M-%S')
 	writer = SummaryWriter(log_dir=os.path.join('results', 'runs', f'training_AC_{curr_time}'))
@@ -120,6 +122,13 @@ def train_actorcritic(
 
 				environments[env].reset()
 				info_accumulators[env] = None
+
+				mean_reward = averaged_info['profits/all']['vendor_0']
+				if best_mean_reward < mean_reward:
+					agent.save(path_name=f'{signature}_{curr_time}', model_name=f'{signature}_{mean_reward:.3f}')
+					if best_mean_reward is not None:
+						print(f'Best reward updated {best_mean_reward:.3f} -> {mean_reward:.3f}')
+					best_mean_reward = mean_reward
 
 		policy_loss, valueloss = agent.train_batch(
 			torch.Tensor(np.array(states)),

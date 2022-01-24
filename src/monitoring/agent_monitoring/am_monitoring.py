@@ -2,11 +2,13 @@ import os
 import signal
 import sys
 
+import rl.actorcritic_agent as actorcritic_agent
+
 import monitoring.agent_monitoring.am_configuration as am_configuration
 import monitoring.agent_monitoring.am_evaluation as am_evaluation
 
-# import agents.vendors as vendors
-# import market.sim_market as sim_market
+import agents.vendors as vendors
+import market.sim_market as sim_market
 
 
 class Monitor():
@@ -59,7 +61,7 @@ class Monitor():
 
 				# run marketplace for this agent
 				while not is_done:
-					action = self.configurator.agents[i].policy(state)
+					action = self.configurator.agents[i].policy(state)[0].tolist() if i == 0 else self.configurator.agents[i].policy(state)
 					state, step_reward, is_done, _ = self.configurator.marketplace.step(action)
 					episode_reward += step_reward
 
@@ -84,10 +86,16 @@ def run_monitoring_session(monitor: Monitor = Monitor()) -> None:
 	Args:
 		monitor (Monitor instance, optional): The monitor to run the session on. Defaults to a default Monitor() instance.
 	"""
-	# monitor.configurator.setup_monitoring(
-	# 	agents=[(vendors.QLearningLEAgent, ['QLearning Agent']), (vendors.FixedPriceLEAgent, [(6), 'Rulebased Agent'])],
-	# 	marketplace=sim_market.ClassicScenario)
-	monitor.configurator.print_configuration()
+	mymarket = sim_market.CircularEconomyRebuyPriceOneCompetitor()
+
+	myagent = actorcritic_agent.ContinuosActorCriticAgentFixedOneStd(mymarket.observation_space.shape[0], 3)
+	myagent.load_actor('results\\monitoring\\actor_parametersCircularEconomyRebuyPriceOneCompetitor_ContinuosActorCriticAgentFixedOneStd_650.340.dat')
+
+	monitor.configurator.agents = [myagent, vendors.RuleBasedCERebuyAgent()]
+	monitor.configurator.marketplace = mymarket
+
+	monitor.configurator.agent_colors = [(0, 1, 1, 1), (1, 0, 1, 1)]
+	# monitor.configurator.print_configuration()
 
 	print('\nStarting monitoring session...')
 	rewards = monitor.run_marketplace()
