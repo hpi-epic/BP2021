@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 
 import agents.vendors as vendors
 import market.sim_market as sim_market
+import market.circular_market.circular_sim_market as circular_sim_market
 
 
 class Configurator():
@@ -16,7 +17,7 @@ class Configurator():
 		self.enable_live_draw = True
 		self.episodes = 500
 		self.plot_interval = 50
-		self.marketplace = sim_market.CircularEconomyMonopolyScenario()
+		self.marketplace = circular_sim_market.CircularEconomyMonopolyScenario()
 		default_agent = vendors.QLearningCEAgent
 		default_modelfile = f'{type(self.marketplace).__name__}_{default_agent.__name__}'
 		assert os.path.exists(self._get_modelfile_path(default_modelfile)), f'the default modelfile does not exist: {default_modelfile}'
@@ -75,7 +76,7 @@ class Configurator():
 		assert all(isinstance(agent_tuple[1], list) for agent_tuple in agents), 'the second entry in each agent-tuple must be a list'
 		assert all(issubclass(agent[0], vendors.CircularAgent) == issubclass(agents[0][0], vendors.CircularAgent) for agent in agents), \
 			'the agents must all be of the same type (Linear/Circular)'
-		assert issubclass(agents[0][0], vendors.CircularAgent) == isinstance(self.marketplace, sim_market.CircularEconomy), \
+		assert issubclass(agents[0][0], vendors.CircularAgent) == isinstance(self.marketplace, circular_sim_market.CircularEconomy), \
 			'the agent and marketplace must be of the same economy type (Linear/Circular)'
 
 		self.agents = []
@@ -123,8 +124,14 @@ class Configurator():
 		color_map = plt.cm.get_cmap('hsv', len(self.agents) + 1)
 		self.agent_colors = [color_map(agent_id) for agent_id in range(len(self.agents))]
 
-	def setup_monitoring(self, enable_live_draw: bool = None, episodes: int = None, plot_interval: int = None,
-		marketplace: sim_market.SimMarket = None, agents: list = None, subfolder_name: str = None) -> None:
+	def setup_monitoring(
+		self,
+		enable_live_draw: bool = None,
+		episodes: int = None,
+		plot_interval: int = None,
+		marketplace: sim_market.SimMarket = None,
+		agents: list = None,
+		subfolder_name: str = None) -> None:
 		"""
 		Configure the current monitoring session.
 

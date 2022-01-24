@@ -8,7 +8,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 import configuration.config as config
 import configuration.utils as ut
-import market.sim_market as sim_market
+import market.circular_market.circular_sim_market as sim_market
 import rl.actorcritic_agent as actorcritic_agent
 
 

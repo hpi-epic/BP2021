@@ -6,7 +6,9 @@ from unittest.mock import patch
 import pytest
 
 import agents.vendors as vendors
-import market.sim_market as sim_market
+# import market.sim_market as sim_market
+import market.linear_market.linear_sim_market as linear_sim_market
+import market.circular_market.circular_sim_market as circular_sim_market
 import monitoring.agent_monitoring.am_configuration as am_configuration
 import monitoring.agent_monitoring.am_monitoring as monitoring
 
@@ -32,7 +34,7 @@ def test_init_default_values():
 	assert test_configurator.enable_live_draw is True
 	assert 500 == test_configurator.episodes
 	assert 50 == test_configurator.plot_interval
-	assert isinstance(test_configurator.marketplace, sim_market.CircularEconomyMonopolyScenario)
+	assert isinstance(test_configurator.marketplace, circular_sim_market.CircularEconomyMonopolyScenario)
 	assert isinstance(test_configurator.agents[0], vendors.QLearningCEAgent)
 	assert 1 == len(test_configurator.agents)
 	assert [(0.0, 0.0, 1.0, 1.0)] == test_configurator.agent_colors
@@ -94,14 +96,14 @@ def test_correct_setup_monitoring():
 		enable_live_draw=False,
 		episodes=10,
 		plot_interval=2,
-		marketplace=sim_market.CircularEconomyMonopolyScenario,
+		marketplace=circular_sim_market.CircularEconomyMonopolyScenario,
 		agents=[(vendors.HumanPlayerCERebuy, ['reptiloid']),
 			(vendors.QLearningCERebuyAgent, ['CircularEconomyMonopolyScenario_QLearningCEAgent.dat', 'q_learner'])],
 		subfolder_name='subfoldername')
 	assert monitor.configurator.enable_live_draw is False
 	assert 10 == monitor.configurator.episodes
 	assert 2 == monitor.configurator.plot_interval
-	assert isinstance(monitor.configurator.marketplace, sim_market.CircularEconomyMonopolyScenario)
+	assert isinstance(monitor.configurator.marketplace, circular_sim_market.CircularEconomyMonopolyScenario)
 	assert 2 == len(monitor.configurator.agents)
 	assert isinstance(monitor.configurator.agents[0], vendors.HumanPlayerCERebuy)
 	assert isinstance(monitor.configurator.agents[1], vendors.QLearningCERebuyAgent)
@@ -131,7 +133,7 @@ def test_setting_multiple_agents(agents):
 
 
 def test_setting_market_not_agents():
-	monitor.configurator.setup_monitoring(marketplace=sim_market.CircularEconomyMonopolyScenario)
+	monitor.configurator.setup_monitoring(marketplace=circular_sim_market.CircularEconomyMonopolyScenario)
 
 
 incorrect_setup_monitoring_testcases = [
@@ -142,7 +144,7 @@ incorrect_setup_monitoring_testcases = [
 	({'plot_interval': 0}, 'plot_interval must not be 0'),
 	({'episodes': 4, 'plot_interval': 5}, 'plot_interval must be <= episodes, or no plots can be generated.'),
 	({'marketplace': vendors.RuleBasedCEAgent}, 'the marketplace must be a subclass of SimMarket'),
-	({'marketplace': sim_market.ClassicScenario, 'agents': [(vendors.RuleBasedCEAgent, [])]},
+	({'marketplace': linear_sim_market.ClassicScenario, 'agents': [(vendors.RuleBasedCEAgent, [])]},
 		'the agent and marketplace must be of the same economy type'),
 	({'agents': [vendors.RuleBasedCEAgent]}, 'agents must be a list of tuples'),
 	({'agents': [[vendors.RuleBasedCEAgent, 1, '2']]}, 'agents must be a list of tuples'),
@@ -150,16 +152,16 @@ incorrect_setup_monitoring_testcases = [
 	({'agents': [vendors.FixedPriceLEAgent, vendors.FixedPriceCERebuyAgent]}, 'agents must be a list of tuples'),
 	({'agents': [(vendors.RuleBasedCEAgent, ['arg'], 'too_much')]},
 		'the list entries in agents must have size 2 ([agent_class, arguments])'),
-	({'agents': [(sim_market.ClassicScenario, [])]}, 'the first entry in each agent-tuple must be an agent class in `vendors.py`'),
-	({'agents': [(vendors.RuleBasedCEAgent, sim_market.ClassicScenario)]}, 'the second entry in each agent-tuple must be a list'),
+	({'agents': [(linear_sim_market.ClassicScenario, [])]}, 'the first entry in each agent-tuple must be an agent class in `vendors.py`'),
+	({'agents': [(vendors.RuleBasedCEAgent, linear_sim_market.ClassicScenario)]}, 'the second entry in each agent-tuple must be a list'),
 	({'agents': [(vendors.RuleBasedCEAgent, 'new_name')]}, 'the second entry in each agent-tuple must be a list'),
 	({'agents': [(vendors.RuleBasedCEAgent, []), (vendors.FixedPriceLEAgent, [])]},
 		'the agents must all be of the same type (Linear/Circular)'),
 	({'agents': [(vendors.RuleBasedCEAgent, []), (vendors.FixedPriceLEAgent, []), (vendors.FixedPriceCEAgent, [])]},
 		'the agents must all be of the same type (Linear/Circular)'),
-	({'marketplace': sim_market.CircularEconomyRebuyPriceMonopolyScenario, 'agents': [(vendors.FixedPriceLEAgent, [])]},
+	({'marketplace': circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario, 'agents': [(vendors.FixedPriceLEAgent, [])]},
 		'the agent and marketplace must be of the same economy type (Linear/Circular)'),
-	({'marketplace': sim_market.ClassicScenario, 'agents': [(vendors.FixedPriceCEAgent, [])]},
+	({'marketplace': linear_sim_market.ClassicScenario, 'agents': [(vendors.FixedPriceCEAgent, [])]},
 		'the agent and marketplace must be of the same economy type (Linear/Circular)'),
 	({'subfolder_name': 1}, 'subfolder_name must be of type str')
 ]
@@ -192,8 +194,8 @@ def test_incorrect_setup_monitoring(parameters, expected_message):
 
 
 incorrect_setup_monitoring_type_errors_testcases = [
-	{'marketplace': sim_market.ClassicScenario()},
-	{'agents': [(sim_market.ClassicScenario(), [])]},
+	{'marketplace': linear_sim_market.ClassicScenario()},
+	{'agents': [(linear_sim_market.ClassicScenario(), [])]},
 	{'agents': [(vendors.RuleBasedCEAgent(), [])]}
 ]
 
@@ -228,7 +230,7 @@ def test_get_configuration():
 		enable_live_draw=False,
 		episodes=10,
 		plot_interval=2,
-		marketplace=sim_market.CircularEconomyMonopolyScenario,
+		marketplace=circular_sim_market.CircularEconomyMonopolyScenario,
 		agents=[(vendors.HumanPlayerCERebuy, ['reptiloid']),
 			(vendors.QLearningCERebuyAgent, ['CircularEconomyMonopolyScenario_QLearningCEAgent.dat', 'q_learner'])],
 		subfolder_name='subfoldername')
