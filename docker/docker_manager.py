@@ -15,12 +15,12 @@ class AlphaBusinessDockerInfo():
 
 class DockerManager():
 	_instance = None
-	client = docker.from_env(version='1.40')
+	_client = None
 
 	def __new__(cls):
 		if cls._instance is None:
 			cls._instance = super(DockerManager, cls).__new__(cls)
-			# Put any initialization here.
+			cls._client = docker.from_env(version='auto')
 		return cls._instance
 
 	def build_image(self, imagename: str = 'bp2021image'):
@@ -34,7 +34,7 @@ class DockerManager():
 		"""
 		# https://docker-py.readthedocs.io/en/stable/images.html
 		# build image from dockerfile and name it accordingly
-		img = self.client.images.build(path=os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)), tag=imagename, forcerm=True)
+		img = self._client.images.build(path=os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)), tag=imagename, forcerm=True)
 		# return id without the 'sha256:'-prefix
 		return img[0].id[7:]
 
@@ -54,10 +54,10 @@ class DockerManager():
 		# MaximumRetryCount Number of times to restart the container on failure. For example: {"Name": "on-failure", "MaximumRetryCount": 5}
 		print('Starting container...')
 		# name will be first tag without the ':latest'-postfix
-		container_name = self.client.images.get(image).tags[0][:-7]
+		container_name = self._client.images.get(image).tags[0][:-7]
 		# create a device request to use all available GPU devices with compute capabilities
 		device_request_gpu = docker.types.DeviceRequest(driver='nvidia', count=1, capabilities=[['compute']])
-		container = self.client.containers.run(image, name=f'{container_name}_container', detach=True, device_requests=[device_request_gpu])
+		container = self._client.containers.run(image, name=f'{container_name}_container', detach=True, device_requests=[device_request_gpu])
 		return container.id
 
 	# formerly is_container_alive
@@ -72,7 +72,7 @@ class DockerManager():
 		Returns:
 			bool: answers if the docker container with the id is running
 		"""
-		return self.client.containers.get(container_id).status
+		return self._client.containers.get(container_id).status
 
 	def get_container_data(self, container_id: str) -> AlphaBusinessDockerInfo:
 		"""
@@ -85,7 +85,7 @@ class DockerManager():
 		Returns:
 			str: produced data
 		"""
-		return manager.client.containers.get(container_id).logs().decode('UTF-8')
+		return self._client.containers.get(container_id).logs().decode('UTF-8')
 
 	def kill_container(self, id: int) -> None:
 		"""
