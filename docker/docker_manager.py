@@ -16,7 +16,7 @@ class AlphaBusinessDockerInfo():
 class AlphaBusinessDockerManager():
 
 	def __init__(self):
-		self.client = docker.from_env()
+		self.client = docker.from_env(version='1.40')
 
 	def build_image(self, imagename: str = 'bp2021image'):
 		"""
@@ -50,7 +50,9 @@ class AlphaBusinessDockerManager():
 		print('Starting container...')
 		# name will be first tag without the ':latest'-postfix
 		container_name = self.client.images.get(image).tags[0][:-7]
-		container = self.client.containers.run(image, name=f'{container_name}_container', detach=True)
+		# create a device request to use all available GPU devices with compute capabilities
+		device_request_gpu = docker.types.DeviceRequest(driver='nvidia', count=1, capabilities=[['compute']])
+		container = self.client.containers.run(image, name=f'{container_name}_container', detach=True, device_requests=[device_request_gpu])
 		return container.id
 
 	# formerly is_container_alive
@@ -67,7 +69,7 @@ class AlphaBusinessDockerManager():
 		"""
 		return self.client.containers.get(container_id).status
 
-	def get_container_data(self, id: int) -> AlphaBusinessDockerInfo:
+	def get_container_data(self, container_id: str) -> AlphaBusinessDockerInfo:
 		"""
 		This method should return all data the docker container with a given id has produced yet.
 		We should think about wrapping this data into an AlphaBusinessDataClass in order to return files etc.
@@ -78,7 +80,7 @@ class AlphaBusinessDockerManager():
 		Returns:
 			str: produced data
 		"""
-		return AlphaBusinessDockerInfo(container_id=id, data='this is a test')
+		return manager.client.containers.get(container_id).logs().decode('UTF-8')
 
 	def kill_container(self, id: int) -> None:
 		"""
@@ -133,7 +135,8 @@ if __name__ == '__main__':
 	manager = AlphaBusinessDockerManager()
 	img = manager.build_image()
 	cont = manager.start_container(img)
-	print(manager.container_status(cont))
+	print('Status:', manager.container_status(cont))
 	time.sleep(3)
 	print('Stdout of the container:\n')
-	print(manager.client.containers.get(cont).logs().decode('UTF-8'))
+	print(manager.get_container_data(cont))
+	print('Status:', manager.container_status(cont))
