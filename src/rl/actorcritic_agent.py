@@ -1,8 +1,8 @@
+import os
 from abc import ABC, abstractmethod
 
 import numpy as np
 import torch
-import os
 
 import agents.vendors as vendors
 import configuration.config as config
@@ -155,16 +155,23 @@ class DiscreteActorCriticAgent(ActorCriticAgent):
 		self.critic_optimizer = torch.optim.Adam(self.critic_net.parameters(), lr=0.00025)
 		self.critic_tgt_net = model.simple_network(n_observations, 1).to(self.device)
 
-	def policy(self, observation, verbose=False):
+	def policy_verbose(self, observation):
 		observation = torch.Tensor(np.array(observation)).to(self.device)
 		with torch.no_grad():
 			distribution = torch.softmax(self.actor_net(observation).view(-1), dim=0)
-			if verbose:
-				v_estimate = self.critic_net(observation).view(-1)
+			v_estimate = self.critic_net(observation).view(-1)
 
 		distribution = distribution.to('cpu').detach().numpy()
 		action = ut.shuffle_from_probabilities(distribution)
-		return action, distribution[action], v_estimate.to('cpu').item() if verbose else None
+		return action, distribution[action], v_estimate.to('cpu').item()
+
+	def policy(self, observation):
+		observation = torch.Tensor(np.array(observation)).to(self.device)
+		with torch.no_grad():
+			distribution = torch.softmax(self.actor_net(observation).view(-1), dim=0)
+
+		distribution = distribution.to('cpu').detach().numpy()
+		return ut.shuffle_from_probabilities(distribution)
 
 	def log_probability_given_action(self, states, actions):
 		return -torch.log(torch.softmax(self.actor_net(states), dim=0).gather(1, actions.unsqueeze(-1)))
@@ -197,7 +204,7 @@ class ContinuosActorCriticAgent(ActorCriticAgent):
 	You must use one of its subclasses.
 	"""
 	softplus = torch.nn.Softplus()
-	name = "ContinuosActorCriticAgent"
+	name = 'ContinuosActorCriticAgent'
 
 	def initialize_models_and_optimizer(self, n_observations, n_actions):
 		self.n_actions = n_actions
@@ -221,19 +228,30 @@ class ContinuosActorCriticAgent(ActorCriticAgent):
 		"""
 		raise NotImplementedError('This method is abstract. Use a subclass')
 
-	def policy(self, observation, verbose=False):
+	def policy_verbose(self, observation):
 		observation = torch.Tensor(np.array(observation)).to(self.device)
 		with torch.no_grad():
 			network_result = self.actor_net(observation)
 			mean, std = self.transform_network_output(1, network_result)
-			if verbose:
-				v_estimate = self.critic_net(observation).view(-1)
+			v_estimate = self.critic_net(observation).view(-1)
 
 		action = torch.round(torch.normal(mean, std).to(self.device))
 		action = torch.max(action, torch.zeros(action.shape).to(self.device))
 		action = torch.min(action, 9 * torch.ones(action.shape).to(self.device))
-		return action.squeeze().type(torch.LongTensor).to('cpu').numpy(), \
-			*((np.array([mean.to('cpu').numpy(), std.to('cpu').numpy()]).reshape(-1), v_estimate.to('cpu').item()) if verbose else (None, None))
+		action = action.squeeze().type(torch.LongTensor).to('cpu').numpy()
+		transformed_network_output = np.array([mean.to('cpu').numpy(), std.to('cpu').numpy()]).reshape(-1)
+		return action, transformed_network_output, v_estimate.to('cpu').item()
+
+	def policy(self, observation):
+		observation = torch.Tensor(np.array(observation)).to(self.device)
+		with torch.no_grad():
+			network_result = self.actor_net(observation)
+			mean, std = self.transform_network_output(1, network_result)
+
+		action = torch.round(torch.normal(mean, std).to(self.device))
+		action = torch.max(action, torch.zeros(action.shape).to(self.device))
+		action = torch.min(action, 9 * torch.ones(action.shape).to(self.device))
+		return action.squeeze().type(torch.LongTensor).to('cpu').numpy()
 
 	def log_probability_given_action(self, states, actions):
 		network_result = self.actor_net(states)

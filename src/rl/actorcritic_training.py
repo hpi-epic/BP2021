@@ -84,8 +84,10 @@ def train_actorcritic(
 		states_dash = []
 		for env in chosen_envs:
 			state = environments[env]._observation()
-			action, net_output, v_estimate = agent.policy(state, verbose)
-			if verbose:
+			if not verbose:
+				action = agent.policy(state, verbose)
+			else:
+				action, net_output, v_estimate = agent.policy_verbose(state, verbose)
 				all_network_outputs.append(net_output.reshape(-1))
 				all_v_estimates.append(v_estimate)
 			next_state, reward, is_done, info = environments[env].step(agent.agent_output_to_market_form(action))
