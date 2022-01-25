@@ -10,7 +10,8 @@ import torch
 
 import agents.vendors as vendors
 import configuration.config as config
-import market.sim_market as sim_market
+import market.circular.circular_sim_market as circular_market
+import market.linear.linear_sim_market as linear_market
 import rl.training as training
 import tests.utils_tests as ut_t
 
@@ -20,11 +21,11 @@ def teardown_module(module):
 
 
 test_scenarios = [
-	(sim_market.ClassicScenario, vendors.QLearningAgent),
-	(sim_market.MultiCompetitorScenario, vendors.QLearningAgent),
-	(sim_market.CircularEconomyMonopolyScenario, vendors.QLearningCEAgent),
-	(sim_market.CircularEconomyRebuyPriceMonopolyScenario, vendors.QLearningCERebuyAgent),
-	(sim_market.CircularEconomyRebuyPriceOneCompetitor, vendors.QLearningCERebuyAgent)
+	(linear_market.ClassicScenario, vendors.QLearningAgent),
+	(linear_market.MultiCompetitorScenario, vendors.QLearningAgent),
+	(circular_market.CircularEconomyMonopolyScenario, vendors.QLearningCEAgent),
+	(circular_market.CircularEconomyRebuyPriceMonopolyScenario, vendors.QLearningCERebuyAgent),
+	(circular_market.CircularEconomyRebuyPriceOneCompetitor, vendors.QLearningCERebuyAgent)
 ]
 
 
@@ -47,7 +48,7 @@ def test_training_with_tensorboard():
 		ut_t.check_mock_file(mock_file, json)
 		# Include utils_rl again to make sure the file is read again
 		reload(config)
-		environment = sim_market.ClassicScenario()
+		environment = linear_market.ClassicScenario()
 		agent = vendors.QLearningAgent(environment.observation_space.shape[0], n_actions=environment.get_n_actions(), optim=torch.optim.Adam)
 		training.RLTrainer(environment, agent).train_QLearning_agent(int(config.REPLAY_START_SIZE * 1.2), log_dir_prepend='test_')
 

@@ -8,7 +8,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 import configuration.config as config
 import configuration.utils as ut
-import market.sim_market as sim_market
+import market.circular.circular_sim_market as circular_market
 import rl.actorcritic_agent as actorcritic_agent
 
 
@@ -31,7 +31,7 @@ def choose_random_envs(total_envs):
 
 
 def train_actorcritic(
-	marketplace_class=sim_market.CircularEconomyRebuyPriceOneCompetitor,
+	marketplace_class=circular_market.CircularEconomyRebuyPriceOneCompetitor,
 	agent_class=actorcritic_agent.ContinuosActorCriticAgentFixedOneStd,
 	number_of_training_steps=200,
 	verbose=False,
