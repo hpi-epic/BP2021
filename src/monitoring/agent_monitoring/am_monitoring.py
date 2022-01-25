@@ -2,13 +2,13 @@ import os
 import signal
 import sys
 
-import rl.actorcritic_agent as actorcritic_agent
-
 import monitoring.agent_monitoring.am_configuration as am_configuration
 import monitoring.agent_monitoring.am_evaluation as am_evaluation
 
-import agents.vendors as vendors
-import market.sim_market as sim_market
+# import rl.actorcritic_agent as actorcritic_agent
+
+# import agents.vendors as vendors
+# import market.linear_market.linear_sim_market as linear_market
 
 
 class Monitor():
@@ -86,16 +86,10 @@ def run_monitoring_session(monitor: Monitor = Monitor()) -> None:
 	Args:
 		monitor (Monitor instance, optional): The monitor to run the session on. Defaults to a default Monitor() instance.
 	"""
-	mymarket = sim_market.CircularEconomyRebuyPriceOneCompetitor()
-
-	myagent = actorcritic_agent.ContinuosActorCriticAgentFixedOneStd(mymarket.observation_space.shape[0], 3)
-	myagent.load_actor('results\\monitoring\\actor_parametersCircularEconomyRebuyPriceOneCompetitor_ContinuosActorCriticAgentFixedOneStd_650.340.dat')
-
-	monitor.configurator.agents = [myagent, vendors.RuleBasedCERebuyAgent()]
-	monitor.configurator.marketplace = mymarket
-
-	monitor.configurator.agent_colors = [(0, 1, 1, 1), (1, 0, 1, 1)]
-	# monitor.configurator.print_configuration()
+	# monitor.configurator.setup_monitoring(
+	# 	agents=[(vendors.QLearningLEAgent, ['QLearning Agent']), (vendors.FixedPriceLEAgent, [(6), 'Rulebased Agent'])],
+	# 	marketplace=linear_market.ClassicScenario)
+	monitor.configurator.print_configuration()
 
 	print('\nStarting monitoring session...')
 	rewards = monitor.run_marketplace()

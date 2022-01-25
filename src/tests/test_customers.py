@@ -2,8 +2,9 @@ import numpy as np
 import pytest
 
 import configuration.utils as ut
+import market.circular.circular_sim_market as circular_market
 import market.customer as customer
-import market.sim_market as sim_market
+import market.linear.linear_sim_market as linear_market
 
 
 # Helper function that creates a random offer (state that includes the agent's price) to test customer behaviour.
@@ -18,7 +19,7 @@ def random_offer(marketplace):
 # Test the Customer parent class, i.e. make sure it cannot be used
 def test_customer_parent_class():
 	with pytest.raises(NotImplementedError) as assertion_message:
-		customer.Customer.generate_purchase_probabilities_from_offer(customer.CustomerLinear, random_offer(sim_market.ClassicScenario), 1)
+		customer.Customer.generate_purchase_probabilities_from_offer(customer.CustomerLinear, random_offer(linear_market.ClassicScenario), 1)
 	assert 'This method is abstract. Use a subclass' in str(assertion_message.value)
 
 
@@ -42,10 +43,10 @@ def test_generate_purchase_probabilities_from_offer(customer, offers, offer_leng
 
 
 customer_action_range_testcases = [
-	(customer.CustomerLinear, *random_offer(sim_market.ClassicScenario), 4),
-	(customer.CustomerLinear, *random_offer(sim_market.MultiCompetitorScenario), 8),
-	(customer.CustomerCircular, *random_offer(sim_market.CircularEconomyMonopolyScenario), 4),
-	(customer.CustomerCircular, *random_offer(sim_market.CircularEconomyRebuyPriceMonopolyScenario), 5)
+	(customer.CustomerLinear, *random_offer(linear_market.ClassicScenario), 4),
+	(customer.CustomerLinear, *random_offer(linear_market.MultiCompetitorScenario), 8),
+	(customer.CustomerCircular, *random_offer(circular_market.CircularEconomyMonopolyScenario), 4),
+	(customer.CustomerCircular, *random_offer(circular_market.CircularEconomyRebuyPriceMonopolyScenario), 5)
 ]
 
 
