@@ -1,11 +1,7 @@
-from abc import ABC, abstractmethod
-import json
-
-
 class AlphaBusinessDockerInfo():
 	"""This class encapsules the return values for the rest api
 	"""
-	def __init__(self, container_id: int, is_alive: bool=None, data: str=None) -> None:
+	def __init__(self, container_id: int, is_alive: bool = None, data: str = None) -> None:
 		self.id = container_id
 		self.is_alive = is_alive
 		self.data = data
@@ -24,7 +20,7 @@ class AlphaBusinessDockerManager():
 			int: The id of the started docker container
 		"""
 		return AlphaBusinessDockerInfo(container_id=42)
-	
+
 	def is_container_alive(self, id: int) -> AlphaBusinessDockerInfo:
 		"""
 		This method should tell me if the docker container with the given id is still running.
@@ -51,7 +47,6 @@ class AlphaBusinessDockerManager():
 		"""
 		return AlphaBusinessDockerInfo(container_id=id, data='this is a test')
 
-	@abstractmethod
 	def kill_container(self, id: int) -> None:
 		"""
 		kills a docker container with a given id
@@ -74,14 +69,12 @@ class AlphaBusinessDockerManager():
 		pass
 
 	# I would suggest an observer pattern for docker container:
-	@abstractmethod
 	def attach(self, id: int, observer) -> None:
 		"""
 		Attach an observer to the container.
 		"""
 		pass
 
-	@abstractmethod
 	def notify(self) -> None:
 		"""
 		Notify all observers about an event, events should be: the container is done, the container stopped working (any reason).
@@ -90,7 +83,6 @@ class AlphaBusinessDockerManager():
 		pass
 
 	# optional methods
-	@abstractmethod
 	def container_progress(self, id: int) -> AlphaBusinessDockerInfo:
 		"""
 		This methoud should return the total progress of the container
@@ -102,4 +94,3 @@ class AlphaBusinessDockerManager():
 			int: progress between 0 and 1, 1 means done
 		"""
 		pass
-	
