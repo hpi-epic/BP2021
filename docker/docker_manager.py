@@ -23,30 +23,34 @@ class DockerManager():
 			cls._client = docker.from_env(version='auto')
 		return cls._instance
 
-	def build_image(self, imagename: str = 'bp2021image'):
+	def build_image(self, imagename: str = 'bp2021image') -> str:
 		"""
 		Build an image from the default dockerfile and name it accordingly.
 
-		If an image with the provided name already exists, no new image will be built an the existing one will be returned.
+		If an image with the provided name already exists, no new image will be built and the existing one will be returned.
 
 		Args:
 			imagename (str, optional): The name the image will have. Defaults to 'bp2021image'.
 		"""
 		# https://docker-py.readthedocs.io/en/stable/images.html
 		# build image from dockerfile and name it accordingly
+		# TODO: Message the user if the imagename is already taken
 		img = self._client.images.build(path=os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)), tag=imagename, forcerm=True)
 		# return id without the 'sha256:'-prefix
 		return img[0].id[7:]
 
-	def start_container(self, image: str, config={}) -> AlphaBusinessDockerInfo:
+	def start_container(self, image_id: str, config={}) -> str:
 		"""
-		This method should start a docker container with the given `config` as parameter configuration.
+		Start a container for the given image.
+
+		Currently does not support loading a config file.
 
 		Args:
+			image_id (str): The id of the image to start the container for.
 			config (str): a json containing parameters for the simulation
 
 		Returns:
-			int: The id of the started docker container
+			str: The id of the started docker container
 		"""
 		# https://docker-py.readthedocs.io/en/stable/containers.html
 		# options: auto_remove, command, detach, environment (dict/list of environment variables to set), healthcheck(?), name, log_config, remove
@@ -54,47 +58,80 @@ class DockerManager():
 		# MaximumRetryCount Number of times to restart the container on failure. For example: {"Name": "on-failure", "MaximumRetryCount": 5}
 		print('Starting container...')
 		# name will be first tag without the ':latest'-postfix
-		container_name = self._client.images.get(image).tags[0][:-7]
+		container_name = self._client.images.get(image_id).tags[0][:-7]
 		# create a device request to use all available GPU devices with compute capabilities
 		device_request_gpu = docker.types.DeviceRequest(driver='nvidia', count=1, capabilities=[['compute']])
-		container = self._client.containers.run(image, name=f'{container_name}_container', detach=True, device_requests=[device_request_gpu])
+		container = self._client.containers.run(image_id, name=f'{container_name}_container', detach=True, device_requests=[device_request_gpu])
 		return container.id
 
-	# formerly is_container_alive
-	def container_status(self, container_id: str) -> AlphaBusinessDockerInfo:
+	def container_status(self, container_id: str) -> str:
 		"""
-		This method should tell me if the docker container with the given id is still running.
-		If nothing can destroy the observer notification (see below) we can remove this function.
+		Return the status of the given container.
+		Will be one of 'restarting', 'running', 'paused', 'exited'.
 
 		Args:
-			id (int): id of running docker container
+			container_id (str): The id of the container
 
 		Returns:
-			bool: answers if the docker container with the id is running
+			str: The status of the container
 		"""
 		return self._client.containers.get(container_id).status
 
-	def get_container_data(self, container_id: str) -> AlphaBusinessDockerInfo:
+	def is_container_running(self, container_id: str) -> bool:
 		"""
-		This method should return all data the docker container with a given id has produced yet.
-		We should think about wrapping this data into an AlphaBusinessDataClass in order to return files etc.
+		Returns `True` if the given container is still running and `False` otherwise.
 
 		Args:
-			id (int): id of running docker container
+			container_id (str): The id of the container
 
 		Returns:
-			str: produced data
+			bool: Whether or not the container is still running
 		"""
-		return self._client.containers.get(container_id).logs().decode('UTF-8')
+		return self.container_status(container_id) == 'running'
 
-	def kill_container(self, id: int) -> None:
+	def get_container_logs(self, container_id: str, timestamps: bool = False) -> str:
 		"""
-		kills a docker container with a given id
+		Return the logs of the given container.
+
+		The logs consist of `STDOUT` and `STDERR`.
 
 		Args:
-			id (int): id of docker conrainer
+			container_id (str): The id of the container.
+			timestamps (bool): Whether or not timestamps should be displayed in the logs.
+
+		Returns:
+			str: The logs of the container
 		"""
-		pass
+		return self._client.containers.get(container_id).logs(timestamps=timestamps).decode('UTF-8')
+
+	def stop_container(self, container_id: str) -> bool:
+		"""
+		Stop a running container.
+
+		Args:
+			container_id (str): The id of the container.
+		"""
+		return self._client.containers.get(container_id).kill()
+
+	def remove_container(self, container_id: str) -> None:
+		"""
+		Remove a stopped container.
+
+		Will raise an error if the container is still running.
+
+		Args:
+			container_id (str): The id of the container.
+		"""
+		self._client.containers.get(container_id).remove()
+
+	def remove_image(self, image_id: str) -> None:
+		"""
+		Remove an image.
+
+		Args:
+			image_id (str): The id of the image.
+		"""
+		self._client.images.get(image_id).remove()
 
 	def get_tensorboard_link(self, id: int) -> AlphaBusinessDockerInfo:
 		"""
@@ -144,5 +181,7 @@ if __name__ == '__main__':
 	print('Sleeping')
 	time.sleep(7)
 	print('Stdout of the container:\n')
-	print(manager.get_container_data(cont))
+	print(manager.get_container_logs(cont))
 	print('Status:', manager.container_status(cont))
+	print('Removing container...')
+	manager.remove_container(cont)
