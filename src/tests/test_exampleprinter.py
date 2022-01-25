@@ -10,6 +10,7 @@ import agents.vendors as vendors
 import market.circular.circular_sim_market as circular_market
 import market.linear.linear_sim_market as linear_market
 from monitoring.exampleprinter import ExamplePrinter
+import rl.actorcritic_agent as actorcritic_agent
 
 
 def test_setup_exampleprinter():
@@ -27,7 +28,8 @@ full_episode_testcases = [
 	(circular_market.CircularEconomyRebuyPriceMonopolyScenario(), vendors.FixedPriceCERebuyAgent()),
 	(circular_market.CircularEconomyRebuyPriceMonopolyScenario(), vendors.RuleBasedCERebuyAgent()),
 	(circular_market.CircularEconomyRebuyPriceOneCompetitor(), vendors.FixedPriceCERebuyAgent()),
-	(circular_market.CircularEconomyRebuyPriceOneCompetitor(), vendors.RuleBasedCERebuyAgent())
+	(circular_market.CircularEconomyRebuyPriceOneCompetitor(), vendors.RuleBasedCERebuyAgent()),
+	(circular_market.CircularEconomyRebuyPriceOneCompetitor(), actorcritic_agent.ContinuosActorCriticAgentFixedOneStd(6, 3, "results\\monitoring\\actor_parametersCircularEconomyRebuyPriceOneCompetitor_ContinuosActorCriticAgentFixedOneStd_650.340.dat"))
 ]
 
 

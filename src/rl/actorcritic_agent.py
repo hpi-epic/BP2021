@@ -14,10 +14,15 @@ class ActorCriticAgent(vendors.Agent, ABC):
 	"""
 	This is an implementation of an (one step) actor critic agent as proposed in Richard Suttons textbook on page 332.
 	"""
-	def __init__(self, n_observations, n_actions):
+	def __init__(self, n_observations, n_actions, actor_path=None, critic_path=None):
 		self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
 		print(f'I initiate an ActorCriticAgent using {self.device} device')
 		self.initialize_models_and_optimizer(n_observations, n_actions)
+		if actor_path is not None:
+			self.actor_net.load_state_dict(torch.load(actor_path, map_location=self.device))
+		if critic_path is not None:
+			self.critic_net.load_state_dict(torch.load(critic_path, map_location=self.device))
+			self.critic_tgt_net.load_state_dict(torch.load(critic_path, map_location=self.device))
 
 	def synchronize_critic_tgt_net(self):
 		"""
@@ -73,9 +78,6 @@ class ActorCriticAgent(vendors.Agent, ABC):
 				for reward in range(len(rewards) - 10):
 					os.remove(os.path.join(model_path, f'actor_{signature}_{rewards[reward]:.3f}.dat'))
 					os.remove(os.path.join(model_path, f'critic_{signature}_{rewards[reward]:.3f}.dat'))
-
-	def load_actor(self, load_path):
-		self.actor_net.load_state_dict(torch.load(load_path, map_location=self.device))
 
 	def train_batch(self, states, actions, rewards, next_states, regularization=False):
 		"""
@@ -240,7 +242,6 @@ class ContinuosActorCriticAgent(ActorCriticAgent):
 		action = torch.max(action, torch.zeros(action.shape).to(self.device))
 		action = torch.min(action, 9 * torch.ones(action.shape).to(self.device))
 		action = action.squeeze().type(torch.LongTensor).to('cpu').numpy()
-		# action = action if raw_action else self.agent_output_to_market_form(action)
 		transformed_network_output = np.array([mean.to('cpu').numpy(), std.to('cpu').numpy()]).reshape(-1)
 		return action, transformed_network_output, v_estimate.to('cpu').item()
 
@@ -253,7 +254,8 @@ class ContinuosActorCriticAgent(ActorCriticAgent):
 		action = torch.round(torch.normal(mean, std).to(self.device))
 		action = torch.max(action, torch.zeros(action.shape).to(self.device))
 		action = torch.min(action, 9 * torch.ones(action.shape).to(self.device))
-		return action.squeeze().type(torch.LongTensor).to('cpu').numpy()
+		action = action.squeeze().type(torch.LongTensor).to('cpu').numpy()
+		return action if raw_action else self.agent_output_to_market_form(action)
 
 	def log_probability_given_action(self, states, actions):
 		network_result = self.actor_net(states)
