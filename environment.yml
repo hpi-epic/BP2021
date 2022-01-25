@@ -17,8 +17,10 @@ dependencies:
   - matplotlib=3.5.0
   - tensorboard=2.7.0
   - snakeviz=2.1.1
-  - pywin32=302  # This version fixes a DeprecationWarning
+  - pywin32=302
+  - docker=20.10.9
   - pip=21.2.4
+  # pip dependencies were moved to requirements.txt to accomodate the docker image!
   # - pip:
   #   - -e ./src  # This installs our project as a package
   #   - pytest-randomly  # each time the tests are run, they are run in a random order to find hidden dependencies
