@@ -49,8 +49,6 @@ class QLearningTrainer(RLTrainer):
 				vendors_cumulated_info = None
 				self.marketplace.reset()
 
-			self.consider_sync_tgt_net(frame_idx)
-
 			if len(self.RL_agent.buffer) < config.REPLAY_START_SIZE:
 				continue
 
@@ -58,5 +56,7 @@ class QLearningTrainer(RLTrainer):
 			losses.append(loss)
 			rmse_losses.append(np.sqrt(loss))
 			selected_q_vals.append(selected_q_val_mean)
+
+			self.consider_sync_tgt_net(frame_idx)
 
 		self._end_of_training()

@@ -1,10 +1,10 @@
 import torch
 
 import agents.vendors as vendors
+# import market.linear.linear_sim_market as linear_market
 import market.circular.circular_sim_market as circular_market
-import market.linear.linear_sim_market as linear_market
 import market.sim_market as sim_market
-import rl.training as training
+import rl.q_learning_training as training
 
 
 def run_training_session(marketplace=circular_market.CircularEconomyRebuyPriceOneCompetitor, agent=vendors.QLearningCERebuyAgent):
@@ -28,4 +28,4 @@ def run_training_session(marketplace=circular_market.CircularEconomyRebuyPriceOn
 
 
 if __name__ == '__main__':
-	run_training_session(linear_market.ClassicScenario, vendors.QLearningLEAgent)
+	run_training_session(circular_market.CircularEconomyRebuyPriceMonopolyScenario, vendors.QLearningCERebuyAgent)
