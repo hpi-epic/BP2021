@@ -28,4 +28,4 @@ COPY config.json .
 COPY ./results ./results
 
 # The code to run when container is started:
-ENTRYPOINT ["conda", "run", "-n", "dockervenv", "python3", "src/test.py"]
+ENTRYPOINT ["conda", "run", "-n", "dockervenv", "python3", "src/monitoring/exampleprinter.py"]
