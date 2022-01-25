@@ -1,5 +1,11 @@
+import docker
+import os
+import time
+
+
 class AlphaBusinessDockerInfo():
-	"""This class encapsules the return values for the rest api
+	"""
+	This class encapsules the return values for the rest api
 	"""
 	def __init__(self, container_id: int, is_alive: bool = None, data: str = None) -> None:
 		self.id = container_id
@@ -8,8 +14,26 @@ class AlphaBusinessDockerInfo():
 
 
 class AlphaBusinessDockerManager():
-	# important methods:
-	def start_docker(self, config) -> AlphaBusinessDockerInfo:
+
+	def __init__(self):
+		self.client = docker.from_env()
+
+	def build_image(self, imagename: str = 'bp2021image'):
+		"""
+		Build an image from the default dockerfile and name it accordingly.
+
+		If an image with the provided name already exists, no new image will be built an the existing one will be returned.
+
+		Args:
+			imagename (str, optional): The name the image will have. Defaults to 'bp2021image'.
+		"""
+		# https://docker-py.readthedocs.io/en/stable/images.html
+		# build image from dockerfile and name it accordingly
+		img = self.client.images.build(path=os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)), tag=imagename, forcerm=True)
+		# return id without the 'sha256:'-prefix
+		return img[0].id[7:]
+
+	def start_container(self, image: str, config={}) -> AlphaBusinessDockerInfo:
 		"""
 		This method should start a docker container with the given `config` as parameter configuration.
 
@@ -19,9 +43,18 @@ class AlphaBusinessDockerManager():
 		Returns:
 			int: The id of the started docker container
 		"""
-		return AlphaBusinessDockerInfo(container_id=42)
+		# https://docker-py.readthedocs.io/en/stable/containers.html
+		# options: auto_remove, command, detach, environment (dict/list of environment variables to set), healthcheck(?), name, log_config, remove
+		# restart_policy: Restart the container when it exits. Configured as a dictionary with keys: Name One of on-failure, or always.
+		# MaximumRetryCount Number of times to restart the container on failure. For example: {"Name": "on-failure", "MaximumRetryCount": 5}
+		print('Starting container...')
+		# name will be first tag without the ':latest'-postfix
+		container_name = self.client.images.get(image).tags[0][:-7]
+		container = self.client.containers.run(image, name=f'{container_name}_container', detach=True)
+		return container.id
 
-	def is_container_alive(self, id: int) -> AlphaBusinessDockerInfo:
+	# formerly is_container_alive
+	def container_status(self, container_id: str) -> AlphaBusinessDockerInfo:
 		"""
 		This method should tell me if the docker container with the given id is still running.
 		If nothing can destroy the observer notification (see below) we can remove this function.
@@ -32,7 +65,7 @@ class AlphaBusinessDockerManager():
 		Returns:
 			bool: answers if the docker container with the id is running
 		"""
-		return AlphaBusinessDockerInfo(container_id=id, is_alive=True)
+		return self.client.containers.get(container_id).status
 
 	def get_container_data(self, id: int) -> AlphaBusinessDockerInfo:
 		"""
@@ -94,3 +127,13 @@ class AlphaBusinessDockerManager():
 			int: progress between 0 and 1, 1 means done
 		"""
 		pass
+
+
+if __name__ == '__main__':
+	manager = AlphaBusinessDockerManager()
+	img = manager.build_image()
+	cont = manager.start_container(img)
+	print(manager.container_status(cont))
+	time.sleep(3)
+	print('Stdout of the container:\n')
+	print(manager.client.containers.get(cont).logs().decode('UTF-8'))
