@@ -68,7 +68,7 @@ class ExamplePrinter():
 
 		with torch.no_grad():
 			while not is_done:
-				action = self.agent.policy(state)[0].tolist()
+				action = self.agent.policy(state)
 				print(state)
 				state, reward, is_done, logdict = self.marketplace.step(action)
 				if cumulative_dict is not None:

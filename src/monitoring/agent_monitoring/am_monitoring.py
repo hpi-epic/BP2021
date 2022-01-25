@@ -61,7 +61,7 @@ class Monitor():
 
 				# run marketplace for this agent
 				while not is_done:
-					action = self.configurator.agents[i].policy(state)[0].tolist() if i == 0 else self.configurator.agents[i].policy(state)
+					action = self.configurator.agents[i].policy(state)
 					state, step_reward, is_done, _ = self.configurator.marketplace.step(action)
 					episode_reward += step_reward
 
