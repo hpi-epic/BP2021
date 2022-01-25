@@ -185,6 +185,19 @@ class CircularEconomy(SimMarket):
 			n_actions *= self._action_space[id].n
 		return n_actions
 
+	def _is_probability_distribution_fitting_exactly(self, probability_distribution) -> bool:
+		"""
+		The probability distribution must have one entry for buy_noting and two entries (purchases_new, purchases_refurbished) for every vendor.
+
+		Args:
+			probability_distribution (np.array):
+				The probabilities that a customer either buys nothing or the refurbished or alternatively new product of a specific vendor.
+
+		Returns:
+			bool: Whether the probability_distribution fits into the CircularEconomy.
+		"""
+		return len(probability_distribution) == 1 + (2 * self._get_number_of_vendors())
+
 
 class CircularEconomyMonopolyScenario(CircularEconomy):
 
@@ -198,10 +211,8 @@ class CircularEconomyRebuyPrice(CircularEconomy):
 		super()._setup_action_observation_space()
 		self.observation_space = gym.spaces.Box(
 			np.array([0, 0] + [0, 0, 0, 0] * len(self.competitors)),
-			np.array([self.max_circulation, self.max_storage] + [config.MAX_PRICE,
-			config.MAX_PRICE,
-			config.MAX_PRICE,
-			self.max_storage] * len(self.competitors)),
+			np.array([self.max_circulation, self.max_storage] + [config.MAX_PRICE, config.MAX_PRICE,
+				config.MAX_PRICE, self.max_storage] * len(self.competitors)),
 			dtype=np.float64)
 		self._action_space = gym.spaces.Tuple(
 			(gym.spaces.Discrete(config.MAX_PRICE), gym.spaces.Discrete(config.MAX_PRICE), gym.spaces.Discrete(config.MAX_PRICE)))

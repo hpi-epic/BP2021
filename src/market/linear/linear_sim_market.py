@@ -65,6 +65,18 @@ class LinearEconomy(SimMarket, ABC):
 	def get_n_actions(self):
 		return self._action_space.n
 
+	def _is_probability_distribution_fitting_exactly(self, probability_distribution) -> bool:
+		"""
+		The probability distribution must have one entry for buy_nothing and one entry (purchases_new) for every vendor.
+
+		Args:
+			probability_distribution (np.array): The probabilities that a customer either buys nothing or the new product of a specific vendor.
+
+		Returns:
+			bool: Whether the probability_distribution fits into the LinearEcononmy.
+		"""
+		return len(probability_distribution) == 1 + self._get_number_of_vendors()
+
 
 class ClassicScenario(LinearEconomy):
 

@@ -70,6 +70,18 @@ class SimMarket(gym.Env, ABC):
 
 		return self._observation()
 
+	@abstractmethod
+	def _is_probability_distribution_fitting_exactly(self, probability_distribution) -> None:
+		"""
+		The implementation of this function varies between economy types.
+
+		See also:
+			`<market.linear.linear_sim_market.LinearEconomy._is_probability_distribution_fitting_exactly`
+
+			`<market.circular.circular_sim_market.CircularEconomy._is_probability_distribution_fitting_exactly>`
+		"""
+		raise NotImplementedError
+
 	def _simulate_customers(self, profits, offers, number_of_customers) -> None:
 		"""
 		Simulate the customers, the products offered by the vendors get sold to n customers.
@@ -83,9 +95,7 @@ class SimMarket(gym.Env, ABC):
 		"""
 		probability_distribution = self._customer.generate_purchase_probabilities_from_offer(offers, self._get_offer_length_per_vendor())
 		assert isinstance(probability_distribution, np.ndarray), 'generate_purchase_probabilities_from_offer must return an np.ndarray'
-		# assert len(probability_distribution) == 1 + (1 if isinstance(self, LinearEconomy) else 2) * self._get_number_of_vendors(), \
-		# 	"""The probability distribution must have one entry for buy_nothing and one or two entries for every vendor.
-		# 	One entry if it is a linear economy (with only one price) or a circular economy with the option to buy refurbished or new."""
+		assert self._is_probability_distribution_fitting_exactly(probability_distribution)
 
 		for _ in range(number_of_customers):
 			customer_decision = ut.shuffle_from_probabilities(probability_distribution)
