@@ -19,6 +19,7 @@ def test_setup_exampleprinter():
 	assert isinstance(printer.marketplace, linear_market.ClassicScenario)
 	assert isinstance(printer.agent, vendors.FixedPriceLEAgent)
 
+parameters_path = os.path.join('results', 'monitoring')
 
 full_episode_testcases = [
 	(linear_market.ClassicScenario(), vendors.FixedPriceLEAgent()),
@@ -30,7 +31,7 @@ full_episode_testcases = [
 	(circular_market.CircularEconomyRebuyPriceOneCompetitor(), vendors.FixedPriceCERebuyAgent()),
 	(circular_market.CircularEconomyRebuyPriceOneCompetitor(), vendors.RuleBasedCERebuyAgent()),
 	(circular_market.CircularEconomyRebuyPriceOneCompetitor(), actorcritic_agent.ContinuosActorCriticAgentFixedOneStd(6, 3,
-		'results\\monitoring\\actor_parametersCircularRebuyOneComp_ContinuosA2C.340.dat'))
+		os.path.join(parameters_path, 'actor_parametersCircularRebuyOneComp_ContinuosA2C.dat')))
 ]
 
 
