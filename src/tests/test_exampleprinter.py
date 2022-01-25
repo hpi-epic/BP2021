@@ -23,11 +23,17 @@ parameters_path = os.path.join('results', 'monitoring')
 
 full_episode_testcases = [
 	(linear_market.ClassicScenario(), vendors.FixedPriceLEAgent()),
+	(linear_market.ClassicScenario(), vendors.QLearningLEAgent(3, 10,
+		load_path=os.path.join(parameters_path, 'ClassicScenario_QLearningLEAgent.dat'))),
 	(linear_market.MultiCompetitorScenario(), vendors.FixedPriceLEAgent()),
 	(circular_market.CircularEconomyMonopolyScenario(), vendors.FixedPriceCEAgent()),
 	(circular_market.CircularEconomyMonopolyScenario(), vendors.RuleBasedCEAgent()),
+	(circular_market.CircularEconomyMonopolyScenario(), vendors.QLearningCEAgent(2, 100,
+		load_path=os.path.join(parameters_path, 'CircularEconomyMonopolyScenario_QLearningCEAgent.dat'))),
 	(circular_market.CircularEconomyRebuyPriceMonopolyScenario(), vendors.FixedPriceCERebuyAgent()),
 	(circular_market.CircularEconomyRebuyPriceMonopolyScenario(), vendors.RuleBasedCERebuyAgent()),
+	(circular_market.CircularEconomyRebuyPriceMonopolyScenario(), vendors.QLearningCERebuyAgent(2, 1000,
+		load_path=os.path.join(parameters_path, 'CircularEconomyRebuyPriceMonopolyScenario_QLearningCERebuyAgent.dat'))),
 	(circular_market.CircularEconomyRebuyPriceOneCompetitor(), vendors.FixedPriceCERebuyAgent()),
 	(circular_market.CircularEconomyRebuyPriceOneCompetitor(), vendors.RuleBasedCERebuyAgent()),
 	(circular_market.CircularEconomyRebuyPriceOneCompetitor(), actorcritic_agent.ContinuosActorCriticAgentFixedOneStd(6, 3,
