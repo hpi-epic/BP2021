@@ -41,18 +41,21 @@ full_episode_testcases = [
 ]
 
 
+MINIMUM_ACCEPTABLE_VALUE = -7000
+
+
 @pytest.mark.parametrize('marketplace, agent', full_episode_testcases)
 def test_full_episode(marketplace, agent):
 	with patch('monitoring.exampleprinter.SVGManipulator'),\
 		patch('monitoring.exampleprinter.SummaryWriter'):
 		printer = ExamplePrinter()
 		printer.setup_exampleprinter(marketplace, agent)
-		assert printer.run_example(log_dir_prepend='test_') >= -5000
+		assert printer.run_example(log_dir_prepend='test_') >= MINIMUM_ACCEPTABLE_VALUE
 
 
 def test_exampleprinter_with_tensorboard():
 	with patch('monitoring.exampleprinter.SVGManipulator'):
-		assert ExamplePrinter().run_example(log_dir_prepend='test_') >= -5000
+		assert ExamplePrinter().run_example(log_dir_prepend='test_') >= MINIMUM_ACCEPTABLE_VALUE
 
 	print('***TEARDOWN***')
 	# we need to sleep because sometimes the runs folder is still being used when we try to remove it

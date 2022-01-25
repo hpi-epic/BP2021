@@ -219,7 +219,7 @@ class QLearningAgent(ReinforcementLearningAgent, ABC):
 	# If you set an optim, this means you want training.
 	# Give no optim if you don't want training.
 	def __init__(
-		self, n_observation,
+		self, n_observations,
 		n_actions,
 		optim=None,
 		device='cuda' if torch.cuda.is_available() else 'cpu', load_path=None, name='q_learning'):
@@ -229,12 +229,12 @@ class QLearningAgent(ReinforcementLearningAgent, ABC):
 		self.optimizer = None
 		self.name = name
 		print(f'I initiate a QLearningAgent using {self.device} device')
-		self.net = model.simple_network(n_observation, n_actions).to(self.device)
+		self.net = model.simple_network(n_observations, n_actions).to(self.device)
 		if load_path:
 			self.net.load_state_dict(torch.load(load_path, map_location=self.device))
 		if optim:
 			self.optimizer = optim(self.net.parameters(), lr=config.LEARNING_RATE)
-			self.tgt_net = model.simple_network(n_observation, n_actions).to(self.device)
+			self.tgt_net = model.simple_network(n_observations, n_actions).to(self.device)
 			if load_path:
 				self.tgt_net.load_state_dict(torch.load(load_path), map_location=self.device)
 			self.buffer = ExperienceBuffer(config.REPLAY_SIZE)

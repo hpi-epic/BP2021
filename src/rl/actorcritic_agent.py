@@ -14,12 +14,13 @@ class ActorCriticAgent(vendors.Agent, ABC):
 	"""
 	This is an implementation of an (one step) actor critic agent as proposed in Richard Suttons textbook on page 332.
 	"""
-	def __init__(self, n_observations, n_actions, actor_path=None, critic_path=None):
+	def __init__(self, n_observations, n_actions, load_path=None, critic_path=None, name='actor_critic'):
 		self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
 		print(f'I initiate an ActorCriticAgent using {self.device} device')
+		self.name = name
 		self.initialize_models_and_optimizer(n_observations, n_actions)
-		if actor_path is not None:
-			self.actor_net.load_state_dict(torch.load(actor_path, map_location=self.device))
+		if load_path is not None:
+			self.actor_net.load_state_dict(torch.load(load_path, map_location=self.device))
 		if critic_path is not None:
 			self.critic_net.load_state_dict(torch.load(critic_path, map_location=self.device))
 			self.critic_tgt_net.load_state_dict(torch.load(critic_path, map_location=self.device))
@@ -180,17 +181,17 @@ class DiscreteActorCriticAgent(ActorCriticAgent):
 		return -torch.log(torch.softmax(self.actor_net(states), dim=0).gather(1, actions.unsqueeze(-1)))
 
 
-class DiscreteACALinear(DiscreteActorCriticAgent):
+class DiscreteACALinear(DiscreteActorCriticAgent, vendors.LinearAgent):
 	def agent_output_to_market_form(self, action):
 		return action
 
 
-class DiscreteACACircularEconomy(DiscreteActorCriticAgent):
+class DiscreteACACircularEconomy(DiscreteActorCriticAgent, vendors.CircularAgent):
 	def agent_output_to_market_form(self, action):
 		return (int(action % config.MAX_PRICE), int(action / config.MAX_PRICE))
 
 
-class DiscreteACACircularEconomyRebuy(DiscreteActorCriticAgent):
+class DiscreteACACircularEconomyRebuy(DiscreteActorCriticAgent, vendors.CircularAgent):
 	def agent_output_to_market_form(self, action):
 		return (
 			int(action / (config.MAX_PRICE * config.MAX_PRICE)),
@@ -198,7 +199,7 @@ class DiscreteACACircularEconomyRebuy(DiscreteActorCriticAgent):
 			int(action % config.MAX_PRICE))
 
 
-class ContinuosActorCriticAgent(ActorCriticAgent):
+class ContinuosActorCriticAgent(ActorCriticAgent, vendors.LinearAgent, vendors.CircularAgent):
 	"""
 	This is an actor critic agent with continuos action space.
 	It's distribution is a normal distribution parameterized by mean and standard deviation.

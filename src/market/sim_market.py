@@ -244,6 +244,12 @@ class SimMarket(gym.Env, ABC):
 		"""
 		raise NotImplementedError('This method is abstract. Use a subclass')
 
+	def get_actions_dimension(self) -> int:
+		if self._action_space.shape is not None:
+			return 1
+		else:
+			return len(self._action_space)
+
 	@abstractmethod
 	def _get_competitor_list(self) -> list:  # pragma: no cover
 		"""

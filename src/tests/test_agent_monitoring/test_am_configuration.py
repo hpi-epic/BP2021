@@ -10,6 +10,7 @@ import market.circular.circular_sim_market as circular_market
 import market.linear.linear_sim_market as linear_market
 import monitoring.agent_monitoring.am_configuration as am_configuration
 import monitoring.agent_monitoring.am_monitoring as monitoring
+import rl.actorcritic_agent as actorcritic_agent
 
 monitor = monitoring.Monitor()
 
@@ -133,6 +134,35 @@ def test_setting_multiple_agents(agents):
 
 def test_setting_market_not_agents():
 	monitor.configurator.setup_monitoring(marketplace=circular_market.CircularEconomyMonopolyScenario)
+
+
+correct_setup_monitoring_testcases = [
+	({'marketplace': circular_market.CircularEconomyRebuyPriceOneCompetitor,
+		'agents': [(actorcritic_agent.ContinuosActorCriticAgentFixedOneStd, ['actor_parametersCircularRebuyOneComp_ContinuosA2C.dat'])]})]
+
+
+@pytest.mark.parametrize('parameters', correct_setup_monitoring_testcases)
+def test_correct_setup_monitoring_parametrized(parameters):
+	dict = {
+		'enable_live_draw': None,
+		'episodes': None,
+		'plot_interval': None,
+		'marketplace': None,
+		'agents': None,
+		'subfolder_name': None
+	}
+	# replace the given parameters
+	for key, val in parameters.items():
+		dict[key] = val
+
+	monitor.configurator.setup_monitoring(
+		enable_live_draw=dict['enable_live_draw'],
+		episodes=dict['episodes'],
+		plot_interval=dict['plot_interval'],
+		marketplace=dict['marketplace'],
+		agents=dict['agents'],
+		subfolder_name=dict['subfolder_name']
+	)
 
 
 incorrect_setup_monitoring_testcases = [

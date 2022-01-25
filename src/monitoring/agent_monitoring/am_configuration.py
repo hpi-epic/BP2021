@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import agents.vendors as vendors
 import market.circular.circular_sim_market as circular_market
 import market.sim_market as sim_market
+import rl.actorcritic_agent as actorcritic_agent
 
 
 class Configurator():
@@ -21,7 +22,7 @@ class Configurator():
 		default_agent = vendors.QLearningCEAgent
 		default_modelfile = f'{type(self.marketplace).__name__}_{default_agent.__name__}'
 		assert os.path.exists(self._get_modelfile_path(default_modelfile)), f'the default modelfile does not exist: {default_modelfile}'
-		self.agents = [default_agent(n_observation=self.marketplace.observation_space.shape[0],
+		self.agents = [default_agent(n_observations=self.marketplace.observation_space.shape[0],
 			n_actions=self.marketplace.get_n_actions(), load_path=self._get_modelfile_path(default_modelfile))]
 		self.agent_colors = [(0.0, 0.0, 1.0, 1.0)]
 		self.folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir,
@@ -85,13 +86,13 @@ class Configurator():
 		for current_agent in agents:
 			if issubclass(current_agent[0], vendors.RuleBasedAgent):
 				self.agents.append(vendors.Agent.custom_init(vendors.Agent, current_agent[0], current_agent[1]))
-			elif issubclass(current_agent[0], vendors.QLearningAgent):
+			elif issubclass(current_agent[0], vendors.QLearningAgent) or issubclass(current_agent[0], actorcritic_agent.ActorCriticAgent):
 				try:
 					assert (0 <= len(current_agent[1]) <= 2), 'the argument list for a RL-agent must have length between 0 and 2'
 					assert all(isinstance(argument, str) for argument in current_agent[1]), 'the arguments for a RL-agent must be of type str'
 
 					agent_modelfile = f'{type(self.marketplace).__name__}_{current_agent[0].__name__}'
-					agent_name = 'q_learning'
+					agent_name = 'q_learning' if issubclass(current_agent[0], vendors.QLearningAgent) else 'actor_critic'
 					# no arguments
 					if len(current_agent[1]) == 0:
 						pass
@@ -113,8 +114,12 @@ class Configurator():
 						raise RuntimeError('invalid arguments provided')
 
 					# create the agent
-					self.agents.append(current_agent[0](n_observation=self.marketplace.observation_space.shape[0],
-						n_actions=self.marketplace.get_n_actions(), load_path=self._get_modelfile_path(agent_modelfile), name=agent_name))
+					if issubclass(current_agent[0], actorcritic_agent.ContinuosActorCriticAgent):
+						outputs = self.marketplace.get_actions_dimension()
+					else:
+						outputs = self.marketplace.get_n_actions()
+					self.agents.append(current_agent[0](n_observations=self.marketplace.observation_space.shape[0],
+						n_actions=outputs, load_path=self._get_modelfile_path(agent_modelfile), name=agent_name))
 				except RuntimeError:  # pragma: no cover
 					raise RuntimeError('the modelfile is not compatible with the agent you tried to instantiate')
 			else:  # pragma: no cover

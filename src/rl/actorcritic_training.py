@@ -52,10 +52,7 @@ def train_actorcritic(
 	assert issubclass(agent_class, actorcritic_agent.ActorCriticAgent), \
 		f'the agent_class must be a subclass of ActorCriticAgent: {agent_class}'
 	if issubclass(agent_class, actorcritic_agent.ContinuosActorCriticAgent):
-		if marketplace_class()._action_space.shape is not None:
-			outputs = 1
-		else:
-			outputs = len(marketplace_class()._action_space)
+		outputs = marketplace_class().get_actions_dimension()
 	else:
 		outputs = marketplace_class().get_n_actions()
 	agent = agent_class(marketplace_class().observation_space.shape[0], outputs)
