@@ -12,7 +12,7 @@ import agents.vendors as vendors
 import configuration.config as config
 import market.circular.circular_sim_market as circular_market
 import market.linear.linear_sim_market as linear_market
-import rl.training as training
+import rl.q_learning_training as q_learning_training
 import tests.utils_tests as ut_t
 
 
@@ -39,7 +39,7 @@ def test_market_scenario(environment, agent):
 		reload(config)
 		environment = environment()
 		agent = agent(environment.observation_space.shape[0], n_actions=environment.get_n_actions(), optim=torch.optim.Adam)
-		training.QLearningTrainer(environment, agent).train_agent(int(config.REPLAY_START_SIZE * 1.2))
+		q_learning_training.QLearningTrainer(environment, agent).train_agent(int(config.REPLAY_START_SIZE * 1.2))
 
 
 def test_training_with_tensorboard():
@@ -50,7 +50,7 @@ def test_training_with_tensorboard():
 		reload(config)
 		environment = linear_market.ClassicScenario()
 		agent = vendors.QLearningAgent(environment.observation_space.shape[0], n_actions=environment.get_n_actions(), optim=torch.optim.Adam)
-		training.QLearningTrainer(environment, agent, log_dir_prepend='test_').train_agent(int(config.REPLAY_START_SIZE * 1.2))
+		q_learning_training.QLearningTrainer(environment, agent, log_dir_prepend='test_').train_agent(int(config.REPLAY_START_SIZE * 1.2))
 
 	print('***TEARDOWN***')
 	# we need to sleep because sometimes the runs folder is still being used when we try to remove it
