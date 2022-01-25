@@ -6,7 +6,7 @@ import monitoring.agent_monitoring.am_configuration as am_configuration
 import monitoring.agent_monitoring.am_evaluation as am_evaluation
 
 # import agents.vendors as vendors
-# import market.linear_market.linear_sim_market as linear_sim_market
+# import market.linear_market.linear_sim_market as linear_market
 
 
 class Monitor():
@@ -86,7 +86,7 @@ def run_monitoring_session(monitor: Monitor = Monitor()) -> None:
 	"""
 	# monitor.configurator.setup_monitoring(
 	# 	agents=[(vendors.QLearningLEAgent, ['QLearning Agent']), (vendors.FixedPriceLEAgent, [(6), 'Rulebased Agent'])],
-	# 	marketplace=linear_sim_market.ClassicScenario)
+	# 	marketplace=linear_market.ClassicScenario)
 	monitor.configurator.print_configuration()
 
 	print('\nStarting monitoring session...')

@@ -4,7 +4,7 @@ import time
 import matplotlib.pyplot as plt
 
 import agents.vendors as vendors
-import market.circular_market.circular_sim_market as circular_sim_market
+import market.circular.circular_sim_market as circular_market
 import market.sim_market as sim_market
 
 
@@ -17,7 +17,7 @@ class Configurator():
 		self.enable_live_draw = True
 		self.episodes = 500
 		self.plot_interval = 50
-		self.marketplace = circular_sim_market.CircularEconomyMonopolyScenario()
+		self.marketplace = circular_market.CircularEconomyMonopolyScenario()
 		default_agent = vendors.QLearningCEAgent
 		default_modelfile = f'{type(self.marketplace).__name__}_{default_agent.__name__}'
 		assert os.path.exists(self._get_modelfile_path(default_modelfile)), f'the default modelfile does not exist: {default_modelfile}'
@@ -76,7 +76,7 @@ class Configurator():
 		assert all(isinstance(agent_tuple[1], list) for agent_tuple in agents), 'the second entry in each agent-tuple must be a list'
 		assert all(issubclass(agent[0], vendors.CircularAgent) == issubclass(agents[0][0], vendors.CircularAgent) for agent in agents), \
 			'the agents must all be of the same type (Linear/Circular)'
-		assert issubclass(agents[0][0], vendors.CircularAgent) == isinstance(self.marketplace, circular_sim_market.CircularEconomy), \
+		assert issubclass(agents[0][0], vendors.CircularAgent) == isinstance(self.marketplace, circular_market.CircularEconomy), \
 			'the agent and marketplace must be of the same economy type (Linear/Circular)'
 
 		self.agents = []

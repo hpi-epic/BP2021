@@ -9,14 +9,14 @@ from torch.utils.tensorboard import SummaryWriter
 
 import agents.vendors as vendors
 import configuration.utils as ut
-import market.circular_market.circular_sim_market as circular_sim_market
+import market.circular.circular_sim_market as circular_market
 from monitoring.svg_manipulation import SVGManipulator
 
 
 class ExamplePrinter():
 
 	def __init__(self):
-		self.marketplace = circular_sim_market.CircularEconomyRebuyPriceOneCompetitor()
+		self.marketplace = circular_market.CircularEconomyRebuyPriceOneCompetitor()
 		self.agent = vendors.RuleBasedCERebuyAgent()
 		# Signal handler for e.g. KeyboardInterrupt
 		signal.signal(signal.SIGINT, self._signal_handler)
@@ -59,7 +59,7 @@ class ExamplePrinter():
 		signature = f'{log_dir_prepend}exampleprinter_{time.strftime("%b%d_%H-%M-%S")}'
 		writer = SummaryWriter(log_dir=os.path.join('results', 'runs', signature))
 
-		if isinstance(self.marketplace, circular_sim_market.CircularEconomyRebuyPriceOneCompetitor):
+		if isinstance(self.marketplace, circular_market.CircularEconomyRebuyPriceOneCompetitor):
 			svg_manipulator = SVGManipulator(signature)
 		cumulative_dict = None
 
@@ -74,14 +74,14 @@ class ExamplePrinter():
 					cumulative_dict = copy.deepcopy(logdict)
 				ut.write_dict_to_tensorboard(writer, logdict, counter)
 				ut.write_dict_to_tensorboard(writer, cumulative_dict, counter, is_cumulative=True)
-				if isinstance(self.marketplace, circular_sim_market.CircularEconomyRebuyPriceOneCompetitor):
+				if isinstance(self.marketplace, circular_market.CircularEconomyRebuyPriceOneCompetitor):
 					ut.write_content_of_dict_to_overview_svg(svg_manipulator, counter, logdict, cumulative_dict)
 				our_profit += reward
 				counter += 1
-				if isinstance(self.marketplace, circular_sim_market.CircularEconomyRebuyPriceOneCompetitor):
+				if isinstance(self.marketplace, circular_market.CircularEconomyRebuyPriceOneCompetitor):
 					svg_manipulator.save_overview_svg(filename=('MarketOverview_%.3d' % counter))
 
-		if isinstance(self.marketplace, circular_sim_market.CircularEconomyRebuyPriceOneCompetitor):
+		if isinstance(self.marketplace, circular_market.CircularEconomyRebuyPriceOneCompetitor):
 			svg_manipulator.to_html()
 
 		return our_profit

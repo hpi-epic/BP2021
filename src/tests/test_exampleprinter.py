@@ -7,27 +7,27 @@ from unittest.mock import patch
 import pytest
 
 import agents.vendors as vendors
-import market.circular_market.circular_sim_market as circular_sim_market
-import market.linear_market.linear_sim_market as linear_sim_market
+import market.circular.circular_sim_market as circular_market
+import market.linear.linear_sim_market as linear_market
 from monitoring.exampleprinter import ExamplePrinter
 
 
 def test_setup_exampleprinter():
 	printer = ExamplePrinter()
-	printer.setup_exampleprinter(marketplace=linear_sim_market.ClassicScenario(), agent=vendors.FixedPriceLEAgent())
-	assert isinstance(printer.marketplace, linear_sim_market.ClassicScenario)
+	printer.setup_exampleprinter(marketplace=linear_market.ClassicScenario(), agent=vendors.FixedPriceLEAgent())
+	assert isinstance(printer.marketplace, linear_market.ClassicScenario)
 	assert isinstance(printer.agent, vendors.FixedPriceLEAgent)
 
 
 full_episode_testcases = [
-	(linear_sim_market.ClassicScenario(), vendors.FixedPriceLEAgent()),
-	(linear_sim_market.MultiCompetitorScenario(), vendors.FixedPriceLEAgent()),
-	(circular_sim_market.CircularEconomyMonopolyScenario(), vendors.FixedPriceCEAgent()),
-	(circular_sim_market.CircularEconomyMonopolyScenario(), vendors.RuleBasedCEAgent()),
-	(circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario(), vendors.FixedPriceCERebuyAgent()),
-	(circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario(), vendors.RuleBasedCERebuyAgent()),
-	(circular_sim_market.CircularEconomyRebuyPriceOneCompetitor(), vendors.FixedPriceCERebuyAgent()),
-	(circular_sim_market.CircularEconomyRebuyPriceOneCompetitor(), vendors.RuleBasedCERebuyAgent())
+	(linear_market.ClassicScenario(), vendors.FixedPriceLEAgent()),
+	(linear_market.MultiCompetitorScenario(), vendors.FixedPriceLEAgent()),
+	(circular_market.CircularEconomyMonopolyScenario(), vendors.FixedPriceCEAgent()),
+	(circular_market.CircularEconomyMonopolyScenario(), vendors.RuleBasedCEAgent()),
+	(circular_market.CircularEconomyRebuyPriceMonopolyScenario(), vendors.FixedPriceCERebuyAgent()),
+	(circular_market.CircularEconomyRebuyPriceMonopolyScenario(), vendors.RuleBasedCERebuyAgent()),
+	(circular_market.CircularEconomyRebuyPriceOneCompetitor(), vendors.FixedPriceCERebuyAgent()),
+	(circular_market.CircularEconomyRebuyPriceOneCompetitor(), vendors.RuleBasedCERebuyAgent())
 ]
 
 
