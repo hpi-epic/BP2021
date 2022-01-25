@@ -245,6 +245,13 @@ class SimMarket(gym.Env, ABC):
 		raise NotImplementedError('This method is abstract. Use a subclass')
 
 	def get_actions_dimension(self) -> int:
+		"""
+		Get the dimension of the action space.
+		This can be used to set the number of outputs for vendors with continuos action space.
+
+		Returns:
+			int: The dimension of the action space.
+		"""
 		if self._action_space.shape is not None:
 			return 1
 		else:
