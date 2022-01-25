@@ -10,7 +10,6 @@ from torch.utils.tensorboard import SummaryWriter
 import agents.vendors as vendors
 import configuration.utils as ut
 import market.circular.circular_sim_market as circular_market
-import rl.actorcritic_agent as actorcritic_agent
 from monitoring.svg_manipulation import SVGManipulator
 
 
@@ -30,11 +29,9 @@ class ExamplePrinter():
 			marketplace (SimMarket instance, optional): What marketplace to run the session on.
 			agent (Agent instance, optional): What agent ot run the session on..
 		"""
-		print(agent)
 		if(marketplace is not None):
 			self.marketplace = marketplace
 		if(agent is not None):
-			print('I set the agent')
 			self.agent = agent
 
 	def _signal_handler(self, signum, frame):  # pragma: no cover
@@ -91,11 +88,4 @@ class ExamplePrinter():
 
 
 if __name__ == '__main__':  # pragma: no cover
-	mymarket = circular_market.CircularEconomyRebuyPriceOneCompetitor()
-	myagent = actorcritic_agent.ContinuosActorCriticAgentFixedOneStd(mymarket.observation_space.shape[0], 3)
-	myagent.load_actor("""results\\monitoring\\actor_parametersCircularEconomyRebuyPriceOneCompetitor_
-						ContinuosActorCriticAgentFixedOneStd_650.340.dat""")
-	myexampleprinter = ExamplePrinter()
-	print(myagent)
-	myexampleprinter.setup_exampleprinter(mymarket, myagent)
-	print(myexampleprinter.run_example())
+	print(ExamplePrinter().run_example())
