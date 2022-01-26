@@ -25,7 +25,7 @@ def test_reading_file_values():
 
 		# Test all imported values. Extend this test as new values get added!
 		assert len(config.config) == 2, 'the config is being tested for "rl" and "sim_market". Has another type been added?'
-		assert len(config.config['sim_market']) == 5, \
+		assert len(config.config['sim_market']) == 6, \
 			'config["sim_market"] has more or less values than expected. Check this test for the missing values'
 		assert config.EPISODE_LENGTH == 20
 		assert config.MAX_PRICE == 15
