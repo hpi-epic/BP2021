@@ -25,7 +25,7 @@ class ActorCriticAgent(vendors.ReinforcementLearningAgent, ABC):
 			self.critic_net.load_state_dict(torch.load(critic_path, map_location=self.device))
 			self.critic_tgt_net.load_state_dict(torch.load(critic_path, map_location=self.device))
 
-	def synchronize_critic_tgt_net(self):
+	def synchronize_tgt_net(self):
 		print('Now I synchronize the tgt net')
 		self.critic_tgt_net.load_state_dict(self.critic_net.state_dict())
 

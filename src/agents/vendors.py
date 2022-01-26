@@ -68,7 +68,7 @@ class ReinforcementLearningAgent(Agent, ABC):
 		raise NotImplementedError('This method is abstract. Use a subclass')
 
 	@abstractmethod
-	def synchronize_critic_tgt_net(self):
+	def synchronize_tgt_net(self):
 		"""
 		This method writes the parameter from the value estimating net to it's target net.
 		Call this method regularly during training.

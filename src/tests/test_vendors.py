@@ -18,7 +18,9 @@ abstract_agent_classes_testcases = [
 	vendors.CircularAgent,
 	vendors.LinearAgent,
 	vendors.HumanPlayer,
-	vendors.FixedPriceAgent
+	vendors.FixedPriceAgent,
+	vendors.ReinforcementLearningAgent,
+	# vendors.QLearningAgent
 ]
 
 
