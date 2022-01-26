@@ -75,7 +75,7 @@ def check_config_sim_market_completeness(config: dict) -> None:
 	assert 'max_quality' in config, 'your config is missing max_quality'
 	assert 'number_of_customers' in config, 'your config is missing number_of_customers'
 	assert 'production_price' in config, 'your config is missing production_price'
-	assert 'storage_cost_per_product' in config, 'your config is missing STORAGE_COST_PER_PRODUCT'
+	assert 'storage_cost_per_product' in config, 'your config is missing storage_cost_per_product'
 
 
 def update_rl_variables(config: dict) -> None:
