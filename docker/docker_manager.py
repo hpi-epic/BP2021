@@ -23,7 +23,7 @@ class DockerManager():
 			cls._client = docker.from_env()
 		return cls._instance
 
-	def build_image(self, imagename: str = 'bp2021image') -> str:
+	def build_image(self, imagename: str = 'bp2021image', verbose: bool = False) -> str:
 		"""
 		Build an image from the default dockerfile and name it accordingly.
 
@@ -31,6 +31,7 @@ class DockerManager():
 
 		Args:
 			imagename (str, optional): The name the image will have. Defaults to 'bp2021image'.
+			verbose (bool): If True, prints the build logs.
 		"""
 		# https://docker-py.readthedocs.io/en/stable/images.html
 		# build image from dockerfile and name it accordingly
@@ -40,12 +41,17 @@ class DockerManager():
 			old_img = self._client.images.get(imagename)
 		except docker.errors.ImageNotFound:
 			old_img = None
-		img = self._client.images.build(path=os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)), tag=imagename, forcerm=True)
-		if old_img is not None and old_img.id != img[0].id:
+		img, logs = self._client.images.build(path=os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)), tag=imagename, forcerm=True)
+		if verbose:
+			for chunk in logs:
+				if 'stream' in chunk:
+					for line in chunk['stream'].splitlines():
+						print(line)
+		if old_img is not None and old_img.id != img.id:
 			print('An image with this name already exists, it will be overwritten')
 			self._client.images.remove(old_img.id[7:])
 		# return id without the 'sha256:'-prefix
-		return img[0].id[7:]
+		return img.id[7:]
 
 	def create_container(self, image_id: str) -> str:
 		"""
@@ -85,6 +91,11 @@ class DockerManager():
 		print('Starting container...')
 		self._client.containers.get(container_id).start()
 		return container_id
+
+	def execute_command(self, container_id: str, command: str):
+		print(f'Executing command: {command}')
+		_, stream = self._client.containers.get(container_id).exec_run(cmd=command, stream=True)
+		return stream
 
 	def container_status(self, container_id: str) -> str:
 		"""
@@ -144,6 +155,7 @@ class DockerManager():
 			bits, stats = self._client.containers.get(container_id).get_archive(path=container_path)
 			for chunk in bits:
 				f.write(chunk)
+			print(f'Archive written to: {os.path.abspath(target_path)}')
 		return stats
 
 	def stop_container(self, container_id: str) -> bool:
@@ -220,13 +232,11 @@ if __name__ == '__main__':
 	img = manager.build_image()
 	cont = manager.create_container(img)
 	manager.start_container(cont)
-	print('Status:', manager.container_status(cont))
-	print('Sleeping')
-	time.sleep(5)
-	print('Stdout of the container:\n')
-	print(manager.get_container_logs(cont))
-	print('Status:', manager.container_status(cont))
-	time.sleep(3)
+	stream = manager.execute_command(cont, 'python ./src/rl/training_scenario.py')
+	print()
+	for data in stream:
+		print(data.decode(), end='')
+	print()
 	print('Getting archive data...')
 	manager.get_container_data('/app/results', cont)
 	print('Stopping container...')
