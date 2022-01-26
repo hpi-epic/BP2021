@@ -66,7 +66,7 @@ class DockerManager():
 		container_name = self._client.images.get(image_id).tags[0][:-7]
 		# create a device request to use all available GPU devices with compute capabilities
 		device_request_gpu = docker.types.DeviceRequest(driver='nvidia', count=-1, capabilities=[['compute']])
-		container = self._client.containers.run(image_id, name=f'{container_name}_container', detach=True, network_mode='bridge', ports={'6006/tcp': 6006}, device_requests=[device_request_gpu])
+		container = self._client.containers.run(image_id, name=f'{container_name}_container', detach=True, device_requests=[device_request_gpu])
 		return container.id
 
 	def container_status(self, container_id: str) -> str:
@@ -109,22 +109,25 @@ class DockerManager():
 		"""
 		return self._client.containers.get(container_id).logs(timestamps=timestamps).decode('UTF-8')
 
-	def get_container_data(self, target_path: str, container_path: str, container_id: str) -> tuple:
+	def get_container_data(self, container_path: str, container_id: str, target_filename: str = f'results_{time.strftime("%b%d_%H-%M-%S")}') -> dict:
 		"""
-		Return the data in the specified path. Will be returned as a tar archive.
+		Save the data in the container_path to the target_path as a tar archive.
 
 		Args:
-			target_path (str):
-			path (str): [description]
-			container_id (str): [description]
+			container_path (str): The path in the container from which to get the data.
+			container_id (str): The id of the container.
+			target_filename (str): The name of the target file. Defaults to 'results_{time.strftime("%b%d_%H-%M-%S")}'
 
 		Returns:
-			tuple: [description]
+			dict: The 'stats' metadata of the archive extraction.
 		"""
+		target_filename += '.tar'
+		target_path = os.path.join(os.path.dirname(__file__), 'docker_archives', target_filename)
 		with open(target_path, 'wb') as f:
 			bits, stats = self._client.containers.get(container_id).get_archive(path=container_path)
 			for chunk in bits:
 				f.write(chunk)
+		return stats
 
 	def stop_container(self, container_id: str) -> bool:
 		"""
@@ -207,7 +210,7 @@ if __name__ == '__main__':
 	print('Status:', manager.container_status(cont))
 	time.sleep(3)
 	print('Getting archive data...')
-	manager.get_container_data(os.path.abspath(os.path.join(os.path.dirname(__file__), f'results_{cont[:10]}_{time.strftime("%b%d_%H-%M-%S")}.tar')), '/app/results', cont)
+	manager.get_container_data('/app/results', cont)
 	print('Stopping container...')
 	manager.stop_container(cont)
 	print('Removing container...')
