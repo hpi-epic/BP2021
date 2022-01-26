@@ -32,7 +32,7 @@ class Agent(ABC):
 		return class_name(*args)
 
 	@abstractmethod
-	def policy(self, observation, epsilon=0):  # pragma: no cover
+	def policy(self, observation, *_):  # pragma: no cover
 		raise NotImplementedError('This method is abstract. Use a subclass')
 
 

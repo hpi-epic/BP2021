@@ -61,9 +61,9 @@ class ActorCriticTrainer(RLTrainer):
 			for env in chosen_envs:
 				state = environments[env]._observation()
 				if not verbose:
-					action = self.RL_agent.policy(state, True)
+					action = self.RL_agent.policy(state, verbose=False, raw_action=True)
 				else:
-					action, net_output, v_estimate = self.RL_agent.policy_verbose(state)
+					action, net_output, v_estimate = self.RL_agent.policy(state, verbose=True, raw_action=True)
 					all_network_outputs.append(net_output.reshape(-1))
 					all_v_estimates.append(v_estimate)
 				next_state, reward, is_done, info = environments[env].step(self.RL_agent.agent_output_to_market_form(action))

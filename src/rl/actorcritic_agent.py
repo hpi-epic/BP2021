@@ -39,7 +39,7 @@ class ActorCriticAgent(vendors.Agent, ABC):
 		raise NotImplementedError('This method is abstract. Use a subclass')
 
 	@abstractmethod
-	def policy(self, observation, raw_action=False) -> None:  # pragma: no cover
+	def policy(self, observation, verbose=False, raw_action=False) -> None:  # pragma: no cover
 		raise NotImplementedError('This method is abstract. Use a subclass')
 
 	def save(self, path_name, model_name) -> None:
@@ -158,24 +158,21 @@ class DiscreteActorCriticAgent(ActorCriticAgent):
 		self.critic_optimizer = torch.optim.Adam(self.critic_net.parameters(), lr=0.00025)
 		self.critic_tgt_net = model.simple_network(n_observations, 1).to(self.device)
 
-	def policy_verbose(self, observation):
+	def policy(self, observation, verbose=False, raw_action=False):
 		observation = torch.Tensor(np.array(observation)).to(self.device)
 		with torch.no_grad():
 			distribution = torch.softmax(self.actor_net(observation).view(-1), dim=0)
-			v_estimate = self.critic_net(observation).view(-1)
+			if verbose:
+				v_estimate = self.critic_net(observation).view(-1)
 
 		distribution = distribution.to('cpu').detach().numpy()
 		action = ut.shuffle_from_probabilities(distribution)
-		return action, distribution[action], v_estimate.to('cpu').item()
+		action if raw_action else self.agent_output_to_market_form(action)
 
-	def policy(self, observation, raw_action=False):
-		observation = torch.Tensor(np.array(observation)).to(self.device)
-		with torch.no_grad():
-			distribution = torch.softmax(self.actor_net(observation).view(-1), dim=0)
-
-		distribution = distribution.to('cpu').detach().numpy()
-		action = ut.shuffle_from_probabilities(distribution)
-		return action if raw_action else self.agent_output_to_market_form(action)
+		if verbose:
+			return action, distribution[action], v_estimate.to('cpu').item()
+		else:
+			return action
 
 	def log_probability_given_action(self, states, actions):
 		return -torch.log(torch.softmax(self.actor_net(states), dim=0).gather(1, actions.unsqueeze(-1)))
@@ -232,31 +229,25 @@ class ContinuosActorCriticAgent(ActorCriticAgent, vendors.LinearAgent, vendors.C
 		"""
 		raise NotImplementedError('This method is abstract. Use a subclass')
 
-	def policy_verbose(self, observation):
+	def policy(self, observation, verbose=False, raw_action=False):
 		observation = torch.Tensor(np.array(observation)).to(self.device)
 		with torch.no_grad():
 			network_result = self.actor_net(observation)
 			mean, std = self.transform_network_output(1, network_result)
-			v_estimate = self.critic_net(observation).view(-1)
+			if verbose:
+				v_estimate = self.critic_net(observation).view(-1)
 
 		action = torch.round(torch.normal(mean, std).to(self.device))
 		action = torch.max(action, torch.zeros(action.shape).to(self.device))
 		action = torch.min(action, 9 * torch.ones(action.shape).to(self.device))
 		action = action.squeeze().type(torch.LongTensor).to('cpu').numpy()
-		transformed_network_output = np.array([mean.to('cpu').numpy(), std.to('cpu').numpy()]).reshape(-1)
-		return action, transformed_network_output, v_estimate.to('cpu').item()
+		action = action if raw_action else self.agent_output_to_market_form(action)
 
-	def policy(self, observation, raw_action=False):
-		observation = torch.Tensor(np.array(observation)).to(self.device)
-		with torch.no_grad():
-			network_result = self.actor_net(observation)
-			mean, std = self.transform_network_output(1, network_result)
-
-		action = torch.round(torch.normal(mean, std).to(self.device))
-		action = torch.max(action, torch.zeros(action.shape).to(self.device))
-		action = torch.min(action, 9 * torch.ones(action.shape).to(self.device))
-		action = action.squeeze().type(torch.LongTensor).to('cpu').numpy()
-		return action if raw_action else self.agent_output_to_market_form(action)
+		if verbose:
+			transformed_network_output = np.array([mean.to('cpu').numpy(), std.to('cpu').numpy()]).reshape(-1)
+			return action, transformed_network_output, v_estimate.to('cpu').item()
+		else:
+			return action
 
 	def log_probability_given_action(self, states, actions):
 		network_result = self.actor_net(states)
