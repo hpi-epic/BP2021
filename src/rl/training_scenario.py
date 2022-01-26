@@ -1,5 +1,3 @@
-import torch
-
 import agents.vendors as vendors
 # import market.linear.linear_sim_market as linear_market
 import market.circular.circular_sim_market as circular_market
@@ -21,9 +19,6 @@ def run_training_session(marketplace=circular_market.CircularEconomyRebuyPriceOn
 	assert issubclass(agent, vendors.CircularAgent) == issubclass(marketplace, circular_market.CircularEconomy), \
 		'the agent and marketplace must be of the same economy type (Linear/Circular)'
 
-	marketplace = marketplace()
-
-	agent = agent(n_observations=marketplace.observation_space.shape[0], n_actions=marketplace.get_n_actions(), optim=torch.optim.Adam)
 	training.QLearningTrainer(marketplace, agent).train_agent()
 
 
