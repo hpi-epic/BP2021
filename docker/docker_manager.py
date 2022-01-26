@@ -20,7 +20,7 @@ class DockerManager():
 	def __new__(cls):
 		if cls._instance is None:
 			cls._instance = super(DockerManager, cls).__new__(cls)
-			cls._client = docker.from_env(version='auto')
+			cls._client = docker.from_env()
 		return cls._instance
 
 	def build_image(self, imagename: str = 'bp2021image') -> str:
@@ -43,8 +43,7 @@ class DockerManager():
 		img = self._client.images.build(path=os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)), tag=imagename, forcerm=True)
 		if old_img is not None and old_img.id != img[0].id:
 			print('An image with this name already exists, it will be overwritten')
-			print(old_img.id)
-			# self._client.images.remove(old_img)
+			self._client.images.remove(old_img.id[7:])
 		# return id without the 'sha256:'-prefix
 		return img[0].id[7:]
 
