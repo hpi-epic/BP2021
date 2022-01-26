@@ -17,7 +17,7 @@ EPSILON_FINAL = None
 
 # sim_market
 MAX_STORAGE = 100
-STORAGE_COST_PER_PRODUCT = 0.5
+STORAGE_COST_PER_PRODUCT = None
 MAX_PRICE = None
 MAX_QUALITY = None
 MEAN_REWARD_BOUND = None
@@ -31,7 +31,8 @@ def load_config(filename='config') -> dict:
 	Load the configuration json file from the specified path.
 
 	Args:
-		filename (str, optional): The name of the json file containing the configuration values. Must be located in the BP2021/ folder. Defaults to 'config'.
+		filename (str, optional): The name of the json file containing the configuration values.
+		Must be located in the BP2021/ folder. Defaults to 'config'.
 
 	Returns:
 		dict: A dictionary containing the configuration values.
@@ -74,6 +75,7 @@ def check_config_sim_market_completeness(config: dict) -> None:
 	assert 'max_quality' in config, 'your config is missing max_quality'
 	assert 'number_of_customers' in config, 'your config is missing number_of_customers'
 	assert 'production_price' in config, 'your config is missing production_price'
+	assert 'storage_cost_per_product' in config, 'your config is missing storage_cost_per_product'
 
 
 def update_rl_variables(config: dict) -> None:
@@ -95,7 +97,8 @@ def update_rl_variables(config: dict) -> None:
 	global_variables['EPSILON_START'] = float(config['epsilon_start'])
 	global_variables['EPSILON_FINAL'] = float(config['epsilon_final'])
 
-	assert global_variables['LEARNING_RATE'] > 0 and global_variables['LEARNING_RATE'] < 1, 'learning_rate should be between 0 and 1 (excluded)'
+	assert global_variables['LEARNING_RATE'] > 0 and global_variables['LEARNING_RATE'] < 1, \
+		'learning_rate should be between 0 and 1 (excluded)'
 	assert global_variables['GAMMA'] >= 0 and global_variables['GAMMA'] < 1, 'gamma should be between 0 (included) and 1 (excluded)'
 	assert global_variables['BATCH_SIZE'] > 0, 'batch_size should be greater than 0'
 	assert global_variables['REPLAY_SIZE'] > 0, 'replay_size should be greater than 0'
@@ -118,14 +121,19 @@ def update_sim_market_variables(config: dict) -> None:
 	global_variables['MAX_QUALITY'] = int(config['max_quality'])
 	global_variables['NUMBER_OF_CUSTOMERS'] = int(config['number_of_customers'])
 	global_variables['PRODUCTION_PRICE'] = int(config['production_price'])
+	global_variables['STORAGE_COST_PER_PRODUCT'] = config['storage_cost_per_product']
 
-	assert global_variables['NUMBER_OF_CUSTOMERS'] > 0 and global_variables['NUMBER_OF_CUSTOMERS'] % 2 == 0, 'number_of_customers should be even and positive'
-	assert global_variables['PRODUCTION_PRICE'] <= global_variables['MAX_PRICE'] and global_variables['PRODUCTION_PRICE'] >= 0, 'production_price needs to smaller than max_price and positive or zero'
+	assert global_variables['NUMBER_OF_CUSTOMERS'] > 0 and global_variables['NUMBER_OF_CUSTOMERS'] % 2 == 0, \
+		'number_of_customers should be even and positive'
+	assert global_variables['PRODUCTION_PRICE'] <= global_variables['MAX_PRICE'] and global_variables['PRODUCTION_PRICE'] >= 0, \
+		'production_price needs to smaller than max_price and positive or zero'
 	assert global_variables['MAX_QUALITY'] > 0, 'max_quality should be positive'
 	assert global_variables['MAX_PRICE'] > 0, 'max_price should be positive'
 	assert global_variables['EPISODE_LENGTH'] > 0, 'episode_size should be positive'
+	assert global_variables['STORAGE_COST_PER_PRODUCT'] >= 0, 'storage_cost_per_product should be non-negative'
 
-	global_variables['MEAN_REWARD_BOUND'] = global_variables['EPISODE_LENGTH'] * global_variables['MAX_PRICE'] * global_variables['NUMBER_OF_CUSTOMERS']
+	global_variables['MEAN_REWARD_BOUND'] = global_variables['EPISODE_LENGTH'] * global_variables['MAX_PRICE'] * \
+		global_variables['NUMBER_OF_CUSTOMERS']
 
 
 config = load_config()

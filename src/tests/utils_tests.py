@@ -1,7 +1,15 @@
 import os
 
 
-def create_mock_json_rl(gamma='0.99', batch_size='32', replay_size='100000', learning_rate='1e-6', sync_target_frames='1000', replay_start_size='10000', epsilon_decay_last_frame='75000', epsilon_start='1.0', epsilon_final='0.1') -> str:
+def create_mock_json_rl(gamma='0.99',
+	batch_size='32',
+	replay_size='100000',
+	learning_rate='1e-6',
+	sync_target_frames='1000',
+	replay_start_size='10000',
+	epsilon_decay_last_frame='75000',
+	epsilon_start='1.0',
+	epsilon_final='0.1') -> str:
 	"""
 	Create a string in JSON format that can be used to mock the config_rl.json file.
 
@@ -31,7 +39,12 @@ def create_mock_json_rl(gamma='0.99', batch_size='32', replay_size='100000', lea
 		'\t}'
 
 
-def create_mock_json_sim_market(episode_size='20', max_price='15', max_quality='100', number_of_customers='30', production_price='5') -> str:
+def create_mock_json_sim_market(episode_size='20',
+	max_price='15',
+	max_quality='100',
+	number_of_customers='30',
+	production_price='5',
+	storage_cost_per_product='0.3') -> str:
 	"""
 	Create a string in JSON format that can be used to mock the config_sim_market.json file.
 
@@ -49,7 +62,8 @@ def create_mock_json_sim_market(episode_size='20', max_price='15', max_quality='
 		'\t\t"max_price": ' + max_price + ',\n' + \
 		'\t\t"max_quality": ' + max_quality + ',\n' + \
 		'\t\t"number_of_customers": ' + number_of_customers + ',\n' + \
-		'\t\t"production_price": ' + production_price + '\n' + \
+		'\t\t"production_price": ' + production_price + ',\n' + \
+		'\t\t"storage_cost_per_product": ' + storage_cost_per_product + '\n' + \
 		'\t}'
 
 
