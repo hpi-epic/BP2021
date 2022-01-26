@@ -34,9 +34,17 @@ class DockerManager():
 		"""
 		# https://docker-py.readthedocs.io/en/stable/images.html
 		# build image from dockerfile and name it accordingly
-		# TODO: Message the user if the imagename is already taken
 		print('Building image...')
+		# Find out if an image with the name already exists and remove it afterwards
+		try:
+			old_img = self._client.images.get(imagename)
+		except docker.errors.ImageNotFound:
+			old_img = None
 		img = self._client.images.build(path=os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)), tag=imagename, forcerm=True)
+		if old_img is not None and old_img.id != img[0].id:
+			print('An image with this name already exists, it will be overwritten')
+			print(old_img.id)
+			# self._client.images.remove(old_img)
 		# return id without the 'sha256:'-prefix
 		return img[0].id[7:]
 
@@ -54,15 +62,12 @@ class DockerManager():
 			str: The id of the started docker container
 		"""
 		# https://docker-py.readthedocs.io/en/stable/containers.html
-		# options: auto_remove, command, detach, environment (dict/list of environment variables to set), healthcheck(?), name, log_config, remove
-		# restart_policy: Restart the container when it exits. Configured as a dictionary with keys: Name One of on-failure, or always.
-		# MaximumRetryCount Number of times to restart the container on failure. For example: {"Name": "on-failure", "MaximumRetryCount": 5}
 		print('Starting container...')
 		# name will be first tag without the ':latest'-postfix
 		container_name = self._client.images.get(image_id).tags[0][:-7]
 		# create a device request to use all available GPU devices with compute capabilities
 		device_request_gpu = docker.types.DeviceRequest(driver='nvidia', count=-1, capabilities=[['compute']])
-		container = self._client.containers.run(image_id, name=f'{container_name}_container', detach=True, device_requests=[device_request_gpu])
+		container = self._client.containers.run(image_id, name=f'{container_name}_container', detach=True, network_mode='bridge', ports={'6006/tcp': 6006}, device_requests=[device_request_gpu])
 		return container.id
 
 	def container_status(self, container_id: str) -> str:
@@ -184,5 +189,5 @@ if __name__ == '__main__':
 	print('Stdout of the container:\n')
 	print(manager.get_container_logs(cont))
 	print('Status:', manager.container_status(cont))
-	print('Removing container...')
-	manager.remove_container(cont)
+	# print('Removing container...')
+	# manager.remove_container(cont)
