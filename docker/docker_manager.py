@@ -35,6 +35,7 @@ class DockerManager():
 		# https://docker-py.readthedocs.io/en/stable/images.html
 		# build image from dockerfile and name it accordingly
 		# TODO: Message the user if the imagename is already taken
+		print('Building image...')
 		img = self._client.images.build(path=os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)), tag=imagename, forcerm=True)
 		# return id without the 'sha256:'-prefix
 		return img[0].id[7:]
@@ -60,7 +61,7 @@ class DockerManager():
 		# name will be first tag without the ':latest'-postfix
 		container_name = self._client.images.get(image_id).tags[0][:-7]
 		# create a device request to use all available GPU devices with compute capabilities
-		device_request_gpu = docker.types.DeviceRequest(driver='nvidia', count=1, capabilities=[['compute']])
+		device_request_gpu = docker.types.DeviceRequest(driver='nvidia', count=-1, capabilities=[['compute']])
 		container = self._client.containers.run(image_id, name=f'{container_name}_container', detach=True, device_requests=[device_request_gpu])
 		return container.id
 
@@ -179,7 +180,7 @@ if __name__ == '__main__':
 	cont = manager.start_container(img)
 	print('Status:', manager.container_status(cont))
 	print('Sleeping')
-	time.sleep(7)
+	time.sleep(5)
 	print('Stdout of the container:\n')
 	print(manager.get_container_logs(cont))
 	print('Status:', manager.container_status(cont))
