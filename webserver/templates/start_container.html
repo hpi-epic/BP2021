@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="de">
+	<head>
+		<meta charset="utf-8"/>
+		<title>Start container</title>
+	</head>
+	<body>
+		<!-- <h1>You can start containers here</h1> -->
+		At the moment you are not able to do anything here
+		<table class="table">
+			<tr>
+				<th>file name</th>
+				<th></th>
+			</tr>
+
+			{% for file_name in file_names %}
+			<!-- {% with uploaded_file=file.file_upload %}     -->
+				<tr>
+					<td>{{ file_name }}</td>
+					<td>
+						<form method="post" enctype="multipart/form-data">
+							{% csrf_token %}
+							<button name="filename" value="{{ file_name }}" type="submit">launch</button>
+						</form>
+					</td>
+				</tr>
+			<!-- {% endwith %} -->
+			{% endfor %}
+		</table>
+	</body>
+</html>

@@ -10,12 +10,13 @@ from fastapi.responses import JSONResponse
 # GET /data/<docker_id>/tensorboard
 # GET /kill/<docker_id>
 
+# start API with uvicorn app:app --reload
 manager = AlphaBusinessDockerManager()
 
 app = FastAPI()
 
 
-@app.post('/start', status_code=201)
+@app.post('/start')
 async def start_container(config: Request):
 	container_info = manager.start_docker(await config.json())
 	return JSONResponse(vars(container_info))
