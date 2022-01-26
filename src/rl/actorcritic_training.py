@@ -1,10 +1,7 @@
-import os
 import random
-import time
 
 import numpy as np
 import torch
-from torch.utils.tensorboard import SummaryWriter
 
 import configuration.config as config
 import configuration.utils as ut
@@ -50,10 +47,6 @@ class ActorCriticTrainer(RLTrainer):
 			all_v_estimates = []
 		all_value_losses = []
 		all_policy_losses = []
-		best_mean_reward = 0
-
-		curr_time = time.strftime('%b%d_%H-%M-%S')
-		writer = SummaryWriter(log_dir=os.path.join('results', 'runs', f'training_AC_{curr_time}'))
 
 		finished_episodes = 0
 		environments = [self.marketplace_class() for _ in range(total_envs)]
@@ -83,37 +76,27 @@ class ActorCriticTrainer(RLTrainer):
 
 				if is_done:
 					finished_episodes += 1
-					if finished_episodes % 10 == 0:
-						print(f'Finished {finished_episodes} episodes')
 					all_dicts.append(info_accumulators[env])
 
-					# calculate the average of the last 100 items
-					sliced_dicts = all_dicts[-100:]
-					averaged_info = sliced_dicts[0]
-					for dict_number, next_dict in enumerate(sliced_dicts):
-						if dict_number != 0:
-							averaged_info = ut.add_content_of_two_dicts(averaged_info, next_dict)
-					averaged_info = ut.divide_content_of_dict(averaged_info, len(sliced_dicts))
-					ut.write_dict_to_tensorboard(writer, averaged_info, finished_episodes, is_cumulative=True)
+					averaged_info = self.calculate_dict_average(all_dicts)
+					averaged_info['loss/value'] = np.mean(all_value_losses[-1000:])
+					averaged_info['loss/policy'] = np.mean(all_policy_losses[-1000:])
+
 					if verbose:
-						writer.add_scalar('verbose/v_estimate', np.mean(all_v_estimates[-1000:]), finished_episodes)
+						averaged_info['verbose/v_estimate'] = np.mean(all_v_estimates[-1000:])
 						myactions = np.array(all_network_outputs[-1000:])
 						for action_num in range(len(all_network_outputs[0])):
-							writer.add_scalar('verbose/mean/information_' + str(action_num), np.mean(myactions[:, action_num]), finished_episodes)
-							writer.add_scalar('verbose/min/information_' + str(action_num), np.min(myactions[:, action_num]), finished_episodes)
-							writer.add_scalar('verbose/max/information_' + str(action_num), np.max(myactions[:, action_num]), finished_episodes)
-					writer.add_scalar('loss/value', np.mean(all_value_losses[-1000:]), finished_episodes)
-					writer.add_scalar('loss/policy', np.mean(all_policy_losses[-1000:]), finished_episodes)
+							averaged_info['verbose/mean/information_' + str(action_num)] = np.mean(myactions[:, action_num])
+							averaged_info['verbose/min/information_' + str(action_num)] = np.min(myactions[:, action_num])
+							averaged_info['verbose/max/information_' + str(action_num)] = np.max(myactions[:, action_num])
+
+					ut.write_dict_to_tensorboard(self.writer, averaged_info, finished_episodes, is_cumulative=True)
 
 					environments[env].reset()
 					info_accumulators[env] = None
 
-					mean_reward = averaged_info['profits/all']['vendor_0']
-					if best_mean_reward < mean_reward:
-						self.RL_agent.save(path_name=f'{self.signature}_{curr_time}', model_name=f'{self.signature}_{mean_reward:.3f}')
-						if best_mean_reward is not None:
-							print(f'Best reward updated {best_mean_reward:.3f} -> {mean_reward:.3f}')
-						best_mean_reward = mean_reward
+					self.consider_print_info(step_number, finished_episodes, averaged_info)
+					self.consider_update_best_model(averaged_info)
 
 			policy_loss, valueloss = self.RL_agent.train_batch(
 				torch.Tensor(np.array(states)),
@@ -123,5 +106,7 @@ class ActorCriticTrainer(RLTrainer):
 				finished_episodes <= 500)
 			all_value_losses.append(valueloss)
 			all_policy_losses.append(policy_loss)
-			if (step_number + 1) % config.SYNC_TARGET_FRAMES == 0:
-				self.RL_agent.synchronize_critic_tgt_net()
+
+			self.consider_sync_tgt_net(step_number)
+
+		self._end_of_training()
