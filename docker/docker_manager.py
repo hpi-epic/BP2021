@@ -47,27 +47,44 @@ class DockerManager():
 		# return id without the 'sha256:'-prefix
 		return img[0].id[7:]
 
-	def start_container(self, image_id: str, config={}) -> str:
+	def create_container(self, image_id: str) -> str:
+		"""
+		Create a container for the given image.
+
+		Args:
+			image_id (str): The id of the image to start the container for.
+
+		Returns:
+			str: The id of the created docker container
+		"""
+		# https://docker-py.readthedocs.io/en/stable/containers.html
+		print('Creating container...')
+		# name will be first tag without the ':latest'-postfix
+		container_name = self._client.images.get(image_id).tags[0][:-7]
+		# create a device request to use all available GPU devices with compute capabilities
+		device_request_gpu = docker.types.DeviceRequest(driver='nvidia', count=-1, capabilities=[['compute']])
+		container = self._client.containers.create(image_id, name=f'{container_name}_container', detach=True, device_requests=[device_request_gpu])
+		return container.id
+
+	def start_container(self, container_id: str, config: dict = {}) -> str:
 		"""
 		Start a container for the given image.
 
 		Currently does not support loading a config file.
 
 		Args:
-			image_id (str): The id of the image to start the container for.
-			config (str): a json containing parameters for the simulation
+			container_id (str): The id of the image to start the container for.
+			config (str): a json containing parameters for the simulation.
 
 		Returns:
-			str: The id of the started docker container
+			str: The id of the started docker container.
 		"""
-		# https://docker-py.readthedocs.io/en/stable/containers.html
+		if self.container_status(container_id) == 'running':
+			print(f'Container is already running: {container_id}')
+			return container_id
 		print('Starting container...')
-		# name will be first tag without the ':latest'-postfix
-		container_name = self._client.images.get(image_id).tags[0][:-7]
-		# create a device request to use all available GPU devices with compute capabilities
-		device_request_gpu = docker.types.DeviceRequest(driver='nvidia', count=-1, capabilities=[['compute']])
-		container = self._client.containers.run(image_id, name=f'{container_name}_container', detach=True, device_requests=[device_request_gpu])
-		return container.id
+		self._client.containers.get(container_id).start()
+		return container_id
 
 	def container_status(self, container_id: str) -> str:
 		"""
@@ -201,7 +218,8 @@ class DockerManager():
 if __name__ == '__main__':
 	manager = DockerManager()
 	img = manager.build_image()
-	cont = manager.start_container(img)
+	cont = manager.create_container(img)
+	manager.start_container(cont)
 	print('Status:', manager.container_status(cont))
 	print('Sleeping')
 	time.sleep(5)
