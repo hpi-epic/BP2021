@@ -50,7 +50,7 @@ def test_non_abstract_agent_classes(agent):
 
 # actual n_observation and n_action are not needed, we just test if the initialization fails or not
 non_abstract_qlearning_agent_classes_testcases = [
-	(vendors.QLearningAgent, 10, 10),
+	(vendors.QLearningLEAgent, 10, 10),
 	(vendors.QLearningCEAgent, 10, 10),
 	(vendors.QLearningCERebuyAgent, 10, 10)
 ]

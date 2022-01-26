@@ -20,8 +20,8 @@ def teardown_module(module):
 
 
 test_scenarios = [
-	(linear_market.ClassicScenario, vendors.QLearningAgent),
-	(linear_market.MultiCompetitorScenario, vendors.QLearningAgent),
+	(linear_market.ClassicScenario, vendors.QLearningLEAgent),
+	(linear_market.MultiCompetitorScenario, vendors.QLearningLEAgent),
 	(circular_market.CircularEconomyMonopolyScenario, vendors.QLearningCEAgent),
 	(circular_market.CircularEconomyRebuyPriceMonopolyScenario, vendors.QLearningCERebuyAgent),
 	(circular_market.CircularEconomyRebuyPriceOneCompetitor, vendors.QLearningCERebuyAgent)
@@ -46,7 +46,7 @@ def test_training_with_tensorboard():
 		# Include utils_rl again to make sure the file is read again
 		reload(config)
 		market_class = linear_market.ClassicScenario
-		agent_class = vendors.QLearningAgent
+		agent_class = vendors.QLearningLEAgent
 		q_learning_training.QLearningTrainer(market_class, agent_class, log_dir_prepend='test_').train_agent(int(config.REPLAY_START_SIZE * 1.2))
 
 	print('***TEARDOWN***')
