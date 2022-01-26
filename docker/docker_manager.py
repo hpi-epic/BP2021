@@ -69,7 +69,7 @@ class DockerManager():
 		container_name = self._client.images.get(image_id).tags[0][:-7]
 		# create a device request to use all available GPU devices with compute capabilities
 		device_request_gpu = docker.types.DeviceRequest(driver='nvidia', count=-1, capabilities=[['compute']])
-		container = self._client.containers.create(image_id, name=f'{container_name}_container', detach=True, device_requests=[device_request_gpu])
+		container = self._client.containers.create(image_id, name=f'{container_name}_container', detach=True, ports={'6006/tcp': 6006}, device_requests=[device_request_gpu])
 		return container.id
 
 	def start_container(self, container_id: str, config: dict = {}) -> str:
@@ -187,17 +187,20 @@ class DockerManager():
 		"""
 		self._client.images.get(image_id).remove()
 
-	def get_tensorboard_link(self, id: int) -> AlphaBusinessDockerInfo:
+	def start_tensorboard(self, container_id: str) -> str:
 		"""
-		This method should return the link to a running tensorboard of a container
+		Start a tensorboard in the specified container.
 
 		Args:
-			id (int): id of running docker container
+			container_id (str): The id of the container.
 
 		Returns:
-			str: link to tensorboard
+			str: The link to the tensorboard session.
 		"""
-		pass
+		assert self.is_container_running(container_id), f'the Container is not running: {container_id}'
+		self.execute_command(container_id, 'mkdir ./results/runs/')
+		self.execute_command(container_id, 'tensorboard serve --logdir ./results/runs --bind_all')
+		return 'http://localhost:6006'
 
 	# I would suggest an observer pattern for docker container:
 	def attach(self, id: int, observer) -> None:
@@ -232,6 +235,8 @@ if __name__ == '__main__':
 	img = manager.build_image()
 	cont = manager.create_container(img)
 	manager.start_container(cont)
+	tb_link = manager.start_tensorboard(cont)
+	print(f'Tensorboard started on: {tb_link}')
 	stream = manager.execute_command(cont, 'python ./src/rl/training_scenario.py')
 	print()
 	for data in stream:
