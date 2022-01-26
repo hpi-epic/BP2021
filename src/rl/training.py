@@ -4,19 +4,30 @@ import sys
 import time
 from abc import ABC, abstractmethod
 
+import torch
 from torch.utils.tensorboard import SummaryWriter
 
 import configuration.config as config
 import configuration.utils as ut
+import rl.actorcritic_agent as actorcritic_agent
 
 
 class RLTrainer(ABC):
-	def __init__(self, marketplace, RL_agent, log_dir_prepend=''):
+	def __init__(self, marketplace_class, agent_class, log_dir_prepend=''):
 		# TODO: assert Agent and marketplace fit together
+		if issubclass(agent_class, actorcritic_agent.ContinuosActorCriticAgent):
+			outputs = marketplace_class().get_actions_dimension()
+		else:
+			outputs = marketplace_class().get_n_actions()
+
 		self.best_mean_reward = None
-		self.marketplace = marketplace
-		self.RL_agent = RL_agent
+		self.marketplace_class = marketplace_class
+		if issubclass(agent_class, actorcritic_agent.ActorCriticAgent):
+			self.RL_agent = agent_class(marketplace_class().observation_space.shape[0], outputs)
+		else:
+			self.RL_agent = agent_class(marketplace_class().observation_space.shape[0], outputs, torch.optim.Adam)
 		assert self.trainer_agent_fit()
+
 		# Signal handler for e.g. KeyboardInterrupt
 		signal.signal(signal.SIGINT, self._signal_handler)
 
@@ -33,7 +44,7 @@ class RLTrainer(ABC):
 
 	def initialize_io_related(self, log_dir_prepend):
 		self.curr_time = time.strftime('%b%d_%H-%M-%S')
-		self.signature = f'{type(self.marketplace).__name__}_{type(self.RL_agent).__name__}'
+		self.signature = f'{type(self.marketplace_class()).__name__}_{type(self.RL_agent).__name__}'
 		self.writer = SummaryWriter(log_dir=os.path.join('results', 'runs', f'{log_dir_prepend}training_{self.signature}_{self.curr_time}'))
 
 	def reset_time_tracker(self):
@@ -91,4 +102,4 @@ class RLTrainer(ABC):
 		else:
 			print(f'The best mean reward reached by the agent was {self.best_mean_reward:.3f}')
 			print('The models were saved to:')
-			print(os.path.abspath(os.path.join('trainedModels', f'{type(self.marketplace).__name__}_{type(self.RL_agent).__name__}')))
+			print(os.path.abspath(os.path.join('trainedModels', f'{type(self.marketplace_class()).__name__}_{type(self.RL_agent).__name__}')))

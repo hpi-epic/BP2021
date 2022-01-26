@@ -10,13 +10,15 @@ class QLearningTrainer(RLTrainer):
 	def trainer_agent_fit(self):
 		return isinstance(self.RL_agent, vendors.QLearningAgent), f'the passed agent must be a QLearningAgent: {self.RL_agent}'
 
-	def train_agent(self, maxsteps=2 * config.EPSILON_DECAY_LAST_FRAME) -> None:
+	def train_agent(self, number_of_training_steps=2 * config.EPSILON_DECAY_LAST_FRAME) -> None:
 		"""
 		Train a QLearningAgent on a marketplace.
 
 		Args:
-			maxsteps (int, optional): The maximum number of steps the training will run for. Defaults to 2*config.EPSILON_DECAY_LAST_FRAME.
+			number_of_training_steps (int, optional): The maximum number of steps the training will run for.
+			Defaults to 2*config.EPSILON_DECAY_LAST_FRAME.
 		"""
+		self.marketplace = self.marketplace_class()
 		state = self.marketplace.reset()
 
 		vendors_cumulated_info = None
@@ -25,7 +27,7 @@ class QLearningTrainer(RLTrainer):
 		rmse_losses = []
 		selected_q_vals = []
 
-		for frame_idx in range(maxsteps):
+		for frame_idx in range(number_of_training_steps):
 			epsilon = max(config.EPSILON_FINAL, config.EPSILON_START - frame_idx / config.EPSILON_DECAY_LAST_FRAME)
 
 			action = self.RL_agent.policy(state, epsilon)

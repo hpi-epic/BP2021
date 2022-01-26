@@ -5,13 +5,7 @@ import pytest
 import market.circular.circular_sim_market as circular_market
 import market.linear.linear_sim_market as linear_market
 import rl.actorcritic_agent as actorcritic_agent
-import rl.actorcritic_training as actorcritic_training
-
-
-def test_standard_setup():
-	with patch('rl.actorcritic_training.SummaryWriter'):
-		actorcritic_training.train_actorcritic()
-
+from rl.actorcritic_training import ActorCriticTrainer
 
 test_scenarios = [
 	(linear_market.ClassicScenario, actorcritic_agent.DiscreteACALinear, True),
@@ -35,9 +29,7 @@ test_scenarios = [
 @pytest.mark.parametrize('marketplace, agent, verbose', test_scenarios)
 def test_training_configurations(marketplace, agent, verbose):
 	with patch('rl.actorcritic_training.SummaryWriter'):
-		actorcritic_training.train_actorcritic(
-			marketplace_class=marketplace,
-			agent_class=agent,
+		ActorCriticTrainer(marketplace, agent).train_agent(
 			verbose=verbose,
 			number_of_training_steps=120,
 			total_envs=64)

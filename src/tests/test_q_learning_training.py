@@ -6,7 +6,6 @@ from importlib import reload
 from unittest.mock import mock_open, patch
 
 import pytest
-import torch
 
 import agents.vendors as vendors
 import configuration.config as config
@@ -29,17 +28,15 @@ test_scenarios = [
 ]
 
 
-@pytest.mark.parametrize('environment, agent', test_scenarios)
-def test_market_scenario(environment, agent):
+@pytest.mark.parametrize('market_class, agent_class', test_scenarios)
+def test_market_scenario(market_class, agent_class):
 	json = ut_t.create_mock_json(rl=ut_t.create_mock_json_rl(replay_start_size='500', sync_target_frames='100'))
 	with patch('builtins.open', mock_open(read_data=json)) as mock_file, \
 		patch('rl.training.SummaryWriter'):
 		ut_t.check_mock_file(mock_file, json)
 		# Include config again to make sure the file is read again
 		reload(config)
-		environment = environment()
-		agent = agent(environment.observation_space.shape[0], n_actions=environment.get_n_actions(), optim=torch.optim.Adam)
-		q_learning_training.QLearningTrainer(environment, agent).train_agent(int(config.REPLAY_START_SIZE * 1.2))
+		q_learning_training.QLearningTrainer(market_class, agent_class).train_agent(int(config.REPLAY_START_SIZE * 1.2))
 
 
 def test_training_with_tensorboard():
@@ -48,9 +45,9 @@ def test_training_with_tensorboard():
 		ut_t.check_mock_file(mock_file, json)
 		# Include utils_rl again to make sure the file is read again
 		reload(config)
-		environment = linear_market.ClassicScenario()
-		agent = vendors.QLearningAgent(environment.observation_space.shape[0], n_actions=environment.get_n_actions(), optim=torch.optim.Adam)
-		q_learning_training.QLearningTrainer(environment, agent, log_dir_prepend='test_').train_agent(int(config.REPLAY_START_SIZE * 1.2))
+		market_class = linear_market.ClassicScenario
+		agent_class = vendors.QLearningAgent
+		q_learning_training.QLearningTrainer(market_class, agent_class, log_dir_prepend='test_').train_agent(int(config.REPLAY_START_SIZE * 1.2))
 
 	print('***TEARDOWN***')
 	# we need to sleep because sometimes the runs folder is still being used when we try to remove it
