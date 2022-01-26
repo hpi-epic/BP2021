@@ -150,9 +150,9 @@ class CircularEconomy(SimMarket):
 			profits (np.array(int)): The profits of all vendors.
 		"""
 		for vendor in range(self._get_number_of_vendors()):
-			storage_cost_per_timestep = -self.vendor_specific_state[vendor][0] / 2
+			storage_cost_per_timestep = -self.vendor_specific_state[vendor][0] * config.STORAGE_COST_PER_PRODUCT
 			profits[vendor] += storage_cost_per_timestep
-			self.output_dict['profits/storage_cost']['vendor_' + str(vendor)] = storage_cost_per_timestep / 2
+			self.output_dict['profits/storage_cost']['vendor_' + str(vendor)] = storage_cost_per_timestep
 
 	def _initialize_output_dict(self):
 		"""

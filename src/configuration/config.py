@@ -17,7 +17,7 @@ EPSILON_FINAL = None
 
 # sim_market
 MAX_STORAGE = 100
-STORAGE_COST_PER_PRODUCT = 0.5
+STORAGE_COST_PER_PRODUCT = None
 MAX_PRICE = None
 MAX_QUALITY = None
 MEAN_REWARD_BOUND = None
@@ -75,6 +75,7 @@ def check_config_sim_market_completeness(config: dict) -> None:
 	assert 'max_quality' in config, 'your config is missing max_quality'
 	assert 'number_of_customers' in config, 'your config is missing number_of_customers'
 	assert 'production_price' in config, 'your config is missing production_price'
+	assert 'storage_cost_per_product' in config, 'your config is missing STORAGE_COST_PER_PRODUCT'
 
 
 def update_rl_variables(config: dict) -> None:
@@ -120,6 +121,7 @@ def update_sim_market_variables(config: dict) -> None:
 	global_variables['MAX_QUALITY'] = int(config['max_quality'])
 	global_variables['NUMBER_OF_CUSTOMERS'] = int(config['number_of_customers'])
 	global_variables['PRODUCTION_PRICE'] = int(config['production_price'])
+	global_variables['STORAGE_COST_PER_PRODUCT'] = config['storage_cost_per_product']
 
 	assert global_variables['NUMBER_OF_CUSTOMERS'] > 0 and global_variables['NUMBER_OF_CUSTOMERS'] % 2 == 0, \
 		'number_of_customers should be even and positive'
