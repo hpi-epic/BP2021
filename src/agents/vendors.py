@@ -49,6 +49,7 @@ class RuleBasedAgent(Agent, ABC):
 
 
 class ReinforcementLearningAgent(Agent, ABC):
+	@abstractmethod
 	def __init__(self, n_observations, n_actions, load_path=''):
 		"""
 		Every ReinforcementLearningAgent must offer initialization by these parameters
@@ -63,6 +64,15 @@ class ReinforcementLearningAgent(Agent, ABC):
 
 		Raises:
 			NotImplementedError: This is an abstract interface definition
+		"""
+		raise NotImplementedError('This method is abstract. Use a subclass')
+
+	@abstractmethod
+	def synchronize_critic_tgt_net(self):
+		"""
+		This method writes the parameter from the value estimating net to it's target net.
+		Call this method regularly during training.
+		Having a target net solves problems occuring due to oscillation.
 		"""
 		raise NotImplementedError('This method is abstract. Use a subclass')
 

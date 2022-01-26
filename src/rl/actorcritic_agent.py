@@ -26,11 +26,6 @@ class ActorCriticAgent(vendors.ReinforcementLearningAgent, ABC):
 			self.critic_tgt_net.load_state_dict(torch.load(critic_path, map_location=self.device))
 
 	def synchronize_critic_tgt_net(self):
-		"""
-		This method writes the parameter from the critic net to it's target net.
-		Call this method regularly during training.
-		Having a target net solves problems occuring due to oscillation.
-		"""
 		print('Now I synchronize the tgt net')
 		self.critic_tgt_net.load_state_dict(self.critic_net.state_dict())
 
