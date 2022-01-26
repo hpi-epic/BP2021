@@ -1,9 +1,11 @@
+from random import randrange
+
 class AlphaBusinessDockerInfo():
 	"""This class encapsules the return values for the rest api
 	"""
-	def __init__(self, container_id: int, is_alive: bool = None, data: str = None) -> None:
+	def __init__(self, container_id: int, is_alive: str = None, data: str = None) -> None:
 		self.id = container_id
-		self.is_alive = is_alive
+		self.health_status = is_alive
 		self.data = data
 
 
@@ -19,7 +21,7 @@ class AlphaBusinessDockerManager():
 		Returns:
 			int: The id of the started docker container
 		"""
-		return AlphaBusinessDockerInfo(container_id=42)
+		return AlphaBusinessDockerInfo(container_id=randrange(100))
 
 	def is_container_alive(self, id: int) -> AlphaBusinessDockerInfo:
 		"""
@@ -32,7 +34,7 @@ class AlphaBusinessDockerManager():
 		Returns:
 			bool: answers if the docker container with the id is running
 		"""
-		return AlphaBusinessDockerInfo(container_id=id, is_alive=True)
+		return AlphaBusinessDockerInfo(container_id=id, is_alive='very well')
 
 	def get_container_data(self, id: int) -> AlphaBusinessDockerInfo:
 		"""
