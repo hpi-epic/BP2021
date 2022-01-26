@@ -109,6 +109,23 @@ class DockerManager():
 		"""
 		return self._client.containers.get(container_id).logs(timestamps=timestamps).decode('UTF-8')
 
+	def get_container_data(self, target_path: str, container_path: str, container_id: str) -> tuple:
+		"""
+		Return the data in the specified path. Will be returned as a tar archive.
+
+		Args:
+			target_path (str):
+			path (str): [description]
+			container_id (str): [description]
+
+		Returns:
+			tuple: [description]
+		"""
+		with open(target_path, 'wb') as f:
+			bits, stats = self._client.containers.get(container_id).get_archive(path=container_path)
+			for chunk in bits:
+				f.write(chunk)
+
 	def stop_container(self, container_id: str) -> bool:
 		"""
 		Stop a running container.
@@ -116,7 +133,7 @@ class DockerManager():
 		Args:
 			container_id (str): The id of the container.
 		"""
-		return self._client.containers.get(container_id).kill()
+		return self._client.containers.get(container_id).stop()
 
 	def remove_container(self, container_id: str) -> None:
 		"""
@@ -188,5 +205,10 @@ if __name__ == '__main__':
 	print('Stdout of the container:\n')
 	print(manager.get_container_logs(cont))
 	print('Status:', manager.container_status(cont))
-	# print('Removing container...')
-	# manager.remove_container(cont)
+	time.sleep(3)
+	print('Getting archive data...')
+	manager.get_container_data(os.path.abspath(os.path.join(os.path.dirname(__file__), f'results_{cont[:10]}_{time.strftime("%b%d_%H-%M-%S")}.tar')), '/app/results', cont)
+	print('Stopping container...')
+	manager.stop_container(cont)
+	print('Removing container...')
+	manager.remove_container(cont)

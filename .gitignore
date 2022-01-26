@@ -14,6 +14,9 @@ results/runs
 # file for Johanns test runner
 tests.sh
 
+# docker
+docker/docker_archives
+
 # vscode settings
 .vscode/
 .DS_Store
