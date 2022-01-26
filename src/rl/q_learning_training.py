@@ -44,7 +44,7 @@ class QLearningTrainer(RLTrainer):
 					averaged_info['Loss/RMSE'] = np.mean(rmse_losses[-1000:])
 					averaged_info['Loss/selected_q_vals'] = np.mean(selected_q_vals[-1000:])
 					averaged_info['epsilon'] = epsilon
-					ut.write_dict_to_tensorboard(self.writer, averaged_info, frame_idx / config.EPISODE_LENGTH)
+					ut.write_dict_to_tensorboard(self.writer, averaged_info, frame_idx / config.EPISODE_LENGTH, is_cumulative=True)
 					self.consider_print_info(frame_idx, len(all_dicts), averaged_info, epsilon)
 					self.consider_update_best_model(averaged_info)
 
