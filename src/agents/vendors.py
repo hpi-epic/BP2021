@@ -273,7 +273,11 @@ class QLearningAgent(ReinforcementLearningAgent, ABC):
 			action = int(torch.argmax(self.net(torch.Tensor(observation).to(self.device))))
 		if self.optimizer is not None:
 			self.buffer_for_feedback = (observation, action)
-		return action
+		return self.agent_output_to_market_form(action)
+
+	@abstractmethod
+	def agent_output_to_market_form(self, action) -> None:  # pragma: no cover
+		raise NotImplementedError('This method is abstract. Use a subclass')
 
 	def set_feedback(self, reward, is_done, new_observation):
 		exp = self.Experience(*self.buffer_for_feedback, reward, is_done, new_observation)
@@ -349,19 +353,21 @@ class QLearningAgent(ReinforcementLearningAgent, ABC):
 
 
 class QLearningLEAgent(QLearningAgent, LinearAgent):
-	pass
+	def agent_output_to_market_form(self, action):
+		return action
 
 
 class QLearningCEAgent(QLearningAgent, CircularAgent):
-	def policy(self, observation, epsilon=0) -> int:
-		step = super().policy(observation, epsilon)
-		return (int(step % config.MAX_PRICE), int(step / config.MAX_PRICE))
+	def agent_output_to_market_form(self, action):
+		return (int(action % config.MAX_PRICE), int(action / config.MAX_PRICE))
 
 
 class QLearningCERebuyAgent(QLearningAgent, CircularAgent):
-	def policy(self, observation, epsilon=0) -> int:
-		step = super().policy(observation, epsilon)
-		return (int(step / (config.MAX_PRICE * config.MAX_PRICE)), int(step / config.MAX_PRICE % config.MAX_PRICE), int(step % config.MAX_PRICE))
+	def agent_output_to_market_form(self, action):
+		return (
+			int(action / (config.MAX_PRICE * config.MAX_PRICE)),
+			int(action / config.MAX_PRICE % config.MAX_PRICE),
+			int(action % config.MAX_PRICE))
 
 
 class CompetitorLinearRatio1(LinearAgent, RuleBasedAgent):

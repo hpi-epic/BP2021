@@ -136,7 +136,7 @@ class ActorCriticAgent(vendors.ReinforcementLearningAgent, ABC):
 		raise NotImplementedError('This method is abstract. Use a subclass')
 
 	@abstractmethod
-	def agent_output_to_market_form(self) -> None:  # pragma: no cover
+	def agent_output_to_market_form(self, action) -> None:  # pragma: no cover
 		raise NotImplementedError('This method is abstract. Use a subclass')
 
 
