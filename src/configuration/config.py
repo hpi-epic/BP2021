@@ -130,6 +130,7 @@ def update_sim_market_variables(config: dict) -> None:
 	assert global_variables['MAX_QUALITY'] > 0, 'max_quality should be positive'
 	assert global_variables['MAX_PRICE'] > 0, 'max_price should be positive'
 	assert global_variables['EPISODE_LENGTH'] > 0, 'episode_size should be positive'
+	assert global_variables['STORAGE_COST_PER_PRODUCT'] >= 0, 'storage_cost_per_product should be non-negative'
 
 	global_variables['MEAN_REWARD_BOUND'] = global_variables['EPISODE_LENGTH'] * global_variables['MAX_PRICE'] * \
 		global_variables['NUMBER_OF_CUSTOMERS']
