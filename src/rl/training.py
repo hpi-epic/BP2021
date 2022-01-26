@@ -10,11 +10,13 @@ from torch.utils.tensorboard import SummaryWriter
 import configuration.config as config
 import configuration.utils as ut
 import rl.actorcritic_agent as actorcritic_agent
+from agents.vendors import ReinforcementLearningAgent
 
 
 class RLTrainer(ABC):
 	def __init__(self, marketplace_class, agent_class, log_dir_prepend=''):
 		# TODO: assert Agent and marketplace fit together
+		assert issubclass(agent_class, ReinforcementLearningAgent)
 		if issubclass(agent_class, actorcritic_agent.ContinuosActorCriticAgent):
 			outputs = marketplace_class().get_actions_dimension()
 		else:

@@ -49,7 +49,22 @@ class RuleBasedAgent(Agent, ABC):
 
 
 class ReinforcementLearningAgent(Agent, ABC):
-	pass
+	def __init__(self, n_observations, n_actions, load_path=''):
+		"""
+		Every ReinforcementLearningAgent must offer initialization by these parameters
+
+		Args:
+			n_observations (int): length of input (observation) vector
+			n_actions (int): length of output vector
+			load_path (str, optional): The path to load existing parameters of a network corresponding to this agent.
+			Note that this only refers to a network responsible for behaviour.
+			Assistance networks may be initialized differently.
+			Defaults to ''.
+
+		Raises:
+			NotImplementedError: This is an abstract interface definition
+		"""
+		raise NotImplementedError('This method is abstract. Use a subclass')
 
 
 class HumanPlayer(RuleBasedAgent, ABC):

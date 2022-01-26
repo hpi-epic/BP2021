@@ -10,7 +10,7 @@ import configuration.utils as ut
 import rl.model as model
 
 
-class ActorCriticAgent(vendors.Agent, ABC):
+class ActorCriticAgent(vendors.ReinforcementLearningAgent, ABC):
 	"""
 	This is an implementation of an (one step) actor critic agent as proposed in Richard Suttons textbook on page 332.
 	"""
