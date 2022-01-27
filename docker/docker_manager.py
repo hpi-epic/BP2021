@@ -1,6 +1,7 @@
-import docker
 import os
 import time
+
+import docker
 
 
 class DockerInfo():
@@ -26,6 +27,7 @@ class DockerInfo():
 class DockerManager():
 	_instance = None
 	_client = None
+	_observers = []
 
 	def __new__(cls):
 		if cls._instance is None:
@@ -206,14 +208,23 @@ class DockerManager():
 		"""
 		Attach an observer to the container.
 		"""
-		pass
+		observer.implements()
+		self._observers[id] = observer
 
-	def notify(self) -> None:
+	def notify(self, message_id, message_text) -> None:
 		"""
 		Notify all observers about an event, events should be: the container is done, the container stopped working (any reason).
-		The observer will implement observer.update(msg)
+		The observer will implement observer.update(message_id, message_text)
+
+		Args:
+			message_id (int): The id of the event., so the system knows how to hande it.
+			message_text (str): This is the message that will be displayed to the user.
 		"""
-		pass
+		allowed_message_ids = [0, 1]
+		assert message_id in allowed_message_ids, f'The message id is not allowed: {message_id}'
+
+		for observer in self._observers:
+			observer.update(message_id, message_text)
 
 	# optional methods
 	def container_progress(self, id: int) -> DockerInfo:
