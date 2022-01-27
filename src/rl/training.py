@@ -50,7 +50,7 @@ class RLTrainer(ABC):
 		self.signature = f'{type(self.marketplace_class()).__name__}_{type(self.RL_agent).__name__}'
 		self.writer = SummaryWriter(log_dir=os.path.join('results', 'runs', f'{log_dir_prepend}training_{self.signature}_{self.curr_time}'))
 		path_name = f'{self.signature}_{self.curr_time}'
-		self.model_path = os.path.join('results', 'trainedModels', path_name)
+		self.model_path = os.path.join('results', 'trainedModels', log_dir_prepend + path_name)
 
 	def reset_time_tracker(self):
 		self.frame_number_last_speed_update = 0

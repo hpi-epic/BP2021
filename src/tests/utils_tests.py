@@ -1,4 +1,7 @@
 import os
+import re
+import shutil
+import time
 
 
 def create_mock_json_rl(gamma='0.99',
@@ -113,3 +116,15 @@ def create_mock_rewards(num_entries) -> list:
 		list: The list of rewards.
 	"""
 	return list(range(1, num_entries))
+
+
+def remove_results_subfolder_recursively(subfolder):
+	print('***TEARDOWN***')
+	# we need to sleep because sometimes the subfolder is still being used when we try to remove it
+	time.sleep(0.001)
+	for file_name in os.listdir(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'results', subfolder)):
+		if re.match('test_*', file_name):
+			shutil.rmtree(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'results', subfolder, file_name))
+	# remove the subfolder if it is empty, because that means it has only been created for our tests
+	if os.listdir(os.path.join('results', subfolder)) == []:
+		os.rmdir(os.path.join('results', subfolder))
