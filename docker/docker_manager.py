@@ -7,10 +7,11 @@ class AlphaBusinessDockerInfo():
 	"""
 	This class encapsules the return values for the rest api
 	"""
-	def __init__(self, container_id: int, is_alive: bool = None, data: str = None) -> None:
+	def __init__(self, container_id: int, is_alive: bool = None, data: str = None, info: str = None) -> None:
 		self.id = container_id
 		self.is_alive = is_alive
 		self.data = data
+		self.info = info
 
 
 class DockerManager():
@@ -41,7 +42,8 @@ class DockerManager():
 			old_img = self._client.images.get(imagename)
 		except docker.errors.ImageNotFound:
 			old_img = None
-		img, logs = self._client.images.build(path=os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)), tag=imagename, forcerm=True)
+		img, logs = self._client.images.build(path=os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)),
+			tag=imagename, forcerm=True)
 		if verbose:
 			for chunk in logs:
 				if 'stream' in chunk:
@@ -69,7 +71,8 @@ class DockerManager():
 		container_name = self._client.images.get(image_id).tags[0][:-7]
 		# create a device request to use all available GPU devices with compute capabilities
 		device_request_gpu = docker.types.DeviceRequest(driver='nvidia', count=-1, capabilities=[['compute']])
-		container = self._client.containers.create(image_id, name=f'{container_name}_container', detach=True, ports={'6006/tcp': 6006}, device_requests=[device_request_gpu])
+		container = self._client.containers.create(image_id, name=f'{container_name}_container', detach=True, ports={'6006/tcp': 6006},
+			device_requests=[device_request_gpu])
 		return container.id
 
 	def start_container(self, container_id: str, config: dict = {}) -> str:
@@ -100,7 +103,7 @@ class DockerManager():
 	def container_status(self, container_id: str) -> str:
 		"""
 		Return the status of the given container.
-		Will be one of 'restarting', 'running', 'paused', 'exited'.
+		Can e.g. be one of 'created', 'running', 'paused', 'exited' and more.
 
 		Args:
 			container_id (str): The id of the container
@@ -109,18 +112,6 @@ class DockerManager():
 			str: The status of the container
 		"""
 		return self._client.containers.get(container_id).status
-
-	def is_container_running(self, container_id: str) -> bool:
-		"""
-		Returns `True` if the given container is still running and `False` otherwise.
-
-		Args:
-			container_id (str): The id of the container
-
-		Returns:
-			bool: Whether or not the container is still running
-		"""
-		return self.container_status(container_id) == 'running'
 
 	def get_container_logs(self, container_id: str, timestamps: bool = False) -> str:
 		"""
@@ -137,7 +128,9 @@ class DockerManager():
 		"""
 		return self._client.containers.get(container_id).logs(timestamps=timestamps).decode('UTF-8')
 
-	def get_container_data(self, container_path: str, container_id: str, target_filename: str = f'results_{time.strftime("%b%d_%H-%M-%S")}') -> dict:
+	# TODO: Refactor to return the raw data stream
+	def get_container_data(self, container_path: str, container_id: str,
+		target_filename: str = f'results_{time.strftime("%b%d_%H-%M-%S")}') -> dict:
 		"""
 		Save the data in the container_path to the target_path as a tar archive.
 
