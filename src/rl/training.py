@@ -48,6 +48,8 @@ class RLTrainer(ABC):
 		self.curr_time = time.strftime('%b%d_%H-%M-%S')
 		self.signature = f'{type(self.marketplace_class()).__name__}_{type(self.RL_agent).__name__}'
 		self.writer = SummaryWriter(log_dir=os.path.join('results', 'runs', f'{log_dir_prepend}training_{self.signature}_{self.curr_time}'))
+		path_name = f'{self.signature}_{self.curr_time}'
+		self.model_path = os.path.join('results', 'trainedModels', path_name)
 
 	def reset_time_tracker(self):
 		self.frame_number_last_speed_update = 0
@@ -82,7 +84,7 @@ class RLTrainer(ABC):
 			self.best_mean_reward = mean_reward - 1
 
 		if mean_reward > self.best_mean_reward:
-			self.RL_agent.save(path_name=f'{self.signature}_{self.curr_time}', model_name=f'{self.signature}_{mean_reward:.3f}')
+			self.RL_agent.save(model_path=self.model_path, model_name=f'{self.signature}_{mean_reward:.3f}')
 			if self.best_mean_reward != 0:
 				print(f'Best reward updated {self.best_mean_reward:.3f} -> {mean_reward:.3f}')
 			self.best_mean_reward = mean_reward
@@ -104,4 +106,4 @@ class RLTrainer(ABC):
 		else:
 			print(f'The best mean reward reached by the agent was {self.best_mean_reward:.3f}')
 			print('The models were saved to:')
-			print(os.path.abspath(os.path.join('trainedModels', f'{type(self.marketplace_class()).__name__}_{type(self.RL_agent).__name__}')))
+			print(os.path.abspath(self.model_path))

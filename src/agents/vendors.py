@@ -315,21 +315,20 @@ class QLearningAgent(ReinforcementLearningAgent, ABC):
 		expected_state_action_values = next_state_values * config.GAMMA + rewards_v
 		return torch.nn.MSELoss()(state_action_values, expected_state_action_values), state_action_values.mean()
 
-	def save(self, path_name, model_name) -> None:
+	def save(self, model_path, model_name) -> None:
 		"""
 		Save a trained model to the specified folder within 'trainedModels'.
 
 		Also caps the amount of models in the folder to a maximum of 10.
 
 		Args:
-			path_name (str): The name of the folder within 'trainedModels' where the model should be saved.
+			model_path (str): The path to the folder within 'trainedModels' where the model should be saved.
 			model_name (str): The name of the .dat file of this specific model.
 		"""
 		model_name += '.dat'
 		if not os.path.isdir(os.path.abspath(os.path.join('results', 'trainedModels'))):
 			os.mkdir(os.path.abspath(os.path.join('results', 'trainedModels')))
 
-		model_path = os.path.join('results', 'trainedModels', path_name)
 		if not os.path.isdir(os.path.abspath(model_path)):
 			os.mkdir(os.path.abspath(model_path))
 
