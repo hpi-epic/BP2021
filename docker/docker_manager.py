@@ -3,13 +3,14 @@ import os
 import time
 
 
-class AlphaBusinessDockerInfo():
+class DockerInfo():
 	"""
 	This class encapsules the return values for the rest api
 	"""
-	def __init__(self, container_id: int, is_alive: bool = None, data: str = None, info: str = None) -> None:
+	def __init__(self, container_id: int, status: bool = None, stream=None, data: str = None, info: str = None) -> None:
 		self.id = container_id
-		self.is_alive = is_alive
+		self.status = status
+		self.stream = stream
 		self.data = data
 		self.info = info
 
@@ -24,15 +25,17 @@ class DockerManager():
 			cls._client = docker.from_env()
 		return cls._instance
 
-	def build_image(self, imagename: str = 'bp2021image', verbose: bool = False) -> str:
+	def build_image(self, imagename: str = 'bp2021image') -> str:
 		"""
 		Build an image from the default dockerfile and name it accordingly.
 
-		If an image with the provided name already exists, no new image will be built and the existing one will be returned.
+		If an image with the provided name already exists, that image will be overwritten.
 
 		Args:
 			imagename (str, optional): The name the image will have. Defaults to 'bp2021image'.
-			verbose (bool): If True, prints the build logs.
+
+		Returns:
+			DockerInfo: A DockerInfo object with id and stream set
 		"""
 		# https://docker-py.readthedocs.io/en/stable/images.html
 		# build image from dockerfile and name it accordingly
@@ -44,16 +47,11 @@ class DockerManager():
 			old_img = None
 		img, logs = self._client.images.build(path=os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)),
 			tag=imagename, forcerm=True)
-		if verbose:
-			for chunk in logs:
-				if 'stream' in chunk:
-					for line in chunk['stream'].splitlines():
-						print(line)
 		if old_img is not None and old_img.id != img.id:
-			print('An image with this name already exists, it will be overwritten')
+			print(f'An image with this name already exists, it will be overwritten: {imagename}')
 			self._client.images.remove(old_img.id[7:])
 		# return id without the 'sha256:'-prefix
-		return img.id[7:]
+		return DockerInfo(id=img.id[7:], stream=logs)
 
 	def create_container(self, image_id: str) -> str:
 		"""
@@ -210,7 +208,7 @@ class DockerManager():
 		pass
 
 	# optional methods
-	def container_progress(self, id: int) -> AlphaBusinessDockerInfo:
+	def container_progress(self, id: int) -> DockerInfo:
 		"""
 		This methoud should return the total progress of the container
 
