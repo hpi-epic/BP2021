@@ -119,6 +119,13 @@ def create_mock_rewards(num_entries) -> list:
 
 
 def remove_results_subfolder_recursively(subfolder):
+	"""
+	Call this method in your test case after you have created a folder with results which start with test.
+	This method will clean them up and will remove the folder if possible.
+
+	Args:
+		subfolder (str): the name of the subfolder of results, eg runs or trainedModels
+	"""
 	print('***TEARDOWN***')
 	# we need to sleep because sometimes the subfolder is still being used when we try to remove it
 	time.sleep(0.001)

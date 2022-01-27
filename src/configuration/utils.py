@@ -7,6 +7,9 @@ import configuration.config as config
 
 
 def ensure_results_and_monitoring_path_exists():
+	"""
+	If your code assumes that the folder results or results\\monitoring exists, call this method before.
+	"""
 	if not os.path.exists('results'):
 		os.mkdir('results')
 	if not os.path.exists(os.path.join('results', 'monitoring')):
