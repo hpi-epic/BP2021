@@ -1,6 +1,6 @@
 import agents.vendors as vendors
-# import market.linear.linear_sim_market as linear_market
 import market.circular.circular_sim_market as circular_market
+import market.linear.linear_sim_market as linear_market
 import market.sim_market as sim_market
 import rl.actorcritic_agent as actorcritic_agent
 from rl.actorcritic_training import ActorCriticTrainer
@@ -29,6 +29,10 @@ def run_training_session(marketplace=circular_market.CircularEconomyRebuyPriceOn
 
 
 # Just add some standard usecases.
+def q_learning_classic_scenario():
+	run_training_session(linear_market.ClassicScenario, vendors.QLearningLEAgent)
+
+
 def q_learning_circular_economy_rebuy():
 	run_training_session(circular_market.CircularEconomyRebuyPriceOneCompetitor, vendors.QLearningCERebuyAgent)
 
@@ -38,4 +42,4 @@ def continuos_a2c_circular_economy_rebuy():
 
 
 if __name__ == '__main__':
-	run_training_session(circular_market.CircularEconomyRebuyPriceMonopolyScenario, actorcritic_agent.ContinuosActorCriticAgentEstimatingStd)
+	q_learning_classic_scenario()
