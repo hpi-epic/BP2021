@@ -2,10 +2,10 @@ import os
 import signal
 import sys
 
-# import market.circular.circular_sim_market as circular_market
 import monitoring.agent_monitoring.am_configuration as am_configuration
 import monitoring.agent_monitoring.am_evaluation as am_evaluation
 
+# import market.circular.circular_sim_market as circular_market
 # import rl.actorcritic_agent as actorcritic_agent
 
 
@@ -88,8 +88,9 @@ def run_monitoring_session(monitor: Monitor = Monitor()) -> None:
 	# 	agents=[(vendors.QLearningLEAgent, ['QLearning Agent']), (vendors.FixedPriceLEAgent, [(6), 'Rulebased Agent'])],
 	# 	marketplace=linear_market.ClassicScenario)
 	# monitor.configurator.setup_monitoring(
-	# 	agents = [(actorcritic_agent.ContinuosActorCriticAgentFixedOneStd, ['actor_parametersCircularRebuyOneComp_ContinuosA2C.dat'])],
-	# 	marketplace = circular_market.CircularEconomyRebuyPriceOneCompetitor
+	# 	agents = [(actorcritic_agent.ContinuosActorCriticAgentEstimatingStd,
+	# 		['actor_parametersCircularEconomyRebuyPriceMonopolyScenario_ContinuosActorCriticAgentEstimatingStd_1185.422.dat'])],
+	# 	marketplace = circular_market.CircularEconomyRebuyPriceMonopolyScenario
 	# )
 	monitor.configurator.print_configuration()
 
