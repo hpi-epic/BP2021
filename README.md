@@ -153,3 +153,38 @@ Solution: Go to <https://www.sqlite.org/download.html> to download the `sqlite3.
 ```
 C:\Users\your_username\anaconda3\envs\your_venv_name\DLLs
 ```
+
+## Networking Scenario
+
+### Webserver
+
+We provide a Django Webserver with a simple user interface to manage the docker container. 
+To start the webserver on `127.0.0.1:2709` go to `/webserver` and start the server by using the following command
+
+```bash
+python3 ./manage.py runserver 2709
+```
+
+When you add more fields to the database model or you change existing fields, you need to run
+
+```bash
+python3 ./manage.py makemigrations
+```
+
+Before starting the server you might need to apply any pending migrations using
+
+```bash
+python3 ./manage.py migrate
+```
+
+### Docker API
+
+There is a RESTful API written with the python libary FastAPI for communicating with docker container that can be found in `/docker`
+
+The API needs to run on `127.0.0.1:8000`. To start the API go to `/docker` and run
+
+```bash
+uvicorn app:app --reload 
+```
+
+Don't use `--reload` when deploying in production
