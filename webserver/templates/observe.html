@@ -15,6 +15,7 @@
 					<th>last checked at</th>
 					<th>health status</th>
 					<th>get health status</th>
+					<th>kill container</th>
 				</tr>
 				{% for container in all_saved_containers %}
 					<tr>
@@ -22,10 +23,16 @@
 						<td>{{ container.created_at }}</td>
 						<td>{{ container.last_check_at }}</td>
 						<td>{{ container.health_status }}</td>
-						<td class="health_check_container" >
+						<td class="button_row" >
 							<form method="post" enctype="multipart/form-data">
 								{% csrf_token %}
-								<button class="health_check_button" name="health_check" value="{{ container.container_id }}" type="submit">check health</button>
+								<button class="action_button health_check_button" name="health" value="{{ container.container_id }}" type="submit">check health</button>
+							</form>
+						</td>
+						<td class="button_row" >
+							<form method="post" enctype="multipart/form-data">
+								{% csrf_token %}
+								<button class="action_button kill_button" name="kill" value="{{ container.container_id }}" type="submit">kill</button>
 							</form>
 						</td>
 					</tr>
@@ -39,7 +46,7 @@
 			</p>
 		{% endif %}
 		<br>
-		<a class="home" href="/">back</a>
+		<a href="/">home</a>
 	</body>
 
 	<style>
@@ -49,14 +56,19 @@
 		table {
 			border-collapse: collapse;
 		}
-		.health_check_button {
+		.action_button {
 			margin: 5px;
 			padding: 5px 10px 5px 10px;
-			background-color: #8de39a;
 			border: none;
 			border-radius: 5px;
 		}
-		.health_check_container {
+		.health_check_button {
+			background-color: #8de39a;
+		}
+		.kill_button {
+			background-color: #e39a8d;
+		}
+		.button_row {
 			text-align: center;
 		}
 	</style>

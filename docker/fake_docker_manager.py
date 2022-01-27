@@ -3,10 +3,11 @@ from random import randrange
 class AlphaBusinessDockerInfo():
 	"""This class encapsules the return values for the rest api
 	"""
-	def __init__(self, container_id: int, is_alive: str = None, data: str = None) -> None:
+	def __init__(self, container_id: int, is_alive: str = None, data: str = None, msg: str = None) -> None:
 		self.id = container_id
 		self.health_status = is_alive
 		self.data = data
+		self.info = msg
 
 
 class AlphaBusinessDockerManager():
@@ -56,7 +57,7 @@ class AlphaBusinessDockerManager():
 		Args:
 			id (int): id of docker conrainer
 		"""
-		pass
+		return AlphaBusinessDockerInfo(container_id=id, is_alive='killed')
 
 	def get_tensorboard_link(self, id: int) -> AlphaBusinessDockerInfo:
 		"""
@@ -68,7 +69,7 @@ class AlphaBusinessDockerManager():
 		Returns:
 			str: link to tensorboard
 		"""
-		pass
+		return AlphaBusinessDockerInfo(container_id=id, msg='127.0.0.1:1234/')
 
 	# I would suggest an observer pattern for docker container:
 	def attach(self, id: int, observer) -> None:

@@ -7,7 +7,7 @@ from fastapi.responses import JSONResponse
 # POST /start/<docker_id>
 # GET /health/<docker_id>
 # GET /data/<docker_id>
-# GET /data/<docker_id>/tensorboard
+# GET /data/tensorboard/<docker_id>
 # GET /kill/<docker_id>
 
 # start API with uvicorn app:app --reload
@@ -31,4 +31,10 @@ async def is_container_alive(id: int):
 @app.get('/data/')
 async def get_container_data(id: int):
 	container_info = manager.get_container_data(id)
+	return JSONResponse(vars(container_info))
+
+
+@app.get('/kill/')
+async def kill_container(id: int):
+	container_info = manager.kill_container(id)
 	return JSONResponse(vars(container_info))
