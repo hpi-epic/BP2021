@@ -20,7 +20,7 @@ def test_setup_exampleprinter():
 	assert isinstance(printer.agent, vendors.FixedPriceLEAgent)
 
 
-parameters_path = os.path.join('results', 'monitoring')
+parameters_path = os.path.join('data')
 full_episode_testcases = [
 	(linear_market.ClassicScenario(), vendors.FixedPriceLEAgent()),
 	(linear_market.ClassicScenario(), vendors.QLearningLEAgent(3, 10,

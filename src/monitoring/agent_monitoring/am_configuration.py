@@ -43,7 +43,7 @@ class Configurator():
 
 	def _get_modelfile_path(self, model_name: str) -> str:
 		"""
-		Get the full path to a modelfile in the 'results/monitoring' folder.
+		Get the full path to a modelfile in the 'data' folder.
 
 		Args:
 			model_name (str): The name of the .dat modelfile.
@@ -52,7 +52,7 @@ class Configurator():
 			str: The full path to the modelfile.
 		"""
 		model_name += '.dat'
-		full_path = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir, 'results', 'monitoring', model_name))
+		full_path = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir, 'data', model_name))
 		assert os.path.exists(full_path), f'the specified modelfile does not exist: {full_path}'
 		return full_path
 

@@ -3,10 +3,8 @@
 # any sort of result files
 # yes, the way the .gitignore works here is weird!
 
-!results/monitoring
-results/monitoring/*
-!results/monitoring/*.dat
-!results/monitoring/MarketOverview_template.svg
+results/monitoring
+results/monitoring/
 results/performance
 results/trainedModels
 results/runs
