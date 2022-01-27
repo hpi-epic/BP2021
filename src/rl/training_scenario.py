@@ -38,4 +38,4 @@ def continuos_a2c_circular_economy_rebuy():
 
 
 if __name__ == '__main__':
-	run_training_session(circular_market.CircularEconomyRebuyPriceOneCompetitor, actorcritic_agent.DiscreteACACircularEconomyRebuy)
+	run_training_session(circular_market.CircularEconomyRebuyPriceMonopolyScenario, actorcritic_agent.ContinuosActorCriticAgentEstimatingStd)

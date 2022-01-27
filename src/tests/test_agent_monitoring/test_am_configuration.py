@@ -208,7 +208,30 @@ incorrect_setup_monitoring_testcases = [
 		'the agent and marketplace must be of the same economy type (Linear/Circular)'),
 	({'marketplace': linear_market.ClassicScenario, 'agents': [(vendors.FixedPriceCEAgent, [])]},
 		'the agent and marketplace must be of the same economy type (Linear/Circular)'),
-	({'subfolder_name': 1}, 'subfolder_name must be of type str')
+	({'subfolder_name': 1}, 'subfolder_name must be of type str'),
+	({'marketplace': linear_market.ClassicScenario,
+		'agents': [(vendors.QLearningCEAgent, ['ClassicScenario_QLearningLEAgent.dat'])]},
+		'the agent and marketplace must be of the same economy type (Linear/Circular)'),
+	({'marketplace': linear_market.MultiCompetitorScenario,
+		'agents': [(vendors.QLearningLEAgent,
+		['CircularEconomyRebuyPriceMonopolyScenario_QLearningCERebuyAgent.dat'])]},
+		'the modelfile is not compatible with the agent you tried to instantiate'),
+	({'marketplace': circular_market.CircularEconomyRebuyPriceMonopolyScenario,
+		'agents': [(actorcritic_agent.ContinuosActorCriticAgentFixedOneStd,
+		['actor_parametersCircularEconomyRebuyPriceMonopolyScenario_ContinuosActorCriticAgentEstimatingStd.dat'])]},
+		'the modelfile is not compatible with the agent you tried to instantiate'),
+	({'marketplace': circular_market.CircularEconomyRebuyPriceOneCompetitor,
+		'agents': [(actorcritic_agent.DiscreteACACircularEconomyRebuy,
+		['actor_parametersCircularEconomyRebuyPriceOneCompetitor_ContinuosActorCriticAgentFixedOneStd.dat'])]},
+		'the modelfile is not compatible with the agent you tried to instantiate'),
+	({'marketplace': circular_market.CircularEconomyMonopolyScenario,
+		'agents': [(actorcritic_agent.DiscreteACACircularEconomy,
+		['actor_parametersCircularEconomyRebuyPriceOneCompetitor_DiscreteACACircularEconomyRebuy.dat'])]},
+		'the modelfile is not compatible with the agent you tried to instantiate'),
+	({'marketplace': circular_market.CircularEconomyMonopolyScenario,
+		'agents': [(vendors.QLearningCERebuyAgent,
+		['CircularEconomyRebuyPriceOneCompetitor_QLearningCERebuyAgent.dat'])]},
+		'the modelfile is not compatible with the agent you tried to instantiate')
 ]
 
 
@@ -226,7 +249,7 @@ def test_incorrect_setup_monitoring(parameters, expected_message):
 	for key, val in parameters.items():
 		dict[key] = val
 
-	with pytest.raises(AssertionError) as assertion_message:
+	with pytest.raises(Exception) as assertion_message:
 		monitor.configurator.setup_monitoring(
 			enable_live_draw=dict['enable_live_draw'],
 			episodes=dict['episodes'],
