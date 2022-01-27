@@ -35,11 +35,22 @@ class ActorCriticAgent(vendors.ReinforcementLearningAgent, ABC):
 
 	@abstractmethod
 	def policy(self, observation, verbose=False, raw_action=False) -> None:  # pragma: no cover
+		"""
+		Give the current state to the agent and receive his action.
+
+		Args:
+			observation (torch.Tensor): The current observation
+			verbose (bool, optional): Flag to add additional information about the training on the tensorboard.
+			Defaults to False.
+			raw_action (bool, optional): Flag to make the agent return his action without calling agent_output_to_market_form.
+			Defaults to False.
+		"""
 		raise NotImplementedError('This method is abstract. Use a subclass')
 
 	def save(self, model_path, model_name) -> None:
 		"""
 		Save a trained model to the specified folder within 'trainedModels'.
+		For each model an actor and a critic net will be saved.
 		Also caps the amount of models in the folder to a maximum of 10.
 		This method is copied from our Q-Learning Agent
 
