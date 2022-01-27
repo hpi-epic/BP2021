@@ -45,6 +45,7 @@ class RLTrainer(ABC):
 		sys.exit(0)
 
 	def initialize_io_related(self, log_dir_prepend):
+		ut.ensure_results_and_monitoring_path_exists()
 		self.curr_time = time.strftime('%b%d_%H-%M-%S')
 		self.signature = f'{type(self.marketplace_class()).__name__}_{type(self.RL_agent).__name__}'
 		self.writer = SummaryWriter(log_dir=os.path.join('results', 'runs', f'{log_dir_prepend}training_{self.signature}_{self.curr_time}'))

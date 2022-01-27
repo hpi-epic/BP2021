@@ -4,6 +4,7 @@ import time
 import matplotlib.pyplot as plt
 
 import agents.vendors as vendors
+import configuration.utils as ut
 import market.circular.circular_sim_market as circular_market
 import market.sim_market as sim_market
 import rl.actorcritic_agent as actorcritic_agent
@@ -15,6 +16,7 @@ class Configurator():
 	"""
 	def __init__(self) -> None:
 		# Do not change the values in here when setting up a session! They are assumed in tests. Instead use setup_monitoring()!
+		ut.ensure_results_and_monitoring_path_exists()
 		self.enable_live_draw = True
 		self.episodes = 500
 		self.plot_interval = 50

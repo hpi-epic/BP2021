@@ -1,8 +1,16 @@
+import os
 import random
 
 import numpy as np
 
 import configuration.config as config
+
+
+def ensure_results_and_monitoring_path_exists():
+	if not os.path.exists('results'):
+		os.mkdir('results')
+	if not os.path.exists(os.path.join('results', 'monitoring')):
+		os.mkdir(os.path.join('results', 'monitoring'))
 
 
 def shuffle_quality() -> int:
