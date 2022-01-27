@@ -162,7 +162,7 @@ class DiscreteActorCriticAgent(ActorCriticAgent):
 
 		distribution = distribution.to('cpu').detach().numpy()
 		action = ut.shuffle_from_probabilities(distribution)
-		action if raw_action else self.agent_output_to_market_form(action)
+		action = action if raw_action else self.agent_output_to_market_form(action)
 
 		if verbose:
 			return action, distribution[action], v_estimate.to('cpu').item()

@@ -38,4 +38,4 @@ def continuos_a2c_circular_economy_rebuy():
 
 
 if __name__ == '__main__':
-	continuos_a2c_circular_economy_rebuy()
+	run_training_session(circular_market.CircularEconomyMonopolyScenario, vendors.QLearningCEAgent)

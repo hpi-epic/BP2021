@@ -137,8 +137,24 @@ def test_setting_market_not_agents():
 
 
 correct_setup_monitoring_testcases = [
+	({'marketplace': linear_market.ClassicScenario,
+		'agents': [(vendors.QLearningLEAgent, ['ClassicScenario_QLearningLEAgent.dat'])]}),
+	({'marketplace': circular_market.CircularEconomyRebuyPriceMonopolyScenario,
+		'agents': [(vendors.QLearningCERebuyAgent,
+		['CircularEconomyRebuyPriceMonopolyScenario_QLearningCERebuyAgent.dat'])]}),
+	({'marketplace': circular_market.CircularEconomyRebuyPriceMonopolyScenario,
+		'agents': [(actorcritic_agent.ContinuosActorCriticAgentEstimatingStd,
+		['actor_parametersCircularEconomyRebuyPriceMonopolyScenario_ContinuosActorCriticAgentEstimatingStd.dat'])]}),
 	({'marketplace': circular_market.CircularEconomyRebuyPriceOneCompetitor,
-		'agents': [(actorcritic_agent.ContinuosActorCriticAgentFixedOneStd, ['actor_parametersCircularRebuyOneComp_ContinuosA2C.dat'])]})]
+		'agents': [(actorcritic_agent.ContinuosActorCriticAgentFixedOneStd,
+		['actor_parametersCircularEconomyRebuyPriceOneCompetitor_ContinuosActorCriticAgentFixedOneStd.dat'])]}),
+	({'marketplace': circular_market.CircularEconomyRebuyPriceOneCompetitor,
+		'agents': [(actorcritic_agent.DiscreteACACircularEconomyRebuy,
+		['actor_parametersCircularEconomyRebuyPriceOneCompetitor_DiscreteACACircularEconomyRebuy.dat'])]}),
+	({'marketplace': circular_market.CircularEconomyRebuyPriceOneCompetitor,
+		'agents': [(vendors.QLearningCERebuyAgent,
+		['CircularEconomyRebuyPriceOneCompetitor_QLearningCERebuyAgent.dat'])]})
+]
 
 
 @pytest.mark.parametrize('parameters', correct_setup_monitoring_testcases)
