@@ -7,12 +7,20 @@ class DockerInfo():
 	"""
 	This class encapsules the return values for the rest api
 	"""
-	def __init__(self, container_id: int, status: bool = None, stream=None, data: str = None, info: str = None) -> None:
-		self.id = container_id
+	def __init__(self, id: str = None, type: str = None, status: str = None, stream=None, data: str = None) -> None:
+		"""
+		Args:
+			id (str, optional): The sha256 id of the object.
+			type (str, optional): Will be one of 'image', 'container'.
+			status (bool, optional): Status of the container. Returned by `cotnainer_status`.
+			stream ([type], optional): Will be a stream generator object. Returned by `build_image`, `execute_command`.
+			data (str, optional): Raw string output that can be printed as is. Returned by `get_container_logs`.
+		"""
+		self.id = id
+		self.type = type
 		self.status = status
 		self.stream = stream
 		self.data = data
-		self.info = info
 
 
 class DockerManager():
@@ -25,7 +33,7 @@ class DockerManager():
 			cls._client = docker.from_env()
 		return cls._instance
 
-	def build_image(self, imagename: str = 'bp2021image') -> str:
+	def build_image(self, imagename: str = 'bp2021image') -> DockerInfo:
 		"""
 		Build an image from the default dockerfile and name it accordingly.
 
@@ -35,7 +43,7 @@ class DockerManager():
 			imagename (str, optional): The name the image will have. Defaults to 'bp2021image'.
 
 		Returns:
-			DockerInfo: A DockerInfo object with id and stream set
+			DockerInfo: A DockerInfo object with id, type and stream set.
 		"""
 		# https://docker-py.readthedocs.io/en/stable/images.html
 		# build image from dockerfile and name it accordingly
@@ -51,17 +59,17 @@ class DockerManager():
 			print(f'An image with this name already exists, it will be overwritten: {imagename}')
 			self._client.images.remove(old_img.id[7:])
 		# return id without the 'sha256:'-prefix
-		return DockerInfo(id=img.id[7:], stream=logs)
+		return DockerInfo(id=img.id[7:], type='image', stream=logs)
 
-	def create_container(self, image_id: str) -> str:
+	def create_container(self, image_id: str) -> DockerInfo:
 		"""
 		Create a container for the given image.
 
 		Args:
-			image_id (str): The id of the image to start the container for.
+			image_id (str): The id of the image to create the container for.
 
 		Returns:
-			str: The id of the created docker container
+			DockerInfo: A DockerInfo object with id, type and status set.
 		"""
 		# https://docker-py.readthedocs.io/en/stable/containers.html
 		print('Creating container...')
@@ -71,9 +79,9 @@ class DockerManager():
 		device_request_gpu = docker.types.DeviceRequest(driver='nvidia', count=-1, capabilities=[['compute']])
 		container = self._client.containers.create(image_id, name=f'{container_name}_container', detach=True, ports={'6006/tcp': 6006},
 			device_requests=[device_request_gpu])
-		return container.id
+		return DockerInfo(id=container.id, type='container', status=self.container_status(container.id).status)
 
-	def start_container(self, container_id: str, config: dict = {}) -> str:
+	def start_container(self, container_id: str, config: dict = {}) -> DockerInfo:
 		"""
 		Start a container for the given image.
 
@@ -86,19 +94,19 @@ class DockerManager():
 		Returns:
 			str: The id of the started docker container.
 		"""
-		if self.container_status(container_id) == 'running':
+		if self.container_status(container_id).status == 'running':
 			print(f'Container is already running: {container_id}')
-			return container_id
+			return DockerInfo(id=container_id, type='container', status=self.container_status(container_id).status)
 		print('Starting container...')
 		self._client.containers.get(container_id).start()
-		return container_id
+		return DockerInfo(id=container_id, type='container', status=self.container_status(container_id).status)
 
-	def execute_command(self, container_id: str, command: str):
+	def execute_command(self, container_id: str, command: str) -> DockerInfo:
 		print(f'Executing command: {command}')
 		_, stream = self._client.containers.get(container_id).exec_run(cmd=command, stream=True)
 		return stream
 
-	def container_status(self, container_id: str) -> str:
+	def container_status(self, container_id: str) -> DockerInfo:
 		"""
 		Return the status of the given container.
 		Can e.g. be one of 'created', 'running', 'paused', 'exited' and more.
