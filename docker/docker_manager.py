@@ -13,7 +13,7 @@ class DockerInfo():
 		Args:
 			id (str, optional): The sha256 id of the object.
 			type (str, optional): Will be one of 'image', 'container'.
-			status (bool, optional): Status of the container. Returned by `cotnainer_status`.
+			status (bool, optional): Status of the container. Returned by `container_status`.
 			stream ([type], optional): Will be a stream generator object. Returned by `build_image`, `execute_command`.
 			data (str, optional): Raw string output that can be printed as is. Returned by `get_container_logs`.
 		"""
