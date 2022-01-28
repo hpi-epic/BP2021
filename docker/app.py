@@ -11,6 +11,7 @@ from fastapi.responses import JSONResponse
 # GET /kill/<docker_id>
 
 # start API with uvicorn app:app --reload
+# If using a remote machine use "uvicorn --host 0.0.0.0 app:app --reload" instead to expose it to the local network
 manager = DockerManager()
 
 app = FastAPI()
@@ -18,7 +19,7 @@ app = FastAPI()
 
 @app.post('/start')
 async def start_container(config: Request):
-	container_info = manager.start_docker(await config.json())
+	container_info = manager.start(await config.json())
 	return JSONResponse(vars(container_info))
 
 
@@ -40,7 +41,7 @@ async def stop_container(id: int):
 	return JSONResponse(vars(container_info))
 
 
-@app.get('/tensorboard/')
+@app.get('/data/tensorboard/')
 async def get_tensorboard_link(id: int):
 	tb_link = manager.start_tensorboard(id)
 	return JSONResponse(vars(tb_link))

@@ -13,8 +13,9 @@ results/runs
 
 # file for Johanns test runner
 tests.sh
-# Johanns VM debug skript
+# Johanns VM debug skripts
 docker_debug_skript.sh
+docker_container_remove.sh
 
 
 # docker

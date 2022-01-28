@@ -2,19 +2,19 @@
 	"rl": {
 		"gamma" : 0.99,
 		"batch_size" : 32,
-		"replay_size" : 100000,
+		"replay_size" : 1000,
 		"learning_rate" : 1e-6,
-		"sync_target_frames" : 1000,
-		"replay_start_size" : 10000,
-		"epsilon_decay_last_frame" : 75000,
+		"sync_target_frames" : 10,
+		"replay_start_size" : 100,
+		"epsilon_decay_last_frame" : 750,
 		"epsilon_start" : 1.0,
 		"epsilon_final" : 0.1
 	},
 	"sim_market": {
-		"episode_size": 50,
+		"episode_size": 5,
 		"max_price": 10,
 		"max_quality": 50,
-		"number_of_customers": 20,
+		"number_of_customers": 2,
 		"production_price": 3,
 		"storage_cost_per_product": 0.1
 	}
