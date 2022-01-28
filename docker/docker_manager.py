@@ -8,28 +8,35 @@ class DockerInfo():
 	"""
 	This class encapsules the return values for the rest api
 	"""
-	def __init__(self, id: str = None, type: str = None, status: str = None, stream=None, data: str = None) -> None:
+	def __init__(self, id: str = None, status: str = None, data: str = None) -> None:
 		"""
 		Args:
-			id (str, optional): The sha256 id of the object.
-			type (str, optional): Will be one of 'image', 'container'.
+			id (str, optional): The sha256 id of the container.
 			status (bool, optional): Status of the container. Returned by `container_status`.
-			stream ([type], optional): Will be a stream generator object. Returned by `build_image`, `execute_command`.
-			data (str, optional): Raw string output that can be printed as is. Returned by `get_container_logs`.
+			data (str, optional): Any other data, dependent on the function called this differs.
 		"""
 		self.id = id
-		self.type = type
 		self.status = status
-		self.stream = stream
 		self.data = data
 
 
 class DockerManager():
+	"""
+	The DockerManager, implemented as a singleton, is responsible for communicating with Docker.
+
+	It starts containers and performs predefined operations on them, such as starting a training session.
+	"""
 	_instance = None
 	_client = None
 	_observers = []
 
 	def __new__(cls):
+		"""
+		This function makes sure that the `DockerManager` is a singleton.
+
+		Returns:
+			DockerManager: The DockerManager instance.
+		"""
 		if cls._instance is None:
 			cls._instance = super(DockerManager, cls).__new__(cls)
 			cls._client = docker.from_env()
@@ -100,9 +107,9 @@ class DockerManager():
 		Returns:
 			str: The id of the started docker container.
 		"""
-		if self.container_status(container_id) == 'running':
-			print(f'Container is already running: {container_id}')
-			return DockerInfo(id=container_id, type='container', status=self.container.status)
+		# if self.container_status(container_id) == 'running':
+		# 	print(f'Container is already running: {container_id}')
+		# 	return DockerInfo(id=container_id, type='container', status=self.container.status)
 		print('Starting container...')
 		container = self._client.containers.get(container_id)
 		container.start()
