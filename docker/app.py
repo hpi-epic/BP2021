@@ -54,5 +54,6 @@ async def remove_container(id: int):
 
 @app.get('/kill/')
 async def kill_container(id: int):
+	# TODO: evaluate if this is needed/useful
 	container_info = manager.kill_container(id)
 	return JSONResponse(vars(container_info))

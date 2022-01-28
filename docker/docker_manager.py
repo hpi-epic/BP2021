@@ -111,7 +111,7 @@ class DockerManager():
 	def execute_command(self, container_id: str, command: str) -> DockerInfo:
 		print(f'Executing command: {command}')
 		_, stream = self._client.containers.get(container_id).exec_run(cmd=command, stream=True)
-		return stream
+		return DockerInfo(id=container_id, type='container', stream=stream)
 
 	def container_status(self, container_id) -> str:
 		"""
@@ -173,10 +173,11 @@ class DockerManager():
 			container_id (str): The id of the container.
 		"""
 		print('Stopping container', container_id)
-		self._client.containers.get(container_id).stop()
+		_ = self._client.containers.get(container_id).stop()
+		# maybe the self.container_status(container_id).status) call can be replaced, beacuse we get a bool feedback from the docker api
 		return DockerInfo(id=container_id, type='container', status=self.container_status(container_id).status)
 
-	def remove_container(self, container_id: str) -> None:
+	def remove_container(self, container_id: str) -> DockerInfo:
 		"""
 		Remove a stopped container.
 
@@ -187,6 +188,7 @@ class DockerManager():
 		"""
 		print('Removing container', container_id)
 		self._client.containers.get(container_id).remove()
+		# this could fail, the status is not clear
 		return DockerInfo(id=container_id, type='container', status=self.container_status(container_id).status)
 
 	def remove_image(self, image_id: str) -> None:
