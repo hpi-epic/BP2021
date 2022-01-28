@@ -52,7 +52,7 @@ class DockerManager():
 			imagename (str, optional): The name the image will have. Defaults to 'bp2021image'.
 
 		Returns:
-			DockerInfo: A DockerInfo object with id, type and stream set.
+			DockerInfo: A DockerInfo object with id set.
 		"""
 		# https://docker-py.readthedocs.io/en/stable/images.html
 		# build image from dockerfile and name it accordingly
@@ -68,7 +68,7 @@ class DockerManager():
 			print(f'An image with this name already exists, it will be overwritten: {imagename}')
 			self._client.images.remove(old_img.id[7:])
 		# return id without the 'sha256:'-prefix
-		return DockerInfo(id=img.id[7:], type='image', stream=logs)
+		return DockerInfo(id=img.id[7:])
 
 	def create_container(self, image_info: DockerInfo, use_gpu: bool = True) -> DockerInfo:
 		"""
@@ -78,7 +78,7 @@ class DockerManager():
 			image_info (str): The id of the image to create the container for.
 
 		Returns:
-			DockerInfo: A DockerInfo object with id, type and status set.
+			DockerInfo: A DockerInfo object with id and status set.
 		"""
 		# https://docker-py.readthedocs.io/en/stable/containers.html
 		print('Creating container...')
@@ -92,7 +92,7 @@ class DockerManager():
 		else:
 			container = self._client.containers.create(image_info.id, name=f'{container_name}_container', detach=True, ports={'6006/tcp': 6006})
 
-		return DockerInfo(id=container.id, type='container', status=self.container_status(container.id))
+		return DockerInfo(id=container.id, status=self.container_status(container.id))
 
 	def start_container(self, container_id: str, config: dict = {}) -> DockerInfo:
 		"""
@@ -107,18 +107,15 @@ class DockerManager():
 		Returns:
 			str: The id of the started docker container.
 		"""
-		# if self.container_status(container_id) == 'running':
-		# 	print(f'Container is already running: {container_id}')
-		# 	return DockerInfo(id=container_id, type='container', status=self.container.status)
 		print('Starting container...')
 		container = self._client.containers.get(container_id)
 		container.start()
-		return DockerInfo(id=container_id, type='container', status=self.container_status(container.id))
+		return DockerInfo(id=container_id, status=self.container_status(container.id))
 
 	def execute_command(self, container_id: str, command: str) -> DockerInfo:
 		print(f'Executing command: {command}')
 		_, stream = self._client.containers.get(container_id).exec_run(cmd=command, stream=True)
-		return DockerInfo(id=container_id, type='container', stream=stream)
+		return DockerInfo(id=container_id)
 
 	def container_status(self, container_id) -> str:
 		"""
@@ -131,7 +128,7 @@ class DockerManager():
 		Returns:
 			str: The status of the container
 		"""
-		return DockerInfo(id=container_id, type='container', status=self._client.containers.get(container_id).status)
+		return DockerInfo(id=container_id, status=self._client.containers.get(container_id).status)
 
 	def get_container_logs(self, container_id: str, timestamps: bool = False) -> str:
 		"""
@@ -146,8 +143,7 @@ class DockerManager():
 		Returns:
 			str: The logs of the container
 		"""
-		return DockerInfo(container_id, type='container',
-			data=self._client.containers.get(container_id).logs(timestamps=timestamps).decode('UTF-8'))
+		return DockerInfo(container_id, data=self._client.containers.get(container_id).logs(timestamps=timestamps).decode('UTF-8'))
 
 	# TODO: Refactor to return the raw data stream
 	def get_container_data(self, container_path: str, container_id: str,
@@ -182,7 +178,7 @@ class DockerManager():
 		print('Stopping container', container_id)
 		_ = self._client.containers.get(container_id).stop()
 		# maybe the self.container_status(container_id).status) call can be replaced, beacuse we get a bool feedback from the docker api
-		return DockerInfo(id=container_id, type='container', status=self.container_status(container_id).status)
+		return DockerInfo(id=container_id, status=self.container_status(container_id).status)
 
 	def remove_container(self, container_id: str) -> DockerInfo:
 		"""
@@ -196,7 +192,7 @@ class DockerManager():
 		print('Removing container', container_id)
 		self._client.containers.get(container_id).remove()
 		# this could fail, the status is not clear
-		return DockerInfo(id=container_id, type='container', status=self.container_status(container_id).status)
+		return DockerInfo(id=container_id, status=self.container_status(container_id).status)
 
 	def remove_image(self, image_id: str) -> None:
 		"""
@@ -275,16 +271,16 @@ class DockerManager():
 if __name__ == '__main__':
 	manager = DockerManager()
 	img = manager.build_image()
-	print(img.id)
+	# print(img.id)
 	cont = manager.create_container(img, use_gpu=False)
 	manager.start_container(cont.id)
-	tb_link = manager.start_tensorboard(cont.id)
-	print(f'Tensorboard started on: {tb_link}')
-	stream = manager.execute_command(cont.id, 'python ./src/rl/training_scenario.py')
-	print()
-	for data in stream:
-		print(data.decode(), end='')
-	print()
+	# tb_link = manager.start_tensorboard(cont.id)
+	# print(f'Tensorboard started on: {tb_link}')
+	# stream = manager.execute_command(cont.id, 'python ./src/rl/training_scenario.py')
+	# print()
+	# for data in stream:
+	# 	print(data.decode(), end='')
+	# print()
 	print('Getting archive data...')
 	manager.get_container_data('/app/results', cont.id)
 	print('Stopping container...')
