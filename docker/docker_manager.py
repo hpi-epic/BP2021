@@ -214,16 +214,17 @@ class DockerManager():
 		return 'http://localhost:6006'
 
 	# def upload_file(self, container_id:str, src_path: str, dest_path: str) -> None:
-	# 	"""
-	# 	Upload a file to the specified container.
+	def upload_file(self, container_id: str, src_path: str, dest_path: str) -> None:
+		"""
+		Upload a file to the specified container.
 
-	# 	Args:
-	# 		container_id (str): The id of the container.
-	# 		src_path (str): The path to the file to upload.
-	# 		dest_path (str): The path in the container to upload the file to.
-	# 	"""
-	# 	container = self._client.containers.get(container_id)
-	# 	container.copy()
+		Args:
+			container_id (str): The id of the container.
+			src_path (str): The path to the file to upload.
+			dest_path (str): The path in the container to upload the file to.
+		"""
+		container = self._client.containers.get(container_id)
+		container.copy()
 
 	# I would suggest an observer pattern for docker container:
 	def attach(self, id: int, observer) -> None:
