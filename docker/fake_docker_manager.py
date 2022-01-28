@@ -1,5 +1,6 @@
 from random import randrange
 
+
 class AlphaBusinessDockerInfo():
 	"""This class encapsules the return values for the rest api
 	"""
@@ -69,7 +70,7 @@ class AlphaBusinessDockerManager():
 		Returns:
 			str: link to tensorboard
 		"""
-		return AlphaBusinessDockerInfo(container_id=id, msg='127.0.0.1:1234/')
+		return AlphaBusinessDockerInfo(container_id=id, msg='www.hpi.de')
 
 	# I would suggest an observer pattern for docker container:
 	def attach(self, id: int, observer) -> None:
