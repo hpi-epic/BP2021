@@ -63,7 +63,7 @@ class DockerManager():
 		# return id without the 'sha256:'-prefix
 		return DockerInfo(id=img.id[7:], type='image', stream=logs)
 
-	def create_container(self, image_info: DockerInfo, use_gpu: bool=True) -> DockerInfo:
+	def create_container(self, image_info: DockerInfo, use_gpu: bool = True) -> DockerInfo:
 		"""
 		Create a container for the given image.
 
@@ -80,10 +80,11 @@ class DockerManager():
 		# create a device request to use all available GPU devices with compute capabilities
 		if use_gpu:
 			device_request_gpu = docker.types.DeviceRequest(driver='nvidia', count=-1, capabilities=[['compute']])
-			container = self._client.containers.create(image_info.id, name=f'{container_name}_container', detach=True, ports={'6006/tcp': 6006},device_requests=[device_request_gpu])
-		else: 
+			container = self._client.containers.create(image_info.id, name=f'{container_name}_container', detach=True, ports={'6006/tcp': 6006},
+													device_requests=[device_request_gpu])
+		else:
 			container = self._client.containers.create(image_info.id, name=f'{container_name}_container', detach=True, ports={'6006/tcp': 6006})
-		
+
 		return DockerInfo(id=container.id, type='container', status=self.container_status(container.id))
 
 	def start_container(self, container_id: str, config: dict = {}) -> DockerInfo:
@@ -123,7 +124,7 @@ class DockerManager():
 		Returns:
 			str: The status of the container
 		"""
-		return self._client.containers.get(container_id)
+		return DockerInfo(id=container_id, type='container', status=self._client.containers.get(container_id).status)
 
 	def get_container_logs(self, container_id: str, timestamps: bool = False) -> str:
 		"""
@@ -138,11 +139,12 @@ class DockerManager():
 		Returns:
 			str: The logs of the container
 		"""
-		return self._client.containers.get(container_id).logs(timestamps=timestamps).decode('UTF-8')
+		return DockerInfo(container_id, type='container',
+			data=self._client.containers.get(container_id).logs(timestamps=timestamps).decode('UTF-8'))
 
 	# TODO: Refactor to return the raw data stream
 	def get_container_data(self, container_path: str, container_id: str,
-		target_filename: str = f'results_{time.strftime("%b%d_%H-%M-%S")}') -> dict:
+		target_filename: str = f'results_{time.strftime("%b%d_%H-%M-%S")}') -> DockerInfo:
 		"""
 		Save the data in the container_path to the target_path as a tar archive.
 
@@ -161,7 +163,7 @@ class DockerManager():
 			for chunk in bits:
 				f.write(chunk)
 			print(f'Archive written to: {os.path.abspath(target_path)}')
-		return stats
+		return DockerInfo(stats)
 
 	def stop_container(self, container_id: str) -> bool:
 		"""
@@ -170,7 +172,9 @@ class DockerManager():
 		Args:
 			container_id (str): The id of the container.
 		"""
-		return self._client.containers.get(container_id).stop()
+		print('Stopping container', container_id)
+		self._client.containers.get(container_id).stop()
+		return DockerInfo(id=container_id, type='container', status=self.container_status(container_id).status)
 
 	def remove_container(self, container_id: str) -> None:
 		"""
@@ -181,7 +185,9 @@ class DockerManager():
 		Args:
 			container_id (str): The id of the container.
 		"""
+		print('Removing container', container_id)
 		self._client.containers.get(container_id).remove()
+		return DockerInfo(id=container_id, type='container', status=self.container_status(container_id).status)
 
 	def remove_image(self, image_id: str) -> None:
 		"""
@@ -207,11 +213,17 @@ class DockerManager():
 		self.execute_command(container_id, 'tensorboard serve --logdir ./results/runs --bind_all')
 		return 'http://localhost:6006'
 
-	def upload_file(container_id:str, src_path: str, dest_path: str) -> None:
+	# def upload_file(self, container_id:str, src_path: str, dest_path: str) -> None:
+	# 	"""
+	# 	Upload a file to the specified container.
 
-		container = _client.containers.get(container_id)
-		container.copy()
-
+	# 	Args:
+	# 		container_id (str): The id of the container.
+	# 		src_path (str): The path to the file to upload.
+	# 		dest_path (str): The path in the container to upload the file to.
+	# 	"""
+	# 	container = self._client.containers.get(container_id)
+	# 	container.copy()
 
 	# I would suggest an observer pattern for docker container:
 	def attach(self, id: int, observer) -> None:
