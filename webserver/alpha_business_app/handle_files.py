@@ -1,6 +1,6 @@
-import os
 import base64
 import mimetypes
+import os
 import time
 
 from django.http import HttpResponse
@@ -17,7 +17,7 @@ def handle_uploaded_file(uploaded_config) -> None:
 
 
 def save_data(response) -> str:
-	# make sure thet the folder ./data/<container_id> exists 
+	# make sure thet the folder ./data/<container_id> exists
 	# in order to save all data belonging to this container in there
 	container_id = response['id']
 	data_folder = './data'
@@ -28,7 +28,7 @@ def save_data(response) -> str:
 		os.mkdir(container_data_folder)
 
 	# write base64 string from api to file
-	archive_name = time.strftime("%b%d_%H-%M-%S") + '.tar'
+	archive_name = time.strftime('%b%d_%H-%M-%S') + '.tar'
 	path_to_archive = os.path.join(container_data_folder, archive_name)
 	with open(path_to_archive, 'wb') as new_archive:
 		new_archive.write(base64.decodebytes(response['data'].encode('ascii')))
@@ -45,6 +45,6 @@ def download_file(path_to_file) -> HttpResponse:
 	archive_name = os.path.basename(path_to_file)
 	container_id = os.path.basename(os.path.dirname(path_to_file))
 	file_name = 'container_' + container_id + '_' + archive_name
-	response['Content-Disposition'] = "attachment; filename=%s" % file_name
+	response['Content-Disposition'] = 'attachment; filename=%s' % file_name
 	# Return the response value
 	return response

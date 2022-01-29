@@ -4,7 +4,6 @@ from django.db import models
 
 
 class Container(models.Model):
-	# id = models.BigAutoField(primary_key=True)
 	container_id = models.CharField(max_length=50)
 	config_file = models.CharField(max_length=500)
 	created_at = models.DateTimeField(auto_now_add=True, editable=False)

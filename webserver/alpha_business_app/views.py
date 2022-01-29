@@ -8,7 +8,7 @@ from django.utils import timezone
 from .forms import UploadFileForm
 from .handle_files import download_file, handle_uploaded_file, save_data
 from .models import Container
-from .requests import send_get_request, send_post_request, update_container
+from .handle_requests import send_get_request, send_post_request, update_container
 
 
 def index(request):
