@@ -155,19 +155,41 @@ C:\Users\your_username\anaconda3\envs\your_venv_name\DLLs
 
 ### Docker
 
-To use docker, please install it on your machine. If you did so, you have to build the container with the following command:
+To use docker, please install it on your machine. If you did so, you can build an image with the following command:
 
 ```console
-docker build .
+docker build . -t bp2021image
 ```
 
-This probably will take a while (especially at the first time). It will give you an image id you have to use to run the container you just built:
+This probably will take a while (especially the first time, since the image is ~17GB in size). The above command will return the image id you have to use to run the container you just built:
 
 ```console
 docker run IMAGE_ID
 ```
 
-This will run the container and execute the command at the end of the dockerfile.
+At any point you can list all current container with:
+
+```console
+docker ps -a
+```
+
+This will start the container, which will run in an endless loop and allow you to execute commands in it using the following command:
+
+```console
+docker exec -it CONTAINER_ID COMMAND
+```
+
+You can stop the container using:
+
+```console
+docker stop CONTAINER_ID
+```
+
+And remove it with:
+
+```console
+docker remove CONTAINER_ID
+```
 
 ### Troubleshooting
 
