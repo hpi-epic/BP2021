@@ -62,7 +62,7 @@ class DockerManager():
 		Returns:
 			DockerInfo: A JSON serializable object containing the id and the status of the new container.
 		"""
-		container = self._create_container('bp2021image', use_gpu=True)
+		container = self._create_container('bp2021image', use_gpu=False)
 		return self._start_container(container.id, config)
 
 	def health(self, container_id: str) -> DockerInfo:
@@ -227,6 +227,7 @@ class DockerManager():
 		print('Starting container...')
 		container = self._client.containers.get(container_id)
 		container.start()
+		self.upload_config(container_id, config)
 		return DockerInfo(id=container_id, status=self._container_status(container.id))
 
 	def _container_status(self, container_id) -> str:

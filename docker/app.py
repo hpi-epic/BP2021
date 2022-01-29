@@ -34,7 +34,7 @@ async def is_container_alive(id: str):
 	return JSONResponse(vars(container_info))
 
 
-# does not work
+# works, downloads the tar archive
 @app.get('/data/')
 async def get_container_data(id: str, path: str = None):
 	if path:
