@@ -1,8 +1,8 @@
 import os
 import time
-
+import tarfile
 import docker
-
+import json
 
 class DockerInfo():
 	"""
@@ -262,17 +262,44 @@ class DockerManager():
 		"""
 		self._client.images.get(image_id).remove()
 
-	def upload_file(self, container_id: str, src_path: str, dest_path: str) -> None:
+	def upload_config(self, container_id: str, config_dict: dict = {}) -> bool:
 		"""
 		Upload a file to the specified container.
 
 		Args:
 			container_id (str): The id of the container.
-			src_path (str): The path to the file to upload.
-			dest_path (str): The path in the container to upload the file to.
+			config_dict (dict): The config dictionary to upload.
+
+		Returns:
+			bool: Signals whether the method was successful 
 		"""
+		# create a directory to store the files safely
+		if not os.path.exists('config_tmp'):
+			os.makedirs('config_tmp')
+		os.chdir('config_tmp')
 		container = self._client.containers.get(container_id)
-		container.copy()
+
+		# write dict to json
+		with open('config.json', 'w') as config_json:
+			config_json.write(json.dumps(config_dict))
+
+		# put config.json in tar archive
+		with tarfile.open("config.tar", 'w') as tar:
+			try:
+					tar.add('config.json')
+			finally:
+					tar.close()
+		
+		# uploading the tar to the container 
+		ok = False
+		with open('config.tar', 'rb') as fd:
+				ok = container.put_archive(path="/app", data=fd)
+
+		# remove obsolete files
+		if ok:
+			os.remove('config.json')
+			os.remove('config.tar')
+		return DockerInfo(container_id,data=ok)
 
 
 if __name__ == '__main__':
