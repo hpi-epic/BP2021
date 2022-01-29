@@ -50,14 +50,15 @@ This will first uninstall all packages and then re-install them from the `enviro
 ## The `AlphaBusiness` package
 
 You may have noticed the following lines in the `requirements.txt`:
-```
-	-e ./src
+
+```yml
+-e ./src
 ```
 
 This installs the `src` folder (and its subdirectories) as a local pip package. The `-e` flag indicates to pip that the package should be installed in an editable state, meaning that any changes to `.py` files in the package will be integrated into the package immediately (meaning no re-install is necessary). In order to install the package, pip looks into the `setup.py` file where name, version and packages of the new package are set.
-You can confirm that the install was successfull if there is a folder called `AlphaBusiness.egg-info` within the `src`-directory, or by checking `pip freeze` for the following line: 
+You can confirm that the install was successfull if there is a folder called `AlphaBusiness.egg-info` within the `src`-directory, or by checking `pip freeze` for the following line:
 
-```
+```yml
 -e git+https://github.com/hpi-epic/BP2021.git@da8868467690a1300ff4e11245417ec384aae15b#egg=AlphaBusiness&subdirectory=src
 ```
 
@@ -132,7 +133,7 @@ which will install the needed environment.
 
 If you get the following error:
 
-```
+```text
 Git: Python was not found; run without arguments to install from the Microsoft Store, 
 or disable this shortcut from Settings > Manage App Execution Aliases
 ```
@@ -147,7 +148,7 @@ If you get an error saying that the `_sqlite3`-module is missing, you are missin
 
 Solution: Go to <https://www.sqlite.org/download.html> to download the `sqlite3.dll` and `sqlite3.def` files and drop them into the following folder:
 
-```
+```PATH
 C:\Users\your_username\anaconda3\envs\your_venv_name\DLLs
 ```
 
@@ -197,7 +198,7 @@ If you get the message containing permission denied, try to run with sudo or goo
 
 ### Webserver
 
-We provide a Django Webserver with a simple user interface to manage the docker container. 
+We provide a Django Webserver with a simple user interface to manage the docker container.
 To start the webserver on `127.0.0.1:2709` go to `/webserver` and start the server by using the following command
 
 ```bash
