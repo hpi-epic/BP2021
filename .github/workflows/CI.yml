@@ -20,14 +20,6 @@ jobs:
         shell: bash -l {0}
         run: |
           pip install -e ./src
-      # - name: Pre-commit
-      #   shell: bash -l {0}
-      #   run: |
-      #     git init
-      #     git add .
-      #     pre-commit install
-      #     pre-commit run --all-files
-      #     rm -rf .git
       - name: Pytest
         shell: bash -l {0}
         run: |
