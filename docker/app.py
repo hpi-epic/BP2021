@@ -36,9 +36,14 @@ async def is_container_alive(id: str):
 
 # does not work
 @app.get('/data/')
-async def get_container_data(id: str):
-	container_info = manager.get_container_data(id)
-	return JSONResponse(vars(container_info))
+async def get_container_data(id: str, path: str = None):
+	if path:
+		container_info = manager.get_container_data(id, path)
+	else:
+		container_info = manager.get_container_data(id)
+	return StreamingResponse(vars(container_info)['stream'],
+		headers={"Content-Disposition": f"filename={vars(container_info)['data']}.tar"},
+		media_type='application/x-tar')
 
 
 # works

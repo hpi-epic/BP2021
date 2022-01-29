@@ -242,28 +242,19 @@ class DockerManager():
 		"""
 		return self._client.containers.get(container_id).status
 
-	# TODO: Refactor to return the raw data stream
-	def get_container_data(self, container_path: str, container_id: str,
-		target_filename: str = f'results_{time.strftime("%b%d_%H-%M-%S")}') -> DockerInfo:
+	def get_container_data(self, container_id: str, container_path: str = '/app/results') -> DockerInfo:
 		"""
-		Save the data in the container_path to the target_path as a tar archive.
+		Return a data stream object that matches a .tar archive as well as a filename derived from the curent time and file-path.
 
 		Args:
-			container_path (str): The path in the container from which to get the data.
 			container_id (str): The id of the container.
-			target_filename (str): The name of the target file. Defaults to 'results_{time.strftime("%b%d_%H-%M-%S")}'
+			container_path (str): The path in the container from which to get the data.
 
 		Returns:
-			dict: The 'stats' metadata of the archive extraction.
+			DockerInfo: Contains the container_id, a filename in the data field and a stream generator matchign the .tar archive
 		"""
-		target_filename += '.tar'
-		target_path = os.path.join(os.path.dirname(__file__), 'docker_archives', target_filename)
-		with open(target_path, 'wb') as f:
-			bits, stats = self._client.containers.get(container_id).get_archive(path=container_path)
-			for chunk in bits:
-				f.write(chunk)
-			print(f'Archive written to: {os.path.abspath(target_path)}')
-		return DockerInfo(container_id, data=stats)
+		bits, _ = self._client.containers.get(container_id).get_archive(path=container_path)
+		return DockerInfo(container_id, data=f'archive_{container_path.rpartition("/")[2]}_{time.strftime("%b%d_%H-%M-%S")}', stream=bits)
 
 	def _remove_image(self, image_id: str) -> None:
 		"""
