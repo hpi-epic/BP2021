@@ -1,0 +1,22 @@
+name: Pre-commit
+
+on: [push, pull_request]
+
+jobs:
+  pre-commit:
+    runs-on: [self-hosted, ubuntu-20.04]
+    name: Pre-commit
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+    - name: Install AlphaBusiness package
+      shell: bash -l {0}
+      run: |
+        pip install -e ./src
+    - uses: pre-commit/action@v2.0.3
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
