@@ -1,6 +1,6 @@
 import os
 import time
-
+import json
 import docker
 
 
@@ -8,6 +8,7 @@ class DockerInfo():
 	"""
 	This class encapsules the return values for the rest api
 	"""
+
 	def __init__(self, id: str = None, status: str = None, data: str = None) -> None:
 		"""
 		Args:
@@ -70,12 +71,12 @@ class DockerManager():
 		# return id without the 'sha256:'-prefix
 		return DockerInfo(id=img.id[7:])
 
-	def create_container(self, image_info: DockerInfo, use_gpu: bool = True) -> DockerInfo:
+	def create_container(self, image_id: str, use_gpu: bool = True) -> DockerInfo:
 		"""
 		Create a container for the given image.
 
 		Args:
-			image_info (str): The id of the image to create the container for.
+			image_id (str): The id of the image to create the container for.
 
 		Returns:
 			DockerInfo: A DockerInfo object with id and status set.
@@ -83,14 +84,17 @@ class DockerManager():
 		# https://docker-py.readthedocs.io/en/stable/containers.html
 		print('Creating container...')
 		# name will be first tag without the ':latest'-postfix
-		container_name = self._client.images.get(image_info.id).tags[0][:-7]
+		container_name = self._client.images.get(image_id).tags[0][:-7]
 		# create a device request to use all available GPU devices with compute capabilities
 		if use_gpu:
 			device_request_gpu = docker.types.DeviceRequest(driver='nvidia', count=-1, capabilities=[['compute']])
-			container = self._client.containers.create(image_info.id, name=f'{container_name}_container', detach=True, ports={'6006/tcp': 6006},
-													device_requests=[device_request_gpu])
+			container = self._client.containers.create(image_id, 
+														name=f'{container_name}_container', 
+														detach=True, 
+														ports={'6006/tcp': 6006},
+														device_requests=[device_request_gpu])
 		else:
-			container = self._client.containers.create(image_info.id, name=f'{container_name}_container', detach=True, ports={'6006/tcp': 6006})
+			container = self._client.containers.create(image_id, name=f'{container_name}_container', detach=True, ports={'6006/tcp': 6006})
 
 		return DockerInfo(id=container.id, status=self.container_status(container.id))
 
@@ -107,6 +111,10 @@ class DockerManager():
 		Returns:
 			str: The id of the started docker container.
 		"""
+		if self.container_status(container_id) == 'running':
+			print(f'Container is already running: {container_id}')
+			return DockerInfo(id=container_id, status=self.container.status)
+
 		print('Starting container...')
 		container = self._client.containers.get(container_id)
 		container.start()
@@ -128,7 +136,8 @@ class DockerManager():
 		Returns:
 			str: The status of the container
 		"""
-		return DockerInfo(id=container_id, status=self._client.containers.get(container_id).status)
+		return self._client.containers.get(container_id).status
+
 
 	def get_container_logs(self, container_id: str, timestamps: bool = False) -> str:
 		"""
@@ -166,7 +175,7 @@ class DockerManager():
 			for chunk in bits:
 				f.write(chunk)
 			print(f'Archive written to: {os.path.abspath(target_path)}')
-		return DockerInfo(stats)
+		return DockerInfo(container_id, data=stats)
 
 	def stop_container(self, container_id: str) -> bool:
 		"""
@@ -178,7 +187,8 @@ class DockerManager():
 		print('Stopping container', container_id)
 		_ = self._client.containers.get(container_id).stop()
 		# maybe the self.container_status(container_id).status) call can be replaced, beacuse we get a bool feedback from the docker api
-		return DockerInfo(id=container_id, status=self.container_status(container_id).status)
+
+		return DockerInfo(id=container_id, status=self.container_status(container_id))
 
 	def remove_container(self, container_id: str) -> DockerInfo:
 		"""
@@ -192,7 +202,7 @@ class DockerManager():
 		print('Removing container', container_id)
 		self._client.containers.get(container_id).remove()
 		# this could fail, the status is not clear
-		return DockerInfo(id=container_id, status=self.container_status(container_id).status)
+		return DockerInfo(id=container_id, status='removed')
 
 	def remove_image(self, image_id: str) -> None:
 		"""
@@ -216,9 +226,8 @@ class DockerManager():
 		# assert self.is_container_running(container_id), f'the Container is not running: {container_id}'
 		self.execute_command(container_id, 'mkdir ./results/runs/')
 		self.execute_command(container_id, 'tensorboard serve --logdir ./results/runs --bind_all')
-		return 'http://localhost:6006'
+		return DockerInfo(container_id,data='http://localhost:6006')
 
-	# def upload_file(self, container_id:str, src_path: str, dest_path: str) -> None:
 	def upload_file(self, container_id: str, src_path: str, dest_path: str) -> None:
 		"""
 		Upload a file to the specified container.
@@ -254,36 +263,30 @@ class DockerManager():
 		for observer in self._observers:
 			observer.update(message_id, message_text)
 
-	# optional methods
-	def container_progress(self, id: int) -> DockerInfo:
-		"""
-		This methoud should return the total progress of the container
+# -----------------------------------------------------------------------------------------------------
+	def start(self, config: dict) -> DockerInfo:
+		img = self.build_image()
+		cont = self.create_container(img.id, use_gpu=False)
+		return self.start_container(cont.id, config)
 
-		Args:
-			id (int): id of running docker container
-
-		Returns:
-			int: progress between 0 and 1, 1 means done
-		"""
-		pass
-
+	def health(self, container_id: str) -> DockerInfo:
+		return DockerInfo(container_id, status=self.container_status(container_id))
 
 if __name__ == '__main__':
 	manager = DockerManager()
 	img = manager.build_image()
-	# print(img.id)
-	cont = manager.create_container(img, use_gpu=False)
-	manager.start_container(cont.id)
+	print(img.id)
+	cont = manager.create_container(img.id, use_gpu=False)
+	info = manager.start_container(cont.id)
+	variables = vars(info)
+	print(variables)
+	json.dumps(variables)
 	# tb_link = manager.start_tensorboard(cont.id)
 	# print(f'Tensorboard started on: {tb_link}')
-	# stream = manager.execute_command(cont.id, 'python ./src/rl/training_scenario.py')
-	# print()
-	# for data in stream:
-	# 	print(data.decode(), end='')
-	# print()
-	print('Getting archive data...')
-	manager.get_container_data('/app/results', cont.id)
-	print('Stopping container...')
-	manager.stop_container(cont)
-	print('Removing container...')
-	manager.remove_container(cont.id)
+	# info = manager.execute_command(cont.id, 'python ./src/rl/training_scenario.py')
+	# print('Getting archive data...')
+	# manager.get_container_data('/app/results', cont.id)
+	# print('Stopping container...')
+	# manager.stop_container(cont)
+	# print('Removing container...')
+	# manager.remove_container(cont.id)
