@@ -8,14 +8,13 @@ class DockerInfo():
 	"""
 	This class encapsules the return values for the rest api
 	"""
-	def __init__(self, id: str = "", status: str = "", data: str = "") -> None:
+
+	def __init__(self, id: str = None, status: str = None, data: str = None) -> None:
 		"""
 		Args:
-			id (str, optional): The sha256 id of the object.
-			type (str, optional): Will be one of 'image', 'container'.
+			id (str, optional): The sha256 id of the container.
 			status (bool, optional): Status of the container. Returned by `container_status`.
-			stream ([type], optional): Will be a stream generator object. Returned by `build_image`, `execute_command`.
-			data (str, optional): Raw string output that can be printed as is. Returned by `get_container_logs`.
+			data (str, optional): Any other data, dependent on the function called this differs.
 		"""
 		self.id = id
 		self.status = status
@@ -23,11 +22,22 @@ class DockerInfo():
 
 
 class DockerManager():
+	"""
+	The DockerManager, implemented as a singleton, is responsible for communicating with Docker.
+
+	It starts containers and performs predefined operations on them, such as starting a training session.
+	"""
 	_instance = None
 	_client = None
 	_observers = []
 
 	def __new__(cls):
+		"""
+		This function makes sure that the `DockerManager` is a singleton.
+
+		Returns:
+			DockerManager: The DockerManager instance.
+		"""
 		if cls._instance is None:
 			cls._instance = super(DockerManager, cls).__new__(cls)
 			cls._client = docker.from_env()
@@ -43,7 +53,7 @@ class DockerManager():
 			imagename (str, optional): The name the image will have. Defaults to 'bp2021image'.
 
 		Returns:
-			DockerInfo: A DockerInfo object with id, type and stream set.
+			DockerInfo: A DockerInfo object with id set.
 		"""
 		# https://docker-py.readthedocs.io/en/stable/images.html
 		# build image from dockerfile and name it accordingly
@@ -69,7 +79,7 @@ class DockerManager():
 			image_id (str): The id of the image to create the container for.
 
 		Returns:
-			DockerInfo: A DockerInfo object with id, type and status set.
+			DockerInfo: A DockerInfo object with id and status set.
 		"""
 		# https://docker-py.readthedocs.io/en/stable/containers.html
 		print('Creating container...')
@@ -104,6 +114,7 @@ class DockerManager():
 		if self.container_status(container_id) == 'running':
 			print(f'Container is already running: {container_id}')
 			return DockerInfo(id=container_id, status=self.container.status)
+
 		print('Starting container...')
 		container = self._client.containers.get(container_id)
 		container.start()
@@ -127,6 +138,7 @@ class DockerManager():
 		"""
 		return self._client.containers.get(container_id).status
 
+
 	def get_container_logs(self, container_id: str, timestamps: bool = False) -> str:
 		"""
 		Return the logs of the given container.
@@ -140,8 +152,7 @@ class DockerManager():
 		Returns:
 			str: The logs of the container
 		"""
-		return DockerInfo(container_id, type='container',
-			data=self._client.containers.get(container_id).logs(timestamps=timestamps).decode('UTF-8'))
+		return DockerInfo(container_id, data=self._client.containers.get(container_id).logs(timestamps=timestamps).decode('UTF-8'))
 
 	# TODO: Refactor to return the raw data stream
 	def get_container_data(self, container_path: str, container_id: str,
@@ -176,6 +187,7 @@ class DockerManager():
 		print('Stopping container', container_id)
 		_ = self._client.containers.get(container_id).stop()
 		# maybe the self.container_status(container_id).status) call can be replaced, beacuse we get a bool feedback from the docker api
+
 		return DockerInfo(id=container_id, status=self.container_status(container_id))
 
 	def remove_container(self, container_id: str) -> DockerInfo:
