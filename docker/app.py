@@ -19,11 +19,13 @@ manager = DockerManager()
 
 app = FastAPI()
 
-#works
+
+# works
 @app.post('/start')
 async def start_container(config: Request):
 	container_info = manager.start(await config.json())
 	return JSONResponse(vars(container_info))
+
 
 # works
 @app.get('/health/')
@@ -31,11 +33,13 @@ async def is_container_alive(id: str):
 	container_info = manager.health(id)
 	return JSONResponse(vars(container_info))
 
+
 # does not work
 @app.get('/data/')
 async def get_container_data(id: str):
 	container_info = manager.get_container_data(id)
 	return JSONResponse(vars(container_info))
+
 
 # works
 @app.get('/stop/')
@@ -43,11 +47,13 @@ async def stop_container(id: str):
 	container_info = manager.stop_container(id)
 	return JSONResponse(vars(container_info))
 
+
 # works
 @app.get('/data/tensorboard/')
 async def get_tensorboard_link(id: str):
 	tb_link = manager.start_tensorboard(id)
 	return JSONResponse(vars(tb_link))
+
 
 # works, returns 'removed'
 @app.get('/remove/')

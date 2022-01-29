@@ -1,6 +1,7 @@
+import json
 import os
 import time
-import json
+
 import docker
 
 
@@ -88,11 +89,11 @@ class DockerManager():
 		# create a device request to use all available GPU devices with compute capabilities
 		if use_gpu:
 			device_request_gpu = docker.types.DeviceRequest(driver='nvidia', count=-1, capabilities=[['compute']])
-			container = self._client.containers.create(image_id, 
-														name=f'{container_name}_container', 
-														detach=True, 
-														ports={'6006/tcp': 6006},
-														device_requests=[device_request_gpu])
+			container = self._client.containers.create(image_id,
+				name=f'{container_name}_container',
+				detach=True,
+				ports={'6006/tcp': 6006},
+				device_requests=[device_request_gpu])
 		else:
 			container = self._client.containers.create(image_id, name=f'{container_name}_container', detach=True, ports={'6006/tcp': 6006})
 
@@ -137,7 +138,6 @@ class DockerManager():
 			str: The status of the container
 		"""
 		return self._client.containers.get(container_id).status
-
 
 	def get_container_logs(self, container_id: str, timestamps: bool = False) -> str:
 		"""
@@ -215,7 +215,18 @@ class DockerManager():
 		"""
 		self._client.images.get(image_id).remove()
 
-
+		def start_tensorboard(self, container_id: str) -> str:
+        """
+        Start a tensorboard in the specified container.
+        Args:
+            container_id (str): The id of the container.
+        Returns:
+            str: The link to the tensorboard session.
+        """
+        # assert self.is_container_running(container_id), f'the Container is not running: {container_id}'
+        self.execute_command(container_id, 'mkdir ./results/runs/')
+        self.execute_command(container_id, 'tensorboard serve --logdir ./results/runs --bind_all')
+        return DockerInfo(container_id, data='http://localhost:6006')
 
 	def upload_file(self, container_id: str, src_path: str, dest_path: str) -> None:
 		"""
@@ -276,25 +287,6 @@ class DockerManager():
 			DockerInfo: A JSON serializable object containing the id and the status of the new container.
 		"""
 		return DockerInfo(container_id, status=self.container_status(container_id))
-
-	def start_tensorboard(self, container_id: str) -> DockerInfo:
-		"""
-		To call by the REST API. Starts a tensorboard in the specified container.
-
-		Args:
-			container_id (str): The id of the container.
-
-		Returns:
-			DockerInfo: A JSON serializable object containing the id and status of the new container, as well as the link th the tensorboard.
-		"""
-		# assert self.is_container_running(container_id), f'the Container is not running: {container_id}'
-		self.execute_command(container_id, 'mkdir ./results/runs/')
-		self.execute_command(container_id, 'tensorboard serve --logdir ./results/runs --bind_all')
-		return DockerInfo(container_id,data='http://localhost:6006')
-
-
-
-
 
 
 if __name__ == '__main__':

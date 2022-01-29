@@ -9,8 +9,6 @@ COPY environment.yml .
 # create conda environment and make the shell use it by default
 RUN conda env create -f environment.yml -n dockervenv
 ENV PATH /opt/conda/envs/dockervenv/bin:$PATH
-# SHELL ["conda", "run", "-n", "dockervenv", "/bin/bash", "-c"]
-# ENV CONDA_DEFAULT_ENV dockervenv
 # Do not buffer stdout so we can see it live
 ENV PYTHONUNBUFFERED 1
 
@@ -23,7 +21,5 @@ RUN pip install -r requirements.txt
 COPY config.json .
 COPY ./results/monitoring ./results/monitoring
 
-# The code to run when container is started:
-#ENTRYPOINT ["conda", "run", "-n", "dockervenv", "python", "src/monitoring/exampleprinter.py"]
 # Keep the container running until manually stopped
 ENTRYPOINT ["tail", "-f", "/dev/null"]
