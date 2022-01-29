@@ -42,7 +42,7 @@ async def get_container_data(id: str, path: str = None):
 	else:
 		container_info = manager.get_container_data(id)
 	return StreamingResponse(vars(container_info)['stream'],
-		headers={"Content-Disposition": f"filename={vars(container_info)['data']}.tar"},
+		headers={'Content-Disposition': f"filename={vars(container_info)['data']}.tar"},
 		media_type='application/x-tar')
 
 
