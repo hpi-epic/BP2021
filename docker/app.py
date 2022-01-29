@@ -52,7 +52,8 @@ async def execute_command(id: str, command: str):
 	container_info = manager.execute_command(id, command)
 	return StreamingResponse(vars(container_info)['stream'])
 
-# works, returns a bool signaling whether it worked 
+
+# works, returns a bool signaling whether it worked
 @app.post('/upload')
 async def upload_config(id: str, config: Request):
 	container_info = manager.upload_config(id, await config.json())

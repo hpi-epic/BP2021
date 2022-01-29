@@ -1,8 +1,10 @@
-import os
-import time
-import tarfile
-import docker
 import json
+import os
+import tarfile
+import time
+
+import docker
+
 
 class DockerInfo():
 	"""
@@ -274,7 +276,7 @@ class DockerManager():
 			config_dict (dict): The config dictionary to upload.
 
 		Returns:
-			bool: Signals whether the method was successful 
+			bool: Signals whether the method was successful
 		"""
 		# create a directory to store the files safely
 		if not os.path.exists('config_tmp'):
@@ -287,22 +289,22 @@ class DockerManager():
 			config_json.write(json.dumps(config_dict))
 
 		# put config.json in tar archive
-		with tarfile.open("config.tar", 'w') as tar:
+		with tarfile.open('config.tar', 'w') as tar:
 			try:
-					tar.add('config.json')
+				tar.add('config.json')
 			finally:
-					tar.close()
-		
-		# uploading the tar to the container 
+				tar.close()
+
+		# uploading the tar to the container
 		ok = False
 		with open('config.tar', 'rb') as fd:
-				ok = container.put_archive(path="/app", data=fd)
+			ok = container.put_archive(path='/app', data=fd)
 
 		# remove obsolete files
 		if ok:
 			os.remove('config.json')
 			os.remove('config.tar')
-		return DockerInfo(container_id,data=ok)
+		return DockerInfo(container_id, data=ok)
 
 
 if __name__ == '__main__':
