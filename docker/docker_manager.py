@@ -200,7 +200,9 @@ class DockerManager():
 			container_id (str): The id of the container.
 		"""
 		print('Removing container', container_id)
-		self._client.containers.get(container_id).remove()
+		container = self._client.containers.get(container_id)
+		container.stop(timeout=20)
+		container.remove()
 		# this could fail, the status is not clear
 		return DockerInfo(id=container_id, status='removed')
 
@@ -213,20 +215,7 @@ class DockerManager():
 		"""
 		self._client.images.get(image_id).remove()
 
-	def start_tensorboard(self, container_id: str) -> str:
-		"""
-		Start a tensorboard in the specified container.
 
-		Args:
-			container_id (str): The id of the container.
-
-		Returns:
-			str: The link to the tensorboard session.
-		"""
-		# assert self.is_container_running(container_id), f'the Container is not running: {container_id}'
-		self.execute_command(container_id, 'mkdir ./results/runs/')
-		self.execute_command(container_id, 'tensorboard serve --logdir ./results/runs --bind_all')
-		return DockerInfo(container_id,data='http://localhost:6006')
 
 	def upload_file(self, container_id: str, src_path: str, dest_path: str) -> None:
 		"""
@@ -265,22 +254,58 @@ class DockerManager():
 
 # -----------------------------------------------------------------------------------------------------
 	def start(self, config: dict) -> DockerInfo:
-		img = self.build_image()
+		"""
+		To call by the REST API. It creates and starts a new docker cintainer from the default image. 
+
+		Args:
+			config (dict): The config.json to replace the default one with.
+
+		Returns:
+			DockerInfo: A JSON serializable object containing the id and the status of the new container.
+		"""
 		cont = self.create_container(img.id, use_gpu=False)
 		return self.start_container(cont.id, config)
 
 	def health(self, container_id: str) -> DockerInfo:
+		"""To call by the REST API. It provides the current status of the specified container.
+
+		Args:
+			container_id (str): The id of the container.
+
+		Returns:
+			DockerInfo: A JSON serializable object containing the id and the status of the new container.
+		"""
 		return DockerInfo(container_id, status=self.container_status(container_id))
+
+	def start_tensorboard(self, container_id: str) -> DockerInfo:
+		"""
+		To call by the REST API. Starts a tensorboard in the specified container.
+
+		Args:
+			container_id (str): The id of the container.
+
+		Returns:
+			DockerInfo: A JSON serializable object containing the id and status of the new container, as well as the link th the tensorboard.
+		"""
+		# assert self.is_container_running(container_id), f'the Container is not running: {container_id}'
+		self.execute_command(container_id, 'mkdir ./results/runs/')
+		self.execute_command(container_id, 'tensorboard serve --logdir ./results/runs --bind_all')
+		return DockerInfo(container_id,data='http://localhost:6006')
+
+
+
+
+
 
 if __name__ == '__main__':
 	manager = DockerManager()
 	img = manager.build_image()
-	print(img.id)
-	cont = manager.create_container(img.id, use_gpu=False)
-	info = manager.start_container(cont.id)
-	variables = vars(info)
-	print(variables)
-	json.dumps(variables)
+	# print(img.id)
+	# cont = manager.create_container(img.id, use_gpu=False)
+	# info = manager.start_container(cont.id)
+	# variables = vars(info)
+	# print(variables)
+	# json.dumps(variables)
 	# tb_link = manager.start_tensorboard(cont.id)
 	# print(f'Tensorboard started on: {tb_link}')
 	# info = manager.execute_command(cont.id, 'python ./src/rl/training_scenario.py')

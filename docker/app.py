@@ -11,6 +11,8 @@ from fastapi.responses import JSONResponse
 # GET /data/tensorboard/<docker_id>
 # GET /kill/<docker_id>
 
+# before first use on a new machine/ with changes to the environment or the src folder, 
+# please call run the docker_manager.py file. It initializes the image and takes ages. 
 # start API with uvicorn app:app --reload
 # If using a remote machine use "uvicorn --host 0.0.0.0 app:app --reload" instead to expose it to the local network
 manager = DockerManager()
