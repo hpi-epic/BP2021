@@ -1,0 +1,27 @@
+table, th, td {
+	border: 1px solid black;
+}
+table {
+	border-collapse: collapse;
+}
+.action_button {
+	margin: 5px;
+	padding: 5px 10px 5px 10px;
+	border: none;
+	border-radius: 5px;
+}
+.health_check_button {
+	background-color: #8de39a;
+}
+.kill_button {
+	background-color: #e39a8d;
+}
+.data_button {
+	background-color: #8dc1e3;
+}
+.launch_button {
+	background-color: #8de3a0;
+}
+.button_row {
+	text-align: center;
+}

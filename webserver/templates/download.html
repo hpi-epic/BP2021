@@ -3,9 +3,11 @@
 	<head>
 		<meta charset="utf-8"/>
 		<title>Download Data</title>
+		{% load static %}
+		<link rel="stylesheet" type="text/css" href="{% static 'style.css' %}">
 	</head>
 	<body>
-		Shortly you will be able to download the data produced by your docker container here
+		<h1>Download data from containers here</h1>
 		<br>
 		{% if all_saved_containers %}
 			<table class="table">
