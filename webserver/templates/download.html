@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="de">
+	<head>
+		<meta charset="utf-8"/>
+		<title>Download Data</title>
+	</head>
+	<body>
+		Shortly you will be able to download the data produced by your docker container here
+		<br>
+		{% if all_saved_containers %}
+			<table class="table">
+				<tr>
+					<th>container id</th>
+					<th>created at</th>
+					<th>last checked at</th>
+					<th>health status</th>
+					<th>download data</th>
+				</tr>
+				{% for container in all_saved_containers %}
+					<tr>
+						<td>{{ container.container_id }}</td>
+						<td>{{ container.created_at }}</td>
+						<td>{{ container.last_check_at }}</td>
+						<td>{{ container.health_status }}</td>
+						<td class="button_row" >
+							<form method="post" enctype="multipart/form-data">
+								{% csrf_token %}
+								<button class="action_button data_button" name="data" value="{{ container.container_id }}" type="submit">download</button>
+							</form>
+						</td>
+					</tr>
+				{% endfor %}
+			</table>
+		{% else %}
+			<p>
+				Currently you have no containers running :( You can start one by uploading a config file 
+				<a href="/upload">here</a> or use existing config files 
+				<a href="/start_container">here</a>
+			</p>
+		{% endif %}
+		<br>
+		<a href="/">home</a>
+	</body>
+</html>

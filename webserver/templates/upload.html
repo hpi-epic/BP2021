@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="de">
+	<head>
+		<meta charset="utf-8"/>
+		<title>Upload Config files</title>
+	</head>
+	<body>
+		<h1>Upload your config file here</h1>
+		<form method="post" enctype="multipart/form-data">
+			{% csrf_token %}
+			<input type="file" name="upload_config" accept="application/json"/>
+			<button>Submit</button>
+		</form>
+		<br>
+		<a href="/">home</a>
+	</body>
+</html>

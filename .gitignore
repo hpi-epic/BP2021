@@ -11,6 +11,13 @@ results/performance
 results/trainedModels
 results/runs
 
+# all webserver related directories
+webserver/configurations
+webserver/data
+
+# docker related directories
+docker/*.tar
+
 # file for Johanns test runner
 tests.sh
 # Johanns VM debug skripts
