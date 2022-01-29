@@ -2,7 +2,7 @@
 
 from docker_manager import DockerManager
 from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 
 # This file should expose a RESTful api for using the docker container with the following routes:
 # POST /start/<docker_id>
@@ -11,8 +11,8 @@ from fastapi.responses import JSONResponse
 # GET /data/tensorboard/<docker_id>
 # GET /kill/<docker_id>
 
-# before first use on a new machine/ with changes to the environment or the src folder, 
-# please call run the docker_manager.py file. It initializes the image and takes ages. 
+# before first use on a new machine/ with changes to the environment or the src folder,
+# please call run the docker_manager.py file. It initializes the image and takes ages.
 # start API with uvicorn app:app --reload
 # If using a remote machine use "uvicorn --host 0.0.0.0 app:app --reload" instead to expose it to the local network
 manager = DockerManager()
@@ -52,7 +52,7 @@ async def stop_container(id: str):
 @app.get('/data/tensorboard/')
 async def get_tensorboard_link(id: str):
 	tb_link = manager.start_tensorboard(id)
-	return JSONResponse(vars(tb_link))
+	return RedirectResponse(vars(tb_link)["data"])
 
 
 # works, returns 'removed'
