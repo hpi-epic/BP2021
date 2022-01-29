@@ -32,6 +32,13 @@ class DockerManager():
 	_instance = None
 	_client = None
 	_observers = []
+	allowed_commands = {
+		'training': 'python ./src/rl/training_scenario.py',
+		'exampleprinter': 'python ./src/monitoring/exampleprinter.py',
+		'monitoring': 'python ./src/monitoring/agent_monitoring/am_monitoring.py',
+		'mkdirRuns': 'mkdir ./results/runs/',
+		'tensorboard': 'tensorboard serve --logdir ./results/runs --bind_all'
+	}
 
 	def __new__(cls):
 		"""
@@ -55,7 +62,7 @@ class DockerManager():
 		Returns:
 			DockerInfo: A JSON serializable object containing the id and the status of the new container.
 		"""
-		container = self._create_container('bp2021image', use_gpu=False)
+		container = self._create_container('bp2021image', use_gpu=True)
 		return self._start_container(container.id, config)
 
 	def health(self, container_id: str) -> DockerInfo:
@@ -70,6 +77,16 @@ class DockerManager():
 		"""
 		return DockerInfo(container_id, status=self._container_status(container_id))
 
+	def execute_command(self, container_id: str, command_id: int) -> DockerInfo:
+		if command_id not in self.allowed_commands:
+			print(f'Command with ID {command_id} not allowed')
+			raise RuntimeError(f'Command with ID {command_id} not allowed')
+
+		command = self.allowed_commands[command_id]
+		print(f'Executing command: {command}')
+		_, stream = self._client.containers.get(container_id).exec_run(cmd=command, stream=True)
+		return DockerInfo(id=container_id, stream=stream)
+
 	def start_tensorboard(self, container_id: str) -> str:
 		"""
 		Start a tensorboard in the specified container.
@@ -79,8 +96,8 @@ class DockerManager():
 			str: The link to the tensorboard session.
 		"""
 		# assert self.is_container_running(container_id), f'the Container is not running: {container_id}'
-		self._execute_command(container_id, 'mkdir ./results/runs/')
-		self._execute_command(container_id, 'tensorboard serve --logdir ./results/runs --bind_all')
+		self.execute_command(container_id, 'mkdirRuns')
+		self.execute_command(container_id, 'tensorboard')
 		return DockerInfo(container_id, data='http://localhost:6006')
 
 	def stop_container(self, container_id: str) -> bool:
@@ -212,11 +229,6 @@ class DockerManager():
 		container.start()
 		return DockerInfo(id=container_id, status=self._container_status(container.id))
 
-	def _execute_command(self, container_id: str, command: str) -> DockerInfo:
-		print(f'Executing command: {command}')
-		_, stream = self._client.containers.get(container_id).exec_run(cmd=command, stream=True)
-		return DockerInfo(id=container_id, stream=stream)
-
 	def _container_status(self, container_id) -> str:
 		"""
 		Return the status of the given container.
@@ -230,28 +242,19 @@ class DockerManager():
 		"""
 		return self._client.containers.get(container_id).status
 
-	# TODO: Refactor to return the raw data stream
-	def get_container_data(self, container_path: str, container_id: str,
-		target_filename: str = f'results_{time.strftime("%b%d_%H-%M-%S")}') -> DockerInfo:
+	def get_container_data(self, container_id: str, container_path: str = '/app/results') -> DockerInfo:
 		"""
-		Save the data in the container_path to the target_path as a tar archive.
+		Return a data stream object that matches a .tar archive as well as a filename derived from the curent time and file-path.
 
 		Args:
-			container_path (str): The path in the container from which to get the data.
 			container_id (str): The id of the container.
-			target_filename (str): The name of the target file. Defaults to 'results_{time.strftime("%b%d_%H-%M-%S")}'
+			container_path (str): The path in the container from which to get the data.
 
 		Returns:
-			dict: The 'stats' metadata of the archive extraction.
+			DockerInfo: Contains the container_id, a filename in the data field and a stream generator matchign the .tar archive
 		"""
-		target_filename += '.tar'
-		target_path = os.path.join(os.path.dirname(__file__), 'docker_archives', target_filename)
-		with open(target_path, 'wb') as f:
-			bits, stats = self._client.containers.get(container_id).get_archive(path=container_path)
-			for chunk in bits:
-				f.write(chunk)
-			print(f'Archive written to: {os.path.abspath(target_path)}')
-		return DockerInfo(container_id, data=stats)
+		bits, _ = self._client.containers.get(container_id).get_archive(path=container_path)
+		return DockerInfo(container_id, data=f'archive_{container_path.rpartition("/")[2]}_{time.strftime("%b%d_%H-%M-%S")}', stream=bits)
 
 	def _remove_image(self, image_id: str) -> None:
 		"""
