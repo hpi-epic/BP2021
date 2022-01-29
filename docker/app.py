@@ -2,7 +2,7 @@
 
 from docker_manager import DockerManager
 from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi.responses import JSONResponse, RedirectResponse, StreamingResponse
 
 # This file should expose a RESTful api for using the docker container with the following routes:
 # POST /start/<docker_id>
@@ -39,6 +39,13 @@ async def is_container_alive(id: str):
 async def get_container_data(id: str):
 	container_info = manager.get_container_data(id)
 	return JSONResponse(vars(container_info))
+
+
+# works
+@app.get('/exec/')
+async def execute_command(id: str, command: str):
+	container_info = manager.execute_command(id, command)
+	return StreamingResponse(vars(container_info)["stream"])
 
 
 # works

@@ -9,16 +9,18 @@ class DockerInfo():
 	This class encapsules the return values for the rest api
 	"""
 
-	def __init__(self, id: str = None, status: str = None, data: str = None) -> None:
+	def __init__(self, id: str = None, status: str = None, data: str = None, stream=None) -> None:
 		"""
 		Args:
 			id (str, optional): The sha256 id of the container.
 			status (bool, optional): Status of the container. Returned by `container_status`.
 			data (str, optional): Any other data, dependent on the function called this differs.
+			stream (stream generator, optional): A stream generator.
 		"""
 		self.id = id
 		self.status = status
 		self.data = data
+		self.stream = stream
 
 
 class DockerManager():
@@ -123,7 +125,7 @@ class DockerManager():
 	def execute_command(self, container_id: str, command: str) -> DockerInfo:
 		print(f'Executing command: {command}')
 		_, stream = self._client.containers.get(container_id).exec_run(cmd=command, stream=True)
-		return DockerInfo(id=container_id)
+		return DockerInfo(id=container_id, stream=stream)
 
 	def container_status(self, container_id) -> str:
 		"""
