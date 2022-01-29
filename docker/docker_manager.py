@@ -125,7 +125,7 @@ class DockerManager():
 		Returns:
 			str: The status of the container
 		"""
-		return DockerInfo(id=container_id, status=self._client.containers.get(container_id).status)
+		return self._client.containers.get(container_id).status
 
 	def get_container_logs(self, container_id: str, timestamps: bool = False) -> str:
 		"""
@@ -164,7 +164,7 @@ class DockerManager():
 			for chunk in bits:
 				f.write(chunk)
 			print(f'Archive written to: {os.path.abspath(target_path)}')
-		return DockerInfo(stats)
+		return DockerInfo(container_id, data=stats)
 
 	def stop_container(self, container_id: str) -> bool:
 		"""
@@ -176,7 +176,7 @@ class DockerManager():
 		print('Stopping container', container_id)
 		_ = self._client.containers.get(container_id).stop()
 		# maybe the self.container_status(container_id).status) call can be replaced, beacuse we get a bool feedback from the docker api
-		return DockerInfo(id=container_id, status=self.container_status(container_id).status)
+		return DockerInfo(id=container_id, status=self.container_status(container_id))
 
 	def remove_container(self, container_id: str) -> DockerInfo:
 		"""
@@ -190,7 +190,7 @@ class DockerManager():
 		print('Removing container', container_id)
 		self._client.containers.get(container_id).remove()
 		# this could fail, the status is not clear
-		return DockerInfo(id=container_id, status=self.container_status(container_id).status)
+		return DockerInfo(id=container_id, status='removed')
 
 	def remove_image(self, image_id: str) -> None:
 		"""
@@ -214,9 +214,8 @@ class DockerManager():
 		# assert self.is_container_running(container_id), f'the Container is not running: {container_id}'
 		self.execute_command(container_id, 'mkdir ./results/runs/')
 		self.execute_command(container_id, 'tensorboard serve --logdir ./results/runs --bind_all')
-		return 'http://localhost:6006'
+		return DockerInfo(container_id,data='http://localhost:6006')
 
-	# def upload_file(self, container_id:str, src_path: str, dest_path: str) -> None:
 	def upload_file(self, container_id: str, src_path: str, dest_path: str) -> None:
 		"""
 		Upload a file to the specified container.
@@ -258,19 +257,24 @@ class DockerManager():
 		cont = self.create_container(img.id, use_gpu=False)
 		return self.start_container(cont.id, config)
 
+	def health(self, container_id: str) -> DockerInfo:
+		return DockerInfo(container_id, status=self.container_status(container_id))
+
 if __name__ == '__main__':
 	manager = DockerManager()
 	img = manager.build_image()
 	print(img.id)
 	cont = manager.create_container(img.id, use_gpu=False)
 	info = manager.start_container(cont.id)
-	json.dumps(info)
-	tb_link = manager.start_tensorboard(cont.id)
-	print(f'Tensorboard started on: {tb_link}')
-	info = manager.execute_command(cont.id, 'python ./src/rl/training_scenario.py')
-	print('Getting archive data...')
-	manager.get_container_data('/app/results', cont.id)
-	print('Stopping container...')
-	manager.stop_container(cont)
-	print('Removing container...')
-	manager.remove_container(cont.id)
+	variables = vars(info)
+	print(variables)
+	json.dumps(variables)
+	# tb_link = manager.start_tensorboard(cont.id)
+	# print(f'Tensorboard started on: {tb_link}')
+	# info = manager.execute_command(cont.id, 'python ./src/rl/training_scenario.py')
+	# print('Getting archive data...')
+	# manager.get_container_data('/app/results', cont.id)
+	# print('Stopping container...')
+	# manager.stop_container(cont)
+	# print('Removing container...')
+	# manager.remove_container(cont.id)
