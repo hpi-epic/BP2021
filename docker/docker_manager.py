@@ -55,8 +55,8 @@ class DockerManager():
 		Returns:
 			DockerInfo: A JSON serializable object containing the id and the status of the new container.
 		"""
-		container = self.create_container('bp2021image', use_gpu=False)
-		return self.start_container(container.id, config)
+		container = self._create_container('bp2021image', use_gpu=False)
+		return self._start_container(container.id, config)
 
 	def health(self, container_id: str) -> DockerInfo:
 		"""
@@ -68,7 +68,7 @@ class DockerManager():
 		Returns:
 			DockerInfo: A JSON serializable object containing the id and the status of the new container.
 		"""
-		return DockerInfo(container_id, status=self.container_status(container_id))
+		return DockerInfo(container_id, status=self._container_status(container_id))
 
 	def start_tensorboard(self, container_id: str) -> str:
 		"""
@@ -79,8 +79,8 @@ class DockerManager():
 			str: The link to the tensorboard session.
 		"""
 		# assert self.is_container_running(container_id), f'the Container is not running: {container_id}'
-		self.execute_command(container_id, 'mkdir ./results/runs/')
-		self.execute_command(container_id, 'tensorboard serve --logdir ./results/runs --bind_all')
+		self._execute_command(container_id, 'mkdir ./results/runs/')
+		self._execute_command(container_id, 'tensorboard serve --logdir ./results/runs --bind_all')
 		return DockerInfo(container_id, data='http://localhost:6006')
 
 	def stop_container(self, container_id: str) -> bool:
@@ -94,7 +94,7 @@ class DockerManager():
 		_ = self._client.containers.get(container_id).stop()
 		# maybe the self.container_status(container_id).status) call can be replaced, beacuse we get a bool feedback from the docker api
 
-		return DockerInfo(id=container_id, status=self.container_status(container_id))
+		return DockerInfo(id=container_id, status=self._container_status(container_id))
 
 	def remove_container(self, container_id: str) -> DockerInfo:
 		"""
@@ -188,7 +188,7 @@ class DockerManager():
 		else:
 			container = self._client.containers.create(image_id, name=f'{container_name}_container', detach=True, ports={'6006/tcp': 6006})
 
-		return DockerInfo(id=container.id, status=self.container_status(container.id))
+		return DockerInfo(id=container.id, status=self._container_status(container.id))
 
 	def _start_container(self, container_id: str, config: dict = {}) -> DockerInfo:
 		"""
@@ -203,14 +203,14 @@ class DockerManager():
 		Returns:
 			str: The id of the started docker container.
 		"""
-		if self.container_status(container_id) == 'running':
+		if self._container_status(container_id) == 'running':
 			print(f'Container is already running: {container_id}')
-			return DockerInfo(id=container_id, status=self.container.status)
+			return DockerInfo(id=container_id, status='running')
 
 		print('Starting container...')
 		container = self._client.containers.get(container_id)
 		container.start()
-		return DockerInfo(id=container_id, status=self.container_status(container.id))
+		return DockerInfo(id=container_id, status=self._container_status(container.id))
 
 	def _execute_command(self, container_id: str, command: str) -> DockerInfo:
 		print(f'Executing command: {command}')
@@ -277,7 +277,7 @@ class DockerManager():
 
 if __name__ == '__main__':
 	manager = DockerManager()
-	img = manager.build_image()
+	img = manager._build_image()
 	# print(img.id)
 	# cont = manager.create_container(img.id, use_gpu=False)
 	# info = manager.start_container(cont.id)
