@@ -34,6 +34,12 @@ async def get_container_data(id: int):
 	return JSONResponse(vars(container_info))
 
 
+@app.get('/data/tensorboard')
+async def get_tensorboard_link(id: int):
+	container_info = manager.get_tensorboard_link(id)
+	return JSONResponse(vars(container_info))
+
+
 @app.get('/kill/')
 async def kill_container(id: int):
 	container_info = manager.kill_container(id)
