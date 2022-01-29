@@ -6,6 +6,7 @@ import market.linear.linear_sim_market as linear_market
 import market.sim_market as sim_market
 import rl.training as training
 
+
 def run_training_session(marketplace=circular_market.CircularEconomyRebuyPriceOneCompetitor, agent=vendors.QLearningCERebuyAgent):
 	"""
 	Run a training session with the passed marketplace and QLearningAgent.
