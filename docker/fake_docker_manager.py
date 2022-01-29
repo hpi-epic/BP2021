@@ -1,3 +1,4 @@
+import base64
 from random import randrange
 
 
@@ -6,9 +7,9 @@ class AlphaBusinessDockerInfo():
 	"""
 	def __init__(self, container_id: int, is_alive: str = None, data: str = None, msg: str = None) -> None:
 		self.id = container_id
-		self.health_status = is_alive
-		self.data = data
-		self.info = msg
+		self.status = is_alive
+		if data:
+			self.data = base64.b64encode(data).decode('ascii')
 
 
 class AlphaBusinessDockerManager():
@@ -49,7 +50,9 @@ class AlphaBusinessDockerManager():
 		Returns:
 			str: produced data
 		"""
-		return AlphaBusinessDockerInfo(container_id=id, data='this is a test')
+		with open('test.tar', 'rb') as f:
+			data = f.read()
+		return AlphaBusinessDockerInfo(container_id=id, data=data)
 
 	def kill_container(self, id: int) -> None:
 		"""

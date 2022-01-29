@@ -6,9 +6,9 @@ from django.shortcuts import render
 from django.utils import timezone
 
 from .forms import UploadFileForm
-from .handle_uploading import handle_uploaded_file
+from .handle_files import download_file, handle_uploaded_file, save_data
 from .models import Container
-from .handle_requests import send_post_request, send_get_request, update_container
+from .requests import send_get_request, send_post_request, update_container
 
 
 def index(request):
@@ -18,9 +18,8 @@ def index(request):
 def upload(request):
 	if request.method == 'POST':
 		form = UploadFileForm(request.POST, request.FILES)
-		# print(request.FILES, request.POST)
 		handle_uploaded_file(request.FILES['upload_config'])
-		return HttpResponseRedirect('/start_container')   # render(request, 'start_container.html')
+		return HttpResponseRedirect('/observe')
 	else:
 		form = UploadFileForm()
 	return render(request, 'upload.html', {'form': form})
@@ -32,7 +31,7 @@ def observe(request):
 			# assuming the id always stays the same
 			response = send_get_request('health', request.POST)
 			if response:
-				update_container(response['id'], {'last_check_at': timezone.now(), 'health_status': response['health_status']})
+				update_container(response['id'], {'last_check_at': timezone.now(), 'health_status': response['status']})
 		if 'kill' in request.POST:
 			response = send_get_request('kill', request.POST)
 			if 'killed' in response['health_status']:
@@ -44,7 +43,14 @@ def observe(request):
 
 
 def download(request):
-	return render(request, 'download.html')
+	if request.method == 'POST' and 'data' in request.POST:
+		response = send_get_request('data', request.POST)
+		if response:
+			# save data from api and make it available for the user
+			path = save_data(response)
+			return download_file(path)
+	all_containers = Container.objects.all()
+	return render(request, 'download.html', {'all_saved_containers': all_containers})
 
 
 def start_container(request):
