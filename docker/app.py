@@ -45,7 +45,7 @@ async def get_container_data(id: str):
 @app.get('/exec/')
 async def execute_command(id: str, command: str):
 	container_info = manager.execute_command(id, command)
-	return StreamingResponse(vars(container_info)["stream"])
+	return StreamingResponse(vars(container_info)['stream'])
 
 
 # works
@@ -59,10 +59,10 @@ async def stop_container(id: str):
 @app.get('/data/tensorboard/')
 async def get_tensorboard_link(id: str):
 	tb_link = manager.start_tensorboard(id)
-	return RedirectResponse(vars(tb_link)["data"])
+	return RedirectResponse(vars(tb_link)['data'])
 
 
-# works, returns 'removed'
+# works, returns 'removed' and stops the container if it still runs
 @app.get('/remove/')
 async def remove_container(id: str):
 	container_info = manager.remove_container(id)
@@ -71,6 +71,6 @@ async def remove_container(id: str):
 
 @app.get('/kill/')
 async def kill_container(id: str):
-	# TODO: evaluate if this is needed/useful
-	container_info = manager.kill_container(id)
+	# deprecated in favor of remove
+	container_info = manager.remove_container(id)
 	return JSONResponse(vars(container_info))
