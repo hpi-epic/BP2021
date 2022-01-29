@@ -1,4 +1,3 @@
-import json
 import os
 import time
 
@@ -215,18 +214,18 @@ class DockerManager():
 		"""
 		self._client.images.get(image_id).remove()
 
-		def start_tensorboard(self, container_id: str) -> str:
-        """
-        Start a tensorboard in the specified container.
-        Args:
-            container_id (str): The id of the container.
-        Returns:
-            str: The link to the tensorboard session.
-        """
-        # assert self.is_container_running(container_id), f'the Container is not running: {container_id}'
-        self.execute_command(container_id, 'mkdir ./results/runs/')
-        self.execute_command(container_id, 'tensorboard serve --logdir ./results/runs --bind_all')
-        return DockerInfo(container_id, data='http://localhost:6006')
+	def start_tensorboard(self, container_id: str) -> str:
+		"""
+		Start a tensorboard in the specified container.
+		Args:
+			container_id (str): The id of the container.
+		Returns:
+			str: The link to the tensorboard session.
+		"""
+		# assert self.is_container_running(container_id), f'the Container is not running: {container_id}'
+		self.execute_command(container_id, 'mkdir ./results/runs/')
+		self.execute_command(container_id, 'tensorboard serve --logdir ./results/runs --bind_all')
+		return DockerInfo(container_id, data='http://localhost:6006')
 
 	def upload_file(self, container_id: str, src_path: str, dest_path: str) -> None:
 		"""
@@ -266,7 +265,7 @@ class DockerManager():
 # -----------------------------------------------------------------------------------------------------
 	def start(self, config: dict) -> DockerInfo:
 		"""
-		To call by the REST API. It creates and starts a new docker cintainer from the default image. 
+		To call by the REST API. It creates and starts a new docker cintainer from the default image.
 
 		Args:
 			config (dict): The config.json to replace the default one with.
