@@ -6,7 +6,6 @@ import market.linear.linear_sim_market as linear_market
 import market.sim_market as sim_market
 import rl.training as training
 
-
 def run_training_session(marketplace=circular_market.CircularEconomyRebuyPriceOneCompetitor, agent=vendors.QLearningCERebuyAgent):
 	"""
 	Run a training session with the passed marketplace and QLearningAgent.
@@ -25,6 +24,7 @@ def run_training_session(marketplace=circular_market.CircularEconomyRebuyPriceOn
 
 	agent = agent(n_observation=marketplace.observation_space.shape[0], n_actions=marketplace.get_n_actions(), optim=torch.optim.Adam)
 	training.RLTrainer(marketplace, agent).train_QLearning_agent()
+
 
 if __name__ == '__main__':
 	run_training_session(linear_market.ClassicScenario, vendors.QLearningLEAgent)
