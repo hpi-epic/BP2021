@@ -12,6 +12,9 @@ import market.linear.linear_sim_market as linear_market
 import rl.actorcritic_agent as actorcritic_agent
 from monitoring.exampleprinter import ExamplePrinter
 
+# The load path for the agent modelfiles
+parameters_path = os.path.join('src', 'tests', 'test_data')
+
 
 def teardown_module(module):
 	print('***TEARDOWN***')
@@ -29,7 +32,6 @@ def test_setup_exampleprinter():
 	assert isinstance(printer.agent, vendors.FixedPriceLEAgent)
 
 
-parameters_path = os.path.join('data')
 full_episode_testcases = [
 	(linear_market.ClassicScenario(), vendors.FixedPriceLEAgent()),
 	(linear_market.ClassicScenario(), vendors.QLearningLEAgent(3, 10,
