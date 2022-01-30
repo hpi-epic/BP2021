@@ -16,7 +16,7 @@ class Configurator():
 	"""
 	def __init__(self) -> None:
 		# Do not change the values in here when setting up a session! They are assumed in tests. Instead use setup_monitoring()!
-		ut.ensure_results_and_monitoring_path_exists()
+		ut.ensure_results_folders_exist()
 		self.enable_live_draw = True
 		self.episodes = 500
 		self.plot_interval = 50
@@ -88,7 +88,7 @@ class Configurator():
 		for current_agent in agents:
 			if issubclass(current_agent[0], vendors.RuleBasedAgent):
 				self.agents.append(vendors.Agent.custom_init(vendors.Agent, current_agent[0], current_agent[1]))
-			elif issubclass(current_agent[0], vendors.QLearningAgent) or issubclass(current_agent[0], actorcritic_agent.ActorCriticAgent):
+			elif issubclass(current_agent[0], (vendors.QLearningAgent, actorcritic_agent.ActorCriticAgent)):
 				try:
 					assert (0 <= len(current_agent[1]) <= 2), 'the argument list for a RL-agent must have length between 0 and 2'
 					assert all(isinstance(argument, str) for argument in current_agent[1]), 'the arguments for a RL-agent must be of type str'

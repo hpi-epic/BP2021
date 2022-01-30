@@ -74,9 +74,9 @@ class ActorCriticAgent(vendors.ReinforcementLearningAgent, ABC):
 				# split the filenames to isolate the reward-part
 				split_filenames = [file.rsplit('_') for file in filenames]
 				# preserve the signature for later
-				signature = split_filenames[0][1] + '_' + split_filenames[0][2]
+				signature = split_filenames[0][1]
 				# isolate the reward and convert it to float
-				rewards = set([file[3] for file in split_filenames])
+				rewards = {file[2] for file in split_filenames}
 				rewards = [float(reward.rsplit('.', 1)[0]) for reward in rewards]
 				# sort the rewards to keep only the best ones
 				rewards = sorted(rewards)

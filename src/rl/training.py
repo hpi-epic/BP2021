@@ -45,10 +45,10 @@ class RLTrainer(ABC):
 		sys.exit(0)
 
 	def initialize_io_related(self, log_dir_prepend):
-		ut.ensure_results_and_monitoring_path_exists()
+		ut.ensure_results_folders_exist()
 		self.curr_time = time.strftime('%b%d_%H-%M-%S')
-		self.signature = f'{type(self.marketplace_class()).__name__}_{type(self.RL_agent).__name__}'
-		self.writer = SummaryWriter(log_dir=os.path.join('results', 'runs', f'{log_dir_prepend}training_{self.signature}_{self.curr_time}'))
+		self.signature = f'{type(self.RL_agent).__name__}'
+		self.writer = SummaryWriter(log_dir=os.path.join('results', 'runs', f'{log_dir_prepend}training_{self.curr_time}'))
 		path_name = f'{self.signature}_{self.curr_time}'
 		self.model_path = os.path.join('results', 'trainedModels', log_dir_prepend + path_name)
 

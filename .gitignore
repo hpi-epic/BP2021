@@ -1,13 +1,7 @@
 # from https://github.com/github/gitignore
 
-# any sort of result files
-# yes, the way the .gitignore works here is weird!
-
-results/monitoring
-results/monitoring/
-results/performance
-results/trainedModels
-results/runs
+# all files and subfolders of the results folder should be ignored
+results
 
 # file for Johanns test runner
 tests.sh
