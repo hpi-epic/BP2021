@@ -20,6 +20,13 @@ docker/*.tar
 
 # file for Johanns test runner
 tests.sh
+# Johanns VM debug skripts
+docker_debug_skript.sh
+docker_container_remove.sh
+
+
+# docker
+docker/docker_archives
 
 # vscode settings
 .vscode/
