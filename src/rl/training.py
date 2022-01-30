@@ -95,7 +95,7 @@ class RLTrainer(ABC):
 
 	@abstractmethod
 	def train_agent(self, maxsteps=2 * config.EPSILON_DECAY_LAST_FRAME) -> None:
-		raise NotImplementedError
+		raise NotImplementedError('This method is abstract. Use a subclass')
 
 	def _end_of_training(self):
 		"""
