@@ -17,7 +17,7 @@ def run_training_session(marketplace=circular_market.CircularEconomyRebuyPriceOn
 		agent (QLearningAgent subclass, optional): What kind of QLearningAgent to train. Defaults to vendors.QLearningCERebuyAgent.
 	"""
 	assert issubclass(marketplace, sim_market.SimMarket), f'the economy passed must be a subclass of SimMarket: {marketplace}'
-	assert issubclass(agent, vendors.QLearningAgent) or issubclass(agent, actorcritic_agent.ActorCriticAgent), \
+	assert issubclass(agent, (vendors.QLearningAgent, actorcritic_agent.ActorCriticAgent)), \
 		f'the RL_agent_class passed must be a subclass of QLearningAgent: {agent}'
 	assert issubclass(agent, vendors.CircularAgent) == issubclass(marketplace, circular_market.CircularEconomy), \
 		'the agent and marketplace must be of the same economy type (Linear/Circular)'
@@ -29,17 +29,26 @@ def run_training_session(marketplace=circular_market.CircularEconomyRebuyPriceOn
 
 
 # Just add some standard usecases.
-def q_learning_classic_scenario():
+def train_q_learning_classic_scenario():
+	"""
+	Train a Linear QLearningAgent on a Linear Market with one competitor.
+	"""
 	run_training_session(linear_market.ClassicScenario, vendors.QLearningLEAgent)
 
 
-def q_learning_circular_economy_rebuy():
+def train_q_learning_circular_economy_rebuy():
+	"""
+	Train a Circular Economy QLearningAgent on a Circular Economy Market with Rebuy Prices and one competitor.
+	"""
 	run_training_session(circular_market.CircularEconomyRebuyPriceOneCompetitor, vendors.QLearningCERebuyAgent)
 
 
-def continuos_a2c_circular_economy_rebuy():
+def train_continuos_a2c_circular_economy_rebuy():
+	"""
+	Train an ActorCriticAgent on a Circular Economy Market with Rebuy Prices and one competitor.
+	"""
 	run_training_session(circular_market.CircularEconomyRebuyPriceOneCompetitor, actorcritic_agent.ContinuosActorCriticAgentFixedOneStd)
 
 
 if __name__ == '__main__':
-	q_learning_classic_scenario()
+	train_q_learning_classic_scenario()

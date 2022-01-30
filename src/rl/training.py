@@ -67,8 +67,7 @@ class RLTrainer(ABC):
 
 	def calculate_frames_per_second(self, frame_idx) -> float:
 		speed = (frame_idx - self.frame_number_last_speed_update) / (
-			(time.time() - self.time_last_speed_update) if (time.time() - self.time_last_speed_update) > 0 else 1
-		)
+			(time.time() - self.time_last_speed_update) if (time.time() - self.time_last_speed_update) > 0 else 1)
 		self.frame_number_last_speed_update = frame_idx
 		self.time_last_speed_update = time.time()
 		return speed
