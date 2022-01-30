@@ -293,7 +293,8 @@ class QLearningAgent(ReinforcementLearningAgent, ABC):
 		return loss_t.item(), selected_q_val_mean.item()
 
 	def synchronize_tgt_net(self):
-		print('Now I synchronize the tgt net')
+		# Not printing this anymore since it clutters the output when training
+		# print('Now I synchronize the tgt net')
 		self.tgt_net.load_state_dict(self.net.state_dict())
 
 	def calc_loss(self, batch, device='cpu'):
