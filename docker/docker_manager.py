@@ -34,6 +34,7 @@ class DockerManager():
 	_instance = None
 	_client = None
 	_observers = []
+	# This dictionary is very important. It contains a list of commands that users can send to a Docker container.
 	allowed_commands = {
 		'training': 'python ./src/rl/training_scenario.py',
 		'exampleprinter': 'python ./src/monitoring/exampleprinter.py',
@@ -79,7 +80,20 @@ class DockerManager():
 		"""
 		return DockerInfo(container_id, status=self._container_status(container_id))
 
-	def execute_command(self, container_id: str, command_id: int) -> DockerInfo:
+	def execute_command(self, container_id: str, command_id: str) -> DockerInfo:
+		"""
+		Execute a command on the specified container.
+
+		Args:
+			container_id (str): The id of the container.
+			command_id (str): The id of the command. Checked against self.allowed_commands.
+
+		Raises:
+			RuntimeError: If the specified command is not allowed.
+
+		Returns:
+			DockerInfo: A DockerInfo object containing the id of the container and a stream generator for the stdout of the command.
+		"""
 		if command_id not in self.allowed_commands:
 			print(f'Command with ID {command_id} not allowed')
 			raise RuntimeError(f'Command with ID {command_id} not allowed')
@@ -92,26 +106,45 @@ class DockerManager():
 	def start_tensorboard(self, container_id: str) -> str:
 		"""
 		Start a tensorboard in the specified container.
+
 		Args:
 			container_id (str): The id of the container.
+
 		Returns:
 			str: The link to the tensorboard session.
 		"""
-		# assert self.is_container_running(container_id), f'the Container is not running: {container_id}'
 		self.execute_command(container_id, 'mkdirRuns')
 		self.execute_command(container_id, 'tensorboard')
 		return DockerInfo(container_id, data='http://localhost:6006')
 
-	def stop_container(self, container_id: str) -> bool:
+	def get_container_data(self, container_id: str, container_path: str = '/app/results') -> DockerInfo:
 		"""
-		Stop a running container.
+		Return a data stream object that matches a .tar archive as well as a filename derived from the curent time and file-path.
 
 		Args:
 			container_id (str): The id of the container.
+			container_path (str): The path in the container from which to get the data. Defaults to '/app/results'.
+
+		Returns:
+			DockerInfo: Contains the container_id, a filename in the data field and a stream generator matching the .tar archive.
+		"""
+		bits, _ = self._client.containers.get(container_id).get_archive(path=container_path)
+		return DockerInfo(container_id, data=f'archive_{container_path.rpartition("/")[2]}_{time.strftime("%b%d_%H-%M-%S")}', stream=bits)
+
+	def stop_container(self, container_id: str) -> DockerInfo:
+		"""
+		Stop a running container.
+
+		After 10 seconds of no response, the container will be killed.
+
+		Args:
+			container_id (str): The id of the container.
+
+		Returns:
+			DockerInfo: A JSON serializable object containing the id and the status of the container.
 		"""
 		print('Stopping container', container_id)
-		_ = self._client.containers.get(container_id).stop()
-		# maybe the self.container_status(container_id).status) call can be replaced, beacuse we get a bool feedback from the docker api
+		self._client.containers.get(container_id).stop(timeout=10)
 
 		return DockerInfo(id=container_id, status=self._container_status(container_id))
 
@@ -123,12 +156,14 @@ class DockerManager():
 
 		Args:
 			container_id (str): The id of the container.
+
+		Returns:
+			DockerInfo: A JSON serializable object containing the id and the status of the container.
 		"""
 		print('Removing container', container_id)
-		container = self._client.containers.get(container_id)
-		container.stop(timeout=20)
-		container.remove()
-		# this could fail, the status is not clear
+		self.stop_container(container_id)
+		self._client.containers.get(container_id).remove()
+
 		return DockerInfo(id=container_id, status='removed')
 
 	# I would suggest an observer pattern for docker container:
@@ -213,14 +248,13 @@ class DockerManager():
 		"""
 		Start a container for the given image.
 
-		Currently does not support loading a config file.
-
 		Args:
 			container_id (str): The id of the image to start the container for.
 			config (str): a json containing parameters for the simulation.
 
 		Returns:
-			str: The id of the started docker container.
+			DockerInfo: A DockerInfo object with the id, the status of the started docker container and a bool in the data field
+				indicating whether or not the config was uploaded successfully.
 		"""
 		if self._container_status(container_id) == 'running':
 			print(f'Container is already running: {container_id}')
@@ -229,35 +263,24 @@ class DockerManager():
 		print('Starting container...')
 		container = self._client.containers.get(container_id)
 		container.start()
-		self.upload_config(container_id, config)
-		return DockerInfo(id=container_id, status=self._container_status(container.id))
+		upload_status = self.upload_config(container_id, config)
+		if not upload_status:
+			print('Failed to upload configuration file!')
+		return DockerInfo(id=container_id, status=self._container_status(container.id), data=upload_status)
 
 	def _container_status(self, container_id) -> str:
 		"""
 		Return the status of the given container.
-		Can e.g. be one of 'created', 'running', 'paused', 'exited' and more.
 
-		Args:
-			container_id (str): The id of the container
-
-		Returns:
-			str: The status of the container
-		"""
-		return self._client.containers.get(container_id).status
-
-	def get_container_data(self, container_id: str, container_path: str = '/app/results') -> DockerInfo:
-		"""
-		Return a data stream object that matches a .tar archive as well as a filename derived from the curent time and file-path.
+		Can e.g. be 'created', 'running', 'paused', 'exited'.
 
 		Args:
 			container_id (str): The id of the container.
-			container_path (str): The path in the container from which to get the data.
 
 		Returns:
-			DockerInfo: Contains the container_id, a filename in the data field and a stream generator matchign the .tar archive
+			str: The status of the container.
 		"""
-		bits, _ = self._client.containers.get(container_id).get_archive(path=container_path)
-		return DockerInfo(container_id, data=f'archive_{container_path.rpartition("/")[2]}_{time.strftime("%b%d_%H-%M-%S")}', stream=bits)
+		return self._client.containers.get(container_id).status
 
 	def _remove_image(self, image_id: str) -> None:
 		"""
@@ -268,7 +291,7 @@ class DockerManager():
 		"""
 		self._client.images.get(image_id).remove()
 
-	def upload_config(self, container_id: str, config_dict: dict = {}) -> bool:
+	def upload_config(self, container_id: str, config_dict: dict = {}) -> DockerInfo:
 		"""
 		Upload a file to the specified container.
 
@@ -277,7 +300,7 @@ class DockerManager():
 			config_dict (dict): The config dictionary to upload.
 
 		Returns:
-			bool: Signals whether the method was successful
+			DockerInfo: A DockerInfo object with the id of the container and the status of the upload in the data field.
 		"""
 		# create a directory to store the files safely
 		if not os.path.exists('config_tmp'):
@@ -305,24 +328,9 @@ class DockerManager():
 		if ok:
 			os.remove('config.json')
 			os.remove('config.tar')
-		return DockerInfo(container_id, data=ok)
+		return DockerInfo(id=container_id, data=ok)
 
 
 if __name__ == '__main__':
 	manager = DockerManager()
 	img = manager._build_image()
-	# print(img.id)
-	# cont = manager.create_container(img.id, use_gpu=False)
-	# info = manager.start_container(cont.id)
-	# variables = vars(info)
-	# print(variables)
-	# json.dumps(variables)
-	# tb_link = manager.start_tensorboard(cont.id)
-	# print(f'Tensorboard started on: {tb_link}')
-	# info = manager.execute_command(cont.id, 'python ./src/rl/training_scenario.py')
-	# print('Getting archive data...')
-	# manager.get_container_data('/app/results', cont.id)
-	# print('Stopping container...')
-	# manager.stop_container(cont)
-	# print('Removing container...')
-	# manager.remove_container(cont.id)
