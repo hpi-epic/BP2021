@@ -66,8 +66,8 @@ async def get_container_data(id: str, path: str = None) -> StreamingResponse:
 		container_info = manager.get_container_data(id, path)
 	else:
 		container_info = manager.get_container_data(id)
-	return StreamingResponse(vars(container_info)['stream'],
-		headers={'Content-Disposition': f"filename={vars(container_info)['data']}.tar"},
+	return StreamingResponse(container_info.stream,
+		headers={'Content-Disposition': f'filename={container_info.data}.tar'},
 		media_type='application/x-tar')
 
 
@@ -84,7 +84,7 @@ async def execute_command(id: str, command: str) -> StreamingResponse:
 		StreamingResponse: A stream generator that will return the stdout the container produces from the command.
 	"""
 	container_info = manager.execute_command(id, command)
-	return StreamingResponse(vars(container_info)['stream'])
+	return StreamingResponse(container_info.stream)
 
 
 @app.post('/upload')
@@ -112,7 +112,7 @@ async def stop_container(id: str) -> JSONResponse:
 		id (str): The id of the container.
 
 	Returns:
-		JSONResponse: The response of the stop request.
+		JSONResponse: The response of the stop request encapsuled in a DockerInfo JSON. status will be 'stopped' if successful.
 	"""
 	container_info = manager.stop_container(id)
 	return JSONResponse(vars(container_info))
@@ -130,7 +130,7 @@ async def get_tensorboard_link(id: str) -> RedirectResponse:
 		RedirectResponse: A redirect to the tensorboard endpoint.
 	"""
 	tb_link = manager.start_tensorboard(id)
-	return RedirectResponse(vars(tb_link)['data'])
+	return RedirectResponse(tb_link.data)
 
 
 @app.get('/remove/')
@@ -142,7 +142,7 @@ async def remove_container(id: str) -> JSONResponse:
 		id (str): The id of the container.
 
 	Returns:
-		JSONResponse: The response of the remove request.
+		JSONResponse: The response of the remove request encapsuled in a DockerInfo JSON. status will be 'removed' if successful.
 	"""
 	container_info = manager.remove_container(id)
 	return JSONResponse(vars(container_info))
