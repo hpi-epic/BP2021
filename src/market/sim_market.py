@@ -1,4 +1,3 @@
-import copy
 from abc import ABC, abstractmethod
 from typing import Tuple
 
@@ -148,7 +147,7 @@ class SimMarket(gym.Env, ABC):
 
 		self._ensure_output_dict_has('profits/all', profits)
 		is_done = self.step_counter >= config.EPISODE_LENGTH
-		return self._observation(), profits[0], is_done, copy.deepcopy(self.output_dict)
+		return self._observation(), profits[0], is_done, self.output_dict
 
 	def _observation(self, vendor_view=0) -> np.array:
 		"""
