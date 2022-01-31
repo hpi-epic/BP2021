@@ -1,3 +1,5 @@
+from abc import ABC
+
 import gym
 import numpy as np
 
@@ -11,7 +13,7 @@ from market.owner import Owner
 from market.sim_market import SimMarket
 
 
-class CircularEconomy(SimMarket):
+class CircularEconomy(SimMarket, ABC):
 
 	def _setup_action_observation_space(self) -> None:
 		# cell 0: number of products in the used storage, cell 1: number of products in circulation
@@ -205,7 +207,7 @@ class CircularEconomyMonopolyScenario(CircularEconomy):
 		return []
 
 
-class CircularEconomyRebuyPrice(CircularEconomy):
+class CircularEconomyRebuyPrice(CircularEconomy, ABC):
 
 	def _setup_action_observation_space(self) -> None:
 		super()._setup_action_observation_space()
