@@ -7,7 +7,7 @@ from django.utils import timezone
 
 from .forms import UploadFileForm
 from .handle_files import download_file, handle_uploaded_file, save_data
-from .handle_requests import send_get_request, send_post_request, update_container
+from .handle_requests import send_get_request, send_get_request_with_streaming, send_post_request, update_container
 from .models import Container
 
 
@@ -44,10 +44,11 @@ def observe(request):
 
 def download(request):
 	if request.method == 'POST' and 'data' in request.POST:
-		response = send_get_request('data', request.POST)
+		wanted_container = request.POST['data']
+		response = send_get_request_with_streaming('data', wanted_container)
 		if response:
 			# save data from api and make it available for the user
-			path = save_data(response)
+			path = save_data(response, wanted_container)
 			return download_file(path)
 	all_containers = Container.objects.all()
 	return render(request, 'download.html', {'all_saved_containers': all_containers})
