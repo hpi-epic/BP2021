@@ -1,4 +1,3 @@
-import base64
 import mimetypes
 import os
 import time
@@ -16,10 +15,9 @@ def handle_uploaded_file(uploaded_config) -> None:
 			destination.write(chunk)
 
 
-def save_data(response) -> str:
+def save_data(response, container_id: str) -> str:
 	# make sure thet the folder ./data/<container_id> exists
 	# in order to save all data belonging to this container in there
-	container_id = response['id']
 	data_folder = './data'
 	if not os.path.exists(data_folder):
 		os.mkdir(data_folder)
@@ -27,11 +25,10 @@ def save_data(response) -> str:
 	if not os.path.exists(container_data_folder):
 		os.mkdir(container_data_folder)
 
-	# write base64 string from api to file
 	archive_name = time.strftime('%b%d_%H-%M-%S') + '.tar'
 	path_to_archive = os.path.join(container_data_folder, archive_name)
 	with open(path_to_archive, 'wb') as new_archive:
-		new_archive.write(base64.decodebytes(response['data'].encode('ascii')))
+		new_archive.write(response.content)
 	return path_to_archive
 
 

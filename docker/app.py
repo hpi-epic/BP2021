@@ -1,7 +1,7 @@
 # app.py
 from fake_docker_manager import AlphaBusinessDockerManager
 from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, RedirectResponse, StreamingResponse
 
 # This file should expose a RESTful api for using the docker container with the following routes:
 # POST /start/<docker_id>
@@ -28,12 +28,6 @@ async def is_container_alive(id: int):
 	return JSONResponse(vars(container_info))
 
 
-@app.get('/data/')
-async def get_container_data(id: int):
-	container_info = manager.get_container_data(id)
-	return JSONResponse(vars(container_info))
-
-
 @app.get('/data/tensorboard')
 async def get_tensorboard_link(id: int):
 	container_info = manager.get_tensorboard_link(id)
@@ -44,3 +38,18 @@ async def get_tensorboard_link(id: int):
 async def kill_container(id: int):
 	container_info = manager.kill_container(id)
 	return JSONResponse(vars(container_info))
+
+
+def iterfile():
+	with open('logo.tar', mode='rb') as file_like:
+		yield from file_like
+
+
+@app.get('/data')
+async def data(id: int):
+	return StreamingResponse(iterfile(), media_type='application/x-tar')
+
+
+@app.get('/data/tensorboard')
+async def test(id: int):
+	return RedirectResponse('hpi.de')

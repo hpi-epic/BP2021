@@ -16,9 +16,7 @@ def send_post_request(route: str, body) -> dict:
 
 def send_get_request(wanted_action: str, raw_data) -> dict:
 	wanted_container = raw_data[wanted_action]
-	print(DOCKER_API + '/' + wanted_action, wanted_container)
 	response = requests.get(DOCKER_API + '/' + wanted_action, params={'id': str(wanted_container)})
-	print(response)
 	if response.ok:
 		return response.json()
 	else:
@@ -33,5 +31,9 @@ def update_container(id: str, updated_values: dict) -> None:
 	saved_container.save()
 
 
-def my_really_funny_spass_function():
-	pass
+def send_get_request_with_streaming(wanted_action: str, wanted_container: str):
+	response = requests.get(DOCKER_API + '/' + wanted_action, params={'id': str(wanted_container)}, stream=True)
+	if response.ok:
+		return response
+	else:
+		return None
