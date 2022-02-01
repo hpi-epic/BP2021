@@ -70,7 +70,7 @@ class DockerManager():
 		try:
 			return self._start_container(container.id, config)
 		except docker.errors.NotFound:
-			return DockerInfo(id=container_id, status='not found')
+			return DockerInfo(id=container.id, status='not found')
 
 	def health(self, container_id: str) -> DockerInfo:
 		"""
