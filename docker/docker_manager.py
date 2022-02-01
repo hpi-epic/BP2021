@@ -39,6 +39,7 @@ class DockerManager():
 		'training': 'python ./src/rl/training_scenario.py',
 		'exampleprinter': 'python ./src/monitoring/exampleprinter.py',
 		'monitoring': 'python ./src/monitoring/agent_monitoring/am_monitoring.py',
+		# for better readability, define commands users might want to perform above this comment and internal commands below
 		'mkdirRuns': 'mkdir ./results/runs/',
 		'tensorboard': 'tensorboard serve --logdir ./results/runs --bind_all'
 	}
@@ -263,7 +264,7 @@ class DockerManager():
 		print('Starting container...')
 		container = self._client.containers.get(container_id)
 		container.start()
-		upload_status = self.upload_config(container_id, config)
+		upload_status = self.upload_config(container_id, config).data
 		if not upload_status:
 			print('Failed to upload configuration file!')
 		return DockerInfo(id=container_id, status=self._container_status(container.id), data=upload_status)
