@@ -66,7 +66,10 @@ class DockerManager():
 			DockerInfo: A JSON serializable object containing the id and the status of the new container.
 		"""
 		container = self._create_container('bp2021image', use_gpu=False)
-		return self._start_container(container.id, config)
+		try:
+			return self._start_container(container.id, config)
+		except docker.errors.NotFound:
+			return DockerInfo(id=container_id, status='not found')
 
 	def health(self, container_id: str) -> DockerInfo:
 		"""
@@ -78,7 +81,10 @@ class DockerManager():
 		Returns:
 			DockerInfo: A JSON serializable object containing the id and the status of the new container.
 		"""
-		return DockerInfo(container_id, status=self._container_status(container_id))
+		try:
+			return DockerInfo(container_id, status=self._container_status(container_id))
+		except docker.errors.NotFound:
+			return DockerInfo(id=container_id, status='not found')
 
 	def execute_command(self, container_id: str, command_id: str) -> DockerInfo:
 		"""
@@ -161,12 +167,13 @@ class DockerManager():
 			DockerInfo: A JSON serializable object containing the id and the status of the container.
 		"""
 		print('Removing container', container_id)
-		self.stop_container(container_id)
-		self._client.containers.get(container_id).remove()
+		try:
+			self.stop_container(container_id)
+			self._client.containers.get(container_id).remove()
+			return DockerInfo(id=container_id, status='removed')
+		except docker.errors.NotFound:
+			return DockerInfo(container_id, status='not found')
 
-		return DockerInfo(id=container_id, status='removed')
-
-	# I would suggest an observer pattern for docker container:
 	def attach(self, id: int, observer) -> None:
 		"""
 		Attach an observer to the container.
