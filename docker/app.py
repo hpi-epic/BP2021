@@ -47,7 +47,10 @@ async def is_container_alive(id: str) -> JSONResponse:
 		JSONResponse: The response of the status request.
 	"""
 	container_info = manager.health(id)
-	return JSONResponse(vars(container_info))
+	if container_info.status == 'not found':
+		return JSONResponse(status_code=404, content=vars(container_info))
+	else:
+		return JSONResponse(vars(container_info))
 
 
 @app.get('/data/')
@@ -84,6 +87,9 @@ async def execute_command(id: str, command: str) -> StreamingResponse:
 		StreamingResponse: A stream generator that will return the stdout the container produces from the command.
 	"""
 	container_info = manager.execute_command(id, command)
+	# if container_info.status == 'not found':
+	# 	return JSONResponse(status_code=404, content=vars(container_info))
+	# return JSONResponse(vars(container_info))
 	return StreamingResponse(container_info.stream)
 
 
@@ -100,7 +106,10 @@ async def upload_config(id: str, config: Request) -> JSONResponse:
 		JSONResponse: The response of the upload request.
 	"""
 	container_info = manager.upload_config(id, await config.json())
-	return JSONResponse(vars(container_info))
+	if container_info.status == 'not found':
+		return JSONResponse(status_code=404, content=vars(container_info))
+	else:
+		return JSONResponse(vars(container_info))
 
 
 @app.get('/stop/')
@@ -115,8 +124,10 @@ async def stop_container(id: str) -> JSONResponse:
 		JSONResponse: The response of the stop request encapsuled in a DockerInfo JSON. status will be 'stopped' if successful.
 	"""
 	container_info = manager.stop_container(id)
-	return JSONResponse(vars(container_info))
-
+	if container_info.status == 'not found':
+		return JSONResponse(status_code=404, content=vars(container_info))
+	else:
+		return JSONResponse(vars(container_info))
 
 @app.get('/data/tensorboard/')
 async def get_tensorboard_link(id: str) -> RedirectResponse:
@@ -145,4 +156,7 @@ async def remove_container(id: str) -> JSONResponse:
 		JSONResponse: The response of the remove request encapsuled in a DockerInfo JSON. status will be 'removed' if successful.
 	"""
 	container_info = manager.remove_container(id)
-	return JSONResponse(vars(container_info))
+	if container_info.status == 'not found':
+		return JSONResponse(status_code=404, content=vars(container_info))
+	else:
+		return JSONResponse(vars(container_info))
