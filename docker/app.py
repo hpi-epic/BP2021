@@ -86,7 +86,7 @@ async def execute_command(id: str, command: str) -> StreamingResponse:
 	Returns:
 		StreamingResponse: A stream generator that will return the stdout the container produces from the command.
 	"""
-	container_info = manager.execute_command(id, command)
+	container_info = await manager.execute_command(id, command)
 	# if container_info.status == 'not found':
 	# 	return JSONResponse(status_code=404, content=vars(container_info))
 	# return JSONResponse(vars(container_info))
@@ -129,6 +129,7 @@ async def stop_container(id: str) -> JSONResponse:
 	else:
 		return JSONResponse(vars(container_info))
 
+
 @app.get('/data/tensorboard/')
 async def get_tensorboard_link(id: str) -> RedirectResponse:
 	"""
@@ -140,7 +141,7 @@ async def get_tensorboard_link(id: str) -> RedirectResponse:
 	Returns:
 		RedirectResponse: A redirect to the tensorboard endpoint.
 	"""
-	tb_link = manager.start_tensorboard(id)
+	tb_link = await manager.start_tensorboard(id)
 	return RedirectResponse(tb_link.data)
 
 

@@ -87,7 +87,7 @@ class DockerManager():
 		except docker.errors.NotFound:
 			return DockerInfo(id=container_id, status='not found')
 
-	def execute_command(self, container_id: str, command_id: str) -> DockerInfo:
+	async def execute_command(self, container_id: str, command_id: str) -> DockerInfo:
 		"""
 		Execute a command on the specified container.
 
@@ -110,7 +110,7 @@ class DockerManager():
 		_, stream = self._client.containers.get(container_id).exec_run(cmd=command, stream=True)
 		return DockerInfo(id=container_id, stream=stream)
 
-	def start_tensorboard(self, container_id: str) -> str:
+	async def start_tensorboard(self, container_id: str) -> str:
 		"""
 		Start a tensorboard in the specified container.
 
@@ -120,8 +120,8 @@ class DockerManager():
 		Returns:
 			str: The link to the tensorboard session.
 		"""
-		self.execute_command(container_id, 'mkdirRuns')
-		self.execute_command(container_id, 'tensorboard')
+		await self.execute_command(container_id, 'mkdirRuns')
+		await self.execute_command(container_id, 'tensorboard')
 		return DockerInfo(container_id, data='http://localhost:6006')
 
 	def get_container_data(self, container_id: str, container_path: str = '/app/results') -> DockerInfo:
