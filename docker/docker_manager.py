@@ -36,9 +36,9 @@ class DockerManager():
 	_observers = []
 	# This dictionary is very important. It contains a list of commands that users can send to a Docker container.
 	_allowed_commands = {
-		'training': 'python ./src/rl/training_scenario.py',
-		'exampleprinter': 'python ./src/monitoring/exampleprinter.py',
-		'monitoring': 'python ./src/monitoring/agent_monitoring/am_monitoring.py',
+		'training': 'python3 ./src/rl/training_scenario.py',
+		'exampleprinter': 'python3 ./src/monitoring/exampleprinter.py',
+		'monitoring': 'python3 ./src/monitoring/agent_monitoring/am_monitoring.py',
 		# for better readability, define commands users might want to perform above this comment and internal commands below
 		'mkdirRuns': 'mkdir ./results/runs/',
 		'tensorboard': 'tensorboard serve --logdir ./results/runs --bind_all'
