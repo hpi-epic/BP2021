@@ -24,14 +24,14 @@ def test_get_default_dict():
 
 def test_correct_template():
 	with open(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir,
-		'results', 'monitoring', 'MarketOverview_template.svg')), 'r') as template:
+		'data', 'MarketOverview_template.svg')), 'r') as template:
 		correct_template = template.read()
 	assert correct_template == svg_manipulator.template_svg
 
 
 def test_template_not_changed():
 	with open(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir,
-		'results', 'monitoring', 'MarketOverview_template.svg')), 'r') as template:
+		'data', 'MarketOverview_template.svg')), 'r') as template:
 		correct_template = template.read()
 
 	# run one exampleprinter and to make sure the template does not get changed
@@ -44,11 +44,13 @@ def test_template_not_changed():
 			patch('monitoring.svg_manipulation.os.path.isdir') as mock_isdir, \
 			patch('monitoring.svg_manipulation.os.listdir') as mock_list_dir, \
 			patch('monitoring.svg_manipulation.os.path.exists') as mock_exists, \
+			patch('monitoring.svg_manipulation.os.mkdir') as mock_mkdir, \
 			patch('monitoring.exampleprinter.SummaryWriter'), \
 			patch('builtins.open', mock_open()):
 			mock_isfile.return_value = True
 			mock_isdir.return_value = True
 			mock_exists.return_value = False
+			mock_mkdir.return_value = True
 			mock_list_dir.return_value = ['MarketOverview_001.svg', 'MarketOverview_002.svg', 'MarketOverview_003.svg']
 
 			ExamplePrinter().run_example()
@@ -79,7 +81,7 @@ def test_write_dict_to_svg():
 		test_dict[key] = 'test'
 	svg_manipulator.write_dict_to_svg(test_dict)
 	correct_svg = ''
-	with open(os.path.join(os.path.dirname(__file__), 'output_test_svg.svg')) as file:
+	with open(os.path.join(os.path.dirname(__file__), 'test_data', 'output_test_svg.svg')) as file:
 		correct_svg = file.read()
 	assert correct_svg == svg_manipulator.output_svg
 	assert test_dict == svg_manipulator.value_dictionary
@@ -207,11 +209,13 @@ def test_one_exampleprinter_run():
 			patch('monitoring.svg_manipulation.os.path.isdir') as mock_isdir, \
 			patch('monitoring.svg_manipulation.os.listdir') as mock_list_dir, \
 			patch('monitoring.svg_manipulation.os.path.exists') as mock_exists, \
+			patch('monitoring.svg_manipulation.os.mkdir') as mock_mkdir, \
 			patch('monitoring.exampleprinter.SummaryWriter'), \
 			patch('builtins.open', mock_open()) as mock_file:
 			mock_isfile.return_value = True
 			mock_isdir.return_value = True
 			mock_exists.return_value = False
+			mock_mkdir.return_value = True
 			mock_list_dir.return_value = ['MarketOverview_001.svg', 'MarketOverview_002.svg', 'MarketOverview_003.svg']
 
 			ExamplePrinter().run_example()
