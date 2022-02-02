@@ -276,7 +276,17 @@ class QLearningAgent(ReinforcementLearningAgent, ABC):
 		return self.agent_output_to_market_form(action)
 
 	@abstractmethod
-	def agent_output_to_market_form(self, action) -> None:  # pragma: no cover
+	def agent_output_to_market_form(self, action) -> tuple or int:  # pragma: no cover
+		"""
+		Takes a raw action and transforms it to a form that is accepted by the market.
+		A raw action is for example three numbers in one.
+
+		Args:
+			action (np.array or int): the raw action
+
+		Returns:
+			tuple or int: the action accepted by the market.
+		"""
 		raise NotImplementedError('This method is abstract. Use a subclass')
 
 	def set_feedback(self, reward, is_done, new_observation):
