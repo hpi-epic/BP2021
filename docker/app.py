@@ -34,13 +34,10 @@ async def start_container(command: str, config: Request) -> JSONResponse:
 		StreamingResponse: The response of the Docker start request. Contains custom header keys for id and status of the container.
 	"""
 	container_info = await manager.start(config=await config.json(), command=command)
-	return StreamingResponse(
-		container_info.stream,
-		headers={
-			'Container-ID': f'{container_info.id}',
-			'Container-Status': f'{container_info.status}',
-		},
-		media_type='application/x-tar')
+	if container_info.status.__contains__('Command not allowed') or container_info.status.__contains__('Container not found'):
+		return JSONResponse(status_code=404, content=vars(container_info))
+	else:
+		return JSONResponse(vars(container_info))
 
 
 @app.get('/health/')

@@ -71,8 +71,8 @@ class DockerManager():
 			# TODO: Error handling for failed upload
 			started_container = self._start_container(container.id, config)
 		except docker.errors.NotFound:
-			return DockerInfo(id=container.id, status=f'container not found: {container.id}')
-		return await self.execute_command(started_container.id, command)
+			return DockerInfo(id=container.id, status=f'Container not found: {container.id}')
+		return await self._execute_command(started_container.id, command)
 
 	def health(self, container_id: str) -> DockerInfo:
 		"""
@@ -88,11 +88,11 @@ class DockerManager():
 		try:
 			return DockerInfo(container_id, status=self._container_status(container_id))
 		except docker.errors.NotFound:
-			return DockerInfo(id=container_id, status=f'container not found: {container_id}')
+			return DockerInfo(id=container_id, status=f'Container not found: {container_id}')
 
-	async def execute_command(self, container_id: str, command_id: str) -> DockerInfo:
+	async def _execute_command(self, container_id: str, command_id: str) -> DockerInfo:
 		"""
-		To be called by the REST API. Execute a command on the specified container.
+		Execute a command on the specified container.
 
 		Args:
 			container_id (str): The id of the container.
@@ -103,12 +103,13 @@ class DockerManager():
 		"""
 		if command_id not in self._allowed_commands:
 			print(f'Command with ID {command_id} not allowed')
-			return DockerInfo(id=container_id, status=f'command not allowed: {command_id}')
+			self.remove_container(container_id)
+			return DockerInfo(id=container_id, status=f'Command not allowed: {command_id}')
 
 		command = self._allowed_commands[command_id]
 		print(f'Executing command: {command}')
 		_, stream = self._client.containers.get(container_id).exec_run(cmd=command, stream=True)
-		return DockerInfo(id=container_id, status=self._container_status(container_id), stream=stream)
+		return DockerInfo(id=container_id, status=self._container_status(container_id))
 
 	async def start_tensorboard(self, container_id: str) -> DockerInfo:
 		"""
@@ -120,8 +121,8 @@ class DockerManager():
 		Returns:
 			DockerInfo: A DockerInfo object containing the id of the container and a link to the tensorboard in the data field.
 		"""
-		await self.execute_command(container_id, 'mkdirRuns')
-		await self.execute_command(container_id, 'tensorboard')
+		await self._execute_command(container_id, 'mkdirRuns')
+		await self._execute_command(container_id, 'tensorboard')
 		return DockerInfo(container_id, data='http://localhost:6006')
 
 	def get_container_data(self, container_id: str, container_path: str) -> DockerInfo:
@@ -155,7 +156,7 @@ class DockerManager():
 			self._client.containers.get(container_id).remove()
 			return DockerInfo(id=container_id, status='removed')
 		except docker.errors.NotFound:
-			return DockerInfo(container_id, status=f'container not found: {container_id}')
+			return DockerInfo(container_id, status=f'Container not found: {container_id}')
 
 	# PRIVATE METHODS
 	def _stop_container(self, container_id: str) -> DockerInfo:
