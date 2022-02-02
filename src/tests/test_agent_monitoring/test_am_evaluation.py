@@ -22,7 +22,7 @@ def setup_function(function):
 def teardown_module(module):
 	for file_name in os.listdir(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir, 'results', 'monitoring')):
 		if re.match('test_*', file_name):
-			assert False, 'file writing was not mocked or a created file was not removed after the test!'
+			assert False, 'Test files were not mocked correctly'
 
 
 evaluate_session_testcases = [

@@ -1,3 +1,6 @@
+import os
+import re
+import time
 from unittest.mock import patch
 
 import pytest
@@ -5,12 +8,16 @@ import pytest
 import market.circular.circular_sim_market as circular_market
 import market.linear.linear_sim_market as linear_market
 import rl.actorcritic_agent as actorcritic_agent
-import rl.actorcritic_training as actorcritic_training
+from rl.actorcritic_training import ActorCriticTrainer
 
 
-def test_standard_setup():
-	with patch('rl.actorcritic_training.SummaryWriter'):
-		actorcritic_training.train_actorcritic()
+def teardown_module(module):
+	print('***TEARDOWN***')
+	# we need to sleep because sometimes the subfolder is still being used when we try to remove it
+	time.sleep(0.001)
+	for file_name in os.listdir(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'results', 'trainedModels')):
+		if re.match('test_*', file_name):
+			assert False, 'Test files were not mocked correctly'
 
 
 test_scenarios = [
@@ -34,10 +41,9 @@ test_scenarios = [
 
 @pytest.mark.parametrize('marketplace, agent, verbose', test_scenarios)
 def test_training_configurations(marketplace, agent, verbose):
-	with patch('rl.actorcritic_training.SummaryWriter'):
-		actorcritic_training.train_actorcritic(
-			marketplace_class=marketplace,
-			agent_class=agent,
+	with patch('rl.training.SummaryWriter'), \
+		patch('rl.actorcritic_agent.ActorCriticAgent.save'):
+		ActorCriticTrainer(marketplace, agent, log_dir_prepend='test_').train_agent(
 			verbose=verbose,
 			number_of_training_steps=120,
 			total_envs=64)
