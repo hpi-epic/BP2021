@@ -74,3 +74,15 @@ def start_container(request):
 	if os.path.exists('configurations'):
 		file_names = os.listdir('configurations')
 	return render(request, 'start_container.html', {'file_names': file_names})
+
+
+def tensorboard(request):
+	if (request.GET.get('observe')):
+		# mypythoncode.mypythonfunction(int(request.GET.get('mytextbox')))
+		# response = send_get_request('data/tensorboard', request.POST)
+		# Container.objects.get(container_id=response['id'])
+		response = send_get_request('health', request.POST)
+		if response:
+			update_container(response['id'], {'last_check_at': timezone.now(), 'health_status': response['status']})
+	all_containers = Container.objects.all()
+	return render(request, 'observe.html', {'all_saved_containers': all_containers})

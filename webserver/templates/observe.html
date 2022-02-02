@@ -16,6 +16,7 @@
 					<th>health status</th>
 					<th>get health status</th>
 					<th>kill container</th>
+					<th>tensorboard</th>
 				</tr>
 				{% for container in all_saved_containers %}
 					<tr>
@@ -34,6 +35,11 @@
 								{% csrf_token %}
 								<button class="action_button kill_button" name="kill" value="{{ container.container_id }}" type="submit">kill</button>
 							</form>
+						</td>
+						<td class="button_row" >
+							<form action="#" method="get">
+								<button class="action_button observe_button" value="{{ container.container_id }}" name="observe" href="{% url 'observe'%}" type="submit">Check it out</button>
+							</form>  
 						</td>
 					</tr>
 				{% endfor %}
@@ -67,6 +73,9 @@
 		}
 		.kill_button {
 			background-color: #e39a8d;
+		}
+		.observe_button {
+			background-color: #f3e03b
 		}
 		.button_row {
 			text-align: center;
