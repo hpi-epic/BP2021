@@ -66,11 +66,12 @@ class DockerManager():
 		Returns:
 			DockerInfo: A JSON serializable object containing the id and the status of the new container.
 		"""
+		print('Creating container...')
 		container = self._create_container('bp2021image', use_gpu=False)
 		try:
 			return self._start_container(container.id, config)
 		except docker.errors.NotFound:
-			return DockerInfo(id=container.id, status='not found')
+			return DockerInfo(id=container.id, status=f'container not found: {container.id}')
 
 	def health(self, container_id: str) -> DockerInfo:
 		"""
@@ -82,10 +83,11 @@ class DockerManager():
 		Returns:
 			DockerInfo: A JSON serializable object containing the id and the status of the new container.
 		"""
+		print(f'Checking health status for: {container_id}')
 		try:
 			return DockerInfo(container_id, status=self._container_status(container_id))
 		except docker.errors.NotFound:
-			return DockerInfo(id=container_id, status='not found')
+			return DockerInfo(id=container_id, status=f'container not found: {container_id}')
 
 	async def execute_command(self, container_id: str, command_id: str) -> DockerInfo:
 		"""
@@ -95,20 +97,17 @@ class DockerManager():
 			container_id (str): The id of the container.
 			command_id (str): The id of the command. Checked against self.allowed_commands.
 
-		Raises:
-			RuntimeError: If the specified command is not allowed.
-
 		Returns:
 			DockerInfo: A DockerInfo object containing the id of the container and a stream generator for the stdout of the command.
 		"""
 		if command_id not in self.allowed_commands:
 			print(f'Command with ID {command_id} not allowed')
-			raise RuntimeError(f'Command with ID {command_id} not allowed')
+			return DockerInfo(id=container_id, status=f'command not allowed: {command_id}')
 
 		command = self.allowed_commands[command_id]
 		print(f'Executing command: {command}')
 		_, stream = self._client.containers.get(container_id).exec_run(cmd=command, stream=True)
-		return DockerInfo(id=container_id, stream=stream)
+		return DockerInfo(id=container_id, status=self._container_status(container_id), stream=stream)
 
 	async def start_tensorboard(self, container_id: str) -> DockerInfo:
 		"""
@@ -150,16 +149,14 @@ class DockerManager():
 		Returns:
 			DockerInfo: A JSON serializable object containing the id and the status of the container.
 		"""
-		print('Stopping container', container_id)
+		print(f'Stopping container: {container_id}')
 		self._client.containers.get(container_id).stop(timeout=10)
 
 		return DockerInfo(id=container_id, status=self._container_status(container_id))
 
 	def remove_container(self, container_id: str) -> DockerInfo:
 		"""
-		Remove a stopped container.
-
-		Will raise an error if the container is still running.
+		Remove and stop a container.
 
 		Args:
 			container_id (str): The id of the container.
@@ -167,13 +164,13 @@ class DockerManager():
 		Returns:
 			DockerInfo: A JSON serializable object containing the id and the status of the container.
 		"""
-		print('Removing container', container_id)
+		print(f'Removing container: {container_id}')
 		try:
 			self.stop_container(container_id)
 			self._client.containers.get(container_id).remove()
 			return DockerInfo(id=container_id, status='removed')
 		except docker.errors.NotFound:
-			return DockerInfo(container_id, status='not found')
+			return DockerInfo(container_id, status=f'container not found: {container_id}')
 
 	def attach(self, id: int, observer) -> None:
 		"""
@@ -197,7 +194,7 @@ class DockerManager():
 		for observer in self._observers:
 			observer.update(message_id, message_text)
 
-	def _build_image(self, imagename: str = 'bp2021image') -> DockerInfo:
+	def _build_image(self, imagename: str = 'bp2021image') -> str:
 		"""
 		Build an image from the default dockerfile and name it accordingly.
 
@@ -207,23 +204,23 @@ class DockerManager():
 			imagename (str, optional): The name the image will have. Defaults to 'bp2021image'.
 
 		Returns:
-			DockerInfo: A DockerInfo object with id set.
+			str: The id of the image.
 		"""
 		# https://docker-py.readthedocs.io/en/stable/images.html
 		# build image from dockerfile and name it accordingly
-		print('Building image...')
+		print(f'Building image: {imagename}')
 		# Find out if an image with the name already exists and remove it afterwards
 		try:
 			old_img = self._client.images.get(imagename)
 		except docker.errors.ImageNotFound:
 			old_img = None
-		img, logs = self._client.images.build(path=os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)),
+		img, _ = self._client.images.build(path=os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)),
 			tag=imagename, forcerm=True)
 		if old_img is not None and old_img.id != img.id:
 			print(f'An image with this name already exists, it will be overwritten: {imagename}')
 			self._client.images.remove(old_img.id[7:])
 		# return id without the 'sha256:'-prefix
-		return DockerInfo(id=img.id[7:])
+		return img.id[7:]
 
 	def _create_container(self, image_id: str, use_gpu: bool = True) -> DockerInfo:
 		"""
@@ -236,7 +233,7 @@ class DockerManager():
 			DockerInfo: A DockerInfo object with id and status set.
 		"""
 		# https://docker-py.readthedocs.io/en/stable/containers.html
-		print('Creating container...')
+		print(f'Creating container for image: {image_id}')
 		# name will be first tag without the ':latest'-postfix
 		container_name = self._client.images.get(image_id).tags[0][:-7]
 		# create a device request to use all available GPU devices with compute capabilities
@@ -268,7 +265,7 @@ class DockerManager():
 			print(f'Container is already running: {container_id}')
 			return DockerInfo(id=container_id, status='running')
 
-		print('Starting container...')
+		print(f'Starting container: {container_id}')
 		container = self._client.containers.get(container_id)
 		container.start()
 		upload_status = self.upload_config(container_id, config).data
