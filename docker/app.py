@@ -47,7 +47,7 @@ async def is_container_alive(id: str) -> JSONResponse:
 		JSONResponse: The response of the status request.
 	"""
 	container_info = manager.health(id)
-	if container_info.status == 'not found':
+	if container_info.status.__contains__('not found'):
 		return JSONResponse(status_code=404, content=vars(container_info))
 	else:
 		return JSONResponse(vars(container_info))
@@ -87,7 +87,7 @@ async def execute_command(id: str, command: str) -> StreamingResponse:
 		StreamingResponse: A stream generator that will return the stdout the container produces from the command.
 	"""
 	container_info = await manager.execute_command(id, command)
-	# if container_info.status == 'not found':
+	# if container_info.status.__contains__('not allowed'):
 	# 	return JSONResponse(status_code=404, content=vars(container_info))
 	# return JSONResponse(vars(container_info))
 	return StreamingResponse(container_info.stream)
@@ -106,7 +106,7 @@ async def upload_config(id: str, config: Request) -> JSONResponse:
 		JSONResponse: The response of the upload request.
 	"""
 	container_info = manager.upload_config(id, await config.json())
-	if container_info.status == 'not found':
+	if container_info.status.__contains__('not found'):
 		return JSONResponse(status_code=404, content=vars(container_info))
 	else:
 		return JSONResponse(vars(container_info))
@@ -124,7 +124,7 @@ async def stop_container(id: str) -> JSONResponse:
 		JSONResponse: The response of the stop request encapsuled in a DockerInfo JSON. Status will be 'stopped' if successful.
 	"""
 	container_info = manager.stop_container(id)
-	if container_info.status == 'not found':
+	if container_info.status.__contains__('not found'):
 		return JSONResponse(status_code=404, content=vars(container_info))
 	else:
 		return JSONResponse(vars(container_info))
@@ -157,7 +157,7 @@ async def remove_container(id: str) -> JSONResponse:
 		JSONResponse: The response of the remove request encapsuled in a DockerInfo JSON. Status will be 'removed' if successful.
 	"""
 	container_info = manager.remove_container(id)
-	if container_info.status == 'not found':
+	if container_info.status.__contains__('not found'):
 		return JSONResponse(status_code=404, content=vars(container_info))
 	else:
 		return JSONResponse(vars(container_info))
