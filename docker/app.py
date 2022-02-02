@@ -21,24 +21,34 @@ app = FastAPI()
 
 
 @app.post('/start')
-async def start_container(config: Request) -> JSONResponse:
+async def start_container(command: str, config: Request) -> JSONResponse:
 	"""
-	Start a container with the specified config.json.
+	Start a container with the specified config.json and perform a command on it.
+	TODO: The command should be contained in a json-file.
 
 	Args:
+		command (str): The key of the command that is to be executed.
 		config (Request): The config.json file that should be sent to the container.
 
 	Returns:
-		JSONResponse: The response of the Docker start request.
+		StreamingResponse: The response of the Docker start request. Contains custom header keys for id and status of the container.
 	"""
-	container_info = manager.start(await config.json())
-	return JSONResponse(vars(container_info))
+	container_info = await manager.start(config=await config.json(), command=command)
+	return StreamingResponse(
+		container_info.stream,
+		headers={
+			'Container-ID': f'{container_info.id}',
+			'Container-Status': f'{container_info.status}',
+		},
+		media_type='application/x-tar')
 
 
 @app.get('/health/')
 async def is_container_alive(id: str) -> JSONResponse:
 	"""
-	Check if the container is still running.
+	Check the status of the container.
+
+	Most other commands also return the status of the container in the `status` field.
 
 	Args:
 		id (str): The id of the container.
@@ -47,7 +57,7 @@ async def is_container_alive(id: str) -> JSONResponse:
 		JSONResponse: The response of the status request.
 	"""
 	container_info = manager.health(id)
-	if container_info.status.__contains__('not found'):
+	if container_info.status.__contains__('Container not found'):
 		return JSONResponse(status_code=404, content=vars(container_info))
 	else:
 		return JSONResponse(vars(container_info))
@@ -65,29 +75,15 @@ async def get_container_data(id: str, path: str = '/app/results') -> StreamingRe
 	Returns:
 		StreamingResponse: A stream generator that will download the requested path as a .tar archive.
 	"""
-	container_info = manager.get_container_data(id)
-	return StreamingResponse(container_info.stream,
-		headers={'Content-Disposition': f'filename={container_info.data}.tar'},
+	container_info = manager.get_container_data(id, path)
+	return StreamingResponse(
+		container_info.stream,
+		headers={
+			'Content-Disposition': f'filename={container_info.data}.tar',
+			'Container-ID': f'{container_info.id}',
+			'Container-Status': f'{container_info.status}',
+		},
 		media_type='application/x-tar')
-
-
-@app.get('/exec/')
-async def execute_command(id: str, command: str) -> StreamingResponse:
-	"""
-	Execute a command in a container.
-
-	Args:
-		id (str): The id of the container.
-		command (str): The key of the command to execute, which will be mapped to the python command internally if it is valid.
-
-	Returns:
-		StreamingResponse: A stream generator that will return the stdout the container produces from the command.
-	"""
-	container_info = await manager.execute_command(id, command)
-	# if container_info.status.__contains__('not allowed'):
-	# 	return JSONResponse(status_code=404, content=vars(container_info))
-	# return JSONResponse(vars(container_info))
-	return StreamingResponse(container_info.stream)
 
 
 @app.get('/data/tensorboard/')
@@ -117,10 +113,30 @@ async def remove_container(id: str) -> JSONResponse:
 		JSONResponse: The response of the remove request encapsuled in a DockerInfo JSON. Status will be 'removed' if successful.
 	"""
 	container_info = manager.remove_container(id)
-	if container_info.status.__contains__('not found'):
+	if container_info.status.__contains__('Container not found'):
 		return JSONResponse(status_code=404, content=vars(container_info))
 	else:
 		return JSONResponse(vars(container_info))
+
+
+# Route kept, but shouldn't be used anymore due to security concerns
+# @app.get('/exec/')
+# async def execute_command(id: str, command: str) -> StreamingResponse:
+# 	"""
+# 	Execute a command in a container.
+
+# 	Args:
+# 		id (str): The id of the container.
+# 		command (str): The key of the command to execute, which will be mapped to the python command internally if it is valid.
+
+# 	Returns:
+# 		StreamingResponse: A stream generator that will return the stdout the container produces from the command.
+# 	"""
+# 	container_info = await manager.execute_command(id, command)
+# 	# if container_info.status.__contains__('not allowed'):
+# 	# 	return JSONResponse(status_code=404, content=vars(container_info))
+# 	# return JSONResponse(vars(container_info))
+# 	return StreamingResponse(container_info.stream)
 
 
 # Route kept, but functionality should be integrated with /remove
@@ -136,7 +152,7 @@ async def remove_container(id: str) -> JSONResponse:
 # 		JSONResponse: The response of the stop request encapsuled in a DockerInfo JSON. Status will be 'stopped' if successful.
 # 	"""
 # 	container_info = manager._stop_container(id)
-# 	if container_info.status.__contains__('not found'):
+# 	if container_info.status.__contains__('Container not found'):
 # 		return JSONResponse(status_code=404, content=vars(container_info))
 # 	else:
 # 		return JSONResponse(vars(container_info))
@@ -156,7 +172,7 @@ async def remove_container(id: str) -> JSONResponse:
 # 		JSONResponse: The response of the upload request.
 # 	"""
 # 	container_info = manager._upload_config(id, await config.json())
-# 	if container_info.status.__contains__('not found'):
+# 	if container_info.status.__contains__('Container not found'):
 # 		return JSONResponse(status_code=404, content=vars(container_info))
 # 	else:
 # 		return JSONResponse(vars(container_info))

@@ -56,7 +56,7 @@ class DockerManager():
 			cls._client = docker.from_env()
 		return cls._instance
 
-	def start(self, config: dict) -> DockerInfo:
+	async def start(self, command: str, config: dict) -> DockerInfo:
 		"""
 		To be called by the REST API. Create and start a new docker container from the default image.
 
@@ -68,9 +68,11 @@ class DockerManager():
 		"""
 		container = self._create_container('bp2021image', use_gpu=False)
 		try:
-			return self._start_container(container.id, config)
+			# TODO: Error handling for failed upload
+			started_container = self._start_container(container.id, config)
 		except docker.errors.NotFound:
 			return DockerInfo(id=container.id, status=f'container not found: {container.id}')
+		return await self.execute_command(started_container.id, command)
 
 	def health(self, container_id: str) -> DockerInfo:
 		"""
