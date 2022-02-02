@@ -35,7 +35,7 @@ class DockerManager():
 	_client = None
 	_observers = []
 	# This dictionary is very important. It contains a list of commands that users can send to a Docker container.
-	allowed_commands = {
+	_allowed_commands = {
 		'training': 'python ./src/rl/training_scenario.py',
 		'exampleprinter': 'python ./src/monitoring/exampleprinter.py',
 		'monitoring': 'python ./src/monitoring/agent_monitoring/am_monitoring.py',
@@ -58,7 +58,7 @@ class DockerManager():
 
 	def start(self, config: dict) -> DockerInfo:
 		"""
-		To call by the REST API. It creates and starts a new docker cintainer from the default image.
+		To be called by the REST API. Create and start a new docker container from the default image.
 
 		Args:
 			config (dict): The config.json to replace the default one with.
@@ -74,7 +74,7 @@ class DockerManager():
 
 	def health(self, container_id: str) -> DockerInfo:
 		"""
-		To call by the REST API. It provides the current status of the specified container.
+		To be called by the REST API. Return the status of the specified container.
 
 		Args:
 			container_id (str): The id of the container.
@@ -90,27 +90,27 @@ class DockerManager():
 
 	async def execute_command(self, container_id: str, command_id: str) -> DockerInfo:
 		"""
-		Execute a command on the specified container.
+		To be called by the REST API. Execute a command on the specified container.
 
 		Args:
 			container_id (str): The id of the container.
-			command_id (str): The id of the command. Checked against self.allowed_commands.
+			command_id (str): The id of the command. Checked against self._allowed_commands.
 
 		Returns:
 			DockerInfo: A DockerInfo object containing the id of the container and a stream generator for the stdout of the command.
 		"""
-		if command_id not in self.allowed_commands:
+		if command_id not in self._allowed_commands:
 			print(f'Command with ID {command_id} not allowed')
 			return DockerInfo(id=container_id, status=f'command not allowed: {command_id}')
 
-		command = self.allowed_commands[command_id]
+		command = self._allowed_commands[command_id]
 		print(f'Executing command: {command}')
 		_, stream = self._client.containers.get(container_id).exec_run(cmd=command, stream=True)
 		return DockerInfo(id=container_id, status=self._container_status(container_id), stream=stream)
 
 	async def start_tensorboard(self, container_id: str) -> DockerInfo:
 		"""
-		Start a tensorboard in the specified container.
+		To be called by the REST API. Start a tensorboard session on the specified container.
 
 		Args:
 			container_id (str): The id of the container.
@@ -124,7 +124,8 @@ class DockerManager():
 
 	def get_container_data(self, container_id: str, container_path: str) -> DockerInfo:
 		"""
-		Return a data stream object that matches a .tar archive as well as a filename derived from the curent time and file-path.
+		To be called by the REST API.
+		Return a data stream object that matches a .tar archive as well as a filename derived from the curent time and the provided file-path.
 
 		Args:
 			container_id (str): The id of the container.
@@ -136,7 +137,26 @@ class DockerManager():
 		bits, _ = self._client.containers.get(container_id).get_archive(path=container_path)
 		return DockerInfo(container_id, data=f'archive_{container_path.rpartition("/")[2]}_{time.strftime("%b%d_%H-%M-%S")}', stream=bits)
 
-	def stop_container(self, container_id: str) -> DockerInfo:
+	def remove_container(self, container_id: str) -> DockerInfo:
+		"""
+		To be called by the REST API. Stop and remove a container.
+
+		Args:
+			container_id (str): The id of the container.
+
+		Returns:
+			DockerInfo: A JSON serializable object containing the id and the status of the container.
+		"""
+		print(f'Removing container: {container_id}')
+		try:
+			self._stop_container(container_id)
+			self._client.containers.get(container_id).remove()
+			return DockerInfo(id=container_id, status='removed')
+		except docker.errors.NotFound:
+			return DockerInfo(container_id, status=f'container not found: {container_id}')
+
+	# PRIVATE METHODS
+	def _stop_container(self, container_id: str) -> DockerInfo:
 		"""
 		Stop a running container.
 
@@ -152,46 +172,6 @@ class DockerManager():
 		self._client.containers.get(container_id).stop(timeout=10)
 
 		return DockerInfo(id=container_id, status=self._container_status(container_id))
-
-	def remove_container(self, container_id: str) -> DockerInfo:
-		"""
-		Remove and stop a container.
-
-		Args:
-			container_id (str): The id of the container.
-
-		Returns:
-			DockerInfo: A JSON serializable object containing the id and the status of the container.
-		"""
-		print(f'Removing container: {container_id}')
-		try:
-			self.stop_container(container_id)
-			self._client.containers.get(container_id).remove()
-			return DockerInfo(id=container_id, status='removed')
-		except docker.errors.NotFound:
-			return DockerInfo(container_id, status=f'container not found: {container_id}')
-
-	def attach(self, id: int, observer) -> None:
-		"""
-		Attach an observer to the container.
-		"""
-		observer.implements()
-		self._observers[id] = observer
-
-	def notify(self, message_id, message_text) -> None:
-		"""
-		Notify all observers about an event, events should be: the container is done, the container stopped working (any reason).
-		The observer will implement observer.update(message_id, message_text)
-
-		Args:
-			message_id (int): The id of the event., so the system knows how to hande it.
-			message_text (str): This is the message that will be displayed to the user.
-		"""
-		allowed_message_ids = [0, 1]
-		assert message_id in allowed_message_ids, f'The message id is not allowed: {message_id}'
-
-		for observer in self._observers:
-			observer.update(message_id, message_text)
 
 	def _build_image(self, imagename: str = 'bp2021image') -> str:
 		"""
@@ -333,6 +313,30 @@ class DockerManager():
 			os.remove('config.json')
 			os.remove('config.tar')
 		return DockerInfo(id=container_id, data=ok)
+
+# OBSERVER
+	def attach(self, id: int, observer) -> None:
+		"""
+		Attach an observer to the container.
+		"""
+		observer.implements()
+		self._observers[id] = observer
+
+	def notify(self, message_id, message_text) -> None:
+		"""
+		Notify all observers about an event, events should be: the container is done, the container stopped working (any reason).
+		The observer will implement observer.update(message_id, message_text)
+
+		Args:
+			message_id (int): The id of the event., so the system knows how to hande it.
+			message_text (str): This is the message that will be displayed to the user.
+		"""
+		allowed_message_ids = [0, 1]
+		assert message_id in allowed_message_ids, f'The message id is not allowed: {message_id}'
+
+		for observer in self._observers:
+			observer.update(message_id, message_text)
+# END OBSERVER
 
 
 if __name__ == '__main__':

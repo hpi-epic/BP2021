@@ -90,24 +90,6 @@ async def execute_command(id: str, command: str) -> StreamingResponse:
 	return StreamingResponse(container_info.stream)
 
 
-@app.get('/stop/')
-async def stop_container(id: str) -> JSONResponse:
-	"""
-	Stop the container. Does not remove it.
-
-	Args:
-		id (str): The id of the container.
-
-	Returns:
-		JSONResponse: The response of the stop request encapsuled in a DockerInfo JSON. Status will be 'stopped' if successful.
-	"""
-	container_info = manager.stop_container(id)
-	if container_info.status.__contains__('not found'):
-		return JSONResponse(status_code=404, content=vars(container_info))
-	else:
-		return JSONResponse(vars(container_info))
-
-
 @app.get('/data/tensorboard/')
 async def get_tensorboard_link(id: str) -> JSONResponse:
 	"""
@@ -139,6 +121,25 @@ async def remove_container(id: str) -> JSONResponse:
 		return JSONResponse(status_code=404, content=vars(container_info))
 	else:
 		return JSONResponse(vars(container_info))
+
+
+# Route kept, but functionality should be integrated with /remove
+# @app.get('/stop/')
+# async def stop_container(id: str) -> JSONResponse:
+# 	"""
+# 	Stop the container. Does not remove it.
+
+# 	Args:
+# 		id (str): The id of the container.
+
+# 	Returns:
+# 		JSONResponse: The response of the stop request encapsuled in a DockerInfo JSON. Status will be 'stopped' if successful.
+# 	"""
+# 	container_info = manager._stop_container(id)
+# 	if container_info.status.__contains__('not found'):
+# 		return JSONResponse(status_code=404, content=vars(container_info))
+# 	else:
+# 		return JSONResponse(vars(container_info))
 
 
 # Route kept, but shouldn't be necessary
