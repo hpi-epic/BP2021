@@ -3,7 +3,7 @@
 from docker_manager import DockerManager
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse, StreamingResponse
-
+import uvicorn
 # This file should expose a RESTful api for using the docker container with the following routes:
 # POST /start/<docker_id>
 # GET /health/<docker_id>
@@ -114,6 +114,15 @@ async def remove_container(id: str) -> JSONResponse:
 		return JSONResponse(status_code=404, content=vars(container_info))
 	else:
 		return JSONResponse(vars(container_info))
+
+
+@app.get('/test')
+async def test():
+	return JSONResponse({'id':'this'})
+
+
+if __name__ == '__main__':
+	uvicorn.run('app:app', host='0.0.0.0', port=8000)
 
 
 # Route kept, but shouldn't be used anymore due to security concerns
