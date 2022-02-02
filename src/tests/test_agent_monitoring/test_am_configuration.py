@@ -10,6 +10,7 @@ import market.circular.circular_sim_market as circular_market
 import market.linear.linear_sim_market as linear_market
 import monitoring.agent_monitoring.am_configuration as am_configuration
 import monitoring.agent_monitoring.am_monitoring as monitoring
+import rl.actorcritic_agent as actorcritic_agent
 
 monitor = monitoring.Monitor()
 
@@ -25,7 +26,7 @@ def setup_function(function):
 def teardown_module(module):
 	for file_name in os.listdir(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir, 'results', 'monitoring')):
 		if re.match('test_*', file_name):
-			assert False, 'file writing was not mocked or a created file was not removed after the test!'
+			assert False, 'Test files were not mocked correctly'
 
 
 def test_init_default_values():
@@ -135,6 +136,51 @@ def test_setting_market_not_agents():
 	monitor.configurator.setup_monitoring(marketplace=circular_market.CircularEconomyMonopolyScenario)
 
 
+correct_setup_monitoring_testcases = [
+	({'marketplace': linear_market.ClassicScenario,
+		'agents': [(vendors.QLearningLEAgent, ['ClassicScenario_QLearningLEAgent.dat'])]}),
+	({'marketplace': circular_market.CircularEconomyRebuyPriceMonopolyScenario,
+		'agents': [(vendors.QLearningCERebuyAgent,
+		['CircularEconomyRebuyPriceMonopolyScenario_QLearningCERebuyAgent.dat'])]}),
+	({'marketplace': circular_market.CircularEconomyRebuyPriceMonopolyScenario,
+		'agents': [(actorcritic_agent.ContinuosActorCriticAgentEstimatingStd,
+		['actor_parametersCircularEconomyRebuyPriceMonopolyScenario_ContinuosActorCriticAgentEstimatingStd.dat'])]}),
+	({'marketplace': circular_market.CircularEconomyRebuyPriceOneCompetitor,
+		'agents': [(actorcritic_agent.ContinuosActorCriticAgentFixedOneStd,
+		['actor_parametersCircularEconomyRebuyPriceOneCompetitor_ContinuosActorCriticAgentFixedOneStd.dat'])]}),
+	({'marketplace': circular_market.CircularEconomyRebuyPriceOneCompetitor,
+		'agents': [(actorcritic_agent.DiscreteACACircularEconomyRebuy,
+		['actor_parametersCircularEconomyRebuyPriceOneCompetitor_DiscreteACACircularEconomyRebuy.dat'])]}),
+	({'marketplace': circular_market.CircularEconomyRebuyPriceOneCompetitor,
+		'agents': [(vendors.QLearningCERebuyAgent,
+		['CircularEconomyRebuyPriceOneCompetitor_QLearningCERebuyAgent.dat'])]})
+]
+
+
+@pytest.mark.parametrize('parameters', correct_setup_monitoring_testcases)
+def test_correct_setup_monitoring_parametrized(parameters):
+	dict = {
+		'enable_live_draw': None,
+		'episodes': None,
+		'plot_interval': None,
+		'marketplace': None,
+		'agents': None,
+		'subfolder_name': None
+	}
+	# replace the given parameters
+	for key, val in parameters.items():
+		dict[key] = val
+
+	monitor.configurator.setup_monitoring(
+		enable_live_draw=dict['enable_live_draw'],
+		episodes=dict['episodes'],
+		plot_interval=dict['plot_interval'],
+		marketplace=dict['marketplace'],
+		agents=dict['agents'],
+		subfolder_name=dict['subfolder_name']
+	)
+
+
 incorrect_setup_monitoring_testcases = [
 	({'enable_live_draw': 1}, 'enable_live_draw must be a Boolean'),
 	({'episodes': 'Hello World'}, 'episodes must be of type int'),
@@ -162,7 +208,30 @@ incorrect_setup_monitoring_testcases = [
 		'the agent and marketplace must be of the same economy type (Linear/Circular)'),
 	({'marketplace': linear_market.ClassicScenario, 'agents': [(vendors.FixedPriceCEAgent, [])]},
 		'the agent and marketplace must be of the same economy type (Linear/Circular)'),
-	({'subfolder_name': 1}, 'subfolder_name must be of type str')
+	({'subfolder_name': 1}, 'subfolder_name must be of type str'),
+	({'marketplace': linear_market.ClassicScenario,
+		'agents': [(vendors.QLearningCEAgent, ['ClassicScenario_QLearningLEAgent.dat'])]},
+		'the agent and marketplace must be of the same economy type (Linear/Circular)'),
+	({'marketplace': linear_market.MultiCompetitorScenario,
+		'agents': [(vendors.QLearningLEAgent,
+		['CircularEconomyRebuyPriceMonopolyScenario_QLearningCERebuyAgent.dat'])]},
+		'the modelfile is not compatible with the agent you tried to instantiate'),
+	({'marketplace': circular_market.CircularEconomyRebuyPriceMonopolyScenario,
+		'agents': [(actorcritic_agent.ContinuosActorCriticAgentFixedOneStd,
+		['actor_parametersCircularEconomyRebuyPriceMonopolyScenario_ContinuosActorCriticAgentEstimatingStd.dat'])]},
+		'the modelfile is not compatible with the agent you tried to instantiate'),
+	({'marketplace': circular_market.CircularEconomyRebuyPriceOneCompetitor,
+		'agents': [(actorcritic_agent.DiscreteACACircularEconomyRebuy,
+		['actor_parametersCircularEconomyRebuyPriceOneCompetitor_ContinuosActorCriticAgentFixedOneStd.dat'])]},
+		'the modelfile is not compatible with the agent you tried to instantiate'),
+	({'marketplace': circular_market.CircularEconomyMonopolyScenario,
+		'agents': [(actorcritic_agent.DiscreteACACircularEconomy,
+		['actor_parametersCircularEconomyRebuyPriceOneCompetitor_DiscreteACACircularEconomyRebuy.dat'])]},
+		'the modelfile is not compatible with the agent you tried to instantiate'),
+	({'marketplace': circular_market.CircularEconomyMonopolyScenario,
+		'agents': [(vendors.QLearningCERebuyAgent,
+		['CircularEconomyRebuyPriceOneCompetitor_QLearningCERebuyAgent.dat'])]},
+		'the modelfile is not compatible with the agent you tried to instantiate')
 ]
 
 
@@ -180,7 +249,7 @@ def test_incorrect_setup_monitoring(parameters, expected_message):
 	for key, val in parameters.items():
 		dict[key] = val
 
-	with pytest.raises(AssertionError) as assertion_message:
+	with pytest.raises(Exception) as assertion_message:
 		monitor.configurator.setup_monitoring(
 			enable_live_draw=dict['enable_live_draw'],
 			episodes=dict['episodes'],
