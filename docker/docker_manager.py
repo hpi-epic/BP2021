@@ -38,10 +38,7 @@ class DockerManager():
 	_allowed_commands = {
 		'training': 'python3 ./src/rl/training_scenario.py',
 		'exampleprinter': 'python3 ./src/monitoring/exampleprinter.py',
-		'monitoring': 'python3 ./src/monitoring/agent_monitoring/am_monitoring.py',
-		# for better readability, define commands users might want to perform above this comment and internal commands below
-		'mkdirRuns': 'mkdir ./results/runs/',
-		'tensorboard': 'tensorboard serve --logdir ./results/runs --bind_all'
+		'monitoring': 'python3 ./src/monitoring/agent_monitoring/am_monitoring.py'
 	}
 
 	def __new__(cls):
@@ -111,7 +108,11 @@ class DockerManager():
 		_, stream = self._client.containers.get(container_id).exec_run(cmd=command, stream=True)
 		return DockerInfo(id=container_id, status=self._container_status(container_id))
 
-	async def start_tensorboard(self, container_id: str) -> DockerInfo:
+	# TODO: This function should be refactored in two ways after other features were added:
+	# The 'mkdir' command should no longer be necessary after the Actorcritic-workflow PR.
+	# When we add the possibility to run multiple containers at once, we need to change the port that is exposed in each container,
+	# 	which also leads to a different port in the return value here.
+	def start_tensorboard(self, container_id: str) -> DockerInfo:
 		"""
 		To be called by the REST API. Start a tensorboard session on the specified container.
 
@@ -121,9 +122,9 @@ class DockerManager():
 		Returns:
 			DockerInfo: A DockerInfo object containing the id of the container and a link to the tensorboard in the data field.
 		"""
-		await self._execute_command(container_id, 'mkdirRuns')
-		await self._execute_command(container_id, 'tensorboard')
-		return DockerInfo(container_id, data='http://localhost:6006')
+		self._client.containers.get(container_id).exec_run(cmd='mkdir ./results/runs/')
+		self._client.containers.get(container_id).exec_run(cmd='tensorboard serve --logdir ./results/runs --bind_all')
+		return DockerInfo(container_id, status=self._container_status(container_id), data='http://localhost:6006')
 
 	def get_container_data(self, container_id: str, container_path: str) -> DockerInfo:
 		"""
