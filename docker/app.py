@@ -2,7 +2,7 @@
 
 from docker_manager import DockerManager
 from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse, RedirectResponse, StreamingResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 
 # This file should expose a RESTful api for using the docker container with the following routes:
 # POST /start/<docker_id>
@@ -121,7 +121,7 @@ async def stop_container(id: str) -> JSONResponse:
 		id (str): The id of the container.
 
 	Returns:
-		JSONResponse: The response of the stop request encapsuled in a DockerInfo JSON. status will be 'stopped' if successful.
+		JSONResponse: The response of the stop request encapsuled in a DockerInfo JSON. Status will be 'stopped' if successful.
 	"""
 	container_info = manager.stop_container(id)
 	if container_info.status == 'not found':
@@ -131,7 +131,7 @@ async def stop_container(id: str) -> JSONResponse:
 
 
 @app.get('/data/tensorboard/')
-async def get_tensorboard_link(id: str) -> RedirectResponse:
+async def get_tensorboard_link(id: str) -> JSONResponse:
 	"""
 	Start a tensorboard session in the container.
 
@@ -139,10 +139,10 @@ async def get_tensorboard_link(id: str) -> RedirectResponse:
 		id (str): The id of the container.
 
 	Returns:
-		RedirectResponse: A redirect to the tensorboard endpoint.
+		JSONResponse: The response of the tensorboard request encapsuled in a DockerInfo JSON. A link is in the data field.
 	"""
 	tb_link = await manager.start_tensorboard(id)
-	return RedirectResponse(tb_link.data)
+	return JSONResponse(vars(tb_link))
 
 
 @app.get('/remove/')
@@ -154,7 +154,7 @@ async def remove_container(id: str) -> JSONResponse:
 		id (str): The id of the container.
 
 	Returns:
-		JSONResponse: The response of the remove request encapsuled in a DockerInfo JSON. status will be 'removed' if successful.
+		JSONResponse: The response of the remove request encapsuled in a DockerInfo JSON. Status will be 'removed' if successful.
 	"""
 	container_info = manager.remove_container(id)
 	if container_info.status == 'not found':

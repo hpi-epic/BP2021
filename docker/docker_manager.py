@@ -110,7 +110,7 @@ class DockerManager():
 		_, stream = self._client.containers.get(container_id).exec_run(cmd=command, stream=True)
 		return DockerInfo(id=container_id, stream=stream)
 
-	async def start_tensorboard(self, container_id: str) -> str:
+	async def start_tensorboard(self, container_id: str) -> DockerInfo:
 		"""
 		Start a tensorboard in the specified container.
 
@@ -118,7 +118,7 @@ class DockerManager():
 			container_id (str): The id of the container.
 
 		Returns:
-			str: The link to the tensorboard session.
+			DockerInfo: A DockerInfo object containing the id of the container and a link to the tensorboard in the data field.
 		"""
 		await self.execute_command(container_id, 'mkdirRuns')
 		await self.execute_command(container_id, 'tensorboard')
