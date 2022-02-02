@@ -9,7 +9,7 @@ from fastapi.responses import JSONResponse, StreamingResponse
 # GET /health/<docker_id>
 # GET /data/<docker_id>
 # GET /data/tensorboard/<docker_id>
-# GET /kill/<docker_id>
+# GET /remove/<docker_id>
 
 # before first use on a new machine/ with changes to the environment or the src folder,
 # please call run the docker_manager.py file. It initializes the image and takes ages.
@@ -46,9 +46,9 @@ async def start_container(command: str, config: Request) -> JSONResponse:
 @app.get('/health/')
 async def is_container_alive(id: str) -> JSONResponse:
 	"""
-	Check the status of the container.
+	Check the status of a container.
 
-	Most other commands also return the status of the container in the `status` field.
+	Most other commands also return the status of the container in the `status` field, or in their header.
 
 	Args:
 		id (str): The id of the container.
@@ -89,7 +89,7 @@ async def get_container_data(id: str, path: str = '/app/results') -> StreamingRe
 @app.get('/data/tensorboard/')
 async def get_tensorboard_link(id: str) -> JSONResponse:
 	"""
-	Start a tensorboard session in the container.
+	Start a tensorboard session in a container.
 
 	Args:
 		id (str): The id of the container.
@@ -104,7 +104,7 @@ async def get_tensorboard_link(id: str) -> JSONResponse:
 @app.get('/remove/')
 async def remove_container(id: str) -> JSONResponse:
 	"""
-	Stop and remove the container.
+	Stop and remove a container.
 
 	Args:
 		id (str): The id of the container.
