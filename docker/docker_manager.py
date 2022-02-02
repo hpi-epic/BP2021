@@ -66,7 +66,6 @@ class DockerManager():
 		Returns:
 			DockerInfo: A JSON serializable object containing the id and the status of the new container.
 		"""
-		print('Creating container...')
 		container = self._create_container('bp2021image', use_gpu=False)
 		try:
 			return self._start_container(container.id, config)
@@ -123,7 +122,7 @@ class DockerManager():
 		await self.execute_command(container_id, 'tensorboard')
 		return DockerInfo(container_id, data='http://localhost:6006')
 
-	def get_container_data(self, container_id: str, container_path: str = '/app/results') -> DockerInfo:
+	def get_container_data(self, container_id: str, container_path: str) -> DockerInfo:
 		"""
 		Return a data stream object that matches a .tar archive as well as a filename derived from the curent time and file-path.
 
@@ -249,7 +248,7 @@ class DockerManager():
 
 		return DockerInfo(id=container.id, status=self._container_status(container.id))
 
-	def _start_container(self, container_id: str, config: dict = {}) -> DockerInfo:
+	def _start_container(self, container_id: str, config: dict) -> DockerInfo:
 		"""
 		Start a container for the given image.
 
@@ -268,7 +267,7 @@ class DockerManager():
 		print(f'Starting container: {container_id}')
 		container = self._client.containers.get(container_id)
 		container.start()
-		upload_status = self.upload_config(container_id, config).data
+		upload_status = self._upload_config(container_id, config).data
 		if not upload_status:
 			print('Failed to upload configuration file!')
 		return DockerInfo(id=container_id, status=self._container_status(container.id), data=upload_status)
@@ -296,7 +295,7 @@ class DockerManager():
 		"""
 		self._client.images.get(image_id).remove()
 
-	def upload_config(self, container_id: str, config_dict: dict = {}) -> DockerInfo:
+	def _upload_config(self, container_id: str, config_dict: dict) -> DockerInfo:
 		"""
 		Upload a file to the specified container.
 

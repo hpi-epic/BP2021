@@ -54,21 +54,18 @@ async def is_container_alive(id: str) -> JSONResponse:
 
 
 @app.get('/data/')
-async def get_container_data(id: str, path: str = None) -> StreamingResponse:
+async def get_container_data(id: str, path: str = '/app/results') -> StreamingResponse:
 	"""
 	Extract a folder or file from a container.
 
 	Args:
 		id (str): The id of the container.
-		path (str): The path of the folder or file that should be extracted.
+		path (str, optional): The path of the folder or file that should be extracted. Defaults to '/app/results'.
 
 	Returns:
 		StreamingResponse: A stream generator that will download the requested path as a .tar archive.
 	"""
-	if path:
-		container_info = manager.get_container_data(id, path)
-	else:
-		container_info = manager.get_container_data(id)
+	container_info = manager.get_container_data(id)
 	return StreamingResponse(container_info.stream,
 		headers={'Content-Disposition': f'filename={container_info.data}.tar'},
 		media_type='application/x-tar')
@@ -91,25 +88,6 @@ async def execute_command(id: str, command: str) -> StreamingResponse:
 	# 	return JSONResponse(status_code=404, content=vars(container_info))
 	# return JSONResponse(vars(container_info))
 	return StreamingResponse(container_info.stream)
-
-
-@app.post('/upload')
-async def upload_config(id: str, config: Request) -> JSONResponse:
-	"""
-	Upload a config.json to the container.
-
-	Args:
-		id (str): The id of the container.
-		config (Request): The config.json that should be uploaded.
-
-	Returns:
-		JSONResponse: The response of the upload request.
-	"""
-	container_info = manager.upload_config(id, await config.json())
-	if container_info.status.__contains__('not found'):
-		return JSONResponse(status_code=404, content=vars(container_info))
-	else:
-		return JSONResponse(vars(container_info))
 
 
 @app.get('/stop/')
@@ -161,3 +139,23 @@ async def remove_container(id: str) -> JSONResponse:
 		return JSONResponse(status_code=404, content=vars(container_info))
 	else:
 		return JSONResponse(vars(container_info))
+
+
+# Route kept, but shouldn't be necessary
+# @app.post('/upload')
+# async def upload_config(id: str, config: Request) -> JSONResponse:
+# 	"""
+# 	Upload a config.json to the container.
+
+# 	Args:
+# 		id (str): The id of the container.
+# 		config (Request): The config.json that should be uploaded.
+
+# 	Returns:
+# 		JSONResponse: The response of the upload request.
+# 	"""
+# 	container_info = manager._upload_config(id, await config.json())
+# 	if container_info.status.__contains__('not found'):
+# 		return JSONResponse(status_code=404, content=vars(container_info))
+# 	else:
+# 		return JSONResponse(vars(container_info))
