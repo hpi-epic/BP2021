@@ -15,6 +15,14 @@ from agents.vendors import ReinforcementLearningAgent
 
 class RLTrainer(ABC):
 	def __init__(self, marketplace_class, agent_class, log_dir_prepend=''):
+		"""
+		Initialize an RLTrainer to train one specific configuration.
+
+		Args:
+			marketplace_class (subclass of SimMarket): The market scenario you want to train.
+			agent_class (subclass of RLAgent): The agent you want to train.
+			log_dir_prepend (str, optional): A prefix that is written before the saved data. Defaults to ''.
+		"""
 		# TODO: assert Agent and marketplace fit together
 		assert issubclass(agent_class, ReinforcementLearningAgent)
 		if issubclass(agent_class, actorcritic_agent.ContinuosActorCriticAgent):
@@ -36,7 +44,7 @@ class RLTrainer(ABC):
 		self.initialize_io_related(log_dir_prepend)
 		self.reset_time_tracker()
 
-	def _signal_handler(self, signum, frame):  # pragma: no cover
+	def _signal_handler(self, signum, frame) -> None:  # pragma: no cover
 		"""
 		Handle any interruptions to the running process, such as a `KeyboardInterrupt`-event.
 		"""
@@ -44,7 +52,14 @@ class RLTrainer(ABC):
 		self._end_of_training()
 		sys.exit(0)
 
-	def initialize_io_related(self, log_dir_prepend):
+	def initialize_io_related(self, log_dir_prepend) -> None:
+		"""
+		Initializes the local variables self.curr_time, self.signature, self.writer, self.model_path
+		which are needed for saving the models and writing to tensorboard
+
+		Args:
+			log_dir_prepend (str): A prefix that is written before the saved data
+		"""
 		ut.ensure_results_folders_exist()
 		self.curr_time = time.strftime('%b%d_%H-%M-%S')
 		self.signature = f'{type(self.RL_agent).__name__}'
@@ -52,11 +67,21 @@ class RLTrainer(ABC):
 		path_name = f'{self.signature}_{self.curr_time}'
 		self.model_path = os.path.join('results', 'trainedModels', log_dir_prepend + path_name)
 
-	def reset_time_tracker(self):
+	def reset_time_tracker(self) -> None:
 		self.frame_number_last_speed_update = 0
 		self.time_last_speed_update = time.time()
 
 	def calculate_dict_average(self, all_dicts) -> dict:
+		"""
+		Takes a list of dictionaries and calculates the average for each entry over all dicts.
+		Assumes that all dicts have the same shape.
+
+		Args:
+			all_dicts (list of dicts): The dictionaries which entries you want to average
+
+		Returns:
+			dict: A dict of the same shape containing the average in each entry.
+		"""
 		sliced_dicts = all_dicts[-100:]
 		averaged_info = sliced_dicts[0]
 		for i, next_dict in enumerate(sliced_dicts):
@@ -72,13 +97,20 @@ class RLTrainer(ABC):
 		self.time_last_speed_update = time.time()
 		return speed
 
-	def consider_print_info(self, frame_idx, episode_number, averaged_info, epsilon=None):
+	def consider_print_info(self, frame_idx, episode_number, averaged_info, epsilon=None) -> None:
 		if (episode_number) % 10 == 0:
 			speed = self.calculate_frames_per_second(frame_idx)
 			print(f"{frame_idx + 1}: {episode_number} episodes trained, mean return {averaged_info['profits/all']['vendor_0']:.3f}, " + (
 				f'eps {epsilon:.2f}, ' if epsilon is not None else '') + f'speed {speed:.2f} f/s')
 
-	def consider_update_best_model(self, averaged_info):
+	def consider_update_best_model(self, averaged_info) -> None:
+		"""
+		Evaluates if the current model is the best one until now.
+		If it is, it updates the high score and saves the model.
+
+		Args:
+			averaged_info (dict): A dictionary containing averaged_info['profits/all']['vendor_0'] to evaluate the performance.
+		"""
 		mean_reward = averaged_info['profits/all']['vendor_0']
 		if self.best_mean_reward is None:
 			self.best_mean_reward = mean_reward - 1
@@ -89,7 +121,7 @@ class RLTrainer(ABC):
 				print(f'Best reward updated {self.best_mean_reward:.3f} -> {mean_reward:.3f}')
 			self.best_mean_reward = mean_reward
 
-	def consider_sync_tgt_net(self, frame_idx):
+	def consider_sync_tgt_net(self, frame_idx) -> None:
 		if (frame_idx + 1) % config.SYNC_TARGET_FRAMES == 0:
 			self.RL_agent.synchronize_tgt_net()
 
@@ -97,7 +129,7 @@ class RLTrainer(ABC):
 	def train_agent(self, maxsteps=2 * config.EPSILON_DECAY_LAST_FRAME) -> None:
 		raise NotImplementedError('This method is abstract. Use a subclass')
 
-	def _end_of_training(self):
+	def _end_of_training(self) -> None:
 		"""
 		Inform the user of the best_mean_reward the agent achieved during training.
 		"""

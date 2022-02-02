@@ -10,10 +10,10 @@ from rl.training import RLTrainer
 
 
 class ActorCriticTrainer(RLTrainer):
-	def trainer_agent_fit(self):
+	def trainer_agent_fit(self) -> bool:
 		return isinstance(self.RL_agent, actorcritic_agent.ActorCriticAgent)
 
-	def choose_random_envs(self, total_envs):
+	def choose_random_envs(self, total_envs) -> set:
 		"""
 		This method samples config.BATCH_SIZE distinct numbers out of 0, ..., total_envs - 1
 
@@ -30,7 +30,7 @@ class ActorCriticTrainer(RLTrainer):
 				chosen_envs.add(number)
 		return chosen_envs
 
-	def train_agent(self, number_of_training_steps=200, verbose=False, total_envs=128):
+	def train_agent(self, number_of_training_steps=200, verbose=False, total_envs=128) -> None:
 		"""
 		This is the central method you need to start training of actorcritic_agent.
 		You can customize the training by several parameters.

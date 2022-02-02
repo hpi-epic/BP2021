@@ -7,7 +7,7 @@ from rl.training import RLTrainer
 
 
 class QLearningTrainer(RLTrainer):
-	def trainer_agent_fit(self):
+	def trainer_agent_fit(self) -> bool:
 		return isinstance(self.RL_agent, vendors.QLearningAgent), f'the passed agent must be a QLearningAgent: {self.RL_agent}'
 
 	def train_agent(self, number_of_training_steps=2 * config.EPSILON_DECAY_LAST_FRAME) -> None:
