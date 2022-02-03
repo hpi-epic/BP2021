@@ -49,7 +49,7 @@ def download(request):
 		if response:
 			# save data from api and make it available for the user
 			path = save_data(response, wanted_container)
-			return download_file(path)
+			return download_file(path, wanted_container)
 	all_containers = Container.objects.all()
 	return render(request, 'download.html', {'all_saved_containers': all_containers})
 
