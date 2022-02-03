@@ -10,14 +10,14 @@ table {
 	border: none;
 	border-radius: 5px;
 }
-.health_check_button {
-	background-color: #8de39a;
-}
-.stop_button {
-	background-color: #e39a8d;
+.button_row {
+	text-align: center;
 }
 .data_button {
 	background-color: #8dc1e3;
+}
+.health_check_button {
+	background-color: #8de39a;
 }
 .launch_button {
 	background-color: #8de3a0;
@@ -25,6 +25,12 @@ table {
 .observe_button {
 	background-color: #f1e681
 }
-.button_row {
-	text-align: center;
+.selection_list {
+	margin-left: 5px;
+	border: none;
+	border-radius: 5px;
+	padding: 5px 0px 5px 0px;
+}
+.stop_button {
+	background-color: #e39a8d;
 }

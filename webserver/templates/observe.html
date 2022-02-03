@@ -35,7 +35,7 @@
 						<td class="button_row" >
 							<form method="post" enctype="multipart/form-data">
 								{% csrf_token %}
-								<button class="action_button stop_button" name="stop" value="{{ container.container_id }}" type="submit">stop and remove</button>
+								<button class="action_button stop_button" name="remove" value="{{ container.container_id }}" type="submit">stop and remove</button>
 							</form>
 						</td>
 						<!-- <td class="button_row" >

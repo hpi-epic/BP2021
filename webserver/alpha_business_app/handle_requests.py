@@ -6,8 +6,8 @@ from .models import Container
 DOCKER_API = 'http://192.168.159.134:8000'  # http://127.0.0.1:8000'
 
 
-def send_post_request(route: str, body) -> dict:
-	response = requests.post(DOCKER_API + '/' + route, json=body)
+def send_post_request(route: str, body: dict, command: str) -> dict:
+	response = requests.post(DOCKER_API + '/' + route, json=body, params={'command': command})
 	if response.ok:
 		return response.json()
 	else:

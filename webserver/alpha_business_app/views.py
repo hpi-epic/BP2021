@@ -32,8 +32,8 @@ def observe(request):
 			response = send_get_request('health', request.POST)
 			if response:
 				update_container(response['id'], {'last_check_at': timezone.now(), 'health_status': response['status']})
-		if 'stop' in request.POST:
-			response = send_get_request('stop', request.POST)
+		if 'remove' in request.POST:
+			response = send_get_request('remove', request.POST)
 			if response:
 				# remove the docker container from the database
 				# TODO add a success message for the user
@@ -55,13 +55,14 @@ def download(request):
 
 
 def start_container(request):
+	print(request.POST)
 	if request.method == 'POST':
 		# the start button was pressed
 		config_file = request.POST['filename']
 		# read the right config file
 		with open(os.path.join('configurations', config_file), 'r') as file:
 			config_dict = json.load(file)
-			response = send_post_request('start', config_dict)
+			response = send_post_request('start', config_dict, request.POST['command_selection'])
 		if response:
 			# TODO add success banner, with new container id
 			# put container into database

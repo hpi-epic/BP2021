@@ -22,6 +22,11 @@
 						<td>
 							<form method="post" enctype="multipart/form-data">
 								{% csrf_token %}
+								<select class="selection_list" name="command_selection">
+									<option value="training">training</option>
+									<option value="exampleprinter">exampleprinter</option>
+									<option value="monitoring">monitoring</option>
+								</select>
 								<button class="action_button health_check_button" name="filename" value="{{ file_name }}" type="submit">launch</button>
 							</form>
 						</td>
