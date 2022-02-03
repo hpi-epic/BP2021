@@ -19,7 +19,7 @@ def upload(request):
 	if request.method == 'POST':
 		form = UploadFileForm(request.POST, request.FILES)
 		handle_uploaded_file(request.FILES['upload_config'])
-		return HttpResponseRedirect('/observe')
+		return HttpResponseRedirect('/start_container')
 	else:
 		form = UploadFileForm()
 	return render(request, 'upload.html', {'form': form})
@@ -66,7 +66,9 @@ def start_container(request):
 		if response:
 			# TODO add success banner, with new container id
 			# put container into database
-			Container.objects.create(container_id=response['id'], config_file=config_dict)
+			container_name = request.POST['experiment_name']
+			container_name = container_name if container_name != '' else response['id']
+			Container.objects.create(container_id=response['id'], config_file=config_dict, name=container_name)
 			return HttpResponseRedirect('/observe')
 		else:
 			# TODO tell the user it didnt work

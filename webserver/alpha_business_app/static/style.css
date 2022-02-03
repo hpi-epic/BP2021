@@ -16,6 +16,10 @@ table {
 .data_button {
 	background-color: #8dc1e3;
 }
+.experiment_name {
+	border-radius: 5px;
+	border-color: black;
+}
 .health_check_button {
 	background-color: #8de39a;
 }
@@ -26,10 +30,10 @@ table {
 	background-color: #f1e681
 }
 .selection_list {
-	margin-left: 5px;
+	margin: 5px;
 	border: none;
 	border-radius: 5px;
-	padding: 5px 0px 5px 0px;
+	padding: 5px 0 5px 0;
 }
 .stop_button {
 	background-color: #e39a8d;
