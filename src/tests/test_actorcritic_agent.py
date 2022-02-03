@@ -11,10 +11,11 @@ abstract_agent_classes_testcases = [
 ]
 
 
-@pytest.mark.parametrize('actorcritic_agent', abstract_agent_classes_testcases)
-def test_abstract_agent_classes(actorcritic_agent):
-	with pytest.raises(TypeError):
-		actorcritic_agent()
+@pytest.mark.parametrize('agent', abstract_agent_classes_testcases)
+def test_abstract_agent_classes(agent):
+	with pytest.raises(TypeError) as error_message:
+		agent()
+	assert 'Can\'t instantiate abstract class' in str(error_message.value)
 
 
 agent_initialization_testcases = [

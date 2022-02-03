@@ -16,6 +16,7 @@ from monitoring.svg_manipulation import SVGManipulator
 class ExamplePrinter():
 
 	def __init__(self):
+		ut.ensure_results_folders_exist()
 		self.marketplace = circular_market.CircularEconomyRebuyPriceOneCompetitor()
 		self.agent = vendors.RuleBasedCERebuyAgent()
 		# Signal handler for e.g. KeyboardInterrupt

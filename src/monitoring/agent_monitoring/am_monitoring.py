@@ -6,7 +6,7 @@ import monitoring.agent_monitoring.am_configuration as am_configuration
 import monitoring.agent_monitoring.am_evaluation as am_evaluation
 
 # import agents.vendors as vendors
-# import market.linear_market.linear_sim_market as linear_market
+# import market.linear.linear_sim_market as linear_market
 
 
 class Monitor():

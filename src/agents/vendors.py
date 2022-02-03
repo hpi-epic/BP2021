@@ -32,7 +32,7 @@ class Agent(ABC):
 		return class_name(*args)
 
 	@abstractmethod
-	def policy(self, observation, epsilon=0):  # pragma: no cover
+	def policy(self, observation, *_):  # pragma: no cover
 		raise NotImplementedError('This method is abstract. Use a subclass')
 
 
@@ -49,7 +49,32 @@ class RuleBasedAgent(Agent, ABC):
 
 
 class ReinforcementLearningAgent(Agent, ABC):
-	pass
+	@abstractmethod
+	def __init__(self, n_observations, n_actions, load_path=''):
+		"""
+		Every ReinforcementLearningAgent must offer initialization by these parameters
+
+		Args:
+			n_observations (int): length of input (observation) vector
+			n_actions (int): length of output vector
+			load_path (str, optional): The path to load existing parameters of a network corresponding to this agent.
+			Note that this only refers to a network responsible for behaviour.
+			Assistance networks may be initialized differently.
+			Defaults to ''.
+
+		Raises:
+			NotImplementedError: This is an abstract interface definition
+		"""
+		raise NotImplementedError('This method is abstract. Use a subclass')
+
+	@abstractmethod
+	def synchronize_tgt_net(self):
+		"""
+		This method writes the parameter from the value estimating net to it's target net.
+		Call this method regularly during training.
+		Having a target net solves problems occuring due to oscillation.
+		"""
+		raise NotImplementedError('This method is abstract. Use a subclass')
 
 
 class HumanPlayer(RuleBasedAgent, ABC):
@@ -219,7 +244,7 @@ class QLearningAgent(ReinforcementLearningAgent, ABC):
 	# If you set an optim, this means you want training.
 	# Give no optim if you don't want training.
 	def __init__(
-		self, n_observation,
+		self, n_observations,
 		n_actions,
 		optim=None,
 		device='cuda' if torch.cuda.is_available() else 'cpu', load_path=None, name='q_learning'):
@@ -229,12 +254,12 @@ class QLearningAgent(ReinforcementLearningAgent, ABC):
 		self.optimizer = None
 		self.name = name
 		print(f'I initiate a QLearningAgent using {self.device} device')
-		self.net = model.simple_network(n_observation, n_actions).to(self.device)
+		self.net = model.simple_network(n_observations, n_actions).to(self.device)
 		if load_path:
 			self.net.load_state_dict(torch.load(load_path, map_location=self.device))
 		if optim:
 			self.optimizer = optim(self.net.parameters(), lr=config.LEARNING_RATE)
-			self.tgt_net = model.simple_network(n_observation, n_actions).to(self.device)
+			self.tgt_net = model.simple_network(n_observations, n_actions).to(self.device)
 			if load_path:
 				self.tgt_net.load_state_dict(torch.load(load_path), map_location=self.device)
 			self.buffer = ExperienceBuffer(config.REPLAY_SIZE)
@@ -248,7 +273,21 @@ class QLearningAgent(ReinforcementLearningAgent, ABC):
 			action = int(torch.argmax(self.net(torch.Tensor(observation).to(self.device))))
 		if self.optimizer is not None:
 			self.buffer_for_feedback = (observation, action)
-		return action
+		return self.agent_output_to_market_form(action)
+
+	@abstractmethod
+	def agent_output_to_market_form(self, action) -> tuple or int:  # pragma: no cover
+		"""
+		Takes a raw action and transforms it to a form that is accepted by the market.
+		A raw action is for example three numbers in one.
+
+		Args:
+			action (np.array or int): the raw action
+
+		Returns:
+			tuple or int: the action accepted by the market.
+		"""
+		raise NotImplementedError('This method is abstract. Use a subclass')
 
 	def set_feedback(self, reward, is_done, new_observation):
 		exp = self.Experience(*self.buffer_for_feedback, reward, is_done, new_observation)
@@ -264,6 +303,8 @@ class QLearningAgent(ReinforcementLearningAgent, ABC):
 		return loss_t.item(), selected_q_val_mean.item()
 
 	def synchronize_tgt_net(self):
+		# Not printing this anymore since it clutters the output when training
+		# print('Now I synchronize the tgt net')
 		self.tgt_net.load_state_dict(self.net.state_dict())
 
 	def calc_loss(self, batch, device='cpu'):
@@ -285,21 +326,20 @@ class QLearningAgent(ReinforcementLearningAgent, ABC):
 		expected_state_action_values = next_state_values * config.GAMMA + rewards_v
 		return torch.nn.MSELoss()(state_action_values, expected_state_action_values), state_action_values.mean()
 
-	def save(self, path_name, model_name) -> None:
+	def save(self, model_path, model_name) -> None:
 		"""
 		Save a trained model to the specified folder within 'trainedModels'.
 
 		Also caps the amount of models in the folder to a maximum of 10.
 
 		Args:
-			path_name (str): The name of the folder within 'trainedModels' where the model should be saved.
+			model_path (str): The path to the folder within 'trainedModels' where the model should be saved.
 			model_name (str): The name of the .dat file of this specific model.
 		"""
 		model_name += '.dat'
 		if not os.path.isdir(os.path.abspath(os.path.join('results', 'trainedModels'))):
 			os.mkdir(os.path.abspath(os.path.join('results', 'trainedModels')))
 
-		model_path = os.path.join('results', 'trainedModels', path_name)
 		if not os.path.isdir(os.path.abspath(model_path)):
 			os.mkdir(os.path.abspath(model_path))
 
@@ -323,19 +363,21 @@ class QLearningAgent(ReinforcementLearningAgent, ABC):
 
 
 class QLearningLEAgent(QLearningAgent, LinearAgent):
-	pass
+	def agent_output_to_market_form(self, action):
+		return action
 
 
 class QLearningCEAgent(QLearningAgent, CircularAgent):
-	def policy(self, observation, epsilon=0) -> int:
-		step = super().policy(observation, epsilon)
-		return (int(step % config.MAX_PRICE), int(step / config.MAX_PRICE))
+	def agent_output_to_market_form(self, action):
+		return (int(action % config.MAX_PRICE), int(action / config.MAX_PRICE))
 
 
 class QLearningCERebuyAgent(QLearningAgent, CircularAgent):
-	def policy(self, observation, epsilon=0) -> int:
-		step = super().policy(observation, epsilon)
-		return (int(step / (config.MAX_PRICE * config.MAX_PRICE)), int(step / config.MAX_PRICE % config.MAX_PRICE), int(step % config.MAX_PRICE))
+	def agent_output_to_market_form(self, action):
+		return (
+			int(action / (config.MAX_PRICE * config.MAX_PRICE)),
+			int(action / config.MAX_PRICE % config.MAX_PRICE),
+			int(action % config.MAX_PRICE))
 
 
 class CompetitorLinearRatio1(LinearAgent, RuleBasedAgent):

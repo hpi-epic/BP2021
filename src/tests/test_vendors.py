@@ -18,14 +18,17 @@ abstract_agent_classes_testcases = [
 	vendors.CircularAgent,
 	vendors.LinearAgent,
 	vendors.HumanPlayer,
-	vendors.FixedPriceAgent
+	vendors.FixedPriceAgent,
+	vendors.ReinforcementLearningAgent,
+	vendors.QLearningAgent
 ]
 
 
 @pytest.mark.parametrize('agent', abstract_agent_classes_testcases)
 def test_abstract_agent_classes(agent):
-	with pytest.raises(TypeError):
+	with pytest.raises(TypeError) as error_message:
 		agent()
+	assert 'Can\'t instantiate abstract class' in str(error_message.value)
 
 
 non_abstract_agent_classes_testcases = [
@@ -47,7 +50,7 @@ def test_non_abstract_agent_classes(agent):
 
 # actual n_observation and n_action are not needed, we just test if the initialization fails or not
 non_abstract_qlearning_agent_classes_testcases = [
-	(vendors.QLearningAgent, 10, 10),
+	(vendors.QLearningLEAgent, 10, 10),
 	(vendors.QLearningCEAgent, 10, 10),
 	(vendors.QLearningCERebuyAgent, 10, 10)
 ]
