@@ -3,6 +3,8 @@
 	<head>
 		<meta charset="utf-8"/>
 		<title>Observe Container</title>
+		{% load static %}
+		<link rel="stylesheet" type="text/css" href="{% static 'style.css' %}">
 	</head>
 	<body>
 		<h1>You can observe all your docker containers here</h1>
@@ -15,7 +17,7 @@
 					<th>last checked at</th>
 					<th>health status</th>
 					<th>get health status</th>
-					<th>kill container</th>
+					<th>stop and remove container</th>
 					<th>tensorboard</th>
 				</tr>
 				{% for container in all_saved_containers %}
@@ -33,14 +35,14 @@
 						<td class="button_row" >
 							<form method="post" enctype="multipart/form-data">
 								{% csrf_token %}
-								<button class="action_button kill_button" name="kill" value="{{ container.container_id }}" type="submit">kill</button>
+								<button class="action_button stop_button" name="stop" value="{{ container.container_id }}" type="submit">stop and remove</button>
 							</form>
 						</td>
-						<td class="button_row" >
+						<!-- <td class="button_row" >
 							<form action="#" method="get">
 								<button class="action_button observe_button" value="{{ container.container_id }}" name="observe" href="{% url 'observe'%}" type="submit">Check it out</button>
 							</form>  
-						</td>
+						</td> -->
 					</tr>
 				{% endfor %}
 			</table>
@@ -54,32 +56,4 @@
 		<br>
 		<a href="/">home</a>
 	</body>
-
-	<style>
-		table, th, td {
-			border: 1px solid black;
-		}
-		table {
-			border-collapse: collapse;
-		}
-		.action_button {
-			margin: 5px;
-			padding: 5px 10px 5px 10px;
-			border: none;
-			border-radius: 5px;
-		}
-		.health_check_button {
-			background-color: #8de39a;
-		}
-		.kill_button {
-			background-color: #e39a8d;
-		}
-		.observe_button {
-			background-color: #f3e03b
-		}
-		.button_row {
-			text-align: center;
-		}
-	</style>
-	
 </html>
