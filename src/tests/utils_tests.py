@@ -132,6 +132,6 @@ def create_mock_action(market_subclass) -> Union[int, list]:
 	if issubclass(market_subclass, linear_market.LinearEconomy):
 		return 1
 	elif issubclass(market_subclass, circular_market.CircularEconomyRebuyPrice):
-		return [1, 2, 3]
+		return (1, 2, 3)
 	elif issubclass(market_subclass, circular_market.CircularEconomy):
-		return [1, 2]
+		return (1, 2)
