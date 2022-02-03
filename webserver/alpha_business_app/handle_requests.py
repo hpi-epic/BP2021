@@ -3,7 +3,7 @@ import requests
 from .models import Container
 
 # start api with uvicorn app:app --reload
-DOCKER_API = 'http://127.0.0.1:8000'
+DOCKER_API = 'http://192.168.159.134:8000'  # http://127.0.0.1:8000'
 
 
 def send_post_request(route: str, body) -> dict:

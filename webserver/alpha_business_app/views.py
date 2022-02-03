@@ -32,9 +32,9 @@ def observe(request):
 			response = send_get_request('health', request.POST)
 			if response:
 				update_container(response['id'], {'last_check_at': timezone.now(), 'health_status': response['status']})
-		if 'kill' in request.POST:
-			response = send_get_request('kill', request.POST)
-			if 'killed' in response['health_status']:
+		if 'stop' in request.POST:
+			response = send_get_request('stop', request.POST)
+			if response:
 				# remove the docker container from the database
 				# TODO add a success message for the user
 				Container.objects.get(container_id=response['id']).delete()
