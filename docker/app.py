@@ -1,9 +1,10 @@
 # app.py
 
+import uvicorn
 from docker_manager import DockerManager
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse, StreamingResponse
-import uvicorn
+
 # This file should expose a RESTful api for using the docker container with the following routes:
 # POST /start/<docker_id>
 # GET /health/<docker_id>
