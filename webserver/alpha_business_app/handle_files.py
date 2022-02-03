@@ -69,7 +69,8 @@ def download_file(path_to_file: str, container_id: str) -> HttpResponse:
 	# set the HTTP header for sending to browser
 	archive_name = os.path.basename(path_to_file)
 	container_id = os.path.basename(os.path.dirname(path_to_file))
-	file_name = 'container_' + container_id + '_' + archive_name
+	container_name = Container.objects.get(container_id=container_id).name
+	file_name = 'container_' + container_name + '_' + archive_name
 	response['Content-Disposition'] = 'attachment; filename=%s' % file_name
 	# Return the response value
 	return response
