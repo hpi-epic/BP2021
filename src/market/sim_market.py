@@ -168,7 +168,7 @@ class SimMarket(gym.Env, ABC):
 		observation = self._get_common_state_array()
 		assert isinstance(observation, np.ndarray), '_get_common_state_array must return an np.ndarray'
 
-		# first the action and state of the of the vendor whose view we create will be added
+		# first the state of the of the vendor whose view we create will be added
 		if self.vendor_specific_state[vendor_view] is not None:
 			observation = np.concatenate((observation, np.array(self.vendor_specific_state[vendor_view], ndmin=1)), dtype=np.float64)
 
