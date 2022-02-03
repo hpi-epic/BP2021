@@ -77,6 +77,9 @@ class LinearEconomy(SimMarket, ABC):
 		"""
 		return len(probability_distribution) == 1 + self._get_number_of_vendors()
 
+	def _get_common_state_array(self) -> np.array:
+		return np.array([])
+
 
 class ClassicScenario(LinearEconomy):
 

@@ -63,11 +63,21 @@ class SimMarket(gym.Env, ABC):
 
 		self.vendor_specific_state = [self._reset_vendor_specific_state() for _ in range(self._get_number_of_vendors())]
 		self.vendor_actions = [self._reset_vendor_actions() for _ in range(self._get_number_of_vendors())]
+		self._offers = self._create_offers_array()
 
 		self._customer = self._choose_customer()
 		self._owner = self._choose_owner()
 
 		return self._observation()
+
+	def _create_offers_array(self) -> None:
+		"""
+		The implementation of this function varies between economy types.
+
+		See also:
+			TBD
+		"""
+		raise NotImplementedError
 
 	@abstractmethod
 	def _is_probability_distribution_fitting_exactly(self, probability_distribution) -> None:
@@ -75,9 +85,9 @@ class SimMarket(gym.Env, ABC):
 		The implementation of this function varies between economy types.
 
 		See also:
-			`<market.linear.linear_sim_market.LinearEconomy._is_probability_distribution_fitting_exactly`
+			`<market.linear.linear.LinearEconomy._is_probability_distribution_fitting_exactly`
 
-			`<market.circular.circular_sim_market.CircularEconomy._is_probability_distribution_fitting_exactly>`
+			`<market.circular.circular.CircularEconomy._is_probability_distribution_fitting_exactly>`
 		"""
 		raise NotImplementedError
 
@@ -111,7 +121,7 @@ class SimMarket(gym.Env, ABC):
 		It is pretty generic and configured by overwriting the abstract and empty methods.
 
 		Args:
-			action (np.array): The action of the agent. In discrete case: the action must be between 0 and number of actions -1.
+			action (int | Tuple): The action of the agent. In discrete case: the action must be between 0 and number of actions -1.
 			Note that you must add one to this price to get the real price!
 
 		Returns:
@@ -203,8 +213,16 @@ class SimMarket(gym.Env, ABC):
 	def _reset_common_state(self) -> None:
 		pass
 
-	def _get_common_state_array(self) -> np.array:
-		return np.array([])
+	def _get_common_state_array(self) -> None:
+		"""
+		The implementation of this function varies between economy types.
+
+		See also:
+			`<market.linear.LinearEconomy._get_common_state_array>`
+
+			`<market.circular.CircularEconomy._get_common_state_array>`
+		"""
+		raise NotImplementedError
 
 	@abstractmethod
 	def _reset_vendor_specific_state(self) -> None:
@@ -212,8 +230,8 @@ class SimMarket(gym.Env, ABC):
 		The implementation of this function varies between economy types.
 
 		See also:
-			`<market.sim_market.LinearEconomy._reset_vendor_specific_state>`
-			`<market.sim_market.CircularEconomy._reset_vendor_specific_state>`
+			`<market.linear.LinearEconomy._reset_vendor_specific_state>`
+			`<market.circular.CircularEconomy._reset_vendor_specific_state>`
 		"""
 		raise NotImplementedError
 
