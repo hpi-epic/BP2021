@@ -63,21 +63,24 @@ class SimMarket(gym.Env, ABC):
 
 		self.vendor_specific_state = [self._reset_vendor_specific_state() for _ in range(self._get_number_of_vendors())]
 		self.vendor_actions = [self._reset_vendor_actions() for _ in range(self._get_number_of_vendors())]
-		self._offers = self._create_offers_array()
+		self.offers = self._create_offers_array()
 
 		self._customer = self._choose_customer()
 		self._owner = self._choose_owner()
 
 		return self._observation()
 
-	def _create_offers_array(self) -> None:
+	def _create_offers_array(self) -> np.array:
 		"""
-		The implementation of this function varies between economy types.
+		This method returns the overall 'blueprint-array' of the offers that will be presented to the customers.
+		It will include all information customers will use for their decisions.
 
-		See also:
-			TBD
+		Returns:
+			np.array: The overall offers array.
 		"""
-		raise NotImplementedError
+		common_state_length = len(self._get_common_state_array())
+		vendor_specific_offer_length = self._get_offer_length_per_vendor()
+		return np.zeros(common_state_length + vendor_specific_offer_length)
 
 	@abstractmethod
 	def _is_probability_distribution_fitting_exactly(self, probability_distribution) -> None:
@@ -144,6 +147,8 @@ class SimMarket(gym.Env, ABC):
 		customers_per_vendor_iteration = int(np.floor(config.NUMBER_OF_CUSTOMERS / self._get_number_of_vendors()))
 		for i in range(self._get_number_of_vendors()):
 			self._simulate_customers(profits, self._generate_customer_offer(), customers_per_vendor_iteration)
+			# self._adapt_customer_offer()
+			# self._simulate_customers(profits, self.offers, customers_per_vendor_iteration)
 			if self._owner is not None:
 				self._simulate_owners(profits, self._generate_customer_offer())
 
@@ -209,6 +214,24 @@ class SimMarket(gym.Env, ABC):
 			if self.vendor_specific_state[vendor_index] is not None:
 				offer = np.concatenate((offer, np.array(self.vendor_specific_state[vendor_index], ndmin=1)), dtype=np.float64)
 		return offer
+
+	def _adapt_customer_offer(self) -> None:
+		"""
+		Adjusts the previous offers by updating each field of the offers array.
+		"""
+		current_comment_state = list(self._get_common_state_array())
+		current_comment_state_length = len(current_comment_state)
+		# if we've got at least one comment state entry
+		if current_comment_state_length:
+			# adapt all comment_state fields in the offers array
+			for common_state_index, common_state_value in enumerate(current_comment_state):
+				self.offers[common_state_index] = common_state_value
+
+		offer_length_per_vendor = self._get_offer_length_per_vendor()
+		for vendor_index in range(current_comment_state_length, offer_length_per_vendor + current_comment_state_length, offer_length_per_vendor):
+			self.offers[vendor_index] = np.array(self.vendor_actions[vendor_index], ndmin=1)
+			# if self.vendor_specific_state[vendor_index] is not None:
+			# 	self.offers[vendor_index]
 
 	def _reset_common_state(self) -> None:
 		pass
