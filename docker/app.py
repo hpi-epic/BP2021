@@ -22,19 +22,19 @@ app = FastAPI()
 
 
 @app.post('/start')
-async def start_container(command: str, config: Request) -> JSONResponse:
+async def start_container(command_id: str, config: Request) -> JSONResponse:
 	"""
 	Start a container with the specified config.json and perform a command on it.
 	TODO: The command should be contained in a json-file.
 
 	Args:
-		command (str): The key of the command that is to be executed.
+		command_id (str): The key of the command that is to be executed.
 		config (Request): The config.json file that should be sent to the container.
 
 	Returns:
 		StreamingResponse: The response of the Docker start request. Contains custom header keys for id and status of the container.
 	"""
-	container_info = manager.start(config=await config.json(), command=command)
+	container_info = manager.start(command_id=command_id, config=await config.json())
 	if container_info.status.__contains__('Command not allowed') or container_info.status.__contains__('Container not found'):
 		return JSONResponse(status_code=404, content=vars(container_info))
 	else:

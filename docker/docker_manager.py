@@ -55,7 +55,7 @@ class DockerManager():
 			cls._client = docker.from_env()
 		return cls._instance
 
-	def start(self, command: str, config: dict) -> DockerInfo:
+	def start(self, command_id: str, config: dict) -> DockerInfo:
 		"""
 		To be called by the REST API. Create and start a new docker container from the default image.
 
@@ -65,11 +65,15 @@ class DockerManager():
 		Returns:
 			DockerInfo: A JSON serializable object containing the id and the status of the new container.
 		"""
+		if command_id not in self._allowed_commands:
+			print(f'Command with ID {command_id} not allowed')
+			return DockerInfo(id=None, status=f'Command not allowed: {command_id}')
+
 		# Hacky dockerfile creation
 		with open('../dockerfile', 'r') as dockerfile:
 			template = dockerfile.read()
 			dock = template
-			dock = dock.replace('USER_COMMAND_PLACEHOLDER', self._allowed_commands[command])
+			dock = dock.replace('USER_COMMAND_PLACEHOLDER', self._allowed_commands[command_id])
 		with open('../dockerfile', 'w') as dockerfile:
 			dockerfile.write(dock)
 		try:
