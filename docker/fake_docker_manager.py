@@ -1,15 +1,14 @@
-import base64
 from random import randrange
 
 
 class AlphaBusinessDockerInfo():
 	"""This class encapsules the return values for the rest api
 	"""
-	def __init__(self, container_id: int, is_alive: str = None, data: str = None, msg: str = None) -> None:
+	def __init__(self, container_id: int, is_alive: str = None, data: str = None) -> None:
 		self.id = container_id
 		self.status = is_alive
 		if data:
-			self.data = base64.b64encode(data).decode('ascii')
+			self.data = data
 
 
 class AlphaBusinessDockerManager():
@@ -73,7 +72,7 @@ class AlphaBusinessDockerManager():
 		Returns:
 			str: link to tensorboard
 		"""
-		return AlphaBusinessDockerInfo(container_id=id, msg='www.hpi.de')
+		return AlphaBusinessDockerInfo(container_id=id, data='http://www.hpi.de')
 
 	# I would suggest an observer pattern for docker container:
 	def attach(self, id: int, observer) -> None:

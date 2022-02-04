@@ -2,7 +2,7 @@ import json
 import os
 
 from django.http import HttpResponseRedirect  # HttpResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.utils import timezone
 
 from .forms import UploadFileForm
@@ -31,6 +31,10 @@ def observe(request):
 			response = send_get_request('health', request.POST)
 			if response:
 				update_container(response['id'], {'last_check_at': timezone.now(), 'health_status': response['status']})
+		if 'data/tensorboard' in request.POST:
+			response = send_get_request('data/tensorboard', request.POST)
+			if response:
+				return redirect(response['data'])
 		if 'remove' in request.POST:
 			if not stop_container(request.POST):
 				pass
