@@ -80,7 +80,7 @@ class SimMarket(gym.Env, ABC):
 		"""
 		common_state_length = len(self._get_common_state_array())
 		vendor_specific_offer_length = self._get_offer_length_per_vendor()
-		return np.zeros(common_state_length + vendor_specific_offer_length)
+		return np.zeros(common_state_length + vendor_specific_offer_length * self._get_number_of_vendors())
 
 	@abstractmethod
 	def _is_probability_distribution_fitting_exactly(self, probability_distribution) -> None:
@@ -139,18 +139,19 @@ class SimMarket(gym.Env, ABC):
 
 		self.step_counter += 1
 
-		profits = [0] * self._get_number_of_vendors()
+		number_vendors = self._get_number_of_vendors()
+
+		profits = [0] * number_vendors
 
 		self.output_dict = {'customer/buy_nothing': 0}
 		self._initialize_output_dict()
 
-		customers_per_vendor_iteration = int(np.floor(config.NUMBER_OF_CUSTOMERS / self._get_number_of_vendors()))
-		for i in range(self._get_number_of_vendors()):
-			self._simulate_customers(profits, self._generate_customer_offer(), customers_per_vendor_iteration)
-			# self._adapt_customer_offer()
-			# self._simulate_customers(profits, self.offers, customers_per_vendor_iteration)
+		customers_per_vendor_iteration = int(np.floor(config.NUMBER_OF_CUSTOMERS / number_vendors))
+		for i in range(number_vendors):
+			self._adapt_customer_offer(number_vendors)
+			self._simulate_customers(profits, self.offers, customers_per_vendor_iteration)
 			if self._owner is not None:
-				self._simulate_owners(profits, self._generate_customer_offer())
+				self._simulate_owners(profits, self.offers)
 
 			# the competitor, which turn it is, will update its pricing
 			if i < len(self.competitors):
@@ -215,27 +216,49 @@ class SimMarket(gym.Env, ABC):
 				offer = np.concatenate((offer, np.array(self.vendor_specific_state[vendor_index], ndmin=1)), dtype=np.float64)
 		return offer
 
-	def _adapt_customer_offer(self) -> None:
+	def _adapt_customer_offer(self, number_vendors) -> None:
 		"""
 		Adjusts the previous offers by updating each field of the offers array.
 		"""
-		current_comment_state = list(self._get_common_state_array())
-		current_comment_state_length = len(current_comment_state)
-		# if we've got at least one comment state entry
-		if current_comment_state_length:
-			# adapt all comment_state fields in the offers array
-			for common_state_index, common_state_value in enumerate(current_comment_state):
+		current_common_state = list(self._get_common_state_array())
+		current_common_state_length = len(current_common_state)
+		# if we've got at least one common state entry
+		if current_common_state_length:
+			# then all common_state fields in the offers array will be adapted
+			for common_state_index, common_state_value in enumerate(current_common_state):
 				self.offers[common_state_index] = common_state_value
 
 		offer_length_per_vendor = self._get_offer_length_per_vendor()
-		for vendor_index in range(current_comment_state_length, offer_length_per_vendor + current_comment_state_length, offer_length_per_vendor):
-			self.offers[vendor_index] = np.array(self.vendor_actions[vendor_index], ndmin=1)
-			# if self.vendor_specific_state[vendor_index] is not None:
-			# 	self.offers[vendor_index]
+		actions_state_iter = 0
+		for vendor_index in range(
+			current_common_state_length,
+			offer_length_per_vendor * number_vendors + current_common_state_length,
+			offer_length_per_vendor):
+
+			# update all actions entries of one vendor
+			current_vendor_actions = self.vendor_actions[actions_state_iter]
+			if type(current_vendor_actions) == int:
+				self.offers[vendor_index] = current_vendor_actions
+			else:
+				for action_index, action_value in enumerate(current_vendor_actions):
+					self.offers[vendor_index + action_index] = action_value
+
+			# update all state entries of one vendor
+			current_vendor_state = self.vendor_specific_state[actions_state_iter]
+			if self.vendor_specific_state[actions_state_iter] is not None:
+				if type(current_vendor_actions) == int:
+					for state_index, state_value in enumerate(current_vendor_state):
+						self.offers[vendor_index + 1 + state_index] = state_value
+				else:
+					for state_index, state_value in enumerate(current_vendor_state):
+						self.offers[vendor_index + len(current_vendor_actions) + state_index] = state_value
+
+			actions_state_iter += 1
 
 	def _reset_common_state(self) -> None:
 		pass
 
+	@abstractmethod
 	def _get_common_state_array(self) -> None:
 		"""
 		The implementation of this function varies between economy types.

@@ -1,5 +1,5 @@
 import os
-from typing import Union
+from typing import Tuple, Union
 
 import market.circular.circular_sim_market as circular_market
 import market.linear.linear_sim_market as linear_market
@@ -119,7 +119,7 @@ def create_mock_rewards(num_entries) -> list:
 	return list(range(1, num_entries))
 
 
-def create_mock_action(market_subclass) -> Union[int, list]:
+def create_mock_action(market_subclass) -> Union[int, Tuple]:
 	"""
 	Create an array to be used as an action. The length of the array fits to the argument's class.
 
