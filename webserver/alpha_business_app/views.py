@@ -2,7 +2,7 @@ import json
 import os
 
 from django.http import HttpResponseRedirect  # HttpResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import redirect, render
 from django.utils import timezone
 
 from .forms import UploadFileForm
