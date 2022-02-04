@@ -292,7 +292,7 @@ class DockerManager():
 		"""
 		# create a directory to store the files safely
 		if not os.path.exists('config_tmp'):
-			os.makedirs('config_tmp')
+			os.mkdir('config_tmp')
 		os.chdir('config_tmp')
 		container = self._client.containers.get(container_id)
 
@@ -316,9 +316,11 @@ class DockerManager():
 		if ok:
 			os.remove('config.json')
 			os.remove('config.tar')
+			os.chdir('..')
+			os.rmdir('config_tmp')
 		return DockerInfo(id=container_id, data=ok)
 
-# OBSERVER
+	# OBSERVER
 	def attach(self, id: int, observer) -> None:
 		"""
 		Attach an observer to the container.
