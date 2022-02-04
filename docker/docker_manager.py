@@ -4,18 +4,19 @@ import tarfile
 import time
 
 import docker
+from docker.models.containers import Container
 
 
 class DockerInfo():
 	"""
-	This class encapsules the return values for the rest api
+	This class encapsules the return values for the REST API.
 	"""
 
-	def __init__(self, id: str = None, status: str = None, data: str = None, stream=None) -> None:
+	def __init__(self, id: str, status: str, data: str = None, stream=None) -> None:
 		"""
 		Args:
-			id (str, optional): The sha256 id of the container.
-			status (bool, optional): Status of the container. Returned by `container_status`.
+			id (str, optional): The sha256 id of the container. Always returned.
+			status (bool, optional): Status of the container. Always returned.
 			data (str, optional): Any other data, dependent on the function called this differs.
 			stream (stream generator, optional): A stream generator.
 		"""
@@ -54,7 +55,7 @@ class DockerManager():
 			cls._client = docker.from_env()
 		return cls._instance
 
-	async def start(self, command: str, config: dict) -> DockerInfo:
+	def start(self, command: str, config: dict) -> DockerInfo:
 		"""
 		To be called by the REST API. Create and start a new docker container from the default image.
 
@@ -64,6 +65,7 @@ class DockerManager():
 		Returns:
 			DockerInfo: A JSON serializable object containing the id and the status of the new container.
 		"""
+		# Hacky dockerfile creation
 		with open('../dockerfile', 'r') as dockerfile:
 			template = dockerfile.read()
 			dock = template
@@ -75,14 +77,13 @@ class DockerManager():
 		finally:
 			with open('../dockerfile', 'w') as dockerfile:
 				dockerfile.write(template)
-		container = self._create_container('bp2021image', use_gpu=False)
-		try:
-			# TODO: Error handling for failed upload
-			started_container = self._start_container(container.id, config)
-		except docker.errors.NotFound:
-			return DockerInfo(id=container.id, status=f'Container not found: {container.id}')
-		return DockerInfo(id=started_container.id, status=self._container_status(started_container.id))
-		# return await self._execute_command(started_container.id, command)
+
+		container_info = self._create_container('bp2021image', use_gpu=False)
+
+		if container_info.status.__contains__('Container not found'):
+			return container_info
+		else:
+			return self._start_container(container_info.id, config)
 
 	def health(self, container_id: str) -> DockerInfo:
 		"""
@@ -95,12 +96,12 @@ class DockerManager():
 			DockerInfo: A JSON serializable object containing the id and the status of the new container.
 		"""
 		print(f'Checking health status for: {container_id}')
-		try:
-			return DockerInfo(container_id, status=self._container_status(container_id))
-		except docker.errors.NotFound:
-			return DockerInfo(id=container_id, status=f'Container not found: {container_id}')
+		container: Container = self._get_container(container_id)
+		if not container:
+			return DockerInfo(container_id, status=f'Container not found: {container_id}')
+		return DockerInfo(container_id, status=container.status())
 
-	# TODO: This function should be refactored in two ways after other features were added:
+	# TODO:
 	# When we add the possibility to run multiple containers at once, we need to change the port that is exposed in each container,
 	# 	which also leads to a different port in the return value here.
 	def start_tensorboard(self, container_id: str) -> DockerInfo:
@@ -113,8 +114,12 @@ class DockerManager():
 		Returns:
 			DockerInfo: A DockerInfo object containing the id of the container, the status and a link to the tensorboard in the data field.
 		"""
-		self._client.containers.get(container_id).exec_run(cmd='tensorboard serve --logdir ./results/runs --bind_all')
-		return DockerInfo(container_id, status=self._container_status(container_id), data='http://localhost:6006')
+		container: Container = self._get_container(container_id)
+		if not container:
+			return DockerInfo(container_id, status=f'Container not found: {container_id}')
+
+		container.exec_run(cmd='tensorboard serve --logdir ./results/runs --bind_all')
+		return DockerInfo(container_id, status=container.status(), data='http://localhost:6006')
 
 	def get_container_logs(self, container_id: str, timestamps: bool, stream: bool, tail: int) -> DockerInfo:
 		"""
@@ -130,11 +135,15 @@ class DockerManager():
 			DockerInfo: A DockerInfo object containing the id of the container, the status and the logs of the container in the data field,
 				or if stream is True, the stream generator in the stream field.
 		"""
-		logs = self._client.containers.get(container_id).logs(stream=stream, timestamps=timestamps, tail=tail)
+		container: Container = self._get_container(container_id)
+		if not container:
+			return DockerInfo(container_id, status=f'Container not found: {container_id}')
+
+		logs = container.logs(stream=stream, timestamps=timestamps, tail=tail)
 		if stream:
-			return DockerInfo(container_id, status=self._container_status(container_id), stream=logs)
+			return DockerInfo(container_id, status=container.status(), stream=logs)
 		else:
-			return DockerInfo(container_id, status=self._container_status(container_id), data=logs.decode('utf-8'))
+			return DockerInfo(container_id, status=container.status(), data=logs.decode('utf-8'))
 
 	def get_container_data(self, container_id: str, container_path: str) -> DockerInfo:
 		"""
@@ -148,7 +157,11 @@ class DockerManager():
 		Returns:
 			DockerInfo: Contains the container_id, a filename in the data field and a stream generator matching the .tar archive.
 		"""
-		bits, _ = self._client.containers.get(container_id).get_archive(path=container_path)
+		container: Container = self._get_container(container_id)
+		if not container:
+			return DockerInfo(container_id, status=f'Container not found: {container_id}')
+
+		bits, _ = container.get_archive(path=container_path)
 		return DockerInfo(container_id, data=f'archive_{container_path.rpartition("/")[2]}_{time.strftime("%b%d_%H-%M-%S")}', stream=bits)
 
 	def remove_container(self, container_id: str) -> DockerInfo:
@@ -161,13 +174,18 @@ class DockerManager():
 		Returns:
 			DockerInfo: A JSON serializable object containing the id and the status of the container.
 		"""
-		try:
-			self._stop_container(container_id)
-			print(f'Removing container: {container_id}')
-			self._client.containers.get(container_id).remove()
-			return DockerInfo(id=container_id, status='removed')
-		except docker.errors.NotFound:
+		container: Container = self._get_container(container_id)
+		if not container:
 			return DockerInfo(container_id, status=f'Container not found: {container_id}')
+
+		self._stop_container(container_id)
+
+		print(f'Removing container: {container_id}')
+		try:
+			container.remove()
+			return DockerInfo(id=container_id, status='removed')
+		except docker.errors.APIError:
+			return DockerInfo(id=container_id, status=f'APIError encountered while removing container: {container_id}')
 
 	# PRIVATE METHODS
 	def _build_image(self, imagename: str = 'bp2021image') -> str:
@@ -216,15 +234,19 @@ class DockerManager():
 		# create a device request to use all available GPU devices with compute capabilities
 		if use_gpu:
 			device_request_gpu = docker.types.DeviceRequest(driver='nvidia', count=-1, capabilities=[['compute']])
-			container = self._client.containers.create(image_id,
+			container: Container = self._client.containers.create(image_id,
 				# name=f'{container_name}_container',
 				detach=True,
-				ports={str(self.counter) + '/tcp': self.counter},
+				ports={'6006/tcp': self.counter},
 				device_requests=[device_request_gpu])
 		else:
-			container = self._client.containers.create(image_id, detach=True, ports={'6006/tcp': self.counter})
-			self.counter += 1
-		return DockerInfo(id=container.id, status=self._container_status(container.id))
+			try:
+				container: Container = self._client.containers.create(image_id, detach=True, ports={'6006/tcp': self.counter})
+			except docker.errors.ImageNotFound:
+				return DockerInfo(id=image_id, status=f'Image not found: {image_id}')
+
+		self.counter += 1
+		return DockerInfo(id=container.id, status=container.status())
 
 	def _start_container(self, container_id: str, config: dict) -> DockerInfo:
 		"""
@@ -238,33 +260,42 @@ class DockerManager():
 			DockerInfo: A DockerInfo object with the id, the status of the started docker container and a bool in the data field
 				indicating whether or not the config was uploaded successfully.
 		"""
-		if self._container_status(container_id) == 'running':
+		container: Container = self._get_container(container_id)
+		if not container:
+			return DockerInfo(id=container_id, status=f'Container not found: {container_id}')
+
+		if container.status() == 'running':
 			print(f'Container is already running: {container_id}')
 			return DockerInfo(id=container_id, status='running')
 
 		print(f'Starting container: {container_id}')
-		container = self._client.containers.get(container_id)
-		container.start()
-		upload_status = self._upload_config(container_id, config).data
-		if not upload_status:
+		try:
+			container.start()
+		except docker.errors.APIError:
+			return DockerInfo(id=container_id, status=f'APIError encountered while starting container: {container_id}')
+
+		upload_info = self._upload_config(container_id, config)
+		if not upload_info.data:
 			print('Failed to upload configuration file!')
-		return DockerInfo(id=container_id, status=self._container_status(container.id), data=upload_status)
+		return upload_info
 
-	def _container_status(self, container_id) -> str:
+	def _get_container(self, container_id: str) -> Container:
 		"""
-		Return the status of the given container.
-
-		Can e.g. be 'created', 'running', 'paused', 'exited'.
+		Get the container for the given id. If the container does not exist, return None.
 
 		Args:
 			container_id (str): The id of the container.
 
 		Returns:
-			str: The status of the container.
+			docker.models.containers.Container: The container for the given id or None if the container does not exist.
 		"""
-		return self._client.containers.get(container_id).status
+		try:
+			return self._client.containers.get(container_id)
+		except docker.errors.NotFound:
+			return None
 
-	async def _execute_command(self, container_id: str, command_id: str) -> DockerInfo:
+	# Should no longer be used since we moved command execution to the container ENTRYPOINT
+	def _execute_command(self, container_id: str, command_id: str) -> DockerInfo:
 		"""
 		Execute a command on the specified container.
 
@@ -273,8 +304,12 @@ class DockerManager():
 			command_id (str): The id of the command. Checked against self._allowed_commands.
 
 		Returns:
-			DockerInfo: A DockerInfo object containing the id of the container and a stream generator for the stdout of the command.
+			DockerInfo: A DockerInfo object containing the id and status of the container.
 		"""
+		container: Container = self._get_container(container_id)
+		if not container:
+			return DockerInfo(container_id, status=f'Container not found: {container_id}')
+
 		if command_id not in self._allowed_commands:
 			print(f'Command with ID {command_id} not allowed')
 			self.remove_container(container_id)
@@ -282,8 +317,8 @@ class DockerManager():
 
 		command = self._allowed_commands[command_id]
 		print(f'Executing command: {command}')
-		_, stream = self._client.containers.get(container_id).exec_run(cmd=command, detach=True)
-		return DockerInfo(id=container_id, status=self._container_status(container_id))
+		_, stream = container.exec_run(cmd=command, detach=True)
+		return DockerInfo(id=container_id, status=container.status())
 
 	def _stop_container(self, container_id: str) -> DockerInfo:
 		"""
@@ -297,19 +332,16 @@ class DockerManager():
 		Returns:
 			DockerInfo: A JSON serializable object containing the id and the status of the container.
 		"""
+		container: Container = self._get_container(container_id)
+		if not container:
+			return DockerInfo(container_id, status=f'Container not found: {container_id}')
+
 		print(f'Stopping container: {container_id}')
-		self._client.containers.get(container_id).stop(timeout=10)
-
-		return DockerInfo(id=container_id, status=self._container_status(container_id))
-
-	def _remove_image(self, image_id: str) -> None:
-		"""
-		Remove an image.
-
-		Args:
-			image_id (str): The id of the image.
-		"""
-		self._client.images.get(image_id).remove()
+		try:
+			container.stop(timeout=10)
+			return DockerInfo(id=container_id, status=container.status())
+		except docker.errors.APIError:
+			return DockerInfo(container_id, status=f'APIError encountered while stopping container: {container_id}')
 
 	def _upload_config(self, container_id: str, config_dict: dict) -> DockerInfo:
 		"""
@@ -322,11 +354,14 @@ class DockerManager():
 		Returns:
 			DockerInfo: A DockerInfo object with the id of the container and the status of the upload in the data field.
 		"""
+		container: Container = self._get_container(container_id)
+		if not container:
+			return DockerInfo(id=container_id, status=f'Container not found: {container_id}')
+
 		# create a directory to store the files safely
 		if not os.path.exists('config_tmp'):
 			os.mkdir('config_tmp')
 		os.chdir('config_tmp')
-		container = self._client.containers.get(container_id)
 
 		# write dict to json
 		with open('config.json', 'w') as config_json:
@@ -350,7 +385,7 @@ class DockerManager():
 			os.remove('config.tar')
 			os.chdir('..')
 			os.rmdir('config_tmp')
-		return DockerInfo(id=container_id, data=ok)
+		return DockerInfo(id=container_id, status=container.status(), data=ok)
 
 	# OBSERVER
 	def attach(self, id: int, observer) -> None:

@@ -34,7 +34,7 @@ async def start_container(command: str, config: Request) -> JSONResponse:
 	Returns:
 		StreamingResponse: The response of the Docker start request. Contains custom header keys for id and status of the container.
 	"""
-	container_info = await manager.start(config=await config.json(), command=command)
+	container_info = manager.start(config=await config.json(), command=command)
 	if container_info.status.__contains__('Command not allowed') or container_info.status.__contains__('Container not found'):
 		return JSONResponse(status_code=404, content=vars(container_info))
 	else:
@@ -124,7 +124,7 @@ async def get_tensorboard_link(id: str) -> JSONResponse:
 	Returns:
 		JSONResponse: The response of the tensorboard request encapsuled in a DockerInfo JSON. A link is in the data field.
 	"""
-	tb_link = await manager.start_tensorboard(id)
+	tb_link = manager.start_tensorboard(id)
 	return JSONResponse(vars(tb_link))
 
 
@@ -162,7 +162,7 @@ if __name__ == '__main__':
 # 	Returns:
 # 		StreamingResponse: A stream generator that will return the stdout the container produces from the command.
 # 	"""
-# 	container_info = await manager.execute_command(id, command)
+# 	container_info = manager.execute_command(id, command)
 # 	# if container_info.status.__contains__('not allowed'):
 # 	# 	return JSONResponse(status_code=404, content=vars(container_info))
 # 	# return JSONResponse(vars(container_info))
