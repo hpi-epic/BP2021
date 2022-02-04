@@ -103,14 +103,17 @@ async def get_container_data(id: str, path: str = '/app/results') -> StreamingRe
 		StreamingResponse: A stream generator that will download the requested path as a .tar archive.
 	"""
 	container_info = manager.get_container_data(id, path)
-	return StreamingResponse(
-		container_info.stream,
-		headers={
-			'Content-Disposition': f'filename={container_info.data}.tar',
-			'Container-ID': f'{container_info.id}',
-			'Container-Status': f'{container_info.status}',
-		},
-		media_type='application/x-tar')
+	if container_info.status.__contains__('Container not found'):
+		return JSONResponse(status_code=404, content=vars(container_info))
+	else:
+		return StreamingResponse(
+			container_info.stream,
+			headers={
+				'Content-Disposition': f'filename={container_info.data}.tar',
+				'Container-ID': f'{container_info.id}',
+				'Container-Status': f'{container_info.status}',
+			},
+			media_type='application/x-tar')
 
 
 @app.get('/data/tensorboard/')
@@ -124,8 +127,11 @@ async def get_tensorboard_link(id: str) -> JSONResponse:
 	Returns:
 		JSONResponse: The response of the tensorboard request encapsuled in a DockerInfo JSON. A link is in the data field.
 	"""
-	tb_link = manager.start_tensorboard(id)
-	return JSONResponse(vars(tb_link))
+	container_info = manager.start_tensorboard(id)
+	if container_info.status.__contains__('Container not found'):
+		return JSONResponse(status_code=404, content=vars(container_info))
+	else:
+		return JSONResponse(vars(container_info))
 
 
 @app.get('/remove/')
