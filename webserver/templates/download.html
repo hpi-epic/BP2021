@@ -7,7 +7,7 @@
 		<link rel="stylesheet" type="text/css" href="{% static 'style.css' %}">
 	</head>
 	<body>
-		<h1>Download data from containers here</h1>
+		<h1>Download container data here</h1>
 		<br>
 		{% if all_saved_containers %}
 			<table class="table">
@@ -16,7 +16,9 @@
 					<th>created at</th>
 					<th>last checked at</th>
 					<th>health status</th>
-					<th>download data</th>
+					<th>download current data</th>
+					<th>download all data</th>
+					<th>delete permanently</th>
 				</tr>
 				{% for container in all_saved_containers %}
 					<tr>
@@ -27,13 +29,13 @@
 						<td class="button_row" >
 							<form method="post" enctype="multipart/form-data">
 								{% csrf_token %}
-								<button class="action_button data_button" name="data" value="{{ container.container_id }}" type="submit">download</button>
+								<button class="action_button data_button" name="data-latest" value="{{ container.container_id }}" type="submit">download</button>
 							</form>
 						</td>
 						<td class="button_row" >
 							<form method="post" enctype="multipart/form-data">
 								{% csrf_token %}
-								<button class="action_button data_button" name="data" value="{{ container.container_id }}" type="submit">download</button>
+								<button class="action_button data_button" name="data-all" value="{{ container.container_id }}" type="submit">download</button>
 							</form>
 						</td>
 						<td class="button_row" >

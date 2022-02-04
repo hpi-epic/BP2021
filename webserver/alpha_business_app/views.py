@@ -6,7 +6,7 @@ from django.shortcuts import render
 from django.utils import timezone
 
 from .forms import UploadFileForm
-from .handle_files import download_file, handle_uploaded_file, save_data
+from .handle_files import archive_files, download_file, handle_uploaded_file, has_downloaded_data, save_data
 from .handle_requests import send_get_request, send_get_request_with_streaming, send_post_request, stop_container
 from .models import Container, update_container
 
@@ -39,22 +39,27 @@ def observe(request):
 
 
 def download(request):
+	all_containers = Container.objects.all()
 	if request.method == 'POST':
-		if 'data' in request.POST:
-			wanted_container = request.POST['data']
+		if 'data-latest' in request.POST:
+			wanted_container = request.POST['data-latest']
 			response = send_get_request_with_streaming('data', wanted_container)
 			if response:
 				# save data from api and make it available for the user
 				path = save_data(response, wanted_container)
-				return download_file(path, wanted_container)
+				return download_file(path)
+		if 'data-all' in request.POST:
+			wanted_container = request.POST['data-all']
+			if not has_downloaded_data(wanted_container):
+				return render(request, 'download.html', {'all_saved_containers': all_containers})
+			return archive_files(wanted_container)
 		if 'remove' in request.POST:
 			wanted_container = request.POST['remove']
-			print(wanted_container)
 			if Container.objects.get(container_id=wanted_container).health_status != 'archived':
 				stop_container(request.POST)
 			Container.objects.get(container_id=wanted_container).delete()
+			all_containers = Container.objects.all()
 
-	all_containers = Container.objects.all()
 	return render(request, 'download.html', {'all_saved_containers': all_containers})
 
 
