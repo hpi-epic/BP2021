@@ -4,11 +4,12 @@ import tarfile
 
 from django.http import HttpResponse
 
+from .constants import CONFIGURATION_DIR, DATA_DIR
 from .models import Container
 
 
 def handle_uploaded_file(uploaded_config) -> None:
-	path_to_configurations = './configurations'
+	path_to_configurations = CONFIGURATION_DIR
 	if not os.path.exists(path_to_configurations):
 		os.mkdir(path_to_configurations)
 
@@ -20,7 +21,7 @@ def handle_uploaded_file(uploaded_config) -> None:
 def ensure_data_folder_structure(container_id: str) -> str:
 	# make sure thet the folder ./data/<container_id> exists
 	# in order to save all data belonging to this container in there
-	data_folder = './data'
+	data_folder = DATA_DIR
 	path_to_container_data = os.path.join(data_folder, str(container_id))
 	if os.path.exists(path_to_container_data):
 		return path_to_container_data

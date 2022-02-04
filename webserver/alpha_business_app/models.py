@@ -1,6 +1,11 @@
-from django.db import models
+import os
+import shutil
 
-# Create your models here.
+from django.db import models
+from django.db.models.signals import post_delete
+from django.dispatch import receiver
+
+from .constants import DATA_DIR
 
 
 class Container(models.Model):
@@ -10,3 +15,13 @@ class Container(models.Model):
 	health_status = models.CharField(max_length=20, default='unknown')
 	last_check_at = models.DateTimeField(auto_now_add=True)
 	name = models.CharField(max_length=20)
+
+
+@receiver(post_delete, sender=Container)
+def delete_repo(sender, instance, **kwargs) -> None:
+	# method will be called when you delete an object,
+	# we need to make sure, that we delete the objects' data folder
+	container_id = instance.container_id
+	container_data_path = os.path.join(DATA_DIR, container_id)
+	if os.path.exists(container_data_path):
+		shutil.rmtree(container_data_path)
