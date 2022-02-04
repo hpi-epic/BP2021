@@ -7,8 +7,8 @@ from django.utils import timezone
 
 from .forms import UploadFileForm
 from .handle_files import download_file, handle_uploaded_file, save_data
-from .handle_requests import send_get_request, send_get_request_with_streaming, send_post_request, update_container
-from .models import Container
+from .handle_requests import send_get_request, send_get_request_with_streaming, send_post_request, stop_container
+from .models import Container, update_container
 
 
 def index(request):
@@ -28,28 +28,32 @@ def upload(request):
 def observe(request):
 	if request.method == 'POST':
 		if 'health' in request.POST:
-			# assuming the id always stays the same
 			response = send_get_request('health', request.POST)
 			if response:
 				update_container(response['id'], {'last_check_at': timezone.now(), 'health_status': response['status']})
 		if 'remove' in request.POST:
-			response = send_get_request('remove', request.POST)
-			if response:
-				# remove the docker container from the database
-				# TODO add a success message for the user
-				Container.objects.get(container_id=response['id']).delete()
-	all_containers = Container.objects.all()
+			if not stop_container(request.POST):
+				pass
+	all_containers = Container.objects.all().exclude(health_status='archived')
 	return render(request, 'observe.html', {'all_saved_containers': all_containers})
 
 
 def download(request):
-	if request.method == 'POST' and 'data' in request.POST:
-		wanted_container = request.POST['data']
-		response = send_get_request_with_streaming('data', wanted_container)
-		if response:
-			# save data from api and make it available for the user
-			path = save_data(response, wanted_container)
-			return download_file(path, wanted_container)
+	if request.method == 'POST':
+		if 'data' in request.POST:
+			wanted_container = request.POST['data']
+			response = send_get_request_with_streaming('data', wanted_container)
+			if response:
+				# save data from api and make it available for the user
+				path = save_data(response, wanted_container)
+				return download_file(path, wanted_container)
+		if 'remove' in request.POST:
+			wanted_container = request.POST['remove']
+			print(wanted_container)
+			if Container.objects.get(container_id=wanted_container).health_status != 'archived':
+				stop_container(request.POST)
+			Container.objects.get(container_id=wanted_container).delete()
+
 	all_containers = Container.objects.all()
 	return render(request, 'download.html', {'all_saved_containers': all_containers})
 

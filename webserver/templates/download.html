@@ -30,6 +30,18 @@
 								<button class="action_button data_button" name="data" value="{{ container.container_id }}" type="submit">download</button>
 							</form>
 						</td>
+						<td class="button_row" >
+							<form method="post" enctype="multipart/form-data">
+								{% csrf_token %}
+								<button class="action_button data_button" name="data" value="{{ container.container_id }}" type="submit">download</button>
+							</form>
+						</td>
+						<td class="button_row" >
+							<form method="post" enctype="multipart/form-data">
+								{% csrf_token %}
+								<button class="action_button delete_button" name="remove" value="{{ container.container_id }}" type="submit">delete</button>
+							</form>
+						</td>
 					</tr>
 				{% endfor %}
 			</table>

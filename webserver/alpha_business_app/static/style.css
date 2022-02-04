@@ -16,6 +16,9 @@ table {
 .data_button {
 	background-color: #8dc1e3;
 }
+.delete_button {
+	background-color: #f84949;
+}
 .experiment_name {
 	border-radius: 5px;
 	border-color: black;
