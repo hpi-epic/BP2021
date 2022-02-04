@@ -116,12 +116,6 @@ async def remove_container(id: str) -> JSONResponse:
 	else:
 		return JSONResponse(vars(container_info))
 
-
-@app.get('/test')
-async def test():
-	return JSONResponse({'id': 'this'})
-
-
 if __name__ == '__main__':
 	uvicorn.run('app:app', host='0.0.0.0', port=8000)
 

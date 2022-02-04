@@ -1,21 +1,17 @@
-FROM johannschulzetast/miniconda-cuda:11.5-devel-ubuntu20.04
+FROM pure/python:3.8-cuda10.2-runtime
 
 WORKDIR /app
 EXPOSE 6006
 
-# Copy yaml for environment creation
-COPY environment.yml .
-
-# create conda environment and make the shell use it by default
-RUN conda env create -f environment.yml -n dockervenv
-ENV PATH /opt/conda/envs/dockervenv/bin:$PATH
 # Do not buffer stdout so we can see it live
 ENV PYTHONUNBUFFERED 1
 
 # copy the src folder and install the pip requirements (includes our project as a pip dependency)
 COPY requirements.txt .
 COPY ./src ./src
-RUN pip install -r requirements.txt
+RUN python3 -m ensurepip --upgrad
+RUN pip install --upgrade pip
+RUN python3 -m pip install -r requirements.txt
 
 # copy all relevant files to the container
 COPY config.json .

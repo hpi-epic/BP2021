@@ -40,7 +40,7 @@ class DockerManager():
 		'exampleprinter': 'python3 ./src/monitoring/exampleprinter.py',
 		'monitoring': 'python3 ./src/monitoring/agent_monitoring/am_monitoring.py'
 	}
-
+	counter = 6006
 	def __new__(cls):
 		"""
 		This function makes sure that the `DockerManager` is a singleton.
@@ -152,7 +152,8 @@ class DockerManager():
 			DockerInfo: A JSON serializable object containing the id and the status of the container.
 		"""
 		print(f'Removing container: {container_id}')
-		try:
+		try:	
+			print(os.system('docker ps'))
 			self._stop_container(container_id)
 			self._client.containers.get(container_id).remove()
 			return DockerInfo(id=container_id, status='removed')
@@ -218,18 +219,23 @@ class DockerManager():
 		# https://docker-py.readthedocs.io/en/stable/containers.html
 		print(f'Creating container for image: {image_id}')
 		# name will be first tag without the ':latest'-postfix
-		container_name = self._client.images.get(image_id).tags[0][:-7]
+		# container_name = self._client.images.get(image_id).tags[0][:-7]
 		# create a device request to use all available GPU devices with compute capabilities
+		# warning: hacky!
+		# change dockerfile to be able to bind multiple ports
+		with open('../dockerfile', 'w') as file:
+			print(file) 
 		if use_gpu:
 			device_request_gpu = docker.types.DeviceRequest(driver='nvidia', count=-1, capabilities=[['compute']])
 			container = self._client.containers.create(image_id,
-				name=f'{container_name}_container',
+				# name=f'{container_name}_container',
 				detach=True,
-				ports={'6006/tcp': 6006},
+				ports={str(self.counter) + '/tcp': self.counter},
 				device_requests=[device_request_gpu])
 		else:
-			container = self._client.containers.create(image_id, name=f'{container_name}_container', detach=True, ports={'6006/tcp': 6006})
-
+			container = self._client.containers.create(image_id, detach=True, ports={str(self.counter) + '/tcp': self.counter})  #
+			self.counter += 1
+			print('\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\/', self.counter)
 		return DockerInfo(id=container.id, status=self._container_status(container.id))
 
 	def _start_container(self, container_id: str, config: dict) -> DockerInfo:
