@@ -18,4 +18,4 @@ COPY config.json .
 COPY ./results/monitoring ./results/monitoring
 
 # Keep the container running until manually stopped
-ENTRYPOINT ["tail", "-f", "/dev/null"]
+ENTRYPOINT ["python3", "USER_COMMAND_PLACEHOLDER"]

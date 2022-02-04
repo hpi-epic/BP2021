@@ -36,9 +36,9 @@ class DockerManager():
 	_observers = []
 	# This dictionary is very important. It contains a list of commands that users can send to a Docker container.
 	_allowed_commands = {
-		'training': 'python3 ./src/rl/training_scenario.py',
-		'exampleprinter': 'python3 ./src/monitoring/exampleprinter.py',
-		'monitoring': 'python3 ./src/monitoring/agent_monitoring/am_monitoring.py'
+		'training': './src/rl/training_scenario.py',
+		'exampleprinter': './src/monitoring/exampleprinter.py',
+		'monitoring': './src/monitoring/agent_monitoring/am_monitoring.py'
 	}
 	counter = 6006
 
@@ -64,13 +64,25 @@ class DockerManager():
 		Returns:
 			DockerInfo: A JSON serializable object containing the id and the status of the new container.
 		"""
-		container = self._create_container('bp2021image', use_gpu=False)
+		with open('../dockerfile', 'r') as dockerfile:
+			template = dockerfile.read()
+			dock = template
+			dock = dock.replace('USER_COMMAND_PLACEHOLDER', self._allowed_commands[command])
+		with open('../dockerfile', 'w') as dockerfile:
+			dockerfile.write(dock)
+		try:
+			self._build_image(imagename='bp2021imagesmall')
+		finally:
+			with open('../dockerfile', 'w') as dockerfile:
+				dockerfile.write(template)
+		container = self._create_container('bp2021imagesmall', use_gpu=False)
 		try:
 			# TODO: Error handling for failed upload
 			started_container = self._start_container(container.id, config)
 		except docker.errors.NotFound:
 			return DockerInfo(id=container.id, status=f'Container not found: {container.id}')
-		return await self._execute_command(started_container.id, command)
+		return DockerInfo(id=started_container.id, status=self._container_status(started_container.id))
+		# return await self._execute_command(started_container.id, command)
 
 	def health(self, container_id: str) -> DockerInfo:
 		"""
@@ -250,7 +262,7 @@ class DockerManager():
 
 		command = self._allowed_commands[command_id]
 		print(f'Executing command: {command}')
-		_, stream = self._client.containers.get(container_id).exec_run(cmd=command, stream=True)
+		_, stream = self._client.containers.get(container_id).exec_run(cmd=command, detach=True)
 		return DockerInfo(id=container_id, status=self._container_status(container_id))
 
 	def _stop_container(self, container_id: str) -> DockerInfo:
