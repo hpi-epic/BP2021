@@ -61,6 +61,35 @@ async def is_container_alive(id: str) -> JSONResponse:
 		return JSONResponse(vars(container_info))
 
 
+@app.get('/logs/')
+async def get_container_logs(id: str, timestamps: bool = False, stream: bool = False, tail: int = 10) -> JSONResponse:
+	"""
+	Get the logs of a container.
+
+	Args:
+		id (str): The id of the container.
+		timestamps (bool): Whether or not timestamps should be included in the logs. Defaults to False.
+		stream (bool): Whether to stream the logs instead of directly retrieving them. Defaults to False.
+		tail (int): How many lines at the end of the logs should be returned. int or 'all'. Defaults to 10.
+
+	Returns:
+		JSONResponse: If stream=False. The response of the log request.
+		StreamingResponse: If stream=True. The response of the log request.
+	"""
+	container_info = manager.get_container_logs(id, timestamps, stream, tail)
+	if container_info.status.__contains__('Container not found'):
+		return JSONResponse(status_code=404, content=vars(container_info))
+	elif stream:
+		return StreamingResponse(
+			container_info.stream,
+			headers={
+				'Container-ID': f'{container_info.id}',
+				'Container-Status': f'{container_info.status}',
+			})
+	else:
+		return JSONResponse(content=vars(container_info))
+
+
 @app.get('/data/')
 async def get_container_data(id: str, path: str = '/app/results') -> StreamingResponse:
 	"""

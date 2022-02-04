@@ -71,11 +71,11 @@ class DockerManager():
 		with open('../dockerfile', 'w') as dockerfile:
 			dockerfile.write(dock)
 		try:
-			self._build_image(imagename='bp2021imagesmall')
+			self._build_image(imagename='bp2021image')
 		finally:
 			with open('../dockerfile', 'w') as dockerfile:
 				dockerfile.write(template)
-		container = self._create_container('bp2021imagesmall', use_gpu=False)
+		container = self._create_container('bp2021image', use_gpu=False)
 		try:
 			# TODO: Error handling for failed upload
 			started_container = self._start_container(container.id, config)
@@ -111,10 +111,30 @@ class DockerManager():
 			container_id (str): The id of the container.
 
 		Returns:
-			DockerInfo: A DockerInfo object containing the id of the container and a link to the tensorboard in the data field.
+			DockerInfo: A DockerInfo object containing the id of the container, the status and a link to the tensorboard in the data field.
 		"""
 		self._client.containers.get(container_id).exec_run(cmd='tensorboard serve --logdir ./results/runs --bind_all')
 		return DockerInfo(container_id, status=self._container_status(container_id), data='http://localhost:6006')
+
+	def get_container_logs(self, container_id: str, timestamps: bool, stream: bool, tail: int) -> DockerInfo:
+		"""
+		To be called by the REST API. Return the current logs of the container as a string.
+
+		Args:
+			container_id (str): The id of the container.
+			timestamps (bool): Whether or not timestamps should be included in the logs.
+			stream (bool): Whether to stream the logs instead of directly retrieving them.
+			tail (int): How many lines at the end of the logs should be returned. int or 'all'.
+
+		Returns:
+			DockerInfo: A DockerInfo object containing the id of the container, the status and the logs of the container in the data field,
+				or if stream is True, the stream generator in the stream field.
+		"""
+		logs = self._client.containers.get(container_id).logs(stream=stream, timestamps=timestamps, tail=tail)
+		if stream:
+			return DockerInfo(container_id, status=self._container_status(container_id), stream=logs)
+		else:
+			return DockerInfo(container_id, status=self._container_status(container_id), data=logs.decode('utf-8'))
 
 	def get_container_data(self, container_id: str, container_path: str) -> DockerInfo:
 		"""
@@ -141,9 +161,9 @@ class DockerManager():
 		Returns:
 			DockerInfo: A JSON serializable object containing the id and the status of the container.
 		"""
-		print(f'Removing container: {container_id}')
 		try:
 			self._stop_container(container_id)
+			print(f'Removing container: {container_id}')
 			self._client.containers.get(container_id).remove()
 			return DockerInfo(id=container_id, status='removed')
 		except docker.errors.NotFound:
