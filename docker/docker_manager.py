@@ -202,7 +202,7 @@ class DockerManager():
 				ports={str(self.counter) + '/tcp': self.counter},
 				device_requests=[device_request_gpu])
 		else:
-			container = self._client.containers.create(image_id, detach=True, ports={str(self.counter) + '/tcp': self.counter})
+			container = self._client.containers.create(image_id, detach=True, ports={'6006/tcp': self.counter})
 			self.counter += 1
 		return DockerInfo(id=container.id, status=self._container_status(container.id))
 
