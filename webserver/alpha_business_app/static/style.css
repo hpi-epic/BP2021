@@ -10,18 +10,34 @@ table {
 	border: none;
 	border-radius: 5px;
 }
-.health_check_button {
-	background-color: #8de39a;
-}
-.kill_button {
-	background-color: #e39a8d;
+.button_row {
+	text-align: center;
 }
 .data_button {
 	background-color: #8dc1e3;
 }
+.delete_button {
+	background-color: #f84949;
+}
+.experiment_name {
+	border-radius: 5px;
+	border-color: black;
+}
+.health_check_button {
+	background-color: #8de39a;
+}
 .launch_button {
 	background-color: #8de3a0;
 }
-.button_row {
-	text-align: center;
+.observe_button {
+	background-color: #f1e681
+}
+.selection_list {
+	margin: 5px;
+	border: none;
+	border-radius: 5px;
+	padding: 5px 0 5px 0;
+}
+.stop_button {
+	background-color: #e39a8d;
 }
