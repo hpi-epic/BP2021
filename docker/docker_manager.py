@@ -41,6 +41,7 @@ class DockerManager():
 		'monitoring': 'python3 ./src/monitoring/agent_monitoring/am_monitoring.py'
 	}
 	counter = 6006
+
 	def __new__(cls):
 		"""
 		This function makes sure that the `DockerManager` is a singleton.
@@ -87,29 +88,7 @@ class DockerManager():
 		except docker.errors.NotFound:
 			return DockerInfo(id=container_id, status=f'Container not found: {container_id}')
 
-	async def _execute_command(self, container_id: str, command_id: str) -> DockerInfo:
-		"""
-		Execute a command on the specified container.
-
-		Args:
-			container_id (str): The id of the container.
-			command_id (str): The id of the command. Checked against self._allowed_commands.
-
-		Returns:
-			DockerInfo: A DockerInfo object containing the id of the container and a stream generator for the stdout of the command.
-		"""
-		if command_id not in self._allowed_commands:
-			print(f'Command with ID {command_id} not allowed')
-			self.remove_container(container_id)
-			return DockerInfo(id=container_id, status=f'Command not allowed: {command_id}')
-
-		command = self._allowed_commands[command_id]
-		print(f'Executing command: {command}')
-		_, stream = self._client.containers.get(container_id).exec_run(cmd=command, stream=True)
-		return DockerInfo(id=container_id, status=self._container_status(container_id))
-
 	# TODO: This function should be refactored in two ways after other features were added:
-	# The 'mkdir' command should no longer be necessary after the Actorcritic-workflow PR.
 	# When we add the possibility to run multiple containers at once, we need to change the port that is exposed in each container,
 	# 	which also leads to a different port in the return value here.
 	def start_tensorboard(self, container_id: str) -> DockerInfo:
@@ -122,7 +101,6 @@ class DockerManager():
 		Returns:
 			DockerInfo: A DockerInfo object containing the id of the container and a link to the tensorboard in the data field.
 		"""
-		self._client.containers.get(container_id).exec_run(cmd='mkdir ./results/runs/')
 		self._client.containers.get(container_id).exec_run(cmd='tensorboard serve --logdir ./results/runs --bind_all')
 		return DockerInfo(container_id, status=self._container_status(container_id), data='http://localhost:6006')
 
@@ -152,8 +130,7 @@ class DockerManager():
 			DockerInfo: A JSON serializable object containing the id and the status of the container.
 		"""
 		print(f'Removing container: {container_id}')
-		try:	
-			print(os.system('docker ps'))
+		try:
 			self._stop_container(container_id)
 			self._client.containers.get(container_id).remove()
 			return DockerInfo(id=container_id, status='removed')
@@ -161,23 +138,6 @@ class DockerManager():
 			return DockerInfo(container_id, status=f'Container not found: {container_id}')
 
 	# PRIVATE METHODS
-	def _stop_container(self, container_id: str) -> DockerInfo:
-		"""
-		Stop a running container.
-
-		After 10 seconds of no response, the container will be killed.
-
-		Args:
-			container_id (str): The id of the container.
-
-		Returns:
-			DockerInfo: A JSON serializable object containing the id and the status of the container.
-		"""
-		print(f'Stopping container: {container_id}')
-		self._client.containers.get(container_id).stop(timeout=10)
-
-		return DockerInfo(id=container_id, status=self._container_status(container_id))
-
 	def _build_image(self, imagename: str = 'bp2021image') -> str:
 		"""
 		Build an image from the default dockerfile and name it accordingly.
@@ -220,11 +180,8 @@ class DockerManager():
 		print(f'Creating container for image: {image_id}')
 		# name will be first tag without the ':latest'-postfix
 		# container_name = self._client.images.get(image_id).tags[0][:-7]
+
 		# create a device request to use all available GPU devices with compute capabilities
-		# warning: hacky!
-		# change dockerfile to be able to bind multiple ports
-		with open('../dockerfile', 'w') as file:
-			print(file) 
 		if use_gpu:
 			device_request_gpu = docker.types.DeviceRequest(driver='nvidia', count=-1, capabilities=[['compute']])
 			container = self._client.containers.create(image_id,
@@ -233,9 +190,8 @@ class DockerManager():
 				ports={str(self.counter) + '/tcp': self.counter},
 				device_requests=[device_request_gpu])
 		else:
-			container = self._client.containers.create(image_id, detach=True, ports={str(self.counter) + '/tcp': self.counter})  #
+			container = self._client.containers.create(image_id, detach=True, ports={str(self.counter) + '/tcp': self.counter})
 			self.counter += 1
-			print('\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\/', self.counter)
 		return DockerInfo(id=container.id, status=self._container_status(container.id))
 
 	def _start_container(self, container_id: str, config: dict) -> DockerInfo:
@@ -275,6 +231,44 @@ class DockerManager():
 			str: The status of the container.
 		"""
 		return self._client.containers.get(container_id).status
+
+	async def _execute_command(self, container_id: str, command_id: str) -> DockerInfo:
+		"""
+		Execute a command on the specified container.
+
+		Args:
+			container_id (str): The id of the container.
+			command_id (str): The id of the command. Checked against self._allowed_commands.
+
+		Returns:
+			DockerInfo: A DockerInfo object containing the id of the container and a stream generator for the stdout of the command.
+		"""
+		if command_id not in self._allowed_commands:
+			print(f'Command with ID {command_id} not allowed')
+			self.remove_container(container_id)
+			return DockerInfo(id=container_id, status=f'Command not allowed: {command_id}')
+
+		command = self._allowed_commands[command_id]
+		print(f'Executing command: {command}')
+		_, stream = self._client.containers.get(container_id).exec_run(cmd=command, stream=True)
+		return DockerInfo(id=container_id, status=self._container_status(container_id))
+
+	def _stop_container(self, container_id: str) -> DockerInfo:
+		"""
+		Stop a running container.
+
+		After 10 seconds of no response, the container will be killed.
+
+		Args:
+			container_id (str): The id of the container.
+
+		Returns:
+			DockerInfo: A JSON serializable object containing the id and the status of the container.
+		"""
+		print(f'Stopping container: {container_id}')
+		self._client.containers.get(container_id).stop(timeout=10)
+
+		return DockerInfo(id=container_id, status=self._container_status(container_id))
 
 	def _remove_image(self, image_id: str) -> None:
 		"""
