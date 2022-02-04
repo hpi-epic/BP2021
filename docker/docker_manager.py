@@ -82,12 +82,13 @@ class DockerManager():
 			with open('../dockerfile', 'w') as dockerfile:
 				dockerfile.write(template)
 
-		container_info = self._create_container('bp2021image', use_gpu=False)
+		container_info = self._create_container('bp2021image', config, use_gpu=False)
 
-		if container_info.status.__contains__('Container not found'):
+		if container_info.status.__contains__('Container not found') or container_info.data is False:
+			self.remove_container(container_info.id)
 			return container_info
 		else:
-			return self._start_container(container_info.id, config)
+			return self._start_container(container_info.id)
 
 	def health(self, container_id: str) -> DockerInfo:
 		"""
@@ -103,7 +104,7 @@ class DockerManager():
 		container: Container = self._get_container(container_id)
 		if not container:
 			return DockerInfo(container_id, status=f'Container not found: {container_id}')
-		return DockerInfo(container_id, status=container.status())
+		return DockerInfo(container_id, status=container.status)
 
 	# TODO:
 	# When we add the possibility to run multiple containers at once, we need to change the port that is exposed in each container,
@@ -123,7 +124,7 @@ class DockerManager():
 			return DockerInfo(container_id, status=f'Container not found: {container_id}')
 
 		container.exec_run(cmd='tensorboard serve --logdir ./results/runs --bind_all')
-		return DockerInfo(container_id, status=container.status(), data='http://localhost:6006')
+		return DockerInfo(container_id, status=container.status, data='http://localhost:6006')
 
 	def get_container_logs(self, container_id: str, timestamps: bool, stream: bool, tail: int) -> DockerInfo:
 		"""
@@ -145,9 +146,9 @@ class DockerManager():
 
 		logs = container.logs(stream=stream, timestamps=timestamps, tail=tail)
 		if stream:
-			return DockerInfo(container_id, status=container.status(), stream=logs)
+			return DockerInfo(container_id, status=container.status, stream=logs)
 		else:
-			return DockerInfo(container_id, status=container.status(), data=logs.decode('utf-8'))
+			return DockerInfo(container_id, status=container.status, data=logs.decode('utf-8'))
 
 	def get_container_data(self, container_id: str, container_path: str) -> DockerInfo:
 		"""
@@ -220,12 +221,14 @@ class DockerManager():
 		# return id without the 'sha256:'-prefix
 		return img.id[7:]
 
-	def _create_container(self, image_id: str, use_gpu: bool = True) -> DockerInfo:
+	def _create_container(self, image_id: str, config: dict, use_gpu: bool = True) -> DockerInfo:
 		"""
 		Create a container for the given image.
 
 		Args:
 			image_id (str): The id of the image to create the container for.
+			config (str): A json containing parameters for the simulation.
+			use_gpu (bool) Whether or not to request access to GPU's. Defaults to True.
 
 		Returns:
 			DockerInfo: A DockerInfo object with id and status set.
@@ -250,38 +253,36 @@ class DockerManager():
 				return DockerInfo(id=image_id, status=f'Image not found: {image_id}')
 
 		self.counter += 1
-		return DockerInfo(id=container.id, status=container.status())
 
-	def _start_container(self, container_id: str, config: dict) -> DockerInfo:
+		upload_info = self._upload_config(container.id, config)
+		if not upload_info.data:
+			print('Failed to upload configuration file!')
+		return upload_info
+
+	def _start_container(self, container_id: str) -> DockerInfo:
 		"""
 		Start a container for the given image.
 
 		Args:
 			container_id (str): The id of the image to start the container for.
-			config (str): a json containing parameters for the simulation.
 
 		Returns:
-			DockerInfo: A DockerInfo object with the id, the status of the started docker container and a bool in the data field
-				indicating whether or not the config was uploaded successfully.
+			DockerInfo: A DockerInfo object with the id and the status of the started docker container.
 		"""
 		container: Container = self._get_container(container_id)
 		if not container:
 			return DockerInfo(id=container_id, status=f'Container not found: {container_id}')
 
-		if container.status() == 'running':
+		if container.status == 'running':
 			print(f'Container is already running: {container_id}')
 			return DockerInfo(id=container_id, status='running')
 
 		print(f'Starting container: {container_id}')
 		try:
 			container.start()
+			return DockerInfo(id=container_id, status=container.status)
 		except docker.errors.APIError:
 			return DockerInfo(id=container_id, status=f'APIError encountered while starting container: {container_id}')
-
-		upload_info = self._upload_config(container_id, config)
-		if not upload_info.data:
-			print('Failed to upload configuration file!')
-		return upload_info
 
 	def _get_container(self, container_id: str) -> Container:
 		"""
@@ -322,7 +323,7 @@ class DockerManager():
 		command = self._allowed_commands[command_id]
 		print(f'Executing command: {command}')
 		_, stream = container.exec_run(cmd=command, detach=True)
-		return DockerInfo(id=container_id, status=container.status())
+		return DockerInfo(id=container_id, status=container.status)
 
 	def _stop_container(self, container_id: str) -> DockerInfo:
 		"""
@@ -343,7 +344,7 @@ class DockerManager():
 		print(f'Stopping container: {container_id}')
 		try:
 			container.stop(timeout=10)
-			return DockerInfo(id=container_id, status=container.status())
+			return DockerInfo(id=container_id, status=container.status)
 		except docker.errors.APIError:
 			return DockerInfo(container_id, status=f'APIError encountered while stopping container: {container_id}')
 
@@ -389,7 +390,7 @@ class DockerManager():
 			os.remove('config.tar')
 			os.chdir('..')
 			os.rmdir('config_tmp')
-		return DockerInfo(id=container_id, status=container.status(), data=ok)
+		return DockerInfo(id=container_id, status=container.status, data=ok)
 
 	# OBSERVER
 	def attach(self, id: int, observer) -> None:
