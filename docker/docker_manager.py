@@ -87,8 +87,7 @@ class DockerManager():
 		if container_info.status.__contains__('Container not found') or container_info.data is False:
 			self.remove_container(container_info.id)
 			return container_info
-		else:
-			return self._start_container(container_info.id)
+		return self._start_container(container_info.id)
 
 	def health(self, container_id: str) -> DockerInfo:
 		"""
