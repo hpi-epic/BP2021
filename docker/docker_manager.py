@@ -35,12 +35,9 @@ class DockerManager():
 	_instance = None
 	_client = None
 	_observers = []
-	# This dictionary is very important. It contains a list of commands that users can send to a Docker container.
-	_allowed_commands = {
-		'training': './src/rl/training_scenario.py',
-		'exampleprinter': './src/monitoring/exampleprinter.py',
-		'monitoring': './src/monitoring/agent_monitoring/am_monitoring.py'
-	}
+	# This is a list of commands that should be supported by our docker implementation
+	# For each command, there is a dockerfile of the format 'dockerfile_command' in the docker/dockerfiles folder
+	_allowed_commands = ['training', 'exampleprinter', 'agent_monitoring']
 	counter = 6006
 
 	def __new__(cls):
@@ -57,9 +54,10 @@ class DockerManager():
 
 	def start(self, command_id: str, config: dict) -> DockerInfo:
 		"""
-		To be called by the REST API. Create and start a new docker container from the default image.
+		To be called by the REST API. Create and start a new docker container from the image of the specified command.
 
 		Args:
+			command_id (str): The command for which to start a container.
 			config (dict): The config.json to replace the default one with.
 
 		Returns:
@@ -69,24 +67,14 @@ class DockerManager():
 			print(f'Command with ID {command_id} not allowed')
 			return DockerInfo(id=None, status=f'Command not allowed: {command_id}')
 
-		# Hacky dockerfile creation
-		with open('../dockerfile', 'r') as dockerfile:
-			template = dockerfile.read()
-			dock = template
-			dock = dock.replace('USER_COMMAND_PLACEHOLDER', self._allowed_commands[command_id])
-		with open('../dockerfile', 'w') as dockerfile:
-			dockerfile.write(dock)
-		try:
-			self._build_image(imagename='bp2021image')
-		finally:
-			with open('../dockerfile', 'w') as dockerfile:
-				dockerfile.write(template)
+		self._confirm_image_exists(command_id)
 
-		container_info = self._create_container('bp2021image', config, use_gpu=False)
-
-		if container_info.status.__contains__('Container not found') or container_info.data is False:
+		# start a container for the image of the requested command
+		container_info = self._create_container(command_id, config, use_gpu=False)
+		if container_info.status.__contains__('Image not found') or container_info.data is False:
 			self.remove_container(container_info.id)
 			return container_info
+
 		return self._start_container(container_info.id)
 
 	def health(self, container_id: str) -> DockerInfo:
@@ -192,30 +180,71 @@ class DockerManager():
 			return DockerInfo(id=container_id, status=f'APIError encountered while removing container: {container_id}')
 
 	# PRIVATE METHODS
-	def _build_image(self, imagename: str = 'bp2021image') -> str:
+	def _confirm_image_exists(self, command_id: str, update: bool = False) -> str:
 		"""
-		Build an image from the default dockerfile and name it accordingly.
-
-		If an image with the provided name already exists, that image will be overwritten.
+		Find out if the specified image exists.	If not, the image will be built. If the command is invalid, None is returned.
 
 		Args:
-			imagename (str, optional): The name the image will have. Defaults to 'bp2021image'.
+			command_id (str): The command for which an image should exist.
+			update (bool): Whether or not to always build/update an image for this id. Defaults to False.
+
+		Returns:
+			str: The id of the image.
+		"""
+		if command_id not in self._allowed_commands:
+			print(f'Invalid command: {command_id}. No image will be built.')
+			return None
+		if update:
+			print(f'Image for command {command_id} will be created/updated.')
+			return self._build_image(command_id=command_id)
+
+		# Get the image tag of all images on the system.
+		images = [image.tags[0].rsplit(':')[0] for image in self._client.images.list()]
+		if command_id not in images:
+			print(f'Image does not exist and will be created: {command_id}')
+			return self._build_image(command_id=command_id)
+		print(f'image already exists: {command_id}')
+		return self._client.images.get(command_id).id[7:]
+
+	def _build_image(self, command_id: str) -> str:
+		"""
+		Build an image from the dockerfile of the command and name it accordingly.
+
+		Args:
+			command_id (str): The command for which to build the image for.
 
 		Returns:
 			str: The id of the image.
 		"""
 		# https://docker-py.readthedocs.io/en/stable/images.html
 		# build image from dockerfile and name it accordingly
-		print(f'Building image: {imagename}')
-		# Find out if an image with the name already exists and remove it afterwards
+		print(f'Building image for command: {command_id}')
+
+		# Copy over the correct dockerfile for the command
+		with open(os.path.join(os.path.dirname(__file__), os.pardir, 'dockerfile'), 'r') as dockerfile_template:
+			template = dockerfile_template.read()
+		with open(os.path.join(os.path.dirname(__file__), 'dockerfiles', f'dockerfile_{command_id}'), 'r') as new_dockerfile:
+			docker_file = new_dockerfile.read()
+		with open(os.path.join(os.path.dirname(__file__), os.pardir, 'dockerfile'), 'w') as dockerfile:
+			dockerfile.write(docker_file)
+
+		# Find out if an image with the name already exists to remove it afterwards
 		try:
-			old_img = self._client.images.get(imagename)
+			old_img = self._client.images.get(command_id)
 		except docker.errors.ImageNotFound:
 			old_img = None
-		img, _ = self._client.images.build(path=os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)),
-			tag=imagename, forcerm=True)
+		try:
+			img, _ = self._client.images.build(path=os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)),
+				tag=command_id, forcerm=True)
+		except docker.errors.BuildError or docker.errors.APIError:
+			print(f'An error occurred while building the image for command: {command_id}')
+		# No matter what happens during the build, we reset our default dockerfile
+		finally:
+			with open(os.path.join(os.path.dirname(__file__), os.pardir, 'dockerfile'), 'w') as dockerfile:
+				dockerfile.write(template)
+
 		if old_img is not None and old_img.id != img.id:
-			print(f'An image with this name already exists, it will be overwritten: {imagename}')
+			print(f'An image with this name already exists, it will be overwritten: {command_id}')
 			self._client.images.remove(old_img.id[7:])
 		# return id without the 'sha256:'-prefix
 		return img.id[7:]
@@ -240,11 +269,14 @@ class DockerManager():
 		# create a device request to use all available GPU devices with compute capabilities
 		if use_gpu:
 			device_request_gpu = docker.types.DeviceRequest(driver='nvidia', count=-1, capabilities=[['compute']])
-			container: Container = self._client.containers.create(image_id,
-				# name=f'{container_name}_container',
-				detach=True,
-				ports={'6006/tcp': self.counter},
-				device_requests=[device_request_gpu])
+			try:
+				container: Container = self._client.containers.create(image_id,
+					# name=f'{container_name}_container',
+					detach=True,
+					ports={'6006/tcp': self.counter},
+					device_requests=[device_request_gpu])
+			except docker.errors.ImageNotFound:
+				return DockerInfo(id=image_id, status=f'Image not found: {image_id}')
 		else:
 			try:
 				container: Container = self._client.containers.create(image_id, detach=True, ports={'6006/tcp': self.counter})
@@ -418,4 +450,4 @@ class DockerManager():
 
 if __name__ == '__main__':
 	manager = DockerManager()
-	img = manager._build_image()
+	print(manager._confirm_image_exists('agent_monitoring'))
