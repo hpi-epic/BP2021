@@ -146,7 +146,7 @@ async def remove_container(id: str) -> JSONResponse:
 		JSONResponse: The response of the remove request encapsuled in a DockerInfo JSON. Status will be 'removed' if successful.
 	"""
 	container_info = manager.remove_container(id)
-	if container_info.status.__contains__('Container not found'):
+	if container_info.status.__contains__('Container not found') or container_info.status.__contains__('Container not stopped successfully'):
 		return JSONResponse(status_code=404, content=vars(container_info))
 	else:
 		return JSONResponse(vars(container_info))

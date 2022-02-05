@@ -170,7 +170,10 @@ class DockerManager():
 		if not container:
 			return DockerInfo(container_id, status=f'Container not found: {container_id}')
 
-		self._stop_container(container_id)
+		container_info = self._stop_container(container_id)
+		if container_info.status != 'stopped':
+			print(f'Container not stopped successfully: {container_id}')
+			return DockerInfo(id=container_id, status=f'Container not stopped successfully: {container_id}')
 
 		print(f'Removing container: {container_id}')
 		try:
@@ -203,7 +206,7 @@ class DockerManager():
 		if command_id not in images:
 			print(f'Image does not exist and will be created: {command_id}')
 			return self._build_image(command_id=command_id)
-		print(f'image already exists: {command_id}')
+		print(f'Image already exists: {command_id}')
 		return self._client.images.get(command_id).id[7:]
 
 	def _build_image(self, command_id: str) -> str:
@@ -311,6 +314,8 @@ class DockerManager():
 		print(f'Starting container: {container_id}')
 		try:
 			container.start()
+			# Reload the attributes to get the correct status
+			container.reload()
 			return DockerInfo(id=container_id, status=container.status)
 		except docker.errors.APIError:
 			return DockerInfo(id=container_id, status=f'APIError encountered while starting container: {container_id}')
@@ -329,32 +334,6 @@ class DockerManager():
 			return self._client.containers.get(container_id)
 		except docker.errors.NotFound:
 			return None
-
-	# Should no longer be used since we moved command execution to the container ENTRYPOINT
-	def _execute_command(self, container_id: str, command_id: str) -> DockerInfo:
-		"""
-		Execute a command on the specified container.
-
-		Args:
-			container_id (str): The id of the container.
-			command_id (str): The id of the command. Checked against self._allowed_commands.
-
-		Returns:
-			DockerInfo: A DockerInfo object containing the id and status of the container.
-		"""
-		container: Container = self._get_container(container_id)
-		if not container:
-			return DockerInfo(container_id, status=f'Container not found: {container_id}')
-
-		if command_id not in self._allowed_commands:
-			print(f'Command with ID {command_id} not allowed')
-			self.remove_container(container_id)
-			return DockerInfo(id=container_id, status=f'Command not allowed: {command_id}')
-
-		command = self._allowed_commands[command_id]
-		print(f'Executing command: {command}')
-		_, stream = container.exec_run(cmd=command, detach=True)
-		return DockerInfo(id=container_id, status=container.status)
 
 	def _stop_container(self, container_id: str) -> DockerInfo:
 		"""
@@ -375,6 +354,8 @@ class DockerManager():
 		print(f'Stopping container: {container_id}')
 		try:
 			container.stop(timeout=10)
+			# Reload the attributes to get the correct status
+			container.reload()
 			return DockerInfo(id=container_id, status=container.status)
 		except docker.errors.APIError:
 			return DockerInfo(container_id, status=f'APIError encountered while stopping container: {container_id}')
@@ -422,6 +403,32 @@ class DockerManager():
 			os.chdir('..')
 			os.rmdir('config_tmp')
 		return DockerInfo(id=container_id, status=container.status, data=ok)
+
+	# Should no longer be used since we moved command execution to the container ENTRYPOINT
+	# def _execute_command(self, container_id: str, command_id: str) -> DockerInfo:
+	# 	"""
+	# 	Execute a command on the specified container.
+
+	# 	Args:
+	# 		container_id (str): The id of the container.
+	# 		command_id (str): The id of the command. Checked against self._allowed_commands.
+
+	# 	Returns:
+	# 		DockerInfo: A DockerInfo object containing the id and status of the container.
+	# 	"""
+	# 	container: Container = self._get_container(container_id)
+	# 	if not container:
+	# 		return DockerInfo(container_id, status=f'Container not found: {container_id}')
+
+	# 	if command_id not in self._allowed_commands:
+	# 		print(f'Command with ID {command_id} not allowed')
+	# 		self.remove_container(container_id)
+	# 		return DockerInfo(id=container_id, status=f'Command not allowed: {command_id}')
+
+	# 	command = self._allowed_commands[command_id]
+	# 	print(f'Executing command: {command}')
+	# 	_, stream = container.exec_run(cmd=command, detach=True)
+	# 	return DockerInfo(id=container_id, status=container.status)
 
 	# OBSERVER
 	def attach(self, id: int, observer) -> None:
