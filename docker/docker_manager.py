@@ -39,6 +39,7 @@ class DockerManager():
 	# This is a list of commands that should be supported by our docker implementation
 	# For each command, there must be a dockerfile of the format 'dockerfile_command' in the docker/dockerfiles folder
 	_allowed_commands = ['training', 'exampleprinter', 'agent_monitoring']
+	# dictionary of container_id:host-port pairs
 	_port_mapping = {}
 
 	def __new__(cls):
@@ -51,6 +52,10 @@ class DockerManager():
 		if cls._instance is None:
 			cls._instance = super(DockerManager, cls).__new__(cls)
 			cls._client = docker.from_env()
+
+		# make sure the 'occupied_ports.txt' exists
+		with open('occupied_ports.txt', 'w'):
+			pass
 		# initialize the list of occupied ports by reading from the file
 		with open(os.path.join(os.path.dirname(__file__), 'occupied_ports.txt'), 'r') as port_file:
 			occupied_ports = port_file.readlines()
@@ -58,8 +63,6 @@ class DockerManager():
 		occupied_ports = (item[:-1] for item in occupied_ports)
 		# the port mapping is a dictionary with the container_id being the key and its port the value
 		cls._port_mapping = dict(zip(occupied_ports, occupied_ports))
-		# convert the values to ints
-		cls._port_mapping.update((id, int(port)) for id, port in cls._port_mapping.items())
 		return cls._instance
 
 	def start(self, command_id: str, config: dict) -> DockerInfo:
@@ -348,6 +351,7 @@ class DockerManager():
 			container.reload()
 			return DockerInfo(id=container_id, status=container.status, data=self._port_mapping[container.id])
 		except docker.errors.APIError:
+			container.remove()
 			return DockerInfo(id=container_id, status=f'APIError encountered while starting container: {container_id}')
 
 	def _get_container(self, container_id: str) -> Container:
