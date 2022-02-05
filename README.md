@@ -5,6 +5,21 @@
 ![Docstring-Coverage](/badges/docstring_coverage.svg)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 
+- [Online Marketplace Simulation: A Testbed for Self-Learning Agents](#online-marketplace-simulation-a-testbed-for-self-learning-agents)
+	- [Installing dependencies](#installing-dependencies)
+	- [The `AlphaBusiness` package](#the-alphabusiness-package)
+	- [Pytest](#pytest)
+		- [Coverage](#coverage)
+	- [Pre-commit](#pre-commit)
+		- [Interrogate](#interrogate)
+		- [Pre-commit Troubleshooting](#pre-commit-troubleshooting)
+	- [Networking Scenario](#networking-scenario)
+		- [Docker](#docker)
+			- [Docker-API](#docker-api)
+			- [Using Docker natively](#using-docker-natively)
+		- [Webserver](#webserver)
+		- [Docker API](#docker-api-1)
+
 Working repository in context of the bachelorproject "Online Marketplace Simulation: A Testbed for Self-Learning Agents" at the research group Enterprise Platform and Integration Concepts.
 
 The goal of the project is to develop a universal simulation platform for markets with varying numbers of merchants. Being able to run various market simulations is highly relevant for many firms such as SAP and its partners. As the platform is designed as a tool to support evaluation and research, aspects like configurability and ease of use are crucial. While the technology stack is left open for now, high compatibility to common simulation APIs (such as Gym, TF-Agents) is required.
@@ -73,7 +88,7 @@ Check `pip freeze` again to make sure the package was installed.
 Installing our project as a package enables us to perform [relative imports](https://realpython.com/absolute-vs-relative-python-imports/) from within subdirectories to parent directories. The most prominent example of this would be importing the tested files from within the test-files in the `tests/` subdirectory.
 Package installation adapted from [this post](https://stackoverflow.com/a/50194143).
 
-## Using Pytest locally
+## Pytest
 
 [Pytest documentation](https://docs.pytest.org/en/latest/index.html)
 
@@ -129,6 +144,22 @@ pre-commit run --all-files
 
 which will install the needed environment.
 
+### Interrogate
+
+[Interrogate documentation](https://interrogate.readthedocs.io/en/latest/)
+
+We use Interrogate to monitor our docstring coverage. Interrogate is automatically run with Pre-commit, but the badge can only be updated manually.
+To update the badge, modify the `pre-commit-config.yml` file by swapping the following line:
+
+```yml
+args: [-v, --ignore-init-method, --ignore-module, --exclude=./src/tests, --exclude=./webserver, --fail-under=50]
+```
+with
+```yml
+args: [-v, --ignore-init-method, --ignore-module, --exclude=./src/tests, --exclude=./webserver, --fail-under=50, --generate-badge=./badges/docstring_coverage.svg, --badge-style=flat]
+```
+
+
 ### Pre-commit Troubleshooting
 
 If you get the following error:
@@ -146,7 +177,7 @@ Solution: Check the App execution Aliases, and if no Python version is present, 
 
 If you get an error saying that the `_sqlite3`-module is missing, you are missing the `sqlite3.dll` and `sqlite3.def` files.
 
-Solution: Go to <https://www.sqlite.org/download.html> to download the `sqlite3.dll` and `sqlite3.def` files and drop them into the following folder:
+Solution: Go to the [SQLite Download Page](https://www.sqlite.org/download.html) to download the `sqlite3.dll` and `sqlite3.def` files and drop them into the following folder:
 
 ```PATH
 C:\Users\your_username\anaconda3\envs\your_venv_name\DLLs
@@ -156,31 +187,37 @@ C:\Users\your_username\anaconda3\envs\your_venv_name\DLLs
 
 ### Docker
 
-To use docker, please install it on your machine. If you did so, you can build an image with the following command:
+To use docker, first install it on your machine. Afterwards, you can build the images used in our repository using the following command:
 
 ```console
-docker build . -t bp2021image
+python3 ./docker/docker_manager.py
 ```
 
-This probably will take a while (especially the first time, since the image is ~17GB in size). The above command will return the image id you have to use to run the container you just built:
+#### Docker-API
+
+We recommend interacting with Docker using the Webserver as outlined in the [Webserver](#webserver) section. If you still want to use Docker from you commandline, refer to [Using Docker natively](#using-docker-natively).
+
+#### Using Docker natively
+
+This command will create an image for each command that can be executed in a docker container. Building the images may take a while, it is about 5GB in size. To see all current images on your system use:
+
+```console
+docker images
+```
+
+You can create and run a container for an image using the following command:
 
 ```console
 docker run IMAGE_ID
 ```
 
-At any point you can list all current container with:
+At any point you can list all current containers with:
 
 ```console
 docker ps -a
 ```
 
-This will start the container, which will run in an endless loop and allow you to execute commands in it using the following command:
-
-```console
-docker exec -it CONTAINER_ID COMMAND
-```
-
-You can stop the container using:
+You can stop a container using:
 
 ```console
 docker stop CONTAINER_ID
@@ -191,10 +228,6 @@ And remove it with:
 ```console
 docker remove CONTAINER_ID
 ```
-
-### Troubleshooting
-
-If you get the message containing permission denied, try to run with sudo or google it. there is much help with this.
 
 ### Webserver
 
@@ -219,7 +252,7 @@ python3 ./manage.py migrate
 
 ### Docker API
 
-There is a RESTful API written with the python libary FastAPI for communicating with docker container that can be found in `/docker`
+There is a RESTful API written with the python libary FastAPI for communicating with docker containers that can be found in `/docker`
 
 The API needs to run on `127.0.0.1:8000`. To start the API go to `/docker` and run
 
@@ -227,4 +260,4 @@ The API needs to run on `127.0.0.1:8000`. To start the API go to `/docker` and r
 uvicorn app:app --reload 
 ```
 
-Don't use `--reload` when deploying in production
+Don't use `--reload` when deploying in production.
