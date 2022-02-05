@@ -171,9 +171,9 @@ class DockerManager():
 			return DockerInfo(container_id, status=f'Container not found: {container_id}')
 
 		container_info = self._stop_container(container_id)
-		if container_info.status != 'stopped':
-			print(f'Container not stopped successfully: {container_id}')
-			return DockerInfo(id=container_id, status=f'Container not stopped successfully: {container_id}')
+		if container_info.status != 'exited':
+			print(f'Container not stopped successfully: {container_id}. Status: {container_info.status}')
+			return DockerInfo(id=container_id, status=f'Container not stopped successfully: {container_id}. Status: {container_info.status}')
 
 		print(f'Removing container: {container_id}')
 		try:
