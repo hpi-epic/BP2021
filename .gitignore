@@ -8,7 +8,7 @@ webserver/configurations
 webserver/data
 
 # docker related directories
-docker/*.tar
+docker/occupied_ports.txt
 
 # file for Johanns test runner
 tests.sh
