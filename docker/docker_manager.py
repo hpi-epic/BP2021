@@ -457,4 +457,5 @@ class DockerManager():
 
 if __name__ == '__main__':
 	manager = DockerManager()
-	print(manager._confirm_image_exists('agent_monitoring'))
+	for command in manager._allowed_commands:
+		print(manager._confirm_image_exists(command, update=True))
