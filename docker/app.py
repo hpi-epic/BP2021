@@ -32,10 +32,10 @@ async def start_container(command: str, config: Request) -> JSONResponse:
 		config (Request): The config.json file that should be sent to the container.
 
 	Returns:
-		StreamingResponse: The response of the Docker start request. Contains custom header keys for id and status of the container.
+		JSONResponse: The response of the Docker start request. Contains the port used on the host in the data-field.
 	"""
 	container_info = manager.start(command_id=command, config=await config.json())
-	if container_info.status.__contains__('Command not allowed') or container_info.status.__contains__('Container not found'):
+	if container_info.status.__contains__('Command not allowed') or container_info.status.__contains__('Image not found'):
 		return JSONResponse(status_code=404, content=vars(container_info))
 	else:
 		return JSONResponse(vars(container_info))

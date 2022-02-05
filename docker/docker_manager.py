@@ -2,6 +2,7 @@ import json
 import os
 import tarfile
 import time
+from itertools import count, filterfalse
 
 import docker
 from docker.models.containers import Container
@@ -36,9 +37,9 @@ class DockerManager():
 	_client = None
 	_observers = []
 	# This is a list of commands that should be supported by our docker implementation
-	# For each command, there is a dockerfile of the format 'dockerfile_command' in the docker/dockerfiles folder
+	# For each command, there must be a dockerfile of the format 'dockerfile_command' in the docker/dockerfiles folder
 	_allowed_commands = ['training', 'exampleprinter', 'agent_monitoring']
-	counter = 6006
+	_port_mapping = {}
 
 	def __new__(cls):
 		"""
@@ -50,6 +51,15 @@ class DockerManager():
 		if cls._instance is None:
 			cls._instance = super(DockerManager, cls).__new__(cls)
 			cls._client = docker.from_env()
+		# initialize the list of occupied ports by reading from the file
+		with open(os.path.join(os.path.dirname(__file__), 'occupied_ports.txt'), 'r') as port_file:
+			occupied_ports = port_file.readlines()
+		# occupied_ports is a tuple with alternating container_id and port
+		occupied_ports = (item[:-1] for item in occupied_ports)
+		# the port mapping is a dictionary with the container_id being the key and its port the value
+		cls._port_mapping = dict(zip(occupied_ports, occupied_ports))
+		# convert the values to ints
+		cls._port_mapping.update((id, int(port)) for id, port in cls._port_mapping.items())
 		return cls._instance
 
 	def start(self, command_id: str, config: dict) -> DockerInfo:
@@ -110,8 +120,10 @@ class DockerManager():
 		if not container:
 			return DockerInfo(container_id, status=f'Container not found: {container_id}')
 
-		container.exec_run(cmd='tensorboard serve --logdir ./results/runs --bind_all')
-		return DockerInfo(container_id, status=container.status, data='http://localhost:6006')
+		print(f'Starting tensorboard for: {container_id}')
+		container.exec_run(cmd='tensorboard serve --logdir ./results/runs --bind_all', detach=True)
+		port = self._port_mapping[container.id]
+		return DockerInfo(container_id, status=container.status, data=f'http://localhost:{port}')
 
 	def get_container_logs(self, container_id: str, timestamps: bool, stream: bool, tail: int) -> DockerInfo:
 		"""
@@ -178,6 +190,19 @@ class DockerManager():
 		print(f'Removing container: {container_id}')
 		try:
 			container.remove()
+			# remove the port mapping of the old container from the occupied_ports.txt
+			with open(os.path.join(os.path.dirname(__file__), 'occupied_ports.txt'), 'r') as port_file:
+				lines = port_file.readlines()
+				with open(os.path.join(os.path.dirname(__file__), 'occupied_ports_temp.txt'), 'w') as temp_port_file:
+					for line in lines:
+						if line.strip('\n') not in [container.id, str(self._port_mapping[container.id])]:
+							temp_port_file.write(line)
+			# replace the old file with the new one
+			os.remove('./occupied_ports.txt')
+			os.rename('./occupied_ports_temp.txt', './occupied_ports.txt')
+			# update the local port mapping
+			self._port_mapping.pop(container.id)
+
 			return DockerInfo(id=container_id, status='removed')
 		except docker.errors.APIError:
 			return DockerInfo(id=container_id, status=f'APIError encountered while removing container: {container_id}')
@@ -269,6 +294,8 @@ class DockerManager():
 		# name will be first tag without the ':latest'-postfix
 		# container_name = self._client.images.get(image_id).tags[0][:-7]
 
+		# find the next available port to map to 6006 in the container
+		used_port = next(filterfalse(set(self._port_mapping.values()).__contains__, count(6006)))
 		# create a device request to use all available GPU devices with compute capabilities
 		if use_gpu:
 			device_request_gpu = docker.types.DeviceRequest(driver='nvidia', count=-1, capabilities=[['compute']])
@@ -276,17 +303,20 @@ class DockerManager():
 				container: Container = self._client.containers.create(image_id,
 					# name=f'{container_name}_container',
 					detach=True,
-					ports={'6006/tcp': self.counter},
+					ports={'6006/tcp': used_port},
 					device_requests=[device_request_gpu])
 			except docker.errors.ImageNotFound:
 				return DockerInfo(id=image_id, status=f'Image not found: {image_id}')
 		else:
 			try:
-				container: Container = self._client.containers.create(image_id, detach=True, ports={'6006/tcp': self.counter})
+				container: Container = self._client.containers.create(image_id, detach=True, ports={'6006/tcp': used_port})
 			except docker.errors.ImageNotFound:
 				return DockerInfo(id=image_id, status=f'Image not found: {image_id}')
 
-		self.counter += 1
+		# Add the container.id and used_port to the occupied_ports.txt and the self._port_mapping
+		with open(os.path.join(os.path.dirname(__file__), 'occupied_ports.txt'), 'a') as port_file:
+			port_file.write(f'{container.id}\n{used_port}\n')
+		self._port_mapping.update({container.id: used_port})
 
 		upload_info = self._upload_config(container.id, config)
 		if not upload_info.data:
@@ -316,7 +346,7 @@ class DockerManager():
 			container.start()
 			# Reload the attributes to get the correct status
 			container.reload()
-			return DockerInfo(id=container_id, status=container.status)
+			return DockerInfo(id=container_id, status=container.status, data=self._port_mapping[container.id])
 		except docker.errors.APIError:
 			return DockerInfo(id=container_id, status=f'APIError encountered while starting container: {container_id}')
 
