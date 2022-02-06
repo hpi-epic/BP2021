@@ -3,6 +3,7 @@ import os
 import tarfile
 import time
 from itertools import count, filterfalse
+from types import GeneratorType
 
 import docker
 from docker.models.containers import Container
@@ -13,14 +14,18 @@ class DockerInfo():
 	This class encapsules the return values for the REST API.
 	"""
 
-	def __init__(self, id: str, status: str, data: str = None, stream=None) -> None:
+	def __init__(self, id: str, status: str, data=None, stream: GeneratorType = None) -> None:
 		"""
 		Args:
-			id (str, optional): The sha256 id of the container. Always returned.
-			status (bool, optional): Status of the container. Always returned.
-			data (str, optional): Any other data, dependent on the function called this differs.
+			id (str): The sha256 id of the container.
+			status (str): Status of the container.
+			data ([str, bool, int], optional): Any other data, dependent on the function called this differs.
 			stream (stream generator, optional): A stream generator.
 		"""
+		assert isinstance(id, str), f'id must be a string: {id}'
+		assert isinstance(status, str), f'status must be a string: {status}'
+		assert isinstance(data, (str, bool, int, type(None))), f'data must be a string, bool or int: {data}'
+		assert isinstance(stream, (GeneratorType, type(None))), f'stream must be a stream Generator: {stream} ({type(stream)})'
 		self.id = id
 		self.status = status
 		self.data = data
@@ -50,19 +55,11 @@ class DockerManager():
 			DockerManager: The DockerManager instance.
 		"""
 		if cls._instance is None:
+			print('A new instance of DockerManager is being initialized')
 			cls._instance = super(DockerManager, cls).__new__(cls)
 			cls._client = docker.from_env()
 
-		# make sure the 'occupied_ports.txt' exists
-		with open(os.path.join(os.path.dirname(__file__), 'occupied_ports.txt'), 'w'):
-			pass
-		# initialize the list of occupied ports by reading from the file
-		with open(os.path.join(os.path.dirname(__file__), 'occupied_ports.txt'), 'r') as port_file:
-			occupied_ports = port_file.readlines()
-		# occupied_ports is a tuple with alternating container_id and port
-		occupied_ports = (item[:-1] for item in occupied_ports)
-		# the port mapping is a dictionary with the container_id being the key and its port the value
-		cls._port_mapping = dict(zip(occupied_ports, occupied_ports))
+		cls._initialize_port_mapping(cls)
 		return cls._instance
 
 	def start(self, command_id: str, config: dict) -> DockerInfo:
@@ -436,31 +433,27 @@ class DockerManager():
 			os.rmdir('config_tmp')
 		return DockerInfo(id=container_id, status=container.status, data=ok)
 
-	# Should no longer be used since we moved command execution to the container ENTRYPOINT
-	# def _execute_command(self, container_id: str, command_id: str) -> DockerInfo:
-	# 	"""
-	# 	Execute a command on the specified container.
+	def _initialize_port_mapping(cls):
+		# make sure the 'occupied_ports.txt' exists
+		with open(os.path.join(os.path.dirname(__file__), 'occupied_ports.txt'), 'a'):
+			pass
+		# initialize the list of occupied ports by reading from the file
+		with open(os.path.join(os.path.dirname(__file__), 'occupied_ports.txt'), 'r') as port_file:
+			occupied_ports = port_file.readlines()
+		# occupied_ports is a tuple with alternating container_id and port
+		occupied_ports = (item[:-1] for item in occupied_ports)
+		# the port mapping is a dictionary with the container_id being the key and its port the value
+		cls._port_mapping = dict(zip(occupied_ports, occupied_ports))
 
-	# 	Args:
-	# 		container_id (str): The id of the container.
-	# 		command_id (str): The id of the command. Checked against self._allowed_commands.
+		# make sure all containers are mapped and registered to the manager
+		running_containers = [container.id for container in cls._client.containers.list()]
+		mapped_containers = list(cls._port_mapping.keys())
+		assert set(mapped_containers) == set(running_containers), f'''Container-Port mapping is mismatched! Check the \'occupied_ports.txt\'!
+running_containers: {running_containers}
+mapped_containers: {mapped_containers}'''
 
-	# 	Returns:
-	# 		DockerInfo: A DockerInfo object containing the id and status of the container.
-	# 	"""
-	# 	container: Container = self._get_container(container_id)
-	# 	if not container:
-	# 		return DockerInfo(container_id, status=f'Container not found: {container_id}')
-
-	# 	if command_id not in self._allowed_commands:
-	# 		print(f'Command with ID {command_id} not allowed')
-	# 		self.remove_container(container_id)
-	# 		return DockerInfo(id=container_id, status=f'Command not allowed: {command_id}')
-
-	# 	command = self._allowed_commands[command_id]
-	# 	print(f'Executing command: {command}')
-	# 	_, stream = container.exec_run(cmd=command, detach=True)
-	# 	return DockerInfo(id=container_id, status=container.status)
+		# make the ports integers
+		cls._port_mapping.update((key, int(value)) for key, value in cls._port_mapping.items())
 
 	# OBSERVER
 	def attach(self, id: int, observer) -> None:
@@ -487,7 +480,7 @@ class DockerManager():
 # END OBSERVER
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # pragma: no cover
 	manager = DockerManager()
 	for command in manager._allowed_commands:
 		print(manager._confirm_image_exists(command, update=True))
