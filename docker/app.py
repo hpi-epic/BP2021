@@ -35,7 +35,8 @@ async def start_container(command: str, config: Request) -> JSONResponse:
 		JSONResponse: The response of the Docker start request. Contains the port used on the host in the data-field.
 	"""
 	container_info = manager.start(command_id=command, config=await config.json())
-	if container_info.status.__contains__('Command not allowed') or container_info.status.__contains__('Image not found'):
+	if (container_info.status.__contains__('Command not allowed')
+		or container_info.status.__contains__('Image not found') or container_info.data is False):
 		return JSONResponse(status_code=404, content=vars(container_info))
 	else:
 		return JSONResponse(vars(container_info))

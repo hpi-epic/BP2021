@@ -106,9 +106,6 @@ class DockerManager():
 			return DockerInfo(container_id, status=f'Container not found: {container_id}')
 		return DockerInfo(container_id, status=container.status)
 
-	# TODO:
-	# When we add the possibility to run multiple containers at once, we need to change the port that is exposed in each container,
-	# 	which also leads to a different port in the return value here.
 	def start_tensorboard(self, container_id: str) -> DockerInfo:
 		"""
 		To be called by the REST API. Start a tensorboard session on the specified container.
@@ -169,7 +166,8 @@ class DockerManager():
 			return DockerInfo(container_id, status=f'Container not found: {container_id}')
 
 		bits, _ = container.get_archive(path=container_path)
-		return DockerInfo(container_id, data=f'archive_{container_path.rpartition("/")[2]}_{time.strftime("%b%d_%H-%M-%S")}', stream=bits)
+		return DockerInfo(container_id, status=container.status,
+			data=f'archive_{container_path.rpartition("/")[2]}_{time.strftime("%b%d_%H-%M-%S")}', stream=bits)
 
 	def remove_container(self, container_id: str) -> DockerInfo:
 		"""
