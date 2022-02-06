@@ -6,16 +6,18 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse, StreamingResponse
 
 # This file should expose a RESTful api for using the docker container with the following routes:
-# POST /start/<docker_id>
-# GET /health/<docker_id>
-# GET /data/<docker_id>
-# GET /data/tensorboard/<docker_id>
-# GET /remove/<docker_id>
+# POST /start/<command><config>
+# GET /health/<id>
+# GET /logs/<id><timestamps><stream><tail>
+# GET /data/<id><path>
+# GET /data/tensorboard/<id>
+# GET /remove/<id>
 
-# before first use on a new machine/ with changes to the environment or the src folder,
-# please call run the docker_manager.py file. It initializes the image and takes ages.
-# start API with uvicorn app:app --reload
-# If using a remote machine use "uvicorn --host 0.0.0.0 app:app --reload" instead to expose it to the local network
+# start API with
+# uvicorn app:app --reload
+# If using a remote machine use
+# uvicorn --host 0.0.0.0 app:app --reload
+# instead to expose it to the local network
 manager = DockerManager()
 
 app = FastAPI()
