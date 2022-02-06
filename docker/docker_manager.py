@@ -54,7 +54,7 @@ class DockerManager():
 			cls._client = docker.from_env()
 
 		# make sure the 'occupied_ports.txt' exists
-		with open('occupied_ports.txt', 'w'):
+		with open(os.path.join(os.path.dirname(__file__), 'occupied_ports.txt'), 'w'):
 			pass
 		# initialize the list of occupied ports by reading from the file
 		with open(os.path.join(os.path.dirname(__file__), 'occupied_ports.txt'), 'r') as port_file:
