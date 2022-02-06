@@ -15,3 +15,7 @@ jobs:
         shell: bash -l {0}
         run: |
           conda env update -n BP2021
+      - name: Update pip
+        shell: bash -l {0}
+        run: |
+          pip install -r requirements.txt
