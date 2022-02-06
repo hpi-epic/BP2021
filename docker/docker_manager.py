@@ -434,6 +434,12 @@ class DockerManager():
 		return DockerInfo(id=container_id, status=container.status, data=ok)
 
 	def _initialize_port_mapping(cls):
+		"""
+		Initialize the cls._port_mapping dictionary.
+
+		Opens the 'occupied_ports.txt' and reads the containers registered there, creating a dictionary of container_id:port mappings.
+		Checks that the registered containers and the currently running containers are the same.
+		"""
 		# make sure the 'occupied_ports.txt' exists
 		with open(os.path.join(os.path.dirname(__file__), 'occupied_ports.txt'), 'a'):
 			pass
@@ -446,7 +452,7 @@ class DockerManager():
 		cls._port_mapping = dict(zip(occupied_ports, occupied_ports))
 
 		# make sure all containers are mapped and registered to the manager
-		running_containers = [container.id for container in cls._client.containers.list()]
+		running_containers = [container.id for container in cls._client.containers.list(all=True)]
 		mapped_containers = list(cls._port_mapping.keys())
 		assert set(mapped_containers) == set(running_containers), f'''Container-Port mapping is mismatched! Check the \'occupied_ports.txt\'!
 running_containers: {running_containers}

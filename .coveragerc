@@ -4,6 +4,7 @@ omit =
 	*/__init__.py
 	# ignore files in the test folder
 	src/tests/*
+	docker/test_docker_manager.py
 	# ignore files only used as helpers
 	src/setup.py
 	src/rl/training_scenario.py
