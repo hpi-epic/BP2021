@@ -30,8 +30,8 @@ def observe(request):
 	if request.method == 'POST':
 		if 'data/tensorboard' in request.POST:
 			response = send_get_request('data/tensorboard', request.POST)
-			if response:
-				return redirect(response['data'])
+			if response.ok():
+				return redirect(response.content()['data'])
 			else:
 				message = response.status()
 
