@@ -261,9 +261,11 @@ class DockerManager():
 			old_img = None
 		try:
 			img, _ = self._client.images.build(path=os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)),
-				tag=command_id, forcerm=True)
-		except docker.errors.BuildError or docker.errors.APIError:
+				tag=command_id, forcerm=True, network_mode='host')
+		except docker.errors.BuildError or docker.errors.APIError as e:
 			print(f'An error occurred while building the image for command: {command_id}')
+			print(e)
+			exit(1)
 		# No matter what happens during the build, we reset our default dockerfile
 		finally:
 			with open(os.path.join(os.path.dirname(__file__), os.pardir, 'dockerfile'), 'w') as dockerfile:
