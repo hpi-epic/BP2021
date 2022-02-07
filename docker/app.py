@@ -65,7 +65,7 @@ async def is_container_alive(id: str) -> JSONResponse:
 
 
 @app.get('/logs/')
-async def get_container_logs(id: str, timestamps: bool = False, stream: bool = False, tail: int = 10) -> JSONResponse:
+async def get_container_logs(id: str, timestamps: bool = False, stream: bool = False, tail: int = 'all') -> JSONResponse:
 	"""
 	Get the logs of a container.
 
@@ -73,7 +73,7 @@ async def get_container_logs(id: str, timestamps: bool = False, stream: bool = F
 		id (str): The id of the container.
 		timestamps (bool): Whether or not timestamps should be included in the logs. Defaults to False.
 		stream (bool): Whether to stream the logs instead of directly retrieving them. Defaults to False.
-		tail (int): How many lines at the end of the logs should be returned. int or 'all'. Defaults to 10.
+		tail (int): How many lines at the end of the logs should be returned. int or 'all'. Defaults to 'all'.
 
 	Returns:
 		JSONResponse: If stream=False. The response of the log request.
