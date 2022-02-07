@@ -500,4 +500,4 @@ mapped_containers: {mapped_containers}'''
 if __name__ == '__main__':  # pragma: no cover
 	manager = DockerManager()
 	for command in manager._allowed_commands:
-		print(manager._confirm_image_exists(command, update=False), '\n')
+		print(manager._confirm_image_exists(command, update=True), '\n')
