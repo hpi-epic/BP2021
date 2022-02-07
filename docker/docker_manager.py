@@ -25,7 +25,7 @@ class DockerInfo():
 		assert isinstance(id, str), f'id must be a string: {id}'
 		assert isinstance(status, str), f'status must be a string: {status}'
 		assert isinstance(data, (str, bool, int, type(None))), f'data must be a string, bool or int: {data}'
-		assert isinstance(stream, (GeneratorType, type(None))), f'stream must be a stream Generator: {stream} ({type(stream)})'
+		assert isinstance(stream, (GeneratorType, type(None))), f'stream must be a stream Generator (GeneratorType): {stream} ({type(stream)})'
 		self.id = id
 		self.status = status
 		self.data = data
