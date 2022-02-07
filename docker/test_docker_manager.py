@@ -69,9 +69,11 @@ incorrect_docker_info_init_testcases = [
 
 @pytest.mark.parametrize('id, status, data, stream, expected_message', incorrect_docker_info_init_testcases)
 def test_incorrect_docker_info_initialization(id, status, data, stream, expected_message):
-	with pytest.raises(AssertionError) as assertion_message:
-		docker_manager.DockerInfo(id=id, status=status, data=data, stream=stream)
-	assert expected_message in str(assertion_message.value)
+	with patch('docker_manager.docker'), \
+		patch('docker_manager.DockerManager._initialize_port_mapping'):
+		with pytest.raises(AssertionError) as assertion_message:
+			docker_manager.DockerInfo(id=id, status=status, data=data, stream=stream)
+		assert expected_message in str(assertion_message.value)
 
 
 def test_docker_manager_is_singleton():
@@ -87,3 +89,8 @@ def test_port_mapping_initialization():
 		assert len(manager._port_mapping) == 3
 		assert '2d680af1e272e0573d44f0adccccf03361a1c4e8db98c540e03ac84f9d9c4e3c' in manager._port_mapping
 		assert manager._port_mapping['c818251ed4088168b51b5677082c1bdf87200fbdb87bab25a7d2faca30ffac6e'] == 6008
+
+
+def test_allowed_commands_is_up_to_date():
+	assert set(manager._allowed_commands) == set(['training', 'exampleprinter', 'monitoring']), \
+		'The set of allowed commands has changed, please update this and all the other tests!'
