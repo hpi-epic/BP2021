@@ -54,6 +54,10 @@ class DockerManager():
 		Returns:
 			DockerManager: The DockerManager instance.
 		"""
+		# make sure the wirking directory is the dir the file is in
+		abspath = os.path.abspath(__file__)
+		directory_name = os.path.dirname(abspath)
+		os.chdir(directory_name)
 		if cls._instance is None:
 			print('A new instance of DockerManager is being initialized')
 			cls._instance = super(DockerManager, cls).__new__(cls)
