@@ -202,8 +202,8 @@ class DockerManager():
 			self._port_mapping.pop(container.id)
 
 			return DockerInfo(id=container_id, status='removed')
-		except docker.errors.APIError:
-			return DockerInfo(id=container_id, status=f'APIError encountered while removing container: {container_id}')
+		except docker.errors.APIError as error:
+			return DockerInfo(id=container_id, status=f'APIError encountered while removing container: {container_id}\n{error}')
 
 	# PRIVATE METHODS
 	def _confirm_image_exists(self, command_id: str, update: bool = False) -> str:
@@ -271,9 +271,8 @@ class DockerManager():
 		try:
 			img, _ = self._client.images.build(path=os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)),
 				tag=command_id, forcerm=True, network_mode='host')
-		except docker.errors.BuildError or docker.errors.APIError as e:
-			print(f'An error occurred while building the image for command: {command_id}')
-			print(e)
+		except docker.errors.BuildError or docker.errors.APIError as error:
+			print(f'An error occurred while building the image for command: {command_id}\n{error}')
 			exit(1)
 		# No matter what happens during the build, we reset our default dockerfile
 		finally:
@@ -314,13 +313,13 @@ class DockerManager():
 					detach=True,
 					ports={'6006/tcp': used_port},
 					device_requests=[device_request_gpu])
-			except docker.errors.ImageNotFound:
-				return DockerInfo(id=image_id, status=f'Image not found: {image_id}')
+			except docker.errors.ImageNotFound as error:
+				return DockerInfo(id=image_id, status=f'Image not found: {image_id}\n{error}')
 		else:
 			try:
 				container: Container = self._client.containers.create(image_id, detach=True, ports={'6006/tcp': used_port})
-			except docker.errors.ImageNotFound:
-				return DockerInfo(id=image_id, status=f'Image not found: {image_id}')
+			except docker.errors.ImageNotFound as error:
+				return DockerInfo(id=image_id, status=f'Image not found: {image_id}\n{error}')
 
 		# Add the container.id and used_port to the occupied_ports.txt and the self._port_mapping
 		with open(os.path.join(os.path.dirname(__file__), 'occupied_ports.txt'), 'a') as port_file:
@@ -356,9 +355,9 @@ class DockerManager():
 			# Reload the attributes to get the correct status
 			container.reload()
 			return DockerInfo(id=container_id, status=container.status, data=self._port_mapping[container.id])
-		except docker.errors.APIError:
+		except docker.errors.APIError as error:
 			container.remove()
-			return DockerInfo(id=container_id, status=f'APIError encountered while starting container: {container_id}')
+			return DockerInfo(id=container_id, status=f'APIError encountered while starting container: {container_id}\n{error}')
 
 	def _get_container(self, container_id: str) -> Container:
 		"""
@@ -397,8 +396,8 @@ class DockerManager():
 			# Reload the attributes to get the correct status
 			container.reload()
 			return DockerInfo(id=container_id, status=container.status)
-		except docker.errors.APIError:
-			return DockerInfo(container_id, status=f'APIError encountered while stopping container: {container_id}')
+		except docker.errors.APIError as error:
+			return DockerInfo(container_id, status=f'APIError encountered while stopping container: {container_id}\n{error}')
 
 	def _upload_config(self, container_id: str, config_dict: dict) -> DockerInfo:
 		"""
