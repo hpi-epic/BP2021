@@ -54,10 +54,6 @@ class DockerManager():
 		Returns:
 			DockerManager: The DockerManager instance.
 		"""
-		# make sure the wirking directory is the dir the file is in
-		abspath = os.path.abspath(__file__)
-		directory_name = os.path.dirname(abspath)
-		os.chdir(directory_name)
 		if cls._instance is None:
 			print('A new instance of DockerManager is being initialized')
 			cls._instance = super(DockerManager, cls).__new__(cls)
@@ -122,9 +118,9 @@ class DockerManager():
 			return DockerInfo(container_id, status=f'Container not found: {container_id}')
 
 		print(f'Starting tensorboard for: {container_id}')
-		container.exec_run(cmd='tensorboard serve --logdir ./results/runs --bind_all', detach=True)
+		container.exec_run(cmd='tensorboard serve --host 127.0.0.1 --logdir ./results/runs --bind_all', detach=True)
 		port = self._port_mapping[container.id]
-		return DockerInfo(container_id, status=container.status, data=f'http://localhost:{port}')
+		return DockerInfo(container_id, status=container.status, data=f'http://0.0.0.0:{port}')
 
 	def get_container_logs(self, container_id: str, timestamps: bool, stream: bool, tail: int) -> DockerInfo:
 		"""
