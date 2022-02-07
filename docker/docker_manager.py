@@ -43,7 +43,7 @@ class DockerManager():
 	_observers = []
 	# This is a list of commands that should be supported by our docker implementation
 	# For each command, there must be a dockerfile of the format 'dockerfile_command' in the docker/dockerfiles folder
-	_allowed_commands = ['training', 'exampleprinter', 'agent_monitoring']
+	_allowed_commands = ['training', 'exampleprinter', 'monitoring']
 	# dictionary of container_id:host-port pairs
 	_port_mapping = {}
 
