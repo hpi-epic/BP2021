@@ -223,14 +223,23 @@ class DockerManager():
 		"""
 		if command_id not in self._allowed_commands:
 			print(f'Invalid command: {command_id}. No image will be built.')
-			return None
+			return
+
+		# Get the image tag of all images on the system.
+		all_images = self._client.images.list()
+		tagged_images = [image.tags[0].rsplit(':')[0] for image in all_images if len(image.tags)]
+
+		if len(all_images) != (tagged_images):
+			print('You have untagged images and may want to remove them:')
+			for image in all_images:
+				if len(image.tags) == 0:
+					print(image.id)
+
 		if update:
 			print(f'Image for command {command_id} will be created/updated.')
 			return self._build_image(command_id=command_id)
 
-		# Get the image tag of all images on the system.
-		images = [image.tags[0].rsplit(':')[0] for image in self._client.images.list()]
-		if command_id not in images:
+		if command_id not in tagged_images:
 			print(f'Image does not exist and will be created: {command_id}')
 			return self._build_image(command_id=command_id)
 		print(f'Image already exists: {command_id}')
@@ -495,4 +504,4 @@ mapped_containers: {mapped_containers}'''
 if __name__ == '__main__':  # pragma: no cover
 	manager = DockerManager()
 	for command in manager._allowed_commands:
-		print(manager._confirm_image_exists(command, update=True))
+		print(manager._confirm_image_exists(command, update=False), '\n')
