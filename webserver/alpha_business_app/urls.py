@@ -7,6 +7,5 @@ urlpatterns = [
 	path('upload', views.upload, name='upload'),
 	path('observe', views.observe, name='observe'),
 	path('download', views.download, name='download'),
-	path('start_container', views.start_container, name='start'),
-	path('tensorboard', views.tensorboard, name='observe')
+	path('start_container', views.start_container, name='start')
 ]
