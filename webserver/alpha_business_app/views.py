@@ -19,7 +19,7 @@ def upload(request):
 	if request.method == 'POST':
 		form = UploadFileForm(request.POST, request.FILES)
 		handle_uploaded_file(request.FILES['upload_config'])
-		return HttpResponseRedirect('/start_container', {'success': 'you successfully uploaded a config file'})
+		return HttpResponseRedirect('/start_container', {'success': 'You successfully uploaded a config file'})
 	else:
 		form = UploadFileForm()
 	return render(request, 'upload.html', {'form': form})
@@ -54,36 +54,43 @@ def download(request):
 	message = [None, None]
 	all_containers = Container.objects.all()
 	if request.method == 'POST':
-		if 'data-all' in request.POST:
+		all_keys = list(request.POST.keys())
+		all_keys.remove('csrfmiddlewaretoken')
+		assert 1 == len(all_keys), 'You can only use one request at a time'
+		wanted_key = all_keys[0]
+		wanted_container_id = request.POST[wanted_key]
+		wanted_container = Container.objects.get(container_id=wanted_container_id)
+
+		if 'data-all' == wanted_key:
 			# the user wants the all data we saved
-			wanted_container = request.POST['data-all']
-			if not has_downloaded_data(wanted_container):
+			if not has_downloaded_data(wanted_container_id):
 				return render(request, 'download.html',
 					{'all_saved_containers': all_containers,
-					'error': 'you have not yet saved any data belonging to this container'})
-			return archive_files(wanted_container)
+					'error': 'You have not yet saved any data belonging to this container'})
+			return archive_files(wanted_container_id)
 
-		if 'data-latest' in request.POST:
+		if 'data-latest' == wanted_key:
 			# the user only wants the lates data
-			wanted_container = request.POST['data-latest']
-			response = send_get_request_with_streaming('data', wanted_container)
-			if response.ok():
-				# save data from api and make it available for the user
-				response = response.content()
-				path = save_data(response, wanted_container)
-				return download_file(path)
+			if wanted_container.is_archived():
+				message = ['error', 'You cannot downoload data from archived containers']
 			else:
-				message = response.status()
+				response = send_get_request_with_streaming('data', wanted_container_id)
+				if response.ok():
+					# save data from api and make it available for the user
+					response = response.content()
+					path = save_data(response, wanted_container_id)
+					return download_file(path)
+				else:
+					message = response.status()
 
-		if 'remove' in request.POST:
-			wanted_container = request.POST['remove']
-			if Container.objects.get(container_id=wanted_container).health_status != 'archived':
+		if 'remove' == wanted_key:
+			if not wanted_container.is_archived():
 				message = stop_container(request.POST).status()
-			if message[0] == 'success':
-				Container.objects.get(container_id=wanted_container).delete()
-				all_containers = Container.objects.all()
-				message[1] = 'you successfully removed the container'
 
+			if message[0] == 'success' or wanted_container.is_archived():
+				wanted_container.delete()
+				all_containers = Container.objects.all()
+				message = ['success', 'You successfully removed all data']
 	return render(request, 'download.html', {'all_saved_containers': all_containers, message[0]: message[1]})
 
 
@@ -103,7 +110,7 @@ def start_container(request):
 			container_name = request.POST['experiment_name']
 			container_name = container_name if container_name != '' else response['id']
 			Container.objects.create(container_id=response['id'], config_file=config_dict, name=container_name)
-			return redirect('/observe', {'success': 'you successfully launched an experiment'})
+			return redirect('/observe', {'success': 'You successfully launched an experiment'})
 		else:
 			message = response.status()
 	print('#################start', message)

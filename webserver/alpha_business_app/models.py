@@ -16,6 +16,9 @@ class Container(models.Model):
 	last_check_at = models.DateTimeField(auto_now_add=True)
 	name = models.CharField(max_length=20)
 
+	def is_archived(self):
+		return self.health_status == 'archived'
+
 
 @receiver(post_delete, sender=Container)
 def delete_container(sender, instance, **kwargs) -> None:
