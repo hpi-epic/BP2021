@@ -118,9 +118,9 @@ class DockerManager():
 			return DockerInfo(container_id, status=f'Container not found: {container_id}')
 
 		print(f'Starting tensorboard for: {container_id}')
-		container.exec_run(cmd='tensorboard serve --host 127.0.0.1 --logdir ./results/runs --bind_all', detach=True)
+		container.exec_run(cmd='tensorboard serve --host 0.0.0.0 --logdir ./results/runs', detach=True)
 		port = self._port_mapping[container.id]
-		return DockerInfo(container_id, status=container.status, data=f'http://0.0.0.0:{port}')
+		return DockerInfo(container_id, status=container.status, data=f'http://localhost:{port}')
 
 	def get_container_logs(self, container_id: str, timestamps: bool, stream: bool, tail: int) -> DockerInfo:
 		"""
