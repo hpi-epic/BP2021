@@ -13,3 +13,5 @@ dependencies:
   - snakeviz=2.1.1
   - pip=21.2.4
   - django=4.0.1
+  - uvicorn==0.17.0.post1
+  - fastapi==0.73.0
