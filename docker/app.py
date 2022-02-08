@@ -131,7 +131,7 @@ async def get_tensorboard_link(id: str) -> JSONResponse:
 		JSONResponse: The response of the tensorboard request encapsuled in a DockerInfo JSON. A link is in the data field.
 	"""
 	container_info = manager.start_tensorboard(id)
-	if container_info.status.__contains__('Container not found'):
+	if container_info.status.__contains__('Container not found') or container_info.status.__contains__('Container is not running'):
 		return JSONResponse(status_code=404, content=vars(container_info))
 	else:
 		return JSONResponse(vars(container_info))

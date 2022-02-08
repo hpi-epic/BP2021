@@ -117,6 +117,9 @@ class DockerManager():
 		if not container:
 			return DockerInfo(container_id, status=f'Container not found: {container_id}')
 
+		if container.status != 'running':
+			return DockerInfo(container_id, status=f'Container is not running: {container_id}. Download the data and start a tensorboard locally.')
+
 		print(f'Starting tensorboard for: {container_id}')
 		container.exec_run(cmd='tensorboard serve --host 0.0.0.0 --logdir ./results/runs', detach=True)
 		port = self._port_mapping[container.id]
