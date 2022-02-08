@@ -1,63 +1,28 @@
 import json
 import os
 
-from django.http import HttpResponseRedirect
-from django.shortcuts import get_object_or_404, redirect, render
-from django.utils import timezone
+from django.http import Http404, HttpResponseRedirect
+from django.shortcuts import redirect, render
 
+from .buttons import ButtonHandler
 from .forms import UploadFileForm
-from .handle_files import archive_files, download_file, handle_uploaded_file, save_data
-from .handle_requests import send_get_request, send_get_request_with_streaming, send_post_request, stop_container
-from .models import Container, update_container
+from .handle_files import handle_uploaded_file
+from .handle_requests import send_post_request
+from .models import Container
 
 
 def detail(request, container_id):
-	wanted_container = get_object_or_404(Container, pk=container_id)
-	return render(request, 'details.html', {'container': wanted_container})
+	try:
+		wanted_container = Container.objects.get(container_id=container_id)
+	except Container.DoesNotExist:
+		raise Http404('Container does not exist')
+	button_handler = ButtonHandler(request, view='details.html', container=wanted_container)
+	return button_handler.do_button_click()
 
 
 def download(request):
-	message = [None, None]
-	all_containers = Container.objects.all()
-	if request.method == 'POST':
-		all_keys = list(request.POST.keys())
-		all_keys.remove('csrfmiddlewaretoken')
-		assert 1 == len(all_keys), 'You can only use one request at a time'
-		wanted_key = all_keys[0]
-		wanted_container_id = request.POST[wanted_key]
-		wanted_container = Container.objects.get(container_id=wanted_container_id)
-
-		if 'data-all' == wanted_key:
-			# the user wants the all data we saved
-			if not wanted_container.has_data():
-				return render(request, 'download.html',
-					{'all_saved_containers': all_containers,
-					'error': 'You have not yet saved any data belonging to this container'})
-			return archive_files(wanted_container_id)
-
-		if 'data-latest' == wanted_key:
-			# the user only wants the lates data
-			if wanted_container.is_archived():
-				message = ['error', 'You cannot downoload data from archived containers']
-			else:
-				response = send_get_request_with_streaming('data', wanted_container_id)
-				if response.ok():
-					# save data from api and make it available for the user
-					response = response.content()
-					path = save_data(response, wanted_container_id)
-					return download_file(path)
-				else:
-					message = response.status()
-
-		if 'remove' == wanted_key:
-			if not wanted_container.is_archived():
-				message = stop_container(request.POST).status()
-
-			if message[0] == 'success' or wanted_container.is_archived():
-				wanted_container.delete()
-				all_containers = Container.objects.all()
-				message = ['success', 'You successfully removed all data']
-	return render(request, 'download.html', {'all_saved_containers': all_containers, message[0]: message[1]})
+	button_handler = ButtonHandler(request, 'download.html')
+	return button_handler.do_button_click()
 
 
 def index(request):
@@ -65,28 +30,8 @@ def index(request):
 
 
 def observe(request):
-	message = [None, None]
-	if request.method == 'POST':
-		if 'data/tensorboard' in request.POST:
-			response = send_get_request('data/tensorboard', request.POST)
-			if response.ok():
-				return redirect(response.content()['data'])
-			else:
-				message = response.status()
-
-		if 'health' in request.POST:
-			response = send_get_request('health', request.POST)
-			if response.ok():
-				response = response.content()
-				update_container(response['id'], {'last_check_at': timezone.now(), 'health_status': response['status']})
-			else:
-				message = response.status()
-
-		if 'remove' in request.POST:
-			message = stop_container(request.POST).status()
-
-	all_containers = Container.objects.all().exclude(health_status='archived')
-	return render(request, 'observe.html', {'all_saved_containers': all_containers, message[0]: message[1]})
+	button_handler = ButtonHandler(request, 'observe.html')
+	return button_handler.do_button_click()
 
 
 def start_container(request):

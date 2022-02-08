@@ -5,7 +5,7 @@ from .constants import DOCKER_API
 from .models import update_container
 
 
-def send_get_request(wanted_action: str, raw_data) -> dict:
+def send_get_request(wanted_action: str, raw_data: dict) -> dict:
 	wanted_container = raw_data[wanted_action]
 	try:
 		response = requests.get(DOCKER_API + '/' + wanted_action, params={'id': str(wanted_container)})
@@ -42,7 +42,7 @@ def stop_container(post_request) -> bool:
 		# mark container as archived
 		update_container(post_request['remove'], {'health_status': 'archived'})
 		return APIResponse('success', string_response='You successfully stopped the container')
-	return APIResponse('error', string_response='The container could not be stopped')
+	return response
 
 
 def _error_handling_API(response) -> APIResponse:

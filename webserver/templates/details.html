@@ -14,8 +14,8 @@
 					<th>created at</th>
 					<th>last checked at</th>
 					<th>health status</th>
+					<th>download latest data</th>
 					<th>download all data</th>
-					<th>delete permanently</th>
 				</tr>
 				<tr>
 					<td>{{ container.created_at }}</td>
@@ -37,7 +37,20 @@
 					</td>
 				</tr>
 			</table>
-
+			{% if success %}
+				<div>
+					<p class="success notice">
+						{{success}}
+					</p>
+				</div>
+			{% elif error %}
+				<div>
+					<p class="error notice">
+						{{error}}
+					</p>
+				</div>
+			{% endif %}
+			
 		</div>
 	</body>
 </html>
