@@ -23,35 +23,28 @@
 					</tr>
 					{% for container in all_saved_containers %}
 						<tr>
-							<td>
-								{% if container.is_archived %}
-									{{ container.name }}
-								{% else %}
-									<a href="/details/{{ container.container_id }}">{{ container.name }}</a></td>
-								{% endif %}
+							{% if container.is_archived %}
+								<td>{{ container.name }}</td>
+							{% else %}
+								<td><a href="/details/{{ container.container_id }}">{{ container.name }}</a></td>
+							{% endif %}
 							<td>{{ container.created_at }}</td>
 							<td>{{ container.last_check_at }}</td>
 							<td>{{ container.health_status }}</td>
-							{% if container.is_archived %}
-								<td></td>
-							{% else %}
-								<td class="button_row" >
-									<form method="post" enctype="multipart/form-data">
-										{% csrf_token %}
-										<button class="action_button data_button" name="data-latest" value="{{ container.container_id }}" type="submit">download</button>
-									</form>
-								</td>
-							{% endif %}
-							{% if not container.has_data %}
-								<td></td>
-							{% else %}
-								<td class="button_row" >
-									<form method="post" enctype="multipart/form-data">
-										{% csrf_token %}
-										<button class="action_button data_button" name="data-all" value="{{ container.container_id }}" type="submit">download</button>
-									</form>
-								</td>
-							{% endif %}
+							<td class="button_row" >
+								<form method="post" enctype="multipart/form-data">
+									{% csrf_token %}
+									<button class="action_button data_button {% if container.is_archived %} inactive {% endif %}" 
+										name="data-latest" value="{{ container.container_id }}" type="submit">download</button>
+								</form>
+							</td>
+							<td class="button_row" >
+								<form method="post" enctype="multipart/form-data">
+									{% csrf_token %}
+									<button class="action_button data_button {% if not container.has_data %} inactive {% endif %}" 
+										name="data-all" value="{{ container.container_id }}" type="submit">download</button>
+								</form>
+							</td>
 							<td class="button_row" >
 								<form method="post" enctype="multipart/form-data">
 									{% csrf_token %}

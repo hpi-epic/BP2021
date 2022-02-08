@@ -1,8 +1,8 @@
 import json
 import os
 
-from django.http import HttpResponse, HttpResponseRedirect  # HttpResponse
-from django.shortcuts import redirect, render
+from django.http import HttpResponseRedirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
 from .forms import UploadFileForm
@@ -12,7 +12,8 @@ from .models import Container, update_container
 
 
 def detail(request, container_id):
-	return HttpResponse('You are looking at container %s.' % container_id)
+	wanted_container = get_object_or_404(Container, pk=container_id)
+	return render(request, 'details.html', {'container': wanted_container})
 
 
 def download(request):

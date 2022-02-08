@@ -43,6 +43,9 @@ table {
 .health_check_button {
 	background-color: #8de39a;
 }
+.inactive {
+	background-color: #b6bdbd;
+}
 .launch_button {
 	background-color: #8de3a0;
 }
