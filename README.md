@@ -7,6 +7,7 @@
 
 - [1. Online Marketplace Simulation: A Testbed for Self-Learning Agents](#1-online-marketplace-simulation-a-testbed-for-self-learning-agents)
 	- [1.1. Installing dependencies](#11-installing-dependencies)
+		- [1.1.1 Dependency Installation Troubleshooting](#111-dependency-installation-troubleshooting)
 	- [1.2. The `AlphaBusiness` package](#12-the-alphabusiness-package)
 	- [1.3. Pytest](#13-pytest)
 		- [1.3.1. Coverage](#131-coverage)
@@ -31,55 +32,69 @@ The simulation should cover the interaction between customers and particularly c
 
 If you have not yet done so, install Anaconda and run the following command to create an environment and install the required packages from the `environment.yml`:
 
-```console
+```bash
 conda env create -n your_venv_name
 ```
 
 To activate your created environment use:
 
-```console
+```bash
 conda activate your_venv_name
 ```
 
 Additionally, pip dependencies need to be installed using the following command. Make sure you activate your conda environment first!
 
-```console
+```bash
 pip install -r requirements.txt
 ```
 
 To update an existing environment with the needed packages run the following command:
 
-```console
+```bash
 conda env update -n your_venv_name
 ```
 
 If version numbers have changed in the `environment.yml` it can happen that conda finds conflicts and tries resolving them without succeeding. In this case you may need to reinstall the packages. Deactivate your environment before proceeding, otherwise conda cannot perform the commands.
 
-```console
+```bash
 conda uninstall -n your_venv_name --all
 conda env update -n your_venv_name
 ```
 
 This will first uninstall all packages and then re-install them from the `environment.yml`.
 
+### 1.1.1 Dependency Installation Troubleshooting
+
+If you get the following error message when trying to access the docker SDK (e.g. by starting the API through `docker/app.py`):
+
+```bash
+docker.errors.DockerException: Install pypiwin32 package to enable npipe:// support
+```
+
+you have to run the `pywin32_postinstall.py` script. To do so, run the following command:
+
+```bash
+python Path/To/Anaconda3/Scripts/pywin32_postinstall.py -install
+```
+
 ## 1.2. The `AlphaBusiness` package
 
 You may have noticed the following line in the `requirements.txt`:
 
-```console
+```bash
 -e ./src
 ```
 
 This installs the `src` folder (and its subdirectories) as a local pip package. The `-e` flag indicates to pip that the package should be installed in an editable state, meaning that any changes to `.py` files in the package will be integrated into the package immediately (meaning no re-install is necessary). In order to install the package, pip looks into the `setup.py` file where name, version and packages of the new package are set.
 You can confirm that the install was successfull if there is a folder called `AlphaBusiness.egg-info` within the `src`-directory, or by checking `pip freeze` for the following line:
 
-```console
+```bash
 -e git+https://github.com/hpi-epic/BP2021.git@da8868467690a1300ff4e11245417ec384aae15b#egg=AlphaBusiness&subdirectory=src
 ```
 
 If you do not see the `AlphaBusiness`-package in the resulting list, perform the following command while in the top-level-folder of the repository (e.g. `BP2021`):
 
-```console
+```bash
 pip install -e ./src
 ```
 
@@ -96,13 +111,13 @@ If you want to run tests locally you can do so in a few ways:
 
 - Simply running all tests:
 
-```console
+```bash
 pytest
 ```
 
 - Running all tests with increased verbosity:
 
-```console
+```bash
 pytest -v
 ```
 
@@ -114,7 +129,7 @@ If you want to know/export the current test coverage use these commands:
 
 - Run all tests, collect coverage info, write it to the coverage.json (for source code analysis of coverage) and update the coverage.svg badge:
 
-```console
+```bash
 coverage run --source=. -m pytest
 coverage json
 coverage-badge -f -o ./badges/coverage.svg
@@ -122,7 +137,7 @@ coverage-badge -f -o ./badges/coverage.svg
 
 - See coverage report locally:
 
-```console
+```bash
 coverage report
 ```
 
@@ -132,13 +147,13 @@ coverage report
 
 We are using `pre-commit` to lint our files before committing. Pre-commit itself should already have been installed through the `environment.yml`. Initialize pre-commit using
 
-```console
+```bash
 pre-commit install
 ```
 
 To circumvent possible errors caused later on, run pre-commit once with the following command:
 
-```console
+```bash
 pre-commit run --all-files
 ```
 
@@ -164,7 +179,7 @@ args: [-v, --ignore-init-method, --ignore-module, --exclude=./src/tests, --exclu
 
 If you get the following error:
 
-```text
+```bash
 Git: Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from Settings > Manage App Execution Aliases
 ```
 
@@ -188,7 +203,7 @@ C:\Users\your_username\anaconda3\envs\your_venv_name\DLLs
 
 To use docker, first install it on your machine. Afterwards, you can build the images used in our repository using the following command:
 
-```console
+```bash
 python3 ./docker/docker_manager.py
 ```
 
@@ -200,31 +215,31 @@ We recommend interacting with Docker using the Webserver as outlined in the [Web
 
 This command will create an image for each command that can be executed in a docker container. Building the images may take a while, it is about 5GB in size. To see all current images on your system use:
 
-```console
+```bash
 docker images
 ```
 
 You can create and run a container for an image using the following command:
 
-```console
+```bash
 docker run IMAGE_ID
 ```
 
 At any point you can list all current containers with:
 
-```console
+```bash
 docker ps -a
 ```
 
 You can stop a container using:
 
-```console
+```bash
 docker stop CONTAINER_ID
 ```
 
 And remove it with:
 
-```console
+```bash
 docker remove CONTAINER_ID
 ```
 
