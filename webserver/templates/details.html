@@ -11,6 +11,7 @@
 		<div class="content">
 			<table class="table">
 				<tr>
+					<th>command</th>
 					<th>created at</th>
 					<th>last checked at</th>
 					<th>health status</th>
@@ -18,9 +19,16 @@
 					<th>download all data</th>
 				</tr>
 				<tr>
+					<td>{{ container.command }}</td>
 					<td>{{ container.created_at }}</td>
 					<td>{{ container.last_check_at }}</td>
 					<td>{{ container.health_status }}</td>
+					<td class="button_row" >
+						<form method="post" enctype="multipart/form-data">
+							{% csrf_token %}
+							<button class="action_button health_check_button" name="health" value="{{ container.container_id }}" type="submit">check health</button>
+						</form>
+					</td>
 					<td class="button_row" >
 						<form method="post" enctype="multipart/form-data">
 							{% csrf_token %}
@@ -50,7 +58,13 @@
 					</p>
 				</div>
 			{% endif %}
-			
+			<div>
+				<p>
+					Logs:
+				</p>
+			</div>
 		</div>
+		<br>
+		<a href="/">home</a>
 	</body>
 </html>
