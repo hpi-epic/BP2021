@@ -309,7 +309,6 @@ class DockerManager():
 			device_request_gpu = docker.types.DeviceRequest(driver='nvidia', count=-1, capabilities=[['compute']])
 			try:
 				container: Container = self._client.containers.create(image_id,
-					# name=f'{container_name}_container',
 					detach=True,
 					ports={'6006/tcp': used_port},
 					device_requests=[device_request_gpu])
@@ -485,7 +484,7 @@ mapped_containers: {mapped_containers}'''
 		The observer will implement observer.update(message_id, message_text)
 
 		Args:
-			message_id (int): The id of the event., so the system knows how to hande it.
+			message_id (int): The id of the event, so the system knows how to hande it.
 			message_text (str): This is the message that will be displayed to the user.
 		"""
 		allowed_message_ids = [0, 1]
@@ -493,7 +492,7 @@ mapped_containers: {mapped_containers}'''
 
 		for observer in self._observers:
 			observer.update(message_id, message_text)
-# END OBSERVER
+	# END OBSERVER
 
 
 if __name__ == '__main__':  # pragma: no cover
