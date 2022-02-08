@@ -101,6 +101,10 @@ class DockerManager():
 		container: Container = self._get_container(container_id)
 		if not container:
 			return DockerInfo(container_id, status='Container not found')
+
+		if container.status == 'exited':
+			return DockerInfo(container_id, status=f'exited ({container.wait()["StatusCode"]})')
+
 		return DockerInfo(container_id, status=container.status)
 
 	def start_tensorboard(self, container_id: str) -> DockerInfo:
@@ -190,6 +194,7 @@ class DockerManager():
 
 		print(f'Removing container: {container_id}')
 		try:
+			exit_code = container.wait()['StatusCode']
 			container.remove()
 			# update the local port mapping
 			self._port_mapping.pop(container.id)
@@ -200,7 +205,7 @@ class DockerManager():
 				for id, port in self._port_mapping.items():
 					port_file.write(f'{id}\n{port}\n')
 
-			return DockerInfo(id=container_id, status='removed')
+			return DockerInfo(id=container_id, status=f'removed ({exit_code})')
 		except docker.errors.APIError as error:
 			return DockerInfo(id=container_id, status=f'APIError encountered while removing container.\n{error}')
 
