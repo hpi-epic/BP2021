@@ -13,11 +13,28 @@ table {
 .button_row {
 	text-align: center;
 }
+.content {
+	display: inline-block;
+}
 .data_button {
 	background-color: #8dc1e3;
 }
 .delete_button {
-	background-color: #f84949;
+	background-color: #e95c5c;
+}
+.notice {
+	text-align: center;
+	border-style: solid;
+	padding: 5px 10px 5px 10px;
+	border-radius: 5px;
+}
+.error {
+	background-color: #f16a6a;
+	border-color: #da4848;
+}
+.success {
+	background-color: #94fa94;
+	border-color: #15aa15;
 }
 .experiment_name {
 	border-radius: 5px;
