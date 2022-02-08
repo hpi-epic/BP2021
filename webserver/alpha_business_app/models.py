@@ -17,7 +17,11 @@ class Container(models.Model):
 	name = models.CharField(max_length=20)
 
 	def is_archived(self):
-		return self.health_status == 'archived'
+		return 'archived' == self.health_status
+
+	def has_data(self):
+		container_data_path = os.path.join(DATA_DIR, self.container_id)
+		return os.path.exists(container_data_path)
 
 
 @receiver(post_delete, sender=Container)

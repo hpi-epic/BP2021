@@ -4,8 +4,9 @@ from . import views
 
 urlpatterns = [
 	path('', views.index, name='index'),
-	path('upload', views.upload, name='upload'),
-	path('observe', views.observe, name='observe'),
 	path('download', views.download, name='download'),
-	path('start_container', views.start_container, name='start')
+	path('observe', views.observe, name='observe'),
+	path('upload', views.upload, name='upload'),
+	path('start_container', views.start_container, name='start'),
+	path('details/<str:container_id>', views.detail, name='detail')
 ]

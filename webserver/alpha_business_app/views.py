@@ -1,53 +1,18 @@
 import json
 import os
 
-from django.http import HttpResponseRedirect  # HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect  # HttpResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
 
 from .forms import UploadFileForm
-from .handle_files import archive_files, download_file, handle_uploaded_file, has_downloaded_data, save_data
+from .handle_files import archive_files, download_file, handle_uploaded_file, save_data
 from .handle_requests import send_get_request, send_get_request_with_streaming, send_post_request, stop_container
 from .models import Container, update_container
 
 
-def index(request):
-	return render(request, 'index.html')
-
-
-def upload(request):
-	if request.method == 'POST':
-		form = UploadFileForm(request.POST, request.FILES)
-		handle_uploaded_file(request.FILES['upload_config'])
-		return HttpResponseRedirect('/start_container', {'success': 'You successfully uploaded a config file'})
-	else:
-		form = UploadFileForm()
-	return render(request, 'upload.html', {'form': form})
-
-
-def observe(request):
-	message = [None, None]
-	if request.method == 'POST':
-		if 'data/tensorboard' in request.POST:
-			response = send_get_request('data/tensorboard', request.POST)
-			if response.ok():
-				return redirect(response.content()['data'])
-			else:
-				message = response.status()
-
-		if 'health' in request.POST:
-			response = send_get_request('health', request.POST)
-			if response.ok():
-				response = response.content()
-				update_container(response['id'], {'last_check_at': timezone.now(), 'health_status': response['status']})
-			else:
-				message = response.status()
-
-		if 'remove' in request.POST:
-			message = stop_container(request.POST).status()
-
-	all_containers = Container.objects.all().exclude(health_status='archived')
-	return render(request, 'observe.html', {'all_saved_containers': all_containers, message[0]: message[1]})
+def detail(request, container_id):
+	return HttpResponse('You are looking at container %s.' % container_id)
 
 
 def download(request):
@@ -63,7 +28,7 @@ def download(request):
 
 		if 'data-all' == wanted_key:
 			# the user wants the all data we saved
-			if not has_downloaded_data(wanted_container_id):
+			if not wanted_container.has_data():
 				return render(request, 'download.html',
 					{'all_saved_containers': all_containers,
 					'error': 'You have not yet saved any data belonging to this container'})
@@ -94,6 +59,35 @@ def download(request):
 	return render(request, 'download.html', {'all_saved_containers': all_containers, message[0]: message[1]})
 
 
+def index(request):
+	return render(request, 'index.html')
+
+
+def observe(request):
+	message = [None, None]
+	if request.method == 'POST':
+		if 'data/tensorboard' in request.POST:
+			response = send_get_request('data/tensorboard', request.POST)
+			if response.ok():
+				return redirect(response.content()['data'])
+			else:
+				message = response.status()
+
+		if 'health' in request.POST:
+			response = send_get_request('health', request.POST)
+			if response.ok():
+				response = response.content()
+				update_container(response['id'], {'last_check_at': timezone.now(), 'health_status': response['status']})
+			else:
+				message = response.status()
+
+		if 'remove' in request.POST:
+			message = stop_container(request.POST).status()
+
+	all_containers = Container.objects.all().exclude(health_status='archived')
+	return render(request, 'observe.html', {'all_saved_containers': all_containers, message[0]: message[1]})
+
+
 def start_container(request):
 	message = [None, None]
 	if request.method == 'POST':
@@ -113,8 +107,17 @@ def start_container(request):
 			return redirect('/observe', {'success': 'You successfully launched an experiment'})
 		else:
 			message = response.status()
-	print('#################start', message)
 	file_names = None
 	if os.path.exists('configurations'):
 		file_names = os.listdir('configurations')
 	return render(request, 'start_container.html', {'file_names': file_names, message[0]: message[1]})
+
+
+def upload(request):
+	if request.method == 'POST':
+		form = UploadFileForm(request.POST, request.FILES)
+		handle_uploaded_file(request.FILES['upload_config'])
+		return HttpResponseRedirect('/start_container', {'success': 'You successfully uploaded a config file'})
+	else:
+		form = UploadFileForm()
+	return render(request, 'upload.html', {'form': form})
