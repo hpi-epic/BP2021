@@ -100,7 +100,7 @@ class DockerManager():
 		print(f'Checking health status for: {container_id}')
 		container: Container = self._get_container(container_id)
 		if not container:
-			return DockerInfo(container_id, status=f'Container not found: {container_id}')
+			return DockerInfo(container_id, status='Container not found')
 		return DockerInfo(container_id, status=container.status)
 
 	def start_tensorboard(self, container_id: str) -> DockerInfo:
@@ -115,10 +115,10 @@ class DockerManager():
 		"""
 		container: Container = self._get_container(container_id)
 		if not container:
-			return DockerInfo(container_id, status=f'Container not found: {container_id}')
+			return DockerInfo(container_id, status='Container not found')
 
 		if container.status != 'running':
-			return DockerInfo(container_id, status=f'Container is not running: {container_id}. Download the data and start a tensorboard locally.')
+			return DockerInfo(container_id, status='Container is not running. Download the data and start a tensorboard locally.')
 
 		print(f'Starting tensorboard for: {container_id}')
 		container.exec_run(cmd='tensorboard serve --host 0.0.0.0 --logdir ./results/runs', detach=True)
@@ -141,7 +141,7 @@ class DockerManager():
 		"""
 		container: Container = self._get_container(container_id)
 		if not container:
-			return DockerInfo(container_id, status=f'Container not found: {container_id}')
+			return DockerInfo(container_id, status='Container not found')
 
 		logs = container.logs(stream=stream, timestamps=timestamps, tail=tail)
 		if stream:
@@ -163,7 +163,7 @@ class DockerManager():
 		"""
 		container: Container = self._get_container(container_id)
 		if not container:
-			return DockerInfo(container_id, status=f'Container not found: {container_id}')
+			return DockerInfo(container_id, status='Container not found')
 
 		bits, _ = container.get_archive(path=container_path)
 		return DockerInfo(container_id, status=container.status,
@@ -181,12 +181,12 @@ class DockerManager():
 		"""
 		container: Container = self._get_container(container_id)
 		if not container:
-			return DockerInfo(container_id, status=f'Container not found: {container_id}')
+			return DockerInfo(container_id, status='Container not found')
 
 		container_info = self._stop_container(container_id)
 		if container_info.status != 'exited':
-			print(f'Container not stopped successfully: {container_id}. Status: {container_info.status}')
-			return DockerInfo(id=container_id, status=f'Container not stopped successfully: {container_id}. Status: {container_info.status}')
+			print(f'Container not stopped successfully. Status: {container_info.status}')
+			return DockerInfo(id=container_id, status=f'Container not stopped successfully. Status: {container_info.status}')
 
 		print(f'Removing container: {container_id}')
 		try:
@@ -202,7 +202,7 @@ class DockerManager():
 
 			return DockerInfo(id=container_id, status='removed')
 		except docker.errors.APIError as error:
-			return DockerInfo(id=container_id, status=f'APIError encountered while removing container: {container_id}\n{error}')
+			return DockerInfo(id=container_id, status=f'APIError encountered while removing container.\n{error}')
 
 	# PRIVATE METHODS
 	def _confirm_image_exists(self, command_id: str, update: bool = False) -> str:
@@ -224,7 +224,7 @@ class DockerManager():
 		all_images = self._client.images.list()
 		tagged_images = [image.tags[0].rsplit(':')[0] for image in all_images if len(image.tags)]
 
-		if len(all_images) != (tagged_images):
+		if len(all_images) != len(tagged_images):
 			print('You have untagged images and may want to remove them:')
 			for image in all_images:
 				if len(image.tags) == 0:
@@ -298,8 +298,6 @@ class DockerManager():
 		"""
 		# https://docker-py.readthedocs.io/en/stable/containers.html
 		print(f'Creating container for image: {image_id}')
-		# name will be first tag without the ':latest'-postfix
-		# container_name = self._client.images.get(image_id).tags[0][:-7]
 
 		# find the next available port to map to 6006 in the container
 		used_port = next(filterfalse(set(self._port_mapping.values()).__contains__, count(6006)))
@@ -312,12 +310,12 @@ class DockerManager():
 					ports={'6006/tcp': used_port},
 					device_requests=[device_request_gpu])
 			except docker.errors.ImageNotFound as error:
-				return DockerInfo(id=image_id, status=f'Image not found: {image_id}\n{error}')
+				return DockerInfo(id=image_id, status=f'Image not found.\n{error}')
 		else:
 			try:
 				container: Container = self._client.containers.create(image_id, detach=True, ports={'6006/tcp': used_port})
 			except docker.errors.ImageNotFound as error:
-				return DockerInfo(id=image_id, status=f'Image not found: {image_id}\n{error}')
+				return DockerInfo(id=image_id, status=f'Image not found.\n{error}')
 
 		# Add the container.id and used_port to the occupied_ports.txt and the self._port_mapping
 		with open(os.path.join(os.path.dirname(__file__), 'occupied_ports.txt'), 'a') as port_file:
@@ -341,7 +339,7 @@ class DockerManager():
 		"""
 		container: Container = self._get_container(container_id)
 		if not container:
-			return DockerInfo(id=container_id, status=f'Container not found: {container_id}')
+			return DockerInfo(id=container_id, status='Container not found.')
 
 		if container.status == 'running':
 			print(f'Container is already running: {container_id}')
@@ -355,7 +353,7 @@ class DockerManager():
 			return DockerInfo(id=container_id, status=container.status, data=self._port_mapping[container.id])
 		except docker.errors.APIError as error:
 			container.remove()
-			return DockerInfo(id=container_id, status=f'APIError encountered while starting container: {container_id}\n{error}')
+			return DockerInfo(id=container_id, status=f'APIError encountered while starting container.\n{error}')
 
 	def _get_container(self, container_id: str) -> Container:
 		"""
@@ -386,7 +384,7 @@ class DockerManager():
 		"""
 		container: Container = self._get_container(container_id)
 		if not container:
-			return DockerInfo(container_id, status=f'Container not found: {container_id}')
+			return DockerInfo(container_id, status='Container not found.')
 
 		print(f'Stopping container: {container_id}')
 		try:
@@ -395,7 +393,7 @@ class DockerManager():
 			container.reload()
 			return DockerInfo(id=container_id, status=container.status)
 		except docker.errors.APIError as error:
-			return DockerInfo(container_id, status=f'APIError encountered while stopping container: {container_id}\n{error}')
+			return DockerInfo(container_id, status=f'APIError encountered while stopping container.\n{error}')
 
 	def _upload_config(self, container_id: str, config_dict: dict) -> DockerInfo:
 		"""
@@ -410,7 +408,7 @@ class DockerManager():
 		"""
 		container: Container = self._get_container(container_id)
 		if not container:
-			return DockerInfo(id=container_id, status=f'Container not found: {container_id}')
+			return DockerInfo(id=container_id, status='Container not found.')
 
 		# create a directory to store the files safely
 		if not os.path.exists('config_tmp'):
@@ -462,7 +460,8 @@ class DockerManager():
 		# make sure all containers are mapped and registered to the manager
 		running_containers = [container.id for container in cls._client.containers.list(all=True)]
 		mapped_containers = list(cls._port_mapping.keys())
-		assert set(mapped_containers) == set(running_containers), f'''Container-Port mapping is mismatched! Check the \'occupied_ports.txt\'!
+		assert set(mapped_containers) == set(running_containers), \
+f'''Container-Port mapping is mismatched! Check the \'occupied_ports.txt\' and your running docker containers (`docker ps -a`)!
 running_containers: {running_containers}
 mapped_containers: {mapped_containers}'''
 
