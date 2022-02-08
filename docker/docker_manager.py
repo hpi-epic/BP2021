@@ -188,18 +188,14 @@ class DockerManager():
 		print(f'Removing container: {container_id}')
 		try:
 			container.remove()
-			# remove the port mapping of the old container from the occupied_ports.txt
-			with open(os.path.join(os.path.dirname(__file__), 'occupied_ports.txt'), 'r') as port_file:
-				lines = port_file.readlines()
-				with open(os.path.join(os.path.dirname(__file__), 'occupied_ports_temp.txt'), 'w') as temp_port_file:
-					for line in lines:
-						if line.strip('\n') not in [container.id, str(self._port_mapping[container.id])]:
-							temp_port_file.write(line)
-			# replace the old file with the new one
-			os.remove('./occupied_ports.txt')
-			os.rename('./occupied_ports_temp.txt', './occupied_ports.txt')
 			# update the local port mapping
 			self._port_mapping.pop(container.id)
+			# remove the port mapping of the old container from the occupied_ports.txt
+			with open(os.path.join(os.path.dirname(__file__), 'occupied_ports.txt'), 'w') as port_file:
+				pass
+			with open(os.path.join(os.path.dirname(__file__), 'occupied_ports.txt'), 'a') as port_file:
+				for id, port in self._port_mapping.items():
+					port_file.write(f'{id}\n{port}\n')
 
 			return DockerInfo(id=container_id, status='removed')
 		except docker.errors.APIError as error:
