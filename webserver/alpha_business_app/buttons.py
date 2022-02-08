@@ -71,7 +71,6 @@ class ButtonHandler():
 
 		if self.message[0] == 'success' or self.wanted_container.is_archived():
 			self.wanted_container.delete()
-			self.all_containers = Container.objects.all()
 			self.message = ['success', 'You successfully removed all data']
 		return self._decide_rendering()
 
@@ -104,6 +103,7 @@ class ButtonHandler():
 			update_container(response['id'], {'last_check_at': timezone.now(), 'health_status': response['status']})
 		else:
 			self.message = response.status()
+		self.wanted_container = Container.objects.get(container_id=self.wanted_container_id)
 		return self._decide_rendering()
 
 	def _logs(self):
@@ -114,11 +114,12 @@ class ButtonHandler():
 		return self._decide_rendering()
 
 	def _render_default(self) -> HttpResponse:
+		self.all_containers = Container.objects.all()
 		return render(self.request, self.view_to_render, self._default_params_for_view())
 
 	def _render_without_archived(self) -> HttpResponse:
 		self.all_containers = Container.objects.all().exclude(health_status='archived')
-		return self._render_default()
+		return render(self.request, self.view_to_render, self._default_params_for_view())
 
 	def _render_files(self):
 		if os.path.exists('configurations'):
