@@ -80,7 +80,7 @@ class DockerManager():
 		self._confirm_image_exists(command_id)
 
 		# start a container for the image of the requested command
-		container_info = self._create_container(command_id, config, use_gpu=False)
+		container_info: DockerInfo = self._create_container(command_id, config, use_gpu=False)
 		if container_info.status.__contains__('Image not found') or container_info.data is False:
 			self.remove_container(container_info.id)
 			return container_info
