@@ -95,10 +95,10 @@ class CircularEconomy(SimMarket, ABC):
 		assert self._owner is not None, 'an owner must be set'
 		return_probabilities = self._owner.generate_return_probabilities_from_offer(offer, self._get_offer_length_per_vendor())
 		assert isinstance(return_probabilities, np.ndarray), 'return_probabilities must be an np.ndarray'
-		assert len(return_probabilities) == 2 + self._get_number_of_vendors(), \
+		assert len(return_probabilities) == 2 + self._number_of_vendors, \
 			'the length of return_probabilities must be the number of vendors plus 2'
 
-		number_of_owners = int(0.05 * self.in_circulation / self._get_number_of_vendors())
+		number_of_owners = int(0.05 * self.in_circulation / self._number_of_vendors)
 		for _ in range(number_of_owners):
 			owner_action = ut.shuffle_from_probabilities(return_probabilities)
 
@@ -121,7 +121,7 @@ class CircularEconomy(SimMarket, ABC):
 			profits (np.array(int)): The profits of all vendors.
 			customer_decision (int): Indicates the customer's decision.
 		"""
-		assert customer_decision >= 0 and customer_decision < 2 * self._get_number_of_vendors(), \
+		assert customer_decision >= 0 and customer_decision < 2 * self._number_of_vendors, \
 			'the customer_decision must be between 0 and 2 * the number of vendors, as each vendor offers a new and a refurbished product'
 
 		chosen_vendor = int(np.floor(customer_decision / 2))
@@ -151,7 +151,7 @@ class CircularEconomy(SimMarket, ABC):
 		Args:
 			profits (np.array(int)): The profits of all vendors.
 		"""
-		for vendor in range(self._get_number_of_vendors()):
+		for vendor in range(self._number_of_vendors):
 			storage_cost_per_timestep = -self.vendor_specific_state[vendor][0] * config.STORAGE_COST_PER_PRODUCT
 			profits[vendor] += storage_cost_per_timestep
 			self.output_dict['profits/storage_cost']['vendor_' + str(vendor)] = storage_cost_per_timestep
@@ -164,22 +164,22 @@ class CircularEconomy(SimMarket, ABC):
 		"""
 		self.output_dict['state/in_circulation'] = self.in_circulation
 		self._ensure_output_dict_has('state/in_storage',
-			[self.vendor_specific_state[vendor][0] for vendor in range(self._get_number_of_vendors())])
+			[self.vendor_specific_state[vendor][0] for vendor in range(self._number_of_vendors)])
 		self._ensure_output_dict_has('actions/price_refurbished',
-			[self.vendor_actions[vendor][0] for vendor in range(self._get_number_of_vendors())])
+			[self.vendor_actions[vendor][0] for vendor in range(self._number_of_vendors)])
 		self._ensure_output_dict_has('actions/price_new',
-			[self.vendor_actions[vendor][1] for vendor in range(self._get_number_of_vendors())])
+			[self.vendor_actions[vendor][1] for vendor in range(self._number_of_vendors)])
 
 		self._ensure_output_dict_has('owner/throw_away')
-		self._ensure_output_dict_has('owner/rebuys', [0] * self._get_number_of_vendors())
-		self._ensure_output_dict_has('profits/rebuy_cost', [0] * self._get_number_of_vendors())
+		self._ensure_output_dict_has('owner/rebuys', [0] * self._number_of_vendors)
+		self._ensure_output_dict_has('profits/rebuy_cost', [0] * self._number_of_vendors)
 
-		self._ensure_output_dict_has('customer/purchases_refurbished', [0] * self._get_number_of_vendors())
-		self._ensure_output_dict_has('customer/purchases_new', [0] * self._get_number_of_vendors())
-		self._ensure_output_dict_has('profits/by_selling_refurbished', [0] * self._get_number_of_vendors())
-		self._ensure_output_dict_has('profits/by_selling_new', [0] * self._get_number_of_vendors())
+		self._ensure_output_dict_has('customer/purchases_refurbished', [0] * self._number_of_vendors)
+		self._ensure_output_dict_has('customer/purchases_new', [0] * self._number_of_vendors)
+		self._ensure_output_dict_has('profits/by_selling_refurbished', [0] * self._number_of_vendors)
+		self._ensure_output_dict_has('profits/by_selling_new', [0] * self._number_of_vendors)
 
-		self._ensure_output_dict_has('profits/storage_cost', [0] * self._get_number_of_vendors())
+		self._ensure_output_dict_has('profits/storage_cost', [0] * self._number_of_vendors)
 
 	def get_n_actions(self):
 		n_actions = 1
@@ -198,7 +198,7 @@ class CircularEconomy(SimMarket, ABC):
 		Returns:
 			bool: Whether the probability_distribution fits into the CircularEconomy.
 		"""
-		return len(probability_distribution) == 1 + (2 * self._get_number_of_vendors())
+		return len(probability_distribution) == 1 + (2 * self._number_of_vendors)
 
 
 class CircularEconomyMonopolyScenario(CircularEconomy):
@@ -239,9 +239,9 @@ class CircularEconomyRebuyPrice(CircularEconomy, ABC):
 		Also extend the the output_dict initialized by the superclass with entries concerning the rebuy price and cost.
 		"""
 		super()._initialize_output_dict()
-		self._ensure_output_dict_has('actions/price_rebuy', [self.vendor_actions[vendor][2] for vendor in range(self._get_number_of_vendors())])
+		self._ensure_output_dict_has('actions/price_rebuy', [self.vendor_actions[vendor][2] for vendor in range(self._number_of_vendors)])
 
-		self._ensure_output_dict_has('profits/rebuy_cost', [0] * self._get_number_of_vendors())
+		self._ensure_output_dict_has('profits/rebuy_cost', [0] * self._number_of_vendors)
 
 	def _get_rebuy_price(self, vendor_idx) -> int:
 		return self.vendor_actions[vendor_idx][2]

@@ -34,6 +34,7 @@ class SimMarket(gym.Env, ABC):
 		self._setup_action_observation_space()
 		self._owner = None
 		self._customer = None
+		self._number_of_vendors = self._get_number_of_vendors()
 		# TODO: Better testing for the observation and action space
 		assert (self.observation_space and self._action_space), 'Your observation or action space is not defined'
 		# Make sure that variables such as state, customer are known
@@ -61,8 +62,8 @@ class SimMarket(gym.Env, ABC):
 
 		self._reset_common_state()
 
-		self.vendor_specific_state = [self._reset_vendor_specific_state() for _ in range(self._get_number_of_vendors())]
-		self.vendor_actions = [self._reset_vendor_actions() for _ in range(self._get_number_of_vendors())]
+		self.vendor_specific_state = [self._reset_vendor_specific_state() for _ in range(self._number_of_vendors)]
+		self.vendor_actions = [self._reset_vendor_actions() for _ in range(self._number_of_vendors)]
 		self.offers = self._create_offers_array()
 
 		self._customer = self._choose_customer()
@@ -80,7 +81,7 @@ class SimMarket(gym.Env, ABC):
 		"""
 		common_state_length = len(self._get_common_state_array())
 		vendor_specific_offer_length = self._get_offer_length_per_vendor()
-		return np.zeros(common_state_length + vendor_specific_offer_length * self._get_number_of_vendors())
+		return np.zeros(common_state_length + vendor_specific_offer_length * self._number_of_vendors)
 
 	@abstractmethod
 	def _is_probability_distribution_fitting_exactly(self, probability_distribution) -> None:
@@ -139,16 +140,14 @@ class SimMarket(gym.Env, ABC):
 
 		self.step_counter += 1
 
-		number_vendors = self._get_number_of_vendors()
-
-		profits = [0] * number_vendors
+		profits = [0] * self._number_of_vendors
 
 		self.output_dict = {'customer/buy_nothing': 0}
 		self._initialize_output_dict()
 
-		customers_per_vendor_iteration = int(np.floor(config.NUMBER_OF_CUSTOMERS / number_vendors))
-		for i in range(number_vendors):
-			self._adapt_customer_offer(number_vendors)
+		customers_per_vendor_iteration = int(np.floor(config.NUMBER_OF_CUSTOMERS / self._number_of_vendors))
+		for i in range(self._number_of_vendors):
+			self._adapt_customer_offer()
 			self._simulate_customers(profits, self.offers, customers_per_vendor_iteration)
 			if self._owner is not None:
 				self._simulate_owners(profits, self.offers)
@@ -189,7 +188,7 @@ class SimMarket(gym.Env, ABC):
 			observation = np.concatenate((observation, np.array(self.vendor_specific_state[vendor_view], ndmin=1)), dtype=np.float64)
 
 		# the rest of the vendors actions and states will be added
-		for vendor_index in range(self._get_number_of_vendors()):
+		for vendor_index in range(self._number_of_vendors):
 			if vendor_index == vendor_view:
 				continue
 			observation = np.concatenate((observation, np.array(self.vendor_actions[vendor_index], ndmin=1)), dtype=np.float64)
@@ -200,23 +199,23 @@ class SimMarket(gym.Env, ABC):
 		assert self.observation_space.contains(observation), f'{observation} ({type(observation)}) invalid observation'
 		return observation
 
-	def _generate_customer_offer(self) -> np.array:
-		"""
-		Map the internal state to an array which is presented to the customers.
+	# def _generate_customer_offer(self) -> np.array:
+	# 	"""
+	# 	Map the internal state to an array which is presented to the customers.
 
-		It includes all information customers will use for their decisions.
-		At the beginning of the array you have the common state.
-		Afterwards you have the action and vendor specific state for all vendors.
-		"""
-		offer = self._get_common_state_array()
-		assert isinstance(offer, np.ndarray), '_get_common_state_array must return an np.ndarray'
-		for vendor_index in range(self._get_number_of_vendors()):
-			offer = np.concatenate((offer, np.array(self.vendor_actions[vendor_index], ndmin=1)), dtype=np.float64)
-			if self.vendor_specific_state[vendor_index] is not None:
-				offer = np.concatenate((offer, np.array(self.vendor_specific_state[vendor_index], ndmin=1)), dtype=np.float64)
-		return offer
+	# 	It includes all information customers will use for their decisions.
+	# 	At the beginning of the array you have the common state.
+	# 	Afterwards you have the action and vendor specific state for all vendors.
+	# 	"""
+	# 	offer = self._get_common_state_array()
+	# 	assert isinstance(offer, np.ndarray), '_get_common_state_array must return an np.ndarray'
+	# 	for vendor_index in range(self._get_number_of_vendors()):
+	# 		offer = np.concatenate((offer, np.array(self.vendor_actions[vendor_index], ndmin=1)), dtype=np.float64)
+	# 		if self.vendor_specific_state[vendor_index] is not None:
+	# 			offer = np.concatenate((offer, np.array(self.vendor_specific_state[vendor_index], ndmin=1)), dtype=np.float64)
+	# 	return offer
 
-	def _adapt_customer_offer(self, number_vendors) -> None:
+	def _adapt_customer_offer(self) -> None:
 		"""
 		Adjusts the previous offers by updating each field of the offers array.
 		"""
@@ -232,12 +231,12 @@ class SimMarket(gym.Env, ABC):
 		actions_state_iter = 0
 		for vendor_index in range(
 			current_common_state_length,
-			offer_length_per_vendor * number_vendors + current_common_state_length,
+			offer_length_per_vendor * self._number_of_vendors + current_common_state_length,
 			offer_length_per_vendor):
 
 			# update all actions entries of one vendor
 			current_vendor_actions = self.vendor_actions[actions_state_iter]
-			if type(current_vendor_actions) == int:
+			if isinstance(current_vendor_actions, int):
 				self.offers[vendor_index] = current_vendor_actions
 			else:
 				for action_index, action_value in enumerate(current_vendor_actions):
@@ -246,7 +245,7 @@ class SimMarket(gym.Env, ABC):
 			# update all state entries of one vendor
 			current_vendor_state = self.vendor_specific_state[actions_state_iter]
 			if self.vendor_specific_state[actions_state_iter] is not None:
-				if type(current_vendor_actions) == int:
+				if isinstance(current_vendor_actions, int):
 					for state_index, state_value in enumerate(current_vendor_state):
 						self.offers[vendor_index + 1 + state_index] = state_value
 				else:
@@ -400,10 +399,10 @@ class SimMarket(gym.Env, ABC):
 			init_for_all_vendors (list, optional): initialization values for all vendors in this entry. Defaults to None.
 		"""
 		if init_for_all_vendors is not None:
-			assert isinstance(init_for_all_vendors, list) and len(init_for_all_vendors) == self._get_number_of_vendors(), \
+			assert isinstance(init_for_all_vendors, list) and len(init_for_all_vendors) == self._number_of_vendors, \
 				'make sure you pass a list with length of number of vendors'
 		if name not in self.output_dict:
 			if init_for_all_vendors is None:
 				self.output_dict[name] = 0
 			else:
-				self.output_dict[name] = dict(zip(['vendor_' + str(i) for i in range(self._get_number_of_vendors())], init_for_all_vendors))
+				self.output_dict[name] = dict(zip(['vendor_' + str(i) for i in range(self._number_of_vendors)], init_for_all_vendors))
