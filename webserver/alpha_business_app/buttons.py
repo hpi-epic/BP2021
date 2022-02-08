@@ -11,14 +11,15 @@ from .models import Container, update_container
 
 
 class ButtonHandler():
-	def __init__(self, request, view: str, container: Container = None, rendering_method: str = 'default') -> None:
+	def __init__(self, request, view: str, container: Container = None, rendering_method: str = 'default', data: str = None) -> None:
 		self.request = request
 		self.view_to_render = view
-		self.message = [None, None]
 		self.wanted_container = container
+		self.rendering_method = rendering_method
+		self.data = data
+		self.message = [None, None]
 		self.wanted_key = None
 		self.all_containers = Container.objects.all()
-		self.rendering_method = rendering_method
 
 		if request.method == 'POST':
 			all_keys = list(self.request.POST.keys())
@@ -46,6 +47,8 @@ class ButtonHandler():
 			return self._remove()
 		if 'start' == self.wanted_key:
 			return self._start()
+		if 'logs' == self.wanted_key:
+			return self._logs()
 		return self._decide_rendering()
 
 	def _decide_rendering(self) -> HttpResponse:
@@ -58,6 +61,7 @@ class ButtonHandler():
 	def _default_params_for_view(self) -> dict:
 		return {'all_saved_containers': self.all_containers,
 				'container': self.wanted_container,
+				'data': self.data,
 				self.message[0]: self.message[1]}
 
 	def _delete_container(self):
@@ -100,6 +104,13 @@ class ButtonHandler():
 			update_container(response['id'], {'last_check_at': timezone.now(), 'health_status': response['status']})
 		else:
 			self.message = response.status()
+		return self._decide_rendering()
+
+	def _logs(self):
+		response = send_get_request('logs', self.request.POST)
+		self.data = ''
+		if response.ok():
+			self.data = response.content()['data']
 		return self._decide_rendering()
 
 	def _render_default(self) -> HttpResponse:

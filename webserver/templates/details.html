@@ -15,6 +15,7 @@
 					<th>created at</th>
 					<th>last checked at</th>
 					<th>health status</th>
+					<th>get health status</th>
 					<th>download latest data</th>
 					<th>download all data</th>
 				</tr>
@@ -45,13 +46,7 @@
 					</td>
 				</tr>
 			</table>
-			{% if success %}
-				<div>
-					<p class="success notice">
-						{{success}}
-					</p>
-				</div>
-			{% elif error %}
+			{% if error %}
 				<div>
 					<p class="error notice">
 						{{error}}
@@ -59,9 +54,15 @@
 				</div>
 			{% endif %}
 			<div>
-				<p>
-					Logs:
-				</p>
+				<form method="post" enctype="multipart/form-data">
+					{% csrf_token %}
+					<button class="action_button" name="logs" value="{{ container.container_id }}" type="submit">get logs</button>
+				</form>
+				{% if data %}
+					<p > 
+						<pre class="notice terminal">{{ data }}</pre> 
+					</p>
+				{% endif %}
 			</div>
 		</div>
 		<br>
