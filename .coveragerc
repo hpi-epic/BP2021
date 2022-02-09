@@ -2,7 +2,7 @@
 omit = 
 	# ignore __init__.py files
 	*/__init__.py
-	# ignore files in the test folder
+	# ignore test files
 	src/tests/*
 	docker/test_docker_manager.py
 	# ignore files only used as helpers
