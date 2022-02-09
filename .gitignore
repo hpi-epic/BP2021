@@ -3,8 +3,22 @@
 # all files and subfolders of the results folder should be ignored
 results
 
+# all webserver related directories
+webserver/configurations
+webserver/data
+
+# docker related directories
+docker/occupied_ports.txt
+
 # file for Johanns test runner
 tests.sh
+# Johanns VM debug skripts
+docker_debug_skript.sh
+docker_container_remove.sh
+
+
+# docker
+docker/docker_archives
 
 # vscode settings
 .vscode/
