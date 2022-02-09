@@ -93,7 +93,7 @@ class CircularEconomy(SimMarket, ABC):
 			offer (np.array): The offers of the vendor.
 		"""
 		assert self._owner is not None, 'an owner must be set'
-		return_probabilities = self._owner.generate_return_probabilities_from_offer(offer, self._get_offer_length_per_vendor())
+		return_probabilities = self._owner.generate_return_probabilities_from_offer(offer, self.offer_length_per_vendor)
 		assert isinstance(return_probabilities, np.ndarray), 'return_probabilities must be an np.ndarray'
 		assert len(return_probabilities) == 2 + self._number_of_vendors, \
 			'the length of return_probabilities must be the number of vendors plus 2'

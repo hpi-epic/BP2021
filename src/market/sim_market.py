@@ -64,6 +64,7 @@ class SimMarket(gym.Env, ABC):
 
 		self.vendor_specific_state = [self._reset_vendor_specific_state() for _ in range(self._number_of_vendors)]
 		self.vendor_actions = [self._reset_vendor_actions() for _ in range(self._number_of_vendors)]
+		self.offer_length_per_vendor = self._get_offer_length_per_vendor()
 		self.offers = self._create_offers_array()
 
 		self._customer = self._choose_customer()
@@ -80,7 +81,7 @@ class SimMarket(gym.Env, ABC):
 			np.array: The overall offers array.
 		"""
 		common_state_length = len(self._get_common_state_array())
-		vendor_specific_offer_length = self._get_offer_length_per_vendor()
+		vendor_specific_offer_length = self.offer_length_per_vendor
 		return np.zeros(common_state_length + vendor_specific_offer_length * self._number_of_vendors)
 
 	@abstractmethod
@@ -106,7 +107,7 @@ class SimMarket(gym.Env, ABC):
 			offers (np.array): this array contains the offers of the vendors. It has to be compatible with the customers used.
 			number_of_customers (int): the number of customers eager to buy each step.
 		"""
-		probability_distribution = self._customer.generate_purchase_probabilities_from_offer(offers, self._get_offer_length_per_vendor())
+		probability_distribution = self._customer.generate_purchase_probabilities_from_offer(offers, self.offer_length_per_vendor)
 		assert isinstance(probability_distribution, np.ndarray), 'generate_purchase_probabilities_from_offer must return an np.ndarray'
 		assert self._is_probability_distribution_fitting_exactly(probability_distribution)
 
@@ -227,12 +228,11 @@ class SimMarket(gym.Env, ABC):
 			for common_state_index, common_state_value in enumerate(current_common_state):
 				self.offers[common_state_index] = common_state_value
 
-		offer_length_per_vendor = self._get_offer_length_per_vendor()
 		actions_state_iter = 0
 		for vendor_index in range(
 			current_common_state_length,
-			offer_length_per_vendor * self._number_of_vendors + current_common_state_length,
-			offer_length_per_vendor):
+			self.offer_length_per_vendor * self._number_of_vendors + current_common_state_length,
+			self.offer_length_per_vendor):
 
 			# update all actions entries of one vendor
 			current_vendor_actions = self.vendor_actions[actions_state_iter]
