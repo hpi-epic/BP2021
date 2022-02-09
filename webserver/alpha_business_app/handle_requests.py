@@ -5,17 +5,7 @@ from .constants import DOCKER_API
 from .models import update_container
 
 
-def send_post_request(route: str, body: dict, command: str) -> dict:
-	try:
-		response = requests.post(DOCKER_API + '/' + route, json=body, params={'command': command})
-	except requests.exceptions.RequestException:
-		return APIResponse('error', string_response='The API is unavailable')
-	if response.ok:
-		return APIResponse('success', json_response=response.json())
-	return _error_handling_API(response)
-
-
-def send_get_request(wanted_action: str, raw_data) -> dict:
+def send_get_request(wanted_action: str, raw_data: dict) -> dict:
 	wanted_container = raw_data[wanted_action]
 	try:
 		response = requests.get(DOCKER_API + '/' + wanted_action, params={'id': str(wanted_container)})
@@ -36,14 +26,23 @@ def send_get_request_with_streaming(wanted_action: str, wanted_container: str):
 	return _error_handling_API(response)
 
 
+def send_post_request(route: str, body: dict, command: str) -> dict:
+	try:
+		response = requests.post(DOCKER_API + '/' + route, json=body, params={'command': command})
+	except requests.exceptions.RequestException:
+		return APIResponse('error', string_response='The API is unavailable')
+	if response.ok:
+		return APIResponse('success', json_response=response.json())
+	return _error_handling_API(response)
+
+
 def stop_container(post_request) -> bool:
 	response = send_get_request('remove', post_request)
-	print(response.status())
 	if response.ok() or response.not_found():
 		# mark container as archived
 		update_container(post_request['remove'], {'health_status': 'archived'})
 		return APIResponse('success', string_response='You successfully stopped the container')
-	return APIResponse('error', string_response='The container could not be stopped')
+	return response
 
 
 def _error_handling_API(response) -> APIResponse:

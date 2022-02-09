@@ -14,6 +14,7 @@
 				<table class="table">
 					<tr>
 						<th>container name</th>
+						<th>command</th>
 						<th>created at</th>
 						<th>last checked at</th>
 						<th>health status</th>
@@ -23,7 +24,8 @@
 					</tr>
 					{% for container in all_saved_containers %}
 						<tr>
-							<td>{{ container.name }}</td>
+							<td><a href="/details/{{ container.container_id }}">{{ container.name }}</a></td>
+							<td>{{ container.command }}</td>
 							<td>{{ container.created_at }}</td>
 							<td>{{ container.last_check_at }}</td>
 							<td>{{ container.health_status }}</td>

@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="de">
+	<head>
+		<meta charset="utf-8"/>
+		<title>Details</title>
+		{% load static %}
+		<link rel="stylesheet" type="text/css" href="{% static 'style.css' %}">
+	</head>
+	<body>
+		<h1>You are viewing container {{ container.name }}</h1>
+		<div class="content">
+			<table class="table">
+				<tr>
+					<th>command</th>
+					<th>created at</th>
+					<th>last checked at</th>
+					<th>health status</th>
+					<th>get health status</th>
+					<th>download latest data</th>
+					<th>download all data</th>
+				</tr>
+				<tr>
+					<td>{{ container.command }}</td>
+					<td>{{ container.created_at }}</td>
+					<td>{{ container.last_check_at }}</td>
+					<td>{{ container.health_status }}</td>
+					<td class="button_row" >
+						<form method="post" enctype="multipart/form-data">
+							{% csrf_token %}
+							<button class="action_button health_check_button" name="health" value="{{ container.container_id }}" type="submit">check health</button>
+						</form>
+					</td>
+					<td class="button_row" >
+						<form method="post" enctype="multipart/form-data">
+							{% csrf_token %}
+							<button class="action_button data_button {% if container.is_archived %} inactive {% endif %}" 
+								name="data-latest" value="{{ container.container_id }}" type="submit">download</button>
+						</form>
+					</td>
+					<td class="button_row" >
+						<form method="post" enctype="multipart/form-data">
+							{% csrf_token %}
+							<button class="action_button data_button {% if not container.has_data %} inactive {% endif %}" 
+								name="data-all" value="{{ container.container_id }}" type="submit">download</button>
+						</form>
+					</td>
+				</tr>
+			</table>
+			{% if error %}
+				<div>
+					<p class="error notice">
+						{{error}}
+					</p>
+				</div>
+			{% endif %}
+			<div>
+				<form method="post" enctype="multipart/form-data">
+					{% csrf_token %}
+					<button class="action_button" name="logs" value="{{ container.container_id }}" type="submit">get logs</button>
+				</form>
+				{% if data %}
+					<p > 
+						<pre class="notice terminal">{{ data }}</pre> 
+					</p>
+				{% endif %}
+			</div>
+		</div>
+		<br>
+		<a href="/">home</a>
+	</body>
+</html>

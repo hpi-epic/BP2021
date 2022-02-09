@@ -14,6 +14,7 @@
 				<table class="table">
 					<tr>
 						<th>container name</th>
+						<th>command</th>
 						<th>created at</th>
 						<th>last checked at</th>
 						<th>health status</th>
@@ -23,26 +24,33 @@
 					</tr>
 					{% for container in all_saved_containers %}
 						<tr>
-							<td>{{ container.name }}</td>
+							{% if container.is_archived %}
+								<td>{{ container.name }}</td>
+							{% else %}
+								<td><a href="/details/{{ container.container_id }}">{{ container.name }}</a></td>
+							{% endif %}
+							<td>{{ container.command }}</td>
 							<td>{{ container.created_at }}</td>
 							<td>{{ container.last_check_at }}</td>
 							<td>{{ container.health_status }}</td>
 							<td class="button_row" >
 								<form method="post" enctype="multipart/form-data">
 									{% csrf_token %}
-									<button class="action_button data_button" name="data-latest" value="{{ container.container_id }}" type="submit">download</button>
+									<button class="action_button data_button {% if container.is_archived %} inactive {% endif %}" 
+										name="data-latest" value="{{ container.container_id }}" type="submit">download</button>
 								</form>
 							</td>
 							<td class="button_row" >
 								<form method="post" enctype="multipart/form-data">
 									{% csrf_token %}
-									<button class="action_button data_button" name="data-all" value="{{ container.container_id }}" type="submit">download</button>
+									<button class="action_button data_button {% if not container.has_data %} inactive {% endif %}" 
+										name="data-all" value="{{ container.container_id }}" type="submit">download</button>
 								</form>
 							</td>
 							<td class="button_row" >
 								<form method="post" enctype="multipart/form-data">
 									{% csrf_token %}
-									<button class="action_button delete_button" name="remove" value="{{ container.container_id }}" type="submit">delete</button>
+									<button class="action_button delete_button" name="delete" value="{{ container.container_id }}" type="submit">delete</button>
 								</form>
 							</td>
 						</tr>

@@ -28,11 +28,7 @@ class APIResponse():
 			return False
 
 	def not_found(self) -> bool:
-		print(self.http_status)
-		if self.http_status == 404:
-			return True
-		else:
-			return False
+		return self.http_status == 404
 
 	def status(self) -> list:
 		return [self.status_code, self.content()]
