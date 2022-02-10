@@ -25,40 +25,19 @@
 					<td>{{ container.last_check_at }}</td>
 					<td>{{ container.health_status }}</td>
 					<td class="button_row" >
-						<form method="post" enctype="multipart/form-data">
-							{% csrf_token %}
-							<button class="action_button health_check_button"
-								name="health" value="{{ container.container_id }}" type="submit">check health</button>
-						</form>
+						{% include "api_buttons/health_button.html" %}
 					</td>
 					<td class="button_row" >
-						<form method="post" enctype="multipart/form-data">
-							{% csrf_token %}
-							<button class="action_button data_button {% if container.is_archived %} inactive {% endif %}" 
-								name="data-latest" value="{{ container.container_id }}" type="submit">download</button>
-						</form>
+						{% include "api_buttons/download_latest_button.html" %}
 					</td>
 					<td class="button_row" >
-						<form method="post" enctype="multipart/form-data">
-							{% csrf_token %}
-							<button class="action_button data_button {% if not container.has_data %} inactive {% endif %}" 
-								name="data-all" value="{{ container.container_id }}" type="submit">download</button>
-						</form>
+						{% include "api_buttons/download_all_button.html" %}
 					</td>
 				</tr>
 			</table>
-			{% if error %}
-				<div>
-					<p class="error notice">
-						{{error}}
-					</p>
-				</div>
-			{% endif %}
+			{% include "notice_field.html" %}
 			<div>
-				<form method="post" enctype="multipart/form-data">
-					{% csrf_token %}
-					<button class="action_button" name="logs" value="{{ container.container_id }}" type="submit">get logs</button>
-				</form>
+				{% include "api_buttons/logs_button.html" %}
 				{% if data %}
 					<p > 
 						<pre class="notice terminal">{{ data }}</pre> 

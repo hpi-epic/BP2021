@@ -9,7 +9,6 @@ class APIResponse():
 		self.status_code = status
 		self.http_status = http_status
 		self.content = content
-		assert self._only_one_response_content_set(), 'you are only allowed to set one response content'
 
 	def ok(self) -> bool:
 		return self.status_code == 'success'

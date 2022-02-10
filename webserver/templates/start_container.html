@@ -17,7 +17,6 @@
 					</tr>
 
 					{% for file_name in file_names %}
-					<!-- {% with uploaded_file=file.file_upload %}     -->
 						<tr>
 							<td>{{ file_name }}</td>
 							<td>
@@ -33,7 +32,6 @@
 								</form>
 							</td>
 						</tr>
-					<!-- {% endwith %} -->
 					{% endfor %}
 				</table>
 			{% else %}
@@ -43,19 +41,7 @@
 					<a href="/upload">here</a>.
 				</p>
 			{% endif %}
-			{% if success %}
-				<div>
-					<p class="success notice">
-						{{success}}
-					</p>
-				</div>
-			{% elif error %}
-				<div>
-					<p class="error notice">
-						{{error}}
-					</p>
-				</div>
-			{% endif %}
+			{% include "notice_field.html" %}
 		</div>
 		<br>
 		<a href="/">home</a>
