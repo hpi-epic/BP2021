@@ -37,6 +37,7 @@
 								<form method="post" enctype="multipart/form-data">
 									{% csrf_token %}
 									<button class="action_button data_button {% if container.is_archived %} inactive {% endif %}" 
+										title="download data directly from running container"
 										name="data-latest" value="{{ container.container_id }}" type="submit">download</button>
 								</form>
 							</td>
@@ -44,13 +45,15 @@
 								<form method="post" enctype="multipart/form-data">
 									{% csrf_token %}
 									<button class="action_button data_button {% if not container.has_data %} inactive {% endif %}" 
+										title="download all data belonging to your container"
 										name="data-all" value="{{ container.container_id }}" type="submit">download</button>
 								</form>
 							</td>
 							<td class="button_row" >
 								<form method="post" enctype="multipart/form-data">
 									{% csrf_token %}
-									<button class="action_button delete_button" name="delete" value="{{ container.container_id }}" type="submit">delete</button>
+									<button class="action_button delete_button" title="deletes all data we stored about the container"
+									name="delete" value="{{ container.container_id }}" type="submit">delete</button>
 								</form>
 							</td>
 						</tr>

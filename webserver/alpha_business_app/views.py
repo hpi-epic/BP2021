@@ -1,4 +1,4 @@
-from django.http import Http404, HttpResponseRedirect
+from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 
 from .buttons import ButtonHandler
@@ -7,7 +7,7 @@ from .handle_files import handle_uploaded_file
 from .models import Container
 
 
-def detail(request, container_id):
+def detail(request, container_id) -> HttpResponse:
 	try:
 		wanted_container = Container.objects.get(container_id=container_id)
 	except Container.DoesNotExist:
@@ -16,26 +16,26 @@ def detail(request, container_id):
 	return button_handler.do_button_click()
 
 
-def download(request):
+def download(request) -> HttpResponse:
 	button_handler = ButtonHandler(request, view='download.html')
 	return button_handler.do_button_click()
 
 
-def index(request):
+def index(request) -> HttpResponse:
 	return render(request, 'index.html')
 
 
-def observe(request):
+def observe(request) -> HttpResponse:
 	button_handler = ButtonHandler(request, view='observe.html', rendering_method='archived')
 	return button_handler.do_button_click()
 
 
-def start_container(request):
+def start_container(request) -> HttpResponse:
 	button_handler = ButtonHandler(request, view='start_container.html', rendering_method='files')
 	return button_handler.do_button_click()
 
 
-def upload(request):
+def upload(request) -> HttpResponse:
 	if request.method == 'POST':
 		form = UploadFileForm(request.POST, request.FILES)
 		handle_uploaded_file(request.FILES['upload_config'])
