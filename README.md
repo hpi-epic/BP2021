@@ -30,6 +30,8 @@ The simulation should cover the interaction between customers and particularly c
 
 ## 1.1. Installing dependencies
 
+We are using both pip and conda to install our dependencies. The difference between the two is that we install all dependencies we need to run the core functionality of our project using pip, and all other dependencies (such as pytest or django) with conda. This allows us to keep our docker containers small by only installing pip dependencies there.
+
 If you have not yet done so, install Anaconda and run the following command to create an environment and install the required packages from the `environment.yml`:
 
 ```bash
@@ -200,6 +202,8 @@ C:\Users\your_username\anaconda3\envs\your_venv_name\DLLs
 ## 1.5. Networking Scenario
 
 ### 1.5.1. Docker
+
+[Docker SDK documentation](https://docker-py.readthedocs.io/en/stable/index.html)
 
 To use docker, first install it on your machine. Afterwards, you can build the images used in our repository using the following command:
 
