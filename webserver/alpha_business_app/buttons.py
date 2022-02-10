@@ -139,7 +139,7 @@ class ButtonHandler():
 			response = send_get_request_with_streaming('data', self.wanted_container_id)
 			if response.ok():
 				# save data from api and make it available for the user
-				response = response.content()
+				response = response.content
 				path = save_data(response, self.wanted_container_id)
 				return download_file(path)
 			else:
@@ -155,7 +155,7 @@ class ButtonHandler():
 		"""
 		response = send_get_request('health', self.request.POST)
 		if response.ok():
-			response = response.content()
+			response = response.content
 			update_container(response['id'], {'last_check_at': timezone.now(), 'health_status': response['status']})
 		else:
 			self.message = response.status()
@@ -173,7 +173,7 @@ class ButtonHandler():
 		response = send_get_request('logs', self.request.POST)
 		self.data = ''
 		if response.ok():
-			self.data = response.content()['data']
+			self.data = response.content['data']
 		return self._decide_rendering()
 
 	def _render_default(self) -> HttpResponse:
@@ -203,6 +203,7 @@ class ButtonHandler():
 		Returns:
 			HttpResponse: A rendering with all file names and the error or success message.
 		"""
+		file_names = None
 		if os.path.exists('configurations'):
 			file_names = os.listdir('configurations')
 		return render(self.request, self.view_to_render, {'file_names': file_names, self.message[0]: self.message[1]})
@@ -219,7 +220,7 @@ class ButtonHandler():
 
 	def _start(self) -> HttpResponse:
 		"""
-		Sends a post request to the API with a config in the body.
+		Sends a post request to the API with a config in the body to start the container.
 
 		Returns:
 			HttpResponse: An appropriate rendering, or a redirect to the `observe` view.
@@ -235,9 +236,9 @@ class ButtonHandler():
 
 		if response.ok():
 			# put container into database
-			response = response.content()
+			response = response.content
 			container_name = self.request.POST['experiment_name']
-			container_name = container_name if container_name != '' else response['id']
+			container_name = container_name if container_name != '' else response['id'][:10]
 			Container.objects.create(container_id=response['id'], config_file=config_dict, name=container_name, command=requested_command)
 			return redirect('/observe', {'success': 'You successfully launched an experiment'})
 		else:
@@ -256,8 +257,8 @@ class ButtonHandler():
 			return redirect(self.wanted_container.tensorboard_link)
 		response = send_get_request('data/tensorboard', self.request.POST)
 		if response.ok():
-			update_container(self.wanted_container_id, {'tensorboard_link': response.content()['data']})
-			return redirect(response.content()['data'])
+			update_container(self.wanted_container_id, {'tensorboard_link': response.content['data']})
+			return redirect(response.content['data'])
 		else:
 			self.message = response.status()
 			return self._decide_rendering()
