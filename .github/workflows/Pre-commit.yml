@@ -1,6 +1,6 @@
 name: Pre-commit
 
-on: [push, pull_request]
+on: push
 
 jobs:
   pre-commit:
@@ -9,13 +9,9 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
     - name: Set up Python 3.8
       uses: actions/setup-python@v2
       with:
         python-version: 3.8
     - name: Pre-commit
       uses: pre-commit/action@v2.0.3
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}

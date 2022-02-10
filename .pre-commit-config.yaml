@@ -34,9 +34,12 @@ repos:
     hooks:
       - id: flake8
         types: [python]
-  # - repo: https://github.com/econchick/interrogate
-  #   rev: 1.5.0  
-  #   hooks:
-  #   - id: interrogate
-  #     args: [-vv, --ignore-init-method, --ignore-module, --exclude=./src/tests, --generate-badge=./badges/docstring_coverage.svg, --badge-style=flat]
-  #     pass_filenames: false
+  - repo: https://github.com/econchick/interrogate
+    rev: 1.5.0  
+    hooks:
+    - id: interrogate
+      # This line is for the CI, so it doesn't change the badge and fail the workflow run
+      args: [-v, --ignore-init-method, --ignore-module, --exclude=./src/tests, --exclude=./webserver, --fail-under=50]
+      # Use this line instead if you want to update the badge locally
+      # args: [-v, --ignore-init-method, --ignore-module, --exclude=./src/tests, --exclude=./webserver, --fail-under=50, --generate-badge=./badges/docstring_coverage.svg, --badge-style=flat]
+      pass_filenames: false
