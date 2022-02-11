@@ -31,7 +31,7 @@ def teardown_module(module):
 
 def test_init_default_values():
 	test_configurator = am_configuration.Configurator()
-	assert test_configurator.enable_live_draw is True
+	assert test_configurator.enable_live_draw is False
 	assert 500 == test_configurator.episodes
 	assert 50 == test_configurator.plot_interval
 	assert isinstance(test_configurator.marketplace, circular_market.CircularEconomyMonopolyScenario)
