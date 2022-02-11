@@ -5,7 +5,7 @@ import pytest
 from numpy import random
 
 import agents.vendors as vendors
-import configuration.config as config
+import configuration.hyperparameters_config as config
 import tests.utils_tests as ut_t
 
 

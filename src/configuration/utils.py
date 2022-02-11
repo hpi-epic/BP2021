@@ -3,7 +3,7 @@ import random
 
 import numpy as np
 
-import configuration.config as config
+import configuration.hyperparameters_config as config
 
 
 def ensure_results_folders_exist():
@@ -57,8 +57,7 @@ def cartesian_product(list_a, list_b):
 	assert isinstance(list_a, list) and isinstance(list_b, list), 'You must give to lists'
 	output_list = []
 	for a in list_a:
-		for b in list_b:
-			output_list.append((a, b))
+		output_list.extend((a, b) for b in list_b)
 	return output_list
 
 
@@ -79,7 +78,7 @@ def write_dict_to_tensorboard(writer, dictionary, counter, is_cumulative=False) 
 			if (name.startswith('actions') or name.startswith('state')):
 				continue
 			else:
-				name = 'cumulated_' + name
+				name = f'cumulated_{name}'
 		if isinstance(content, dict):
 			writer.add_scalars(name, content, counter)
 		else:

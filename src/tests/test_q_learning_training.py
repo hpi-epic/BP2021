@@ -8,7 +8,7 @@ from unittest.mock import mock_open, patch
 import pytest
 
 import agents.vendors as vendors
-import configuration.config as config
+import configuration.hyperparameters_config as config
 import market.circular.circular_sim_market as circular_market
 import market.linear.linear_sim_market as linear_market
 import rl.q_learning_training as q_learning_training

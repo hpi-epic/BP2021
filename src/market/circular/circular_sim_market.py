@@ -2,7 +2,7 @@ import gym
 import numpy as np
 
 import agents.vendors as vendors
-import configuration.config as config
+import configuration.hyperparameters_config as config
 import configuration.utils as ut
 import market.customer as customer
 import market.owner as owner

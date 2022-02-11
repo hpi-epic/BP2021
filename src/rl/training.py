@@ -7,7 +7,7 @@ from abc import ABC, abstractmethod
 import torch
 from torch.utils.tensorboard import SummaryWriter
 
-import configuration.config as config
+import configuration.hyperparameters_config as config
 import configuration.utils as ut
 import rl.actorcritic_agent as actorcritic_agent
 from agents.vendors import ReinforcementLearningAgent

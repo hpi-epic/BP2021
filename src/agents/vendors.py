@@ -7,7 +7,7 @@ from abc import ABC, abstractmethod
 import numpy as np
 import torch
 
-import configuration.config as config
+import configuration.hyperparameters_config as config
 import rl.model as model
 from market.customer import CustomerCircular
 from rl.experience_buffer import ExperienceBuffer
