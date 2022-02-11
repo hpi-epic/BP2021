@@ -69,6 +69,7 @@ class ButtonHandler():
 			return self._logs()
 		return self._decide_rendering()
 
+	# PRIVATE METHODS
 	def _decide_rendering(self) -> HttpResponse:
 		"""
 		Will return you a rendering depending on the given keyword in `self.rendering_method`.
@@ -95,6 +96,39 @@ class ButtonHandler():
 				'data': self.data,
 				self.message[0]: self.message[1]}
 
+	def _render_default(self) -> HttpResponse:
+		"""
+		This will return a rendering for `self.view` with the default parameters.
+
+		Returns:
+			HttpResponse: A default rendering with default values, some might be set by the different functions.
+		"""
+		self.all_containers = Container.objects.all()
+		return render(self.request, self.view_to_render, self._default_params_for_view())
+
+	def _render_without_archived(self) -> HttpResponse:
+		"""
+		This will return a rendering for `self.view` without all 'archived' containers.
+
+		Returns:
+			HttpResponse: A default rendering with default values, some might be set by the different functions.
+		"""
+		self.all_containers = Container.objects.all().exclude(health_status='archived')
+		return render(self.request, self.view_to_render, self._default_params_for_view())
+
+	def _render_files(self):
+		"""
+		This will return a rendering for `self.view` with all `file_names` from `configurations`.
+
+		Returns:
+			HttpResponse: A rendering with all file names and the error or success message.
+		"""
+		file_names = None
+		if os.path.exists('configurations'):
+			file_names = os.listdir('configurations')
+		return render(self.request, self.view_to_render, {'file_names': file_names, self.message[0]: self.message[1]})
+
+	# BUTTON ACTION HANDLING
 	def _delete_container(self) -> HttpResponse:
 		"""
 		This will delete the selected container and all data belonging to this container.
@@ -175,38 +209,6 @@ class ButtonHandler():
 		if response.ok():
 			self.data = response.content['data']
 		return self._decide_rendering()
-
-	def _render_default(self) -> HttpResponse:
-		"""
-		This will return a rendering for `self.view` with the default parameters.
-
-		Returns:
-			HttpResponse: A default rendering with default values, some might be set by the different functions.
-		"""
-		self.all_containers = Container.objects.all()
-		return render(self.request, self.view_to_render, self._default_params_for_view())
-
-	def _render_without_archived(self) -> HttpResponse:
-		"""
-		This will return a rendering for `self.view` without all 'archived' containers.
-
-		Returns:
-			HttpResponse: A default rendering with default values, some might be set by the different functions.
-		"""
-		self.all_containers = Container.objects.all().exclude(health_status='archived')
-		return render(self.request, self.view_to_render, self._default_params_for_view())
-
-	def _render_files(self):
-		"""
-		This will return a rendering for `self.view` with all `file_names` from `configurations`.
-
-		Returns:
-			HttpResponse: A rendering with all file names and the error or success message.
-		"""
-		file_names = None
-		if os.path.exists('configurations'):
-			file_names = os.listdir('configurations')
-		return render(self.request, self.view_to_render, {'file_names': file_names, self.message[0]: self.message[1]})
 
 	def _remove(self) -> HttpResponse:
 		"""
