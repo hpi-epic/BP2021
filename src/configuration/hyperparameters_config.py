@@ -32,7 +32,7 @@ def load_config(filename='hyperparameters_config') -> dict:
 
 	Args:
 		filename (str, optional): The name of the json file containing the configuration values.
-		Must be located in the BP2021/ folder. Defaults to 'config'.
+		Must be located in the BP2021/ folder. Defaults to 'hyperparameters_config'.
 
 	Returns:
 		dict: A dictionary containing the configuration values.
