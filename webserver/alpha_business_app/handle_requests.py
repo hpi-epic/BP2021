@@ -18,7 +18,6 @@ def send_get_request(wanted_action: str, raw_data: dict) -> APIResponse:
 		APIResponse: Response from the API converted into our special format.
 	"""
 	wanted_container = raw_data[wanted_action]
-	requests.get(DOCKER_API + '/' + wanted_action, params={'id': str(wanted_container)})
 	try:
 		response = requests.get(DOCKER_API + '/' + wanted_action, params={'id': str(wanted_container)})
 	except requests.exceptions.RequestException:
