@@ -26,7 +26,7 @@ PRODUCTION_PRICE = None
 EPISODE_LENGTH = None
 
 
-def load_config(filename='config') -> dict:
+def load_config(filename='hyperparameters_config') -> dict:
 	"""
 	Load the configuration json file from the specified path.
 
