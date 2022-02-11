@@ -20,7 +20,7 @@ def archive_files(container_id: str) -> HttpResponse:
 		HttpResponse: All files beloning to this container.
 	"""
 	container_data_path = os.path.join(DATA_DIR, container_id)
-	archive_path = os.path.join(container_data_path, 'all_' + time.strftime('%b%d_%H-%M-%S') + '.tar')
+	archive_path = os.path.join(container_data_path, f'all_{time.strftime("%b%d_%H-%M-%S")}.tar')
 
 	tar_archive = tarfile.open(archive_path, 'x')
 	tar_archive.close()
@@ -145,7 +145,7 @@ def _file_as_http_response(path_to_file: str, mime_type: str) -> HttpResponse:
 	archive_name = os.path.basename(path_to_file)
 	container_id = os.path.basename(os.path.dirname(path_to_file))
 	container_name = Container.objects.get(container_id=container_id).name
-	file_name = 'container_%s_%s' % (container_name, archive_name)
-	response['Content-Disposition'] = 'attachment; filename=%s' % file_name
+	file_name = f'container_{container_name}_{archive_name}'
+	response['Content-Disposition'] = f'attachment; filename={file_name}'
 	# Return the response value
 	return response
