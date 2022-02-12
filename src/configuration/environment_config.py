@@ -10,6 +10,17 @@ class EnvironmentConfig(ABC):
 	def __init__(self, config: dict):
 		self.validate_config(config)
 
+	def __str__(self) -> str:
+		"""
+		This overwrites the internal function that get called when you call `print(class_instance)`.
+
+		Instead of printing the class name, prints the instance variables as a dictionary.
+
+		Returns:
+			str: The instance variables as a dictionary.
+		"""
+		return f'{self.__class__.__name__}: {self.__dict__}'
+
 	@abstractmethod
 	def validate_config(config: dict) -> None:
 		"""
@@ -110,4 +121,4 @@ class ConfigLoader():
 
 if __name__ == '__main__':
 	config: EnvironmentConfig = ConfigLoader().load()
-	print(config.__dict__)
+	print(config)
