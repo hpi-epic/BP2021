@@ -3,6 +3,7 @@ import market.circular.circular_sim_market as circular_market
 import market.linear.linear_sim_market as linear_market
 import market.sim_market as sim_market
 import rl.actorcritic_agent as actorcritic_agent
+from configuration.environment_config import ConfigLoader
 from rl.actorcritic_training import ActorCriticTrainer
 from rl.q_learning_training import QLearningTrainer
 
@@ -50,5 +51,13 @@ def train_continuos_a2c_circular_economy_rebuy():
 	run_training_session(circular_market.CircularEconomyRebuyPriceOneCompetitor, actorcritic_agent.ContinuosActorCriticAgentFixedOneStd)
 
 
+def train_from_config():
+	"""
+	Use the `environment_config.json` file to decide on the training parameters.
+	"""
+	config = ConfigLoader().load()
+	run_training_session(config.marketplace, config.agent)
+
+
 if __name__ == '__main__':
-	train_q_learning_classic_scenario()
+	train_from_config()
