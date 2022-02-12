@@ -36,6 +36,8 @@ class EnvironmentConfig(ABC):
 		assert 'agents' in config, f'The config must have an "agents" field: {config}'
 		assert 'marketplace' in config, f'The config must have a "marketplace" field: {config}'
 
+		# TODO: Assert marketplace and agent match
+
 		if single_agent and len(config['agents']) > 1:
 			print(f'Multiple agents were provided but only the first one will be used:: {config["agents"]}')
 		assert isinstance(config['agents'], dict), \
@@ -51,6 +53,7 @@ class EnvironmentConfig(ABC):
 			f'The "class" fields must be strings: {agent_dictionaries} ({[type(agent["class"]) for agent in agent_dictionaries]})'
 
 		if needs_modelfile:
+			# TODO: Only check modelfiles for non-RL agents (need to check class inheritance, need to get the agent class beforehand)
 			assert all('modelfile' in agent for agent in agent_dictionaries), f'Each agent must have a "modelfile" field: {agent_dictionaries}'
 			# TODO: Verify if the modelfile is a .dat and in the data folder!
 			assert all(isinstance(agent['modelfile'], str) for agent in agent_dictionaries), \
@@ -62,22 +65,12 @@ class EnvironmentConfig(ABC):
 		self.marketplace = self.get_class(config['marketplace'])
 		# If a modelfile is needed, the self.agents will be a list of tuples, else just a list of classes
 		if needs_modelfile:
-			self.agents = [(self.get_class(agent['class']), agent['modelfile']) for agent in agent_dictionaries]
+			self.agent = [(self.get_class(agent['class']), agent['modelfile']) for agent in agent_dictionaries]
 		else:
-			self.agents = [self.get_class(agent['class']) for agent in agent_dictionaries]
-		# If only one agent is needed, we just take out the first agent from the list we created beforehand
+			self.agent = [self.get_class(agent['class']) for agent in agent_dictionaries]
+		# If only one agent is needed, we just use the first agent from the list we created before
 		if single_agent:
-			self.agents = self.agents[0]
-
-	@abstractmethod
-	def get_task() -> str:
-		"""
-		Return the type of task this Config is for.
-
-		Returns:
-			str: The task name.
-		"""
-		raise NotImplementedError('This method is abstract. Use a subclass')
+			self.agent = self.agent[0]
 
 	def get_class(self, import_string: str):
 		"""
@@ -92,6 +85,16 @@ class EnvironmentConfig(ABC):
 		module_name, class_name = import_string.rsplit('.', 1)
 		return getattr(importlib.import_module(module_name), class_name)
 
+	@abstractmethod
+	def get_task() -> str:
+		"""
+		Return the type of task this Config is for.
+
+		Returns:
+			str: The task name.
+		"""
+		raise NotImplementedError('This method is abstract. Use a subclass')
+
 
 class TrainingEnvironmentConfig(EnvironmentConfig):
 	"""
@@ -99,7 +102,7 @@ class TrainingEnvironmentConfig(EnvironmentConfig):
 	"""
 
 	def validate_config(self, config: dict) -> None:
-		super(TrainingEnvironmentConfig, self).validate_config(config, True, False)
+		super(TrainingEnvironmentConfig, self).validate_config(config, single_agent=True, needs_modelfile=False)
 
 	def get_task(self) -> str:
 		return 'training'
@@ -127,7 +130,7 @@ class AgentMonitoringEnvironmentConfig(EnvironmentConfig):
 		self.plot_interval = config['plot_interval']
 
 		# We do the super call last because getting the classes takes longer than the other operations, so we save time in case of an error.
-		super(AgentMonitoringEnvironmentConfig, self).validate_config(config, False, True)
+		super(AgentMonitoringEnvironmentConfig, self).validate_config(config, single_agent=False, needs_modelfile=True)
 
 	def get_task() -> str:
 		return 'agent_monitoring'
@@ -139,7 +142,7 @@ class ExampleprinterEnvironmentConfig(EnvironmentConfig):
 	"""
 
 	def validate_config(self, config: dict) -> None:
-		super(ExampleprinterEnvironmentConfig, self).validate_config(config, True, True)
+		super(ExampleprinterEnvironmentConfig, self).validate_config(config, single_agent=True, needs_modelfile=True)
 
 	def get_task() -> str:
 		return 'exampleprinter'
