@@ -21,15 +21,26 @@ class EnvironmentConfig(ABC):
 		"""
 		return f'{self.__class__.__name__}: {self.__dict__}'
 
-	@abstractmethod
-	def validate_config(config: dict) -> None:
+	def validate_config(self, config: dict) -> None:
 		"""
 		Validate the given configuration dictionary and set the instance variables accordingly.
 
 		Args:
 			config (dict): The config dictionary to be validated.
 		"""
-		raise NotImplementedError('This method is abstract. Use a subclass')
+		assert 'agents' in config, f'The config must have an "agents" field: {config}'
+		assert 'marketplace' in config, f'The config must have a "marketplace" field: {config}'
+
+		assert isinstance(config['agents'], dict), \
+			f'The "agents" field must be a dict: {config["agents"]} ({type(config["agents"])})'
+		assert all(isinstance(config['agents'][agent], dict) for agent in config['agents']), \
+			f'All agents in the "agents" field must be dictionaries: {[config["agents"][agent] for agent in config["agents"]]}'
+
+		assert isinstance(config['marketplace'], str), \
+			f'The "marketplace" field must be a str: {config["marketplace"]} ({type(config["marketplace"])})'
+
+		self.marketplace = self.get_class(config['marketplace'])
+		self.agents = [self.get_class(config['agents'][agent]['class']) for agent in config['agents']]
 
 	@abstractmethod
 	def get_task() -> str:
@@ -58,35 +69,45 @@ class EnvironmentConfig(ABC):
 class TrainingEnvironmentConfig(EnvironmentConfig):
 
 	def validate_config(self, config: dict) -> None:
-		assert 'agents' in config, f'The config must have an "agents" field: {config}'
-		assert 'marketplace' in config, f'The config must have a "marketplace" field: {config}'
-
-		assert isinstance(config['agents'], dict), \
-			f'The "agents" field must be a dict: {config["agents"]} ({type(config["agents"])})'
-		assert all(isinstance(config['agents'][agent], dict) for agent in config['agents']), \
-			f'All agents in the "agents" field must be dictionaries: {[config["agents"][agent] for agent in config["agents"]]}'
-
-		assert isinstance(config['marketplace'], str), \
-			f'The "marketplace" field must be a str: {config["marketplace"]} ({type(config["marketplace"])})'
-
-		self.marketplace = self.get_class(config['marketplace'])
-		self.agents = [self.get_class(config['agents'][agent]['class']) for agent in config['agents']]
+		super(TrainingEnvironmentConfig, self).validate_config(config)
+		# temporary(?) workaround, since we only support one agent
+		self.agents = self.agents[0]
 
 	def get_task(self) -> str:
 		return 'training'
 
 
 class AgentMonitoringEnvironmentConfig(EnvironmentConfig):
-	enable_live_draw = None
-	episodes = None
-	plot_interval = None
-	folder_path = None
+
+	def validate_config(self, config: dict) -> None:
+		assert 'enable_live_draw' in config, f'The config must have an "enable_live_draw" field: {config}'
+		assert 'episodes' in config, f'The config must have an "episodes" field: {config}'
+		assert 'plot_interval' in config, f'The config must have an "plot_interval" field: {config}'
+
+		assert isinstance(config['enable_live_draw'], bool), \
+			f'The "enable_live_draw" field must be a bool: {config["enable_live_draw"]} ({type(config["enable_live_draw"])})'
+		assert isinstance(config['episodes'], int), \
+			f'The "episodes" field must be a int: {config["episodes"]} ({type(config["episodes"])})'
+		assert isinstance(config['plot_interval'], int), \
+			f'The "plot_interval" field must be a int: {config["plot_interval"]} ({type(config["plot_interval"])})'
+
+		self.enable_live_draw = config['enable_live_draw']
+		self.episodes = config['episodes']
+		self.plot_interval = config['plot_interval']
+
+		# We do the super call last because getting the classes takes longer than the other operations, so we save time in case of an error.
+		super(AgentMonitoringEnvironmentConfig, self).validate_config(config)
 
 	def get_task() -> str:
 		return 'agent_monitoring'
 
 
 class ExampleprinterEnvironmentConfig(EnvironmentConfig):
+
+	def validate_config(self, config: dict) -> None:
+		super(ExampleprinterEnvironmentConfig, self).validate_config(config)
+		# temporary(?) workaround, since we only support one agent
+		self.agents = self.agents[0]
 
 	def get_task() -> str:
 		return 'exampleprinter'
