@@ -1,5 +1,5 @@
 {
-	"task": "agent_monitoring",
+	"task": "training",
 	"enable_live_draw": false,
 	"episodes": 1000,
 	"plot_interval": 10,
@@ -7,7 +7,11 @@
 	"agents": {
 		"Agent_name": {
 			"class": "agents.vendors.QLearningCERebuyAgent",
-			"modelfile": null
+			"modelfile": "CircularEconomyRebuyPriceMonopolyScenario_QLearningCERebuyAgent.dat"
+		},
+		"Agent_name2": {
+			"class": "agents.vendors.QLearningCERebuyAgent",
+			"modelfile": "CircularEconomyRebuyPriceMonopolyScenario_QLearningCERebuyAgent.dat"
 		}
 	}
 }

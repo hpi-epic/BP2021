@@ -6,6 +6,9 @@ from abc import ABC, abstractmethod
 
 
 class EnvironmentConfig(ABC):
+	"""
+	An abstract environment configuration class.
+	"""
 
 	def __init__(self, config: dict):
 		self.validate_config(config)
@@ -21,26 +24,50 @@ class EnvironmentConfig(ABC):
 		"""
 		return f'{self.__class__.__name__}: {self.__dict__}'
 
-	def validate_config(self, config: dict) -> None:
+	def validate_config(self, config: dict, single_agent: bool, needs_modelfile: bool) -> None:
 		"""
 		Validate the given configuration dictionary and set the instance variables accordingly.
 
 		Args:
 			config (dict): The config dictionary to be validated.
+			single_agent (bool): Whether or not only one agent can be in the config.
+			needs_modelfile (bool): Whether or not the config must include modelfiles.
 		"""
 		assert 'agents' in config, f'The config must have an "agents" field: {config}'
 		assert 'marketplace' in config, f'The config must have a "marketplace" field: {config}'
 
+		if single_agent and len(config['agents']) > 1:
+			print(f'Multiple agents were provided but only the first one will be used:: {config["agents"]}')
 		assert isinstance(config['agents'], dict), \
 			f'The "agents" field must be a dict: {config["agents"]} ({type(config["agents"])})'
-		assert all(isinstance(config['agents'][agent], dict) for agent in config['agents']), \
+
+		# The dictionaries in config['agents'] in a list for easier access
+		agent_dictionaries = [config['agents'][agent] for agent in config['agents']]
+		assert (isinstance(agent, dict) for agent in agent_dictionaries), \
 			f'All agents in the "agents" field must be dictionaries: {[config["agents"][agent] for agent in config["agents"]]}'
+
+		assert all('class' in agent for agent in agent_dictionaries), f'Each agent must have a "class" field: {agent_dictionaries}'
+		assert all(isinstance(agent['class'], str) for agent in agent_dictionaries), \
+			f'The "class" fields must be strings: {agent_dictionaries} ({[type(agent["class"]) for agent in agent_dictionaries]})'
+
+		if needs_modelfile:
+			assert all('modelfile' in agent for agent in agent_dictionaries), f'Each agent must have a "modelfile" field: {agent_dictionaries}'
+			# TODO: Verify if the modelfile is a .dat and in the data folder!
+			assert all(isinstance(agent['modelfile'], str) for agent in agent_dictionaries), \
+				f'The "modelfile" fields must be strings: {agent_dictionaries} ({[type(agent["modelfile"]) for agent in agent_dictionaries]})'
 
 		assert isinstance(config['marketplace'], str), \
 			f'The "marketplace" field must be a str: {config["marketplace"]} ({type(config["marketplace"])})'
 
 		self.marketplace = self.get_class(config['marketplace'])
-		self.agents = [self.get_class(config['agents'][agent]['class']) for agent in config['agents']]
+		# If a modelfile is needed, the self.agents will be a list of tuples, else just a list of classes
+		if needs_modelfile:
+			self.agents = [(self.get_class(agent['class']), agent['modelfile']) for agent in agent_dictionaries]
+		else:
+			self.agents = [self.get_class(agent['class']) for agent in agent_dictionaries]
+		# If only one agent is needed, we just take out the first agent from the list we created beforehand
+		if single_agent:
+			self.agents = self.agents[0]
 
 	@abstractmethod
 	def get_task() -> str:
@@ -67,17 +94,21 @@ class EnvironmentConfig(ABC):
 
 
 class TrainingEnvironmentConfig(EnvironmentConfig):
+	"""
+	The environment configuration class for the training configuration.
+	"""
 
 	def validate_config(self, config: dict) -> None:
-		super(TrainingEnvironmentConfig, self).validate_config(config)
-		# temporary(?) workaround, since we only support one agent
-		self.agents = self.agents[0]
+		super(TrainingEnvironmentConfig, self).validate_config(config, True, False)
 
 	def get_task(self) -> str:
 		return 'training'
 
 
 class AgentMonitoringEnvironmentConfig(EnvironmentConfig):
+	"""
+	The environment configuration class for the agent_monitoring configuration.
+	"""
 
 	def validate_config(self, config: dict) -> None:
 		assert 'enable_live_draw' in config, f'The config must have an "enable_live_draw" field: {config}'
@@ -96,18 +127,19 @@ class AgentMonitoringEnvironmentConfig(EnvironmentConfig):
 		self.plot_interval = config['plot_interval']
 
 		# We do the super call last because getting the classes takes longer than the other operations, so we save time in case of an error.
-		super(AgentMonitoringEnvironmentConfig, self).validate_config(config)
+		super(AgentMonitoringEnvironmentConfig, self).validate_config(config, False, True)
 
 	def get_task() -> str:
 		return 'agent_monitoring'
 
 
 class ExampleprinterEnvironmentConfig(EnvironmentConfig):
+	"""
+	The environment configuration class for the exampleprinter configuration.
+	"""
 
 	def validate_config(self, config: dict) -> None:
-		super(ExampleprinterEnvironmentConfig, self).validate_config(config)
-		# temporary(?) workaround, since we only support one agent
-		self.agents = self.agents[0]
+		super(ExampleprinterEnvironmentConfig, self).validate_config(config, True, True)
 
 	def get_task() -> str:
 		return 'exampleprinter'
