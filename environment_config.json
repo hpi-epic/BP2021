@@ -1,0 +1,13 @@
+{
+	"task": "training",
+	"enable_live_draw": null,
+	"episodes": null,
+	"plot_interval": null,
+	"marketplace": "market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario",
+	"agents": {
+		"Agent_name": {
+			"class": "agents.vendors.QLearningCERebuyAgent",
+			"modelfile": null
+		}
+	}
+}
