@@ -47,8 +47,10 @@ conda activate your_venv_name
 Additionally, pip dependencies need to be installed using the following command. Make sure you activate your conda environment first!
 
 ```bash
-pip install -r requirements.txt
+pip install -r requirements.txt -f https://download.pytorch.org/whl/cu113/torch_stable.html
 ```
+
+The `-f` flag tells pip to look at the specified URL for links to archives. This is needed to find the pytorch version with cuda support (`torch==1.10.2+cu113`)
 
 To update an existing environment with the needed packages run the following command:
 
