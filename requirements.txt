@@ -1,3 +1,4 @@
+pytest-randomly==3.11.0
 docker==5.0.3
 -e ./src  # This installs our project as a package
 gym==0.21.0
