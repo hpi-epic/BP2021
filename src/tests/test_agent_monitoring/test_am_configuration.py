@@ -8,7 +8,6 @@ import pytest
 import agents.vendors as vendors
 import market.circular.circular_sim_market as circular_market
 import market.linear.linear_sim_market as linear_market
-import monitoring.agent_monitoring.am_configuration as am_configuration
 import monitoring.agent_monitoring.am_monitoring as monitoring
 import rl.actorcritic_agent as actorcritic_agent
 
@@ -20,25 +19,20 @@ def setup_function(function):
 	print('***SETUP***')
 	global monitor
 	monitor = monitoring.Monitor()
-	monitor.configurator.setup_monitoring(enable_live_draw=False, subfolder_name=f'test_plots_{function.__name__}')
+	monitor.configurator.setup_monitoring(
+		enable_live_draw=False,
+		episodes=50,
+		plot_interval=10,
+		marketplace=circular_market.CircularEconomyMonopolyScenario,
+		agents=[(vendors.QLearningCEAgent, [os.path.join(os.path.dirname(__file__), os.pardir, 'test_data',
+			'CircularEconomyMonopolyScenario_QLearningCEAgent.dat')])],
+		subfolder_name=f'test_plots_{function.__name__}')
 
 
 def teardown_module(module):
 	for file_name in os.listdir(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir, 'results', 'monitoring')):
 		if re.match('test_*', file_name):
 			assert False, 'Test files were not mocked correctly'
-
-
-def test_init_default_values():
-	test_configurator = am_configuration.Configurator()
-	assert test_configurator.enable_live_draw is True
-	assert 500 == test_configurator.episodes
-	assert 50 == test_configurator.plot_interval
-	assert isinstance(test_configurator.marketplace, circular_market.CircularEconomyMonopolyScenario)
-	assert isinstance(test_configurator.agents[0], vendors.QLearningCEAgent)
-	assert 1 == len(test_configurator.agents)
-	assert [(0.0, 0.0, 1.0, 1.0)] == test_configurator.agent_colors
-	# folder_path can hardly be tested due to the default involving the current DateTime
 
 
 def test_get_folder():
