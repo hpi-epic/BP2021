@@ -11,7 +11,7 @@ RUN python3 -m ensurepip --upgrade
 RUN pip install --upgrade pip
 COPY requirements.txt .
 COPY ./src ./src
-RUN python3 -m pip install -r requirements.txt
+RUN python3 -m pip install -r requirements.txt -f https://download.pytorch.org/whl/cu113/torch_stable.html
 
 # copy all relevant files to the container
 COPY ./data ./data

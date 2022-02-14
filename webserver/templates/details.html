@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8"/>
+		<title>Details</title>
+		{% load static %}
+		<link rel="stylesheet" type="text/css" href="{% static 'style.css' %}">
+		<link rel="shortcut icon" type="image/png" href="{% static 'favicon.png' %}"/>
+	</head>
+	<body>
+		<h1>You are viewing container {{ container.name }}</h1>
+		<div class="content">
+			<table class="table">
+				<tr>
+					<th>command</th>
+					<th>created at</th>
+					<th>last checked at</th>
+					<th>health status</th>
+					<th>get health status</th>
+					<th>download latest data</th>
+					<th>download all data</th>
+				</tr>
+				<tr>
+					<td>{{ container.command }}</td>
+					<td>{{ container.created_at }}</td>
+					<td>{{ container.last_check_at }}</td>
+					<td>{{ container.health_status }}</td>
+					<td class="button_row" >
+						{% include "api_buttons/health_button.html" %}
+					</td>
+					<td class="button_row" >
+						{% include "api_buttons/download_latest_button.html" %}
+					</td>
+					<td class="button_row" >
+						{% include "api_buttons/download_all_button.html" %}
+					</td>
+				</tr>
+			</table>
+			{% include "notice_field.html" %}
+			<div>
+				{% include "api_buttons/logs_button.html" %}
+				{% if data %}
+					<p > 
+						<pre class="notice terminal">{{ data }}</pre> 
+					</p>
+				{% endif %}
+			</div>
+		</div>
+		<br>
+		<a href="/">home</a>
+	</body>
+</html>

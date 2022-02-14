@@ -30,6 +30,8 @@ The simulation should cover the interaction between customers and particularly c
 
 ## 1.1. Installing dependencies
 
+We are using both pip and conda to install our dependencies. The difference between the two is that we install all dependencies we need to run the core functionality of our project using pip, and all other dependencies (such as pytest or django) with conda. This allows us to keep our docker containers small by only installing pip dependencies there.
+
 If you have not yet done so, install Anaconda and run the following command to create an environment and install the required packages from the `environment.yml`:
 
 ```bash
@@ -45,8 +47,10 @@ conda activate your_venv_name
 Additionally, pip dependencies need to be installed using the following command. Make sure you activate your conda environment first!
 
 ```bash
-pip install -r requirements.txt
+pip install -r requirements.txt -f https://download.pytorch.org/whl/cu113/torch_stable.html
 ```
+
+The `-f` flag tells pip to look at the specified URL for links to archives. This is needed to find the pytorch version with cuda support (`torch==1.10.2+cu113`)
 
 To update an existing environment with the needed packages run the following command:
 
@@ -201,6 +205,8 @@ C:\Users\your_username\anaconda3\envs\your_venv_name\DLLs
 
 ### 1.5.1. Docker
 
+[Docker SDK documentation](https://docker-py.readthedocs.io/en/stable/index.html)
+
 To use docker, first install it on your machine. Afterwards, you can build the images used in our repository using the following command:
 
 ```bash
@@ -275,3 +281,5 @@ uvicorn app:app --reload
 ```
 
 Don't use `--reload` when deploying in production.
+
+You can just run the `app.py` with python from the docker folder as well.
