@@ -4,9 +4,7 @@ import sys
 
 import monitoring.agent_monitoring.am_configuration as am_configuration
 import monitoring.agent_monitoring.am_evaluation as am_evaluation
-
-# import agents.vendors as vendors
-# import market.linear.linear_sim_market as linear_market
+from configuration.environment_config import AgentMonitoringEnvironmentConfig, ConfigLoader
 
 
 class Monitor():
@@ -84,9 +82,14 @@ def run_monitoring_session(monitor: Monitor = Monitor()) -> None:
 	Args:
 		monitor (Monitor instance, optional): The monitor to run the session on. Defaults to a default Monitor() instance.
 	"""
-	# monitor.configurator.setup_monitoring(
-	# 	agents=[(vendors.QLearningLEAgent, ['QLearning Agent']), (vendors.FixedPriceLEAgent, [(6), 'Rulebased Agent'])],
-	# 	marketplace=linear_market.ClassicScenario)
+	config: AgentMonitoringEnvironmentConfig = ConfigLoader.load('environment_config_agent_monitoring')
+	monitor.configurator.setup_monitoring(
+		enable_live_draw=config.enable_live_draw,
+		episodes=config.episodes,
+		plot_interval=config.plot_interval,
+		marketplace=config.marketplace,
+		agents=config.agent
+	)
 	monitor.configurator.print_configuration()
 
 	print('\nStarting monitoring session...')

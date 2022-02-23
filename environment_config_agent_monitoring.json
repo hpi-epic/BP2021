@@ -1,8 +1,8 @@
 {
 	"task": "agent_monitoring",
-	"enable_live_draw": false,
+	"enable_live_draw": true,
 	"episodes": 1000,
-	"plot_interval": 10,
+	"plot_interval": 100,
 	"marketplace": "market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario",
 	"agents": {
 		"Agent_name": {

@@ -149,7 +149,7 @@ class AgentMonitoringEnvironmentConfig(EnvironmentConfig):
 	"""
 
 	def validate_config(self, config: dict) -> None:
-
+		# TODO: subfolder_name variable
 		# CHECK: All required top-level fields exist
 		assert 'enable_live_draw' in config, f'The config must have an "enable_live_draw" field: {config}'
 		assert 'episodes' in config, f'The config must have an "episodes" field: {config}'
@@ -171,8 +171,8 @@ class AgentMonitoringEnvironmentConfig(EnvironmentConfig):
 		super(AgentMonitoringEnvironmentConfig, self).validate_config(config, single_agent=False, needs_modelfile=True)
 
 		# In agent_monitoring, agents can have names, which will be the key of the agent dictionary in the json file
-		for curr_agent in range(len(self.agent)):
-			self.agent[curr_agent] = self.agent[curr_agent] + (list(config['agents'].keys())[curr_agent],)
+		self.agent = [(self.agent[current_agent][0], [self.agent[current_agent][1], list(config['agents'].keys())[current_agent]])
+			for current_agent in range(len(self.agent))]
 
 	def get_task(self) -> str:
 		return 'agent_monitoring'
@@ -192,7 +192,7 @@ class ExampleprinterEnvironmentConfig(EnvironmentConfig):
 
 class ConfigLoader():
 
-	def load(self, filename: str = 'environment_config') -> EnvironmentConfig:
+	def load(filename: str = 'environment_config') -> EnvironmentConfig:
 		"""
 		Load the configuration json file from the specified path and instantiate the correct configuration class.
 
@@ -218,5 +218,5 @@ class ConfigLoader():
 
 
 if __name__ == '__main__':
-	config: EnvironmentConfig = ConfigLoader().load()
+	config: EnvironmentConfig = ConfigLoader.load()
 	print(config)

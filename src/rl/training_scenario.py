@@ -3,7 +3,7 @@ import market.circular.circular_sim_market as circular_market
 import market.linear.linear_sim_market as linear_market
 import market.sim_market as sim_market
 import rl.actorcritic_agent as actorcritic_agent
-from configuration.environment_config import ConfigLoader
+from configuration.environment_config import ConfigLoader, TrainingEnvironmentConfig
 from rl.actorcritic_training import ActorCriticTrainer
 from rl.q_learning_training import QLearningTrainer
 
@@ -55,7 +55,7 @@ def train_from_config():
 	"""
 	Use the `environment_config.json` file to decide on the training parameters.
 	"""
-	config = ConfigLoader().load()
+	config: TrainingEnvironmentConfig = ConfigLoader.load('environment_config_training')
 	run_training_session(config.marketplace, config.agent)
 
 
