@@ -33,25 +33,35 @@ class EnvironmentConfig(ABC):
 			single_agent (bool): Whether or not only one agent is needed.
 			needs_modelfile (bool): Whether or not the config must include modelfiles.
 		"""
+
+		# CHECK: All required top-level fields exist
 		assert 'agents' in config, f'The config must have an "agents" field: {config}'
 		assert 'marketplace' in config, f'The config must have a "marketplace" field: {config}'
 
 		# TODO: Assert marketplace and agent match
 
-		if single_agent and len(config['agents']) > 1:
-			print(f'Multiple agents were provided but only the first one will be used: {config["agents"]}')
+		# CHECK: Agents
 		assert isinstance(config['agents'], dict), \
 			f'The "agents" field must be a dict: {config["agents"]} ({type(config["agents"])})'
 
-		# The dictionaries in config['agents'] in a list for easier access
+		# Shorten the agent dictionary if only one is necessary
+		if single_agent and len(config['agents']) > 1:
+			used_agent = list(config['agents'].items())[0]
+			config['agents'] = {used_agent[0]: used_agent[1]}
+			print(f'Multiple agents were provided but only the first one will be used:\n{config["agents"]}')
+
+		# Save the agents in config['agents'] in a list for easier access
 		agent_dictionaries = [config['agents'][agent] for agent in config['agents']]
+
 		assert (isinstance(agent, dict) for agent in agent_dictionaries), \
 			f'All agents in the "agents" field must be dictionaries: {[config["agents"][agent] for agent in config["agents"]]}'
 
+		# CHECK: Agents::Class
 		assert all('class' in agent for agent in agent_dictionaries), f'Each agent must have a "class" field: {agent_dictionaries}'
 		assert all(isinstance(agent['class'], str) for agent in agent_dictionaries), \
 			f'The "class" fields must be strings: {agent_dictionaries} ({[type(agent["class"]) for agent in agent_dictionaries]})'
 
+		# CHECK: Agents::Modelfile
 		if needs_modelfile:
 			# TODO: Only check modelfiles for non-RL agents (need to check class inheritance, need to get the agent class beforehand)
 			assert all('modelfile' in agent for agent in agent_dictionaries), f'Each agent must have a "modelfile" field: {agent_dictionaries}'
@@ -59,11 +69,14 @@ class EnvironmentConfig(ABC):
 			assert all(isinstance(agent['modelfile'], str) for agent in agent_dictionaries), \
 				f'The "modelfile" fields must be strings: {agent_dictionaries} ({[type(agent["modelfile"]) for agent in agent_dictionaries]})'
 
+		# CHECK: Marketplace
 		assert isinstance(config['marketplace'], str), \
 			f'The "marketplace" field must be a str: {config["marketplace"]} ({type(config["marketplace"])})'
 
 		self.marketplace = self.get_class(config['marketplace'])
-		# If a modelfile is needed, the self.agents will be a list of tuples, else just a list of classes
+
+		# FINAL: Assign instance variables
+		# If a modelfile is needed, the self.agents will be a list of tuples (as required by agent_monitoring), else just a list of classes
 		if needs_modelfile:
 			self.agent = [(self.get_class(agent['class']), agent['modelfile']) for agent in agent_dictionaries]
 		else:
@@ -114,10 +127,13 @@ class AgentMonitoringEnvironmentConfig(EnvironmentConfig):
 	"""
 
 	def validate_config(self, config: dict) -> None:
+
+		# CHECK: All required top-level fields exist
 		assert 'enable_live_draw' in config, f'The config must have an "enable_live_draw" field: {config}'
 		assert 'episodes' in config, f'The config must have an "episodes" field: {config}'
 		assert 'plot_interval' in config, f'The config must have an "plot_interval" field: {config}'
 
+		# CHECK: Agent_monitoring fields have the correct types
 		assert isinstance(config['enable_live_draw'], bool), \
 			f'The "enable_live_draw" field must be a bool: {config["enable_live_draw"]} ({type(config["enable_live_draw"])})'
 		assert isinstance(config['episodes'], int), \
@@ -125,6 +141,7 @@ class AgentMonitoringEnvironmentConfig(EnvironmentConfig):
 		assert isinstance(config['plot_interval'], int), \
 			f'The "plot_interval" field must be a int: {config["plot_interval"]} ({type(config["plot_interval"])})'
 
+		# FINAL: Assign instance variables
 		self.enable_live_draw = config['enable_live_draw']
 		self.episodes = config['episodes']
 		self.plot_interval = config['plot_interval']
