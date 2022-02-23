@@ -75,8 +75,9 @@ class EnvironmentConfig(ABC):
 		agent_classes = [self.get_class(agent['class']) for agent in agent_dictionaries]
 		# If a modelfile is needed, the self.agents will be a list of tuples (as required by agent_monitoring), else just a list of classes
 		if needs_modelfile:
+			modelfile_list = []
 			for current_agent in range(len(agent_classes)):
-				if issubclass(agent_classes[current_agent], QLearningAgent):
+				if issubclass(agent_classes[current_agent], (QLearningAgent, ActorCriticAgent)):
 					assert 'modelfile' in agent_dictionaries[current_agent], f'This agent must have a "modelfile" field: {agent_classes[current_agent]}'
 
 					modelfile = agent_dictionaries[current_agent]['modelfile']
@@ -86,9 +87,13 @@ class EnvironmentConfig(ABC):
 					# Check that the modelfile exists. Implies that it must end in .dat Taken from am_configuration::_get_modelfile_path()
 					full_path = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'data', modelfile))
 					assert os.path.exists(full_path), f'the specified modelfile does not exist: {full_path}'
+					modelfile_list.append(modelfile)
 
+				# if this agent doesn't have modelfiles, append None
+				else:
+					modelfile_list.append(None)
 			# Create a list of tuples (agent_class, modelfile_string)
-			self.agent = list(zip(agent_classes, (agent['modelfile'] for agent in agent_dictionaries)))
+			self.agent = list(zip(agent_classes, iter(modelfile_list)))
 
 			assert all(issubclass(agent[0], CircularAgent) == issubclass(self.marketplace, CircularEconomy) for agent in self.agent), \
 				f'The agents and marketplace must be of the same economy type (Linear/Circular): {self.agent} and {self.marketplace}'
@@ -109,7 +114,7 @@ class EnvironmentConfig(ABC):
 			import_string (str): A string containing the import path in the format 'module.submodule.class'.
 
 		Returns:
-			class: The imported class
+			class: The imported class.
 		"""
 		module_name, class_name = import_string.rsplit('.', 1)
 		try:

@@ -10,6 +10,7 @@ from torch.utils.tensorboard import SummaryWriter
 import agents.vendors as vendors
 import configuration.utils as ut
 import market.circular.circular_sim_market as circular_market
+from configuration.environment_config import ConfigLoader, ExampleprinterEnvironmentConfig
 from monitoring.svg_manipulation import SVGManipulator
 
 
@@ -89,4 +90,20 @@ class ExamplePrinter():
 
 
 if __name__ == '__main__':  # pragma: no cover
-	print(ExamplePrinter().run_example())
+	printer = ExamplePrinter()
+
+	# TODO: Make the config loading a little nicer!
+	config: ExampleprinterEnvironmentConfig = ConfigLoader.load('environment_config_exampleprinter')
+	marketplace = config.marketplace()
+
+	# no modelfile
+	if config.agent[1] is not None:
+		printer.setup_exampleprinter(marketplace=marketplace,
+			agent=config.agent[0](
+				n_observations=marketplace.observation_space.shape[0],
+				n_actions=marketplace.get_n_actions(),
+				load_path=os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'data', config.agent[1]))))
+	else:
+		printer.setup_exampleprinter(marketplace=marketplace, agent=config.agent[0]())
+
+	print(printer.run_example())

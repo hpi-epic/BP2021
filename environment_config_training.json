@@ -3,8 +3,7 @@
 	"marketplace": "market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario",
 	"agents": {
 		"Agent_name": {
-			"class": "agents.vendors.QLearningCERebuyAgent",
-			"modelfile": "CircularEconomyRebuyPriceMonopolyScenario_QLearningCERebuyAgent.dat"
+			"class": "agents.vendors.QLearningCERebuyAgent"
 		}
 	}
 }

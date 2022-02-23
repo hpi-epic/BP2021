@@ -1,15 +1,8 @@
 {
-	"task": "agent_monitoring",
-	"enable_live_draw": true,
-	"episodes": 50,
-	"plot_interval": 49,
+	"task": "exampleprinter",
 	"marketplace": "market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario",
 	"agents": {
 		"Agent_name": {
-			"class": "agents.vendors.QLearningCERebuyAgent",
-			"modelfile": "CircularEconomyRebuyPriceMonopolyScenario_QLearningCERebuyAgent.dat"
-		},
-		"Agent_name2": {
 			"class": "agents.vendors.QLearningCERebuyAgent",
 			"modelfile": "CircularEconomyRebuyPriceMonopolyScenario_QLearningCERebuyAgent.dat"
 		}

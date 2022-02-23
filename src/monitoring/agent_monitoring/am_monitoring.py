@@ -4,7 +4,8 @@ import sys
 
 import monitoring.agent_monitoring.am_configuration as am_configuration
 import monitoring.agent_monitoring.am_evaluation as am_evaluation
-from configuration.environment_config import AgentMonitoringEnvironmentConfig, ConfigLoader
+
+# from configuration.environment_config import AgentMonitoringEnvironmentConfig, ConfigLoader
 
 
 class Monitor():
@@ -71,7 +72,12 @@ class Monitor():
 				print(f'Running {episode}th episode...')
 
 			if (episode % self.configurator.plot_interval) == 0:
-				self.evaluator.create_histogram(rewards, 'episode_' + str(episode))
+				self.evaluator.create_histogram(rewards, f'episode_{episode}')
+
+		# if the plot_interval does not create a plot after the last episode automatically, we will do it manually
+		if (self.configurator.episodes % self.configurator.plot_interval) != 0:
+			self.evaluator.create_histogram(rewards, f'episode_{self.configurator.episodes}')
+
 		return rewards
 
 
@@ -82,14 +88,6 @@ def run_monitoring_session(monitor: Monitor = Monitor()) -> None:
 	Args:
 		monitor (Monitor instance, optional): The monitor to run the session on. Defaults to a default Monitor() instance.
 	"""
-	config: AgentMonitoringEnvironmentConfig = ConfigLoader.load('environment_config_agent_monitoring')
-	monitor.configurator.setup_monitoring(
-		enable_live_draw=config.enable_live_draw,
-		episodes=config.episodes,
-		plot_interval=config.plot_interval,
-		marketplace=config.marketplace,
-		agents=config.agent
-	)
 	monitor.configurator.print_configuration()
 
 	print('\nStarting monitoring session...')
@@ -99,4 +97,14 @@ def run_monitoring_session(monitor: Monitor = Monitor()) -> None:
 
 
 if __name__ == '__main__':  # pragma: no cover
-	run_monitoring_session()
+	monitor = Monitor()
+	# TODO: Before enabling this, fix the tests (mock the config loading to use fewer episodes)
+	# config: AgentMonitoringEnvironmentConfig = ConfigLoader.load('environment_config_agent_monitoring')
+	# monitor.configurator.setup_monitoring(
+	# 	enable_live_draw=config.enable_live_draw,
+	# 	episodes=config.episodes,
+	# 	plot_interval=config.plot_interval,
+	# 	marketplace=config.marketplace,
+	# 	agents=config.agent
+	# )
+	run_monitoring_session(monitor)

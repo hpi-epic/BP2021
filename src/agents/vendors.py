@@ -244,10 +244,13 @@ class QLearningAgent(ReinforcementLearningAgent, ABC):
 	# If you set an optim, this means you want training.
 	# Give no optim if you don't want training.
 	def __init__(
-		self, n_observations,
-		n_actions,
-		optim=None,
-		device='cuda' if torch.cuda.is_available() else 'cpu', load_path=None, name='q_learning'):
+			self,
+			n_observations,
+			n_actions,
+			optim=None,
+			device='cuda' if torch.cuda.is_available() else 'cpu',
+			load_path=None,
+			name='q_learning'):
 		self.device = device
 		self.n_actions = n_actions
 		self.buffer_for_feedback = None
