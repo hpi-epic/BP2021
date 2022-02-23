@@ -1,0 +1,4 @@
+<form method="post" enctype="multipart/form-data">
+	{% csrf_token %}
+	<button class="action_button" name="logs" value="{{ container.container_id }}" type="submit">get logs</button>
+</form>

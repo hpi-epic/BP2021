@@ -1,0 +1,13 @@
+{% if success %}
+	<div>
+		<p class="success notice">
+			{{success}}
+		</p>
+	</div>
+{% elif error %}
+	<div>
+		<p class="error notice">
+			{{error}}
+		</p>
+	</div>
+{% endif %}

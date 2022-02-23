@@ -1,0 +1,20 @@
+FROM pure/python:3.8-cuda10.2-runtime
+
+WORKDIR /app
+EXPOSE 6006
+
+# Do not buffer stdout so we can see it live
+ENV PYTHONUNBUFFERED 1
+
+# copy the src folder and install the pip requirements (includes our project as a pip dependency)
+RUN python3 -m ensurepip --upgrade
+RUN pip install --upgrade pip
+COPY requirements.txt .
+COPY ./src ./src
+RUN python3 -m pip install -r requirements.txt -f https://download.pytorch.org/whl/cu113/torch_stable.html
+
+# copy all relevant files to the container
+COPY ./data ./data
+
+# Perform the specified action when starting the container
+ENTRYPOINT ["python3", "-O", "./src/rl/training_scenario.py"]

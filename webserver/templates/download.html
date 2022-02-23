@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8"/>
+		<title>Download Data</title>
+		{% load static %}
+		<link rel="stylesheet" type="text/css" href="{% static 'style.css' %}">
+		<link rel="shortcut icon" type="image/png" href="{% static 'favicon.png' %}"/>
+	</head>
+	<body>
+		<h1>Download container data here</h1>
+		<br>
+		<div class="content">
+			{% if all_saved_containers %}
+				<table class="table">
+					<tr>
+						<th>container name</th>
+						<th>command</th>
+						<th>created at</th>
+						<th>last checked at</th>
+						<th>health status</th>
+						<th>download current data</th>
+						<th>download all data</th>
+						<th>delete permanently</th>
+					</tr>
+					{% for container in all_saved_containers %}
+						<tr>
+							{% if container.is_archived %}
+								<td>{{ container.name }}</td>
+							{% else %}
+								<td><a href="/details/{{ container.container_id }}">{{ container.name }}</a></td>
+							{% endif %}
+							<td>{{ container.command }}</td>
+							<td>{{ container.created_at }}</td>
+							<td>{{ container.last_check_at }}</td>
+							<td>{{ container.health_status }}</td>
+							<td class="button_row" >
+								{% include "api_buttons/download_latest_button.html" %}
+							</td>
+							<td class="button_row" >
+								{% include "api_buttons/download_all_button.html" %}
+							</td>
+							<td class="button_row" >
+								{% include "api_buttons/delete_button.html" %}
+							</td>
+						</tr>
+					{% endfor %}
+				</table>
+			{% else %}
+				<p>
+					Currently you have no containers running :( You can start one by uploading a config file 
+					<a href="/upload">here</a> or use existing config files 
+					<a href="/start_container">here</a>
+				</p>
+			{% endif %}
+			{% include "notice_field.html" %}
+		</div>
+		<br>
+		<a href="/">home</a>
+	</body>
+</html>
