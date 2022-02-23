@@ -97,8 +97,6 @@ class EnvironmentConfig(ABC):
 			assert all(issubclass(agent, CircularAgent) == issubclass(self.marketplace, CircularEconomy) for agent in self.agent), \
 				f'The agents and marketplace must be of the same economy type (Linear/Circular): {self.agent} and {self.marketplace}'
 
-		# TODO: Also check if we want the agents to be named (agent_monitoring)
-
 		# If only one agent is needed, we just use the first agent from the list we created before
 		if single_agent:
 			self.agent = self.agent[0]
@@ -171,6 +169,10 @@ class AgentMonitoringEnvironmentConfig(EnvironmentConfig):
 
 		# We do the super call last because getting the classes takes longer than the other operations, so we save time in case of an error.
 		super(AgentMonitoringEnvironmentConfig, self).validate_config(config, single_agent=False, needs_modelfile=True)
+
+		# In agent_monitoring, agents can have names, which will be the key of the agent dictionary in the json file
+		for curr_agent in range(len(self.agent)):
+			self.agent[curr_agent] = self.agent[curr_agent] + (list(config['agents'].keys())[curr_agent],)
 
 	def get_task(self) -> str:
 		return 'agent_monitoring'
