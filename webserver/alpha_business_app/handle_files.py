@@ -84,7 +84,6 @@ def save_data(response, container_id: str) -> str:
 	# save the archive with the filename from response in data folder of container
 	archive_name = response.headers['content-disposition'][9:]
 	path_to_archive = os.path.join(container_data_folder, archive_name)
-	print(archive_name)
 
 	with open(path_to_archive, 'wb') as new_archive:
 		new_archive.write(response.content)
@@ -117,6 +116,7 @@ def _convert_tar_file_to_zip(path_to_tar: str) -> str:
 
 	shutil.make_archive(path_to_temp_folder, 'zip', path_to_temp_folder)
 	try:
+		os.remove(path_to_tar)
 		shutil.rmtree(path_to_temp_folder)
 	except Exception:
 		print(f'deleting {path_to_temp_folder} didn\'t work, please check')
