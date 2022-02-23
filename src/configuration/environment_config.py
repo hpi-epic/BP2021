@@ -4,7 +4,10 @@ import json
 import os
 from abc import ABC, abstractmethod
 
+from agents.vendors import CircularAgent, QLearningAgent
+from market.circular.circular_sim_market import CircularEconomy
 from market.sim_market import SimMarket
+from rl.actorcritic_agent import ActorCriticAgent
 
 
 class EnvironmentConfig(ABC):
@@ -40,8 +43,6 @@ class EnvironmentConfig(ABC):
 		assert 'agents' in config, f'The config must have an "agents" field: {config}'
 		assert 'marketplace' in config, f'The config must have a "marketplace" field: {config}'
 
-		# TODO: Assert marketplace and agent match
-
 		# CHECK: Agents
 		assert isinstance(config['agents'], dict), \
 			f'The "agents" field must be a dict: {config["agents"]} ({type(config["agents"])})'
@@ -50,7 +51,7 @@ class EnvironmentConfig(ABC):
 		if single_agent and len(config['agents']) > 1:
 			used_agent = list(config['agents'].items())[0]
 			config['agents'] = {used_agent[0]: used_agent[1]}
-			print(f'Multiple agents were provided but only the first one will be used:\n{config["agents"]}')
+			print(f'Multiple agents were provided but only the first one will be used:\n{config["agents"]}\n')
 
 		# Save the agents in config['agents'] in a list for easier access
 		agent_dictionaries = [config['agents'][agent] for agent in config['agents']]
@@ -78,12 +79,17 @@ class EnvironmentConfig(ABC):
 		self.marketplace = self.get_class(config['marketplace'])
 		assert issubclass(self.marketplace, SimMarket), f'The marketplace passed must be a subclass of SimMarket: {self.marketplace}'
 
-		# FINAL: Assign instance variables
 		# If a modelfile is needed, the self.agents will be a list of tuples (as required by agent_monitoring), else just a list of classes
 		if needs_modelfile:
 			self.agent = [(self.get_class(agent['class']), agent['modelfile']) for agent in agent_dictionaries]
 		else:
 			self.agent = [self.get_class(agent['class']) for agent in agent_dictionaries]
+
+		assert all(issubclass(agent, (QLearningAgent, ActorCriticAgent)) for agent in self.agent), \
+			f'the agent classes passed must be subclasses of either QLearningAgent or ActorCriticAgent: {self.agent}'
+		assert all(issubclass(agent, CircularAgent) == issubclass(self.marketplace, CircularEconomy) for agent in self.agent), \
+			f'the agents and marketplace must be of the same economy type (Linear/Circular): {self.agent} and {self.marketplace}'
+
 		# If only one agent is needed, we just use the first agent from the list we created before
 		if single_agent:
 			self.agent = self.agent[0]
@@ -147,7 +153,6 @@ class AgentMonitoringEnvironmentConfig(EnvironmentConfig):
 		assert isinstance(config['plot_interval'], int), \
 			f'The "plot_interval" field must be a int: {config["plot_interval"]} ({type(config["plot_interval"])})'
 
-		# FINAL: Assign instance variables
 		self.enable_live_draw = config['enable_live_draw']
 		self.episodes = config['episodes']
 		self.plot_interval = config['plot_interval']
