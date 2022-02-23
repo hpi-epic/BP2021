@@ -82,13 +82,12 @@ class EnvironmentConfig(ABC):
 		# If a modelfile is needed, the self.agents will be a list of tuples (as required by agent_monitoring), else just a list of classes
 		if needs_modelfile:
 			self.agent = [(self.get_class(agent['class']), agent['modelfile']) for agent in agent_dictionaries]
+			assert all(issubclass(agent[0], CircularAgent) == issubclass(self.marketplace, CircularEconomy) for agent in self.agent), \
+				f'The agents and marketplace must be of the same economy type (Linear/Circular): {self.agent} and {self.marketplace}'
 		else:
 			self.agent = [self.get_class(agent['class']) for agent in agent_dictionaries]
-
-		assert all(issubclass(agent, (QLearningAgent, ActorCriticAgent)) for agent in self.agent), \
-			f'the agent classes passed must be subclasses of either QLearningAgent or ActorCriticAgent: {self.agent}'
-		assert all(issubclass(agent, CircularAgent) == issubclass(self.marketplace, CircularEconomy) for agent in self.agent), \
-			f'the agents and marketplace must be of the same economy type (Linear/Circular): {self.agent} and {self.marketplace}'
+			assert all(issubclass(agent, CircularAgent) == issubclass(self.marketplace, CircularEconomy) for agent in self.agent), \
+				f'The agents and marketplace must be of the same economy type (Linear/Circular): {self.agent} and {self.marketplace}'
 
 		# If only one agent is needed, we just use the first agent from the list we created before
 		if single_agent:
@@ -111,7 +110,7 @@ class EnvironmentConfig(ABC):
 			raise AttributeError(f'The string you passed could not be resolved to a class: {import_string}') from e
 
 	@abstractmethod
-	def get_task() -> str:
+	def get_task(self) -> str:
 		"""
 		Return the type of task this Config is for.
 
@@ -128,6 +127,9 @@ class TrainingEnvironmentConfig(EnvironmentConfig):
 
 	def validate_config(self, config: dict) -> None:
 		super(TrainingEnvironmentConfig, self).validate_config(config, single_agent=True, needs_modelfile=False)
+
+		assert issubclass(self.agent, (QLearningAgent, ActorCriticAgent)), \
+			f'The agent class passed must be subclasses of either QLearningAgent or ActorCriticAgent: {self.agent}'
 
 	def get_task(self) -> str:
 		return 'training'
@@ -160,7 +162,7 @@ class AgentMonitoringEnvironmentConfig(EnvironmentConfig):
 		# We do the super call last because getting the classes takes longer than the other operations, so we save time in case of an error.
 		super(AgentMonitoringEnvironmentConfig, self).validate_config(config, single_agent=False, needs_modelfile=True)
 
-	def get_task() -> str:
+	def get_task(self) -> str:
 		return 'agent_monitoring'
 
 
@@ -172,7 +174,7 @@ class ExampleprinterEnvironmentConfig(EnvironmentConfig):
 	def validate_config(self, config: dict) -> None:
 		super(ExampleprinterEnvironmentConfig, self).validate_config(config, single_agent=True, needs_modelfile=True)
 
-	def get_task() -> str:
+	def get_task(self) -> str:
 		return 'exampleprinter'
 
 
