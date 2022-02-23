@@ -4,6 +4,8 @@ import json
 import os
 from abc import ABC, abstractmethod
 
+from market.sim_market import SimMarket
+
 
 class EnvironmentConfig(ABC):
 	"""
@@ -74,6 +76,7 @@ class EnvironmentConfig(ABC):
 			f'The "marketplace" field must be a str: {config["marketplace"]} ({type(config["marketplace"])})'
 
 		self.marketplace = self.get_class(config['marketplace'])
+		assert issubclass(self.marketplace, SimMarket), f'The marketplace passed must be a subclass of SimMarket: {self.marketplace}'
 
 		# FINAL: Assign instance variables
 		# If a modelfile is needed, the self.agents will be a list of tuples (as required by agent_monitoring), else just a list of classes
@@ -96,7 +99,10 @@ class EnvironmentConfig(ABC):
 			class: The imported class
 		"""
 		module_name, class_name = import_string.rsplit('.', 1)
-		return getattr(importlib.import_module(module_name), class_name)
+		try:
+			return getattr(importlib.import_module(module_name), class_name)
+		except AttributeError as e:
+			raise AttributeError(f'The string you passed could not be resolved to a class: {import_string}') from e
 
 	@abstractmethod
 	def get_task() -> str:

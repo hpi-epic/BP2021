@@ -17,7 +17,7 @@ def run_training_session(marketplace=circular_market.CircularEconomyRebuyPriceOn
 		Defaults to circular_market.CircularEconomyRebuyPriceOneCompetitor.
 		agent (QLearningAgent subclass, optional): What kind of QLearningAgent to train. Defaults to vendors.QLearningCERebuyAgent.
 	"""
-	assert issubclass(marketplace, sim_market.SimMarket), f'the economy passed must be a subclass of SimMarket: {marketplace}'
+	assert issubclass(marketplace, sim_market.SimMarket), f'the marketplace passed must be a subclass of SimMarket: {marketplace}'
 	assert issubclass(agent, (vendors.QLearningAgent, actorcritic_agent.ActorCriticAgent)), \
 		f'the RL_agent_class passed must be a subclass of either QLearningAgent or ActorCriticAgent: {agent}'
 	assert issubclass(agent, vendors.CircularAgent) == issubclass(marketplace, circular_market.CircularEconomy), \
