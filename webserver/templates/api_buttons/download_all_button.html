@@ -1,12 +1,12 @@
 <form method="post" enctype="multipart/form-data">
 	{% csrf_token %}
-	<button class="action_button data_button {% if container.has_data %} inactive {% endif %}"
-			name="data-all" value="{{ container.container_id }}" 
-			type="{% if container.has_data %}button{% else %}submit{% endif %}">
-				{% if container.has_data %}	
-					not available
-				{% else %}
-					download
-				{% endif %}
+	<button class="action_button data_button {% if not container.has_data %} inactive {% endif %}"
+		name="data-all" value="{{ container.container_id }}" 
+		type="{% if container.has_data %}submit{% else %}button{% endif %}">
+			{% if container.has_data %}	
+				download
+			{% else %}
+				not available
+			{% endif %}
 	</button>
 </form>
