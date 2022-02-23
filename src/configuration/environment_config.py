@@ -30,7 +30,7 @@ class EnvironmentConfig(ABC):
 
 		Args:
 			config (dict): The config dictionary to be validated.
-			single_agent (bool): Whether or not only one agent can be in the config.
+			single_agent (bool): Whether or not only one agent is needed.
 			needs_modelfile (bool): Whether or not the config must include modelfiles.
 		"""
 		assert 'agents' in config, f'The config must have an "agents" field: {config}'
@@ -39,7 +39,7 @@ class EnvironmentConfig(ABC):
 		# TODO: Assert marketplace and agent match
 
 		if single_agent and len(config['agents']) > 1:
-			print(f'Multiple agents were provided but only the first one will be used:: {config["agents"]}')
+			print(f'Multiple agents were provided but only the first one will be used: {config["agents"]}')
 		assert isinstance(config['agents'], dict), \
 			f'The "agents" field must be a dict: {config["agents"]} ({type(config["agents"])})'
 
@@ -159,7 +159,7 @@ class ConfigLoader():
 			Must be located in the BP2021/ folder. Defaults to 'environment_config'.
 
 		Returns:
-			EnvironmentConfig: A subclass isntance of EnvironmentConfig.
+			EnvironmentConfig: A subclass instance of EnvironmentConfig.
 		"""
 		filename += '.json'
 		path = os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, filename)
