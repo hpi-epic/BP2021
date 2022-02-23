@@ -1,5 +1,6 @@
 import mimetypes
 import os
+import shutil
 import tarfile
 import time
 
@@ -27,7 +28,7 @@ def archive_files(container_id: str) -> HttpResponse:
 	files_to_be_included = [file for file in os.listdir(container_data_path) if not file.startswith('all')]
 
 	_add_files_to_archive(archive_path, container_data_path, files_to_be_included)
-	return _file_as_http_response(archive_path, 'application/x-tar')
+	return _file_as_http_response(archive_path)
 
 
 def download_file(path_to_file: str) -> HttpResponse:
@@ -47,7 +48,8 @@ def download_file(path_to_file: str) -> HttpResponse:
 	if mime_type == 'application/x-tar':
 		path_to_container_data = os.path.dirname(path_to_file)
 		_add_files_to_archive(path_to_file, path_to_container_data, ['config.json'])
-	return _file_as_http_response(path_to_file, mime_type)
+	print('download file:', path_to_file)
+	return _file_as_http_response(path_to_file)
 
 
 def handle_uploaded_file(uploaded_config) -> None:
@@ -82,9 +84,11 @@ def save_data(response, container_id: str) -> str:
 	# save the archive with the filename from response in data folder of container
 	archive_name = response.headers['content-disposition'][9:]
 	path_to_archive = os.path.join(container_data_folder, archive_name)
+	print(archive_name)
 
 	with open(path_to_archive, 'wb') as new_archive:
 		new_archive.write(response.content)
+	print('save:', path_to_archive)
 	return path_to_archive
 
 
@@ -101,6 +105,23 @@ def _add_files_to_archive(path_to_tar_archive: str, path_to_files: str, files: l
 	for file in files:
 		tar_archive.add(os.path.join(path_to_files, file), arcname=file)
 	tar_archive.close()
+
+
+def _convert_tar_file_to_zip(path_to_tar: str) -> str:
+	path_to_temp_folder = path_to_tar[:-4]
+
+	# extract all files to a temp folder
+	# extractall from the tarfile libary throws an error, so we use a commandline tool here
+	os.mkdir(path_to_temp_folder)
+	os.system(f'tar -xvf {path_to_tar} -C {path_to_temp_folder}')
+
+	shutil.make_archive(path_to_temp_folder, 'zip', path_to_temp_folder)
+	try:
+		shutil.rmtree(path_to_temp_folder)
+	except Exception:
+		print(f'deleting {path_to_temp_folder} didn\'t work, please check')
+
+	return path_to_temp_folder + '.zip'
 
 
 def _ensure_data_folder_structure(container_id: str) -> str:
@@ -126,17 +147,22 @@ def _ensure_data_folder_structure(container_id: str) -> str:
 	return path_to_container_data
 
 
-def _file_as_http_response(path_to_file: str, mime_type: str) -> HttpResponse:
+def _file_as_http_response(path_to_archive: str) -> HttpResponse:
 	"""
-	Converts a given file with a mime type into an HttpResponse.
+	Converts a given file into an HttpResponse and guesses mime type of file.
 
 	Args:
 		path_to_file (str): path to the file that should be converted.
-		mime_type (str): type of the file for the http response.
 
 	Returns:
 		HttpResponse: HttpResponse containing the file.
 	"""
+	# currently we want to download zip files, so convert to zip file
+	print('in file_as_http:', path_to_archive)
+	path_to_file = _convert_tar_file_to_zip(path_to_archive)
+
+	mime_type, _ = mimetypes.guess_type(path_to_file)
+
 	# open file and write to HttpResponse
 	with open(path_to_file, 'rb') as archive:
 		response = HttpResponse(archive, content_type=mime_type)
