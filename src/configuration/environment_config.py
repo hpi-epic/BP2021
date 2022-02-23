@@ -43,6 +43,13 @@ class EnvironmentConfig(ABC):
 		assert 'agents' in config, f'The config must have an "agents" field: {config}'
 		assert 'marketplace' in config, f'The config must have a "marketplace" field: {config}'
 
+		# CHECK: Marketplace
+		assert isinstance(config['marketplace'], str), \
+			f'The "marketplace" field must be a str: {config["marketplace"]} ({type(config["marketplace"])})'
+
+		self.marketplace = self.get_class(config['marketplace'])
+		assert issubclass(self.marketplace, SimMarket), f'The marketplace passed must be a subclass of SimMarket: {self.marketplace}'
+
 		# CHECK: Agents
 		assert isinstance(config['agents'], dict), \
 			f'The "agents" field must be a dict: {config["agents"]} ({type(config["agents"])})'
@@ -65,29 +72,32 @@ class EnvironmentConfig(ABC):
 			f'The "class" fields must be strings: {agent_dictionaries} ({[type(agent["class"]) for agent in agent_dictionaries]})'
 
 		# CHECK: Agents::Modelfile
-		if needs_modelfile:
-			# TODO: Only check modelfiles for non-RL agents (need to check class inheritance, need to get the agent class beforehand)
-			assert all('modelfile' in agent for agent in agent_dictionaries), f'Each agent must have a "modelfile" field: {agent_dictionaries}'
-			# TODO: Verify if the modelfile is a .dat and in the data folder!
-			assert all(isinstance(agent['modelfile'], str) for agent in agent_dictionaries), \
-				f'The "modelfile" fields must be strings: {agent_dictionaries} ({[type(agent["modelfile"]) for agent in agent_dictionaries]})'
-
-		# CHECK: Marketplace
-		assert isinstance(config['marketplace'], str), \
-			f'The "marketplace" field must be a str: {config["marketplace"]} ({type(config["marketplace"])})'
-
-		self.marketplace = self.get_class(config['marketplace'])
-		assert issubclass(self.marketplace, SimMarket), f'The marketplace passed must be a subclass of SimMarket: {self.marketplace}'
-
+		agent_classes = [self.get_class(agent['class']) for agent in agent_dictionaries]
 		# If a modelfile is needed, the self.agents will be a list of tuples (as required by agent_monitoring), else just a list of classes
 		if needs_modelfile:
-			self.agent = [(self.get_class(agent['class']), agent['modelfile']) for agent in agent_dictionaries]
+			for current_agent in range(len(agent_classes)):
+				if issubclass(agent_classes[current_agent], QLearningAgent):
+					assert 'modelfile' in agent_dictionaries[current_agent], f'This agent must have a "modelfile" field: {agent_classes[current_agent]}'
+
+					modelfile = agent_dictionaries[current_agent]['modelfile']
+
+					assert isinstance(modelfile, str), \
+						f'The "modelfile" field of this agent must be a str: {agent_classes[current_agent]} ({type(modelfile)})'
+					# Check that the modelfile exists. Implies that it must end in .dat Taken from am_configuration::_get_modelfile_path()
+					full_path = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'data', modelfile))
+					assert os.path.exists(full_path), f'the specified modelfile does not exist: {full_path}'
+
+			# Create a list of tuples (agent_class, modelfile_string)
+			self.agent = list(zip(agent_classes, (agent['modelfile'] for agent in agent_dictionaries)))
+
 			assert all(issubclass(agent[0], CircularAgent) == issubclass(self.marketplace, CircularEconomy) for agent in self.agent), \
 				f'The agents and marketplace must be of the same economy type (Linear/Circular): {self.agent} and {self.marketplace}'
 		else:
-			self.agent = [self.get_class(agent['class']) for agent in agent_dictionaries]
+			self.agent = agent_classes
 			assert all(issubclass(agent, CircularAgent) == issubclass(self.marketplace, CircularEconomy) for agent in self.agent), \
 				f'The agents and marketplace must be of the same economy type (Linear/Circular): {self.agent} and {self.marketplace}'
+
+		# TODO: Also check if we want the agents to be named (agent_monitoring)
 
 		# If only one agent is needed, we just use the first agent from the list we created before
 		if single_agent:
