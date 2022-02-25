@@ -4,8 +4,7 @@ import sys
 
 import monitoring.agent_monitoring.am_configuration as am_configuration
 import monitoring.agent_monitoring.am_evaluation as am_evaluation
-
-# from configuration.environment_config import AgentMonitoringEnvironmentConfig, ConfigLoader
+from configuration.environment_config import AgentMonitoringEnvironmentConfig, ConfigLoader
 
 
 class Monitor():
@@ -98,13 +97,12 @@ def run_monitoring_session(monitor: Monitor = Monitor()) -> None:
 
 if __name__ == '__main__':  # pragma: no cover
 	monitor = Monitor()
-	# TODO: Before enabling this, fix the tests (mock the config loading to use fewer episodes)
-	# config: AgentMonitoringEnvironmentConfig = ConfigLoader.load('environment_config_agent_monitoring')
-	# monitor.configurator.setup_monitoring(
-	# 	enable_live_draw=config.enable_live_draw,
-	# 	episodes=config.episodes,
-	# 	plot_interval=config.plot_interval,
-	# 	marketplace=config.marketplace,
-	# 	agents=config.agent
-	# )
+	config: AgentMonitoringEnvironmentConfig = ConfigLoader.load('environment_config_agent_monitoring')
+	monitor.configurator.setup_monitoring(
+		enable_live_draw=config.enable_live_draw,
+		episodes=config.episodes,
+		plot_interval=config.plot_interval,
+		marketplace=config.marketplace,
+		agents=config.agent
+	)
 	run_monitoring_session(monitor)

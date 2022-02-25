@@ -1,7 +1,7 @@
 import os
 
 
-def create_mock_json_rl(gamma='0.99',
+def create_hyperparameter_mock_json_rl(gamma='0.99',
 	batch_size='32',
 	replay_size='100000',
 	learning_rate='1e-6',
@@ -39,7 +39,7 @@ def create_mock_json_rl(gamma='0.99',
 		'\t}'
 
 
-def create_mock_json_sim_market(episode_size='20',
+def create_hyperparameter_mock_json_sim_market(episode_size='20',
 	max_price='15',
 	max_quality='100',
 	number_of_customers='30',
@@ -67,8 +67,51 @@ def create_mock_json_sim_market(episode_size='20',
 		'\t}'
 
 
-def create_mock_json(rl=create_mock_json_rl(), sim_market=create_mock_json_sim_market()):
+def create_hyperparameter_mock_json(rl: str = create_hyperparameter_mock_json_rl(),
+	sim_market: str = create_hyperparameter_mock_json_sim_market()) -> str:
+	"""
+	Create a mock json in the format of the hyperparameter_config.json.
+
+	Args:
+		rl (str, optional): The string that should be used for the rl-part. Defaults to create_hyperparameter_mock_json_rl().
+		sim_market (str, optional): The string that should be used for the sim_market-part.
+			Defaults to create_hyperparameter_mock_json_sim_market().
+
+	Returns:
+		str: The mock json.
+	"""
 	return '{\n' + '\t"rl": ' + rl + ',\n' + '\t"sim_market": ' + sim_market + '\n}'
+
+
+def create_environment_mock_json(task: str = 'agent_monitoring',
+	enable_live_draw: str = 'false',
+	episodes: str = '10',
+	plot_interval: str = '5',
+	marketplace: str = 'market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
+	agents: str = '{\n\t\t"Agent_name": {\n\t\t\t"class": "agents.vendors.FixedPriceCERebuyAgent"\n\t\t}\n\t}') -> str:
+	"""
+	Create a mock json in the format of an environment_config.json.
+
+	Args:
+		task (str, optional): What task to run. Defaults to 'agent_monitoring'.
+		enable_live_draw (str, optional): If live drawing should be enabled. Defaults to 'false'.
+		episodes (str, optional): How many episodes to run. Defaults to '10'.
+		plot_interval (str, optional): How often plots should be drawn. Defaults to '5'.
+		marketplace (str, optional): What marketplace to run on.
+			Defaults to "market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario".
+		agents (str, optional): What agents to use.
+			Defaults to '{\n\t\t"Agent_name": {\n\t\t\t"class": "agents.vendors.FixedPriceCERebuyAgent"\n\t\t}\n\t}'.
+
+	Returns:
+		str: The mock json.
+	"""
+	return '{\n\t"task": ' + task + ',\n' + \
+		'\t"enable_live_draw": ' + enable_live_draw + ',\n' + \
+		'\t"episodes": ' + episodes + ',\n' + \
+		'\t"plot_interval": ' + plot_interval + ',\n' + \
+		'\t"marketplace": ' + marketplace + ',\n' + \
+		'\t"agents": ' + agents + '\n' + \
+		'}'
 
 
 def check_mock_file(mock_file, json) -> None:
@@ -97,7 +140,7 @@ def remove_line(number, json) -> str:
 	"""
 	lines = json.split('\n')
 	final_lines = lines[:number + 1]
-	final_lines += lines[number + 2:len(lines)]
+	final_lines += lines[number + 2:]
 	final_lines[-2] = final_lines[-2].replace(',', '')
 	return '\n'.join(final_lines)
 
