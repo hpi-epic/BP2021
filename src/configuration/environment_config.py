@@ -35,7 +35,7 @@ class EnvironmentConfig(ABC):
 
 		Args:
 			config (dict): The config dictionary to be validated.
-			single_agent (bool): Whether or not only one agent is needed.
+			single_agent (bool): Whether or not only one agent should be used.
 			needs_modelfile (bool): Whether or not the config must include modelfiles.
 		"""
 
@@ -197,13 +197,13 @@ class ExampleprinterEnvironmentConfig(EnvironmentConfig):
 
 class ConfigLoader():
 
-	def load(filename: str = 'environment_config') -> EnvironmentConfig:
+	def load(filename: str) -> EnvironmentConfig:
 		"""
 		Load the configuration json file from the specified path and instantiate the correct configuration class.
 
 		Args:
-			filename (str, optional): The name of the json file containing the configuration values.
-			Must be located in the BP2021/ folder. Defaults to 'environment_config'.
+			filename (str): The name of the json file containing the configuration values.
+				Must be located in the BP2021/ folder.
 
 		Returns:
 			EnvironmentConfig: A subclass instance of EnvironmentConfig.
@@ -223,5 +223,5 @@ class ConfigLoader():
 
 
 if __name__ == '__main__':
-	config: EnvironmentConfig = ConfigLoader.load()
+	config: EnvironmentConfig = ConfigLoader.load('environment_config_exampleprinter')
 	print(config)
