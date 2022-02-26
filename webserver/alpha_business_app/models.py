@@ -24,10 +24,6 @@ class Container(models.Model):
 	def is_archived(self):
 		return 'archived' == self.health_status
 
-	def has_data(self):
-		container_data_path = os.path.join(DATA_DIR, self.container_id)
-		return os.path.exists(container_data_path)
-
 	def has_tensorboard_link(self):
 		return self.tensorboard_link
 

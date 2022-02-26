@@ -5,7 +5,7 @@ from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
 
-from .handle_files import archive_files, download_file, save_data
+from .handle_files import download_file
 from .handle_requests import send_get_request, send_get_request_with_streaming, send_post_request, stop_container
 from .models import Container, update_container
 
@@ -51,8 +51,6 @@ class ButtonHandler():
 		Returns:
 			HttpResponse: response including the rendering for an appropriate view.
 		"""
-		if 'data-all' == self.wanted_key:
-			return self._download_all_data()
 		if 'data-latest' == self.wanted_key:
 			return self._download_latest_data()
 		if 'delete' == self.wanted_key:
@@ -145,19 +143,6 @@ class ButtonHandler():
 			self.message = ['success', 'You successfully removed all data']
 		return self._decide_rendering()
 
-	def _download_all_data(self) -> HttpResponse:
-		"""
-		This will download all data the webserver stored about this container i.e. all downloaded archives.
-		Will return an error in the response if no data belongs to the container.
-
-		Returns:
-			HttpResponse: A collection of all archives for the user to be saved or a response containing the error field.
-		"""
-		if not self.wanted_container.has_data():
-			self.message = ['error', 'You have not yet saved any data belonging to this container']
-			return self._decide_rendering()
-		return archive_files(self.wanted_container_id)
-
 	def _download_latest_data(self) -> HttpResponse:
 		"""
 		This will send an API  request to get the latest data of the container.
@@ -174,8 +159,7 @@ class ButtonHandler():
 			if response.ok():
 				# save data from api and make it available for the user
 				response = response.content
-				path = save_data(response, self.wanted_container_id)
-				return download_file(path)
+				return download_file(response)
 			else:
 				self.message = response.status()
 				return self._decide_rendering()

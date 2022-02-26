@@ -1,9 +1,9 @@
 <form method="post" enctype="multipart/form-data">
 	{% csrf_token %}
-	<button class="action_button data_button {% if container.is_archived and not container.has_data %} inactive {% endif %}"
+	<button class="action_button data_button {% if container.is_archived%} inactive {% endif %}"
 		name="data-latest" value="{{ container.container_id }}" 
-		type="{% if container.is_archived and not container.has_data %}button{% else %}submit{% endif %}">
-			{% if container.is_archived and not container.has_data %}	
+		type="{% if container.is_archived%}button{% else %}submit{% endif %}">
+			{% if container.is_archived%}	
 				not available
 			{% else %}
 				download
