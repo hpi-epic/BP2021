@@ -239,6 +239,13 @@ class ButtonHandler():
 		if response.ok():
 			# put container into database
 			response = response.content
+			# check if a container with the same id already exists
+			if Container.objects.filter(container_id=response['id']).exists():
+				# we will kindly ask the user to try it again and stop the container
+				# TODO insert better handling here
+				print('the new container has the same id, as another container')
+				self.message = ['error', 'please try again']
+				return self._remove()
 			container_name = self.request.POST['experiment_name']
 			container_name = container_name if container_name != '' else response['id'][:10]
 			Container.objects.create(container_id=response['id'], config_file=config_dict, name=container_name, command=requested_command)
