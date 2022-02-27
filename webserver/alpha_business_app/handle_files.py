@@ -29,9 +29,9 @@ def download_file(response) -> HttpResponse:
 
 	# convert tar file to file like object to be able to convert it to zip in memory
 	file_like_tar_archive = BytesIO(response.content)
-	# file_like_tar_archive = _add_files_to_archive(file_like_tar_archive, CONFIGURATION_DIR, ['config.json'])
 
 	zip_file = _convert_tar_file_to_zip(file_like_tar_archive)
+	zip_file = _add_files_to_zip(zip_file, CONFIGURATION_DIR, ['config.json'])
 
 	# put together an http response for the browser
 	response = HttpResponse(zip_file.getvalue(), content_type='application/zip')
@@ -40,7 +40,7 @@ def download_file(response) -> HttpResponse:
 	return response
 
 
-def _add_files_to_archive(fake_tar_archive: BytesIO, path_to_add_files: str, files: list) -> BytesIO:
+def _add_files_to_tar(fake_tar_archive: BytesIO, path_to_add_files: str, files: list) -> BytesIO:
 	"""
 	This function adds the given files at the path to the given tar archive.
 
@@ -51,22 +51,41 @@ def _add_files_to_archive(fake_tar_archive: BytesIO, path_to_add_files: str, fil
 	"""
 	# TODO: assert all path + file exist
 	print(f'adding {files} to tar archive')
-	tar_archive = tarfile.open(fileobj=fake_tar_archive, mode='a')
+	tar_archive = tarfile.open(fileobj=fake_tar_archive, mode='a:')
 	for file in files:
 		tar_archive.add(os.path.join(path_to_add_files, file), arcname=file)
 	tar_archive.close()
+
 	return fake_tar_archive
+
+
+def _add_files_to_zip(file_like_zip: BytesIO, path_to_add_files: str, files: list) -> BytesIO:
+	"""
+	This function adds the given files at the path to the given tar archive.
+
+	Args:
+		file_like_zip (BytesIO): the zip archive the files should be added.
+		path_to_add_files (str): path to the files that need to be added.
+		files (list): names of the files at the path that need to be added.
+	"""
+	# TODO: assert all path + file exist
+	print(f'adding {files} to zip archive')
+	zip_archive = zipfile.ZipFile(file=file_like_zip, mode='a', compression=zipfile.ZIP_DEFLATED)
+	for file in files:
+		zip_archive.write(os.path.join(path_to_add_files, file), arcname=file)
+	zip_archive.close()
+
+	return file_like_zip
 
 
 def _convert_tar_file_to_zip(fake_tar_archive: BytesIO) -> BytesIO:
 	print('converting tar archive to zip')
-	tar_archive = tarfile.open(fileobj=fake_tar_archive, mode='r')
+	tar_archive = tarfile.open(fileobj=fake_tar_archive, mode='r:')
 
 	# create an in memory zip file
 	file_like_zip = BytesIO()
 	zip_archive = zipfile.ZipFile(file=file_like_zip, mode='a', compression=zipfile.ZIP_DEFLATED)
 
-	# iterate over all files in the tarfile
 	for member in tar_archive:
 		file = tar_archive.extractfile(member)
 		if file:
@@ -74,6 +93,7 @@ def _convert_tar_file_to_zip(fake_tar_archive: BytesIO) -> BytesIO:
 			file_content = file.read()
 			file_name = member.name
 			zip_archive.writestr(file_name, file_content)
+
 	zip_archive.close()
 	tar_archive.close()
 
