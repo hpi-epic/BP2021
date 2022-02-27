@@ -34,15 +34,10 @@ class ButtonHandler():
 		self.all_containers = Container.objects.all()
 
 		if request.method == 'POST':
-			all_keys = list(self.request.POST.keys())
-			all_keys.remove('csrfmiddlewaretoken')
-			if len(all_keys) != 1:
-				# we have multiple parameters for this request, assuming want to start a container
-				self.wanted_key = 'start'
-			else:
-				self.wanted_key = all_keys[0]
-				self.wanted_container_id = self.request.POST[self.wanted_key]
-				self.wanted_container = Container.objects.get(container_id=self.wanted_container_id)
+			self.wanted_key = request.POST['action']
+			if 'container_id' in request.POST:
+				wanted_container_id = request.POST['container_id']
+				self.wanted_container = Container.objects.get(container_id=wanted_container_id)
 
 	def do_button_click(self) -> HttpResponse:
 		"""
@@ -134,7 +129,7 @@ class ButtonHandler():
 		Returns:
 			HttpResponse: a defined rendering
 		"""
-		raw_data = {'remove': self.request.POST['delete']}
+		raw_data = {'container_id': self.wanted_container.id()}
 		if not self.wanted_container.is_archived():
 			self.message = stop_container(raw_data).status()
 
@@ -155,7 +150,7 @@ class ButtonHandler():
 			self.message = ['error', 'You cannot downoload data from archived containers']
 			return self._decide_rendering()
 		else:
-			response = send_get_request_with_streaming('data', self.wanted_container_id)
+			response = send_get_request_with_streaming('data', self.wanted_container.id())
 			if response.ok():
 				# save data from api and make it available for the user
 				response = response.content
@@ -177,7 +172,7 @@ class ButtonHandler():
 			update_container(response['id'], {'last_check_at': timezone.now(), 'health_status': response['status']})
 		else:
 			self.message = response.status()
-		self.wanted_container = Container.objects.get(container_id=self.wanted_container_id)
+		self.wanted_container = Container.objects.get(container_id=self.wanted_container.id())
 		return self._decide_rendering()
 
 	def _logs(self) -> HttpResponse:
@@ -215,6 +210,7 @@ class ButtonHandler():
 			HttpResponse: An appropriate rendering, or a redirect to the `observe` view.
 		"""
 		post_request = self.request.POST
+		print(post_request)
 		requested_command = post_request['command_selection']
 		# the start button was pressed
 		config_file = post_request['filename']
@@ -253,7 +249,7 @@ class ButtonHandler():
 			return redirect(self.wanted_container.tensorboard_link)
 		response = send_get_request('data/tensorboard', self.request.POST)
 		if response.ok():
-			update_container(self.wanted_container_id, {'tensorboard_link': response.content['data']})
+			update_container(self.wanted_container.id(), {'tensorboard_link': response.content['data']})
 			return redirect(response.content['data'])
 		else:
 			self.message = response.status()
