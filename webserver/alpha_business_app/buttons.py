@@ -191,7 +191,10 @@ class ButtonHandler():
 		response = send_get_request('logs', self.request.POST)
 		self.data = ''
 		if response.ok():
-			self.data = response.content['data']
+			# reverse the output for better readability
+			self.data = response.content['data'].splitlines()
+			self.data.reverse()
+			self.data = '\n'.join(self.data)
 		return self._decide_rendering()
 
 	def _remove(self) -> HttpResponse:
