@@ -16,7 +16,8 @@ class EnvironmentConfig(ABC):
 	"""
 
 	def __init__(self, config: dict):
-		self.validate_config(config)
+		self.task = self._get_task()
+		self._validate_config(config)
 
 	def __str__(self) -> str:
 		"""
@@ -29,7 +30,7 @@ class EnvironmentConfig(ABC):
 		"""
 		return f'{self.__class__.__name__}: {self.__dict__}'
 
-	def validate_config(self, config: dict, single_agent: bool, needs_modelfile: bool) -> None:
+	def _validate_config(self, config: dict, single_agent: bool, needs_modelfile: bool) -> None:
 		"""
 		Validate the given configuration dictionary and set the instance variables accordingly.
 
@@ -47,7 +48,7 @@ class EnvironmentConfig(ABC):
 		assert isinstance(config['marketplace'], str), \
 			f'The "marketplace" field must be a str: {config["marketplace"]} ({type(config["marketplace"])})'
 
-		self.marketplace = self.get_class(config['marketplace'])
+		self.marketplace = self._get_class(config['marketplace'])
 		assert issubclass(self.marketplace, SimMarket), f'The marketplace passed must be a subclass of SimMarket: {self.marketplace}'
 
 		# CHECK: Agents
@@ -72,7 +73,7 @@ class EnvironmentConfig(ABC):
 			f'The "class" fields must be strings: {agent_dictionaries} ({[type(agent["class"]) for agent in agent_dictionaries]})'
 
 		# CHECK: Agents::Modelfile
-		agent_classes = [self.get_class(agent['class']) for agent in agent_dictionaries]
+		agent_classes = [self._get_class(agent['class']) for agent in agent_dictionaries]
 		# If a modelfile is needed, the self.agents will be a list of tuples (as required by agent_monitoring), else just a list of classes
 		if needs_modelfile:
 			modelfile_list = []
@@ -106,7 +107,7 @@ class EnvironmentConfig(ABC):
 		if single_agent:
 			self.agent = self.agent[0]
 
-	def get_class(self, import_string: str):
+	def _get_class(self, import_string: str):
 		"""
 		Get the class from the given string.
 
@@ -123,7 +124,7 @@ class EnvironmentConfig(ABC):
 			raise AttributeError(f'The string you passed could not be resolved to a class: {import_string}') from e
 
 	@abstractmethod
-	def get_task(self) -> str:
+	def _get_task(self) -> str:
 		"""
 		Return the type of task this Config is for.
 
@@ -136,24 +137,39 @@ class EnvironmentConfig(ABC):
 class TrainingEnvironmentConfig(EnvironmentConfig):
 	"""
 	The environment configuration class for the training configuration.
+
+	Instance variables:
+		task (str): The task this config can be used for. Always "training".
+		marketplace (SimMarket subclass): A subclass of SimMarket, what marketplace the training should be run on.
+		agent (QlearningAgent or ActorCriticAgent subclass): A subclass of QlearningAgent or ActorCritic, the agent to be trained.
 	"""
 
-	def validate_config(self, config: dict) -> None:
-		super(TrainingEnvironmentConfig, self).validate_config(config, single_agent=True, needs_modelfile=False)
+	def _validate_config(self, config: dict) -> None:
+		super(TrainingEnvironmentConfig, self)._validate_config(config, single_agent=True, needs_modelfile=False)
 
 		assert issubclass(self.agent, (QLearningAgent, ActorCriticAgent)), \
 			f'The agent class passed must be subclasses of either QLearningAgent or ActorCriticAgent: {self.agent}'
 
-	def get_task(self) -> str:
+	def _get_task(self) -> str:
 		return 'training'
 
 
 class AgentMonitoringEnvironmentConfig(EnvironmentConfig):
 	"""
 	The environment configuration class for the agent_monitoring configuration.
+
+	Instance variables:
+		task (str): The task this config can be used for. Always "agent_monitoring".
+		enable_live_draw (bool): Whether or not live drawing should be enabled.
+		episodes (int): The number of episodes to run the monitoring for.
+		plot_interval (int): The interval between plot creation.
+		marketplace (SimMarket subclass): A subclass of SimMarket, what marketplace the monitoring session should be run on.
+		agent (list of tuples): A list containing the agents that should be trained.
+			Each entry in the list is a tuple with the first item being the agent class, the second being a list.
+			If the agent needs a modelfile, this will be the first entry in the list, the other entry is always an informal name for the agent.
 	"""
 
-	def validate_config(self, config: dict) -> None:
+	def _validate_config(self, config: dict) -> None:
 		# TODO: subfolder_name variable
 		# CHECK: All required top-level fields exist
 		assert 'enable_live_draw' in config, f'The config must have an "enable_live_draw" field: {config}'
@@ -173,29 +189,62 @@ class AgentMonitoringEnvironmentConfig(EnvironmentConfig):
 		self.plot_interval = config['plot_interval']
 
 		# We do the super call last because getting the classes takes longer than the other operations, so we save time in case of an error.
-		super(AgentMonitoringEnvironmentConfig, self).validate_config(config, single_agent=False, needs_modelfile=True)
+		super(AgentMonitoringEnvironmentConfig, self)._validate_config(config, single_agent=False, needs_modelfile=True)
 
-		# In agent_monitoring, agents can have names, which will be the key of the agent dictionary in the json file
-		self.agent = [(self.agent[current_agent][0], [self.agent[current_agent][1], list(config['agents'].keys())[current_agent]])
-			for current_agent in range(len(self.agent))]
+		# Since RuleBasedAgents do not have modelfiles, we need to adjust the passed lists to remove the "None" entry
+		passed_agents = self.agent
+		self.agent = []
+		for current_agent in range(len(passed_agents)):
+			# No modelfile
+			if passed_agents[current_agent][1] is None:
+				self.agent.append((passed_agents[current_agent][0], [list(config['agents'].keys())[current_agent]]))
+			else:
+				self.agent.append((passed_agents[current_agent][0], [passed_agents[current_agent][1], list(config['agents'].keys())[current_agent]]))
 
-	def get_task(self) -> str:
+	def _get_task(self) -> str:
 		return 'agent_monitoring'
 
 
 class ExampleprinterEnvironmentConfig(EnvironmentConfig):
 	"""
 	The environment configuration class for the exampleprinter configuration.
+
+	Instance variables:
+		task (str): The task this config can be used for. Always "exampleprinter".
+		marketplace (SimMarket subclass): A subclass of SimMarket, what marketplace the exampleprinter should be run on.
+		agent (Agent subclass): A subclass of Agent, the agent for which the exampleprinter should be run.
 	"""
 
-	def validate_config(self, config: dict) -> None:
-		super(ExampleprinterEnvironmentConfig, self).validate_config(config, single_agent=True, needs_modelfile=True)
+	def _validate_config(self, config: dict) -> None:
+		super(ExampleprinterEnvironmentConfig, self)._validate_config(config, single_agent=True, needs_modelfile=True)
 
-	def get_task(self) -> str:
+	def _get_task(self) -> str:
 		return 'exampleprinter'
 
 
-class ConfigLoader():
+class EnvironmentConfigLoader():
+
+	def validate(config: dict) -> EnvironmentConfig:
+		"""
+		Validate the given config dictionary and return the correct configuration class.
+
+		Args:
+			config (dict): The configuration to validate.
+
+		Raises:
+			RuntimeError: If the given configuration has an unknown task name.
+
+		Returns:
+			EnvironmentConfig: A subclass instance of EnvironmentConfig.
+		"""
+		if config['task'] == 'training':
+			return TrainingEnvironmentConfig(config)
+		elif config['task'] == 'agent_monitoring':
+			return AgentMonitoringEnvironmentConfig(config)
+		elif config['task'] == 'exampleprinter':
+			return ExampleprinterEnvironmentConfig(config)
+		else:
+			raise RuntimeError(f'The specified task is unknown: {config["task"]}\nConfig: {config}')
 
 	def load(filename: str) -> EnvironmentConfig:
 		"""
@@ -212,16 +261,15 @@ class ConfigLoader():
 		path = os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, filename)
 		with open(path) as config_file:
 			config = json.load(config_file)
-		if config['task'] == 'training':
-			return TrainingEnvironmentConfig(config)
-		elif config['task'] == 'agent_monitoring':
-			return AgentMonitoringEnvironmentConfig(config)
-		elif config['task'] == 'exampleprinter':
-			return ExampleprinterEnvironmentConfig(config)
-		else:
-			raise RuntimeError(f'The specified task is unknown: {config["task"]}\nConfig: {config}')
+		return EnvironmentConfigLoader.validate(config)
 
 
 if __name__ == '__main__':
-	config: EnvironmentConfig = ConfigLoader.load('environment_config_exampleprinter')
+	config: EnvironmentConfig = EnvironmentConfigLoader.load('environment_config_exampleprinter')
+	print(config)
+	print()
+	config: EnvironmentConfig = EnvironmentConfigLoader.load('environment_config_agent_monitoring')
+	print(config)
+	print()
+	config: EnvironmentConfig = EnvironmentConfigLoader.load('environment_config_training')
 	print(config)

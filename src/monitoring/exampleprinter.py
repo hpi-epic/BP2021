@@ -10,7 +10,7 @@ from torch.utils.tensorboard import SummaryWriter
 import agents.vendors as vendors
 import configuration.utils as ut
 import market.circular.circular_sim_market as circular_market
-from configuration.environment_config import ConfigLoader, ExampleprinterEnvironmentConfig
+from configuration.environment_config import EnvironmentConfigLoader, ExampleprinterEnvironmentConfig
 from market.sim_market import SimMarket
 from monitoring.svg_manipulation import SVGManipulator
 
@@ -94,7 +94,7 @@ class ExamplePrinter():
 if __name__ == '__main__':  # pragma: no cover
 	printer = ExamplePrinter()
 
-	config: ExampleprinterEnvironmentConfig = ConfigLoader.load('environment_config_exampleprinter')
+	config: ExampleprinterEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_exampleprinter')
 	marketplace = config.marketplace()
 
 	# QLearningAgents need more initialization
