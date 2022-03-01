@@ -264,7 +264,7 @@ class EnvironmentConfigLoader():
 		return EnvironmentConfigLoader.validate(config)
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # pragma: no cover
 	config: EnvironmentConfig = EnvironmentConfigLoader.load('environment_config_exampleprinter')
 	print(config)
 	print()
