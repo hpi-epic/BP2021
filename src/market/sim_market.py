@@ -65,24 +65,11 @@ class SimMarket(gym.Env, ABC):
 		self.vendor_specific_state = [self._reset_vendor_specific_state() for _ in range(self._number_of_vendors)]
 		self.vendor_actions = [self._reset_vendor_actions() for _ in range(self._number_of_vendors)]
 		self.offer_length_per_vendor = self._get_offer_length_per_vendor()
-		self.offers = self._create_offers_array()
 
 		self._customer = self._choose_customer()
 		self._owner = self._choose_owner()
 
 		return self._observation()
-
-	def _create_offers_array(self) -> np.array:
-		"""
-		This method returns the overall 'blueprint-array' of the offers that will be presented to the customers.
-		It will include all information customers will use for their decisions.
-
-		Returns:
-			np.array: The overall offers array.
-		"""
-		common_state_length = len(self._get_common_state_array())
-		vendor_specific_offer_length = self.offer_length_per_vendor
-		return np.zeros(common_state_length + vendor_specific_offer_length * self._number_of_vendors)
 
 	@abstractmethod
 	def _is_probability_distribution_fitting_exactly(self, probability_distribution) -> None:
@@ -96,18 +83,18 @@ class SimMarket(gym.Env, ABC):
 		"""
 		raise NotImplementedError
 
-	def _simulate_customers(self, profits, offers, number_of_customers) -> None:
+	def _simulate_customers(self, profits, number_of_customers) -> None:
 		"""
 		Simulate the customers, the products offered by the vendors get sold to n customers.
-
+		For the offers, the internal state is used.
 		The profits for each vendor get saved to the profits array.
 
 		Args:
 			profits (np.array): The profits of the customers get saved to this array
-			offers (np.array): this array contains the offers of the vendors. It has to be compatible with the customers used.
 			number_of_customers (int): the number of customers eager to buy each step.
 		"""
-		probability_distribution = self._customer.generate_purchase_probabilities_from_offer(offers, self.offer_length_per_vendor)
+		probability_distribution = self._customer.generate_purchase_probabilities_from_offer(
+			self._get_common_state_array(), self.vendor_specific_state, self.vendor_actions)
 		assert isinstance(probability_distribution, np.ndarray), 'generate_purchase_probabilities_from_offer must return an np.ndarray'
 		assert self._is_probability_distribution_fitting_exactly(probability_distribution)
 
@@ -148,10 +135,9 @@ class SimMarket(gym.Env, ABC):
 
 		customers_per_vendor_iteration = int(np.floor(config.NUMBER_OF_CUSTOMERS / self._number_of_vendors))
 		for i in range(self._number_of_vendors):
-			self._adapt_customer_offer()
-			self._simulate_customers(profits, self.offers, customers_per_vendor_iteration)
+			self._simulate_customers(profits, customers_per_vendor_iteration)
 			if self._owner is not None:
-				self._simulate_owners(profits, self.offers)
+				self._simulate_owners(profits)
 
 			# the competitor, which turn it is, will update its pricing
 			if i < len(self.competitors):
@@ -217,44 +203,6 @@ class SimMarket(gym.Env, ABC):
 			if self.vendor_specific_state[vendor_index] is not None:
 				offer = np.concatenate((offer, np.array(self.vendor_specific_state[vendor_index], ndmin=1)), dtype=np.float64)
 		return offer
-
-	def _adapt_customer_offer(self) -> None:
-		"""
-		Adjusts the previous offers by updating each field of the offers array.
-		"""
-		current_common_state = list(self._get_common_state_array())
-		current_common_state_length = len(current_common_state)
-		# if we've got at least one common state entry
-		if current_common_state_length:
-			# then all common_state fields in the offers array will be adapted
-			for common_state_index, common_state_value in enumerate(current_common_state):
-				self.offers[common_state_index] = common_state_value
-
-		actions_state_iter = 0
-		for vendor_index in range(
-			current_common_state_length,
-			self.offer_length_per_vendor * self._number_of_vendors + current_common_state_length,
-			self.offer_length_per_vendor):
-
-			# update all actions entries of one vendor
-			current_vendor_actions = self.vendor_actions[actions_state_iter]
-			if isinstance(current_vendor_actions, int):
-				self.offers[vendor_index] = current_vendor_actions
-			else:
-				for action_index, action_value in enumerate(current_vendor_actions):
-					self.offers[vendor_index + action_index] = action_value
-
-			# update all state entries of one vendor
-			current_vendor_state = self.vendor_specific_state[actions_state_iter]
-			if self.vendor_specific_state[actions_state_iter] is not None:
-				if isinstance(current_vendor_actions, int):
-					for state_index, state_value in enumerate(current_vendor_state):
-						self.offers[vendor_index + 1 + state_index] = state_value
-				else:
-					for state_index, state_value in enumerate(current_vendor_state):
-						self.offers[vendor_index + len(current_vendor_actions) + state_index] = state_value
-
-			actions_state_iter += 1
 
 	def _reset_common_state(self) -> None:
 		pass

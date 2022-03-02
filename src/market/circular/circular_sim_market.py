@@ -83,7 +83,7 @@ class CircularEconomy(SimMarket, ABC):
 			self._output_dict['profits/rebuy_cost']['vendor_' + str(vendor)] -= rebuy_price
 			profits[vendor] -= rebuy_price
 
-	def _simulate_owners(self, profits, offer) -> None:
+	def _simulate_owners(self, profits) -> None:
 		"""
 		The process of owners selling their used products to the vendor.
 		It is prepared for multiple vendor scenarios but is still part of a monopoly.
@@ -93,7 +93,8 @@ class CircularEconomy(SimMarket, ABC):
 			offer (np.array): The offers of the vendor.
 		"""
 		assert self._owner is not None, 'an owner must be set'
-		return_probabilities = self._owner.generate_return_probabilities_from_offer(offer, self.offer_length_per_vendor)
+		return_probabilities = self._owner.generate_return_probabilities_from_offer(
+			self._get_common_state_array(), self.vendor_specific_state, self.vendor_actions)
 		assert isinstance(return_probabilities, np.ndarray), 'return_probabilities must be an np.ndarray'
 		assert len(return_probabilities) == 2 + self._number_of_vendors, \
 			'the length of return_probabilities must be the number of vendors plus 2'
