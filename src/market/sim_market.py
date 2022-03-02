@@ -180,25 +180,27 @@ class SimMarket(gym.Env, ABC):
 		Returns:
 			np.array: the view for the vendor with index vendor_view
 		"""
-		# observaton is the array containing the global state. We concatenate everything relevant to it, then return it.
-		observation = self._get_common_state_array()
-		assert isinstance(observation, np.ndarray), '_get_common_state_array must return an np.ndarray'
+		# observatons is the array containing the global states. We add everything relevant to it, then return a concatenated version.
+		observations = [self._get_common_state_array()]
+		assert isinstance(observations[0], np.ndarray), '_get_common_state_array must return an np.ndarray'
 
 		# first the state of the of the vendor whose view we create will be added
 		if self.vendor_specific_state[vendor_view] is not None:
-			observation = np.concatenate((observation, np.array(self.vendor_specific_state[vendor_view], ndmin=1)), dtype=np.float64)
+			observations.append(np.array(self.vendor_specific_state[vendor_view], ndmin=1, dtype=np.float64))
 
 		# the rest of the vendors actions and states will be added
 		for vendor_index in range(self._number_of_vendors):
 			if vendor_index == vendor_view:
 				continue
-			observation = np.concatenate((observation, np.array(self.vendor_actions[vendor_index], ndmin=1)), dtype=np.float64)
+			observations.append(np.array(self.vendor_actions[vendor_index], ndmin=1, dtype=np.float64))
 			if self.vendor_specific_state[vendor_index] is not None:
-				observation = np.concatenate((observation, np.array(self.vendor_specific_state[vendor_index], ndmin=1)), dtype=np.float64)
+				observations.append(np.array(self.vendor_specific_state[vendor_index], ndmin=1, dtype=np.float64))
 
 		# The observation has to be part of the observation_space defined by the market
-		assert self.observation_space.contains(observation), f'{observation} ({type(observation)}) invalid observation'
-		return observation
+		concatenated_observations = np.concatenate(observations, dtype=np.float64)
+		assert self.observation_space.contains(concatenated_observations), \
+			f'{concatenated_observations} ({type(concatenated_observations)}) invalid observation'
+		return concatenated_observations
 
 	def _generate_customer_offer(self) -> np.array:
 		"""
