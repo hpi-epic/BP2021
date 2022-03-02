@@ -140,8 +140,8 @@ configLoader_is_valid_testcases = [
 ]
 
 
-@pytest.mark.parametrize('config, expected_status, expected_errror', configLoader_is_valid_testcases)
-def test_is_valid(config, expected_status, expected_errror):
+@pytest.mark.parametrize('config, expected_status, expected_error', configLoader_is_valid_testcases)
+def test_is_valid(config, expected_status, expected_error):
 	status, error = env_config.EnvironmentConfigLoader.is_valid(config)
 	assert expected_status == status
-	assert error.startswith(expected_errror)
+	assert error.startswith(expected_error)
