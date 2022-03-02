@@ -17,7 +17,7 @@ class EnvironmentConfig(ABC):
 
 	def __init__(self, config: dict):
 		self.task = self._get_task()
-		self._validate_config(config)
+		self._validate_config_and_set_instance_variables(config)
 
 	def __str__(self) -> str:
 		"""
@@ -30,7 +30,7 @@ class EnvironmentConfig(ABC):
 		"""
 		return f'{self.__class__.__name__}: {self.__dict__}'
 
-	def _validate_config(self, config: dict, single_agent: bool, needs_modelfile: bool) -> None:
+	def _validate_config_and_set_instance_variables(self, config: dict, single_agent: bool, needs_modelfile: bool) -> None:
 		"""
 		Validate the given configuration dictionary and set the instance variables accordingly.
 
@@ -38,6 +38,9 @@ class EnvironmentConfig(ABC):
 			config (dict): The config dictionary to be validated.
 			single_agent (bool): Whether or not only one agent should be used.
 			needs_modelfile (bool): Whether or not the config must include modelfiles.
+
+		Raises:
+			AssertionError: In case the provided configuration is invalid.
 		"""
 
 		# CHECK: All required top-level fields exist
@@ -91,6 +94,9 @@ class EnvironmentConfig(ABC):
 					modelfile_list.append(modelfile)
 
 				# if this agent doesn't have modelfiles, append None
+				# we need to append *something* since the subsequent call creates a list of tuples using the `modelfile_list`
+				# if we were to only append items for agents with modelfiles, the lists would have different lengths and the
+				# process of matching the correct ones would get a lot more difficult
 				else:
 					modelfile_list.append(None)
 			# Create a list of tuples (agent_class, modelfile_string)
@@ -144,8 +150,8 @@ class TrainingEnvironmentConfig(EnvironmentConfig):
 		agent (QlearningAgent or ActorCriticAgent subclass): A subclass of QlearningAgent or ActorCritic, the agent to be trained.
 	"""
 
-	def _validate_config(self, config: dict) -> None:
-		super(TrainingEnvironmentConfig, self)._validate_config(config, single_agent=True, needs_modelfile=False)
+	def _validate_config_and_set_instance_variables(self, config: dict) -> None:
+		super(TrainingEnvironmentConfig, self)._validate_config_and_set_instance_variables(config, single_agent=True, needs_modelfile=False)
 
 		assert issubclass(self.agent, (QLearningAgent, ActorCriticAgent)), \
 			f'The agent class passed must be subclasses of either QLearningAgent or ActorCriticAgent: {self.agent}'
@@ -169,7 +175,7 @@ class AgentMonitoringEnvironmentConfig(EnvironmentConfig):
 			If the agent needs a modelfile, this will be the first entry in the list, the other entry is always an informal name for the agent.
 	"""
 
-	def _validate_config(self, config: dict) -> None:
+	def _validate_config_and_set_instance_variables(self, config: dict) -> None:
 		# TODO: subfolder_name variable
 		# CHECK: All required top-level fields exist
 		assert 'enable_live_draw' in config, f'The config must have an "enable_live_draw" field: {config}'
@@ -189,7 +195,8 @@ class AgentMonitoringEnvironmentConfig(EnvironmentConfig):
 		self.plot_interval = config['plot_interval']
 
 		# We do the super call last because getting the classes takes longer than the other operations, so we save time in case of an error.
-		super(AgentMonitoringEnvironmentConfig, self)._validate_config(config, single_agent=False, needs_modelfile=True)
+		super(AgentMonitoringEnvironmentConfig, self)._validate_config_and_set_instance_variables(
+			config, single_agent=False, needs_modelfile=True)
 
 		# Since RuleBasedAgents do not have modelfiles, we need to adjust the passed lists to remove the "None" entry
 		passed_agents = self.agent
@@ -215,8 +222,8 @@ class ExampleprinterEnvironmentConfig(EnvironmentConfig):
 		agent (Agent subclass): A subclass of Agent, the agent for which the exampleprinter should be run.
 	"""
 
-	def _validate_config(self, config: dict) -> None:
-		super(ExampleprinterEnvironmentConfig, self)._validate_config(config, single_agent=True, needs_modelfile=True)
+	def _validate_config_and_set_instance_variables(self, config: dict) -> None:
+		super(ExampleprinterEnvironmentConfig, self)._validate_config_and_set_instance_variables(config, single_agent=True, needs_modelfile=True)
 
 	def _get_task(self) -> str:
 		return 'exampleprinter'
@@ -244,7 +251,7 @@ class EnvironmentConfigLoader():
 		elif config['task'] == 'exampleprinter':
 			return ExampleprinterEnvironmentConfig(config)
 		else:
-			raise RuntimeError(f'The specified task is unknown: {config["task"]}\nConfig: {config}')
+			raise AssertionError(f'The specified task is unknown: {config["task"]}\nConfig: {config}')
 
 	def load(filename: str) -> EnvironmentConfig:
 		"""
@@ -265,11 +272,11 @@ class EnvironmentConfigLoader():
 
 
 if __name__ == '__main__':  # pragma: no cover
-	config: EnvironmentConfig = EnvironmentConfigLoader.load('environment_config_exampleprinter')
+	config: ExampleprinterEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_exampleprinter')
 	print(config)
 	print()
-	config: EnvironmentConfig = EnvironmentConfigLoader.load('environment_config_agent_monitoring')
+	config: AgentMonitoringEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_agent_monitoring')
 	print(config)
 	print()
-	config: EnvironmentConfig = EnvironmentConfigLoader.load('environment_config_training')
+	config: TrainingEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_training')
 	print(config)
