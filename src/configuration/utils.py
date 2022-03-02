@@ -8,18 +8,15 @@ import configuration.hyperparameters_config as config
 
 def ensure_results_folders_exist():
 	"""
-	If your code assumes that the results folder or any of its subfolders exist, call this function before.
+	Create the results directory as well as the needed subdirectories.
+
+	If your code assumes that the results folder or any of its subfolders exist, call this function beforehand.
 	"""
-	if not os.path.exists('results'):
-		os.mkdir('results')
-	if not os.path.exists(os.path.join('results', 'monitoring')):
-		os.mkdir(os.path.join('results', 'monitoring'))
-	if not os.path.exists(os.path.join('results', 'exampleprinter')):
-		os.mkdir(os.path.join('results', 'exampleprinter'))
-	if not os.path.exists(os.path.join('results', 'runs')):
-		os.mkdir(os.path.join('results', 'runs'))
-	if not os.path.exists(os.path.join('results', 'trainedModels')):
-		os.mkdir(os.path.join('results', 'trainedModels'))
+	os.makedirs('results', exist_ok=True)
+	os.makedirs(os.path.join('results', 'monitoring'), exist_ok=True)
+	os.makedirs(os.path.join('results', 'exampleprinter'), exist_ok=True)
+	os.makedirs(os.path.join('results', 'runs'), exist_ok=True)
+	os.makedirs(os.path.join('results', 'trainedModels'), exist_ok=True)
 
 
 def shuffle_quality() -> int:
