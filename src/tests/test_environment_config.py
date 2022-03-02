@@ -92,6 +92,18 @@ def test_get_class(expected_class, class_string):
 	assert expected_class == env_config.EnvironmentConfig._get_class(env_config.EnvironmentConfig, class_string)
 
 
+def test_get_class_invalid_class():
+	with pytest.raises(AttributeError) as error_message:
+		env_config.EnvironmentConfig._get_class(env_config.EnvironmentConfig, 'agents.vendors.NotAValidClass')
+	assert 'The string you passed could not be resolved to a class' in str(error_message.value)
+
+
+def test_get_class_invalid_module():
+	with pytest.raises(ModuleNotFoundError) as error_message:
+		env_config.EnvironmentConfig._get_class(env_config.EnvironmentConfig, 'notAModule.ValidClass')
+	assert 'The string you passed could not be resolved to a module' in str(error_message.value)
+
+
 get_task_testcases = [
 	(env_config.TrainingEnvironmentConfig, 'training'),
 	(env_config.AgentMonitoringEnvironmentConfig, 'agent_monitoring'),
@@ -126,7 +138,7 @@ valid_ConfigLoader_load_training_testcases = [
 
 
 @pytest.mark.parametrize('task, marketplace, agents', valid_ConfigLoader_load_training_testcases)
-def test_valid_ConfigLoader_load(task, marketplace, agents):
+def test_valid_ConfigLoader_load_training(task, marketplace, agents):
 	json = ut_t.create_environment_mock_json(task=task, marketplace=marketplace, agents=agents)
 	with patch('builtins.open', mock_open(read_data=json)) as mock_file:
 		ut_t.check_mock_file(mock_file, json)

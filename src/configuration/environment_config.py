@@ -126,8 +126,10 @@ class EnvironmentConfig(ABC):
 		module_name, class_name = import_string.rsplit('.', 1)
 		try:
 			return getattr(importlib.import_module(module_name), class_name)
-		except AttributeError as e:
-			raise AttributeError(f'The string you passed could not be resolved to a class: {import_string}') from e
+		except AttributeError as error:
+			raise AttributeError(f'The string you passed could not be resolved to a class: {import_string}') from error
+		except ModuleNotFoundError as error:
+			raise ModuleNotFoundError(f'The string you passed could not be resolved to a module: {import_string}') from error
 
 	@abstractmethod
 	def _get_task(self) -> str:
