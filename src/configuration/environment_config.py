@@ -239,7 +239,7 @@ class EnvironmentConfigLoader():
 			config (dict): The configuration to validate.
 
 		Raises:
-			RuntimeError: If the given configuration has an unknown task name.
+			AssertionError: If the given configuration has an unknown task name.
 
 		Returns:
 			EnvironmentConfig: A subclass instance of EnvironmentConfig.
@@ -252,6 +252,25 @@ class EnvironmentConfigLoader():
 			return ExampleprinterEnvironmentConfig(config)
 		else:
 			raise AssertionError(f'The specified task is unknown: {config["task"]}\nConfig: {config}')
+
+	def is_valid(config: dict):
+		"""
+		Validates a given config and catches the exceptions for you.
+		Returns you if a config is valid and an appropriate error message.
+
+		Args:
+			config (dict): _description_
+
+		Returns:
+			Tuple (bool, str): boolean indecating if your config is valid, str the appropriate error.
+		"""
+		try:
+			EnvironmentConfigLoader.validate(config)
+		except AssertionError as error:
+			return False, str(error)
+		except Exception as error:
+			return False, str(error)
+		return True, 'Your config is valid.'
 
 	def load(filename: str) -> EnvironmentConfig:
 		"""
