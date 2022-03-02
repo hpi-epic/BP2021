@@ -75,7 +75,7 @@ correct_update_agents_RL_testcases = [
 	[(vendors.QLearningCEAgent, ['new_name'])],
 	[(vendors.QLearningCEAgent, ['CircularEconomyMonopolyScenario_QLearningCEAgent.dat'])],
 	[(vendors.QLearningCEAgent, ['CircularEconomyMonopolyScenario_QLearningCEAgent.dat', 'new_name'])],
-	[(vendors.QLearningCEAgent, [f'{type(monitor.configurator.marketplace).__name__}_{vendors.QLearningCEAgent.__name__}.dat'])]
+	[(vendors.QLearningCEAgent, [f'{circular_market.CircularEconomyMonopolyScenario.__name__}_{vendors.QLearningCEAgent.__name__}.dat'])]
 ]
 
 
