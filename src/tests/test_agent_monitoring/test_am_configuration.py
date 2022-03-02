@@ -24,8 +24,7 @@ def setup_function(function):
 		episodes=50,
 		plot_interval=10,
 		marketplace=circular_market.CircularEconomyMonopolyScenario,
-		agents=[(vendors.QLearningCEAgent, [os.path.join(os.path.dirname(__file__), os.pardir, 'test_data',
-			'CircularEconomyMonopolyScenario_QLearningCEAgent.dat')])],
+		agents=[(vendors.FixedPriceCERebuyAgent, [])],
 		subfolder_name=f'test_plots_{function.__name__}')
 
 
@@ -54,7 +53,7 @@ def test_get_modelfile_path():
 		assert 'the specified modelfile does not exist' in str(assertion_message.value)
 
 
-incorrect_update_agents_testcases = [
+incorrect_update_agents_RL_testcases = [
 	([(vendors.QLearningCEAgent, ['modelfile.dat', 'arg', 'too_much'])], 'the argument list for a RL-agent must have length between 0 and 2'),
 	([(vendors.QLearningCEAgent, [1, 2, 3, 4])], 'the argument list for a RL-agent must have length between 0 and 2'),
 	([(vendors.QLearningCEAgent, ['modelfile.dat', 35])], 'the arguments for a RL-agent must be of type str'),
@@ -64,14 +63,14 @@ incorrect_update_agents_testcases = [
 ]
 
 
-@pytest.mark.parametrize('agents, expected_message', incorrect_update_agents_testcases)
-def test_incorrect_update_agents(agents, expected_message):
+@pytest.mark.parametrize('agents, expected_message', incorrect_update_agents_RL_testcases)
+def test_incorrect_update_agents_RL(agents, expected_message):
 	with pytest.raises(AssertionError) as assertion_message:
 		monitor.configurator.setup_monitoring(agents=agents)
 	assert expected_message in str(assertion_message.value)
 
 
-correct_update_agents_testcases = [
+correct_update_agents_RL_testcases = [
 	[(vendors.QLearningCEAgent, [])],
 	[(vendors.QLearningCEAgent, ['new_name'])],
 	[(vendors.QLearningCEAgent, ['CircularEconomyMonopolyScenario_QLearningCEAgent.dat'])],
@@ -80,8 +79,8 @@ correct_update_agents_testcases = [
 ]
 
 
-@pytest.mark.parametrize('agents', correct_update_agents_testcases)
-def test_correct_update_agents(agents):
+@pytest.mark.parametrize('agents', correct_update_agents_RL_testcases)
+def test_correct_update_agents_RL(agents):
 	monitor.configurator.setup_monitoring(agents=agents)
 
 

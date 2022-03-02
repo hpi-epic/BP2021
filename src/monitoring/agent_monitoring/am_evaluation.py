@@ -117,7 +117,7 @@ class Evaluator():
 		print(f'Creating line plot for {metric_name} rewards...')
 
 		plt.clf()
-		filename = metric_name + '_rewards.svg'
+		filename = f'{metric_name}_rewards.svg'
 		# plot the metric rewards for each agent
 		for index in range(len(y_values)):
 			plt.plot(x_values, y_values[index], marker='o', color=self.configurator.agent_colors[index])
@@ -125,17 +125,18 @@ class Evaluator():
 		plt.xlabel('Episodes', fontsize='18')
 		plt.ylabel(f'{metric_name} Reward', fontsize='18')
 
-		if metric_type == 'Overall':
-			plt.title(f'Overall {metric_name} Reward calculated each {self.configurator.plot_interval} episodes')
-		elif metric_type == 'Episode':
+		if metric_type == 'Episode':
 			plt.title(f'{metric_name} Reward within each previous {self.configurator.plot_interval} episodes')
+		elif metric_type == 'Overall':
+			plt.title(f'Overall {metric_name} Reward calculated each {self.configurator.plot_interval} episodes')
 		else:
 			raise RuntimeError(f'this metric_type is unknown: {metric_type}')
 
 		plt.legend([a.name for a in self.configurator.agents])
 		plt.grid(True)
 		plt.savefig(fname=os.path.join(self.configurator.get_folder(), filename))
+		plt.savefig(fname=os.path.join(self.configurator.get_folder(), filename))
 
 
 if __name__ == '__main__':  # pragma: no cover
-	raise RuntimeError('agent_monitoring can only be run from `monitor.py`')
+	raise RuntimeError('agent_monitoring can only be run from `am_monitoring.py`')
