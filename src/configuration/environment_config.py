@@ -230,6 +230,28 @@ class ExampleprinterEnvironmentConfig(EnvironmentConfig):
 
 
 class EnvironmentConfigLoader():
+	"""
+	This class is used to load a json-file containing a generic configuration and instantiate the correct
+	`EnvironmentConfig` object to pass to e.g. the `training_scenario.py`.
+	It can also be used to simply validate an existing dictionary containing a configuration.
+	"""
+
+	def load(filename: str) -> EnvironmentConfig:
+		"""
+		Load the configuration json file from the specified path and instantiate the correct configuration class.
+
+		Args:
+			filename (str): The name of the json file containing the configuration values.
+				Must be located in the BP2021/ folder.
+
+		Returns:
+			EnvironmentConfig: A subclass instance of EnvironmentConfig.
+		"""
+		filename += '.json'
+		path = os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, filename)
+		with open(path) as config_file:
+			config = json.load(config_file)
+		return EnvironmentConfigLoader.validate(config)
 
 	def validate(config: dict) -> EnvironmentConfig:
 		"""
@@ -255,39 +277,21 @@ class EnvironmentConfigLoader():
 
 	def is_valid(config: dict):
 		"""
-		Validates a given config and catches the exceptions for you.
-		Returns you if a config is valid and an appropriate error message.
+		To be used when the actual config object is not necessary but only validity needs to be checked.
+		Validates a given config and catches any possible exceptions.
+		Returns if a config is valid and if not, also an appropriate error message.
 
 		Args:
-			config (dict): _description_
+			config (dict): The configuration to validate.
 
 		Returns:
-			Tuple (bool, str): boolean indecating if your config is valid, str the appropriate error.
+			Tuple (bool, str): boolean indicating if your config is valid, str the appropriate error if applicable.
 		"""
 		try:
 			EnvironmentConfigLoader.validate(config)
-		except AssertionError as error:
-			return False, str(error)
-		except Exception as error:
+		except (AssertionError, Exception) as error:
 			return False, str(error)
 		return True, 'Your config is valid.'
-
-	def load(filename: str) -> EnvironmentConfig:
-		"""
-		Load the configuration json file from the specified path and instantiate the correct configuration class.
-
-		Args:
-			filename (str): The name of the json file containing the configuration values.
-				Must be located in the BP2021/ folder.
-
-		Returns:
-			EnvironmentConfig: A subclass instance of EnvironmentConfig.
-		"""
-		filename += '.json'
-		path = os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, filename)
-		with open(path) as config_file:
-			config = json.load(config_file)
-		return EnvironmentConfigLoader.validate(config)
 
 
 if __name__ == '__main__':  # pragma: no cover
