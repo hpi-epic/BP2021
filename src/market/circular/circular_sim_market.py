@@ -61,7 +61,7 @@ class CircularEconomy(SimMarket, ABC):
 		The call of this method will decrease the in_circulation counter by one.
 		Call it if one of your owners decided to throw away his product.
 		"""
-		self.output_dict['owner/throw_away'] += 1
+		self._output_dict['owner/throw_away'] += 1
 		self.in_circulation -= 1
 
 	def _transfer_product_to_storage(self, vendor, profits=None, rebuy_price=0) -> None:
@@ -75,12 +75,12 @@ class CircularEconomy(SimMarket, ABC):
 			Only the specific proftit of the given vendor is needed. Defaults to None.
 			rebuy_price (int, optional): the price to which the used product is bought. Defaults to 0.
 		"""
-		self.output_dict['owner/rebuys']['vendor_' + str(vendor)] += 1
+		self._output_dict['owner/rebuys']['vendor_' + str(vendor)] += 1
 		# receive the product only if you have space for it. Otherwise throw it away.
 		self.vendor_specific_state[vendor][0] = min(self.vendor_specific_state[vendor][0] + 1, self.max_storage)
 		self.in_circulation -= 1
 		if profits is not None:
-			self.output_dict['profits/rebuy_cost']['vendor_' + str(vendor)] -= rebuy_price
+			self._output_dict['profits/rebuy_cost']['vendor_' + str(vendor)] -= rebuy_price
 			profits[vendor] -= rebuy_price
 
 	def _simulate_owners(self, profits, offer) -> None:
@@ -126,20 +126,20 @@ class CircularEconomy(SimMarket, ABC):
 
 		chosen_vendor = int(np.floor(customer_decision / 2))
 		if customer_decision % 2 == 0:
-			self.output_dict['customer/purchases_refurbished']['vendor_' + str(chosen_vendor)] += 1
+			self._output_dict['customer/purchases_refurbished']['vendor_' + str(chosen_vendor)] += 1
 			if self.vendor_specific_state[chosen_vendor][0] >= 1:
 				# Increase the profit and decrease the storage
 				profits[chosen_vendor] += self.vendor_actions[chosen_vendor][0]
-				self.output_dict['profits/by_selling_refurbished']['vendor_' + str(chosen_vendor)] += self.vendor_actions[chosen_vendor][0]
+				self._output_dict['profits/by_selling_refurbished']['vendor_' + str(chosen_vendor)] += self.vendor_actions[chosen_vendor][0]
 				self.vendor_specific_state[chosen_vendor][0] -= 1
 			else:
 				# Punish the agent for not having enough second-hand-products
 				profits[chosen_vendor] -= 2 * config.MAX_PRICE
-				self.output_dict['profits/by_selling_refurbished']['vendor_' + str(chosen_vendor)] -= 2 * config.MAX_PRICE
+				self._output_dict['profits/by_selling_refurbished']['vendor_' + str(chosen_vendor)] -= 2 * config.MAX_PRICE
 		else:
-			self.output_dict['customer/purchases_new']['vendor_' + str(chosen_vendor)] += 1
+			self._output_dict['customer/purchases_new']['vendor_' + str(chosen_vendor)] += 1
 			profits[chosen_vendor] += self.vendor_actions[chosen_vendor][1] - config.PRODUCTION_PRICE
-			self.output_dict['profits/by_selling_new']['vendor_' + str(chosen_vendor)] += (
+			self._output_dict['profits/by_selling_new']['vendor_' + str(chosen_vendor)] += (
 				self.vendor_actions[chosen_vendor][1] - config.PRODUCTION_PRICE)
 			# One more product is in circulation now, but only 10 times the amount of storage space we have
 			self.in_circulation = min(self.in_circulation + 1, self.max_circulation)
@@ -154,15 +154,15 @@ class CircularEconomy(SimMarket, ABC):
 		for vendor in range(self._number_of_vendors):
 			storage_cost_per_timestep = -self.vendor_specific_state[vendor][0] * config.STORAGE_COST_PER_PRODUCT
 			profits[vendor] += storage_cost_per_timestep
-			self.output_dict['profits/storage_cost']['vendor_' + str(vendor)] = storage_cost_per_timestep
+			self._output_dict['profits/storage_cost']['vendor_' + str(vendor)] = storage_cost_per_timestep
 
 	def _initialize_output_dict(self):
 		"""
-		Initialize the output_dict with the state of the environment and the actions the agents takes.
+		Initialize the _output_dict with the state of the environment and the actions the agents takes.
 
 		Furthermore, the dictionary entries for all events which shall be monitored in the market are initialized.
 		"""
-		self.output_dict['state/in_circulation'] = self.in_circulation
+		self._output_dict['state/in_circulation'] = self.in_circulation
 		self._ensure_output_dict_has('state/in_storage',
 			[self.vendor_specific_state[vendor][0] for vendor in range(self._number_of_vendors)])
 		self._ensure_output_dict_has('actions/price_refurbished',
@@ -233,10 +233,10 @@ class CircularEconomyRebuyPrice(CircularEconomy, ABC):
 
 	def _initialize_output_dict(self) -> None:
 		"""
-		Initialize the output_dict with the state of the environment and the actions the agents takes.
+		Initialize the _output_dict with the state of the environment and the actions the agents takes.
 
 		Furthermore, the dictionary entries for all events which shall be monitored in the market are initialized.
-		Also extend the the output_dict initialized by the superclass with entries concerning the rebuy price and cost.
+		Also extend the the _output_dict initialized by the superclass with entries concerning the rebuy price and cost.
 		"""
 		super()._initialize_output_dict()
 		self._ensure_output_dict_has('actions/price_rebuy', [self.vendor_actions[vendor][2] for vendor in range(self._number_of_vendors)])

@@ -55,7 +55,7 @@ class LinearEconomy(SimMarket, ABC):
 
 	def _complete_purchase(self, profits, chosen_vendor) -> None:
 		profits[chosen_vendor] += self.vendor_actions[chosen_vendor] - config.PRODUCTION_PRICE
-		self.output_dict['customer/purchases']['vendor_' + str(chosen_vendor)] += 1
+		self._output_dict['customer/purchases']['vendor_' + str(chosen_vendor)] += 1
 
 	def _initialize_output_dict(self):
 		self._ensure_output_dict_has('state/quality', [self.vendor_specific_state[i][0] for i in range(self._number_of_vendors)])

@@ -116,7 +116,7 @@ class SimMarket(gym.Env, ABC):
 			if customer_decision != 0:
 				self._complete_purchase(profits, customer_decision - 1)
 			else:
-				self.output_dict['customer/buy_nothing'] += 1
+				self._output_dict['customer/buy_nothing'] += 1
 
 	def step(self, action) -> Tuple[np.array, np.float64, bool, dict]:
 		"""
@@ -143,7 +143,7 @@ class SimMarket(gym.Env, ABC):
 
 		profits = [0] * self._number_of_vendors
 
-		self.output_dict = {'customer/buy_nothing': 0}
+		self._output_dict = {'customer/buy_nothing': 0}
 		self._initialize_output_dict()
 
 		customers_per_vendor_iteration = int(np.floor(config.NUMBER_OF_CUSTOMERS / self._number_of_vendors))
@@ -163,7 +163,7 @@ class SimMarket(gym.Env, ABC):
 
 		self._ensure_output_dict_has('profits/all', profits)
 		is_done = self.step_counter >= config.EPISODE_LENGTH
-		return self._observation(), profits[0], is_done, self.output_dict
+		return self._observation(), profits[0], is_done, self._output_dict
 
 	def _observation(self, vendor_view=0) -> np.array:
 		"""
@@ -390,7 +390,7 @@ class SimMarket(gym.Env, ABC):
 
 	def _ensure_output_dict_has(self, name, init_for_all_vendors=None) -> None:
 		"""
-		Ensure that the output_dict has an entry with the given name and create an entry otherwise.
+		Ensure that the _output_dict has an entry with the given name and create an entry otherwise.
 
 		If a parameter for init_for_all_vendors is passed, it will be interpreted as creating a dict with the passed array as content.
 
@@ -401,8 +401,8 @@ class SimMarket(gym.Env, ABC):
 		if init_for_all_vendors is not None:
 			assert isinstance(init_for_all_vendors, list) and len(init_for_all_vendors) == self._number_of_vendors, \
 				'make sure you pass a list with length of number of vendors'
-		if name not in self.output_dict:
+		if name not in self._output_dict:
 			if init_for_all_vendors is None:
-				self.output_dict[name] = 0
+				self._output_dict[name] = 0
 			else:
-				self.output_dict[name] = dict(zip(['vendor_' + str(i) for i in range(self._number_of_vendors)], init_for_all_vendors))
+				self._output_dict[name] = dict(zip(['vendor_' + str(i) for i in range(self._number_of_vendors)], init_for_all_vendors))
