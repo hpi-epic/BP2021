@@ -42,6 +42,27 @@ valid_exampleprinter_dict = {
 	}
 }
 
+invalid_agent_dict = {
+	'task': 'exampleprinter',
+	'marketplace': 'market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
+	'agents': {
+		'Agent_name': {
+			'class': 'agents.vendors.QLearningCERebuyAgent',
+		}
+	}
+}
+
+invalid_task_dict = {
+	'task': 'not_existing_test_task',
+	'marketplace': 'market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
+	'agents': {
+		'Agent_name': {
+			'class': 'agents.vendors.QLearningCERebuyAgent',
+			'modelfile': 'CircularEconomyRebuyPriceMonopolyScenario_QLearningCERebuyAgent.dat'
+		}
+	}
+}
+
 
 def test_abstract_parent_class():
 	with pytest.raises(TypeError) as error_message:
@@ -90,3 +111,17 @@ valid_ConfigLoader_validate_testcases = [
 @pytest.mark.parametrize('config', valid_ConfigLoader_validate_testcases)
 def test_valid_ConfigLoader_validate(config):
 	env_config.EnvironmentConfigLoader.validate(config)
+
+
+configLoader_is_valid_testcases = [
+	(invalid_agent_dict, False, 'This agent must have a "modelfile" field'),
+	(invalid_task_dict, False, 'The specified task is unknown: not_existing_test_task'),
+	(valid_exampleprinter_dict, True, 'Your config is valid.')
+]
+
+
+@pytest.mark.parametrize('config, expected_status, expected_errror', configLoader_is_valid_testcases)
+def test_is_valid(config, expected_status, expected_errror):
+	status, error = env_config.EnvironmentConfigLoader.is_valid(config)
+	assert expected_status == status
+	assert error.startswith(expected_errror)
