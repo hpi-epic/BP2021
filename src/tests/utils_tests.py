@@ -88,7 +88,7 @@ def create_environment_mock_json(task: str = 'agent_monitoring',
 	episodes: str = '10',
 	plot_interval: str = '5',
 	marketplace: str = 'market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
-	agents: str = '{\n\t\t"Agent_name": {\n\t\t\t"class": "agents.vendors.FixedPriceCERebuyAgent"\n\t\t}\n\t}') -> str:
+	agents: str = '{"Fixed CE Rebuy Agent": {"class": "agents.vendors.FixedPriceCERebuyAgent"}}') -> str:
 	"""
 	Create a mock json in the format of an environment_config.json.
 
@@ -100,16 +100,16 @@ def create_environment_mock_json(task: str = 'agent_monitoring',
 		marketplace (str, optional): What marketplace to run on.
 			Defaults to "market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario".
 		agents (str, optional): What agents to use.
-			Defaults to '{\n\t\t"Agent_name": {\n\t\t\t"class": "agents.vendors.FixedPriceCERebuyAgent"\n\t\t}\n\t}'.
+			Defaults to '{"Fixed CE Rebuy Agent": {"class": "agents.vendors.FixedPriceCERebuyAgent"}}'.
 
 	Returns:
 		str: The mock json.
 	"""
-	return '{\n\t"task": ' + task + ',\n' + \
+	return '{\n\t"task": "' + task + '",\n' + \
 		'\t"enable_live_draw": ' + enable_live_draw + ',\n' + \
 		'\t"episodes": ' + episodes + ',\n' + \
 		'\t"plot_interval": ' + plot_interval + ',\n' + \
-		'\t"marketplace": ' + marketplace + ',\n' + \
+		'\t"marketplace": "' + marketplace + '",\n' + \
 		'\t"agents": ' + agents + '\n' + \
 		'}'
 

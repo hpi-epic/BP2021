@@ -1,6 +1,9 @@
+from unittest.mock import mock_open, patch
+
 import pytest
 
 import configuration.environment_config as env_config
+import tests.utils_tests as ut_t
 from agents.vendors import QLearningCERebuyAgent, RuleBasedCERebuyAgent
 from market.circular.circular_sim_market import CircularEconomyRebuyPriceMonopolyScenario
 
@@ -8,7 +11,7 @@ valid_training_dict = {
 	'task': 'training',
 	'marketplace': 'market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
 	'agents': {
-		'Agent_name': {
+		'CE Rebuy Agent (QLearning)': {
 			'class': 'agents.vendors.QLearningCERebuyAgent'
 		}
 	}
@@ -35,7 +38,7 @@ valid_exampleprinter_dict = {
 	'task': 'exampleprinter',
 	'marketplace': 'market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
 	'agents': {
-		'Agent_name': {
+		'CE Rebuy Agent (QLearning)': {
 			'class': 'agents.vendors.QLearningCERebuyAgent',
 			'modelfile': 'CircularEconomyRebuyPriceMonopolyScenario_QLearningCERebuyAgent.dat'
 		}
@@ -90,3 +93,20 @@ valid_ConfigLoader_validate_testcases = [
 @pytest.mark.parametrize('config', valid_ConfigLoader_validate_testcases)
 def test_valid_ConfigLoader_validate(config):
 	env_config.EnvironmentConfigLoader.validate(config)
+
+
+valid_ConfigLoader_load_training_testcases = [
+	# TODO: Currently no testcases for ActorCriticAgents
+	('training', 'market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
+		'{ "CE Rebuy Agent (QLearning)": {"class": "agents.vendors.QLearningCERebuyAgent"}}'),
+	('training', 'market.circular.circular_sim_market.CircularEconomyRebuyPriceOneCompetitor',
+		'{ "CE Rebuy Agent (QLearning)": {"class": "agents.vendors.QLearningCEAgent"}}')
+]
+
+
+@pytest.mark.parametrize('task, marketplace, agents', valid_ConfigLoader_load_training_testcases)
+def test_valid_ConfigLoader_load(task, marketplace, agents):
+	json = ut_t.create_environment_mock_json(task=task, marketplace=marketplace, agents=agents)
+	with patch('builtins.open', mock_open(read_data=json)) as mock_file:
+		ut_t.check_mock_file(mock_file, json)
+		env_config.EnvironmentConfigLoader.load('environment_config_training.json')
