@@ -99,9 +99,8 @@ class CircularEconomy(SimMarket, ABC):
 			'the length of return_probabilities must be the number of vendors plus 2'
 
 		number_of_owners = int(0.05 * self.in_circulation / self._number_of_vendors)
-		for _ in range(number_of_owners):
-			owner_action = ut.shuffle_from_probabilities(return_probabilities)
-
+		owner_actions = ut.multiple_shuffle_from_probabilities(number_of_owners, return_probabilities)
+		for owner_action in owner_actions:
 			# owner_action 0 means holding the product, so nothing happens
 			if owner_action == 1:
 				self._throw_away()

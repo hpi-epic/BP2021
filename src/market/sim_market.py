@@ -111,8 +111,8 @@ class SimMarket(gym.Env, ABC):
 		assert isinstance(probability_distribution, np.ndarray), 'generate_purchase_probabilities_from_offer must return an np.ndarray'
 		assert self._is_probability_distribution_fitting_exactly(probability_distribution)
 
-		for _ in range(number_of_customers):
-			customer_decision = ut.shuffle_from_probabilities(probability_distribution)
+		customer_decisions = ut.multiple_shuffle_from_probabilities(number_of_customers, probability_distribution)
+		for customer_decision in customer_decisions:
 			if customer_decision != 0:
 				self._complete_purchase(profits, customer_decision - 1)
 			else:

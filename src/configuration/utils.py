@@ -43,6 +43,10 @@ def shuffle_from_probabilities(probabilities) -> int:
 	return len(probabilities) - 1  # pragma: no cover
 
 
+def multiple_shuffle_from_probabilities(n, probabilities) -> list:
+	return [shuffle_from_probabilities(probabilities) for _ in range(n)]
+
+
 def cartesian_product(list_a, list_b):
 	"""
 	This helper function takes to lists and generates the cartesian product
