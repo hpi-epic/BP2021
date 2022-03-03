@@ -83,35 +83,44 @@ def create_hyperparameter_mock_json(rl: str = create_hyperparameter_mock_json_rl
 	return '{\n' + '\t"rl": ' + rl + ',\n' + '\t"sim_market": ' + sim_market + '\n}'
 
 
-def create_environment_mock_json(task: str = 'agent_monitoring',
-	enable_live_draw: str = 'false',
-	episodes: str = '10',
-	plot_interval: str = '5',
+def create_environment_mock_dict(
+	task: str = 'agent_monitoring',
+	enable_live_draw: bool = False,
+	episodes: int = 10,
+	plot_interval: int = 5,
 	marketplace: str = 'market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
-	agents: str = '{"Fixed CE Rebuy Agent": {"class": "agents.vendors.FixedPriceCERebuyAgent"}}') -> str:
+	agents: dict = None) -> dict:
 	"""
-	Create a mock json in the format of an environment_config.json.
+	Create a mock dictionary in the format of an environment_config.json.
 
 	Args:
 		task (str, optional): What task to run. Defaults to 'agent_monitoring'.
-		enable_live_draw (str, optional): If live drawing should be enabled. Defaults to 'false'.
-		episodes (str, optional): How many episodes to run. Defaults to '10'.
-		plot_interval (str, optional): How often plots should be drawn. Defaults to '5'.
+		enable_live_draw (bool, optional): If live drawing should be enabled. Defaults to False.
+		episodes (int, optional): How many episodes to run. Defaults to 10.
+		plot_interval (int, optional): How often plots should be drawn. Defaults to 5.
 		marketplace (str, optional): What marketplace to run on.
 			Defaults to "market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario".
-		agents (str, optional): What agents to use.
-			Defaults to '{"Fixed CE Rebuy Agent": {"class": "agents.vendors.FixedPriceCERebuyAgent"}}'.
+		agents (dict, optional): What agents to use.
+			Defaults to {"Fixed CE Rebuy Agent": {"class": "agents.vendors.FixedPriceCERebuyAgent"}}.
 
 	Returns:
-		str: The mock json.
+		dict: The mock dictionary.
 	"""
-	return '{\n\t"task": "' + task + '",\n' + \
-		'\t"enable_live_draw": ' + enable_live_draw + ',\n' + \
-		'\t"episodes": ' + episodes + ',\n' + \
-		'\t"plot_interval": ' + plot_interval + ',\n' + \
-		'\t"marketplace": "' + marketplace + '",\n' + \
-		'\t"agents": ' + agents + '\n' + \
-		'}'
+	if agents is None:
+		agents = {
+			'Fixed CE Rebuy Agent': {
+				'class': 'agents.vendors.FixedPriceCERebuyAgent'
+			}
+		}
+
+	return {
+		'task': task,
+		'enable_live_draw': enable_live_draw,
+		'episodes': episodes,
+		'plot_interval': plot_interval,
+		'marketplace': marketplace,
+		'agents': agents
+	}
 
 
 def check_mock_file(mock_file, json) -> None:

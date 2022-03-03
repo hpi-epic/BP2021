@@ -1,3 +1,4 @@
+import json
 from unittest.mock import mock_open, patch
 
 import pytest
@@ -131,17 +132,17 @@ def test_valid_ConfigLoader_validate(config):
 valid_ConfigLoader_load_training_testcases = [
 	# TODO: Currently no testcases for ActorCriticAgents
 	('training', 'market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
-		'{ "CE Rebuy Agent (QLearning)": {"class": "agents.vendors.QLearningCERebuyAgent"}}'),
+		{'CE Rebuy Agent (QLearning)': {'class': 'agents.vendors.QLearningCERebuyAgent'}}),
 	('training', 'market.circular.circular_sim_market.CircularEconomyRebuyPriceOneCompetitor',
-		'{ "CE Rebuy Agent (QLearning)": {"class": "agents.vendors.QLearningCEAgent"}}')
+		{'CE Rebuy Agent (QLearning)': {'class': 'agents.vendors.QLearningCEAgent'}})
 ]
 
 
 @pytest.mark.parametrize('task, marketplace, agents', valid_ConfigLoader_load_training_testcases)
 def test_valid_ConfigLoader_load_training(task, marketplace, agents):
-	json = ut_t.create_environment_mock_json(task=task, marketplace=marketplace, agents=agents)
-	with patch('builtins.open', mock_open(read_data=json)) as mock_file:
-		ut_t.check_mock_file(mock_file, json)
+	mock_json = json.dumps(ut_t.create_environment_mock_dict(task=task, marketplace=marketplace, agents=agents))
+	with patch('builtins.open', mock_open(read_data=mock_json)) as mock_file:
+		ut_t.check_mock_file(mock_file, mock_json)
 		env_config.EnvironmentConfigLoader.load('environment_config_training.json')
 
 
