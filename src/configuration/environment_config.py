@@ -17,7 +17,7 @@ class EnvironmentConfig(ABC):
 
 	def __init__(self, config: dict):
 		self.task = self._get_task()
-		self._validate_config_and_set_instance_variables(config)
+		self._validate_config(config)
 
 	def __str__(self) -> str:
 		"""
@@ -30,13 +30,14 @@ class EnvironmentConfig(ABC):
 		"""
 		return f'{self.__class__.__name__}: {self.__dict__}'
 
-	def _validate_config_and_set_instance_variables(self, config: dict, single_agent: bool, needs_modelfile: bool) -> None:
+	def _validate_config(self, config: dict, single_agent: bool, needs_modelfile: bool) -> None:
 		"""
 		Validate the given configuration dictionary and set the instance variables accordingly.
 
 		Args:
 			config (dict): The config dictionary to be validated.
 			single_agent (bool): Whether or not only one agent should be used.
+				Note that if single_agent is True and the agent dictionary is too long, it will be shortened globally.
 			needs_modelfile (bool): Whether or not the config must include modelfiles.
 
 		Raises:
@@ -152,8 +153,8 @@ class TrainingEnvironmentConfig(EnvironmentConfig):
 		agent (QlearningAgent or ActorCriticAgent subclass): A subclass of QlearningAgent or ActorCritic, the agent to be trained.
 	"""
 
-	def _validate_config_and_set_instance_variables(self, config: dict) -> None:
-		super(TrainingEnvironmentConfig, self)._validate_config_and_set_instance_variables(config, single_agent=True, needs_modelfile=False)
+	def _validate_config(self, config: dict) -> None:
+		super(TrainingEnvironmentConfig, self)._validate_config(config, single_agent=True, needs_modelfile=False)
 
 		assert issubclass(self.agent, (QLearningAgent, ActorCriticAgent)), \
 			f'The agent class passed must be subclasses of either QLearningAgent or ActorCriticAgent: {self.agent}'
@@ -177,7 +178,7 @@ class AgentMonitoringEnvironmentConfig(EnvironmentConfig):
 			If the agent needs a modelfile, this will be the first entry in the list, the other entry is always an informal name for the agent.
 	"""
 
-	def _validate_config_and_set_instance_variables(self, config: dict) -> None:
+	def _validate_config(self, config: dict) -> None:
 		# TODO: subfolder_name variable
 		# CHECK: All required top-level fields exist
 		assert 'enable_live_draw' in config, f'The config must have an "enable_live_draw" field: {config}'
@@ -197,7 +198,7 @@ class AgentMonitoringEnvironmentConfig(EnvironmentConfig):
 		self.plot_interval = config['plot_interval']
 
 		# We do the super call last because getting the classes takes longer than the other operations, so we save time in case of an error.
-		super(AgentMonitoringEnvironmentConfig, self)._validate_config_and_set_instance_variables(
+		super(AgentMonitoringEnvironmentConfig, self)._validate_config(
 			config, single_agent=False, needs_modelfile=True)
 
 		# Since RuleBasedAgents do not have modelfiles, we need to adjust the passed lists to remove the "None" entry
@@ -224,8 +225,8 @@ class ExampleprinterEnvironmentConfig(EnvironmentConfig):
 		agent (Agent subclass): A subclass of Agent, the agent for which the exampleprinter should be run.
 	"""
 
-	def _validate_config_and_set_instance_variables(self, config: dict) -> None:
-		super(ExampleprinterEnvironmentConfig, self)._validate_config_and_set_instance_variables(config, single_agent=True, needs_modelfile=True)
+	def _validate_config(self, config: dict) -> None:
+		super(ExampleprinterEnvironmentConfig, self)._validate_config(config, single_agent=True, needs_modelfile=True)
 
 	def _get_task(self) -> str:
 		return 'exampleprinter'
