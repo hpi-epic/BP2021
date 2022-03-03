@@ -114,7 +114,7 @@ class EnvironmentConfig(ABC):
 		if single_agent:
 			self.agent = self.agent[0]
 
-	def _get_class(self, import_string: str):
+	def _get_class(self, import_string: str) -> object:
 		"""
 		Get the class from the given string.
 
@@ -122,7 +122,7 @@ class EnvironmentConfig(ABC):
 			import_string (str): A string containing the import path in the format 'module.submodule.class'.
 
 		Returns:
-			class: The imported class.
+			A class object: The imported class.
 		"""
 		module_name, class_name = import_string.rsplit('.', 1)
 		try:
