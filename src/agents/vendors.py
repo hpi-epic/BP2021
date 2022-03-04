@@ -7,7 +7,7 @@ from abc import ABC, abstractmethod
 import numpy as np
 import torch
 
-import configuration.config as config
+import configuration.hyperparameters_config as config
 import rl.model as model
 from market.customer import CustomerCircular
 from rl.experience_buffer import ExperienceBuffer
@@ -244,10 +244,13 @@ class QLearningAgent(ReinforcementLearningAgent, ABC):
 	# If you set an optim, this means you want training.
 	# Give no optim if you don't want training.
 	def __init__(
-		self, n_observations,
-		n_actions,
-		optim=None,
-		device='cuda' if torch.cuda.is_available() else 'cpu', load_path=None, name='q_learning'):
+			self,
+			n_observations,
+			n_actions,
+			optim=None,
+			device='cuda' if torch.cuda.is_available() else 'cpu',
+			load_path=None,
+			name='q_learning'):
 		self.device = device
 		self.n_actions = n_actions
 		self.buffer_for_feedback = None

@@ -3,7 +3,7 @@ import random
 import numpy as np
 import torch
 
-import configuration.config as config
+import configuration.hyperparameters_config as config
 import configuration.utils as ut
 import rl.actorcritic_agent as actorcritic_agent
 from rl.training import RLTrainer

@@ -3,7 +3,7 @@ from unittest.mock import mock_open, patch
 
 import pytest
 
-import configuration.config as config
+import configuration.hyperparameters_config as config
 import tests.utils_tests as ut_t
 
 
@@ -16,7 +16,7 @@ def teardown_module(module):
 # https://stackoverflow.com/questions/1289894/how-do-i-mock-an-open-used-in-a-with-statement-using-the-mock-framework-in-pyth
 # Test that checks if the config.json is read correctly
 def test_reading_file_values():
-	json = ut_t.create_mock_json(sim_market=ut_t.create_mock_json_sim_market())
+	json = ut_t.create_hyperparameter_mock_json(sim_market=ut_t.create_hyperparameter_mock_json_sim_market())
 	with patch('builtins.open', mock_open(read_data=json)) as mock_file:
 		ut_t.check_mock_file(mock_file, json)
 
@@ -35,7 +35,8 @@ def test_reading_file_values():
 		assert config.STORAGE_COST_PER_PRODUCT == 0.3
 
 	# Test a second time with other values to ensure, that the values are read correctly
-	json2 = ut_t.create_mock_json(sim_market=ut_t.create_mock_json_sim_market('50', '50', '80', '20', '10', '0.7'))
+	json2 = ut_t.create_hyperparameter_mock_json(
+		sim_market=ut_t.create_hyperparameter_mock_json_sim_market('50', '50', '80', '20', '10', '0.7'))
 	with patch('builtins.open', mock_open(read_data=json2)) as mock_file:
 		ut_t.check_mock_file(mock_file, json2)
 		reload(config)
@@ -50,25 +51,29 @@ def test_reading_file_values():
 
 # The following variables are input mock-json strings for the test_invalid_values test
 # These tests have invalid values in their input file, the import should throw a specific error message
-odd_number_of_customers = (ut_t.create_mock_json_sim_market('50', '50', '80', '21', '10', '0.15'),
+odd_number_of_customers = (ut_t.create_hyperparameter_mock_json_sim_market('50', '50', '80', '21', '10', '0.15'),
 	'number_of_customers should be even and positive')
-negative_number_of_customers = (ut_t.create_mock_json_sim_market('50', '50', '80', '-10', '10', '0.15'),
+negative_number_of_customers = (ut_t.create_hyperparameter_mock_json_sim_market('50', '50', '80', '-10', '10', '0.15'),
 	'number_of_customers should be even and positive')
-prod_price_higher_max_price = (ut_t.create_mock_json_sim_market('50', '10', '80', '20', '50', '0.15'),
+prod_price_higher_max_price = (ut_t.create_hyperparameter_mock_json_sim_market('50', '10', '80', '20', '50', '0.15'),
 	'production_price needs to smaller than max_price and positive or zero')
-negative_production_price = (ut_t.create_mock_json_sim_market('50', '50', '80', '20', '-10', '0.15'),
+negative_production_price = (ut_t.create_hyperparameter_mock_json_sim_market('50', '50', '80', '20', '-10', '0.15'),
 	'production_price needs to smaller than max_price and positive or zero')
-negative_max_quality = (ut_t.create_mock_json_sim_market('20', '15', '-80', '30', '5', '0.15'), 'max_quality should be positive')
-non_negative_storage_cost = (ut_t.create_mock_json_sim_market('20', '15', '80', '30', '5', '-3.5'),
+negative_max_quality = (ut_t.create_hyperparameter_mock_json_sim_market('20', '15', '-80', '30', '5', '0.15'),
+	'max_quality should be positive')
+non_negative_storage_cost = (ut_t.create_hyperparameter_mock_json_sim_market('20', '15', '80', '30', '5', '-3.5'),
 	'storage_cost_per_product should be non-negative')
 
 # These tests are missing a line in the config file, the import should throw a specific error message
-missing_episode_size = (ut_t.remove_line(0, ut_t.create_mock_json_sim_market()), 'your config is missing episode_size')
-missing_max_price = (ut_t.remove_line(1, ut_t.create_mock_json_sim_market()), 'your config is missing max_price')
-missing_max_quality = (ut_t.remove_line(2, ut_t.create_mock_json_sim_market()), 'your config is missing max_quality')
-missing_number_of_customers = (ut_t.remove_line(3, ut_t.create_mock_json_sim_market()), 'your config is missing number_of_customers')
-missing_production_price = (ut_t.remove_line(4, ut_t.create_mock_json_sim_market()), 'your config is missing production_price')
-missing_storage_cost = (ut_t.remove_line(5, ut_t.create_mock_json_sim_market()), 'your config is missing storage_cost_per_product')
+missing_episode_size = (ut_t.remove_line(0, ut_t.create_hyperparameter_mock_json_sim_market()), 'your config is missing episode_size')
+missing_max_price = (ut_t.remove_line(1, ut_t.create_hyperparameter_mock_json_sim_market()), 'your config is missing max_price')
+missing_max_quality = (ut_t.remove_line(2, ut_t.create_hyperparameter_mock_json_sim_market()), 'your config is missing max_quality')
+missing_number_of_customers = (ut_t.remove_line(3, ut_t.create_hyperparameter_mock_json_sim_market()),
+	'your config is missing number_of_customers')
+missing_production_price = (ut_t.remove_line(4, ut_t.create_hyperparameter_mock_json_sim_market()),
+	'your config is missing production_price')
+missing_storage_cost = (ut_t.remove_line(5, ut_t.create_hyperparameter_mock_json_sim_market()),
+	'your config is missing storage_cost_per_product')
 
 # All pairs concerning themselves with invalid config.json values should be added to this array to get tested in test_invalid_values
 invalid_values_testcases = [
@@ -90,7 +95,7 @@ invalid_values_testcases = [
 # Test that checks that an invalid/broken config.json gets detected correctly
 @pytest.mark.parametrize('sim_market_json, expected_message', invalid_values_testcases)
 def test_invalid_values(sim_market_json, expected_message):
-	json = ut_t.create_mock_json(sim_market=sim_market_json)
+	json = ut_t.create_hyperparameter_mock_json(sim_market=sim_market_json)
 	with patch('builtins.open', mock_open(read_data=json)) as mock_file:
 		ut_t.check_mock_file(mock_file, json)
 		with pytest.raises(AssertionError) as assertion_message:

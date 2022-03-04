@@ -1,7 +1,7 @@
 import numpy as np
 
 import agents.vendors as vendors
-import configuration.config as config
+import configuration.hyperparameters_config as config
 import configuration.utils as ut
 from rl.training import RLTrainer
 
