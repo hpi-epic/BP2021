@@ -36,18 +36,19 @@ class ButtonHandler():
 		if request.method == 'POST':
 			self.wanted_key = request.POST['action']
 			if 'container_id' in request.POST:
-				wanted_container_id = request.POST['container_id']
+				wanted_container_id = request.POST['container_id'].strip()
 				self.wanted_container = Container.objects.get(container_id=wanted_container_id)
 
 	def do_button_click(self) -> HttpResponse:
 		"""
 		Call this function after initializing a ButtonHandler. It will decide, depending on the given keyword in the request,
 		which action to perform and return an appropriate rendering for a view.
+
 		Returns:
 			HttpResponse: response including the rendering for an appropriate view.
 		"""
-		if 'data-latest' == self.wanted_key:
-			return self._download_latest_data()
+		if 'data' == self.wanted_key:
+			return self._download_data()
 		if 'delete' == self.wanted_key:
 			return self._delete_container()
 		if 'data/tensorboard' == self.wanted_key:
@@ -138,7 +139,7 @@ class ButtonHandler():
 			self.message = ['success', 'You successfully removed all data']
 		return self._decide_rendering()
 
-	def _download_latest_data(self) -> HttpResponse:
+	def _download_data(self) -> HttpResponse:
 		"""
 		This will send an API  request to get the latest data of the container.
 		Will return an error in the response if the container is archived.
@@ -154,7 +155,7 @@ class ButtonHandler():
 			if response.ok():
 				# save data from api and make it available for the user
 				response = response.content
-				return download_file(response)
+				return download_file(response, self.request.POST['file_type'] == 'zip')
 			else:
 				self.message = response.status()
 				return self._decide_rendering()
@@ -210,7 +211,7 @@ class ButtonHandler():
 			HttpResponse: An appropriate rendering, or a redirect to the `observe` view.
 		"""
 		post_request = self.request.POST
-		print(post_request)
+
 		requested_command = post_request['command_selection']
 		# the start button was pressed
 		config_file = post_request['filename']

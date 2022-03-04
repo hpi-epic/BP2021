@@ -19,7 +19,7 @@
 						<th>created at</th>
 						<th>last checked at</th>
 						<th>health status</th>
-						<th>download current data</th>
+						<th>download</th>
 						<th>delete permanently</th>
 					</tr>
 					{% for container in all_saved_containers %}
@@ -34,7 +34,7 @@
 							<td>{{ container.last_check_at }}</td>
 							<td>{{ container.health_status }}</td>
 							<td class="button_row" >
-								{% include "api_buttons/download_latest_button.html" %}
+								{% include "api_buttons/download_button.html" %}
 							</td>
 							<td class="button_row" >
 								{% include "api_buttons/delete_button.html" %}

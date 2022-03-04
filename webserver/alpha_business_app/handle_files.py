@@ -24,20 +24,38 @@ def handle_uploaded_file(uploaded_config) -> None:
 			destination.write(chunk)
 
 
-def download_file(response) -> HttpResponse:
+def download_file(response, wants_zip: bool) -> HttpResponse:
+	"""
+	Makes the dat from the API available for the user and adds the config file before.
+	This can eiter be a zip or a tarfile.
+
+	Args:
+		response (Response): response from the API which is a tar archive
+		wants_zip (bool): indecates if the user wants to download the data as zip.
+
+	Returns:
+		HttpResponse: response for the user containing the file.
+	"""
 	archive_name = response.headers['content-disposition'][9:-4]
 
-	# convert tar file to file like object to be able to convert it to zip in memory
+	# convert tar file to file like object to be able to work with it in memory
 	file_like_tar_archive = BytesIO(response.content)
 
-	zip_file = _convert_tar_file_to_zip(file_like_tar_archive)
-	zip_file = _add_files_to_zip(zip_file, CONFIGURATION_DIR, ['config.json'])
+	if wants_zip:
+		zip_file = _convert_tar_file_to_zip(file_like_tar_archive)
+		zip_file = _add_files_to_zip(zip_file, CONFIGURATION_DIR, ['config.json'])
+		fake_file = zip_file
+		application_type = 'zip'
+	else:
+		tar_file = _add_files_to_tar(file_like_tar_archive, CONFIGURATION_DIR, ['config.json'])
+		fake_file = tar_file
+		application_type = 'tar'
 
 	# put together an http response for the browser
-	response = HttpResponse(zip_file.getvalue(), content_type='application/zip')
-	response['Content-Disposition'] = f'attachment; filename={archive_name}.zip'
+	file_response = HttpResponse(fake_file.getvalue(), content_type=f'application/{application_type}')
+	file_response['Content-Disposition'] = f'attachment; filename={archive_name}.{application_type}'
 
-	return response
+	return file_response
 
 
 def _add_files_to_tar(fake_tar_archive: BytesIO, path_to_add_files: str, files: list) -> BytesIO:
@@ -79,6 +97,15 @@ def _add_files_to_zip(file_like_zip: BytesIO, path_to_add_files: str, files: lis
 
 
 def _convert_tar_file_to_zip(fake_tar_archive: BytesIO) -> BytesIO:
+	"""
+	Converts a tar file into a zip file
+
+	Args:
+		fake_tar_archive (BytesIO): bytes of a tar archive
+
+	Returns:
+		BytesIO: fake file bytes of zip archive
+	"""
 	print('converting tar archive to zip')
 	tar_archive = tarfile.open(fileobj=fake_tar_archive, mode='r:')
 
