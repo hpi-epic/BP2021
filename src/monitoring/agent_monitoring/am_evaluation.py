@@ -117,7 +117,7 @@ class Evaluator():
 		print(f'Creating line plot for {metric_name} rewards...')
 
 		plt.clf()
-		filename = metric_name + '_rewards.svg'
+		filename = f'{metric_name}_rewards.svg'
 		# plot the metric rewards for each agent
 		for index in range(len(y_values)):
 			plt.plot(x_values, y_values[index], marker='o', color=self.configurator.agent_colors[index])

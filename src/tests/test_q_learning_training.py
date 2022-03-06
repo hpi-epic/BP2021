@@ -8,7 +8,7 @@ from unittest.mock import mock_open, patch
 import pytest
 
 import agents.vendors as vendors
-import configuration.config as config
+import configuration.hyperparameters_config as config
 import market.circular.circular_sim_market as circular_market
 import market.linear.linear_sim_market as linear_market
 import rl.q_learning_training as q_learning_training
@@ -36,7 +36,7 @@ test_scenarios = [
 
 @pytest.mark.parametrize('market_class, agent_class', test_scenarios)
 def test_market_scenario(market_class, agent_class):
-	json = ut_t.create_mock_json(rl=ut_t.create_mock_json_rl(replay_start_size='500', sync_target_frames='100'))
+	json = ut_t.create_hyperparameter_mock_json(rl=ut_t.create_hyperparameter_mock_json_rl(replay_start_size='500', sync_target_frames='100'))
 	with patch('builtins.open', mock_open(read_data=json)) as mock_file, \
 		patch('rl.training.SummaryWriter'), \
 		patch('agents.vendors.QLearningAgent.save'):
@@ -47,7 +47,7 @@ def test_market_scenario(market_class, agent_class):
 
 
 def test_training_with_tensorboard():
-	json = ut_t.create_mock_json(rl=ut_t.create_mock_json_rl(replay_start_size='500', sync_target_frames='100'))
+	json = ut_t.create_hyperparameter_mock_json(rl=ut_t.create_hyperparameter_mock_json_rl(replay_start_size='500', sync_target_frames='100'))
 	with patch('builtins.open', mock_open(read_data=json)) as mock_file, \
 		patch('rl.training.SummaryWriter'), \
 		patch('agents.vendors.QLearningAgent.save'):
