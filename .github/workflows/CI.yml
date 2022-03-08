@@ -23,7 +23,7 @@ jobs:
         run: |
           coverage run --source=. -m pytest
       - name: Django Tests
-        shell: bash -l
+        shell: bash -l {0}
         run: |
           pwd
       - name: Report Coverage
