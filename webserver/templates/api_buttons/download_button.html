@@ -4,7 +4,8 @@
 		<input type="hidden" name="action" value="data">
 		<input type="hidden" name="file_type" value="zip">
 		<button class="action_button data_button {% if container.is_archived%} inactive {% endif %}"
-			name="container_id" value="{{ container.container_id }} " 
+			name="container_id" value="{{ container.container_id }}"
+			title="downloads data from running container as zip"
 			type="{% if container.is_archived%}button{% else %}submit{% endif %}">
 				{% if container.is_archived%}	
 					not available
@@ -18,7 +19,8 @@
 		<input type="hidden" name="action" value="data">
 		<input type="hidden" name="file_type" value="tar">
 		<button class="action_button data_button {% if container.is_archived%} inactive {% endif %}"
-			name="container_id" value="{{ container.container_id }} " 
+			name="container_id" value="{{ container.container_id }}"
+			title="downloads data from running container as zip"
 			type="{% if container.is_archived%}button{% else %}submit{% endif %}">
 				{% if container.is_archived%}	
 					not available
