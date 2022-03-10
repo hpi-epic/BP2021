@@ -396,7 +396,7 @@ class CompetitorLinearRatio1(LinearAgent, RuleBasedAgent):
 
 		ratio = max_competing_ratio / ratios[0]
 		intended = math.floor(1 / max_competing_ratio * state[0]) - 1
-		return min(max(config.PRODUCTION_PRICE + 1, intended), config.MAX_PRICE - 1)
+		return min(max(config.PRODUCTION_PRICE + 1, intended), config.MAX_PRICE - 1)  # actual price
 
 
 class CompetitorRandom(LinearAgent, RuleBasedAgent):
