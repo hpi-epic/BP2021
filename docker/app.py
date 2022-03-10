@@ -65,7 +65,7 @@ async def is_container_alive(id: str) -> JSONResponse:
 
 
 @app.get('/logs/')
-async def get_container_logs(id: str, timestamps: bool = False, stream: bool = False, tail: int = 'all') -> JSONResponse:
+async def get_container_logs(id: str, timestamps: bool = False, stream: bool = True, tail: int = 'all') -> JSONResponse:
 	"""
 	Get the logs of a container.
 
@@ -132,6 +132,42 @@ async def get_tensorboard_link(id: str) -> JSONResponse:
 	"""
 	container_info = manager.start_tensorboard(id)
 	if container_info.status.__contains__('Container not found') or container_info.status.__contains__('Container is not running'):
+		return JSONResponse(status_code=404, content=vars(container_info))
+	else:
+		return JSONResponse(vars(container_info))
+
+
+@app.get('/pause/')
+async def pause_container(id: str) -> JSONResponse:
+	"""
+	Pause a container.logs
+
+	Args:
+		id (str): The id of the container.
+
+	Returns:
+		JSONResponse: The response of the pause request encapsuled in a DockerInfo JSON. Status will be 'paused' if successful.------------------------------------
+	"""
+	container_info = manager.pause(id)
+	if container_info.status.__contains__('Container not found') or container_info.status.__contains__('Container not paused successfully'):
+		return JSONResponse(status_code=404, content=vars(container_info))
+	else:
+		return JSONResponse(vars(container_info))
+
+
+@app.get('/unpause/')
+async def unpause_container(id: str) -> JSONResponse:
+	"""
+	Unpause a container.logs
+
+	Args:
+		id (str): The id of the container.
+
+	Returns:
+		JSONResponse: The response of the unpause request encapsuled in a DockerInfo JSON. Status will be 'running' if successful.------------------------------------
+	"""
+	container_info = manager.unpause(id)
+	if container_info.status.__contains__('Container not found') or container_info.status.__contains__('Container not unpaused successfully'):
 		return JSONResponse(status_code=404, content=vars(container_info))
 	else:
 		return JSONResponse(vars(container_info))

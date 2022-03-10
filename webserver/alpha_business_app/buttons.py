@@ -196,6 +196,22 @@ class ButtonHandler():
 		self.wanted_container = Container.objects.get(container_id=self.wanted_container_id)
 		return self._decide_rendering()
 
+	def _pause(self) -> HttpResponse:
+		"""
+		This will send an API request to get the health status of a container and updates the container in the database.
+
+		Returns:
+			HttpResponse: A default response with default values or a response containing the error field.
+		"""
+		response = send_get_request('pause', self.request.POST)
+		if response.ok():
+			response = response.content
+			update_container(response['id'], {'last_check_at': timezone.now(), 'health_status': response['status']})
+		else:
+			self.message = response.status()
+		self.wanted_container = Container.objects.get(container_id=self.wanted_container_id)
+		return self._decide_rendering()
+
 	def _logs(self) -> HttpResponse:
 		"""
 		This will send an API request to get the logs of the container.

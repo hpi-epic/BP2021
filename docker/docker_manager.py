@@ -107,6 +107,40 @@ class DockerManager():
 
 		return DockerInfo(container_id, status=container.status)
 
+	def pause(self, container_id: str)-> DockerInfo:
+		print(f'Checking health status for: {container_id}')
+		container: Container = self._get_container(container_id)
+		if not container:
+			return DockerInfo(container_id, status='Container not found')
+
+		if container.status == 'exited':
+			return DockerInfo(container_id, status=f'exited ({container.wait()["StatusCode"]})')
+
+		try:
+			container.pause()
+			# Reload the attributes to get the correct status
+			container.reload()
+			return DockerInfo(id=container_id, status=container.status)
+		except docker.errors.APIError as error:
+			return DockerInfo(container_id, status=f'APIError encountered while pausing container.\n{error}')
+
+	def unpause(self, container_id: str) -> DockerInfo:
+		print(f'Checking health status for: {container_id}')
+		container: Container = self._get_container(container_id)
+		if not container:
+			return DockerInfo(container_id, status='Container not found')
+
+		if container.status == 'exited':
+			return DockerInfo(container_id, status=f'exited ({container.wait()["StatusCode"]})')
+
+		try:
+			container.unpause()
+			# Reload the attributes to get the correct status
+			container.reload()
+			return DockerInfo(id=container_id, status=container.status)
+		except docker.errors.APIError as error:
+			return DockerInfo(container_id, status=f'APIError encountered while unpause container.\n{error}')
+
 	def start_tensorboard(self, container_id: str) -> DockerInfo:
 		"""
 		To be called by the REST API. Start a tensorboard session on the specified container.
