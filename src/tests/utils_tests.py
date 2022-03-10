@@ -39,7 +39,9 @@ def create_hyperparameter_mock_json_rl(gamma='0.99',
 		'\t}'
 
 
-def create_hyperparameter_mock_json_sim_market(episode_size='20',
+def create_hyperparameter_mock_json_sim_market(
+	max_storage='20',
+	episode_size='20',
 	max_price='15',
 	max_quality='100',
 	number_of_customers='30',
@@ -49,16 +51,19 @@ def create_hyperparameter_mock_json_sim_market(episode_size='20',
 	Create a string in JSON format that can be used to mock the config_sim_market.json file.
 
 	Args:
+		max_storage (str, optional): Defaults to '20'.
 		episode_size (str, optional): Defaults to '20'.
 		max_price (str, optional): Defaults to '15'.
 		max_quality (str, optional): Defaults to '100'.
 		number_of_customers (str, optional): Defaults to '30'.
 		production_price (str, optional): Defaults to '5'.
+		storage_cost_per_product (str, optional): Defaults to '0.3'.
 
 	Returns:
 		str: A string in JSON format.
 	"""
-	return '{\n\t\t"episode_size": ' + episode_size + ',\n' + \
+	return '{\n\t\t"max_storage": ' + max_storage + ',\n' + \
+		'\t\t"episode_size": ' + episode_size + ',\n' + \
 		'\t\t"max_price": ' + max_price + ',\n' + \
 		'\t\t"max_quality": ' + max_quality + ',\n' + \
 		'\t\t"number_of_customers": ' + number_of_customers + ',\n' + \

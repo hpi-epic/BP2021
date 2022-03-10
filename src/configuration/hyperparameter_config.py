@@ -125,7 +125,8 @@ class HyperparameterConfig():
 
 		assert self.max_storage >= 0, 'max_storage must be positive'
 		assert self.number_of_customers > 0 and self.number_of_customers % 2 == 0, 'number_of_customers should be even and positive'
-		assert self.production_price <= self.max_price and self.production_price >= 0, 'production_price needs to smaller than max_price and >= 0'
+		assert self.production_price <= self.max_price and self.production_price >= 0, \
+			'production_price needs to be smaller than max_price and >=0'
 		assert self.max_quality > 0, 'max_quality should be positive'
 		assert self.max_price > 0, 'max_price should be positive'
 		assert self.episode_length > 0, 'episode_size should be positive'
