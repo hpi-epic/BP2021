@@ -106,7 +106,7 @@ class Configurator():
 					# only modelfile argument
 					elif len(current_agent[1]) == 1 and str.endswith(current_agent[1][0], '.dat'):
 						agent_modelfile = current_agent[1][0][:-4]
-					# both arguments
+					# both arguments, first must be the modelfile, second the name
 					elif len(current_agent[1]) == 2:
 						assert str.endswith(current_agent[1][0], '.dat'), \
 							f'if two arguments are provided, the first one must be the modelfile. Arg1: {current_agent[1][0]}, Arg2: {current_agent[1][1]}'

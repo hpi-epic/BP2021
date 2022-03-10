@@ -3,23 +3,20 @@ import random
 
 import numpy as np
 
-import configuration.config as config
+import configuration.hyperparameters_config as config
 
 
 def ensure_results_folders_exist():
 	"""
-	If your code assumes that the results folder or any of its subfolders exist, call this function before.
+	Create the results directory as well as the needed subdirectories.
+
+	If your code assumes that the results folder or any of its subfolders exist, call this function beforehand.
 	"""
-	if not os.path.exists('results'):
-		os.mkdir('results')
-	if not os.path.exists(os.path.join('results', 'monitoring')):
-		os.mkdir(os.path.join('results', 'monitoring'))
-	if not os.path.exists(os.path.join('results', 'exampleprinter')):
-		os.mkdir(os.path.join('results', 'exampleprinter'))
-	if not os.path.exists(os.path.join('results', 'runs')):
-		os.mkdir(os.path.join('results', 'runs'))
-	if not os.path.exists(os.path.join('results', 'trainedModels')):
-		os.mkdir(os.path.join('results', 'trainedModels'))
+	os.makedirs('results', exist_ok=True)
+	os.makedirs(os.path.join('results', 'monitoring'), exist_ok=True)
+	os.makedirs(os.path.join('results', 'exampleprinter'), exist_ok=True)
+	os.makedirs(os.path.join('results', 'runs'), exist_ok=True)
+	os.makedirs(os.path.join('results', 'trainedModels'), exist_ok=True)
 
 
 def shuffle_quality() -> int:
@@ -57,8 +54,7 @@ def cartesian_product(list_a, list_b):
 	assert isinstance(list_a, list) and isinstance(list_b, list), 'You must give to lists'
 	output_list = []
 	for a in list_a:
-		for b in list_b:
-			output_list.append((a, b))
+		output_list.extend((a, b) for b in list_b)
 	return output_list
 
 
@@ -79,7 +75,7 @@ def write_dict_to_tensorboard(writer, dictionary, counter, is_cumulative=False) 
 			if (name.startswith('actions') or name.startswith('state')):
 				continue
 			else:
-				name = 'cumulated_' + name
+				name = f'cumulated_{name}'
 		if isinstance(content, dict):
 			writer.add_scalars(name, content, counter)
 		else:

@@ -3,6 +3,7 @@ import market.circular.circular_sim_market as circular_market
 import market.linear.linear_sim_market as linear_market
 import market.sim_market as sim_market
 import rl.actorcritic_agent as actorcritic_agent
+from configuration.environment_config import EnvironmentConfigLoader, TrainingEnvironmentConfig
 from rl.actorcritic_training import ActorCriticTrainer
 from rl.q_learning_training import QLearningTrainer
 
@@ -16,11 +17,11 @@ def run_training_session(marketplace=circular_market.CircularEconomyRebuyPriceOn
 		Defaults to circular_market.CircularEconomyRebuyPriceOneCompetitor.
 		agent (QLearningAgent subclass, optional): What kind of QLearningAgent to train. Defaults to vendors.QLearningCERebuyAgent.
 	"""
-	assert issubclass(marketplace, sim_market.SimMarket), f'the economy passed must be a subclass of SimMarket: {marketplace}'
+	assert issubclass(marketplace, sim_market.SimMarket), f'the marketplace passed must be a subclass of SimMarket: {marketplace}'
 	assert issubclass(agent, (vendors.QLearningAgent, actorcritic_agent.ActorCriticAgent)), \
-		f'the RL_agent_class passed must be a subclass of QLearningAgent: {agent}'
+		f'the RL_agent_class passed must be a subclass of either QLearningAgent or ActorCriticAgent: {agent}'
 	assert issubclass(agent, vendors.CircularAgent) == issubclass(marketplace, circular_market.CircularEconomy), \
-		'the agent and marketplace must be of the same economy type (Linear/Circular)'
+		f'the agent and marketplace must be of the same economy type (Linear/Circular): {agent} and {marketplace}'
 
 	if issubclass(agent, vendors.QLearningAgent):
 		QLearningTrainer(marketplace, agent).train_agent()
@@ -50,5 +51,13 @@ def train_continuos_a2c_circular_economy_rebuy():
 	run_training_session(circular_market.CircularEconomyRebuyPriceOneCompetitor, actorcritic_agent.ContinuosActorCriticAgentFixedOneStd)
 
 
+def train_from_config():
+	"""
+	Use the `environment_config.json` file to decide on the training parameters.
+	"""
+	config: TrainingEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_training')
+	run_training_session(config.marketplace, config.agent)
+
+
 if __name__ == '__main__':
-	train_q_learning_classic_scenario()
+	train_from_config()

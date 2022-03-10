@@ -5,7 +5,7 @@ import numpy as np
 import torch
 
 import agents.vendors as vendors
-import configuration.config as config
+import configuration.hyperparameters_config as config
 import configuration.utils as ut
 import rl.model as model
 

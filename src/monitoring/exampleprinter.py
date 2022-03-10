@@ -10,6 +10,8 @@ from torch.utils.tensorboard import SummaryWriter
 import agents.vendors as vendors
 import configuration.utils as ut
 import market.circular.circular_sim_market as circular_market
+from configuration.environment_config import EnvironmentConfigLoader, ExampleprinterEnvironmentConfig
+from market.sim_market import SimMarket
 from monitoring.svg_manipulation import SVGManipulator
 
 
@@ -22,7 +24,7 @@ class ExamplePrinter():
 		# Signal handler for e.g. KeyboardInterrupt
 		signal.signal(signal.SIGINT, self._signal_handler)
 
-	def setup_exampleprinter(self, marketplace=None, agent=None):
+	def setup_exampleprinter(self, marketplace: SimMarket = None, agent: vendors.Agent = None) -> None:
 		"""
 		Configure the current exampleprinter session.
 
@@ -35,7 +37,7 @@ class ExamplePrinter():
 		if(agent is not None):
 			self.agent = agent
 
-	def _signal_handler(self, signum, frame):  # pragma: no cover
+	def _signal_handler(self, signum, frame) -> None:  # pragma: no cover
 		"""
 		Handle any interruptions to the running process, such as a `KeyboardInterrupt`-event.
 		"""
@@ -52,6 +54,7 @@ class ExamplePrinter():
 		Returns:
 			int: The profit made.
 		"""
+		print(f'Running exampleprinter on a {self.marketplace.__class__.__name__} market with a {self.agent.__class__.__name__} agent...')
 		counter = 0
 		our_profit = 0
 		is_done = False
@@ -89,4 +92,19 @@ class ExamplePrinter():
 
 
 if __name__ == '__main__':  # pragma: no cover
-	print(ExamplePrinter().run_example())
+	printer = ExamplePrinter()
+
+	config: ExampleprinterEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_exampleprinter')
+	marketplace = config.marketplace()
+
+	# QLearningAgents need more initialization
+	if issubclass(config.agent[0], vendors.QLearningAgent):
+		printer.setup_exampleprinter(marketplace=marketplace,
+			agent=config.agent[0](
+				n_observations=marketplace.observation_space.shape[0],
+				n_actions=marketplace.get_n_actions(),
+				load_path=os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'data', config.agent[1]))))
+	else:
+		printer.setup_exampleprinter(marketplace=marketplace, agent=config.agent[0]())
+
+	print(f'The final profit was: {printer.run_example()}')
