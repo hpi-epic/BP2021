@@ -5,8 +5,8 @@ import pytest
 from numpy import random
 
 import agents.vendors as vendors
-import configuration.hyperparameters_config as config
 import tests.utils_tests as ut_t
+from configuration.hyperparameter_config import config
 
 
 def teardown_module(module):
@@ -62,7 +62,7 @@ def test_non_abstract_qlearning_agent_classes(agent, n_observation, n_actions):
 
 
 fixed_price_agent_observation_policy_pairs_testcases = [
-	(vendors.FixedPriceLEAgent(), config.PRODUCTION_PRICE + 3),
+	(vendors.FixedPriceLEAgent(), config.production_price + 3),
 	(vendors.FixedPriceLEAgent(7), 7),
 	(vendors.FixedPriceCEAgent(), (2, 4)),
 	(vendors.FixedPriceCEAgent((3, 5)), (3, 5)),
@@ -129,7 +129,7 @@ def test_prices_are_not_higher_than_allowed():
 # This is dependent on the sim_market working!
 # TODO: Make deterministic #174
 def random_offer():
-	return [random.randint(1, config.MAX_QUALITY), random.randint(1, config.MAX_PRICE), random.randint(1, config.MAX_QUALITY)]
+	return [random.randint(1, config.max_quality), random.randint(1, config.max_price), random.randint(1, config.max_quality)]
 
 
 policy_testcases = [
@@ -148,7 +148,7 @@ def test_policy(competitor_class, state):
 		reload(config)
 		competitor = competitor_class()
 
-		assert config.PRODUCTION_PRICE <= competitor.policy(state) < config.MAX_PRICE
+		assert config.production_price <= competitor.policy(state) < config.max_price
 
 
 policy_plus_one_testcases = [
@@ -169,4 +169,4 @@ def test_policy_plus_one(competitor_class, state):
 		reload(config)
 		competitor = competitor_class()
 
-		assert config.PRODUCTION_PRICE + 1 <= competitor.policy(state) < config.MAX_PRICE
+		assert config.production_price + 1 <= competitor.policy(state) < config.max_price

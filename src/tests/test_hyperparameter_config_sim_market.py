@@ -3,8 +3,8 @@ from unittest.mock import mock_open, patch
 
 import pytest
 
-import configuration.hyperparameters_config as config
 import tests.utils_tests as ut_t
+from configuration.hyperparameter_config import config
 
 
 def teardown_module(module):
@@ -27,12 +27,12 @@ def test_reading_file_values():
 		assert len(config.config) == 2, 'the config is being tested for "rl" and "sim_market". Has another type been added?'
 		assert len(config.config['sim_market']) == 6, \
 			'config["sim_market"] has more or less values than expected. Check this test for the missing values'
-		assert config.EPISODE_LENGTH == 20
-		assert config.MAX_PRICE == 15
-		assert config.MAX_QUALITY == 100
-		assert config.NUMBER_OF_CUSTOMERS == 30
-		assert config.PRODUCTION_PRICE == 5
-		assert config.STORAGE_COST_PER_PRODUCT == 0.3
+		assert config.episode_length == 20
+		assert config.max_price == 15
+		assert config.max_quality == 100
+		assert config.number_of_customers == 30
+		assert config.production_price == 5
+		assert config.storage_cost_per_product == 0.3
 
 	# Test a second time with other values to ensure, that the values are read correctly
 	json2 = ut_t.create_hyperparameter_mock_json(
@@ -41,12 +41,12 @@ def test_reading_file_values():
 		ut_t.check_mock_file(mock_file, json2)
 		reload(config)
 
-		assert config.EPISODE_LENGTH == 50
-		assert config.MAX_PRICE == 50
-		assert config.MAX_QUALITY == 80
-		assert config.NUMBER_OF_CUSTOMERS == 20
-		assert config.PRODUCTION_PRICE == 10
-		assert config.STORAGE_COST_PER_PRODUCT == 0.7
+		assert config.episode_length == 50
+		assert config.max_price == 50
+		assert config.max_quality == 80
+		assert config.number_of_customers == 20
+		assert config.production_price == 10
+		assert config.storage_cost_per_product == 0.7
 
 
 # The following variables are input mock-json strings for the test_invalid_values test

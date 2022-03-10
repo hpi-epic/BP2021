@@ -8,11 +8,11 @@ from unittest.mock import mock_open, patch
 import pytest
 
 import agents.vendors as vendors
-import configuration.hyperparameters_config as config
 import market.circular.circular_sim_market as circular_market
 import market.linear.linear_sim_market as linear_market
 import rl.q_learning_training as q_learning_training
 import tests.utils_tests as ut_t
+from configuration.hyperparameter_config import config
 
 
 def teardown_module(module):
@@ -43,7 +43,7 @@ def test_market_scenario(market_class, agent_class):
 		ut_t.check_mock_file(mock_file, json)
 		# Include config again to make sure the file is read again
 		reload(config)
-		q_learning_training.QLearningTrainer(market_class, agent_class, log_dir_prepend='test_').train_agent(int(config.REPLAY_START_SIZE * 1.2))
+		q_learning_training.QLearningTrainer(market_class, agent_class, log_dir_prepend='test_').train_agent(int(config.replay_start_size * 1.2))
 
 
 def test_training_with_tensorboard():
@@ -56,4 +56,4 @@ def test_training_with_tensorboard():
 		reload(config)
 		market_class = linear_market.ClassicScenario
 		agent_class = vendors.QLearningLEAgent
-		q_learning_training.QLearningTrainer(market_class, agent_class, log_dir_prepend='test_').train_agent(int(config.REPLAY_START_SIZE * 1.2))
+		q_learning_training.QLearningTrainer(market_class, agent_class, log_dir_prepend='test_').train_agent(int(config.replay_start_size * 1.2))

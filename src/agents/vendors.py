@@ -7,8 +7,8 @@ from abc import ABC, abstractmethod
 import numpy as np
 import torch
 
-import configuration.hyperparameters_config as config
 import rl.model as model
+from configuration.hyperparameter_config import config
 from market.customer import CustomerCircular
 from rl.experience_buffer import ExperienceBuffer
 
@@ -121,7 +121,7 @@ class FixedPriceAgent(RuleBasedAgent, ABC):
 
 
 class FixedPriceLEAgent(LinearAgent, FixedPriceAgent):
-	def __init__(self, fixed_price=config.PRODUCTION_PRICE + 3, name='fixed_price_le'):
+	def __init__(self, fixed_price=config.production_price + 3, name='fixed_price_le'):
 		assert isinstance(fixed_price, int), 'the fixed_price must be an integer'
 		self.name = name
 		self.fixed_price = fixed_price
@@ -165,29 +165,29 @@ class RuleBasedCEAgent(RuleBasedAgent, CircularAgent):
 		# this policy sets the prices according to the amount of available storage
 		products_in_storage = observation[1]
 		price_old = 0
-		price_new = config.PRODUCTION_PRICE
+		price_new = config.production_price
 		rebuy_price = 0
-		if products_in_storage < config.MAX_STORAGE / 15:
+		if products_in_storage < config.max_storage / 15:
 			# fill up the storage immediately
-			price_old = int(config.MAX_PRICE * 6 / 10)
-			price_new += int(config.MAX_PRICE * 6 / 10)
+			price_old = int(config.max_price * 6 / 10)
+			price_new += int(config.max_price * 6 / 10)
 			rebuy_price = price_old - 1
 
-		elif products_in_storage < config.MAX_STORAGE / 10:
+		elif products_in_storage < config.max_storage / 10:
 			# fill up the storage
-			price_old = int(config.MAX_PRICE * 5 / 10)
-			price_new += int(config.MAX_PRICE * 5 / 10)
+			price_old = int(config.max_price * 5 / 10)
+			price_new += int(config.max_price * 5 / 10)
 			rebuy_price = price_old - 2
 
-		elif products_in_storage < config.MAX_STORAGE / 8:
+		elif products_in_storage < config.max_storage / 8:
 			# storage content is ok
-			price_old = int(config.MAX_PRICE * 4 / 10)
-			price_new += int(config.MAX_PRICE * 4 / 10)
+			price_old = int(config.max_price * 4 / 10)
+			price_new += int(config.max_price * 4 / 10)
 			rebuy_price = int(price_old / 2)
 		else:
 			# storage too full, we need to get rid of some refurbished products
-			price_old = int(config.MAX_PRICE * 2 / 10)
-			price_new += int(config.MAX_PRICE * 7 / 10)
+			price_old = int(config.max_price * 2 / 10)
+			price_new += int(config.max_price * 7 / 10)
 			rebuy_price = 0
 
 		price_new = min(9, price_new)
@@ -199,14 +199,14 @@ class RuleBasedCEAgent(RuleBasedAgent, CircularAgent):
 		# and trying each used_price, new_price combination
 		# Warning, this strategy is not very good or optimal
 		customers = []
-		for _ in range(0, config.NUMBER_OF_CUSTOMERS * 10):
+		for _ in range(0, config.number_of_customers * 10):
 			customers += [CustomerCircular()]
 
 		max_profit = -9999999999999  # we have not found a better solution yet
 		max_price_new = 0
 		max_price_used = 0
-		for p_u in range(1, config.MAX_PRICE):
-			for p_n in range(1, config.MAX_PRICE):
+		for p_u in range(1, config.max_price):
+			for p_n in range(1, config.max_price):
 				storage = observation[0]
 				exp_sales_new = 0
 				exp_sales_old = 0
@@ -261,11 +261,11 @@ class QLearningAgent(ReinforcementLearningAgent, ABC):
 		if load_path:
 			self.net.load_state_dict(torch.load(load_path, map_location=self.device))
 		if optim:
-			self.optimizer = optim(self.net.parameters(), lr=config.LEARNING_RATE)
+			self.optimizer = optim(self.net.parameters(), lr=config.learning_rate)
 			self.tgt_net = model.simple_network(n_observations, n_actions).to(self.device)
 			if load_path:
 				self.tgt_net.load_state_dict(torch.load(load_path), map_location=self.device)
-			self.buffer = ExperienceBuffer(config.REPLAY_SIZE)
+			self.buffer = ExperienceBuffer(config.replay_size)
 
 	@torch.no_grad()
 	def policy(self, observation, epsilon=0):
@@ -299,7 +299,7 @@ class QLearningAgent(ReinforcementLearningAgent, ABC):
 
 	def train_batch(self):
 		self.optimizer.zero_grad()
-		batch = self.buffer.sample(config.BATCH_SIZE)
+		batch = self.buffer.sample(config.batch_size)
 		loss_t, selected_q_val_mean = self.calc_loss(batch, self.device)
 		loss_t.backward()
 		self.optimizer.step()
@@ -326,7 +326,7 @@ class QLearningAgent(ReinforcementLearningAgent, ABC):
 			next_state_values[done_mask] = 0.0
 			next_state_values = next_state_values.detach()
 
-		expected_state_action_values = next_state_values * config.GAMMA + rewards_v
+		expected_state_action_values = next_state_values * config.gamma + rewards_v
 		return torch.nn.MSELoss()(state_action_values, expected_state_action_values), state_action_values.mean()
 
 	def save(self, model_path, model_name) -> None:
@@ -372,15 +372,15 @@ class QLearningLEAgent(QLearningAgent, LinearAgent):
 
 class QLearningCEAgent(QLearningAgent, CircularAgent):
 	def agent_output_to_market_form(self, action):
-		return (int(action % config.MAX_PRICE), int(action / config.MAX_PRICE))
+		return (int(action % config.max_price), int(action / config.max_price))
 
 
 class QLearningCERebuyAgent(QLearningAgent, CircularAgent):
 	def agent_output_to_market_form(self, action):
 		return (
-			int(action / (config.MAX_PRICE * config.MAX_PRICE)),
-			int(action / config.MAX_PRICE % config.MAX_PRICE),
-			int(action % config.MAX_PRICE))
+			int(action / (config.max_price * config.max_price)),
+			int(action / config.max_price % config.max_price),
+			int(action % config.max_price))
 
 
 class CompetitorLinearRatio1(LinearAgent, RuleBasedAgent):
@@ -399,14 +399,14 @@ class CompetitorLinearRatio1(LinearAgent, RuleBasedAgent):
 
 		ratio = max_competing_ratio / ratios[0]
 		intended = math.floor(1 / max_competing_ratio * state[0]) - 1
-		actual_price = min(max(config.PRODUCTION_PRICE + 1, intended), config.MAX_PRICE - 1)
+		actual_price = min(max(config.production_price + 1, intended), config.max_price - 1)
 		# print('price from the competitor:', actual_price)
 		return actual_price
 
 
 class CompetitorRandom(LinearAgent, RuleBasedAgent):
 	def policy(self, state, epsilon=0):
-		return random.randint(config.PRODUCTION_PRICE + 1, config.MAX_PRICE - 1)
+		return random.randint(config.production_price + 1, config.max_price - 1)
 
 
 class CompetitorJust2Players(LinearAgent, RuleBasedAgent):
@@ -445,10 +445,10 @@ class CompetitorJust2Players(LinearAgent, RuleBasedAgent):
 		elif comp_quality == agent_quality:
 			# same quality
 			new_price = agent_price
-		if new_price < config.PRODUCTION_PRICE:
-			new_price = config.PRODUCTION_PRICE + 1
-		elif new_price >= config.MAX_PRICE:
-			new_price = config.MAX_PRICE - 1
+		if new_price < config.production_price:
+			new_price = config.production_price + 1
+		elif new_price >= config.max_price:
+			new_price = config.max_price - 1
 		new_price = int(new_price)
 		assert isinstance(new_price, int), 'new_price must be an int'
 		return new_price

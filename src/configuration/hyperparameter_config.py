@@ -6,9 +6,23 @@ import os
 
 
 class HyperparameterConfig():
+	_instance = None
 
-	def __init__(self, config: dict):
-		self._validate_config(config)
+	def __new__(cls, config: dict = None):
+		"""
+		This function makes sure that the `HyperparameterConfig` is a singleton.
+
+		Returns:
+			HyperparameterConfig: The HyperparameterConfig instance.
+		"""
+		if cls._instance is None:
+			print('A new instance of HyperparameterConfig is being initialized')
+			cls._instance = super(HyperparameterConfig, cls).__new__(cls)
+			cls._instance._validate_config(config)
+		else:
+			print('An instance of HyperparameterConfig already exists and it will not be overwritten')
+
+		return cls._instance
 
 	def __str__(self) -> str:
 		"""
@@ -21,7 +35,7 @@ class HyperparameterConfig():
 		"""
 		return f'{self.__class__.__name__}: {self.__dict__}'
 
-	def _validate_config(self, config: dict):
+	def _validate_config(self, config: dict) -> None:
 		"""
 		Validate the given config dictionary and set the instance variables.
 
@@ -133,6 +147,10 @@ class HyperparameterConfigLoader():
 		Returns:
 			HyperparameterConfig: An instance of `HyperparameterConfig`.
 		"""
+		# in case there already is an instance of the config, we do not need to load the file again
+		if HyperparameterConfig._instance is not None:
+			return HyperparameterConfig()
+
 		filename += '.json'
 		path = os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, filename)
 		with open(path) as config_file:
@@ -140,6 +158,7 @@ class HyperparameterConfigLoader():
 		return HyperparameterConfig(config)
 
 
+config: HyperparameterConfig = HyperparameterConfigLoader.load('hyperparameter_config')
+
 if __name__ == '__main__':  # pragma: no cover
-	config: HyperparameterConfig = HyperparameterConfigLoader.load('hyperparameter_config')
 	print(config)

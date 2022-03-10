@@ -3,9 +3,9 @@ import random
 import numpy as np
 import torch
 
-import configuration.hyperparameters_config as config
 import configuration.utils as ut
 import rl.actorcritic_agent as actorcritic_agent
+from configuration.hyperparameter_config import config
 from rl.training import RLTrainer
 
 
@@ -15,7 +15,7 @@ class ActorCriticTrainer(RLTrainer):
 
 	def choose_random_envs(self, total_envs) -> set:
 		"""
-		This method samples config.BATCH_SIZE distinct numbers out of 0, ..., total_envs - 1
+		This method samples config.batch_size distinct numbers out of 0, ..., total_envs - 1
 
 		Args:
 			total_envs (int): The number of envs
@@ -24,7 +24,7 @@ class ActorCriticTrainer(RLTrainer):
 			set: the distinct shuffled numbers
 		"""
 		chosen_envs = set()
-		while len(chosen_envs) < config.BATCH_SIZE:
+		while len(chosen_envs) < config.batch_size:
 			number = random.randint(0, total_envs - 1)
 			if number not in chosen_envs:
 				chosen_envs.add(number)

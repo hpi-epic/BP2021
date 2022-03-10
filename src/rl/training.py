@@ -7,10 +7,10 @@ from abc import ABC, abstractmethod
 import torch
 from torch.utils.tensorboard import SummaryWriter
 
-import configuration.hyperparameters_config as config
 import configuration.utils as ut
 import rl.actorcritic_agent as actorcritic_agent
 from agents.vendors import ReinforcementLearningAgent
+from configuration.hyperparameter_config import config
 
 
 class RLTrainer(ABC):
@@ -122,11 +122,11 @@ class RLTrainer(ABC):
 			self.best_mean_reward = mean_reward
 
 	def consider_sync_tgt_net(self, frame_idx) -> None:
-		if (frame_idx + 1) % config.SYNC_TARGET_FRAMES == 0:
+		if (frame_idx + 1) % config.sync_target_frames == 0:
 			self.RL_agent.synchronize_tgt_net()
 
 	@abstractmethod
-	def train_agent(self, maxsteps=2 * config.EPSILON_DECAY_LAST_FRAME) -> None:
+	def train_agent(self, maxsteps=2 * config.epsilon_decay_last_frame) -> None:
 		raise NotImplementedError('This method is abstract. Use a subclass')
 
 	def _end_of_training(self) -> None:
