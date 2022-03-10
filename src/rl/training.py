@@ -133,7 +133,9 @@ class RLTrainer(ABC):
 		"""
 		Inform the user of the best_mean_reward the agent achieved during training.
 		"""
-		if self.best_mean_reward == 0:
+		if self.best_mean_reward is None:
+			print('The `best_mean_reward` has never been set. Is this expected?')
+		elif self.best_mean_reward == 0:
 			print('The mean reward of the agent was never higher than 0, so no models were saved!')
 		else:
 			print(f'The best mean reward reached by the agent was {self.best_mean_reward:.3f}')
