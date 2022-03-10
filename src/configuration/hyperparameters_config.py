@@ -4,27 +4,6 @@
 import json
 import os
 
-# rl
-GAMMA = None
-BATCH_SIZE = None
-REPLAY_SIZE = None
-LEARNING_RATE = None
-SYNC_TARGET_FRAMES = None
-REPLAY_START_SIZE = None
-EPSILON_DECAY_LAST_FRAME = None
-EPSILON_START = None
-EPSILON_FINAL = None
-
-# sim_market
-MAX_STORAGE = 100
-STORAGE_COST_PER_PRODUCT = None
-MAX_PRICE = None
-MAX_QUALITY = None
-MEAN_REWARD_BOUND = None
-NUMBER_OF_CUSTOMERS = None
-PRODUCTION_PRICE = None
-EPISODE_LENGTH = None
-
 
 class HyperparameterConfig():
 
@@ -43,6 +22,12 @@ class HyperparameterConfig():
 		return f'{self.__class__.__name__}: {self.__dict__}'
 
 	def _validate_config(self, config: dict):
+		"""
+		Validate the given config dictionary and set the instance variables.
+
+		Args:
+			config (dict): The config to validate and take the values from.
+		"""
 		assert 'rl' in config, 'The config must contain an "rl" field.'
 		assert 'sim_market' in config, 'The config must contain a "sim_market" field.'
 
@@ -75,6 +60,7 @@ class HyperparameterConfig():
 		Args:
 			config (dict): The dictionary to be checked.
 		"""
+		assert 'max_storage' in config, 'your config is missing max_storage'
 		assert 'episode_size' in config, 'your config is missing episode_size'
 		assert 'max_price' in config, 'your config is missing max_price'
 		assert 'max_quality' in config, 'your config is missing max_quality'
@@ -115,14 +101,15 @@ class HyperparameterConfig():
 		Args:
 			config (dict): The dictionary from which to read the new values.
 		"""
+		self.max_storage = config['max_storage']
 		self.episode_length = config['episode_size']
-
 		self.max_price = config['max_price']
 		self.max_quality = config['max_quality']
 		self.number_of_customers = config['number_of_customers']
 		self.production_price = config['production_price']
 		self.storage_cost_per_product = config['storage_cost_per_product']
 
+		assert self.max_storage >= 0, 'max_storage must be positive'
 		assert self.number_of_customers > 0 and self.number_of_customers % 2 == 0, 'number_of_customers should be even and positive'
 		assert self.production_price <= self.max_price and self.production_price >= 0, 'production_price needs to smaller than max_price and >= 0'
 		assert self.max_quality > 0, 'max_quality should be positive'
