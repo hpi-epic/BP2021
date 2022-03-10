@@ -58,7 +58,6 @@ class HyperparameterConfig():
 		Args:
 			config (dict): The dictionary to be checked.
 		"""
-		# ordered like in the config_rl.json
 		assert 'gamma' in config, 'your config_rl is missing gamma'
 		assert 'batch_size' in config, 'your config_rl is missing batch_size'
 		assert 'replay_size' in config, 'your config_rl is missing replay_size'
@@ -90,19 +89,18 @@ class HyperparameterConfig():
 		Args:
 			config (dict): The dictionary from which to read the new values.
 		"""
-		self.gamma = float(config['gamma'])
-		self.learning_rate = float(config['learning_rate'])
-		self.batch_size = int(config['batch_size'])
-		self.replay_size = int(config['replay_size'])
-		self.sync_target_frames = int(config['sync_target_frames'])
-		self.replay_start_size = int(config['replay_start_size'])
+		self.gamma = config['gamma']
+		self.learning_rate = config['learning_rate']
+		self.batch_size = config['batch_size']
+		self.replay_size = config['replay_size']
+		self.sync_target_frames = config['sync_target_frames']
+		self.replay_start_size = config['replay_start_size']
 
-		self.epsilon_decay_last_frame = int(config['epsilon_decay_last_frame'])
-		self.epsilon_start = float(config['epsilon_start'])
-		self.epsilon_final = float(config['epsilon_final'])
+		self.epsilon_decay_last_frame = config['epsilon_decay_last_frame']
+		self.epsilon_start = config['epsilon_start']
+		self.epsilon_final = config['epsilon_final']
 
-		assert self.learning_rate > 0 and self.learning_rate < 1, \
-			'learning_rate should be between 0 and 1 (excluded)'
+		assert self.learning_rate > 0 and self.learning_rate < 1, 'learning_rate should be between 0 and 1 (excluded)'
 		assert self.gamma >= 0 and self.gamma < 1, 'gamma should be between 0 (included) and 1 (excluded)'
 		assert self.batch_size > 0, 'batch_size should be greater than 0'
 		assert self.replay_size > 0, 'replay_size should be greater than 0'
@@ -117,12 +115,12 @@ class HyperparameterConfig():
 		Args:
 			config (dict): The dictionary from which to read the new values.
 		"""
-		self.episode_length = int(config['episode_size'])
+		self.episode_length = config['episode_size']
 
-		self.max_price = int(config['max_price'])
-		self.max_quality = int(config['max_quality'])
-		self.number_of_customers = int(config['number_of_customers'])
-		self.production_price = int(config['production_price'])
+		self.max_price = config['max_price']
+		self.max_quality = config['max_quality']
+		self.number_of_customers = config['number_of_customers']
+		self.production_price = config['production_price']
 		self.storage_cost_per_product = config['storage_cost_per_product']
 
 		assert self.number_of_customers > 0 and self.number_of_customers % 2 == 0, 'number_of_customers should be even and positive'
