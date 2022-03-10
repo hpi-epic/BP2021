@@ -26,118 +26,135 @@ PRODUCTION_PRICE = None
 EPISODE_LENGTH = None
 
 
-def load_config(filename='hyperparameters_config') -> dict:
-	"""
-	Load the configuration json file from the specified path.
+class HyperparameterConfig():
 
-	Args:
-		filename (str, optional): The name of the json file containing the configuration values.
-		Must be located in the BP2021/ folder. Defaults to 'hyperparameters_config'.
+	def __init__(self, config: dict):
+		self._validate_config(config)
 
-	Returns:
-		dict: A dictionary containing the configuration values.
-	"""
-	filename += '.json'
-	path = os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, filename)
-	with open(path) as config_file:
-		return json.load(config_file)
+	def __str__(self) -> str:
+		"""
+		This overwrites the internal function that get called when you call `print(class_instance)`.
+
+		Instead of printing the class name, prints the instance variables as a dictionary.
+
+		Returns:
+			str: The instance variables as a dictionary.
+		"""
+		return f'{self.__class__.__name__}: {self.__dict__}'
+
+	def _validate_config(self, config: dict):
+		assert 'rl' in config, 'The config must contain an "rl" field.'
+		assert 'sim_market' in config, 'The config must contain a "sim_market" field.'
+
+		self._check_config_rl_completeness(config['rl'])
+		self._check_config_sim_market_completeness(config['sim_market'])
+		self._update_rl_variables(config['rl'])
+		self._update_sim_market_variables(config['sim_market'])
+
+	def _check_config_rl_completeness(self, config: dict) -> None:
+		"""
+		Check if the passed config dictionary contains all rl values.
+
+		Args:
+			config (dict): The dictionary to be checked.
+		"""
+		# ordered like in the config_rl.json
+		assert 'gamma' in config, 'your config_rl is missing gamma'
+		assert 'batch_size' in config, 'your config_rl is missing batch_size'
+		assert 'replay_size' in config, 'your config_rl is missing replay_size'
+		assert 'learning_rate' in config, 'your config_rl is missing learning_rate'
+		assert 'sync_target_frames' in config, 'your config_rl is missing sync_target_frames'
+		assert 'replay_start_size' in config, 'your config_rl is missing replay_start_size'
+		assert 'epsilon_decay_last_frame' in config, 'your config_rl is missing epsilon_decay_last_frame'
+		assert 'epsilon_start' in config, 'your config_rl is missing epsilon_start'
+		assert 'epsilon_final' in config, 'your config_rl is missing epsilon_final'
+
+	def _check_config_sim_market_completeness(self, config: dict) -> None:
+		"""
+		Check if the passed config dictionary contains all sim_market values.
+
+		Args:
+			config (dict): The dictionary to be checked.
+		"""
+		assert 'episode_size' in config, 'your config is missing episode_size'
+		assert 'max_price' in config, 'your config is missing max_price'
+		assert 'max_quality' in config, 'your config is missing max_quality'
+		assert 'number_of_customers' in config, 'your config is missing number_of_customers'
+		assert 'production_price' in config, 'your config is missing production_price'
+		assert 'storage_cost_per_product' in config, 'your config is missing storage_cost_per_product'
+
+	def _update_rl_variables(self, config: dict) -> None:
+		"""
+		Update the global variables with new values provided by the config.
+
+		Args:
+			config (dict): The dictionary from which to read the new values.
+		"""
+		self.gamma = float(config['gamma'])
+		self.learning_rate = float(config['learning_rate'])
+		self.batch_size = int(config['batch_size'])
+		self.replay_size = int(config['replay_size'])
+		self.sync_target_frames = int(config['sync_target_frames'])
+		self.replay_start_size = int(config['replay_start_size'])
+
+		self.epsilon_decay_last_frame = int(config['epsilon_decay_last_frame'])
+		self.epsilon_start = float(config['epsilon_start'])
+		self.epsilon_final = float(config['epsilon_final'])
+
+		assert self.learning_rate > 0 and self.learning_rate < 1, \
+			'learning_rate should be between 0 and 1 (excluded)'
+		assert self.gamma >= 0 and self.gamma < 1, 'gamma should be between 0 (included) and 1 (excluded)'
+		assert self.batch_size > 0, 'batch_size should be greater than 0'
+		assert self.replay_size > 0, 'replay_size should be greater than 0'
+		assert self.sync_target_frames > 0, 'sync_target_frames should be greater than 0'
+		assert self.replay_start_size > 0, 'replay_start_size should be greater than 0'
+		assert self.epsilon_decay_last_frame >= 0, 'epsilon_decay_last_frame should not be negative'
+
+	def _update_sim_market_variables(self, config: dict) -> None:
+		"""
+		Update the global variables with new values provided by the config.
+
+		Args:
+			config (dict): The dictionary from which to read the new values.
+		"""
+		self.episode_length = int(config['episode_size'])
+
+		self.max_price = int(config['max_price'])
+		self.max_quality = int(config['max_quality'])
+		self.number_of_customers = int(config['number_of_customers'])
+		self.production_price = int(config['production_price'])
+		self.storage_cost_per_product = config['storage_cost_per_product']
+
+		assert self.number_of_customers > 0 and self.number_of_customers % 2 == 0, 'number_of_customers should be even and positive'
+		assert self.production_price <= self.max_price and self.production_price >= 0, 'production_price needs to smaller than max_price and >= 0'
+		assert self.max_quality > 0, 'max_quality should be positive'
+		assert self.max_price > 0, 'max_price should be positive'
+		assert self.episode_length > 0, 'episode_size should be positive'
+		assert self.storage_cost_per_product >= 0, 'storage_cost_per_product should be non-negative'
+
+		self.mean_reward_bound = self.episode_length * self.max_price * self.number_of_customers
 
 
-def check_config_rl_completeness(config: dict) -> None:
-	"""
-	Check if the passed config dictionary contains all rl values.
+class HyperparameterConfigLoader():
 
-	Args:
-		config (dict): The dictionary to be checked.
-	"""
-	# ordered like in the config_rl.json
-	assert 'gamma' in config, 'your config_rl is missing gamma'
-	assert 'batch_size' in config, 'your config_rl is missing batch_size'
-	assert 'replay_size' in config, 'your config_rl is missing replay_size'
-	assert 'learning_rate' in config, 'your config_rl is missing learning_rate'
-	assert 'sync_target_frames' in config, 'your config_rl is missing sync_target_frames'
-	assert 'replay_start_size' in config, 'your config_rl is missing replay_start_size'
-	assert 'epsilon_decay_last_frame' in config, 'your config_rl is missing epsilon_decay_last_frame'
-	assert 'epsilon_start' in config, 'your config_rl is missing epsilon_start'
-	assert 'epsilon_final' in config, 'your config_rl is missing epsilon_final'
+	def load(filename: str) -> HyperparameterConfig:
+		"""
+		Load the configuration json file from the specified path and instantiate a `HyperparameterConfig` object.
 
+		Args:
+			filename (str): The name of the json file containing the configuration values.
+			Must be located in the BP2021/ folder.
 
-def check_config_sim_market_completeness(config: dict) -> None:
-	"""
-	Check if the passed config dictionary contains all sim_market values.
-
-	Args:
-		config (dict): The dictionary to be checked.
-	"""
-	# ordered alphabetically in the config_sim_market.json
-	assert 'episode_size' in config, 'your config is missing episode_size'
-	assert 'max_price' in config, 'your config is missing max_price'
-	assert 'max_quality' in config, 'your config is missing max_quality'
-	assert 'number_of_customers' in config, 'your config is missing number_of_customers'
-	assert 'production_price' in config, 'your config is missing production_price'
-	assert 'storage_cost_per_product' in config, 'your config is missing storage_cost_per_product'
+		Returns:
+			HyperparameterConfig: An instance of `HyperparameterConfig`.
+		"""
+		filename += '.json'
+		path = os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, filename)
+		with open(path) as config_file:
+			config = json.load(config_file)
+		return HyperparameterConfig(config)
 
 
-def update_rl_variables(config: dict) -> None:
-	"""
-	Update the global variables with new values provided by the config.
-
-	Args:
-		config (dict): The dictionary from which to read the new values.
-	"""
-	global_variables = globals()
-	global_variables['GAMMA'] = float(config['gamma'])
-	global_variables['LEARNING_RATE'] = float(config['learning_rate'])
-	global_variables['BATCH_SIZE'] = int(config['batch_size'])
-	global_variables['REPLAY_SIZE'] = int(config['replay_size'])
-	global_variables['SYNC_TARGET_FRAMES'] = int(config['sync_target_frames'])
-	global_variables['REPLAY_START_SIZE'] = int(config['replay_start_size'])
-
-	global_variables['EPSILON_DECAY_LAST_FRAME'] = int(config['epsilon_decay_last_frame'])
-	global_variables['EPSILON_START'] = float(config['epsilon_start'])
-	global_variables['EPSILON_FINAL'] = float(config['epsilon_final'])
-
-	assert global_variables['LEARNING_RATE'] > 0 and global_variables['LEARNING_RATE'] < 1, \
-		'learning_rate should be between 0 and 1 (excluded)'
-	assert global_variables['GAMMA'] >= 0 and global_variables['GAMMA'] < 1, 'gamma should be between 0 (included) and 1 (excluded)'
-	assert global_variables['BATCH_SIZE'] > 0, 'batch_size should be greater than 0'
-	assert global_variables['REPLAY_SIZE'] > 0, 'replay_size should be greater than 0'
-	assert global_variables['SYNC_TARGET_FRAMES'] > 0, 'sync_target_frames should be greater than 0'
-	assert global_variables['REPLAY_START_SIZE'] > 0, 'replay_start_size should be greater than 0'
-	assert global_variables['EPSILON_DECAY_LAST_FRAME'] >= 0, 'epsilon_decay_last_frame should not be negative'
-
-
-def update_sim_market_variables(config: dict) -> None:
-	"""
-	Update the global variables with new values provided by the config.
-
-	Args:
-		config (dict): The dictionary from which to read the new values.
-	"""
-	global_variables = globals()
-	global_variables['EPISODE_LENGTH'] = int(config['episode_size'])
-
-	global_variables['MAX_PRICE'] = int(config['max_price'])
-	global_variables['MAX_QUALITY'] = int(config['max_quality'])
-	global_variables['NUMBER_OF_CUSTOMERS'] = int(config['number_of_customers'])
-	global_variables['PRODUCTION_PRICE'] = int(config['production_price'])
-	global_variables['STORAGE_COST_PER_PRODUCT'] = config['storage_cost_per_product']
-
-	assert global_variables['NUMBER_OF_CUSTOMERS'] > 0 and global_variables['NUMBER_OF_CUSTOMERS'] % 2 == 0, \
-		'number_of_customers should be even and positive'
-	assert global_variables['PRODUCTION_PRICE'] <= global_variables['MAX_PRICE'] and global_variables['PRODUCTION_PRICE'] >= 0, \
-		'production_price needs to smaller than max_price and positive or zero'
-	assert global_variables['MAX_QUALITY'] > 0, 'max_quality should be positive'
-	assert global_variables['MAX_PRICE'] > 0, 'max_price should be positive'
-	assert global_variables['EPISODE_LENGTH'] > 0, 'episode_size should be positive'
-	assert global_variables['STORAGE_COST_PER_PRODUCT'] >= 0, 'storage_cost_per_product should be non-negative'
-
-	global_variables['MEAN_REWARD_BOUND'] = global_variables['EPISODE_LENGTH'] * global_variables['MAX_PRICE'] * \
-		global_variables['NUMBER_OF_CUSTOMERS']
-
-
-config = load_config()
-check_config_rl_completeness(config['rl'])
-check_config_sim_market_completeness(config['sim_market'])
-update_rl_variables(config['rl'])
-update_sim_market_variables(config['sim_market'])
+if __name__ == '__main__':  # pragma: no cover
+	config: HyperparameterConfig = HyperparameterConfigLoader.load('hyperparameter_config')
+	print(config)
