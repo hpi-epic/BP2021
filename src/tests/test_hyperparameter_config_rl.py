@@ -3,13 +3,24 @@ from unittest.mock import mock_open, patch
 
 import pytest
 
+import configuration.hyperparameter_config as hyperparameter_config
 import tests.utils_tests as ut_t
-from configuration.hyperparameter_config import config
 
 
 def teardown_module(module):
 	print('***TEARDOWN***')
-	reload(config)
+	reload(hyperparameter_config)
+
+
+def import_config() -> hyperparameter_config.HyperparameterConfig:
+	"""
+	Reload the hyperparameter_config file to update the config variable with the mocked values.
+
+	Returns:
+		HyperparameterConfig: The config object.
+	"""
+	reload(hyperparameter_config)
+	return hyperparameter_config.config
 
 
 # mock format taken from:
@@ -19,11 +30,9 @@ def test_reading_file_values():
 	json = ut_t.create_hyperparameter_mock_json()
 	with patch('builtins.open', mock_open(read_data=json)) as mock_file:
 		ut_t.check_mock_file(mock_file, json)
-		# Include config again to make sure the file is read again
-		reload(config)
-		# Test all imported values. Extend this test as new values get added!
-		assert len(config.config) == 2, 'the config is being tested for "rl" and "sim_market". Has another type been added?'
-		assert len(config.config['rl']) == 9, 'config["rl"] has more or less values than expected. Check this test for the missing values'
+
+		config = import_config()
+
 		assert config.gamma == 0.99
 		assert config.batch_size == 32
 		assert config.replay_size == 100000
@@ -38,7 +47,9 @@ def test_reading_file_values():
 	json2 = ut_t.create_hyperparameter_mock_json(rl=ut_t.create_hyperparameter_mock_json_rl(learning_rate='1e-4'))
 	with patch('builtins.open', mock_open(read_data=json2)) as mock_file:
 		ut_t.check_mock_file(mock_file, json2)
-		reload(config)
+
+		config = import_config()
+
 		assert config.learning_rate == 1e-4
 
 
@@ -104,5 +115,5 @@ def test_invalid_values(rl_json, expected_message):
 	with patch('builtins.open', mock_open(read_data=json)) as mock_file:
 		ut_t.check_mock_file(mock_file, json)
 		with pytest.raises(AssertionError) as assertion_message:
-			reload(config)
+			import_config()
 		assert expected_message in str(assertion_message.value)
