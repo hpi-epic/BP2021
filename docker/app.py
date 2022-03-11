@@ -65,7 +65,7 @@ async def is_container_alive(id: str) -> JSONResponse:
 
 
 @app.get('/logs/')
-async def get_container_logs(id: str, timestamps: bool = False, stream: bool = True, tail: int = 'all') -> JSONResponse:
+async def get_container_logs(id: str, timestamps: bool = False, stream: bool = False, tail: int = 'all') -> JSONResponse:
 	"""
 	Get the logs of a container.
 
