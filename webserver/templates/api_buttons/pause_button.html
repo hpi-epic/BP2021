@@ -2,5 +2,7 @@
 	{% csrf_token %}
 	<button class="action_button pause_button" 
 		title="pauses execution of the script in the running container"
-		name="pause" value="{{ container.container_id }}" type="submit">pause</button>
+		name="pause" 
+		value="{{ container.container_id }}" 
+		type="submit">pause</button>
 </form>
