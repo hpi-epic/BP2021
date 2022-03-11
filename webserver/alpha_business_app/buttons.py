@@ -220,7 +220,6 @@ class ButtonHandler():
 		self.wanted_container = Container.objects.get(container_id=self.wanted_container_id)
 		return self._decide_rendering()
 
-
 	def _logs(self) -> HttpResponse:
 		"""
 		This will send an API request to get the logs of the container.

@@ -146,7 +146,7 @@ async def pause_container(id: str) -> JSONResponse:
 		id (str): The id of the container.
 
 	Returns:
-		JSONResponse: The response of the pause request encapsuled in a DockerInfo JSON. Status will be 'paused' if successful.------------------------------------
+		JSONResponse: The response of the pause request encapsuled in a DockerInfo JSON.
 	"""
 	container_info = manager.pause(id)
 	if container_info.status.__contains__('Container not found') or container_info.status.__contains__('Container not paused successfully'):
@@ -164,7 +164,7 @@ async def unpause_container(id: str) -> JSONResponse:
 		id (str): The id of the container.
 
 	Returns:
-		JSONResponse: The response of the unpause request encapsuled in a DockerInfo JSON. Status will be 'running' if successful.------------------------------------
+		JSONResponse: The response of the unpause request encapsuled in a DockerInfo JSON.
 	"""
 	container_info = manager.unpause(id)
 	if container_info.status.__contains__('Container not found') or container_info.status.__contains__('Container not unpaused successfully'):

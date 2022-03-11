@@ -107,7 +107,7 @@ class DockerManager():
 
 		return DockerInfo(container_id, status=container.status)
 
-	def pause(self, container_id: str)-> DockerInfo:
+	def pause(self, container_id: str) -> DockerInfo:
 		"""To be called by the REST API. Pauses the container if it is not already paused.
 
 		Args:
@@ -226,6 +226,7 @@ class DockerManager():
 			data=f'archive_{container_path.rpartition("/")[2]}_{time.strftime("%b%d_%H-%M-%S")}', stream=bits)
 
 	def remove_container(self, container_id: str) -> DockerInfo:
+		# sourcery skip: extract-method
 		"""
 		To be called by the REST API. Stop and remove a container.
 
