@@ -200,7 +200,7 @@ class ButtonHandler():
 		self.wanted_container = Container.objects.get(container_id=self.wanted_container_id)
 		return self._decide_rendering()
 
-	def _toggle_pause(self, pause_application) -> HttpResponse:
+	def _toggle_pause(self, pause_application: bool) -> HttpResponse:
 		"""
 		This will send an API request to get the health status of a container and updates the container in the database.
 
