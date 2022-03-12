@@ -117,7 +117,7 @@ class RLTrainer(ABC):
 			self.best_mean_reward = mean_reward - 1
 
 		# save the model only if the epsilon-decay has completed and we reached a new best reward
-		if frame_idx > config.EPSILON_DECAY_LAST_FRAME and mean_reward > self.best_mean_reward:
+		if frame_idx > config.epsilon_decay_last_frame and mean_reward > self.best_mean_reward:
 			self.RL_agent.save(model_path=self.model_path, model_name=f'{self.signature}_{mean_reward:.3f}')
 			if self.best_mean_reward != 0:
 				print(f'Best reward updated {self.best_mean_reward:.3f} -> {mean_reward:.3f}')
