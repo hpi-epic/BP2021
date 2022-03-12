@@ -1,10 +1,10 @@
 {
 	"task": "exampleprinter",
-	"marketplace": "market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario",
+	"marketplace": "market.circular.circular_sim_market.CircularEconomyRebuyPriceOneCompetitor",
 	"agents": {
 		"CE Rebuy Agent (QLearning)": {
 			"class": "agents.vendors.QLearningCERebuyAgent",
-			"modelfile": "CircularEconomyRebuyPriceMonopolyScenario_QLearningCERebuyAgent.dat"
+			"modelfile": "CircularEconomyRebuyPriceOneCompetitor_QLearningCERebuyAgent.dat"
 		}
 	}
 }
