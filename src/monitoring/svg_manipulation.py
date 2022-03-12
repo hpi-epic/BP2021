@@ -116,7 +116,7 @@ class SVGManipulator():
 		"""
 		all_svg_files = [file for file in os.listdir(directory) if os.path.isfile(os.path.join(directory, file))]
 		assert all(file.endswith('.svg') for file in all_svg_files), f'all files in given directory must be svgs: {os.path.abspath(directory)}'
-		return all_svg_files
+		return sorted(all_svg_files)
 
 	def construct_slideshow_html(self, images: list, time: int = 1000) -> str:
 		"""
@@ -164,6 +164,7 @@ class SVGManipulator():
 
 		# construct image array for javascript
 		svg_array_for_js = ''.join('\t\t\t{"name":"' + image[:-4] + '", "src":"./' + image + '"},\n' for image in all_svgs)
+
 		# write html to file
 		html_path = os.path.join(self.save_directory, html_name + '.html')
 		with open(html_path, 'w') as out_file:

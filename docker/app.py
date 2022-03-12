@@ -24,19 +24,19 @@ app = FastAPI()
 
 
 @app.post('/start')
-async def start_container(command: str, config: Request) -> JSONResponse:
+async def start_container(command: str, hyperparameter_config: Request) -> JSONResponse:
 	"""
 	Start a container with the specified config.json and perform a command on it.
 	TODO: The command should be contained in a json-file.
 
 	Args:
 		command (str): The key of the command that is to be executed.
-		config (Request): The config.json file that should be sent to the container.
+		hyperparameter_config (Request): The hyperparameter_config.json file that should be sent to the container.
 
 	Returns:
 		JSONResponse: The response of the Docker start request. Contains the port used on the host in the data-field.
 	"""
-	container_info = manager.start(command_id=command, config=await config.json())
+	container_info = manager.start(command_id=command, hyperparameter_config=await hyperparameter_config.json())
 	if (container_info.status.__contains__('Command not allowed')
 		or container_info.status.__contains__('Image not found') or container_info.data is False):
 		return JSONResponse(status_code=404, content=vars(container_info))

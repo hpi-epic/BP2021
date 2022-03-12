@@ -103,19 +103,21 @@ class RLTrainer(ABC):
 			print(f"{frame_idx + 1}: {episode_number} episodes trained, mean return {averaged_info['profits/all']['vendor_0']:.3f}, " + (
 				f'eps {epsilon:.2f}, ' if epsilon is not None else '') + f'speed {speed:.2f} f/s')
 
-	def consider_update_best_model(self, averaged_info) -> None:
+	def consider_update_best_model(self, averaged_info: dict, frame_idx: int) -> None:
 		"""
 		Evaluates if the current model is the best one until now.
 		If it is, it updates the high score and saves the model.
 
 		Args:
 			averaged_info (dict): A dictionary containing averaged_info['profits/all']['vendor_0'] to evaluate the performance.
+			frame_idx (int): The current frame.
 		"""
 		mean_reward = averaged_info['profits/all']['vendor_0']
 		if self.best_mean_reward is None:
 			self.best_mean_reward = mean_reward - 1
 
-		if mean_reward > self.best_mean_reward:
+		# save the model only if the epsilon-decay has completed and we reached a new best reward
+		if frame_idx > config.EPSILON_DECAY_LAST_FRAME and mean_reward > self.best_mean_reward:
 			self.RL_agent.save(model_path=self.model_path, model_name=f'{self.signature}_{mean_reward:.3f}')
 			if self.best_mean_reward != 0:
 				print(f'Best reward updated {self.best_mean_reward:.3f} -> {mean_reward:.3f}')

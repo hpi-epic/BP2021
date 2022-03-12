@@ -86,9 +86,9 @@ class ActorCriticTrainer(RLTrainer):
 						averaged_info['verbose/v_estimate'] = np.mean(all_v_estimates[-1000:])
 						myactions = np.array(all_network_outputs[-1000:])
 						for action_num in range(len(all_network_outputs[0])):
-							averaged_info['verbose/mean/information_' + str(action_num)] = np.mean(myactions[:, action_num])
-							averaged_info['verbose/min/information_' + str(action_num)] = np.min(myactions[:, action_num])
-							averaged_info['verbose/max/information_' + str(action_num)] = np.max(myactions[:, action_num])
+							averaged_info[f'verbose/mean/information_{str(action_num)}'] = np.mean(myactions[:, action_num])
+							averaged_info[f'verbose/min/information_{str(action_num)}'] = np.min(myactions[:, action_num])
+							averaged_info[f'verbose/max/information_{str(action_num)}'] = np.max(myactions[:, action_num])
 
 					ut.write_dict_to_tensorboard(self.writer, averaged_info, finished_episodes, is_cumulative=True)
 
@@ -96,7 +96,7 @@ class ActorCriticTrainer(RLTrainer):
 					info_accumulators[env] = None
 
 					self.consider_print_info(step_number, finished_episodes, averaged_info)
-					self.consider_update_best_model(averaged_info)
+					self.consider_update_best_model(averaged_info, finished_episodes * config.EPISODE_LENGTH)
 
 			policy_loss, valueloss = self.RL_agent.train_batch(
 				torch.Tensor(np.array(states)),

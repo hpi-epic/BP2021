@@ -46,7 +46,7 @@ class QLearningTrainer(RLTrainer):
 					averaged_info['epsilon'] = epsilon
 					ut.write_dict_to_tensorboard(self.writer, averaged_info, frame_idx / config.episode_length, is_cumulative=True)
 					self.consider_print_info(frame_idx, len(all_dicts), averaged_info, epsilon)
-					self.consider_update_best_model(averaged_info)
+					self.consider_update_best_model(averaged_info, frame_idx)
 
 				vendors_cumulated_info = None
 				self.marketplace.reset()
