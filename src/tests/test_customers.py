@@ -67,14 +67,14 @@ def test_customer_action_range(customer, market):
 
 def test_linear_higher_price_lower_purchase_probability():
 	common_state, vendor_specific_state, vendor_actions = np.array([]), [[12], [12]], [3, 5]
-	probability_distribution = customer.CustomerLinear.generate_purchase_probabilities_from_offer( \
+	probability_distribution = customer.CustomerLinear.generate_purchase_probabilities_from_offer(
 		customer.CustomerLinear, common_state, vendor_specific_state, vendor_actions)
 	assert probability_distribution[1] > probability_distribution[2]
 
 
 def test_linear_higher_quality_higher_purchase_probability():
 	common_state, vendor_specific_state, vendor_actions = np.array([]), [[13], [12]], [3, 3]
-	probability_distribution = customer.CustomerLinear.generate_purchase_probabilities_from_offer( \
+	probability_distribution = customer.CustomerLinear.generate_purchase_probabilities_from_offer(
 		customer.CustomerLinear, common_state, vendor_specific_state, vendor_actions)
 	assert probability_distribution[1] > probability_distribution[2]
 
@@ -82,17 +82,17 @@ def test_linear_higher_quality_higher_purchase_probability():
 def test_equal_ratio_equal_purchase_probability():
 	# In the following line: [3, 1] means prices [4, 2]
 	common_state, vendor_specific_state, vendor_actions = np.array([]), [[16], [8]], [3, 1]
-	probability_distribution = customer.CustomerLinear.generate_purchase_probabilities_from_offer( \
+	probability_distribution = customer.CustomerLinear.generate_purchase_probabilities_from_offer(
 		customer.CustomerLinear, common_state, vendor_specific_state, vendor_actions)
 	assert probability_distribution[1] == probability_distribution[2]
 
 
 def test_linear_lower_overall_price_lower_nothing_probability():
 	common_state1, vendor_specific_state1, vendor_actions1 = np.array([]), [[15], [15]], [3, 3]
-	probability_distribution1 = customer.CustomerLinear.generate_purchase_probabilities_from_offer( \
+	probability_distribution1 = customer.CustomerLinear.generate_purchase_probabilities_from_offer(
 		customer.CustomerLinear, common_state1, vendor_specific_state1, vendor_actions1)
 	common_state2, vendor_specific_state2, vendor_actions2 = np.array([]), [[15], [15]], [4, 4]
-	probability_distribution2 = customer.CustomerLinear.generate_purchase_probabilities_from_offer( \
+	probability_distribution2 = customer.CustomerLinear.generate_purchase_probabilities_from_offer(
 		customer.CustomerLinear, common_state2, vendor_specific_state2, vendor_actions2)
 	print(probability_distribution1)
 	print(probability_distribution2)
