@@ -163,9 +163,8 @@ class SVGManipulator():
 		all_svgs = self.get_all_svg_from_directory(self.save_directory)
 
 		# construct image array for javascript
-
 		svg_array_for_js = ''.join('\t\t\t{"name":"' + image[:-4] + '", "src":"./' + image + '"},\n' for image in all_svgs)
-		print(svg_array_for_js)
+
 		# write html to file
 		html_path = os.path.join(self.save_directory, html_name + '.html')
 		with open(html_path, 'w') as out_file:
