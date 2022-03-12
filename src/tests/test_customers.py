@@ -24,20 +24,29 @@ def test_customer_parent_class():
 
 # the following list contains invalid parameters for generate_purchase_probabilities_from_offer and the expected error messages
 generate_purchase_probabilities_from_offer_testcases = [
-	(customer.CustomerLinear(), [20, 20], 1, 'offer_length_per_vendor must be two: one field for the price and one for the quality!'),
-	(customer.CustomerCircular(), [20, 20], 1, 'offers must be a np.ndarray'),
-	(customer.CustomerCircular(), np.array([20, 20, 20, 20]), 4, 'there must be exactly one field for common state (in_circulation)'),
-	(customer.CustomerCircular(), np.array([20, 20, 20, 20, 20, 20]), 5, 'offer_length_per_vendor needs to be 3 or 4'),
-	(customer.CustomerCircular(), np.array([-20, -20, -20, -20]), 3, 'price_refurbished and price_new need to be >= 1')
+	# (customer.CustomerLinear, np.array([]), [[12], [15]], [3, 5], 'this should work'),
+	(customer.CustomerLinear, [], [[12], [15]], [3, 5], 'common_state must be a np.ndarray'),
+	(customer.CustomerLinear, np.array([]), ([12], [15]), [3, 5], 'vendor_specific_state must be a list'),
+	(customer.CustomerLinear, np.array([]), [[12], [15]], (3, 5), 'vendor_actions must be a list'),
+	(customer.CustomerLinear, np.array([]), [[12]], [3, 5], 'they must have the same length'),
+	(customer.CustomerLinear, np.array([]), [[12], [15]], [3], 'they must have the same length'),
+	(customer.CustomerLinear, np.array([]), [], [], 'there must be at least one vendor'),
+	# (customer.CustomerCircular, np.array([]), [[17], [23]], [[3, 6], [4, 7]], 'this should work'),
+	(customer.CustomerCircular, [], [[17], [23]], [[3, 6], [4, 7]], 'common_state must be a np.ndarray'),
+	(customer.CustomerLinear, np.array([]), ([17], [23]), [[3, 6], [4, 7]], 'vendor_specific_state must be a list'),
+	(customer.CustomerCircular, np.array([]), [[17], [23]], ([3, 6], [4, 7]), 'vendor_actions must be a list'),
+	(customer.CustomerCircular, np.array([]), [[17]], [[3, 6], [4, 7]], 'they must have the same length'),
+	(customer.CustomerCircular, np.array([]), [[17], [23]], [[3, 6]], 'they must have the same length'),
+	(customer.CustomerCircular, np.array([]), [], [], 'there must be at least one vendor'),
 ]
 
 
 @pytest.mark.parametrize(
-	'customer, offers, offer_length_per_vendor, expected_message',
+	'customer, common_state, vendor_specific_state, vendor_actions, expected_message',
 	generate_purchase_probabilities_from_offer_testcases)
-def test_generate_purchase_probabilities_from_offer(customer, offers, offer_length_per_vendor, expected_message):
+def test_generate_purchase_probabilities_from_offer(customer, common_state, vendor_specific_state, vendor_actions, expected_message):
 	with pytest.raises(AssertionError) as assertion_message:
-		customer.generate_purchase_probabilities_from_offer(offers, offer_length_per_vendor)
+		customer.generate_purchase_probabilities_from_offer(customer, common_state, vendor_specific_state, vendor_actions)
 	assert expected_message in str(assertion_message.value)
 
 
