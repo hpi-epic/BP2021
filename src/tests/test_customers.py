@@ -13,13 +13,13 @@ def random_offer(marketplace):
 	marketplace = marketplace()
 	marketplace.reset()
 	marketplace.vendor_actions[0] = marketplace._action_space.sample()
-	return marketplace._generate_customer_offer(), marketplace._get_offer_length_per_vendor()
+	return marketplace._get_common_state_array(), marketplace.vendor_specific_state, marketplace.vendor_actions
 
 
 # Test the Customer parent class, i.e. make sure it cannot be used
 def test_customer_parent_class():
 	with pytest.raises(NotImplementedError) as assertion_message:
-		customer.Customer.generate_purchase_probabilities_from_offer(customer.CustomerLinear, random_offer(linear_market.ClassicScenario), 1)
+		customer.Customer.generate_purchase_probabilities_from_offer(customer.CustomerLinear, *random_offer(linear_market.ClassicScenario))
 	assert 'This method is abstract. Use a subclass' in str(assertion_message.value)
 
 
@@ -43,17 +43,16 @@ def test_generate_purchase_probabilities_from_offer(customer, offers, offer_leng
 
 
 customer_action_range_testcases = [
-	(customer.CustomerLinear, *random_offer(linear_market.ClassicScenario), 4),
-	(customer.CustomerLinear, *random_offer(linear_market.MultiCompetitorScenario), 8),
-	(customer.CustomerCircular, *random_offer(circular_market.CircularEconomyMonopolyScenario), 4),
-	(customer.CustomerCircular, *random_offer(circular_market.CircularEconomyRebuyPriceMonopolyScenario), 5)
+	(customer.CustomerLinear, linear_market.ClassicScenario),
+	(customer.CustomerLinear, linear_market.MultiCompetitorScenario),
+	(customer.CustomerCircular, circular_market.CircularEconomyMonopolyScenario),
+	(customer.CustomerCircular, circular_market.CircularEconomyRebuyPriceMonopolyScenario)
 ]
 
 
 # Test the different Customers in the different Market Scenarios
-@pytest.mark.parametrize('customer, offers, offer_length_per_vendor, expected_size', customer_action_range_testcases)
-def test_customer_action_range(customer, offers, offer_length_per_vendor, expected_size):
-	assert len(offers) == expected_size
-	probability_distribution = customer.generate_purchase_probabilities_from_offer(customer, offers, offer_length_per_vendor)
-	buy_decisions = ut.shuffle_from_probabilities(probability_distribution)
-	assert 0 <= buy_decisions <= expected_size - 1
+@pytest.mark.parametrize('customer, market', customer_action_range_testcases)
+def test_customer_action_range(customer, market):
+	offers = random_offer(market)
+	probability_distribution = customer.generate_purchase_probabilities_from_offer(customer, *offers)
+	assert len(probability_distribution) == market()._get_number_of_vendors() * (1 if issubclass(market, linear_market.LinearEconomy) else 2) + 1

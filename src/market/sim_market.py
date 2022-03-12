@@ -188,22 +188,6 @@ class SimMarket(gym.Env, ABC):
 			f'{concatenated_observations} ({type(concatenated_observations)}) invalid observation'
 		return concatenated_observations
 
-	def _generate_customer_offer(self) -> np.array:
-		"""
-		Map the internal state to an array which is presented to the customers.
-
-		It includes all information customers will use for their decisions.
-		At the beginning of the array you have the common state.
-		Afterwards you have the action and vendor specific state for all vendors.
-		"""
-		offer = self._get_common_state_array()
-		assert isinstance(offer, np.ndarray), '_get_common_state_array must return an np.ndarray'
-		for vendor_index in range(self._get_number_of_vendors()):
-			offer = np.concatenate((offer, np.array(self.vendor_actions[vendor_index], ndmin=1)), dtype=np.float64)
-			if self.vendor_specific_state[vendor_index] is not None:
-				offer = np.concatenate((offer, np.array(self.vendor_specific_state[vendor_index], ndmin=1)), dtype=np.float64)
-		return offer
-
 	def _reset_common_state(self) -> None:
 		pass
 
