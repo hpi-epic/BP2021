@@ -18,7 +18,7 @@ class HyperparameterConfig():
 		if cls._instance is None:
 			print('A new instance of HyperparameterConfig is being initialized')
 			cls._instance = super(HyperparameterConfig, cls).__new__(cls)
-			cls._instance._validate_config(config)
+			cls._instance._validate_and_set_config(config)
 		else:
 			print('An instance of HyperparameterConfig already exists and it will not be overwritten')
 
@@ -35,7 +35,7 @@ class HyperparameterConfig():
 		"""
 		return f'{self.__class__.__name__}: {self.__dict__}'
 
-	def _validate_config(self, config: dict) -> None:
+	def _validate_and_set_config(self, config: dict) -> None:
 		"""
 		Validate the given config dictionary and set the instance variables.
 
@@ -47,8 +47,8 @@ class HyperparameterConfig():
 
 		self._check_config_rl_completeness(config['rl'])
 		self._check_config_sim_market_completeness(config['sim_market'])
-		self._update_rl_variables(config['rl'])
-		self._update_sim_market_variables(config['sim_market'])
+		self._set_rl_variables(config['rl'])
+		self._set_sim_market_variables(config['sim_market'])
 
 	def _check_config_rl_completeness(self, config: dict) -> None:
 		"""
@@ -82,13 +82,21 @@ class HyperparameterConfig():
 		assert 'production_price' in config, 'your config is missing production_price'
 		assert 'storage_cost_per_product' in config, 'your config is missing storage_cost_per_product'
 
-	def _update_rl_variables(self, config: dict) -> None:
+	def _set_rl_variables(self, config: dict) -> None:
 		"""
 		Update the global variables with new values provided by the config.
 
 		Args:
 			config (dict): The dictionary from which to read the new values.
 		"""
+		assert config['learning_rate'] > 0 and config['learning_rate'] < 1, 'learning_rate should be between 0 and 1 (excluded)'
+		assert config['gamma'] >= 0 and config['gamma'] < 1, 'gamma should be between 0 (included) and 1 (excluded)'
+		assert config['batch_size'] > 0, 'batch_size should be greater than 0'
+		assert config['replay_size'] > 0, 'replay_size should be greater than 0'
+		assert config['sync_target_frames'] > 0, 'sync_target_frames should be greater than 0'
+		assert config['replay_start_size'] > 0, 'replay_start_size should be greater than 0'
+		assert config['epsilon_decay_last_frame'] >= 0, 'epsilon_decay_last_frame should not be negative'
+
 		self.gamma = config['gamma']
 		self.learning_rate = config['learning_rate']
 		self.batch_size = config['batch_size']
@@ -100,21 +108,22 @@ class HyperparameterConfig():
 		self.epsilon_start = config['epsilon_start']
 		self.epsilon_final = config['epsilon_final']
 
-		assert self.learning_rate > 0 and self.learning_rate < 1, 'learning_rate should be between 0 and 1 (excluded)'
-		assert self.gamma >= 0 and self.gamma < 1, 'gamma should be between 0 (included) and 1 (excluded)'
-		assert self.batch_size > 0, 'batch_size should be greater than 0'
-		assert self.replay_size > 0, 'replay_size should be greater than 0'
-		assert self.sync_target_frames > 0, 'sync_target_frames should be greater than 0'
-		assert self.replay_start_size > 0, 'replay_start_size should be greater than 0'
-		assert self.epsilon_decay_last_frame >= 0, 'epsilon_decay_last_frame should not be negative'
-
-	def _update_sim_market_variables(self, config: dict) -> None:
+	def _set_sim_market_variables(self, config: dict) -> None:
 		"""
 		Update the global variables with new values provided by the config.
 
 		Args:
 			config (dict): The dictionary from which to read the new values.
 		"""
+		assert config['max_storage'] >= 0, 'max_storage must be positive'
+		assert config['number_of_customers'] > 0 and config['number_of_customers'] % 2 == 0, 'number_of_customers should be even and positive'
+		assert config['production_price'] <= config['max_price'] and config['production_price'] >= 0, \
+			'production_price needs to be smaller than max_price and >=0'
+		assert config['max_quality'] > 0, 'max_quality should be positive'
+		assert config['max_price'] > 0, 'max_price should be positive'
+		assert config['episode_size'] > 0, 'episode_size should be positive'
+		assert config['storage_cost_per_product'] >= 0, 'storage_cost_per_product should be non-negative'
+
 		self.max_storage = config['max_storage']
 		self.episode_length = config['episode_size']
 		self.max_price = config['max_price']
@@ -122,15 +131,6 @@ class HyperparameterConfig():
 		self.number_of_customers = config['number_of_customers']
 		self.production_price = config['production_price']
 		self.storage_cost_per_product = config['storage_cost_per_product']
-
-		assert self.max_storage >= 0, 'max_storage must be positive'
-		assert self.number_of_customers > 0 and self.number_of_customers % 2 == 0, 'number_of_customers should be even and positive'
-		assert self.production_price <= self.max_price and self.production_price >= 0, \
-			'production_price needs to be smaller than max_price and >=0'
-		assert self.max_quality > 0, 'max_quality should be positive'
-		assert self.max_price > 0, 'max_price should be positive'
-		assert self.episode_length > 0, 'episode_size should be positive'
-		assert self.storage_cost_per_product >= 0, 'storage_cost_per_product should be non-negative'
 
 		self.mean_reward_bound = self.episode_length * self.max_price * self.number_of_customers
 
