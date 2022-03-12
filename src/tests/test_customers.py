@@ -1,7 +1,6 @@
 import numpy as np
 import pytest
 
-import configuration.utils as ut
 import market.circular.circular_sim_market as circular_market
 import market.customer as customer
 import market.linear.linear_sim_market as linear_market
@@ -55,4 +54,5 @@ customer_action_range_testcases = [
 def test_customer_action_range(customer, market):
 	offers = random_offer(market)
 	probability_distribution = customer.generate_purchase_probabilities_from_offer(customer, *offers)
-	assert len(probability_distribution) == market()._get_number_of_vendors() * (1 if issubclass(market, linear_market.LinearEconomy) else 2) + 1
+	assert len(probability_distribution) == market()._get_number_of_vendors() * \
+		(1 if issubclass(market, linear_market.LinearEconomy) else 2) + 1
