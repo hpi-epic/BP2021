@@ -17,8 +17,7 @@ class ButtonHandler():
 		You can add more keywords in `do_button_click()` or implement your own renderings and add them to `_decide_rendering()`.
 
 		Args:
-			request (HttpRequest): request send to the server when a button is pressed. At the moment you can only have one parameter
-				in the requests, more than one parameter will be interpreted as the request to start a container.
+			request (WSGIRequest): post request send to the server when a button is pressed. The keyword 'action' defines what happens.
 			view (str): The view that should be rendered when the button action is done.
 			container (Container, optional): a container that could be used i.e. for the rendering. Defaults to None.
 			rendering_method (str, optional): keyword for the rendering methode, see `_decide_rendering()`. Defaults to 'default'.

@@ -24,9 +24,9 @@
 								<form method="post" enctype="multipart/form-data">
 									{% csrf_token %}
 									<select class="selection_list" name="command_selection">
-										<option value="exampleprinter">exampleprinter</option>
-										<option value="monitoring">monitoring</option>
 										<option value="training">training</option>
+										<option value="monitoring">monitoring</option>
+										<option value="exampleprinter">exampleprinter</option>
 									</select>
 									<input type="hidden" name="action", value="start">
 									<input class="experiment_name" type="text" name="experiment_name">
