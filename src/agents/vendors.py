@@ -18,7 +18,7 @@ class Agent(ABC):
 	def __init__(self, name='agent'):
 		self.name = name
 
-	def custom_init(self, class_name, args):
+	def custom_init(class_name, args):
 		"""
 		Initialize an agent with a list of arguments.
 
@@ -29,7 +29,7 @@ class Agent(ABC):
 		Returns:
 			agent instance: An instance of the agent_class initialized with the given args.
 		"""
-		return class_name(*args)
+		return class_name(*args) if len(args) > 0 else class_name()
 
 	@abstractmethod
 	def policy(self, observation, *_):  # pragma: no cover
@@ -122,7 +122,7 @@ class FixedPriceAgent(RuleBasedAgent, ABC):
 
 class FixedPriceLEAgent(LinearAgent, FixedPriceAgent):
 	def __init__(self, fixed_price=config.PRODUCTION_PRICE + 3, name='fixed_price_le'):
-		assert isinstance(fixed_price, int), 'the fixed_price must be an integer'
+		assert isinstance(fixed_price, int), f'the fixed_price must be an integer: {fixed_price} ({type(fixed_price)})'
 		self.name = name
 		self.fixed_price = fixed_price
 
@@ -132,9 +132,9 @@ class FixedPriceLEAgent(LinearAgent, FixedPriceAgent):
 
 class FixedPriceCEAgent(CircularAgent, FixedPriceAgent):
 	def __init__(self, fixed_price=(2, 4), name='fixed_price_ce'):
-		assert isinstance(fixed_price, tuple), 'fixed_price must be a tuple'
-		assert len(fixed_price) == 2, 'fixed_price must contain two values'
-		assert all(isinstance(price, int) for price in fixed_price), 'the prices in fixed_price must be integers'
+		assert isinstance(fixed_price, tuple), f'fixed_price must be a tuple: {fixed_price} ({type(fixed_price)})'
+		assert len(fixed_price) == 2, f'fixed_price must contain two values: {fixed_price}'
+		assert all(isinstance(price, int) for price in fixed_price), f'the prices in fixed_price must be integers: {fixed_price}'
 		self.name = name
 		self.fixed_price = fixed_price
 
@@ -144,9 +144,9 @@ class FixedPriceCEAgent(CircularAgent, FixedPriceAgent):
 
 class FixedPriceCERebuyAgent(FixedPriceCEAgent):
 	def __init__(self, fixed_price=(3, 6, 2), name='fixed_price_ce_rebuy'):
-		assert isinstance(fixed_price, tuple), 'fixed_price must be a tuple'
-		assert len(fixed_price) == 3, 'fixed_price must contain three values'
-		assert all(isinstance(price, int) for price in fixed_price), 'the prices in fixed_price must be integers'
+		assert isinstance(fixed_price, tuple), f'fixed_price must be a tuple: {fixed_price} ({type(fixed_price)})'
+		assert len(fixed_price) == 3, f'fixed_price must contain three values: {fixed_price}'
+		assert all(isinstance(price, int) for price in fixed_price), f'the prices in fixed_price must be integers: {fixed_price}'
 		self.name = name
 		self.fixed_price = fixed_price
 
@@ -183,7 +183,7 @@ class RuleBasedCEAgent(RuleBasedAgent, CircularAgent):
 			# storage content is ok
 			price_old = int(config.MAX_PRICE * 4 / 10)
 			price_new += int(config.MAX_PRICE * 4 / 10)
-			rebuy_price = int(price_old / 2)
+			rebuy_price = price_old // 2
 		else:
 			# storage too full, we need to get rid of some refurbished products
 			price_old = int(config.MAX_PRICE * 2 / 10)
@@ -399,9 +399,7 @@ class CompetitorLinearRatio1(LinearAgent, RuleBasedAgent):
 
 		ratio = max_competing_ratio / ratios[0]
 		intended = math.floor(1 / max_competing_ratio * state[0]) - 1
-		actual_price = min(max(config.PRODUCTION_PRICE + 1, intended), config.MAX_PRICE - 1)
-		# print('price from the competitor:', actual_price)
-		return actual_price
+		return min(max(config.PRODUCTION_PRICE + 1, intended), config.MAX_PRICE - 1)  # actual price
 
 
 class CompetitorRandom(LinearAgent, RuleBasedAgent):
