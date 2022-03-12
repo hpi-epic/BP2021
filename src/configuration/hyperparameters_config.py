@@ -26,13 +26,13 @@ PRODUCTION_PRICE = None
 EPISODE_LENGTH = None
 
 
-def load_config(filename='config') -> dict:
+def load_config(filename='hyperparameter_config') -> dict:
 	"""
 	Load the configuration json file from the specified path.
 
 	Args:
 		filename (str, optional): The name of the json file containing the configuration values.
-		Must be located in the BP2021/ folder. Defaults to 'config'.
+		Must be located in the BP2021/ folder. Defaults to 'hyperparameter_config'.
 
 	Returns:
 		dict: A dictionary containing the configuration values.

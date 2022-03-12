@@ -21,11 +21,8 @@ class Configurator():
 		self.episodes = 500
 		self.plot_interval = 50
 		self.marketplace = circular_market.CircularEconomyMonopolyScenario()
-		default_agent = vendors.QLearningCEAgent
-		default_modelfile = f'{type(self.marketplace).__name__}_{default_agent.__name__}'
-		assert os.path.exists(self._get_modelfile_path(default_modelfile)), f'the default modelfile does not exist: {default_modelfile}'
-		self.agents = [default_agent(n_observations=self.marketplace.observation_space.shape[0],
-			n_actions=self.marketplace.get_n_actions(), load_path=self._get_modelfile_path(default_modelfile))]
+		default_agent = vendors.FixedPriceCEAgent
+		self.agents = [default_agent()]
 		self.agent_colors = [(0.0, 0.0, 1.0, 1.0)]
 		self.folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir,
 			'results', 'monitoring', 'plots_' + time.strftime('%b%d_%H-%M-%S')))
@@ -86,8 +83,12 @@ class Configurator():
 
 		# Instantiate all agents. If they are not rule-based, use the marketplace parameters accordingly
 		for current_agent in agents:
+			print(current_agent[0])
+			print(current_agent[1])
 			if issubclass(current_agent[0], vendors.RuleBasedAgent):
-				self.agents.append(vendors.Agent.custom_init(vendors.Agent, current_agent[0], current_agent[1]))
+				# The custom_init takes two parameters: The class of the agent to be initialized and a list of arguments,
+				# e.g. for the fixed prices or names
+				self.agents.append(vendors.Agent.custom_init(current_agent[0], current_agent[1]))
 			elif issubclass(current_agent[0], (vendors.QLearningAgent, actorcritic_agent.ActorCriticAgent)):
 				try:
 					assert (0 <= len(current_agent[1]) <= 2), 'the argument list for a RL-agent must have length between 0 and 2'
@@ -105,7 +106,7 @@ class Configurator():
 					# only modelfile argument
 					elif len(current_agent[1]) == 1 and str.endswith(current_agent[1][0], '.dat'):
 						agent_modelfile = current_agent[1][0][:-4]
-					# both arguments
+					# both arguments, first must be the modelfile, second the name
 					elif len(current_agent[1]) == 2:
 						assert str.endswith(current_agent[1][0], '.dat'), \
 							f'if two arguments are provided, the first one must be the modelfile. Arg1: {current_agent[1][0]}, Arg2: {current_agent[1][1]}'
@@ -176,7 +177,7 @@ class Configurator():
 			# If the agents have not been changed, we reuse the old agents
 			if(agents is None):
 				print('Warning: Your agents are being overwritten by new instances of themselves!')
-				agents = [(type(current_agent), [f'{type(self.marketplace).__name__}_{type(current_agent).__name__}']) for current_agent in self.agents]
+				agents = [(type(current_agent), []) for current_agent in self.agents]
 			self._update_agents(agents)
 
 		# marketplace has not changed but agents have
@@ -230,4 +231,4 @@ class Configurator():
 
 
 if __name__ == '__main__':  # pragma: no cover
-	raise RuntimeError('agent_monitoring can only be run from `monitor.py`')
+	raise RuntimeError('agent_monitoring can only be run from `am_monitoring.py`')

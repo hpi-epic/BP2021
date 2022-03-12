@@ -4,7 +4,7 @@ from typing import Tuple
 import gym
 import numpy as np
 
-import configuration.config as config
+import configuration.hyperparameters_config as config
 import configuration.utils as ut
 
 # An offer is a market state that contains all prices and qualities

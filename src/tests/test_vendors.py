@@ -5,7 +5,7 @@ import pytest
 from numpy import random
 
 import agents.vendors as vendors
-import configuration.config as config
+import configuration.hyperparameters_config as config
 import tests.utils_tests as ut_t
 
 
@@ -87,7 +87,8 @@ storage_evaluation_testcases = [
 
 @pytest.mark.parametrize('state, expected_prices', storage_evaluation_testcases)
 def test_storage_evaluation(state, expected_prices):
-	json = ut_t.create_mock_json(sim_market=ut_t.create_mock_json_sim_market(max_price='10', production_price='2'))
+	json = ut_t.create_hyperparameter_mock_json(
+		sim_market=ut_t.create_hyperparameter_mock_json_sim_market(max_price='10', production_price='2'))
 	with patch('builtins.open', mock_open(read_data=json)) as mock_file:
 		ut_t.check_mock_file(mock_file, json)
 		reload(config)
@@ -105,7 +106,8 @@ storage_evaluation_with_rebuy_price_testcases = [
 
 @pytest.mark.parametrize('state, expected_prices', storage_evaluation_with_rebuy_price_testcases)
 def test_storage_evaluation_with_rebuy_price(state, expected_prices):
-	json = ut_t.create_mock_json(sim_market=ut_t.create_mock_json_sim_market(max_price='10', production_price='2'))
+	json = ut_t.create_hyperparameter_mock_json(
+		sim_market=ut_t.create_hyperparameter_mock_json_sim_market(max_price='10', production_price='2'))
 	with patch('builtins.open', mock_open(read_data=json)) as mock_file:
 		ut_t.check_mock_file(mock_file, json)
 		reload(config)
@@ -114,7 +116,8 @@ def test_storage_evaluation_with_rebuy_price(state, expected_prices):
 
 
 def test_prices_are_not_higher_than_allowed():
-	json = ut_t.create_mock_json(sim_market=ut_t.create_mock_json_sim_market(max_price='10', production_price='9'))
+	json = ut_t.create_hyperparameter_mock_json(
+		sim_market=ut_t.create_hyperparameter_mock_json_sim_market(max_price='10', production_price='9'))
 	with patch('builtins.open', mock_open(read_data=json)) as mock_file:
 		ut_t.check_mock_file(mock_file, json)
 		reload(config)
@@ -138,7 +141,8 @@ policy_testcases = [
 # TODO: Update this test for all current competitors
 @pytest.mark.parametrize('competitor_class, state', policy_testcases)
 def test_policy(competitor_class, state):
-	json = ut_t.create_mock_json(sim_market=ut_t.create_mock_json_sim_market(max_price='10', production_price='2'))
+	json = ut_t.create_hyperparameter_mock_json(
+		sim_market=ut_t.create_hyperparameter_mock_json_sim_market(max_price='10', production_price='2'))
 	with patch('builtins.open', mock_open(read_data=json)) as mock_file:
 		ut_t.check_mock_file(mock_file, json)
 		reload(config)
@@ -158,7 +162,8 @@ policy_plus_one_testcases = [
 # TODO: Update this test for all current competitors
 @pytest.mark.parametrize('competitor_class, state', policy_plus_one_testcases)
 def test_policy_plus_one(competitor_class, state):
-	json = ut_t.create_mock_json(sim_market=ut_t.create_mock_json_sim_market(max_price='10', production_price='2'))
+	json = ut_t.create_hyperparameter_mock_json(
+		sim_market=ut_t.create_hyperparameter_mock_json_sim_market(max_price='10', production_price='2'))
 	with patch('builtins.open', mock_open(read_data=json)) as mock_file:
 		ut_t.check_mock_file(mock_file, json)
 		reload(config)

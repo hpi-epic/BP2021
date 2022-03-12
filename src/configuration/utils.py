@@ -3,23 +3,20 @@ import random
 
 import numpy as np
 
-import configuration.config as config
+import configuration.hyperparameters_config as config
 
 
 def ensure_results_folders_exist():
 	"""
-	If your code assumes that the results folder or any of its subfolders exist, call this function before.
+	Create the results directory as well as the needed subdirectories.
+
+	If your code assumes that the results folder or any of its subfolders exist, call this function beforehand.
 	"""
-	if not os.path.exists('results'):
-		os.mkdir('results')
-	if not os.path.exists(os.path.join('results', 'monitoring')):
-		os.mkdir(os.path.join('results', 'monitoring'))
-	if not os.path.exists(os.path.join('results', 'exampleprinter')):
-		os.mkdir(os.path.join('results', 'exampleprinter'))
-	if not os.path.exists(os.path.join('results', 'runs')):
-		os.mkdir(os.path.join('results', 'runs'))
-	if not os.path.exists(os.path.join('results', 'trainedModels')):
-		os.mkdir(os.path.join('results', 'trainedModels'))
+	os.makedirs('results', exist_ok=True)
+	os.makedirs(os.path.join('results', 'monitoring'), exist_ok=True)
+	os.makedirs(os.path.join('results', 'exampleprinter'), exist_ok=True)
+	os.makedirs(os.path.join('results', 'runs'), exist_ok=True)
+	os.makedirs(os.path.join('results', 'trainedModels'), exist_ok=True)
 
 
 def shuffle_quality() -> int:
@@ -61,8 +58,7 @@ def cartesian_product(list_a, list_b):
 	assert isinstance(list_a, list) and isinstance(list_b, list), 'You must give to lists'
 	output_list = []
 	for a in list_a:
-		for b in list_b:
-			output_list.append((a, b))
+		output_list.extend((a, b) for b in list_b)
 	return output_list
 
 
@@ -83,7 +79,7 @@ def write_dict_to_tensorboard(writer, dictionary, counter, is_cumulative=False) 
 			if (name.startswith('actions') or name.startswith('state')):
 				continue
 			else:
-				name = 'cumulated_' + name
+				name = f'cumulated_{name}'
 		if isinstance(content, dict):
 			writer.add_scalars(name, content, counter)
 		else:
@@ -155,7 +151,7 @@ def write_content_of_dict_to_overview_svg(manipulator, episode, episode_dictiona
 		'a_throw_away':	str(episode_dictionary['owner/throw_away']),
 		'a_garbage': str(cumulated_dictionary['owner/throw_away']),
 		'a_inventory': str(episode_dictionary['state/in_storage']['vendor_0']),
-		'a_profit':	str(cumulated_dictionary['profits/all']['vendor_0']),
+		'a_profit': '{0:.1f}'.format(cumulated_dictionary['profits/all']['vendor_0']),
 		'a_price_new': str(episode_dictionary['actions/price_new']['vendor_0'] + 1),
 		'a_price_used':	str(episode_dictionary['actions/price_refurbished']['vendor_0'] + 1),
 		'a_rebuy_price': str(episode_dictionary['actions/price_rebuy']['vendor_0'] + 1),
@@ -166,7 +162,7 @@ def write_content_of_dict_to_overview_svg(manipulator, episode, episode_dictiona
 		'a_sales_used': str(episode_dictionary['customer/purchases_refurbished']['vendor_0']),
 		'b_competitor_name': 'vendor_1',
 		'b_inventory': str(episode_dictionary['state/in_storage']['vendor_1']),
-		'b_profit': str(cumulated_dictionary['profits/all']['vendor_1']),
+		'b_profit': '{0:.1f}'.format(cumulated_dictionary['profits/all']['vendor_1']),
 		'b_price_new': str(episode_dictionary['actions/price_new']['vendor_1'] + 1),
 		'b_price_used': str(episode_dictionary['actions/price_refurbished']['vendor_1'] + 1),
 		'b_rebuy_price': str(episode_dictionary['actions/price_rebuy']['vendor_1'] + 1),
