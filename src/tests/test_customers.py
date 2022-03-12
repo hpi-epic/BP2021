@@ -103,7 +103,7 @@ def test_linear_lower_overall_price_lower_nothing_probability():
 
 def test_circular_higher_price_lower_purchase_probability():
 	common_state, vendor_specific_state, vendor_actions = np.array([]), [[17], [23]], [[3, 6], [4, 5]]
-	probability_distribution = customer.CustomerCircular.generate_purchase_probabilities_from_offer( \
+	probability_distribution = customer.CustomerCircular.generate_purchase_probabilities_from_offer(
 		customer.CustomerCircular, common_state, vendor_specific_state, vendor_actions)
 	assert probability_distribution[1] > probability_distribution[3]
 	assert probability_distribution[2] < probability_distribution[4]
