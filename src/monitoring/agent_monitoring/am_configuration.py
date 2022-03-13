@@ -18,7 +18,7 @@ class Configurator():
 		# Do not change the values in here when setting up a session! They are assumed in tests. Instead use setup_monitoring()!
 		ut.ensure_results_folders_exist()
 		self.enable_live_draw = False
-		self.episodes = 500
+		self.episodes = 10000
 		self.plot_interval = 50
 		self.marketplace = circular_market.CircularEconomyMonopolyScenario()
 		default_agent = vendors.FixedPriceCEAgent
