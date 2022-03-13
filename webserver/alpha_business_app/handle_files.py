@@ -43,11 +43,11 @@ def download_file(response, wants_zip: bool) -> HttpResponse:
 
 	if wants_zip:
 		zip_file = _convert_tar_file_to_zip(file_like_tar_archive)
-		zip_file = _add_files_to_zip(zip_file, CONFIGURATION_DIR, ['config.json'])
+		zip_file = _add_files_to_zip(zip_file, CONFIGURATION_DIR, ['hyperparameter_config.json'])
 		fake_file = zip_file
 		application_type = 'zip'
 	else:
-		tar_file = _add_files_to_tar(file_like_tar_archive, CONFIGURATION_DIR, ['config.json'])
+		tar_file = _add_files_to_tar(file_like_tar_archive, CONFIGURATION_DIR, ['hyperparameter_config.json'])
 		fake_file = tar_file
 		application_type = 'tar'
 
