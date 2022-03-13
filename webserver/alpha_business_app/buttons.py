@@ -186,6 +186,7 @@ class ButtonHandler():
 		Returns:
 			HttpResponse: A default response with default values or a response containing the error field.
 		"""
+		# check, whether the request wants to pause or to unpause the container
 		if pause_application:
 			response = send_get_request('pause', self.request.POST)
 		else:
@@ -196,7 +197,7 @@ class ButtonHandler():
 			update_container(response['id'], {'last_check_at': timezone.now(), 'health_status': response['status']})
 		else:
 			self.message = response.status()
-		self.wanted_container = Container.objects.get(container_id=self.wanted_container_id)
+		self.wanted_container = Container.objects.get(container_id=self.wanted_container.id())
 		return self._decide_rendering()
 
 	def _logs(self) -> HttpResponse:
