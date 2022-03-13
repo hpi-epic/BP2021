@@ -97,7 +97,7 @@ class SimMarket(gym.Env, ABC):
 		assert isinstance(probability_distribution, np.ndarray), 'generate_purchase_probabilities_from_offer must return an np.ndarray'
 		assert self._is_probability_distribution_fitting_exactly(probability_distribution)
 
-		customer_decisions = np.random.multinomial(number_of_customers, probability_distribution)
+		customer_decisions = np.random.multinomial(number_of_customers, probability_distribution).tolist()
 		self._output_dict['customer/buy_nothing'] += customer_decisions[0]
 		for seller, frequency in enumerate(customer_decisions):
 			if seller == 0 or frequency == 0:
