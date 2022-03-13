@@ -57,8 +57,8 @@ class CircularEconomy(SimMarket, ABC):
 
 	def _throw_away(self, frequency) -> None:
 		"""
-		The call of this method will decrease the in_circulation counter by one.
-		Call it if one of your owners decided to throw away his product.
+		The call of this method will decrease the in_circulation counter by frequency-items.
+		Call it with the of your owners decided to throw away their products.
 		"""
 		self._output_dict['owner/throw_away'] += frequency
 		self.in_circulation -= frequency
@@ -71,8 +71,9 @@ class CircularEconomy(SimMarket, ABC):
 		Args:
 			vendor (int): The index of the vendor that bought the product.
 			profits (np.array(int), optional): The proftits of all vendors.
-			Only the specific proftit of the given vendor is needed. Defaults to None.
-			rebuy_price (int, optional): the price to which the used product is bought. Defaults to 0.
+			Only the specific proftit of the given vendor is needed.
+			rebuy_price (int, optional): the price to which the used product is bought.
+			frequency (int): the number of transfered items
 		"""
 		self._output_dict['owner/rebuys']['vendor_' + str(vendor)] += frequency
 		# receive the product only if you have space for it. Otherwise throw it away. But you have to pay anyway.
@@ -90,7 +91,6 @@ class CircularEconomy(SimMarket, ABC):
 
 		Args:
 			profits (np.array(int)): The profits of the vendor.
-			offer (np.array): The offers of the vendor.
 		"""
 		assert self._owner is not None, 'an owner must be set'
 		return_probabilities = self._owner.generate_return_probabilities_from_offer(
@@ -120,6 +120,7 @@ class CircularEconomy(SimMarket, ABC):
 		Args:
 			profits (np.array(int)): The profits of all vendors.
 			customer_decision (int): Indicates the customer's decision.
+			frequency (int): The number of items bought at this vendor.
 		"""
 		assert customer_decision >= 0 and customer_decision < 2 * self._number_of_vendors, \
 			'the customer_decision must be between 0 and 2 * the number of vendors, as each vendor offers a new and a refurbished product'
