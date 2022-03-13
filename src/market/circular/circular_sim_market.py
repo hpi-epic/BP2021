@@ -124,7 +124,7 @@ class CircularEconomy(SimMarket, ABC):
 		assert customer_decision >= 0 and customer_decision < 2 * self._number_of_vendors, \
 			'the customer_decision must be between 0 and 2 * the number of vendors, as each vendor offers a new and a refurbished product'
 
-		chosen_vendor = int(np.floor(customer_decision / 2))
+		chosen_vendor = customer_decision // 2
 		if customer_decision % 2 == 0:
 			# Calculate how many refurbished can be sold
 			possible_refurbished_solds = min(frequency, self.vendor_specific_state[chosen_vendor][0])
