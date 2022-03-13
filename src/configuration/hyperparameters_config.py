@@ -26,13 +26,13 @@ PRODUCTION_PRICE = None
 EPISODE_LENGTH = None
 
 
-def load_config(filename='config') -> dict:
+def load_config(filename='hyperparameter_config') -> dict:
 	"""
 	Load the configuration json file from the specified path.
 
 	Args:
 		filename (str, optional): The name of the json file containing the configuration values.
-		Must be located in the BP2021/ folder. Defaults to 'config'.
+		Must be located in the BP2021/ folder. Defaults to 'hyperparameter_config'.
 
 	Returns:
 		dict: A dictionary containing the configuration values.
@@ -75,7 +75,7 @@ def check_config_sim_market_completeness(config: dict) -> None:
 	assert 'max_quality' in config, 'your config is missing max_quality'
 	assert 'number_of_customers' in config, 'your config is missing number_of_customers'
 	assert 'production_price' in config, 'your config is missing production_price'
-	assert 'storage_cost_per_product' in config, 'your config is missing STORAGE_COST_PER_PRODUCT'
+	assert 'storage_cost_per_product' in config, 'your config is missing storage_cost_per_product'
 
 
 def update_rl_variables(config: dict) -> None:
@@ -130,6 +130,7 @@ def update_sim_market_variables(config: dict) -> None:
 	assert global_variables['MAX_QUALITY'] > 0, 'max_quality should be positive'
 	assert global_variables['MAX_PRICE'] > 0, 'max_price should be positive'
 	assert global_variables['EPISODE_LENGTH'] > 0, 'episode_size should be positive'
+	assert global_variables['STORAGE_COST_PER_PRODUCT'] >= 0, 'storage_cost_per_product should be non-negative'
 
 	global_variables['MEAN_REWARD_BOUND'] = global_variables['EPISODE_LENGTH'] * global_variables['MAX_PRICE'] * \
 		global_variables['NUMBER_OF_CUSTOMERS']

@@ -1,18 +1,24 @@
 # from https://github.com/github/gitignore
 
-# any sort of result files
-# yes, the way the .gitignore works here is weird!
+# all files and subfolders of the results folder should be ignored
+results
 
-!results/monitoring
-results/monitoring/*
-!results/monitoring/*.dat
-!results/monitoring/MarketOverview_template.svg
-results/performance
-results/trainedModels
-results/runs
+# all webserver related directories
+webserver/configurations
+webserver/data
+
+# docker related directories
+docker/occupied_ports.txt
 
 # file for Johanns test runner
 tests.sh
+# Johanns VM debug skripts
+docker_debug_skript.sh
+docker_container_remove.sh
+
+
+# docker
+docker/docker_archives
 
 # vscode settings
 .vscode/

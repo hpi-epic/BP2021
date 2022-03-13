@@ -5,7 +5,7 @@ from typing import Tuple
 import gym
 import numpy as np
 
-import configuration.config as config
+import configuration.hyperparameters_config as config
 import configuration.utils as ut
 
 # An offer is a market state that contains all prices and qualities
@@ -243,6 +243,19 @@ class SimMarket(gym.Env, ABC):
 			int: The number of actions the agents should take in this marketplace.
 		"""
 		raise NotImplementedError('This method is abstract. Use a subclass')
+
+	def get_actions_dimension(self) -> int:
+		"""
+		Get the dimension of the action space.
+		This can be used to set the number of outputs for vendors with continuos action space.
+
+		Returns:
+			int: The dimension of the action space.
+		"""
+		if self._action_space.shape is not None:
+			return 1
+		else:
+			return len(self._action_space)
 
 	@abstractmethod
 	def _get_competitor_list(self) -> list:  # pragma: no cover

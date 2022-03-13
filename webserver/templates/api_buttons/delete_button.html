@@ -1,0 +1,5 @@
+<form method="post" enctype="multipart/form-data">
+	{% csrf_token %}
+	<button class="action_button delete_button" title="deletes all data we stored about the container"
+	name="delete" value="{{ container.container_id }}" type="submit">delete</button>
+</form>

@@ -1,30 +1,33 @@
+import os
 from abc import ABC, abstractmethod
 
 import numpy as np
 import torch
 
 import agents.vendors as vendors
-import configuration.config as config
+import configuration.hyperparameters_config as config
 import configuration.utils as ut
 import rl.model as model
 
 
-class ActorCriticAgent(vendors.Agent, ABC):
+class ActorCriticAgent(vendors.ReinforcementLearningAgent, ABC):
 	"""
 	This is an implementation of an (one step) actor critic agent as proposed in Richard Suttons textbook on page 332.
 	"""
-	def __init__(self, n_observations, n_actions):
+	def __init__(self, n_observations, n_actions, load_path=None, critic_path=None, name='actor_critic'):
 		self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
 		print(f'I initiate an ActorCriticAgent using {self.device} device')
+		self.name = name
 		self.initialize_models_and_optimizer(n_observations, n_actions)
+		if load_path is not None:
+			self.actor_net.load_state_dict(torch.load(load_path, map_location=self.device))
+		if critic_path is not None:
+			self.critic_net.load_state_dict(torch.load(critic_path, map_location=self.device))
+			self.critic_tgt_net.load_state_dict(torch.load(critic_path, map_location=self.device))
 
-	def synchronize_critic_tgt_net(self):
-		"""
-		This method writes the parameter from the critic net to it's target net.
-		Call this method regularly during training.
-		Having a target net solves problems occuring due to oscillation.
-		"""
-		print('Now I synchronize the tgt net')
+	def synchronize_tgt_net(self):
+		# Not printing this anymore since it clutters the output when training
+		# print('Now I synchronize the tgt net')
 		self.critic_tgt_net.load_state_dict(self.critic_net.state_dict())
 
 	@abstractmethod
@@ -32,8 +35,56 @@ class ActorCriticAgent(vendors.Agent, ABC):
 		raise NotImplementedError('This method is abstract. Use a subclass')
 
 	@abstractmethod
-	def policy(self, observation, verbose=False) -> None:  # pragma: no cover
+	def policy(self, observation, verbose=False, raw_action=False) -> None:  # pragma: no cover
+		"""
+		Give the current state to the agent and receive his action.
+
+		Args:
+			observation (torch.Tensor): The current observation
+			verbose (bool, optional): Flag to add additional information about the training on the tensorboard.
+			Defaults to False.
+			raw_action (bool, optional): Flag to make the agent return his action without calling agent_output_to_market_form.
+			Defaults to False.
+		"""
 		raise NotImplementedError('This method is abstract. Use a subclass')
+
+	def save(self, model_path, model_name) -> None:
+		"""
+		Save a trained model to the specified folder within 'trainedModels'.
+		For each model an actor and a critic net will be saved.
+		Also caps the amount of models in the folder to a maximum of 10.
+		This method is copied from our Q-Learning Agent
+
+		Args:
+			model_path (str): The path to the folder within 'trainedModels' where the model should be saved.
+			model_name (str): The name of the .dat file of this specific model.
+		"""
+		model_name += '.dat'
+		if not os.path.isdir(os.path.abspath(os.path.join('results', 'trainedModels'))):
+			os.mkdir(os.path.abspath(os.path.join('results', 'trainedModels')))
+
+		if not os.path.isdir(os.path.abspath(model_path)):
+			os.mkdir(os.path.abspath(model_path))
+
+		torch.save(self.actor_net.state_dict(), os.path.join(model_path, 'actor_parameters' + model_name))
+		torch.save(self.critic_net.state_dict(), os.path.join(model_path, 'critic_parameters' + model_name))
+
+		full_directory = os.walk(model_path)
+		for _, _, filenames in full_directory:
+			if len(filenames) > 10:
+				# split the filenames to isolate the reward-part
+				split_filenames = [file.rsplit('_') for file in filenames]
+				# preserve the signature for later
+				signature = split_filenames[0][1]
+				# isolate the reward and convert it to float
+				rewards = {file[2] for file in split_filenames}
+				rewards = [float(reward.rsplit('.', 1)[0]) for reward in rewards]
+				# sort the rewards to keep only the best ones
+				rewards = sorted(rewards)
+
+				for reward in range(len(rewards) - 10):
+					os.remove(os.path.join(model_path, f'actor_{signature}_{rewards[reward]:.3f}.dat'))
+					os.remove(os.path.join(model_path, f'critic_{signature}_{rewards[reward]:.3f}.dat'))
 
 	def train_batch(self, states, actions, rewards, next_states, regularization=False):
 		"""
@@ -96,7 +147,17 @@ class ActorCriticAgent(vendors.Agent, ABC):
 		raise NotImplementedError('This method is abstract. Use a subclass')
 
 	@abstractmethod
-	def agent_output_to_market_form(self) -> None:  # pragma: no cover
+	def agent_output_to_market_form(self, action) -> None:  # pragma: no cover
+		"""
+		Takes a raw action and transforms it to a form that is accepted by the market.
+		A raw action is for example three numbers in one.
+
+		Args:
+			action (np.array or int): the raw action
+
+		Returns:
+			tuple or int: the action accepted by the market.
+		"""
 		raise NotImplementedError('This method is abstract. Use a subclass')
 
 
@@ -113,7 +174,7 @@ class DiscreteActorCriticAgent(ActorCriticAgent):
 		self.critic_optimizer = torch.optim.Adam(self.critic_net.parameters(), lr=0.00025)
 		self.critic_tgt_net = model.simple_network(n_observations, 1).to(self.device)
 
-	def policy(self, observation, verbose=False):
+	def policy(self, observation, verbose=False, raw_action=False):
 		observation = torch.Tensor(np.array(observation)).to(self.device)
 		with torch.no_grad():
 			distribution = torch.softmax(self.actor_net(observation).view(-1), dim=0)
@@ -122,23 +183,28 @@ class DiscreteActorCriticAgent(ActorCriticAgent):
 
 		distribution = distribution.to('cpu').detach().numpy()
 		action = ut.shuffle_from_probabilities(distribution)
-		return action, distribution[action], v_estimate.to('cpu').item() if verbose else None
+		action = action if raw_action else self.agent_output_to_market_form(action)
+
+		if verbose:
+			return action, distribution[action], v_estimate.to('cpu').item()
+		else:
+			return action
 
 	def log_probability_given_action(self, states, actions):
 		return -torch.log(torch.softmax(self.actor_net(states), dim=0).gather(1, actions.unsqueeze(-1)))
 
 
-class DiscreteACALinear(DiscreteActorCriticAgent):
+class DiscreteACALinear(DiscreteActorCriticAgent, vendors.LinearAgent):
 	def agent_output_to_market_form(self, action):
 		return action
 
 
-class DiscreteACACircularEconomy(DiscreteActorCriticAgent):
+class DiscreteACACircularEconomy(DiscreteActorCriticAgent, vendors.CircularAgent):
 	def agent_output_to_market_form(self, action):
 		return (int(action % config.MAX_PRICE), int(action / config.MAX_PRICE))
 
 
-class DiscreteACACircularEconomyRebuy(DiscreteActorCriticAgent):
+class DiscreteACACircularEconomyRebuy(DiscreteActorCriticAgent, vendors.CircularAgent):
 	def agent_output_to_market_form(self, action):
 		return (
 			int(action / (config.MAX_PRICE * config.MAX_PRICE)),
@@ -146,7 +212,7 @@ class DiscreteACACircularEconomyRebuy(DiscreteActorCriticAgent):
 			int(action % config.MAX_PRICE))
 
 
-class ContinuosActorCriticAgent(ActorCriticAgent):
+class ContinuosActorCriticAgent(ActorCriticAgent, vendors.LinearAgent, vendors.CircularAgent):
 	"""
 	This is an actor critic agent with continuos action space.
 	It's distribution is a normal distribution parameterized by mean and standard deviation.
@@ -155,6 +221,7 @@ class ContinuosActorCriticAgent(ActorCriticAgent):
 	You must use one of its subclasses.
 	"""
 	softplus = torch.nn.Softplus()
+	name = 'ContinuosActorCriticAgent'
 
 	def initialize_models_and_optimizer(self, n_observations, n_actions):
 		self.n_actions = n_actions
@@ -178,7 +245,7 @@ class ContinuosActorCriticAgent(ActorCriticAgent):
 		"""
 		raise NotImplementedError('This method is abstract. Use a subclass')
 
-	def policy(self, observation, verbose=False):
+	def policy(self, observation, verbose=False, raw_action=False):
 		observation = torch.Tensor(np.array(observation)).to(self.device)
 		with torch.no_grad():
 			network_result = self.actor_net(observation)
@@ -189,8 +256,14 @@ class ContinuosActorCriticAgent(ActorCriticAgent):
 		action = torch.round(torch.normal(mean, std).to(self.device))
 		action = torch.max(action, torch.zeros(action.shape).to(self.device))
 		action = torch.min(action, 9 * torch.ones(action.shape).to(self.device))
-		return action.squeeze().type(torch.LongTensor).to('cpu').numpy(), \
-			*((np.array([mean.to('cpu').numpy(), std.to('cpu').numpy()]).reshape(-1), v_estimate.to('cpu').item()) if verbose else (None, None))
+		action = action.squeeze().type(torch.LongTensor).to('cpu').numpy()
+		action = action if raw_action else self.agent_output_to_market_form(action)
+
+		if verbose:
+			transformed_network_output = np.array([mean.to('cpu').numpy(), std.to('cpu').numpy()]).reshape(-1)
+			return action, transformed_network_output, v_estimate.to('cpu').item()
+		else:
+			return action
 
 	def log_probability_given_action(self, states, actions):
 		network_result = self.actor_net(states)

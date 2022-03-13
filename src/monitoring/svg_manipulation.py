@@ -48,11 +48,11 @@ class SVGManipulator():
 	def __init__(self, save_dir: str = 'svg') -> None:
 		self.value_dictionary = get_default_dict()
 		# do not change the values in template_svg
-		path_to_monitoring = os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'results', 'monitoring')
-		with open(os.path.join(path_to_monitoring, 'MarketOverview_template.svg'), 'r') as template_svg:
+		path_to_template_svg = os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'data')
+		with open(os.path.join(path_to_template_svg, 'MarketOverview_template.svg'), 'r') as template_svg:
 			self.template_svg = template_svg.read()
 		self.output_svg = None
-		self.save_directory = os.path.join(path_to_monitoring, save_dir)
+		self.save_directory = os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'results', 'exampleprinter', save_dir)
 
 	def replace_one_value(self, target_key: str, value: str) -> None:
 		"""
@@ -116,7 +116,7 @@ class SVGManipulator():
 		"""
 		all_svg_files = [file for file in os.listdir(directory) if os.path.isfile(os.path.join(directory, file))]
 		assert all(file.endswith('.svg') for file in all_svg_files), f'all files in given directory must be svgs: {os.path.abspath(directory)}'
-		return all_svg_files
+		return sorted(all_svg_files)
 
 	def construct_slideshow_html(self, images: list, time: int = 1000) -> str:
 		"""
@@ -164,6 +164,7 @@ class SVGManipulator():
 
 		# construct image array for javascript
 		svg_array_for_js = ''.join('\t\t\t{"name":"' + image[:-4] + '", "src":"./' + image + '"},\n' for image in all_svgs)
+
 		# write html to file
 		html_path = os.path.join(self.save_directory, html_name + '.html')
 		with open(html_path, 'w') as out_file:

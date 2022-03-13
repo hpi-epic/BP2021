@@ -3,6 +3,7 @@ import re
 from unittest.mock import patch
 
 import agents.vendors as vendors
+import market.circular.circular_sim_market as circular_market
 import monitoring.agent_monitoring.am_monitoring as monitoring
 
 monitor = monitoring.Monitor()
@@ -13,13 +14,20 @@ def setup_function(function):
 	print('***SETUP***')
 	global monitor
 	monitor = monitoring.Monitor()
-	monitor.configurator.setup_monitoring(enable_live_draw=False, subfolder_name=f'test_plots_{function.__name__}')
+	monitor.configurator.setup_monitoring(
+		enable_live_draw=False,
+		episodes=50,
+		plot_interval=10,
+		marketplace=circular_market.CircularEconomyMonopolyScenario,
+		agents=[(vendors.QLearningCEAgent, [os.path.join(os.path.dirname(__file__), os.pardir, 'test_data',
+			'CircularEconomyMonopolyScenario_QLearningCEAgent.dat')])],
+		subfolder_name=f'test_plots_{function.__name__}')
 
 
 def teardown_module(module):
 	for file_name in os.listdir(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir, 'results', 'monitoring')):
 		if re.match('test_*', file_name):
-			assert False, 'file writing was not mocked or a created file was not removed after the test!'
+			assert False, 'Test files were not mocked correctly'
 
 
 def test_run_marketplace():
