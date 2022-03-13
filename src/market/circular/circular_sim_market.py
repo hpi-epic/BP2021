@@ -112,7 +112,7 @@ class CircularEconomy(SimMarket, ABC):
 	def _get_rebuy_price(self, _) -> int:
 		return 0
 
-	def _complete_purchase(self, profits, customer_decision) -> None:
+	def _complete_purchase(self, profits, customer_decision, frequency) -> None:
 		"""
 		The method handles the customer's decision by raising the profit by the price paid minus the produtcion price.
 		It also handles the storage of used products.
@@ -126,23 +126,30 @@ class CircularEconomy(SimMarket, ABC):
 
 		chosen_vendor = int(np.floor(customer_decision / 2))
 		if customer_decision % 2 == 0:
-			self._output_dict['customer/purchases_refurbished']['vendor_' + str(chosen_vendor)] += 1
-			if self.vendor_specific_state[chosen_vendor][0] >= 1:
-				# Increase the profit and decrease the storage
-				profits[chosen_vendor] += self.vendor_actions[chosen_vendor][0]
-				self._output_dict['profits/by_selling_refurbished']['vendor_' + str(chosen_vendor)] += self.vendor_actions[chosen_vendor][0]
-				self.vendor_specific_state[chosen_vendor][0] -= 1
-			else:
-				# Punish the agent for not having enough second-hand-products
-				profits[chosen_vendor] -= 2 * config.MAX_PRICE
-				self._output_dict['profits/by_selling_refurbished']['vendor_' + str(chosen_vendor)] -= 2 * config.MAX_PRICE
+			# Calculate how many refurbished can be sold
+			possible_refurbished_solds = min(frequency, self.vendor_specific_state[chosen_vendor][0])
+
+			# Increase the profit and decrease the storage
+			profit = possible_refurbished_solds * self.vendor_actions[chosen_vendor][0]
+			self.vendor_specific_state[chosen_vendor][0] -= possible_refurbished_solds
+			profits[chosen_vendor] += profit
+			self._output_dict['customer/purchases_refurbished']['vendor_' + str(chosen_vendor)] += possible_refurbished_solds
+			self._output_dict['profits/by_selling_refurbished']['vendor_' + str(chosen_vendor)] += profit
+
+			# Punish the agent for not having enough second-hand-products
+			unpossible_refurbished_solds = frequency - possible_refurbished_solds
+			punishment = 2 * config.MAX_PRICE * unpossible_refurbished_solds
+			profits[chosen_vendor] -= punishment
+			self._output_dict['profits/by_selling_refurbished']['vendor_' + str(chosen_vendor)] -= punishment
 		else:
-			self._output_dict['customer/purchases_new']['vendor_' + str(chosen_vendor)] += 1
-			profits[chosen_vendor] += self.vendor_actions[chosen_vendor][1] - config.PRODUCTION_PRICE
-			self._output_dict['profits/by_selling_new']['vendor_' + str(chosen_vendor)] += (
-				self.vendor_actions[chosen_vendor][1] - config.PRODUCTION_PRICE)
-			# One more product is in circulation now, but only 10 times the amount of storage space we have
-			self.in_circulation = min(self.in_circulation + 1, self.max_circulation)
+			self._output_dict['customer/purchases_new']['vendor_' + str(chosen_vendor)] += frequency
+			profit = frequency * (self.vendor_actions[chosen_vendor][1] - config.PRODUCTION_PRICE)
+			profits[chosen_vendor] += profit
+			self._output_dict['profits/by_selling_new']['vendor_' + str(chosen_vendor)] += profit
+			# The number of items in circulation is bounded
+			self.in_circulation = min(self.in_circulation + frequency, self.max_circulation)
+
+		assert self.vendor_specific_state[chosen_vendor][0] >= 0, 'Your code must ensure a non-negative storage'
 
 	def _consider_storage_costs(self, profits) -> None:
 		"""

@@ -101,10 +101,9 @@ class SimMarket(gym.Env, ABC):
 		customer_decisions = ut.multinomial(number_of_customers, probability_distribution)
 		self._output_dict['customer/buy_nothing'] += customer_decisions[0]
 		for seller, frequency in enumerate(customer_decisions):
-			if seller == 0:
+			if seller == 0 or frequency == 0:
 				continue
-			for _ in range(frequency):
-				self._complete_purchase(profits, seller - 1)
+			self._complete_purchase(profits, seller - 1, frequency)
 
 	def step(self, action) -> Tuple[np.array, np.float64, bool, dict]:
 		"""
