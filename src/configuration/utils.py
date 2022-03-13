@@ -44,6 +44,14 @@ def multiple_shuffle_from_probabilities(n, probabilities) -> list:
 	return [shuffle_from_probabilities(probabilities) for _ in range(n)]
 
 
+def multinomial(n, probabilities) -> list:
+	numbers = [0] * len(probabilities)
+	shuffles = multiple_shuffle_from_probabilities(n, probabilities)
+	for s in shuffles:
+		numbers[s] += 1
+	return numbers
+
+
 def cartesian_product(list_a, list_b):
 	"""
 	This helper function takes to lists and generates the cartesian product

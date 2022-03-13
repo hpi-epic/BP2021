@@ -98,12 +98,13 @@ class SimMarket(gym.Env, ABC):
 		assert isinstance(probability_distribution, np.ndarray), 'generate_purchase_probabilities_from_offer must return an np.ndarray'
 		assert self._is_probability_distribution_fitting_exactly(probability_distribution)
 
-		customer_decisions = ut.multiple_shuffle_from_probabilities(number_of_customers, probability_distribution)
-		for customer_decision in customer_decisions:
-			if customer_decision != 0:
-				self._complete_purchase(profits, customer_decision - 1)
-			else:
-				self._output_dict['customer/buy_nothing'] += 1
+		customer_decisions = ut.multinomial(number_of_customers, probability_distribution)
+		self._output_dict['customer/buy_nothing'] += customer_decisions[0]
+		for seller, frequency in enumerate(customer_decisions):
+			if seller == 0:
+				continue
+			for _ in range(frequency):
+				self._complete_purchase(profits, seller - 1)
 
 	def step(self, action) -> Tuple[np.array, np.float64, bool, dict]:
 		"""
