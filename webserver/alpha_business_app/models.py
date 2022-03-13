@@ -1,11 +1,4 @@
-import os
-import shutil
-
 from django.db import models
-from django.db.models.signals import post_delete
-from django.dispatch import receiver
-
-from .constants import DATA_DIR
 
 
 class Container(models.Model):
@@ -21,27 +14,14 @@ class Container(models.Model):
 	name = models.CharField(max_length=20)
 	tensorboard_link = models.CharField(max_length=100, default='')
 
+	def id(self):
+		return self.container_id
+
 	def is_archived(self):
 		return 'archived' == self.health_status
 
-	def has_data(self):
-		container_data_path = os.path.join(DATA_DIR, self.container_id)
-		return os.path.exists(container_data_path)
-
 	def has_tensorboard_link(self):
-		return self.tensorboard_link
-
-
-@receiver(post_delete, sender=Container)
-def delete_container(sender, instance, **kwargs) -> None:
-	"""
-	This will be called when you delete a container from the database,
-	We need to make sure, that we delete the objects' data folder
-	"""
-	container_id = instance.container_id
-	container_data_path = os.path.join(DATA_DIR, container_id)
-	if os.path.exists(container_data_path):
-		shutil.rmtree(container_data_path)
+		return self.tensorboard_link != ''
 
 
 def update_container(id: str, updated_values: dict) -> None:

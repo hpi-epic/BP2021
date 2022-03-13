@@ -17,7 +17,7 @@ def send_get_request(wanted_action: str, raw_data: dict) -> APIResponse:
 	Returns:
 		APIResponse: Response from the API converted into our special format.
 	"""
-	wanted_container = raw_data[wanted_action]
+	wanted_container = raw_data['container_id']
 	try:
 		response = requests.get(DOCKER_API + '/' + wanted_action, params={'id': str(wanted_container)})
 	except requests.exceptions.RequestException:
@@ -81,7 +81,7 @@ def stop_container(post_request: dict) -> APIResponse:
 	response = send_get_request('remove', post_request)
 	if response.ok() or response.not_found():
 		# mark container as archived
-		update_container(post_request['remove'], {'health_status': 'archived'})
+		update_container(post_request['container_id'], {'health_status': 'archived'})
 		return APIResponse('success', content='You successfully stopped the container')
 	return response
 

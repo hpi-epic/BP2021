@@ -22,6 +22,10 @@ jobs:
         shell: bash -l {0}
         run: |
           coverage run --source=. -m pytest
+      - name: webserver tests
+        shell: bash -l {0}
+        run: |
+          (cd ./webserver && python ./manage.py test)
       - name: Report Coverage
         shell: bash -l {0}
         run: |

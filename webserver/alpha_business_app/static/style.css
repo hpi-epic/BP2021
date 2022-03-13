@@ -76,3 +76,6 @@ table {
 	background-color: #f3f5f3;
 	border-color: #d0d1d1;
 }
+.flex_div {
+	display: flex;
+}
