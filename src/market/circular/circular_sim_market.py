@@ -5,7 +5,6 @@ import numpy as np
 
 import agents.vendors as vendors
 import configuration.hyperparameters_config as config
-import configuration.utils as ut
 import market.customer as customer
 import market.owner as owner
 from market.customer import Customer
@@ -101,7 +100,7 @@ class CircularEconomy(SimMarket, ABC):
 			'the length of return_probabilities must be the number of vendors plus 2'
 
 		number_of_owners = int(0.05 * self.in_circulation / self._number_of_vendors)
-		owner_decisions = ut.multinomial(number_of_owners, return_probabilities)
+		owner_decisions = np.random.multinomial(number_of_owners, return_probabilities)
 		# owner_action 0 means holding the product, so nothing happens
 		self._throw_away(owner_decisions[1])
 		for rebuyer, frequency in enumerate(owner_decisions):

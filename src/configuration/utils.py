@@ -37,19 +37,7 @@ def shuffle_from_probabilities(probabilities) -> int:
 		sum += p
 		if randomnumber <= sum:
 			return i
-	return len(probabilities) - 1  # pragma: no cover
-
-
-def multiple_shuffle_from_probabilities(n, probabilities) -> list:
-	return [shuffle_from_probabilities(probabilities) for _ in range(n)]
-
-
-def multinomial(n, probabilities) -> list:
-	numbers = [0] * len(probabilities)
-	shuffles = multiple_shuffle_from_probabilities(n, probabilities)
-	for s in shuffles:
-		numbers[s] += 1
-	return numbers
+	return len(probabilities) - 1
 
 
 def cartesian_product(list_a, list_b):
