@@ -56,15 +56,15 @@ class CircularEconomy(SimMarket, ABC):
 	def _choose_owner(self) -> Owner:
 		return owner.UniformDistributionOwner()
 
-	def _throw_away(self) -> None:
+	def _throw_away(self, frequency) -> None:
 		"""
 		The call of this method will decrease the in_circulation counter by one.
 		Call it if one of your owners decided to throw away his product.
 		"""
-		self._output_dict['owner/throw_away'] += 1
-		self.in_circulation -= 1
+		self._output_dict['owner/throw_away'] += frequency
+		self.in_circulation -= frequency
 
-	def _transfer_product_to_storage(self, vendor, profits=None, rebuy_price=0) -> None:
+	def _transfer_product_to_storage(self, vendor, profits, rebuy_price, frequency) -> None:
 		"""
 		Handles the transfer of a used product to the storage after it got bought by the vendor.
 		It respects the storage capacity and adjusts the profit the vendor makes.
@@ -75,13 +75,14 @@ class CircularEconomy(SimMarket, ABC):
 			Only the specific proftit of the given vendor is needed. Defaults to None.
 			rebuy_price (int, optional): the price to which the used product is bought. Defaults to 0.
 		"""
-		self._output_dict['owner/rebuys']['vendor_' + str(vendor)] += 1
-		# receive the product only if you have space for it. Otherwise throw it away.
-		self.vendor_specific_state[vendor][0] = min(self.vendor_specific_state[vendor][0] + 1, self.max_storage)
-		self.in_circulation -= 1
+		self._output_dict['owner/rebuys']['vendor_' + str(vendor)] += frequency
+		# receive the product only if you have space for it. Otherwise throw it away. But you have to pay anyway.
+		self.vendor_specific_state[vendor][0] = min(self.vendor_specific_state[vendor][0] + frequency, self.max_storage)
+		self.in_circulation -= frequency
 		if profits is not None:
-			self._output_dict['profits/rebuy_cost']['vendor_' + str(vendor)] -= rebuy_price
-			profits[vendor] -= rebuy_price
+			rebuy_cost = frequency * rebuy_price
+			self._output_dict['profits/rebuy_cost']['vendor_' + str(vendor)] -= rebuy_cost
+			profits[vendor] -= rebuy_cost
 
 	def _simulate_owners(self, profits) -> None:
 		"""
@@ -100,14 +101,14 @@ class CircularEconomy(SimMarket, ABC):
 			'the length of return_probabilities must be the number of vendors plus 2'
 
 		number_of_owners = int(0.05 * self.in_circulation / self._number_of_vendors)
-		owner_actions = ut.multiple_shuffle_from_probabilities(number_of_owners, return_probabilities)
-		for owner_action in owner_actions:
-			# owner_action 0 means holding the product, so nothing happens
-			if owner_action == 1:
-				self._throw_away()
-			elif owner_action >= 2:
-				rebuy_price = self._get_rebuy_price(owner_action - 2)
-				self._transfer_product_to_storage(owner_action - 2, profits, rebuy_price)
+		owner_decisions = ut.multinomial(number_of_owners, return_probabilities)
+		# owner_action 0 means holding the product, so nothing happens
+		self._throw_away(owner_decisions[1])
+		for rebuyer, frequency in enumerate(owner_decisions):
+			if rebuyer <= 1:
+				continue
+			rebuy_price = self._get_rebuy_price(rebuyer - 2)
+			self._transfer_product_to_storage(rebuyer - 2, profits, rebuy_price, frequency)
 
 	def _get_rebuy_price(self, _) -> int:
 		return 0
