@@ -18,6 +18,7 @@
 					<th>health status</th>
 					<th>get health status</th>
 					<th>download</th>
+					<th>logs</th>
 				</tr>
 				<tr>
 					<td>{{ container.command }}</td>
@@ -30,11 +31,12 @@
 					<td class="button_row" >
 						{% include "api_buttons/download_button.html" %}
 					</td>
+					<td>{% include "api_buttons/logs_button.html" %}</td>
 				</tr>
 			</table>
+			<a href="/">Home</a>
 			{% include "notice_field.html" %}
 			<div>
-				{% include "api_buttons/logs_button.html" %}
 				{% if data %}
 					<p > 
 						<pre class="notice terminal">{{ data }}</pre> 
@@ -43,6 +45,5 @@
 			</div>
 		</div>
 		<br>
-		<a href="/">home</a>
 	</body>
 </html>
