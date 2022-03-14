@@ -4,7 +4,8 @@
 results
 
 # all webserver related directories
-webserver/configurations
+!webserver/configurations/hyperparameter_config.json
+# webserver/configurations
 webserver/data
 
 # docker related directories
