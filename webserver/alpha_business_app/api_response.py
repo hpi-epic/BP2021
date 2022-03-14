@@ -9,6 +9,9 @@ class APIResponse():
 		self.http_status = http_status
 		self.content = content
 
+	def __str__(self) -> str:
+		return 'status_code: ' + str(self.status_code) + ' content: ' + str(self.content)
+
 	def ok(self) -> bool:
 		return self.status_code == 'success'
 

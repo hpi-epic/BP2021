@@ -1,4 +1,4 @@
-from unittest.mock import patch
+from unittest.mock import mock_open, patch
 
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.test import TestCase
@@ -6,11 +6,7 @@ from django.test.client import RequestFactory
 
 from ..api_response import APIResponse
 from ..buttons import ButtonHandler
-from ..models import Container  # , update_container
-
-
-def generate_mock_request():
-	pass
+from ..models import Container, update_container
 
 
 class ButtonTests(TestCase):
@@ -130,30 +126,72 @@ class ButtonTests(TestCase):
 			render_mock.assert_called_once()
 			assert expected_arguments == actual_arguments
 
-	# def test_download_data_from_archived(self):
-	# 	self.test_container.health_status = 'archived'
-	# 	update_container('1234', {'health_status': 'archived'})
+	def test_download_data_from_archived(self):
+		self.test_container.health_status = 'archived'
+		update_container('1234', {'health_status': 'archived'})
 
-	# 	# mock a request that is send when user presses a button
-	# 	request = self.setup_request('/download', 'delete')
+		# mock a request that is send when user presses a button
+		request = self.setup_request('/download', 'data')
 
-	# 	# setup a button handler for this request
-	# 	test_button_handler = self.setup_button_handler('download.html', request)
-	# 	with patch('alpha_business_app.buttons.render') as render_mock:
-	# 		test_button_handler.do_button_click()
+		# setup a button handler for this request
+		test_button_handler = self.setup_button_handler('download.html', request)
+		with patch('alpha_business_app.buttons.render') as render_mock:
+			test_button_handler.do_button_click()
 
-	# 		expected_arguments = self.get_expected_arguments(view='download.html',
-	# 				request=request,
-	# 				data=None,
-	# 				keyword='error',
-	# 				keyword_data='You cannot downoload data from archived containers')
+			expected_arguments = self.get_expected_arguments(view='download.html',
+					request=request,
+					data=None,
+					keyword='error',
+					keyword_data='You cannot downoload data from archived containers')
 
-	# 		render_mock.assert_called_once()
-	# 		actual_arguments = render_mock.call_args.args
-	# 		# cast the query set to list as well
-	# 		actual_arguments[2]['all_saved_containers'] = list(actual_arguments[2]['all_saved_containers'])
+			render_mock.assert_called_once()
+			actual_arguments = render_mock.call_args.args
+			# cast the query set to list as well
+			actual_arguments[2]['all_saved_containers'] = list(actual_arguments[2]['all_saved_containers'])
 
-	# 		assert expected_arguments == actual_arguments
+			assert expected_arguments == actual_arguments
+
+	def test_download_zip_data(self):
+		# mock a request that is send when user presses a button
+		request = self.setup_request_with_parameters('/download', 'data', {'file_type': 'zip'})
+
+		# setup a button handler for this request
+		test_button_handler = self.setup_button_handler('download.html', request)
+		with patch('alpha_business_app.buttons.download_file') as download_file_mock, \
+			patch('alpha_business_app.buttons.send_get_request_with_streaming') as get_request_mock:
+			get_request_mock.return_value = APIResponse('success', content='test_content')
+			test_button_handler.do_button_click()
+
+			download_file_mock.assert_called_once_with('test_content', True)
+
+	def test_download_tar_data(self):
+		# mock a request that is send when user presses a button
+		request = self.setup_request_with_parameters('/download', 'data', {'file_type': 'tar'})
+
+		# setup a button handler for this request
+		test_button_handler = self.setup_button_handler('download.html', request)
+		with patch('alpha_business_app.buttons.download_file') as download_file_mock, \
+			patch('alpha_business_app.buttons.send_get_request_with_streaming') as get_request_mock:
+			get_request_mock.return_value = APIResponse('success', content='test_content')
+			test_button_handler.do_button_click()
+
+			download_file_mock.assert_called_once_with('test_content', False)
+
+	def test_start(self):
+		# mock a request that is send when user presses a button
+		request = self.setup_request_with_parameters('/start_container', 'start',
+			{'filename': 'config.json', 'experiment_name': 'test', 'command_selection': 'training'})
+
+		# setup a button handler for this request
+		test_button_handler = self.setup_button_handler('download.html', request)
+		with patch('alpha_business_app.buttons.send_post_request') as post_request_mock, \
+			patch('alpha_business_app.buttons.redirect') as redirect_mock, \
+			patch('builtins.open', mock_open(read_data='{"test":1}')):
+			post_request_mock.return_value = APIResponse('success', content={'id': '12345'})
+
+			test_button_handler.do_button_click()
+			post_request_mock.assert_called_once_with('start', {'test': 1}, 'training')
+			redirect_mock.assert_called_once_with('/observe', {'success': 'You successfully launched an experiment'})
 
 	def setup_button_handler(self, view: str, request: RequestFactory) -> ButtonHandler:
 		return ButtonHandler(request, view=view,
@@ -162,6 +200,15 @@ class ButtonTests(TestCase):
 
 	def setup_request(self, view: str, action: str) -> RequestFactory:
 		request = RequestFactory().post(view, {'action': action, 'container_id': '1234'})
+		middleware = SessionMiddleware(request)
+		middleware.process_request(request)
+		request.session.save()
+		return request
+
+	def setup_request_with_parameters(self, view: str, action: str, parameter: dict) -> RequestFactory:
+		default_dict = {'action': action, 'container_id': '1234'}
+		# if we switch to python 3.9+, we could also use default_dict | parameter here
+		request = RequestFactory().post(view, {**default_dict, **parameter})
 		middleware = SessionMiddleware(request)
 		middleware.process_request(request)
 		request.session.save()
