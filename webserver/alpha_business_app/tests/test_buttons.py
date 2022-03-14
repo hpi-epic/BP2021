@@ -6,7 +6,7 @@ from django.test.client import RequestFactory
 
 from ..api_response import APIResponse
 from ..buttons import ButtonHandler
-from ..models import Container
+from ..models import Container  # , update_container
 
 
 def generate_mock_request():
@@ -104,32 +104,55 @@ class ButtonTests(TestCase):
 			render_mock.assert_called_once()
 			assert expected_arguments == actual_arguments
 
-	# def test_remove(self):
+	def test_delete(self):
+		# mock a request that is send when user presses a button
+		request = self.setup_request('/observe', 'delete')
+
+		# setup a button handler for this request
+		test_button_handler = self.setup_button_handler('observe.html', request)
+
+		with patch('alpha_business_app.buttons.render') as render_mock, \
+			patch('alpha_business_app.buttons.stop_container') as get_request_mock:
+			content_dict = {'id': '1234', 'data': 'You successfully stopped the container'}
+			get_request_mock.return_value = APIResponse('success', '200', content_dict)
+
+			test_button_handler.do_button_click()
+
+			expected_arguments = (request, 'observe.html',
+						{'all_saved_containers': [],
+							'container': None,
+							'data': None,
+							'success': 'You successfully removed all data'})
+			actual_arguments = render_mock.call_args.args
+			# cast the query set to list as well
+			actual_arguments[2]['all_saved_containers'] = list(actual_arguments[2]['all_saved_containers'])
+
+			render_mock.assert_called_once()
+			assert expected_arguments == actual_arguments
+
+	# def test_download_data_from_archived(self):
+	# 	self.test_container.health_status = 'archived'
+	# 	update_container('1234', {'health_status': 'archived'})
+
 	# 	# mock a request that is send when user presses a button
-	# 	request = self.setup_request('/observe', 'delete')
+	# 	request = self.setup_request('/download', 'delete')
 
 	# 	# setup a button handler for this request
-	# 	test_button_handler = self.setup_button_handler('observe.html', request)
-
-	# 	with patch('alpha_business_app.buttons.render') as render_mock, \
-	# 		patch('alpha_business_app.buttons.stop_container') as get_request_mock:
-	# 		content_dict = {'id': '1234', 'data': 'You successfully stopped the container'}
-	# 		get_request_mock.return_value = APIResponse('success', '200', content_dict)
-
+	# 	test_button_handler = self.setup_button_handler('download.html', request)
+	# 	with patch('alpha_business_app.buttons.render') as render_mock:
 	# 		test_button_handler.do_button_click()
 
-	# 		expected_arguments = (request, 'observe.html',
-	# 					{'all_saved_containers': [],
-	# 						'container': self.test_container,
-	# 						'data': None,
-	# 						'success': 'You successfully removed all data'})
+	# 		expected_arguments = self.get_expected_arguments(view='download.html',
+	# 				request=request,
+	# 				data=None,
+	# 				keyword='error',
+	# 				keyword_data='You cannot downoload data from archived containers')
+
+	# 		render_mock.assert_called_once()
 	# 		actual_arguments = render_mock.call_args.args
 	# 		# cast the query set to list as well
 	# 		actual_arguments[2]['all_saved_containers'] = list(actual_arguments[2]['all_saved_containers'])
 
-	# 		print(actual_arguments)
-	# 		print(expected_arguments)
-	# 		render_mock.assert_called_once()
 	# 		assert expected_arguments == actual_arguments
 
 	def setup_button_handler(self, view: str, request: RequestFactory) -> ButtonHandler:

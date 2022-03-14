@@ -135,6 +135,7 @@ class ButtonHandler():
 
 		if self.message[0] == 'success' or self.wanted_container.is_archived():
 			self.wanted_container.delete()
+			self.wanted_container = None
 			self.message = ['success', 'You successfully removed all data']
 		return self._decide_rendering()
 
