@@ -76,9 +76,9 @@ class SimMarket(gym.Env, ABC):
 		The implementation of this function varies between economy types.
 
 		See also:
-			`<market.linear.linear.LinearEconomy._is_probability_distribution_fitting_exactly`
+			`<market.linear_sim_market.LinearEconomy._is_probability_distribution_fitting_exactly`
 
-			`<market.circular.circular.CircularEconomy._is_probability_distribution_fitting_exactly>`
+			`<market.circular.circular_sim_market.CircularEconomy._is_probability_distribution_fitting_exactly>`
 		"""
 		raise NotImplementedError
 
@@ -132,7 +132,7 @@ class SimMarket(gym.Env, ABC):
 		self._output_dict = {'customer/buy_nothing': 0}
 		self._initialize_output_dict()
 
-		customers_per_vendor_iteration = int(np.floor(config.number_of_customers / self._number_of_vendors))
+		customers_per_vendor_iteration = config.number_of_customers // self._number_of_vendors
 		for i in range(self._number_of_vendors):
 			self._simulate_customers(profits, customers_per_vendor_iteration)
 			if self._owner is not None:
@@ -196,9 +196,9 @@ class SimMarket(gym.Env, ABC):
 		The implementation of this function varies between economy types.
 
 		See also:
-			`<market.linear.LinearEconomy._get_common_state_array>`
+			`<market.linear.linear_sim_market.LinearEconomy._get_common_state_array>`
 
-			`<market.circular.CircularEconomy._get_common_state_array>`
+			`<market.circular.circular_sim_market.CircularEconomy._get_common_state_array>`
 		"""
 		raise NotImplementedError
 
@@ -208,8 +208,8 @@ class SimMarket(gym.Env, ABC):
 		The implementation of this function varies between economy types.
 
 		See also:
-			`<market.linear.LinearEconomy._reset_vendor_specific_state>`
-			`<market.circular.CircularEconomy._reset_vendor_specific_state>`
+			`<market.linear.linear_sim_market.LinearEconomy._reset_vendor_specific_state>`
+			`<market.circular.circular_sim_market.CircularEconomy._reset_vendor_specific_state>`
 		"""
 		raise NotImplementedError
 
