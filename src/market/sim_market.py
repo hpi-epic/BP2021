@@ -4,7 +4,7 @@ from typing import Tuple
 import gym
 import numpy as np
 
-import configuration.hyperparameters_config as config
+from configuration.hyperparameter_config import config
 
 # An offer is a market state that contains all prices and qualities
 
@@ -132,7 +132,7 @@ class SimMarket(gym.Env, ABC):
 		self._output_dict = {'customer/buy_nothing': 0}
 		self._initialize_output_dict()
 
-		customers_per_vendor_iteration = int(np.floor(config.NUMBER_OF_CUSTOMERS / self._number_of_vendors))
+		customers_per_vendor_iteration = int(np.floor(config.number_of_customers / self._number_of_vendors))
 		for i in range(self._number_of_vendors):
 			self._simulate_customers(profits, customers_per_vendor_iteration)
 			if self._owner is not None:
@@ -147,7 +147,7 @@ class SimMarket(gym.Env, ABC):
 		self._consider_storage_costs(profits)
 
 		self._ensure_output_dict_has('profits/all', profits)
-		is_done = self.step_counter >= config.EPISODE_LENGTH
+		is_done = self.step_counter >= config.episode_length
 		return self._observation(), profits[0], is_done, self._output_dict
 
 	def _observation(self, vendor_view=0) -> np.array:
@@ -338,4 +338,4 @@ class SimMarket(gym.Env, ABC):
 			if init_for_all_vendors is None:
 				self._output_dict[name] = 0
 			else:
-				self._output_dict[name] = dict(zip(['vendor_' + str(i) for i in range(self._number_of_vendors)], init_for_all_vendors))
+				self._output_dict[name] = dict(zip([f'vendor_{i}' for i in range(self._number_of_vendors)], init_for_all_vendors))

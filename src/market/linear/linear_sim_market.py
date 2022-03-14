@@ -4,9 +4,9 @@ import gym
 import numpy as np
 
 import agents.vendors as vendors
-import configuration.hyperparameters_config as config
 import configuration.utils as ut
 import market.customer as customer
+from configuration.hyperparameter_config import config
 from market.customer import Customer
 from market.sim_market import SimMarket
 
@@ -24,10 +24,10 @@ class LinearEconomy(SimMarket, ABC):
 		"""
 		self.observation_space = gym.spaces.Box(
 			np.array([0.0] * (len(self.competitors) * 2 + 1)),
-			np.array([config.MAX_QUALITY] + [config.MAX_PRICE, config.MAX_QUALITY] * len(self.competitors)),
+			np.array([config.max_quality] + [config.max_price, config.max_quality] * len(self.competitors)),
 			dtype=np.float64)
 
-		self._action_space = gym.spaces.Discrete(config.MAX_PRICE)
+		self._action_space = gym.spaces.Discrete(config.max_price)
 
 	def _reset_vendor_specific_state(self) -> list:
 		"""
@@ -51,11 +51,11 @@ class LinearEconomy(SimMarket, ABC):
 		Returns:
 			int: The new price.
 		"""
-		return config.PRODUCTION_PRICE + 1
+		return config.production_price + 1
 
 	def _complete_purchase(self, profits, chosen_vendor, frequency) -> None:
-		profits[chosen_vendor] += frequency * (self.vendor_actions[chosen_vendor] - config.PRODUCTION_PRICE)
-		self._output_dict['customer/purchases']['vendor_' + str(chosen_vendor)] += frequency
+		profits[chosen_vendor] += frequency * (self.vendor_actions[chosen_vendor] - config.production_price)
+		self._output_dict['customer/purchases'][f'vendor_{chosen_vendor}'] += frequency
 
 	def _initialize_output_dict(self):
 		self._ensure_output_dict_has('state/quality', [self.vendor_specific_state[i][0] for i in range(self._number_of_vendors)])

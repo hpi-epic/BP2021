@@ -3,13 +3,24 @@ from unittest.mock import mock_open, patch
 
 import pytest
 
-import configuration.hyperparameters_config as config
+import configuration.hyperparameter_config as hyperparameter_config
 import tests.utils_tests as ut_t
 
 
 def teardown_module(module):
 	print('***TEARDOWN***')
-	reload(config)
+	reload(hyperparameter_config)
+
+
+def import_config() -> hyperparameter_config.HyperparameterConfig:
+	"""
+	Reload the hyperparameter_config file to update the config variable with the mocked values.
+
+	Returns:
+		HyperparameterConfig: The config object.
+	"""
+	reload(hyperparameter_config)
+	return hyperparameter_config.config
 
 
 # mock format taken from:
@@ -19,27 +30,27 @@ def test_reading_file_values():
 	json = ut_t.create_hyperparameter_mock_json()
 	with patch('builtins.open', mock_open(read_data=json)) as mock_file:
 		ut_t.check_mock_file(mock_file, json)
-		# Include config again to make sure the file is read again
-		reload(config)
-		# Test all imported values. Extend this test as new values get added!
-		assert len(config.config) == 2, 'the config is being tested for "rl" and "sim_market". Has another type been added?'
-		assert len(config.config['rl']) == 9, 'config["rl"] has more or less values than expected. Check this test for the missing values'
-		assert config.GAMMA == 0.99
-		assert config.BATCH_SIZE == 32
-		assert config.REPLAY_SIZE == 100000
-		assert config.LEARNING_RATE == 1e-6
-		assert config.SYNC_TARGET_FRAMES == 1000
-		assert config.REPLAY_START_SIZE == 10000
-		assert config.EPSILON_DECAY_LAST_FRAME == 75000
-		assert config.EPSILON_START == 1.0
-		assert config.EPSILON_FINAL == 0.1
+
+		config = import_config()
+
+		assert config.gamma == 0.99
+		assert config.batch_size == 32
+		assert config.replay_size == 100000
+		assert config.learning_rate == 1e-6
+		assert config.sync_target_frames == 1000
+		assert config.replay_start_size == 10000
+		assert config.epsilon_decay_last_frame == 75000
+		assert config.epsilon_start == 1.0
+		assert config.epsilon_final == 0.1
 
 	# Test a second time with other values to ensure that the values are read correctly
 	json2 = ut_t.create_hyperparameter_mock_json(rl=ut_t.create_hyperparameter_mock_json_rl(learning_rate='1e-4'))
 	with patch('builtins.open', mock_open(read_data=json2)) as mock_file:
 		ut_t.check_mock_file(mock_file, json2)
-		reload(config)
-		assert config.LEARNING_RATE == 1e-4
+
+		config = import_config()
+
+		assert config.learning_rate == 1e-4
 
 
 # The following variables are input mock-json strings for the test_invalid_values test
@@ -104,5 +115,5 @@ def test_invalid_values(rl_json, expected_message):
 	with patch('builtins.open', mock_open(read_data=json)) as mock_file:
 		ut_t.check_mock_file(mock_file, json)
 		with pytest.raises(AssertionError) as assertion_message:
-			reload(config)
+			import_config()
 		assert expected_message in str(assertion_message.value)

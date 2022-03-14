@@ -3,7 +3,7 @@ import random
 
 import numpy as np
 
-import configuration.hyperparameters_config as config
+from configuration.hyperparameter_config import config
 
 
 def ensure_results_folders_exist():
@@ -20,7 +20,7 @@ def ensure_results_folders_exist():
 
 
 def shuffle_quality() -> int:
-	return min(max(int(np.random.normal(config.MAX_QUALITY / 2, 2 * config.MAX_QUALITY / 5)), 1), config.MAX_QUALITY)
+	return min(max(int(np.random.normal(config.max_quality / 2, 2 * config.max_quality / 5)), 1), config.max_quality)
 
 
 # The following methods should be library calls in the future.
@@ -139,10 +139,10 @@ def write_content_of_dict_to_overview_svg(manipulator, episode, episode_dictiona
 	episode += 1
 	translated_dict = {
 		'simulation_name': 'Market Simulation',
-		'simulation_episode_length': str(config.EPISODE_LENGTH),
+		'simulation_episode_length': str(config.episode_length),
 		'simulation_current_episode': str(episode),
-		'consumer_total_arrivals': str(episode * config.NUMBER_OF_CUSTOMERS),
-		'consumer_total_sales': str(episode * config.NUMBER_OF_CUSTOMERS - cumulated_dictionary['customer/buy_nothing']),
+		'consumer_total_arrivals': str(episode * config.number_of_customers),
+		'consumer_total_sales': str(episode * config.number_of_customers - cumulated_dictionary['customer/buy_nothing']),
 		'a_competitor_name': 'vendor_0',
 		'a_throw_away':	str(episode_dictionary['owner/throw_away']),
 		'a_garbage': str(cumulated_dictionary['owner/throw_away']),
@@ -152,7 +152,7 @@ def write_content_of_dict_to_overview_svg(manipulator, episode, episode_dictiona
 		'a_price_used':	str(episode_dictionary['actions/price_refurbished']['vendor_0'] + 1),
 		'a_rebuy_price': str(episode_dictionary['actions/price_rebuy']['vendor_0'] + 1),
 		'a_repurchases': str(episode_dictionary['owner/rebuys']['vendor_0']),
-		'a_resource_cost': str(config.PRODUCTION_PRICE),
+		'a_resource_cost': str(config.production_price),
 		'a_resources_in_use': str(episode_dictionary['state/in_circulation']),
 		'a_sales_new': str(episode_dictionary['customer/purchases_new']['vendor_0']),
 		'a_sales_used': str(episode_dictionary['customer/purchases_refurbished']['vendor_0']),
@@ -163,7 +163,7 @@ def write_content_of_dict_to_overview_svg(manipulator, episode, episode_dictiona
 		'b_price_used': str(episode_dictionary['actions/price_refurbished']['vendor_1'] + 1),
 		'b_rebuy_price': str(episode_dictionary['actions/price_rebuy']['vendor_1'] + 1),
 		'b_repurchases': str(episode_dictionary['owner/rebuys']['vendor_1']),
-		'b_resource_cost': str(config.PRODUCTION_PRICE),
+		'b_resource_cost': str(config.production_price),
 		'b_sales_new': str(episode_dictionary['customer/purchases_new']['vendor_1']),
 		'b_sales_used': str(episode_dictionary['customer/purchases_refurbished']['vendor_1']),
 	}
