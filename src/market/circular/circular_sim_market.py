@@ -58,7 +58,7 @@ class CircularEconomy(SimMarket, ABC):
 	def _throw_away(self, frequency) -> None:
 		"""
 		The call of this method will decrease the in_circulation counter by frequency-items.
-		Call it with the of your owners decided to throw away their products.
+		Call it with the amount of owners that decided to throw away their products.
 		"""
 		self._output_dict['owner/throw_away'] += frequency
 		self.in_circulation -= frequency
@@ -70,18 +70,17 @@ class CircularEconomy(SimMarket, ABC):
 
 		Args:
 			vendor (int): The index of the vendor that bought the product.
-			profits (np.array(int), optional): The proftits of all vendors.
-			Only the specific proftit of the given vendor is needed.
-			rebuy_price (int, optional): the price to which the used product is bought.
-			frequency (int): the number of transfered items
+			profits (np.array(int)): The profits of all vendors. Only the specific profit of the given vendor is needed.
+			rebuy_price (int): The price to which the used product is bought.
+			frequency (int): The number of transferred items.
 		"""
-		self._output_dict['owner/rebuys']['vendor_' + str(vendor)] += frequency
+		self._output_dict['owner/rebuys'][f'vendor_{vendor}'] += frequency
 		# receive the product only if you have space for it. Otherwise throw it away. But you have to pay anyway.
 		self.vendor_specific_state[vendor][0] = min(self.vendor_specific_state[vendor][0] + frequency, self.max_storage)
 		self.in_circulation -= frequency
 		if profits is not None:
 			rebuy_cost = frequency * rebuy_price
-			self._output_dict['profits/rebuy_cost']['vendor_' + str(vendor)] -= rebuy_cost
+			self._output_dict['profits/rebuy_cost'][f'vendor_{vendor}'] -= rebuy_cost
 			profits[vendor] -= rebuy_cost
 
 	def _simulate_owners(self, profits) -> None:
@@ -103,11 +102,13 @@ class CircularEconomy(SimMarket, ABC):
 		owner_decisions = np.random.multinomial(number_of_owners, return_probabilities).tolist()
 		# owner_action 0 means holding the product, so nothing happens
 		self._throw_away(owner_decisions[1])
-		for rebuyer, frequency in enumerate(owner_decisions):
-			if rebuyer <= 1:
-				continue
-			rebuy_price = self._get_rebuy_price(rebuyer - 2)
-			self._transfer_product_to_storage(rebuyer - 2, profits, rebuy_price, frequency)
+
+		# we start the enumeration at the third element since
+		# owner_decision[0] == hold
+		# owner_decision[1] == throw_away
+		for rebuyer, frequency in enumerate(owner_decisions[2:]):
+			rebuy_price = self._get_rebuy_price(rebuyer)
+			self._transfer_product_to_storage(rebuyer, profits, rebuy_price, frequency)
 
 	def _get_rebuy_price(self, _) -> int:
 		return 0
@@ -128,25 +129,26 @@ class CircularEconomy(SimMarket, ABC):
 		chosen_vendor = customer_decision // 2
 		if customer_decision % 2 == 0:
 			# Calculate how many refurbished can be sold
-			possible_refurbished_solds = min(frequency, self.vendor_specific_state[chosen_vendor][0])
+			possible_refurbished_sales = min(frequency, self.vendor_specific_state[chosen_vendor][0])
 
 			# Increase the profit and decrease the storage
-			profit = possible_refurbished_solds * self.vendor_actions[chosen_vendor][0]
-			self.vendor_specific_state[chosen_vendor][0] -= possible_refurbished_solds
+			profit = possible_refurbished_sales * self.vendor_actions[chosen_vendor][0]
+			self.vendor_specific_state[chosen_vendor][0] -= possible_refurbished_sales
 			profits[chosen_vendor] += profit
-			self._output_dict['customer/purchases_refurbished']['vendor_' + str(chosen_vendor)] += possible_refurbished_solds
-			self._output_dict['profits/by_selling_refurbished']['vendor_' + str(chosen_vendor)] += profit
+			self._output_dict['customer/purchases_refurbished'][f'vendor_{chosen_vendor}'] += possible_refurbished_sales
+			self._output_dict['profits/by_selling_refurbished'][f'vendor_{chosen_vendor}'] += profit
 
 			# Punish the agent for not having enough second-hand-products
-			unpossible_refurbished_solds = frequency - possible_refurbished_solds
-			punishment = 2 * config.max_price * unpossible_refurbished_solds
+			impossible_refurbished_sales = frequency - possible_refurbished_sales
+			punishment = 2 * config.max_price * impossible_refurbished_sales
 			profits[chosen_vendor] -= punishment
-			self._output_dict['profits/by_selling_refurbished']['vendor_' + str(chosen_vendor)] -= punishment
+			self._output_dict['profits/by_selling_refurbished'][f'vendor_{chosen_vendor}'] -= punishment
+
 		else:
-			self._output_dict['customer/purchases_new']['vendor_' + str(chosen_vendor)] += frequency
+			self._output_dict['customer/purchases_new'][f'vendor_{chosen_vendor}'] += frequency
 			profit = frequency * (self.vendor_actions[chosen_vendor][1] - config.production_price)
 			profits[chosen_vendor] += profit
-			self._output_dict['profits/by_selling_new']['vendor_' + str(chosen_vendor)] += profit
+			self._output_dict['profits/by_selling_new'][f'vendor_{chosen_vendor}'] += profit
 			# The number of items in circulation is bounded
 			self.in_circulation = min(self.in_circulation + frequency, self.max_circulation)
 
