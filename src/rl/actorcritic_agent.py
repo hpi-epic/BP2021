@@ -5,9 +5,9 @@ import numpy as np
 import torch
 
 import agents.vendors as vendors
-import configuration.hyperparameters_config as config
 import configuration.utils as ut
 import rl.model as model
+from configuration.hyperparameter_config import config
 
 
 class ActorCriticAgent(vendors.ReinforcementLearningAgent, ABC):
@@ -109,7 +109,7 @@ class ActorCriticAgent(vendors.ReinforcementLearningAgent, ABC):
 
 		v_estimates = self.critic_net(states)
 		with torch.no_grad():
-			v_expected = (rewards + config.GAMMA * self.critic_tgt_net(next_states).detach()).view(-1, 1)
+			v_expected = (rewards + config.gamma * self.critic_tgt_net(next_states).detach()).view(-1, 1)
 		critic_loss = torch.nn.MSELoss()(v_estimates, v_expected)
 		critic_loss.backward()
 
@@ -201,15 +201,15 @@ class DiscreteACALinear(DiscreteActorCriticAgent, vendors.LinearAgent):
 
 class DiscreteACACircularEconomy(DiscreteActorCriticAgent, vendors.CircularAgent):
 	def agent_output_to_market_form(self, action):
-		return (int(action % config.MAX_PRICE), int(action / config.MAX_PRICE))
+		return (int(action % config.max_price), int(action / config.max_price))
 
 
 class DiscreteACACircularEconomyRebuy(DiscreteActorCriticAgent, vendors.CircularAgent):
 	def agent_output_to_market_form(self, action):
 		return (
-			int(action / (config.MAX_PRICE * config.MAX_PRICE)),
-			int(action / config.MAX_PRICE % config.MAX_PRICE),
-			int(action % config.MAX_PRICE))
+			int(action / (config.max_price * config.max_price)),
+			int(action / config.max_price % config.max_price),
+			int(action % config.max_price))
 
 
 class ContinuosActorCriticAgent(ActorCriticAgent, vendors.LinearAgent, vendors.CircularAgent):

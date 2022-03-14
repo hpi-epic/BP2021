@@ -5,13 +5,27 @@ import pytest
 from numpy import random
 
 import agents.vendors as vendors
-import configuration.hyperparameters_config as config
+import configuration.hyperparameter_config as hyperparameter_config
 import tests.utils_tests as ut_t
 
 
 def teardown_module(module):
-	reload(config)
+	print('***TEARDOWN***')
+	reload(hyperparameter_config)
 
+
+def import_config() -> hyperparameter_config.HyperparameterConfig:
+	"""
+	Reload the hyperparameter_config file to update the config variable with the mocked values.
+
+	Returns:
+		HyperparameterConfig: The config object.
+	"""
+	reload(hyperparameter_config)
+	return hyperparameter_config.config
+
+
+config = import_config()
 
 abstract_agent_classes_testcases = [
 	vendors.Agent,
@@ -62,7 +76,7 @@ def test_non_abstract_qlearning_agent_classes(agent, n_observation, n_actions):
 
 
 fixed_price_agent_observation_policy_pairs_testcases = [
-	(vendors.FixedPriceLEAgent(), config.PRODUCTION_PRICE + 3),
+	(vendors.FixedPriceLEAgent(), config.production_price + 3),
 	(vendors.FixedPriceLEAgent(7), 7),
 	(vendors.FixedPriceCEAgent(), (2, 4)),
 	(vendors.FixedPriceCEAgent((3, 5)), (3, 5)),
@@ -78,9 +92,9 @@ def test_fixed_price_agent_observation_policy_pairs(agent, expected_result):
 
 
 storage_evaluation_testcases = [
-	([50, 5], (6, 8)),
-	([50, 9], (5, 7)),
-	([50, 12], (4, 6)),
+	([50, 5], (6, 9)),
+	([50, 9], (5, 8)),
+	([50, 12], (4, 7)),
 	([50, 15], (2, 9))
 ]
 
@@ -91,15 +105,15 @@ def test_storage_evaluation(state, expected_prices):
 		sim_market=ut_t.create_hyperparameter_mock_json_sim_market(max_price='10', production_price='2'))
 	with patch('builtins.open', mock_open(read_data=json)) as mock_file:
 		ut_t.check_mock_file(mock_file, json)
-		reload(config)
+		import_config()
 		agent = vendors.RuleBasedCEAgent()
 		assert expected_prices == agent.policy(state)
 
 
 storage_evaluation_with_rebuy_price_testcases = [
-	([50, 5], (6, 8, 5)),
-	([50, 9], (5, 7, 3)),
-	([50, 12], (4, 6, 2)),
+	([50, 5], (6, 9, 5)),
+	([50, 9], (5, 8, 3)),
+	([50, 12], (4, 7, 2)),
 	([50, 15], (2, 9, 0))
 ]
 
@@ -110,7 +124,7 @@ def test_storage_evaluation_with_rebuy_price(state, expected_prices):
 		sim_market=ut_t.create_hyperparameter_mock_json_sim_market(max_price='10', production_price='2'))
 	with patch('builtins.open', mock_open(read_data=json)) as mock_file:
 		ut_t.check_mock_file(mock_file, json)
-		reload(config)
+		import_config()
 		agent = vendors.RuleBasedCERebuyAgent()
 		assert expected_prices == agent.policy(state)
 
@@ -120,7 +134,7 @@ def test_prices_are_not_higher_than_allowed():
 		sim_market=ut_t.create_hyperparameter_mock_json_sim_market(max_price='10', production_price='9'))
 	with patch('builtins.open', mock_open(read_data=json)) as mock_file:
 		ut_t.check_mock_file(mock_file, json)
-		reload(config)
+		import_config()
 		test_agent = vendors.RuleBasedCEAgent()
 		assert (9, 9) >= test_agent.policy([50, 60])
 
@@ -129,7 +143,7 @@ def test_prices_are_not_higher_than_allowed():
 # This is dependent on the sim_market working!
 # TODO: Make deterministic #174
 def random_offer():
-	return [random.randint(1, config.MAX_QUALITY), random.randint(1, config.MAX_PRICE), random.randint(1, config.MAX_QUALITY)]
+	return [random.randint(1, config.max_quality), random.randint(1, config.max_price), random.randint(1, config.max_quality)]
 
 
 policy_testcases = [
@@ -145,10 +159,10 @@ def test_policy(competitor_class, state):
 		sim_market=ut_t.create_hyperparameter_mock_json_sim_market(max_price='10', production_price='2'))
 	with patch('builtins.open', mock_open(read_data=json)) as mock_file:
 		ut_t.check_mock_file(mock_file, json)
-		reload(config)
+		import_config()
 		competitor = competitor_class()
 
-		assert config.PRODUCTION_PRICE <= competitor.policy(state) < config.MAX_PRICE
+		assert config.production_price <= competitor.policy(state) < config.max_price
 
 
 policy_plus_one_testcases = [
@@ -166,7 +180,7 @@ def test_policy_plus_one(competitor_class, state):
 		sim_market=ut_t.create_hyperparameter_mock_json_sim_market(max_price='10', production_price='2'))
 	with patch('builtins.open', mock_open(read_data=json)) as mock_file:
 		ut_t.check_mock_file(mock_file, json)
-		reload(config)
+		import_config()
 		competitor = competitor_class()
 
-		assert config.PRODUCTION_PRICE + 1 <= competitor.policy(state) < config.MAX_PRICE
+		assert config.production_price + 1 <= competitor.policy(state) < config.max_price
