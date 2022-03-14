@@ -18,13 +18,11 @@ class MockResponse():
 
 
 class ContainerTest(TestCase):
-	def test_error_handling(self):
+	def test_error_handling404(self):
 		mocked_api_response404 = MockResponse(404)
 		expected_response404 = APIResponse('error',
 					content=mocked_api_response404.json()['status'],
 					http_status=mocked_api_response404.status_code)
-
-		# mocked_api_response500 = MockResponse(500)
 
 		converted_response = _error_handling_API(mocked_api_response404)
 
