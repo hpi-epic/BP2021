@@ -8,7 +8,7 @@ from unittest.mock import mock_open, patch
 import pytest
 
 import agents.vendors as vendors
-import configuration.hyperparameters_config as config
+import configuration.hyperparameter_config as hyperparameter_config
 import market.circular.circular_sim_market as circular_market
 import market.linear.linear_sim_market as linear_market
 import rl.q_learning_training as q_learning_training
@@ -22,7 +22,18 @@ def teardown_module(module):
 	for file_name in os.listdir(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'results', 'trainedModels')):
 		if re.match('test_*', file_name):
 			shutil.rmtree(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'results', 'trainedModels', file_name))
-	reload(config)
+	reload(hyperparameter_config)
+
+
+def import_config() -> hyperparameter_config.HyperparameterConfig:
+	"""
+	Reload the hyperparameter_config file to update the config variable with the mocked values.
+
+	Returns:
+		HyperparameterConfig: The config object.
+	"""
+	reload(hyperparameter_config)
+	return hyperparameter_config.config
 
 
 test_scenarios = [
@@ -41,9 +52,9 @@ def test_market_scenario(market_class, agent_class):
 		patch('rl.training.SummaryWriter'), \
 		patch('agents.vendors.QLearningAgent.save'):
 		ut_t.check_mock_file(mock_file, json)
-		# Include config again to make sure the file is read again
-		reload(config)
-		q_learning_training.QLearningTrainer(market_class, agent_class, log_dir_prepend='test_').train_agent(int(config.REPLAY_START_SIZE * 1.2))
+
+		config = import_config()
+		q_learning_training.QLearningTrainer(market_class, agent_class, log_dir_prepend='test_').train_agent(int(config.replay_start_size * 1.2))
 
 
 def test_training_with_tensorboard():
@@ -52,8 +63,8 @@ def test_training_with_tensorboard():
 		patch('rl.training.SummaryWriter'), \
 		patch('agents.vendors.QLearningAgent.save'):
 		ut_t.check_mock_file(mock_file, json)
-		# Include utils_rl again to make sure the file is read again
-		reload(config)
+
+		config = import_config()
 		market_class = linear_market.ClassicScenario
 		agent_class = vendors.QLearningLEAgent
-		q_learning_training.QLearningTrainer(market_class, agent_class, log_dir_prepend='test_').train_agent(int(config.REPLAY_START_SIZE * 1.2))
+		q_learning_training.QLearningTrainer(market_class, agent_class, log_dir_prepend='test_').train_agent(int(config.replay_start_size * 1.2))

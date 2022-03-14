@@ -7,10 +7,10 @@ from abc import ABC, abstractmethod
 import torch
 from torch.utils.tensorboard import SummaryWriter
 
-import configuration.hyperparameters_config as config
 import configuration.utils as ut
 import rl.actorcritic_agent as actorcritic_agent
 from agents.vendors import ReinforcementLearningAgent
+from configuration.hyperparameter_config import config
 
 
 class RLTrainer(ABC):
@@ -117,25 +117,27 @@ class RLTrainer(ABC):
 			self.best_mean_reward = mean_reward - 1
 
 		# save the model only if the epsilon-decay has completed and we reached a new best reward
-		if frame_idx > config.EPSILON_DECAY_LAST_FRAME and mean_reward > self.best_mean_reward:
+		if frame_idx > config.epsilon_decay_last_frame and mean_reward > self.best_mean_reward:
 			self.RL_agent.save(model_path=self.model_path, model_name=f'{self.signature}_{mean_reward:.3f}')
 			if self.best_mean_reward != 0:
 				print(f'Best reward updated {self.best_mean_reward:.3f} -> {mean_reward:.3f}')
 			self.best_mean_reward = mean_reward
 
 	def consider_sync_tgt_net(self, frame_idx) -> None:
-		if (frame_idx + 1) % config.SYNC_TARGET_FRAMES == 0:
+		if (frame_idx + 1) % config.sync_target_frames == 0:
 			self.RL_agent.synchronize_tgt_net()
 
 	@abstractmethod
-	def train_agent(self, maxsteps=2 * config.EPSILON_DECAY_LAST_FRAME) -> None:
+	def train_agent(self, maxsteps=2 * config.epsilon_decay_last_frame) -> None:
 		raise NotImplementedError('This method is abstract. Use a subclass')
 
 	def _end_of_training(self) -> None:
 		"""
 		Inform the user of the best_mean_reward the agent achieved during training.
 		"""
-		if self.best_mean_reward == 0:
+		if self.best_mean_reward is None:
+			print('The `best_mean_reward` has never been set. Is this expected?')
+		elif self.best_mean_reward == 0:
 			print('The mean reward of the agent was never higher than 0, so no models were saved!')
 		else:
 			print(f'The best mean reward reached by the agent was {self.best_mean_reward:.3f}')
