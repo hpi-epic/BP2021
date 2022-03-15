@@ -1,7 +1,7 @@
 from unittest.mock import patch
 
 from django.contrib.sessions.middleware import SessionMiddleware
-from django.test import TestCase
+from django.test import TestCase, Client
 from django.test.client import RequestFactory
 
 from ..api_response import APIResponse
@@ -46,16 +46,16 @@ class ButtonTests(TestCase):
 			render_mock.assert_called_once()
 			assert expected_arguments == actual_arguments
 
-	def test_pause(self):
+	def test_pause_button(self):
 		# mock a request that is send when user presses a button
-		request = self.setup_request('/detail', 'pause')
+		request = self.setup_request('/details', 'pause')
 
 		# setup a button handler for this request
 		test_button_handler = self.setup_button_handler('details.html', request)
 
 		with patch('alpha_business_app.buttons.render') as render_mock, \
 			patch('alpha_business_app.buttons.send_get_request') as get_request_mock:
-			get_request_mock.return_value = APIResponse('success', '200', {'id': '1234', 'status': 'paused X)'})
+			get_request_mock.return_value = APIResponse('success', '200', {'id': '1234', 'status': 'paused'})
 
 			test_button_handler.do_button_click()
 
@@ -67,17 +67,18 @@ class ButtonTests(TestCase):
 
 			render_mock.assert_called_once()
 			assert expected_arguments == actual_arguments
+			assert 'paused' == Container.objects.get(container_id='1234').health_status
 
-	def test_unpause(self):
-
-		request = self.setup_request('/detail', 'unpause')
+	def test_pause_button(self):
+		# mock a request that is send when user presses a button
+		request = self.setup_request('/details', 'unpause')
 
 		# setup a button handler for this request
 		test_button_handler = self.setup_button_handler('details.html', request)
 
 		with patch('alpha_business_app.buttons.render') as render_mock, \
 			patch('alpha_business_app.buttons.send_get_request') as get_request_mock:
-			get_request_mock.return_value = APIResponse('success', '200', {'id': '1234', 'status': 'running again'})
+			get_request_mock.return_value = APIResponse('success', '200', {'id': '1234', 'status': 'running'})
 
 			test_button_handler.do_button_click()
 
@@ -89,6 +90,7 @@ class ButtonTests(TestCase):
 
 			render_mock.assert_called_once()
 			assert expected_arguments == actual_arguments
+			assert 'running' == Container.objects.get(container_id='1234').health_status
 
 	def test_logs(self):
 		# mock a request that is send when user presses a button
