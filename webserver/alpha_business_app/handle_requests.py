@@ -17,9 +17,9 @@ def send_get_request(wanted_action: str, raw_data: dict) -> APIResponse:
 	Returns:
 		APIResponse: Response from the API converted into our special format.
 	"""
-	wanted_container = raw_data[wanted_action]
+	wanted_container = raw_data['container_id']
 	try:
-		response = requests.get(DOCKER_API + '/' + wanted_action, params={'id': str(wanted_container)})
+		response = requests.get(f'{DOCKER_API}/{wanted_action}', params={'id': str(wanted_container)})
 	except requests.exceptions.RequestException:
 		return APIResponse('error', content='The API is unavailable')
 	if response.ok:
@@ -39,7 +39,7 @@ def send_get_request_with_streaming(wanted_action: str, wanted_container: str) -
 		APIResponse: Response from the API converted into our special format.
 	"""
 	try:
-		response = requests.get(DOCKER_API + '/' + wanted_action, params={'id': str(wanted_container)}, stream=True)
+		response = requests.get(f'{DOCKER_API}/{wanted_action}', params={'id': str(wanted_container)}, stream=True)
 	except requests.exceptions.RequestException:
 		return APIResponse('error', content='The API is unavailable')
 	if response.ok:
@@ -60,7 +60,7 @@ def send_post_request(route: str, body: dict, command: str) -> APIResponse:
 		APIResponse: Response from the API converted into our special format.
 	"""
 	try:
-		response = requests.post(DOCKER_API + '/' + route, json=body, params={'command': command})
+		response = requests.post(f'{DOCKER_API}/{route}', json=body, params={'command': command})
 	except requests.exceptions.RequestException:
 		return APIResponse('error', content='The API is unavailable')
 	if response.ok:
@@ -81,7 +81,7 @@ def stop_container(post_request: dict) -> APIResponse:
 	response = send_get_request('remove', post_request)
 	if response.ok() or response.not_found():
 		# mark container as archived
-		update_container(post_request['remove'], {'health_status': 'archived'})
+		update_container(post_request['container_id'], {'health_status': 'archived'})
 		return APIResponse('success', content='You successfully stopped the container')
 	return response
 
