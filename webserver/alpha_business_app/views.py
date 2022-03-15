@@ -6,6 +6,7 @@ from .forms import UploadFileForm
 from .handle_files import handle_uploaded_file
 from .models import Container
 
+
 def detail(request, container_id) -> HttpResponse:
 	try:
 		wanted_container = Container.objects.get(id=container_id)
