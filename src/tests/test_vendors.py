@@ -10,6 +10,7 @@ import market.circular.circular_vendors as circular_vendors
 import market.linear.linear_vendors as linear_vendors
 import tests.utils_tests as ut_t
 from rl.q_learning_agent import QLearningAgent, QLearningCEAgent, QLearningCERebuyAgent, QLearningLEAgent
+from rl.reinforcement_learning_agent import ReinforcementLearningAgent
 
 
 def teardown_module(module):
@@ -37,7 +38,7 @@ abstract_agent_classes_testcases = [
 	vendors.HumanPlayer,
 	vendors.RuleBasedAgent,
 	vendors.FixedPriceAgent,
-	vendors.ReinforcementLearningAgent,
+	ReinforcementLearningAgent,
 	QLearningAgent
 ]
 

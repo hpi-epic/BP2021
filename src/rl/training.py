@@ -9,8 +9,8 @@ from torch.utils.tensorboard import SummaryWriter
 
 import configuration.utils as ut
 import rl.actorcritic_agent as actorcritic_agent
-from agents.vendors import ReinforcementLearningAgent
 from configuration.hyperparameter_config import config
+from rl.reinforcement_learning_agent import ReinforcementLearningAgent
 
 
 class RLTrainer(ABC):

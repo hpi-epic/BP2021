@@ -6,10 +6,10 @@ import torch
 
 import configuration.utils as ut
 import rl.model as model
-from agents.vendors import ReinforcementLearningAgent
 from configuration.hyperparameter_config import config
 from market.circular.circular_vendors import CircularAgent
 from market.linear.linear_vendors import LinearAgent
+from rl.reinforcement_learning_agent import ReinforcementLearningAgent
 
 
 class ActorCriticAgent(ReinforcementLearningAgent, ABC):
