@@ -143,14 +143,14 @@ class ButtonTests(TestCase):
 					request=request,
 					data=None,
 					keyword='error',
-					keyword_data='You cannot downoload data from archived containers')
+					keyword_data='You cannot download data from archived containers')
 
 			render_mock.assert_called_once()
 			actual_arguments = render_mock.call_args.args
 			# cast the query set to list as well
 			actual_arguments[2]['all_saved_containers'] = list(actual_arguments[2]['all_saved_containers'])
 
-			assert expected_arguments == actual_arguments
+			assert expected_arguments == actual_arguments, f'\nExpected_arguments: {expected_arguments} \n actual aguments: {actual_arguments}'
 
 	def test_download_zip_data(self):
 		# mock a request that is sent when user presses a button
