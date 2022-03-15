@@ -14,14 +14,14 @@ class ButtonTests(TestCase):
 		# get a container for testing
 		self.test_container = Container.objects.create(
 								command='training',
-								container_id='1234',
+								id='1234',
 								created_at='01.01.1970',
 								last_check_at='now',
 								name='test_container'
 								)
 
 	def test_health_button(self):
-		# mock a request that is send when user presses a button
+		# mock a request that is sent when user presses a button
 		request = self._setup_request('/details', 'health')
 
 		# setup a button handler for this request
@@ -41,7 +41,7 @@ class ButtonTests(TestCase):
 
 			render_mock.assert_called_once()
 			assert expected_arguments == actual_arguments
-			assert 'healthy :)' == Container.objects.get(container_id='1234').health_status
+			assert 'healthy :)' == Container.objects.get(id='1234').health_status
 
 	def test_pause_button(self):
 		# mock a request that is send when user presses a button
@@ -64,7 +64,7 @@ class ButtonTests(TestCase):
 
 			render_mock.assert_called_once()
 			assert expected_arguments == actual_arguments
-			assert 'paused' == Container.objects.get(container_id='1234').health_status
+			assert 'paused' == Container.objects.get(id='1234').health_status
 
 	def test_unpause_button(self):
 		# mock a request that is send when user presses a button
@@ -87,7 +87,7 @@ class ButtonTests(TestCase):
 
 			render_mock.assert_called_once()
 			assert expected_arguments == actual_arguments
-			assert 'running' == Container.objects.get(container_id='1234').health_status
+			assert 'running' == Container.objects.get(id='1234').health_status
 
 	def test_logs_button(self):
 		# mock a request that is send when user presses a button
@@ -111,7 +111,7 @@ class ButtonTests(TestCase):
 			assert expected_arguments == actual_arguments
 
 	def test_tensorboard_button(self):
-		# mock a request that is send when user presses a button
+		# mock a request that is sent when user presses a button
 		request = self._setup_request('/details', 'data/tensorboard')
 
 		# setup a button handler for this request
@@ -126,7 +126,7 @@ class ButtonTests(TestCase):
 			redirect_mock.assert_called_once_with('tensorboard_link:6006')
 
 	def test_stop_button(self):
-		# mock a request that is send when user presses a button
+		# mock a request that is sent when user presses a button
 		request = self._setup_request('/observe', 'remove')
 
 		# setup a button handler for this request
@@ -148,7 +148,7 @@ class ButtonTests(TestCase):
 			assert expected_arguments == actual_arguments
 
 	def test_delete_button(self):
-		# mock a request that is send when user presses a button
+		# mock a request that is sent when user presses a button
 		request = self._setup_request('/observe', 'delete')
 
 		# setup a button handler for this request
@@ -177,7 +177,7 @@ class ButtonTests(TestCase):
 		self.test_container.health_status = 'archived'
 		update_container('1234', {'health_status': 'archived'})
 
-		# mock a request that is send when user presses a button
+		# mock a request that is sent when user presses a button
 		request = self._setup_request('/download', 'data')
 
 		# setup a button handler for this request
@@ -189,17 +189,17 @@ class ButtonTests(TestCase):
 					request=request,
 					data=None,
 					keyword='error',
-					keyword_data='You cannot downoload data from archived containers')
+					keyword_data='You cannot download data from archived containers')
 
 			render_mock.assert_called_once()
 			actual_arguments = render_mock.call_args.args
 			# cast the query set to list as well
 			actual_arguments[2]['all_saved_containers'] = list(actual_arguments[2]['all_saved_containers'])
 
-			assert expected_arguments == actual_arguments
+			assert expected_arguments == actual_arguments, f'\nExpected_arguments: {expected_arguments} \n actual aguments: {actual_arguments}'
 
 	def test_download_zip_data(self):
-		# mock a request that is send when user presses a button
+		# mock a request that is sent when user presses a button
 		request = self._setup_request_with_parameters('/download', 'data', {'file_type': 'zip'})
 
 		# setup a button handler for this request
@@ -212,7 +212,7 @@ class ButtonTests(TestCase):
 			download_file_mock.assert_called_once_with('test_content', True)
 
 	def test_download_tar_data(self):
-		# mock a request that is send when user presses a button
+		# mock a request that is sent when user presses a button
 		request = self._setup_request_with_parameters('/download', 'data', {'file_type': 'tar'})
 
 		# setup a button handler for this request
@@ -225,7 +225,7 @@ class ButtonTests(TestCase):
 			download_file_mock.assert_called_once_with('test_content', False)
 
 	def test_start_button(self):
-		# mock a request that is send when user presses a button
+		# mock a request that is sent when user presses a button
 		request = self._setup_request_with_parameters('/start_container', 'start',
 			{'filename': 'config.json', 'experiment_name': 'test', 'command_selection': 'training'})
 
@@ -267,7 +267,7 @@ class ButtonTests(TestCase):
 		all_containers = list(Container.objects.all())
 
 		# query the test container again, because it values might have changed
-		self.test_container = Container.objects.get(container_id='1234')
+		self.test_container = Container.objects.get(id='1234')
 
 		return (request,
 				view,

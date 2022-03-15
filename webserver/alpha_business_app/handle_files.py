@@ -27,11 +27,11 @@ def handle_uploaded_file(uploaded_config) -> None:
 def download_file(response, wants_zip: bool) -> HttpResponse:
 	"""
 	Makes the dat from the API available for the user and adds the config file before.
-	This can eiter be a zip or a tarfile.
+	This can either be a zip or a tarfile.
 
 	Args:
-		response (Response): response from the API which is a tar archive
-		wants_zip (bool): indecates if the user wants to download the data as zip.
+		response (Response): Response from the API which is a tar archive.
+		wants_zip (bool): Indicates whether the user wants to download the data as a zipped file.
 
 	Returns:
 		HttpResponse: response for the user containing the file.
@@ -98,13 +98,13 @@ def _add_files_to_zip(file_like_zip: BytesIO, path_to_add_files: str, files: lis
 
 def _convert_tar_file_to_zip(fake_tar_archive: BytesIO) -> BytesIO:
 	"""
-	Converts a tar file into a zip file
+	Converts a tar file into a zip file.
 
 	Args:
 		fake_tar_archive (BytesIO): bytes of a tar archive
 
 	Returns:
-		BytesIO: fake file bytes of zip archive
+		BytesIO: fake file bytes of zip archive.
 	"""
 	print('converting tar archive to zip')
 	tar_archive = tarfile.open(fileobj=fake_tar_archive, mode='r:')

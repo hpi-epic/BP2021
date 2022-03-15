@@ -53,14 +53,14 @@ class LinearEconomy(SimMarket, ABC):
 		"""
 		return config.production_price + 1
 
-	def _complete_purchase(self, profits, chosen_vendor) -> None:
-		profits[chosen_vendor] += self.vendor_actions[chosen_vendor] - config.production_price
-		self.output_dict['customer/purchases']['vendor_' + str(chosen_vendor)] += 1
+	def _complete_purchase(self, profits, chosen_vendor, frequency) -> None:
+		profits[chosen_vendor] += frequency * (self.vendor_actions[chosen_vendor] - config.production_price)
+		self._output_dict['customer/purchases'][f'vendor_{chosen_vendor}'] += frequency
 
 	def _initialize_output_dict(self):
-		self._ensure_output_dict_has('state/quality', [self.vendor_specific_state[i][0] for i in range(self._get_number_of_vendors())])
+		self._ensure_output_dict_has('state/quality', [self.vendor_specific_state[i][0] for i in range(self._number_of_vendors)])
 
-		self._ensure_output_dict_has('customer/purchases', [0] * self._get_number_of_vendors())
+		self._ensure_output_dict_has('customer/purchases', [0] * self._number_of_vendors)
 
 	def get_n_actions(self):
 		return self._action_space.n
@@ -75,7 +75,10 @@ class LinearEconomy(SimMarket, ABC):
 		Returns:
 			bool: Whether the probability_distribution fits into the LinearEcononmy.
 		"""
-		return len(probability_distribution) == 1 + self._get_number_of_vendors()
+		return len(probability_distribution) == 1 + self._number_of_vendors
+
+	def _get_common_state_array(self) -> np.array:
+		return np.array([])
 
 
 class ClassicScenario(LinearEconomy):

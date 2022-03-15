@@ -37,7 +37,7 @@ def shuffle_from_probabilities(probabilities) -> int:
 		sum += p
 		if randomnumber <= sum:
 			return i
-	return len(probabilities) - 1  # pragma: no cover
+	return len(probabilities) - 1
 
 
 def cartesian_product(list_a, list_b):
