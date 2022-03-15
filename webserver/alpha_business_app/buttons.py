@@ -158,8 +158,7 @@ class ButtonHandler():
 			response = send_get_request_with_streaming('data', self.wanted_container.id())
 			if response.ok():
 				# save data from api and make it available for the user
-				response = response.content
-				return download_file(response, self.request.POST['file_type'] == 'zip')
+				return download_file(response.content, self.request.POST['file_type'] == 'zip')
 			else:
 				self.message = response.status()
 				return self._decide_rendering()
@@ -178,6 +177,7 @@ class ButtonHandler():
 		else:
 			self.message = response.status()
 		self.wanted_container = Container.objects.get(container_id=self.wanted_container.id())
+
 		return self._decide_rendering()
 
 	def _toggle_pause(self, pause_application: bool) -> HttpResponse:

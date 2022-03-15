@@ -11,7 +11,6 @@
 		"epsilon_final" : 0.1
 	},
 	"sim_market": {
-		"max_storage": 100,
 		"episode_size": 50,
 		"max_price": 10,
 		"max_quality": 50,

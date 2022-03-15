@@ -30,7 +30,7 @@ def download_file(response, wants_zip: bool) -> HttpResponse:
 	This can eiter be a zip or a tarfile.
 
 	Args:
-		response (APIResponse): response from the API which is a tar archive
+		response (Response): response from the API which is a tar archive
 		wants_zip (bool): indecates if the user wants to download the data as zip.
 
 	Returns:

@@ -270,6 +270,12 @@ Before starting the server you might need to apply any pending migrations using
 python3 ./manage.py migrate
 ```
 
+To run tests you have written for the Django webserver go into the webserver folder and run
+
+```bash
+python3 ./manage.py test
+```
+
 ### 1.5.3. Docker API
 
 There is a RESTful API written with the python libary FastAPI for communicating with docker containers that can be found in `/docker`
