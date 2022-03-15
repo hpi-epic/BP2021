@@ -16,10 +16,6 @@ tests.sh
 docker_debug_skript.sh
 docker_container_remove.sh
 
-
-# docker
-docker/docker_archives
-
 # vscode settings
 .vscode/
 .DS_Store

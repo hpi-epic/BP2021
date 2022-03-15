@@ -10,6 +10,10 @@ class PathManager():
 
 		If the user has not yet provided a path, ask them for one and validate it.
 		"""
+		if not os.path.exists(os.path.join(os.path.dirname(__file__), 'data_path.txt')):
+			with open(os.path.join(os.path.dirname(__file__), 'data_path.txt'), 'w') as path_file:
+				pass
+
 		with open(os.path.join(os.path.dirname(__file__), 'data_path.txt'), 'r') as path_file:
 			cls.data_path = path_file.read()
 
