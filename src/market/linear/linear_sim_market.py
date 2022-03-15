@@ -3,11 +3,11 @@ from abc import ABC
 import gym
 import numpy as np
 
-import agents.vendors as vendors
 import configuration.utils as ut
 from configuration.hyperparameter_config import config
 from market.customer import Customer
 from market.linear.linear_customers import CustomerLinear
+from market.linear.linear_vendors import CompetitorJust2Players, CompetitorLinearRatio1, CompetitorRandom
 from market.sim_market import SimMarket
 
 
@@ -84,14 +84,14 @@ class LinearEconomy(SimMarket, ABC):
 class ClassicScenario(LinearEconomy):
 
 	def _get_competitor_list(self) -> list:
-		return [vendors.CompetitorLinearRatio1()]
+		return [CompetitorLinearRatio1()]
 
 
 class MultiCompetitorScenario(LinearEconomy):
 
 	def _get_competitor_list(self) -> list:
 		return [
-			vendors.CompetitorLinearRatio1(),
-			vendors.CompetitorRandom(),
-			vendors.CompetitorJust2Players(),
+			CompetitorLinearRatio1(),
+			CompetitorRandom(),
+			CompetitorJust2Players(),
 		]

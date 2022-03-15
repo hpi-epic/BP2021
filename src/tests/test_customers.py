@@ -12,7 +12,7 @@ from market.linear.linear_customers import CustomerLinear
 # Test the Customer parent class, i.e. make sure it cannot be used
 def test_customer_parent_class():
 	with pytest.raises(NotImplementedError) as assertion_message:
-		customer.Customer.generate_purchase_probabilities_from_offer(customer.CustomerLinear, *ut_t.random_offer(linear_market.ClassicScenario))
+		customer.Customer.generate_purchase_probabilities_from_offer(CustomerLinear, *ut_t.random_offer(linear_market.ClassicScenario))
 	assert 'This method is abstract. Use a subclass' in str(assertion_message.value)
 
 

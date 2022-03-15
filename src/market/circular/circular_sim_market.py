@@ -3,10 +3,10 @@ from abc import ABC
 import gym
 import numpy as np
 
-import agents.vendors as vendors
 import market.owner as owner
 from configuration.hyperparameter_config import config
 from market.circular.circular_customers import CustomerCircular
+from market.circular.circular_vendors import RuleBasedCERebuyAgent
 from market.customer import Customer
 from market.owner import Owner
 from market.sim_market import SimMarket
@@ -268,4 +268,4 @@ class CircularEconomyRebuyPriceMonopolyScenario(CircularEconomyRebuyPrice):
 class CircularEconomyRebuyPriceOneCompetitor(CircularEconomyRebuyPrice):
 
 	def _get_competitor_list(self) -> list:
-		return [vendors.RuleBasedCERebuyAgent()]
+		return [RuleBasedCERebuyAgent()]

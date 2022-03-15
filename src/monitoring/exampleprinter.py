@@ -7,12 +7,14 @@ import time
 import torch
 from torch.utils.tensorboard import SummaryWriter
 
-import agents.vendors as vendors
 import configuration.utils as ut
 import market.circular.circular_sim_market as circular_market
+from agents.vendors import Agent
 from configuration.environment_config import EnvironmentConfigLoader, ExampleprinterEnvironmentConfig
+from market.circular.circular_vendors import RuleBasedCERebuyAgent
 from market.sim_market import SimMarket
 from monitoring.svg_manipulation import SVGManipulator
+from rl.q_learning_agent import QLearningAgent
 
 
 class ExamplePrinter():
@@ -20,11 +22,11 @@ class ExamplePrinter():
 	def __init__(self):
 		ut.ensure_results_folders_exist()
 		self.marketplace = circular_market.CircularEconomyRebuyPriceOneCompetitor()
-		self.agent = vendors.RuleBasedCERebuyAgent()
+		self.agent = RuleBasedCERebuyAgent()
 		# Signal handler for e.g. KeyboardInterrupt
 		signal.signal(signal.SIGINT, self._signal_handler)
 
-	def setup_exampleprinter(self, marketplace: SimMarket = None, agent: vendors.Agent = None) -> None:
+	def setup_exampleprinter(self, marketplace: SimMarket = None, agent: Agent = None) -> None:
 		"""
 		Configure the current exampleprinter session.
 
@@ -98,7 +100,7 @@ if __name__ == '__main__':  # pragma: no cover
 	marketplace = config.marketplace()
 
 	# QLearningAgents need more initialization
-	if issubclass(config.agent[0], vendors.QLearningAgent):
+	if issubclass(config.agent[0], QLearningAgent):
 		printer.setup_exampleprinter(marketplace=marketplace,
 			agent=config.agent[0](
 				n_observations=marketplace.observation_space.shape[0],

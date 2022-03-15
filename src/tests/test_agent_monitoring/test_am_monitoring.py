@@ -2,9 +2,10 @@ import os
 import re
 from unittest.mock import patch
 
-import agents.vendors as vendors
 import market.circular.circular_sim_market as circular_market
 import monitoring.agent_monitoring.am_monitoring as monitoring
+from market.circular.circular_vendors import FixedPriceCEAgent
+from rl.q_learning_agent import QLearningCEAgent
 
 monitor = monitoring.Monitor()
 
@@ -19,7 +20,7 @@ def setup_function(function):
 		episodes=50,
 		plot_interval=10,
 		marketplace=circular_market.CircularEconomyMonopolyScenario,
-		agents=[(vendors.QLearningCEAgent, [os.path.join(os.path.dirname(__file__), os.pardir, 'test_data',
+		agents=[(QLearningCEAgent, [os.path.join(os.path.dirname(__file__), os.pardir, 'test_data',
 			'CircularEconomyMonopolyScenario_QLearningCEAgent.dat')])],
 		subfolder_name=f'test_plots_{function.__name__}')
 
@@ -31,7 +32,7 @@ def teardown_module(module):
 
 
 def test_run_marketplace():
-	monitor.configurator.setup_monitoring(episodes=100, plot_interval=100, agents=[(vendors.FixedPriceCEAgent, [(5, 2)])])
+	monitor.configurator.setup_monitoring(episodes=100, plot_interval=100, agents=[(FixedPriceCEAgent, [(5, 2)])])
 	with patch('monitoring.agent_monitoring.am_evaluation.plt'), \
 		patch('monitoring.agent_monitoring.am_configuration.os.path.exists') as exists_mock:
 		exists_mock.return_value = True
