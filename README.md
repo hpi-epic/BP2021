@@ -312,6 +312,6 @@ tensorboard serve --logdir results/runs/
 ```
 
 The path specified can be changed to just include one subfolder of the runs folder to track just one of the experiments.
-NOTE: it might not work with Safari, but chrome does the job.
+NOTE: It might not work with Safari, but Chrome does the job.
 
-if you are using the webserver the yellow button opens the tensorboard, you might need to reload the page it redirects you to, because the tensorboard server in the container did not start fast enough, most times the browser will do this for you.
+If you are using the webserver the yellow button opens the tensorboard, you might need to reload the page it redirects you to, because the tensorboard server in the container did not start fast enough, most times the browser will do this for you.
