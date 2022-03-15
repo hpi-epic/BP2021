@@ -121,6 +121,14 @@ class ButtonHandler():
 			file_names = os.listdir('configurations')
 		return render(self.request, self.view_to_render, {'file_names': file_names, self.message[0]: self.message[1]})
 
+	# def _render_details(self):
+	# 	self.all_containers = Container.objects.all()
+	# 	params_for_view = {'all_saved_containers': self.all_containers,
+	# 				'container': self.wanted_container,
+	# 				'data': self.data,
+	# 				self.message[0]: self.message[1]}
+	# 	return render(self.request,self.view_to_render)
+
 	# BUTTON ACTION HANDLING
 	def _delete_container(self) -> HttpResponse:
 		"""

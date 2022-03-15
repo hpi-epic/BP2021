@@ -12,7 +12,11 @@ def detail(request, container_id) -> HttpResponse:
 		wanted_container = Container.objects.get(id=container_id)
 	except Container.DoesNotExist as error:
 		raise Http404('Container does not exist') from error
-	button_handler = ButtonHandler(request, view='details.html', container=wanted_container)
+		
+	if request.POST['action'] == 'remove':
+		button_handler = ButtonHandler(request, viwe='observe.html', container=wanted_container)
+	else:
+		button_handler = ButtonHandler(request, view='details.html', container=wanted_container)
 	return button_handler.do_button_click()
 
 
