@@ -1,11 +1,9 @@
-import copy
 from abc import ABC, abstractmethod
 from typing import Tuple
 
 import gym
 import numpy as np
 
-import configuration.utils as ut
 from configuration.hyperparameter_config import config
 
 # An offer is a market state that contains all prices and qualities
@@ -35,6 +33,7 @@ class SimMarket(gym.Env, ABC):
 		self._setup_action_observation_space()
 		self._owner = None
 		self._customer = None
+		self._number_of_vendors = self._get_number_of_vendors()
 		# TODO: Better testing for the observation and action space
 		assert (self.observation_space and self._action_space), 'Your observation or action space is not defined'
 		# Make sure that variables such as state, customer are known
@@ -62,8 +61,9 @@ class SimMarket(gym.Env, ABC):
 
 		self._reset_common_state()
 
-		self.vendor_specific_state = [self._reset_vendor_specific_state() for _ in range(self._get_number_of_vendors())]
-		self.vendor_actions = [self._reset_vendor_actions() for _ in range(self._get_number_of_vendors())]
+		self.vendor_specific_state = [self._reset_vendor_specific_state() for _ in range(self._number_of_vendors)]
+		self.vendor_actions = [self._reset_vendor_actions() for _ in range(self._number_of_vendors)]
+		self.offer_length_per_vendor = self._get_offer_length_per_vendor()
 
 		self._customer = self._choose_customer()
 		self._owner = self._choose_owner()
@@ -76,33 +76,33 @@ class SimMarket(gym.Env, ABC):
 		The implementation of this function varies between economy types.
 
 		See also:
-			`<market.linear.linear_sim_market.LinearEconomy._is_probability_distribution_fitting_exactly`
+			`<market.linear_sim_market.LinearEconomy._is_probability_distribution_fitting_exactly`
 
 			`<market.circular.circular_sim_market.CircularEconomy._is_probability_distribution_fitting_exactly>`
 		"""
 		raise NotImplementedError
 
-	def _simulate_customers(self, profits, offers, number_of_customers) -> None:
+	def _simulate_customers(self, profits, number_of_customers) -> None:
 		"""
 		Simulate the customers, the products offered by the vendors get sold to n customers.
-
+		For the offers, the internal state is used.
 		The profits for each vendor get saved to the profits array.
 
 		Args:
 			profits (np.array): The profits of the customers get saved to this array
-			offers (np.array): this array contains the offers of the vendors. It has to be compatible with the customers used.
 			number_of_customers (int): the number of customers eager to buy each step.
 		"""
-		probability_distribution = self._customer.generate_purchase_probabilities_from_offer(offers, self._get_offer_length_per_vendor())
+		probability_distribution = self._customer.generate_purchase_probabilities_from_offer(
+			self._get_common_state_array(), self.vendor_specific_state, self.vendor_actions)
 		assert isinstance(probability_distribution, np.ndarray), 'generate_purchase_probabilities_from_offer must return an np.ndarray'
 		assert self._is_probability_distribution_fitting_exactly(probability_distribution)
 
-		for _ in range(number_of_customers):
-			customer_decision = ut.shuffle_from_probabilities(probability_distribution)
-			if customer_decision != 0:
-				self._complete_purchase(profits, customer_decision - 1)
-			else:
-				self.output_dict['customer/buy_nothing'] += 1
+		customer_decisions = np.random.multinomial(number_of_customers, probability_distribution).tolist()
+		self._output_dict['customer/buy_nothing'] += customer_decisions[0]
+		for seller, frequency in enumerate(customer_decisions):
+			if seller == 0 or frequency == 0:
+				continue
+			self._complete_purchase(profits, seller - 1, frequency)
 
 	def step(self, action) -> Tuple[np.array, np.float64, bool, dict]:
 		"""
@@ -112,7 +112,7 @@ class SimMarket(gym.Env, ABC):
 		It is pretty generic and configured by overwriting the abstract and empty methods.
 
 		Args:
-			action (np.array): The action of the agent. In discrete case: the action must be between 0 and number of actions -1.
+			action (int | Tuple): The action of the agent. In discrete case: the action must be between 0 and number of actions -1.
 			Note that you must add one to this price to get the real price!
 
 		Returns:
@@ -127,16 +127,16 @@ class SimMarket(gym.Env, ABC):
 
 		self.step_counter += 1
 
-		profits = [0] * self._get_number_of_vendors()
+		profits = [0] * self._number_of_vendors
 
-		self.output_dict = {'customer/buy_nothing': 0}
+		self._output_dict = {'customer/buy_nothing': 0}
 		self._initialize_output_dict()
 
-		customers_per_vendor_iteration = int(np.floor(config.number_of_customers / self._get_number_of_vendors()))
-		for i in range(self._get_number_of_vendors()):
-			self._simulate_customers(profits, self._generate_customer_offer(), customers_per_vendor_iteration)
+		customers_per_vendor_iteration = config.number_of_customers // self._number_of_vendors
+		for i in range(self._number_of_vendors):
+			self._simulate_customers(profits, customers_per_vendor_iteration)
 			if self._owner is not None:
-				self._simulate_owners(profits, self._generate_customer_offer())
+				self._simulate_owners(profits)
 
 			# the competitor, which turn it is, will update its pricing
 			if i < len(self.competitors):
@@ -148,7 +148,7 @@ class SimMarket(gym.Env, ABC):
 
 		self._ensure_output_dict_has('profits/all', profits)
 		is_done = self.step_counter >= config.episode_length
-		return self._observation(), profits[0], is_done, copy.deepcopy(self.output_dict)
+		return self._observation(), profits[0], is_done, self._output_dict
 
 	def _observation(self, vendor_view=0) -> np.array:
 		"""
@@ -165,47 +165,42 @@ class SimMarket(gym.Env, ABC):
 		Returns:
 			np.array: the view for the vendor with index vendor_view
 		"""
-		# observaton is the array containing the global state. We concatenate everything relevant to it, then return it.
-		observation = self._get_common_state_array()
-		assert isinstance(observation, np.ndarray), '_get_common_state_array must return an np.ndarray'
+		# observatons is the array containing the global states. We add everything relevant to it, then return a concatenated version.
+		observations = [self._get_common_state_array()]
+		assert isinstance(observations[0], np.ndarray), '_get_common_state_array must return an np.ndarray'
 
-		# first the action and state of the of the vendor whose view we create will be added
+		# first the state of the of the vendor whose view we create will be added
 		if self.vendor_specific_state[vendor_view] is not None:
-			observation = np.concatenate((observation, np.array(self.vendor_specific_state[vendor_view], ndmin=1)), dtype=np.float64)
+			observations.append(np.array(self.vendor_specific_state[vendor_view], ndmin=1, dtype=np.float64))
 
 		# the rest of the vendors actions and states will be added
-		for vendor_index in range(self._get_number_of_vendors()):
+		for vendor_index in range(self._number_of_vendors):
 			if vendor_index == vendor_view:
 				continue
-			observation = np.concatenate((observation, np.array(self.vendor_actions[vendor_index], ndmin=1)), dtype=np.float64)
+			observations.append(np.array(self.vendor_actions[vendor_index], ndmin=1, dtype=np.float64))
 			if self.vendor_specific_state[vendor_index] is not None:
-				observation = np.concatenate((observation, np.array(self.vendor_specific_state[vendor_index], ndmin=1)), dtype=np.float64)
+				observations.append(np.array(self.vendor_specific_state[vendor_index], ndmin=1, dtype=np.float64))
 
 		# The observation has to be part of the observation_space defined by the market
-		assert self.observation_space.contains(observation), f'{observation} ({type(observation)}) invalid observation'
-		return observation
-
-	def _generate_customer_offer(self) -> np.array:
-		"""
-		Map the internal state to an array which is presented to the customers.
-
-		It includes all information customers will use for their decisions.
-		At the beginning of the array you have the common state.
-		Afterwards you have the action and vendor specific state for all vendors.
-		"""
-		offer = self._get_common_state_array()
-		assert isinstance(offer, np.ndarray), '_get_common_state_array must return an np.ndarray'
-		for vendor_index in range(self._get_number_of_vendors()):
-			offer = np.concatenate((offer, np.array(self.vendor_actions[vendor_index], ndmin=1)), dtype=np.float64)
-			if self.vendor_specific_state[vendor_index] is not None:
-				offer = np.concatenate((offer, np.array(self.vendor_specific_state[vendor_index], ndmin=1)), dtype=np.float64)
-		return offer
+		concatenated_observations = np.concatenate(observations, dtype=np.float64)
+		assert self.observation_space.contains(concatenated_observations), \
+			f'{concatenated_observations} ({type(concatenated_observations)}) invalid observation'
+		return concatenated_observations
 
 	def _reset_common_state(self) -> None:
 		pass
 
-	def _get_common_state_array(self) -> np.array:
-		return np.array([])
+	@abstractmethod
+	def _get_common_state_array(self) -> None:
+		"""
+		The implementation of this function varies between economy types.
+
+		See also:
+			`<market.linear.linear_sim_market.LinearEconomy._get_common_state_array>`
+
+			`<market.circular.circular_sim_market.CircularEconomy._get_common_state_array>`
+		"""
+		raise NotImplementedError
 
 	@abstractmethod
 	def _reset_vendor_specific_state(self) -> None:
@@ -213,8 +208,8 @@ class SimMarket(gym.Env, ABC):
 		The implementation of this function varies between economy types.
 
 		See also:
-			`<market.sim_market.LinearEconomy._reset_vendor_specific_state>`
-			`<market.sim_market.CircularEconomy._reset_vendor_specific_state>`
+			`<market.linear.linear_sim_market.LinearEconomy._reset_vendor_specific_state>`
+			`<market.circular.circular_sim_market.CircularEconomy._reset_vendor_specific_state>`
 		"""
 		raise NotImplementedError
 
@@ -328,7 +323,7 @@ class SimMarket(gym.Env, ABC):
 
 	def _ensure_output_dict_has(self, name, init_for_all_vendors=None) -> None:
 		"""
-		Ensure that the output_dict has an entry with the given name and create an entry otherwise.
+		Ensure that the _output_dict has an entry with the given name and create an entry otherwise.
 
 		If a parameter for init_for_all_vendors is passed, it will be interpreted as creating a dict with the passed array as content.
 
@@ -337,10 +332,10 @@ class SimMarket(gym.Env, ABC):
 			init_for_all_vendors (list, optional): initialization values for all vendors in this entry. Defaults to None.
 		"""
 		if init_for_all_vendors is not None:
-			assert isinstance(init_for_all_vendors, list) and len(init_for_all_vendors) == self._get_number_of_vendors(), \
+			assert isinstance(init_for_all_vendors, list) and len(init_for_all_vendors) == self._number_of_vendors, \
 				'make sure you pass a list with length of number of vendors'
-		if name not in self.output_dict:
+		if name not in self._output_dict:
 			if init_for_all_vendors is None:
-				self.output_dict[name] = 0
+				self._output_dict[name] = 0
 			else:
-				self.output_dict[name] = dict(zip(['vendor_' + str(i) for i in range(self._get_number_of_vendors())], init_for_all_vendors))
+				self._output_dict[name] = dict(zip([f'vendor_{i}' for i in range(self._number_of_vendors)], init_for_all_vendors))
