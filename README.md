@@ -20,6 +20,7 @@
 			- [1.5.1.2. Using Docker natively](#1512-using-docker-natively)
 		- [1.5.2. Webserver](#152-webserver)
 		- [1.5.3. Docker API](#153-docker-api)
+	- [1.6. Tensorboard](#16-tensorboard)
 
 Working repository in context of the bachelorproject "Online Marketplace Simulation: A Testbed for Self-Learning Agents" at the research group Enterprise Platform and Integration Concepts.
 
@@ -173,11 +174,12 @@ To update the badge, modify the `pre-commit-config.yml` file by swapping the fol
 ```yml
 args: [-v, --ignore-init-method, --ignore-module, --exclude=./src/tests, --exclude=./webserver, --fail-under=50]
 ```
+
 with
+
 ```yml
 args: [-v, --ignore-init-method, --ignore-module, --exclude=./src/tests, --exclude=./webserver, --fail-under=50, --generate-badge=./badges/docstring_coverage.svg, --badge-style=flat]
 ```
-
 
 ### 1.4.2. Pre-commit Troubleshooting
 
@@ -283,3 +285,16 @@ uvicorn app:app --reload
 Don't use `--reload` when deploying in production.
 
 You can just run the `app.py` with python from the docker folder as well.
+
+## 1.6. Tensorboard
+
+Tensorboard is used extensively to track parameters of the training as well as the agents and the market itself. It is started from the console by using:
+
+```bash
+tensorboard serve --logdir results/runs/
+```
+
+The path specified can be changed to just include one subfolder of the runs folder to track just one of the experiments.
+NOTE: it might not work with Safari, but chrome does the job.
+
+if you are using the webserver the yellow button opens the tensorboard, you might need to reload the page it redirects you to, because the tensorboard server in the container did not start fast enough, most times the browser will do this for you.
