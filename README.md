@@ -11,7 +11,7 @@
 	- [1.2. The `AlphaBusiness` package](#12-the-alphabusiness-package)
 	- [1.3. Testing](#13-testing)
 		- [1.3.1. Pytest](#131-pytest)
-		- [1.3.2.](#132-webserver-tests)
+		- [1.3.2. Webserver Tests](#132-webserver-tests)
 		- [1.3.3. Coverage](#133-coverage)
 	- [1.4. Pre-commit](#14-pre-commit)
 		- [1.4.1. Interrogate](#141-interrogate)
