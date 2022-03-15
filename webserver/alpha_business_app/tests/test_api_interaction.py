@@ -21,7 +21,7 @@ class ButtonTests(TestCase):
 								)
 
 	def test_health_button(self):
-		# mock a request that is send when user presses a button
+		# mock a request that is sent when user presses a button
 		request = self._setup_request('/details', 'health')
 
 		# setup a button handler for this request
@@ -44,7 +44,7 @@ class ButtonTests(TestCase):
 			assert 'healthy :)' == Container.objects.get(container_id='1234').health_status
 
 	def test_logs_button(self):
-		# mock a request that is send when user presses a button
+		# mock a request that is sent when user presses a button
 		request = self._setup_request('/details', 'logs')
 
 		# setup a button handler for this request
@@ -65,7 +65,7 @@ class ButtonTests(TestCase):
 			assert expected_arguments == actual_arguments
 
 	def test_tensorboard_button(self):
-		# mock a request that is send when user presses a button
+		# mock a request that is sent when user presses a button
 		request = self._setup_request('/details', 'data/tensorboard')
 
 		# setup a button handler for this request
@@ -80,7 +80,7 @@ class ButtonTests(TestCase):
 			redirect_mock.assert_called_once_with('tensorboard_link:6006')
 
 	def test_stop_button(self):
-		# mock a request that is send when user presses a button
+		# mock a request that is sent when user presses a button
 		request = self._setup_request('/observe', 'remove')
 
 		# setup a button handler for this request
@@ -102,7 +102,7 @@ class ButtonTests(TestCase):
 			assert expected_arguments == actual_arguments
 
 	def test_delete_button(self):
-		# mock a request that is send when user presses a button
+		# mock a request that is sent when user presses a button
 		request = self._setup_request('/observe', 'delete')
 
 		# setup a button handler for this request
@@ -131,7 +131,7 @@ class ButtonTests(TestCase):
 		self.test_container.health_status = 'archived'
 		update_container('1234', {'health_status': 'archived'})
 
-		# mock a request that is send when user presses a button
+		# mock a request that is sent when user presses a button
 		request = self._setup_request('/download', 'data')
 
 		# setup a button handler for this request
@@ -153,7 +153,7 @@ class ButtonTests(TestCase):
 			assert expected_arguments == actual_arguments
 
 	def test_download_zip_data(self):
-		# mock a request that is send when user presses a button
+		# mock a request that is sent when user presses a button
 		request = self._setup_request_with_parameters('/download', 'data', {'file_type': 'zip'})
 
 		# setup a button handler for this request
@@ -166,7 +166,7 @@ class ButtonTests(TestCase):
 			download_file_mock.assert_called_once_with('test_content', True)
 
 	def test_download_tar_data(self):
-		# mock a request that is send when user presses a button
+		# mock a request that is sent when user presses a button
 		request = self._setup_request_with_parameters('/download', 'data', {'file_type': 'tar'})
 
 		# setup a button handler for this request
@@ -179,7 +179,7 @@ class ButtonTests(TestCase):
 			download_file_mock.assert_called_once_with('test_content', False)
 
 	def test_start_button(self):
-		# mock a request that is send when user presses a button
+		# mock a request that is sent when user presses a button
 		request = self._setup_request_with_parameters('/start_container', 'start',
 			{'filename': 'config.json', 'experiment_name': 'test', 'command_selection': 'training'})
 
