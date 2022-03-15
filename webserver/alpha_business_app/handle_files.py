@@ -1,53 +1,11 @@
-import mimetypes
 import os
 import tarfile
-import time
+import zipfile
+from io import BytesIO
 
 from django.http import HttpResponse
 
-from .constants import CONFIGURATION_DIR, DATA_DIR
-from .models import Container
-
-
-def archive_files(container_id: str) -> HttpResponse:
-	"""
-	This will get you ona archive of all the archives in the data folder of the container.
-
-	Args:
-		container_id (str): The id of the wanted container.
-
-	Returns:
-		HttpResponse: All files beloning to this container.
-	"""
-	container_data_path = os.path.join(DATA_DIR, container_id)
-	archive_path = os.path.join(container_data_path, f'all_{time.strftime("%b%d_%H-%M-%S")}.tar')
-
-	tar_archive = tarfile.open(archive_path, 'x')
-	tar_archive.close()
-	files_to_be_included = [file for file in os.listdir(container_data_path) if not file.startswith('all')]
-
-	_add_files_to_archive(archive_path, container_data_path, files_to_be_included)
-	return _file_as_http_response(archive_path, 'application/x-tar')
-
-
-def download_file(path_to_file: str) -> HttpResponse:
-	"""
-	Makes a file available to the user, if the file is a tar archive it adds the `config.json` to it.
-
-	Args:
-		path_to_file (str): Path to the file that should be downloaded.
-
-	Returns:
-		HttpResponse: A response including the file with all headers set for the user to save it.
-	"""
-	# get the mime type of the file
-	mime_type, _ = mimetypes.guess_type(path_to_file)
-
-	# if it is a tar, we can add the config file to the archive
-	if mime_type == 'application/x-tar':
-		path_to_container_data = os.path.dirname(path_to_file)
-		_add_files_to_archive(path_to_file, path_to_container_data, ['config.json'])
-	return _file_as_http_response(path_to_file, mime_type)
+from .constants import CONFIGURATION_DIR
 
 
 def handle_uploaded_file(uploaded_config) -> None:
@@ -66,86 +24,104 @@ def handle_uploaded_file(uploaded_config) -> None:
 			destination.write(chunk)
 
 
-def save_data(response, container_id: str) -> str:
+def download_file(response, wants_zip: bool) -> HttpResponse:
 	"""
-	Saves a tar file to the data folder of the container.
+	Makes the dat from the API available for the user and adds the config file before.
+	This can either be a zip or a tarfile.
 
 	Args:
-		response (APIResponse): A converted response from the API.
-		container_id (str): The container id the data belongs to.
+		response (Response): Response from the API which is a tar archive.
+		wants_zip (bool): Indicates whether the user wants to download the data as a zipped file.
 
 	Returns:
-		str: path to the saved folder.
+		HttpResponse: response for the user containing the file.
 	"""
-	container_data_folder = _ensure_data_folder_structure(container_id)
+	archive_name = response.headers['content-disposition'][9:-4]
 
-	# save the archive with the filename from response in data folder of container
-	archive_name = response.headers['content-disposition'][9:]
-	path_to_archive = os.path.join(container_data_folder, archive_name)
+	# convert tar file to file like object to be able to work with it in memory
+	file_like_tar_archive = BytesIO(response.content)
 
-	with open(path_to_archive, 'wb') as new_archive:
-		new_archive.write(response.content)
-	return path_to_archive
+	if wants_zip:
+		zip_file = _convert_tar_file_to_zip(file_like_tar_archive)
+		zip_file = _add_files_to_zip(zip_file, CONFIGURATION_DIR, ['hyperparameter_config.json'])
+		fake_file = zip_file
+		application_type = 'zip'
+	else:
+		tar_file = _add_files_to_tar(file_like_tar_archive, CONFIGURATION_DIR, ['hyperparameter_config.json'])
+		fake_file = tar_file
+		application_type = 'tar'
+
+	# put together an http response for the browser
+	file_response = HttpResponse(fake_file.getvalue(), content_type=f'application/{application_type}')
+	file_response['Content-Disposition'] = f'attachment; filename={archive_name}.{application_type}'
+
+	return file_response
 
 
-def _add_files_to_archive(path_to_tar_archive: str, path_to_files: str, files: list) -> None:
+def _add_files_to_tar(fake_tar_archive: BytesIO, path_to_add_files: str, files: list) -> BytesIO:
 	"""
-	Adds all given files to the given archive
+	This function adds the given files at the path to the given tar archive.
 
 	Args:
-		path_to_tar_archive (str): Path to the archive the files should be added.
-		path_to_files (str): path to the files that should be added, must match the list of files.
-		files (list): all files that should be added to the archive.
+		fake_tar_archive (BytesIO): the archive the files should be added.
+		path_to_add_files (str): path to the files that need to be added.
+		files (list): names of the files at the path that need to be added.
 	"""
-	tar_archive = tarfile.open(path_to_tar_archive, 'a')
+	# TODO: assert all path + file exist
+	print(f'adding {files} to tar archive')
+	tar_archive = tarfile.open(fileobj=fake_tar_archive, mode='a:')
 	for file in files:
-		tar_archive.add(os.path.join(path_to_files, file), arcname=file)
+		tar_archive.add(os.path.join(path_to_add_files, file), arcname=file)
 	tar_archive.close()
 
+	return fake_tar_archive
 
-def _ensure_data_folder_structure(container_id: str) -> str:
+
+def _add_files_to_zip(file_like_zip: BytesIO, path_to_add_files: str, files: list) -> BytesIO:
 	"""
-	Makes sure thet the folder ./data/<container_id> exists, in order to save all data belonging to this container in there.
+	This function adds the given files at the path to the given tar archive.
 
 	Args:
-		container_id (str): id of the container
-
-	Returns:
-		str: path to the data folder of the requested container.
+		file_like_zip (BytesIO): the zip archive the files should be added.
+		path_to_add_files (str): path to the files that need to be added.
+		files (list): names of the files at the path that need to be added.
 	"""
-	data_folder = DATA_DIR
-	path_to_container_data = os.path.join(data_folder, str(container_id))
-	if os.path.exists(path_to_container_data):
-		return path_to_container_data
-	os.makedirs(path_to_container_data)
-	# put the used config in the data folder
-	config = Container.objects.get(container_id=container_id).config_file
-	with open(os.path.join(path_to_container_data, 'config.json'), 'w') as config_file:
-		config_file.write(config)
+	# TODO: assert all path + file exist
+	print(f'adding {files} to zip archive')
+	zip_archive = zipfile.ZipFile(file=file_like_zip, mode='a', compression=zipfile.ZIP_DEFLATED)
+	for file in files:
+		zip_archive.write(os.path.join(path_to_add_files, file), arcname=file)
+	zip_archive.close()
 
-	return path_to_container_data
+	return file_like_zip
 
 
-def _file_as_http_response(path_to_file: str, mime_type: str) -> HttpResponse:
+def _convert_tar_file_to_zip(fake_tar_archive: BytesIO) -> BytesIO:
 	"""
-	Converts a given file with a mime type into an HttpResponse.
+	Converts a tar file into a zip file.
 
 	Args:
-		path_to_file (str): path to the file that should be converted.
-		mime_type (str): type of the file for the http response.
+		fake_tar_archive (BytesIO): bytes of a tar archive
 
 	Returns:
-		HttpResponse: HttpResponse containing the file.
+		BytesIO: fake file bytes of zip archive.
 	"""
-	# open file and write to HttpResponse
-	with open(path_to_file, 'rb') as archive:
-		response = HttpResponse(archive, content_type=mime_type)
+	print('converting tar archive to zip')
+	tar_archive = tarfile.open(fileobj=fake_tar_archive, mode='r:')
 
-	# set the HTTP header for sending to browser
-	archive_name = os.path.basename(path_to_file)
-	container_id = os.path.basename(os.path.dirname(path_to_file))
-	container_name = Container.objects.get(container_id=container_id).name
-	file_name = f'container_{container_name}_{archive_name}'
-	response['Content-Disposition'] = f'attachment; filename={file_name}'
-	# Return the response value
-	return response
+	# create an in memory zip file
+	file_like_zip = BytesIO()
+	zip_archive = zipfile.ZipFile(file=file_like_zip, mode='a', compression=zipfile.ZIP_DEFLATED)
+
+	for member in tar_archive:
+		file = tar_archive.extractfile(member)
+		if file:
+			# file will be None for empty directories
+			file_content = file.read()
+			file_name = member.name
+			zip_archive.writestr(file_name, file_content)
+
+	zip_archive.close()
+	tar_archive.close()
+
+	return file_like_zip
