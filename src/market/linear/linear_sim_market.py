@@ -5,9 +5,9 @@ import numpy as np
 
 import agents.vendors as vendors
 import configuration.utils as ut
-import market.customer as customer
 from configuration.hyperparameter_config import config
 from market.customer import Customer
+from market.linear.linear_customers import CustomerLinear
 from market.sim_market import SimMarket
 
 
@@ -42,7 +42,7 @@ class LinearEconomy(SimMarket, ABC):
 		return [ut.shuffle_quality()]
 
 	def _choose_customer(self) -> Customer:
-		return customer.CustomerLinear()
+		return CustomerLinear()
 
 	def _reset_vendor_actions(self) -> int:
 		"""

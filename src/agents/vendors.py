@@ -9,7 +9,7 @@ import torch
 
 import rl.model as model
 from configuration.hyperparameter_config import config
-from market.customer import CustomerCircular
+from market.circular.circular_customers import CustomerCircular
 from rl.experience_buffer import ExperienceBuffer
 
 

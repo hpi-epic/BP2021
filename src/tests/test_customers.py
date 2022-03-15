@@ -3,6 +3,8 @@ import pytest
 
 import market.circular.circular_sim_market as circular_market
 import market.customer as customer
+from market.circular.circular_customers import CustomerCircular
+from market.linear.linear_customers import CustomerLinear
 import market.linear.linear_sim_market as linear_market
 import tests.utils_tests as ut_t
 
@@ -16,18 +18,18 @@ def test_customer_parent_class():
 
 # the following list contains invalid parameters for generate_purchase_probabilities_from_offer and the expected error messages
 generate_purchase_probabilities_from_offer_testcases = [
-	(customer.CustomerLinear, [], [[12], [15]], [3, 5], 'common_state must be a np.ndarray'),
-	(customer.CustomerLinear, np.array([]), ([12], [15]), [3, 5], 'vendor_specific_state must be a list'),
-	(customer.CustomerLinear, np.array([]), [[12], [15]], (3, 5), 'vendor_actions must be a list'),
-	(customer.CustomerLinear, np.array([]), [[12]], [3, 5], 'they must have the same length'),
-	(customer.CustomerLinear, np.array([]), [[12], [15]], [3], 'they must have the same length'),
-	(customer.CustomerLinear, np.array([]), [], [], 'there must be at least one vendor'),
-	(customer.CustomerCircular, [], [[17], [23]], [[3, 6], [4, 7]], 'common_state must be a np.ndarray'),
-	(customer.CustomerLinear, np.array([]), ([17], [23]), [[3, 6], [4, 7]], 'vendor_specific_state must be a list'),
-	(customer.CustomerCircular, np.array([]), [[17], [23]], ([3, 6], [4, 7]), 'vendor_actions must be a list'),
-	(customer.CustomerCircular, np.array([]), [[17]], [[3, 6], [4, 7]], 'they must have the same length'),
-	(customer.CustomerCircular, np.array([]), [[17], [23]], [[3, 6]], 'they must have the same length'),
-	(customer.CustomerCircular, np.array([]), [], [], 'there must be at least one vendor'),
+	(CustomerLinear, [], [[12], [15]], [3, 5], 'common_state must be a np.ndarray'),
+	(CustomerLinear, np.array([]), ([12], [15]), [3, 5], 'vendor_specific_state must be a list'),
+	(CustomerLinear, np.array([]), [[12], [15]], (3, 5), 'vendor_actions must be a list'),
+	(CustomerLinear, np.array([]), [[12]], [3, 5], 'they must have the same length'),
+	(CustomerLinear, np.array([]), [[12], [15]], [3], 'they must have the same length'),
+	(CustomerLinear, np.array([]), [], [], 'there must be at least one vendor'),
+	(CustomerCircular, [], [[17], [23]], [[3, 6], [4, 7]], 'common_state must be a np.ndarray'),
+	(CustomerLinear, np.array([]), ([17], [23]), [[3, 6], [4, 7]], 'vendor_specific_state must be a list'),
+	(CustomerCircular, np.array([]), [[17], [23]], ([3, 6], [4, 7]), 'vendor_actions must be a list'),
+	(CustomerCircular, np.array([]), [[17]], [[3, 6], [4, 7]], 'they must have the same length'),
+	(CustomerCircular, np.array([]), [[17], [23]], [[3, 6]], 'they must have the same length'),
+	(CustomerCircular, np.array([]), [], [], 'there must be at least one vendor'),
 ]
 
 
@@ -36,15 +38,15 @@ generate_purchase_probabilities_from_offer_testcases = [
 	generate_purchase_probabilities_from_offer_testcases)
 def test_generate_purchase_probabilities_from_offer(customer, common_state, vendor_specific_state, vendor_actions, expected_message):
 	with pytest.raises(AssertionError) as assertion_message:
-		customer.generate_purchase_probabilities_from_offer(customer, common_state, vendor_specific_state, vendor_actions)
+		customer().generate_purchase_probabilities_from_offer(common_state, vendor_specific_state, vendor_actions)
 	assert expected_message in str(assertion_message.value)
 
 
 customer_action_range_testcases = [
-	(customer.CustomerLinear, linear_market.ClassicScenario),
-	(customer.CustomerLinear, linear_market.MultiCompetitorScenario),
-	(customer.CustomerCircular, circular_market.CircularEconomyMonopolyScenario),
-	(customer.CustomerCircular, circular_market.CircularEconomyRebuyPriceMonopolyScenario)
+	(CustomerLinear, linear_market.ClassicScenario),
+	(CustomerLinear, linear_market.MultiCompetitorScenario),
+	(CustomerCircular, circular_market.CircularEconomyMonopolyScenario),
+	(CustomerCircular, circular_market.CircularEconomyRebuyPriceMonopolyScenario)
 ]
 
 
@@ -59,33 +61,33 @@ def test_customer_action_range(customer, market):
 
 def test_linear_higher_price_lower_purchase_probability():
 	common_state, vendor_specific_state, vendor_actions = np.array([]), [[12], [12]], [3, 5]
-	probability_distribution = customer.CustomerLinear.generate_purchase_probabilities_from_offer(
-		customer.CustomerLinear, common_state, vendor_specific_state, vendor_actions)
+	probability_distribution = CustomerLinear.generate_purchase_probabilities_from_offer(
+		CustomerLinear, common_state, vendor_specific_state, vendor_actions)
 	assert probability_distribution[1] > probability_distribution[2]
 
 
 def test_linear_higher_quality_higher_purchase_probability():
 	common_state, vendor_specific_state, vendor_actions = np.array([]), [[13], [12]], [3, 3]
-	probability_distribution = customer.CustomerLinear.generate_purchase_probabilities_from_offer(
-		customer.CustomerLinear, common_state, vendor_specific_state, vendor_actions)
+	probability_distribution = CustomerLinear.generate_purchase_probabilities_from_offer(
+		CustomerLinear, common_state, vendor_specific_state, vendor_actions)
 	assert probability_distribution[1] > probability_distribution[2]
 
 
 def test_equal_ratio_equal_purchase_probability():
 	# In the following line: [3, 1] means prices [4, 2]
 	common_state, vendor_specific_state, vendor_actions = np.array([]), [[16], [8]], [3, 1]
-	probability_distribution = customer.CustomerLinear.generate_purchase_probabilities_from_offer(
-		customer.CustomerLinear, common_state, vendor_specific_state, vendor_actions)
+	probability_distribution = CustomerLinear.generate_purchase_probabilities_from_offer(
+		CustomerLinear, common_state, vendor_specific_state, vendor_actions)
 	assert probability_distribution[1] == probability_distribution[2]
 
 
 def test_linear_lower_overall_price_lower_nothing_probability():
 	common_state1, vendor_specific_state1, vendor_actions1 = np.array([]), [[15], [15]], [3, 3]
-	probability_distribution1 = customer.CustomerLinear.generate_purchase_probabilities_from_offer(
-		customer.CustomerLinear, common_state1, vendor_specific_state1, vendor_actions1)
+	probability_distribution1 = CustomerLinear.generate_purchase_probabilities_from_offer(
+		CustomerLinear, common_state1, vendor_specific_state1, vendor_actions1)
 	common_state2, vendor_specific_state2, vendor_actions2 = np.array([]), [[15], [15]], [4, 4]
-	probability_distribution2 = customer.CustomerLinear.generate_purchase_probabilities_from_offer(
-		customer.CustomerLinear, common_state2, vendor_specific_state2, vendor_actions2)
+	probability_distribution2 = CustomerLinear.generate_purchase_probabilities_from_offer(
+		CustomerLinear, common_state2, vendor_specific_state2, vendor_actions2)
 	print(probability_distribution1)
 	print(probability_distribution2)
 	assert probability_distribution1[0] < probability_distribution2[0]
@@ -95,7 +97,7 @@ def test_linear_lower_overall_price_lower_nothing_probability():
 
 def test_circular_higher_price_lower_purchase_probability():
 	common_state, vendor_specific_state, vendor_actions = np.array([]), [[17], [23]], [[3, 6], [4, 5]]
-	probability_distribution = customer.CustomerCircular.generate_purchase_probabilities_from_offer(
-		customer.CustomerCircular, common_state, vendor_specific_state, vendor_actions)
+	probability_distribution = CustomerCircular.generate_purchase_probabilities_from_offer(
+		CustomerCircular, common_state, vendor_specific_state, vendor_actions)
 	assert probability_distribution[1] > probability_distribution[3]
 	assert probability_distribution[2] < probability_distribution[4]

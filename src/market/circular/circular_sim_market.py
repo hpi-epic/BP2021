@@ -4,10 +4,10 @@ import gym
 import numpy as np
 
 import agents.vendors as vendors
-import market.customer as customer
 import market.owner as owner
 from configuration.hyperparameter_config import config
 from market.customer import Customer
+from market.circular.circular_customers import CustomerCircular
 from market.owner import Owner
 from market.sim_market import SimMarket
 
@@ -50,7 +50,7 @@ class CircularEconomy(SimMarket, ABC):
 		return (config.production_price, config.production_price + 1)
 
 	def _choose_customer(self) -> Customer:
-		return customer.CustomerCircular()
+		return CustomerCircular()
 
 	def _choose_owner(self) -> Owner:
 		return owner.UniformDistributionOwner()
