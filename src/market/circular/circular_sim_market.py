@@ -74,14 +74,14 @@ class CircularEconomy(SimMarket, ABC):
 			rebuy_price (int): The price to which the used product is bought.
 			frequency (int): The number of transferred items.
 		"""
+		assert profits is not None, 'profits must not be None'
 		self._output_dict['owner/rebuys'][f'vendor_{vendor}'] += frequency
 		# receive the product only if you have space for it. Otherwise throw it away. But you have to pay anyway.
 		self.vendor_specific_state[vendor][0] = min(self.vendor_specific_state[vendor][0] + frequency, self.max_storage)
 		self.in_circulation -= frequency
-		if profits is not None:
-			rebuy_cost = frequency * rebuy_price
-			self._output_dict['profits/rebuy_cost'][f'vendor_{vendor}'] -= rebuy_cost
-			profits[vendor] -= rebuy_cost
+		rebuy_cost = frequency * rebuy_price
+		self._output_dict['profits/rebuy_cost'][f'vendor_{vendor}'] -= rebuy_cost
+		profits[vendor] -= rebuy_cost
 
 	def _simulate_owners(self, profits) -> None:
 		"""
