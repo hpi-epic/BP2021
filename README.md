@@ -133,7 +133,7 @@ pytest -v
 To run tests you have written for the Django webserver go into the *webserver* folder and run
 
 ```bash
-python manage.py test
+python3 manage.py test
 ```
 
 ### 1.3.3. Coverage
