@@ -150,6 +150,8 @@ class ButtonTests(TestCase):
 			# cast the query set to list as well
 			actual_arguments[2]['all_saved_containers'] = list(actual_arguments[2]['all_saved_containers'])
 
+			print(expected_arguments, actual_arguments, sep='\n')
+			print(self.test_container.health_status)
 			assert expected_arguments == actual_arguments
 
 	def test_download_zip_data(self):
