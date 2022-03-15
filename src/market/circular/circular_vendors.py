@@ -1,8 +1,8 @@
 from abc import ABC
 
-from agents.vendors import Agent, FixedPriceAgent, HumanPlayer, RuleBasedAgent
 from configuration.hyperparameter_config import config
 from market.circular.circular_customers import CustomerCircular
+from market.vendors import Agent, FixedPriceAgent, HumanPlayer, RuleBasedAgent
 
 
 class CircularAgent(Agent, ABC):

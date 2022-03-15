@@ -9,10 +9,10 @@ from torch.utils.tensorboard import SummaryWriter
 
 import configuration.utils as ut
 import market.circular.circular_sim_market as circular_market
-from agents.vendors import Agent
 from configuration.environment_config import EnvironmentConfigLoader, ExampleprinterEnvironmentConfig
 from market.circular.circular_vendors import RuleBasedCERebuyAgent
 from market.sim_market import SimMarket
+from market.vendors import Agent
 from monitoring.svg_manipulation import SVGManipulator
 from rl.q_learning_agent import QLearningAgent
 

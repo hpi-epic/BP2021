@@ -1,7 +1,7 @@
-import agents.vendors as vendors
 import market.circular.circular_sim_market as circular_market
 import market.linear.linear_sim_market as linear_market
 import market.sim_market as sim_market
+import market.vendors as vendors
 import rl.actorcritic_agent as actorcritic_agent
 from configuration.environment_config import EnvironmentConfigLoader, TrainingEnvironmentConfig
 from rl.actorcritic_training import ActorCriticTrainer
