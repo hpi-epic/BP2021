@@ -1,4 +1,5 @@
 import numpy as np
+
 import configuration.utils as ut
 from market.customer import Customer
 

@@ -6,8 +6,8 @@ import numpy as np
 import agents.vendors as vendors
 import market.owner as owner
 from configuration.hyperparameter_config import config
-from market.customer import Customer
 from market.circular.circular_customers import CustomerCircular
+from market.customer import Customer
 from market.owner import Owner
 from market.sim_market import SimMarket
 

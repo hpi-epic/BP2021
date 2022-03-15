@@ -1,6 +1,8 @@
 import numpy as np
+
 import configuration.utils as ut
 from market.customer import Customer
+
 
 class CustomerCircular(Customer):
 	def generate_purchase_probabilities_from_offer(self, common_state, vendor_specific_state, vendor_actions) -> np.array:
