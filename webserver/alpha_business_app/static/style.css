@@ -73,12 +73,3 @@ table {
 .flex_div {
 	display: flex;
 }
-.back-button {
-	/*https://stackoverflow.com/questions/1367409/how-to-make-button-look-like-a-link*/
-	background: none;
-	border: none;
-	padding: 0;
-	color: #069;
-	text-decoration: underline;
-	cursor: pointer;
-}
