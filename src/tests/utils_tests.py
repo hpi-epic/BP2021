@@ -192,3 +192,18 @@ def create_mock_action(market_subclass) -> Union[int, Tuple]:
 		return (1, 2, 3)
 	elif issubclass(market_subclass, circular_market.CircularEconomy):
 		return (1, 2)
+
+
+def random_offer(marketplace):
+	"""
+	Helper function that creates a random offer (state that includes the agent's price) to test customer behaviour.
+
+	This is dependent on the sim_market working!
+
+	Args:
+		marketplace (SimMarket): The marketplace for which offers should be generated.
+	"""
+	marketplace = marketplace()
+	marketplace.reset()
+	marketplace.vendor_actions[0] = marketplace._action_space.sample()
+	return marketplace._get_common_state_array(), marketplace.vendor_specific_state, marketplace.vendor_actions

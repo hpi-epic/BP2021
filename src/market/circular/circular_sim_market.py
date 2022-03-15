@@ -100,15 +100,17 @@ class CircularEconomy(SimMarket, ABC):
 
 		number_of_owners = int(0.05 * self.in_circulation / self._number_of_vendors)
 		owner_decisions = np.random.multinomial(number_of_owners, return_probabilities).tolist()
-		# owner_action 0 means holding the product, so nothing happens
+
+		# owner decisions can be as follows:
+		# 0: Hold/Do nothing
+		# 1: Throw away
+		# x: Sell back to vendor x-2
+		# for each action, `owner_decisions` has a frequency of how many customers chose that action
 		self._throw_away(owner_decisions[1])
 
-		# we start the enumeration at the third element since
-		# owner_decision[0] == hold
-		# owner_decision[1] == throw_away
-		for rebuyer, frequency in enumerate(owner_decisions[2:]):
-			rebuy_price = self._get_rebuy_price(rebuyer)
-			self._transfer_product_to_storage(rebuyer, profits, rebuy_price, frequency)
+		for rebuy_vendor, frequency in enumerate(owner_decisions[2:]):
+			rebuy_price = self._get_rebuy_price(rebuy_vendor)
+			self._transfer_product_to_storage(rebuy_vendor, profits, rebuy_price, frequency)
 
 	def _get_rebuy_price(self, _) -> int:
 		return 0
