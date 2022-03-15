@@ -2,9 +2,9 @@ import os
 import re
 from unittest.mock import patch
 
-import agents.vendors as vendors
-import market.circular.circular_sim_market as circular_market
-import monitoring.agent_monitoring.am_monitoring as monitoring
+import alpha_business.agents.vendors as vendors
+import alpha_business.market.circular.circular_sim_market as circular_market
+import alpha_business.monitoring.agent_monitoring.am_monitoring as monitoring
 
 monitor = monitoring.Monitor()
 
@@ -25,15 +25,15 @@ def setup_function(function):
 
 
 def teardown_module(module):
-	for file_name in os.listdir(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir, 'results', 'monitoring')):
+	for file_name in os.listdir(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'results', 'monitoring')):
 		if re.match('test_*', file_name):
 			assert False, 'Test files were not mocked correctly'
 
 
 def test_run_marketplace():
 	monitor.configurator.setup_monitoring(episodes=100, plot_interval=100, agents=[(vendors.FixedPriceCEAgent, [(5, 2)])])
-	with patch('monitoring.agent_monitoring.am_evaluation.plt'), \
-		patch('monitoring.agent_monitoring.am_configuration.os.path.exists') as exists_mock:
+	with patch('alpha_business.monitoring.agent_monitoring.am_evaluation.plt'), \
+		patch('alpha_business.monitoring.agent_monitoring.am_configuration.os.path.exists') as exists_mock:
 		exists_mock.return_value = True
 		agent_rewards = monitor.run_marketplace()
 		assert 1 == len(agent_rewards)
@@ -43,8 +43,8 @@ def test_run_marketplace():
 def test_run_monitoring_session():
 	monitor.configurator.setup_monitoring(episodes=10, plot_interval=10)
 	current_configuration = monitor.configurator.get_configuration()
-	with patch('monitoring.agent_monitoring.am_evaluation.plt'), \
-		patch('monitoring.agent_monitoring.am_configuration.os.path.exists') as exists_mock:
+	with patch('alpha_business.monitoring.agent_monitoring.am_evaluation.plt'), \
+		patch('alpha_business.monitoring.agent_monitoring.am_configuration.os.path.exists') as exists_mock:
 		exists_mock.return_value = True
 		monitoring.run_monitoring_session(monitor)
 		assert current_configuration == monitor.configurator.get_configuration(), \
@@ -54,9 +54,9 @@ def test_run_monitoring_session():
 
 def test_run_monitoring_ratio():
 	# ratio is over 50, program should ask if we want to continue. We answer 'no'
-	with patch('monitoring.agent_monitoring.am_evaluation.plt'), \
-		patch('monitoring.agent_monitoring.am_configuration.input', create=True) as mocked_input, \
-		patch('monitoring.agent_monitoring.am_configuration.os.path.exists') as exists_mock:
+	with patch('alpha_business.monitoring.agent_monitoring.am_evaluation.plt'), \
+		patch('alpha_business.monitoring.agent_monitoring.am_configuration.input', create=True) as mocked_input, \
+		patch('alpha_business.monitoring.agent_monitoring.am_configuration.os.path.exists') as exists_mock:
 		mocked_input.side_effect = ['n']
 		exists_mock.return_value = True
 		monitor.configurator.setup_monitoring(episodes=51, plot_interval=1)

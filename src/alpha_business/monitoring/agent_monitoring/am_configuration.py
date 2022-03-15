@@ -1,12 +1,13 @@
 import os
 import time
 
-import agents.vendors as vendors
-import configuration.utils as ut
-import market.circular.circular_sim_market as circular_market
-import market.sim_market as sim_market
 import matplotlib.pyplot as plt
-import rl.actorcritic_agent as actorcritic_agent
+
+import alpha_business.agents.vendors as vendors
+import alpha_business.configuration.utils as ut
+import alpha_business.market.circular.circular_sim_market as circular_market
+import alpha_business.market.sim_market as sim_market
+import alpha_business.rl.actorcritic_agent as actorcritic_agent
 
 
 class Configurator():
@@ -23,7 +24,7 @@ class Configurator():
 		default_agent = vendors.FixedPriceCEAgent
 		self.agents = [default_agent()]
 		self.agent_colors = [(0.0, 0.0, 1.0, 1.0)]
-		self.folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir,
+		self.folder_path = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir, os.pardir,
 			'results', 'monitoring', 'plots_' + time.strftime('%b%d_%H-%M-%S')))
 
 	def get_folder(self) -> str:
@@ -50,7 +51,7 @@ class Configurator():
 			str: The full path to the modelfile.
 		"""
 		model_name += '.dat'
-		full_path = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir, 'data', model_name))
+		full_path = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir, os.pardir, 'data', model_name))
 		assert os.path.exists(full_path), f'the specified modelfile does not exist: {full_path}'
 		return full_path
 
@@ -185,7 +186,7 @@ class Configurator():
 
 		if(subfolder_name is not None):
 			assert isinstance(subfolder_name, str), f'subfolder_name must be of type str: {type(subfolder_name)}, {subfolder_name}'
-			self.folder_path = os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir, 'results', 'monitoring', subfolder_name)
+			self.folder_path = os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir, os.pardir, 'results', 'monitoring', subfolder_name)
 
 	def get_configuration(self) -> dict:
 		"""

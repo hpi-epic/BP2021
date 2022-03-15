@@ -3,12 +3,13 @@ import re
 import shutil
 from unittest.mock import patch
 
-import agents.vendors as vendors
-import market.circular.circular_sim_market as circular_market
-import market.linear.linear_sim_market as linear_market
-import monitoring.agent_monitoring.am_monitoring as monitoring
 import pytest
-import rl.actorcritic_agent as actorcritic_agent
+
+import alpha_business.agents.vendors as vendors
+import alpha_business.market.circular.circular_sim_market as circular_market
+import alpha_business.market.linear.linear_sim_market as linear_market
+import alpha_business.monitoring.agent_monitoring.am_monitoring as monitoring
+import alpha_business.rl.actorcritic_agent as actorcritic_agent
 
 monitor = monitoring.Monitor()
 
@@ -28,7 +29,7 @@ def setup_function(function):
 
 
 def teardown_module(module):
-	for file_name in os.listdir(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir, 'results', 'monitoring')):
+	for file_name in os.listdir(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'results', 'monitoring')):
 		if re.match('test_*', file_name):
 			assert False, 'Test files were not mocked correctly'
 
@@ -39,13 +40,13 @@ def test_get_folder():
 	monitor.configurator.get_folder()
 	assert os.path.exists(
 		os.path.abspath(os.path.join(os.path.dirname(__file__),
-		os.pardir, os.pardir, os.pardir,
+		os.pardir, os.pardir,
 		'results', 'monitoring', foldername)))
-	shutil.rmtree(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir, 'results', 'monitoring', foldername))
+	shutil.rmtree(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'results', 'monitoring', foldername))
 
 
 def test_get_modelfile_path():
-	with patch('monitoring.agent_monitoring.am_configuration.os.path.exists') as mock_exists:
+	with patch('alpha_business.monitoring.agent_monitoring.am_configuration.os.path.exists') as mock_exists:
 		mock_exists.return_value = False
 		with pytest.raises(AssertionError) as assertion_message:
 			monitor.configurator._get_modelfile_path('non_existing_modelfile')
@@ -105,7 +106,7 @@ def test_correct_setup_monitoring():
 		os.path.abspath(
 			os.path.join(
 				os.path.dirname(__file__),
-				os.pardir, os.pardir, os.pardir,
+				os.pardir, os.pardir,
 				'results', 'monitoring', 'subfoldername'
 			)
 		)
@@ -322,6 +323,6 @@ def test_print_configuration(agents):
 def test_print_configuration_ratio(agents):
 	monitor.configurator.setup_monitoring(episodes=51, plot_interval=1, agents=agents)
 
-	with patch('monitoring.agent_monitoring.am_configuration.input', create=True) as mocked_input:
+	with patch('alpha_business.monitoring.agent_monitoring.am_configuration.input', create=True) as mocked_input:
 		mocked_input.side_effect = ['n']
 		monitor.configurator.print_configuration()

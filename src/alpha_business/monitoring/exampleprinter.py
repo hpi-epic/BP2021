@@ -4,14 +4,15 @@ import signal
 import sys
 import time
 
-import agents.vendors as vendors
-import configuration.utils as ut
-import market.circular.circular_sim_market as circular_market
 import torch
-from configuration.environment_config import EnvironmentConfigLoader, ExampleprinterEnvironmentConfig
-from market.sim_market import SimMarket
-from monitoring.svg_manipulation import SVGManipulator
 from torch.utils.tensorboard import SummaryWriter
+
+import alpha_business.agents.vendors as vendors
+import alpha_business.configuration.utils as ut
+import alpha_business.market.circular.circular_sim_market as circular_market
+from alpha_business.configuration.environment_config import EnvironmentConfigLoader, ExampleprinterEnvironmentConfig
+from alpha_business.market.sim_market import SimMarket
+from alpha_business.monitoring.svg_manipulation import SVGManipulator
 
 
 class ExamplePrinter():

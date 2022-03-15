@@ -1,8 +1,9 @@
 import os
 
 import matplotlib.pyplot as plt
-import monitoring.agent_monitoring.am_configuration as am_configuration
 import numpy as np
+
+import alpha_business.monitoring.agent_monitoring.am_configuration as am_configuration
 
 
 class Evaluator():

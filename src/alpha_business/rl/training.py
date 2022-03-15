@@ -4,12 +4,13 @@ import sys
 import time
 from abc import ABC, abstractmethod
 
-import configuration.utils as ut
-import rl.actorcritic_agent as actorcritic_agent
 import torch
-from agents.vendors import ReinforcementLearningAgent
-from configuration.hyperparameter_config import config
 from torch.utils.tensorboard import SummaryWriter
+
+import alpha_business.configuration.utils as ut
+import alpha_business.rl.actorcritic_agent as actorcritic_agent
+from alpha_business.agents.vendors import ReinforcementLearningAgent
+from alpha_business.configuration.hyperparameter_config import config
 
 
 class RLTrainer(ABC):

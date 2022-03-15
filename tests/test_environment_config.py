@@ -1,19 +1,19 @@
 import json
 from unittest.mock import mock_open, patch
 
-import configuration.environment_config as env_config
 import pytest
-from agents.vendors import QLearningCERebuyAgent, RuleBasedCERebuyAgent
-from market.circular.circular_sim_market import CircularEconomyRebuyPriceMonopolyScenario
+import utils_tests as ut_t
 
-import tests.utils_tests as ut_t
+import alpha_business.configuration.environment_config as env_config
+from alpha_business.agents.vendors import QLearningCERebuyAgent, RuleBasedCERebuyAgent
+from alpha_business.market.circular.circular_sim_market import CircularEconomyRebuyPriceMonopolyScenario
 
 valid_training_dict = {
 	'task': 'training',
-	'marketplace': 'market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
+	'marketplace': 'alpha_business.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
 	'agents': {
 		'CE Rebuy Agent (QLearning)': {
-			'class': 'agents.vendors.QLearningCERebuyAgent'
+			'class': 'alpha_business.agents.vendors.QLearningCERebuyAgent'
 		}
 	}
 }
@@ -23,13 +23,13 @@ valid_agent_monitoring_dict = {
 	'enable_live_draw': False,
 	'episodes': 10,
 	'plot_interval': 5,
-	'marketplace': 'market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
+	'marketplace': 'alpha_business.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
 	'agents': {
 		'Rule_Based Agent': {
-			'class': 'agents.vendors.RuleBasedCERebuyAgent'
+			'class': 'alpha_business.agents.vendors.RuleBasedCERebuyAgent'
 		},
 		'CE Rebuy Agent (QLearning)': {
-			'class': 'agents.vendors.QLearningCERebuyAgent',
+			'class': 'alpha_business.agents.vendors.QLearningCERebuyAgent',
 			'modelfile': 'CircularEconomyRebuyPriceMonopolyScenario_QLearningCERebuyAgent.dat'
 		}
 	}
@@ -37,10 +37,10 @@ valid_agent_monitoring_dict = {
 
 valid_exampleprinter_dict = {
 	'task': 'exampleprinter',
-	'marketplace': 'market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
+	'marketplace': 'alpha_business.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
 	'agents': {
 		'CE Rebuy Agent (QLearning)': {
-			'class': 'agents.vendors.QLearningCERebuyAgent',
+			'class': 'alpha_business.agents.vendors.QLearningCERebuyAgent',
 			'modelfile': 'CircularEconomyRebuyPriceMonopolyScenario_QLearningCERebuyAgent.dat'
 		}
 	}
@@ -48,20 +48,20 @@ valid_exampleprinter_dict = {
 
 invalid_agent_dict = {
 	'task': 'exampleprinter',
-	'marketplace': 'market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
+	'marketplace': 'alpha_business.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
 	'agents': {
 		'Agent_name': {
-			'class': 'agents.vendors.QLearningCERebuyAgent',
+			'class': 'alpha_business.agents.vendors.QLearningCERebuyAgent',
 		}
 	}
 }
 
 invalid_task_dict = {
 	'task': 'not_existing_test_task',
-	'marketplace': 'market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
+	'marketplace': 'alpha_business.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
 	'agents': {
 		'Agent_name': {
-			'class': 'agents.vendors.QLearningCERebuyAgent',
+			'class': 'alpha_business.agents.vendors.QLearningCERebuyAgent',
 			'modelfile': 'CircularEconomyRebuyPriceMonopolyScenario_QLearningCERebuyAgent.dat'
 		}
 	}
@@ -77,14 +77,15 @@ def test_abstract_parent_class():
 def test_str_representation():
 	config = env_config.TrainingEnvironmentConfig(valid_training_dict)
 	assert str(config) == "TrainingEnvironmentConfig: {'task': 'training', \
-'marketplace': <class 'market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario'>, \
-'agent': <class 'agents.vendors.QLearningCERebuyAgent'>}"
+'marketplace': <class 'alpha_business.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario'>, \
+'agent': <class 'alpha_business.agents.vendors.QLearningCERebuyAgent'>}"
 
 
 get_class_testcases = [
-	(CircularEconomyRebuyPriceMonopolyScenario, 'market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario'),
-	(QLearningCERebuyAgent, 'agents.vendors.QLearningCERebuyAgent'),
-	(RuleBasedCERebuyAgent, 'agents.vendors.RuleBasedCERebuyAgent')
+	(CircularEconomyRebuyPriceMonopolyScenario,
+		'alpha_business.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario'),
+	(QLearningCERebuyAgent, 'alpha_business.agents.vendors.QLearningCERebuyAgent'),
+	(RuleBasedCERebuyAgent, 'alpha_business.agents.vendors.RuleBasedCERebuyAgent')
 ]
 
 
@@ -95,7 +96,7 @@ def test_get_class(expected_class, class_string):
 
 def test_get_class_invalid_class():
 	with pytest.raises(AttributeError) as error_message:
-		env_config.EnvironmentConfig._get_class(env_config.EnvironmentConfig, 'agents.vendors.NotAValidClass')
+		env_config.EnvironmentConfig._get_class(env_config.EnvironmentConfig, 'alpha_business.agents.vendors.NotAValidClass')
 	assert 'The string you passed could not be resolved to a class' in str(error_message.value)
 
 
@@ -131,10 +132,10 @@ def test_valid_ConfigLoader_validate(config):
 
 valid_ConfigLoader_load_training_testcases = [
 	# TODO: Currently no testcases for ActorCriticAgents
-	('training', 'market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
-		{'CE Rebuy Agent (QLearning)': {'class': 'agents.vendors.QLearningCERebuyAgent'}}),
-	('training', 'market.circular.circular_sim_market.CircularEconomyRebuyPriceOneCompetitor',
-		{'CE Rebuy Agent (QLearning)': {'class': 'agents.vendors.QLearningCEAgent'}})
+	('training', 'alpha_business.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
+		{'CE Rebuy Agent (QLearning)': {'class': 'alpha_business.agents.vendors.QLearningCERebuyAgent'}}),
+	('training', 'alpha_business.market.circular.circular_sim_market.CircularEconomyRebuyPriceOneCompetitor',
+		{'CE Rebuy Agent (QLearning)': {'class': 'alpha_business.agents.vendors.QLearningCEAgent'}})
 ]
 
 

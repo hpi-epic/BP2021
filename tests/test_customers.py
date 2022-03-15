@@ -1,10 +1,10 @@
-import market.circular.circular_sim_market as circular_market
-import market.customer as customer
-import market.linear.linear_sim_market as linear_market
 import numpy as np
 import pytest
+import utils_tests as ut_t
 
-import tests.utils_tests as ut_t
+import alpha_business.market.circular.circular_sim_market as circular_market
+import alpha_business.market.customer as customer
+import alpha_business.market.linear.linear_sim_market as linear_market
 
 
 # Test the Customer parent class, i.e. make sure it cannot be used

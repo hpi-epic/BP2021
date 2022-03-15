@@ -153,7 +153,7 @@ class HyperparameterConfigLoader():
 			return HyperparameterConfig()
 
 		filename += '.json'
-		path = os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, filename)
+		path = os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir, filename)
 		with open(path) as config_file:
 			config = json.load(config_file)
 		return HyperparameterConfig(config)

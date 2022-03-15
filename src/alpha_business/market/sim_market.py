@@ -3,7 +3,8 @@ from typing import Tuple
 
 import gym
 import numpy as np
-from configuration.hyperparameter_config import config
+
+from alpha_business.configuration.hyperparameter_config import config
 
 # An offer is a market state that contains all prices and qualities
 

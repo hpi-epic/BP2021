@@ -1,12 +1,13 @@
 import os
 from abc import ABC, abstractmethod
 
-import agents.vendors as vendors
-import configuration.utils as ut
 import numpy as np
-import rl.model as model
 import torch
-from configuration.hyperparameter_config import config
+
+import alpha_business.agents.vendors as vendors
+import alpha_business.configuration.utils as ut
+import alpha_business.rl.model as model
+from alpha_business.configuration.hyperparameter_config import config
 
 
 class ActorCriticAgent(vendors.ReinforcementLearningAgent, ABC):

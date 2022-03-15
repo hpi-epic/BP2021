@@ -2,11 +2,12 @@ import os
 import re
 from unittest.mock import patch
 
-import agents.vendors as vendors
-import market.circular.circular_sim_market as circular_market
-import monitoring.agent_monitoring.am_monitoring as monitoring
 import numpy as np
 import pytest
+
+import alpha_business.agents.vendors as vendors
+import alpha_business.market.circular.circular_sim_market as circular_market
+import alpha_business.monitoring.agent_monitoring.am_monitoring as monitoring
 
 monitor = monitoring.Monitor()
 
@@ -27,7 +28,7 @@ def setup_function(function):
 
 
 def teardown_module(module):
-	for file_name in os.listdir(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir, 'results', 'monitoring')):
+	for file_name in os.listdir(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'results', 'monitoring')):
 		if re.match('test_*', file_name):
 			assert False, 'Test files were not mocked correctly'
 
@@ -40,14 +41,14 @@ evaluate_session_testcases = [
 
 @pytest.mark.parametrize('agents, rewards', evaluate_session_testcases)
 def test_evaluate_session(agents, rewards):
-	with patch('monitoring.agent_monitoring.am_evaluation.plt.clf'), \
-		patch('monitoring.agent_monitoring.am_evaluation.plt.xlabel'), \
-		patch('monitoring.agent_monitoring.am_evaluation.plt.title'), \
-		patch('monitoring.agent_monitoring.am_evaluation.plt.legend'), \
-		patch('monitoring.agent_monitoring.am_evaluation.plt.pause'), \
-		patch('monitoring.agent_monitoring.am_evaluation.plt.draw'), \
-		patch('monitoring.agent_monitoring.am_evaluation.plt.savefig'), \
-		patch('monitoring.agent_monitoring.am_configuration.os.path.exists') as exists_mock:
+	with patch('alpha_business.monitoring.agent_monitoring.am_evaluation.plt.clf'), \
+		patch('alpha_business.monitoring.agent_monitoring.am_evaluation.plt.xlabel'), \
+		patch('alpha_business.monitoring.agent_monitoring.am_evaluation.plt.title'), \
+		patch('alpha_business.monitoring.agent_monitoring.am_evaluation.plt.legend'), \
+		patch('alpha_business.monitoring.agent_monitoring.am_evaluation.plt.pause'), \
+		patch('alpha_business.monitoring.agent_monitoring.am_evaluation.plt.draw'), \
+		patch('alpha_business.monitoring.agent_monitoring.am_evaluation.plt.savefig'), \
+		patch('alpha_business.monitoring.agent_monitoring.am_configuration.os.path.exists') as exists_mock:
 		exists_mock.return_value = True
 		monitor.configurator.setup_monitoring(episodes=4, plot_interval=1, agents=agents)
 		monitor.evaluator.evaluate_session(rewards)
@@ -58,7 +59,7 @@ def test_rewards_array_size():
 	# Numpy doesn't like nested arrays of different sizes, need to specify dtype=object
 	rewards_wrong = np.array([[1, 2], [1, 2, 3]], dtype=object)
 
-	with patch('monitoring.agent_monitoring.am_evaluation.plt'):
+	with patch('alpha_business.monitoring.agent_monitoring.am_evaluation.plt'):
 		with pytest.raises(AssertionError) as assertion_message:
 			monitor.evaluator.create_histogram(rewards_wrong)
 		assert 'all rewards-arrays must be of the same size' in str(assertion_message.value)
@@ -80,15 +81,15 @@ create_histogram_statistics_plots_testcases = [
 def test_create_histogram(agents, rewards, plot_bins, agent_color, lower_upper_range):
 	monitor.configurator.setup_monitoring(enable_live_draw=True, agents=agents)
 	name_list = [agent.name for agent in monitor.configurator.agents]
-	with patch('monitoring.agent_monitoring.am_evaluation.plt.clf'), \
-		patch('monitoring.agent_monitoring.am_evaluation.plt.xlabel'), \
-		patch('monitoring.agent_monitoring.am_evaluation.plt.title'), \
-		patch('monitoring.agent_monitoring.am_evaluation.plt.hist') as hist_mock, \
-		patch('monitoring.agent_monitoring.am_evaluation.plt.legend') as legend_mock, \
-		patch('monitoring.agent_monitoring.am_evaluation.plt.pause'), \
-		patch('monitoring.agent_monitoring.am_evaluation.plt.draw') as draw_mock, \
-		patch('monitoring.agent_monitoring.am_evaluation.plt.savefig') as save_mock, \
-		patch('monitoring.agent_monitoring.am_configuration.os.path.exists') as exists_mock:
+	with patch('alpha_business.monitoring.agent_monitoring.am_evaluation.plt.clf'), \
+		patch('alpha_business.monitoring.agent_monitoring.am_evaluation.plt.xlabel'), \
+		patch('alpha_business.monitoring.agent_monitoring.am_evaluation.plt.title'), \
+		patch('alpha_business.monitoring.agent_monitoring.am_evaluation.plt.hist') as hist_mock, \
+		patch('alpha_business.monitoring.agent_monitoring.am_evaluation.plt.legend') as legend_mock, \
+		patch('alpha_business.monitoring.agent_monitoring.am_evaluation.plt.pause'), \
+		patch('alpha_business.monitoring.agent_monitoring.am_evaluation.plt.draw') as draw_mock, \
+		patch('alpha_business.monitoring.agent_monitoring.am_evaluation.plt.savefig') as save_mock, \
+		patch('alpha_business.monitoring.agent_monitoring.am_configuration.os.path.exists') as exists_mock:
 		exists_mock.return_value = True
 
 		monitor.evaluator.create_histogram(rewards)
@@ -101,8 +102,8 @@ def test_create_histogram(agents, rewards, plot_bins, agent_color, lower_upper_r
 @pytest.mark.parametrize('agents, rewards, plot_bins, agent_color, lower_upper_range', create_histogram_statistics_plots_testcases)
 def test_create_statistics_plots(agents, rewards, plot_bins, agent_color, lower_upper_range):
 	monitor.configurator.setup_monitoring(agents=agents, episodes=len(rewards[0]), plot_interval=1)
-	with patch('monitoring.agent_monitoring.am_evaluation.plt'), \
-		patch('monitoring.agent_monitoring.am_configuration.os.path.exists') as exists_mock:
+	with patch('alpha_business.monitoring.agent_monitoring.am_evaluation.plt'), \
+		patch('alpha_business.monitoring.agent_monitoring.am_configuration.os.path.exists') as exists_mock:
 		exists_mock.return_value = True
 
 		monitor.evaluator._create_statistics_plots(rewards)

@@ -48,11 +48,11 @@ class SVGManipulator():
 	def __init__(self, save_dir: str = 'svg') -> None:
 		self.value_dictionary = get_default_dict()
 		# do not change the values in template_svg
-		path_to_template_svg = os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'data')
+		path_to_template_svg = os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir, 'data')
 		with open(os.path.join(path_to_template_svg, 'MarketOverview_template.svg'), 'r') as template_svg:
 			self.template_svg = template_svg.read()
 		self.output_svg = None
-		self.save_directory = os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'results', 'exampleprinter', save_dir)
+		self.save_directory = os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir, 'results', 'exampleprinter', save_dir)
 
 	def replace_one_value(self, target_key: str, value: str) -> None:
 		"""

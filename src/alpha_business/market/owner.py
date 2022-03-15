@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
 
-import configuration.utils as ut
 import numpy as np
+
+import alpha_business.configuration.utils as ut
 
 
 class Owner(ABC):

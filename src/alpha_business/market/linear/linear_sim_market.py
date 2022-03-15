@@ -1,13 +1,14 @@
 from abc import ABC
 
-import agents.vendors as vendors
-import configuration.utils as ut
 import gym
-import market.customer as customer
 import numpy as np
-from configuration.hyperparameter_config import config
-from market.customer import Customer
-from market.sim_market import SimMarket
+
+import alpha_business.agents.vendors as vendors
+import alpha_business.configuration.utils as ut
+import alpha_business.market.customer as customer
+from alpha_business.configuration.hyperparameter_config import config
+from alpha_business.market.customer import Customer
+from alpha_business.market.sim_market import SimMarket
 
 
 class LinearEconomy(SimMarket, ABC):

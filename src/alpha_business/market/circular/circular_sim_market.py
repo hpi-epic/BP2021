@@ -1,14 +1,15 @@
 from abc import ABC
 
-import agents.vendors as vendors
 import gym
-import market.customer as customer
-import market.owner as owner
 import numpy as np
-from configuration.hyperparameter_config import config
-from market.customer import Customer
-from market.owner import Owner
-from market.sim_market import SimMarket
+
+import alpha_business.agents.vendors as vendors
+import alpha_business.market.customer as customer
+import alpha_business.market.owner as owner
+from alpha_business.configuration.hyperparameter_config import config
+from alpha_business.market.customer import Customer
+from alpha_business.market.owner import Owner
+from alpha_business.market.sim_market import SimMarket
 
 
 class CircularEconomy(SimMarket, ABC):

@@ -2,7 +2,8 @@ import os
 import random
 
 import numpy as np
-from configuration.hyperparameter_config import config
+
+from alpha_business.configuration.hyperparameter_config import config
 
 
 def ensure_results_folders_exist():

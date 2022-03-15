@@ -1,5 +1,6 @@
-import configuration.utils as ut
 import pytest
+
+import alpha_business.configuration.utils as ut
 
 testcases = [
 	([2, 3, 4], [5, 6], [(2, 5), (2, 6), (3, 5), (3, 6), (4, 5), (4, 6)]),

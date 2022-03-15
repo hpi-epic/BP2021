@@ -1,10 +1,10 @@
 from importlib import reload
 from unittest.mock import mock_open, patch
 
-import configuration.hyperparameter_config as hyperparameter_config
 import pytest
+import utils_tests as ut_t
 
-import tests.utils_tests as ut_t
+import alpha_business.configuration.hyperparameter_config as hyperparameter_config
 
 
 def teardown_module(module):

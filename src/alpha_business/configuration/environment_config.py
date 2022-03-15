@@ -4,10 +4,10 @@ import json
 import os
 from abc import ABC, abstractmethod
 
-from agents.vendors import CircularAgent, QLearningAgent
-from market.circular.circular_sim_market import CircularEconomy
-from market.sim_market import SimMarket
-from rl.actorcritic_agent import ActorCriticAgent
+from alpha_business.agents.vendors import CircularAgent, QLearningAgent
+from alpha_business.market.circular.circular_sim_market import CircularEconomy
+from alpha_business.market.sim_market import SimMarket
+from alpha_business.rl.actorcritic_agent import ActorCriticAgent
 
 
 class EnvironmentConfig(ABC):
@@ -90,7 +90,7 @@ class EnvironmentConfig(ABC):
 					assert isinstance(modelfile, str), \
 						f'The "modelfile" field of this agent must be a str: {agent_classes[current_agent]} ({type(modelfile)})'
 					# Check that the modelfile exists. Implies that it must end in .dat Taken from am_configuration::_get_modelfile_path()
-					full_path = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'data', modelfile))
+					full_path = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir, 'data', modelfile))
 					assert os.path.exists(full_path), f'the specified modelfile does not exist: {full_path}'
 					modelfile_list.append(modelfile)
 
@@ -251,7 +251,7 @@ class EnvironmentConfigLoader():
 			EnvironmentConfig: A subclass instance of EnvironmentConfig.
 		"""
 		filename += '.json'
-		path = os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, filename)
+		path = os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir, filename)
 		with open(path) as config_file:
 			config = json.load(config_file)
 		return EnvironmentConfigLoader.validate(config)

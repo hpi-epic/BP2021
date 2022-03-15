@@ -2,9 +2,9 @@ import os
 import signal
 import sys
 
-import monitoring.agent_monitoring.am_configuration as am_configuration
-import monitoring.agent_monitoring.am_evaluation as am_evaluation
-from configuration.environment_config import AgentMonitoringEnvironmentConfig, EnvironmentConfigLoader
+import alpha_business.monitoring.agent_monitoring.am_configuration as am_configuration
+import alpha_business.monitoring.agent_monitoring.am_evaluation as am_evaluation
+from alpha_business.configuration.environment_config import AgentMonitoringEnvironmentConfig, EnvironmentConfigLoader
 
 
 class Monitor():

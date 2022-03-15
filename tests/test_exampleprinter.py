@@ -4,24 +4,25 @@ import shutil
 import time
 from unittest.mock import patch
 
-import agents.vendors as vendors
-import market.circular.circular_sim_market as circular_market
-import market.linear.linear_sim_market as linear_market
 import pytest
-import rl.actorcritic_agent as actorcritic_agent
-from monitoring.exampleprinter import ExamplePrinter
+
+import alpha_business.agents.vendors as vendors
+import alpha_business.market.circular.circular_sim_market as circular_market
+import alpha_business.market.linear.linear_sim_market as linear_market
+import alpha_business.rl.actorcritic_agent as actorcritic_agent
+from alpha_business.monitoring.exampleprinter import ExamplePrinter
 
 # The load path for the agent modelfiles
-parameters_path = os.path.join('src', 'tests', 'test_data')
+parameters_path = os.path.join('tests', 'test_data')
 
 
 def teardown_module(module):
 	print('***TEARDOWN***')
 	# we need to sleep because sometimes the runs folder is still being used when we try to remove it
 	time.sleep(0.002)
-	for file_name in os.listdir(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'results', 'runs')):
+	for file_name in os.listdir(os.path.join(os.path.dirname(__file__), os.pardir, 'results', 'runs')):
 		if re.match('test_*', file_name):
-			shutil.rmtree(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'results', 'runs', file_name))
+			shutil.rmtree(os.path.join(os.path.dirname(__file__), os.pardir, 'results', 'runs', file_name))
 
 
 def test_setup_exampleprinter():
@@ -61,13 +62,13 @@ full_episode_testcases = [
 
 @pytest.mark.parametrize('marketplace, agent', full_episode_testcases)
 def test_full_episode(marketplace, agent):
-	with patch('monitoring.exampleprinter.SVGManipulator'),\
-		patch('monitoring.exampleprinter.SummaryWriter'):
+	with patch('alpha_business.monitoring.exampleprinter.SVGManipulator'),\
+		patch('alpha_business.monitoring.exampleprinter.SummaryWriter'):
 		printer = ExamplePrinter()
 		printer.setup_exampleprinter(marketplace, agent)
 		assert printer.run_example(log_dir_prepend='test_') >= -5000
 
 
 def test_exampleprinter_with_tensorboard():
-	with patch('monitoring.exampleprinter.SVGManipulator'):
+	with patch('alpha_business.monitoring.exampleprinter.SVGManipulator'):
 		assert ExamplePrinter().run_example(log_dir_prepend='test_') >= -5000

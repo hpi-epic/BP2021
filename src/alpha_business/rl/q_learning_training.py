@@ -1,8 +1,9 @@
-import agents.vendors as vendors
-import configuration.utils as ut
 import numpy as np
-from configuration.hyperparameter_config import config
-from rl.training import RLTrainer
+
+import alpha_business.agents.vendors as vendors
+import alpha_business.configuration.utils as ut
+from alpha_business.configuration.hyperparameter_config import config
+from alpha_business.rl.training import RLTrainer
 
 
 class QLearningTrainer(RLTrainer):
