@@ -60,6 +60,7 @@ class ButtonHandler():
 			return self._start()
 		if self.wanted_key == 'logs':
 			return self._logs()
+		# no button was clicked?
 		return self._decide_rendering()
 
 	# PRIVATE METHODS
