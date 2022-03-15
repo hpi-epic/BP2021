@@ -36,7 +36,7 @@ class ButtonHandler():
 			self.wanted_key = request.POST['action']
 			if 'container_id' in request.POST:
 				wanted_container_id = request.POST['container_id'].strip()
-				self.wanted_container = Container.objects.get(container_id=wanted_container_id)
+				self.wanted_container = Container.objects.get(id=wanted_container_id)
 
 	def do_button_click(self) -> HttpResponse:
 		"""
@@ -129,7 +129,7 @@ class ButtonHandler():
 		Returns:
 			HttpResponse: a defined rendering
 		"""
-		raw_data = {'container_id': self.wanted_container.id()}
+		raw_data = {'container_id': self.wanted_container.id}
 		if not self.wanted_container.is_archived():
 			self.message = stop_container(raw_data).status()
 
@@ -151,7 +151,7 @@ class ButtonHandler():
 			self.message = ['error', 'You cannot download data from archived containers']
 			return self._decide_rendering()
 		else:
-			response = send_get_request_with_streaming('data', self.wanted_container.id())
+			response = send_get_request_with_streaming('data', self.wanted_container.id)
 			if response.ok():
 				# save data from api and make it available for the user
 				return download_file(response.content, self.request.POST['file_type'] == 'zip')
@@ -172,7 +172,7 @@ class ButtonHandler():
 			update_container(response['id'], {'last_check_at': timezone.now(), 'health_status': response['status']})
 		else:
 			self.message = response.status()
-		self.wanted_container = Container.objects.get(container_id=self.wanted_container.id())
+		self.wanted_container = Container.objects.get(id=self.wanted_container.id)
 
 		return self._decide_rendering()
 
@@ -224,7 +224,7 @@ class ButtonHandler():
 			# put container into database
 			response = response.content
 			# check if a container with the same id already exists
-			if Container.objects.filter(container_id=response['id']).exists():
+			if Container.objects.filter(id=response['id']).exists():
 				# we will kindly ask the user to try it again and stop the container
 				# TODO insert better handling here
 				print('the new container has the same id, as another container')
@@ -232,7 +232,7 @@ class ButtonHandler():
 				return self._remove()
 			container_name = self.request.POST['experiment_name']
 			container_name = container_name if container_name != '' else response['id'][:10]
-			Container.objects.create(container_id=response['id'], config_file=config_dict, name=container_name, command=requested_command)
+			Container.objects.create(id=response['id'], config_file=config_dict, name=container_name, command=requested_command)
 			return redirect('/observe', {'success': 'You successfully launched an experiment'})
 		else:
 			self.message = response.status()
@@ -250,7 +250,7 @@ class ButtonHandler():
 			return redirect(self.wanted_container.tensorboard_link)
 		response = send_get_request('data/tensorboard', self.request.POST)
 		if response.ok():
-			update_container(self.wanted_container.id(), {'tensorboard_link': response.content['data']})
+			update_container(self.wanted_container.id, {'tensorboard_link': response.content['data']})
 			return redirect(response.content['data'])
 		else:
 			self.message = response.status()

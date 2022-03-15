@@ -24,7 +24,7 @@
 					</tr>
 					{% for container in all_saved_containers %}
 						<tr>
-							<td><a href="/details/{{ container.container_id }}">{{ container.name }}</a></td>
+							<td><a href="/details/{{ container.id }}">{{ container.name }}</a></td>
 							<td>{{ container.command }}</td>
 							<td>{{ container.created_at }}</td>
 							<td>{{ container.last_check_at }}</td>

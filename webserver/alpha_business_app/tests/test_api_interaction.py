@@ -14,7 +14,7 @@ class ButtonTests(TestCase):
 		# get a container for testing
 		self.test_container = Container.objects.create(
 								command='training',
-								container_id='1234',
+								id='1234',
 								created_at='01.01.1970',
 								last_check_at='now',
 								name='test_container'
@@ -41,7 +41,7 @@ class ButtonTests(TestCase):
 
 			render_mock.assert_called_once()
 			assert expected_arguments == actual_arguments
-			assert 'healthy :)' == Container.objects.get(container_id='1234').health_status
+			assert 'healthy :)' == Container.objects.get(id='1234').health_status
 
 	def test_logs_button(self):
 		# mock a request that is sent when user presses a button
@@ -150,8 +150,6 @@ class ButtonTests(TestCase):
 			# cast the query set to list as well
 			actual_arguments[2]['all_saved_containers'] = list(actual_arguments[2]['all_saved_containers'])
 
-			print(expected_arguments, actual_arguments, sep='\n')
-			print(self.test_container.health_status)
 			assert expected_arguments == actual_arguments
 
 	def test_download_zip_data(self):
@@ -223,7 +221,7 @@ class ButtonTests(TestCase):
 		all_containers = list(Container.objects.all())
 
 		# query the test container again, because it values might have changed
-		self.test_container = Container.objects.get(container_id='1234')
+		self.test_container = Container.objects.get(id='1234')
 
 		return (request,
 				view,

@@ -27,7 +27,7 @@
 							{% if container.is_archived %}
 								<td>{{ container.name }}</td>
 							{% else %}
-								<td><a href="/details/{{ container.container_id }}">{{ container.name }}</a></td>
+								<td><a href="/details/{{ container.id }}">{{ container.name }}</a></td>
 							{% endif %}
 							<td>{{ container.command }}</td>
 							<td>{{ container.created_at }}</td>
