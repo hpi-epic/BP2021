@@ -5,7 +5,7 @@ from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
 
-from .handle_files import archive_files, download_file, save_data
+from .handle_files import download_file
 from .handle_requests import send_get_request, send_get_request_with_streaming, send_post_request, stop_container
 from .models import Container, update_container
 
@@ -17,8 +17,7 @@ class ButtonHandler():
 		You can add more keywords in `do_button_click()` or implement your own renderings and add them to `_decide_rendering()`.
 
 		Args:
-			request (HttpRequest): request send to the server when a button is pressed. At the moment you can only have one parameter
-				in the requests, more than one parameter will be interpreted as the request to start a container.
+			request (WSGIRequest): post request send to the server when a button is pressed. The keyword 'action' defines what happens.
 			view (str): The view that should be rendered when the button action is done.
 			container (Container, optional): a container that could be used i.e. for the rendering. Defaults to None.
 			rendering_method (str, optional): keyword for the rendering methode, see `_decide_rendering()`. Defaults to 'default'.
@@ -34,38 +33,32 @@ class ButtonHandler():
 		self.all_containers = Container.objects.all()
 
 		if request.method == 'POST':
-			all_keys = list(self.request.POST.keys())
-			all_keys.remove('csrfmiddlewaretoken')
-			if len(all_keys) != 1:
-				# we have multiple parameters for this request, assuming want to start a container
-				self.wanted_key = 'start'
-			else:
-				self.wanted_key = all_keys[0]
-				self.wanted_container_id = self.request.POST[self.wanted_key]
-				self.wanted_container = Container.objects.get(container_id=self.wanted_container_id)
+			self.wanted_key = request.POST['action']
+			if 'container_id' in request.POST:
+				wanted_container_id = request.POST['container_id'].strip()
+				self.wanted_container = Container.objects.get(id=wanted_container_id)
 
 	def do_button_click(self) -> HttpResponse:
 		"""
 		Call this function after initializing a ButtonHandler. It will decide, depending on the given keyword in the request,
 		which action to perform and return an appropriate rendering for a view.
+
 		Returns:
 			HttpResponse: response including the rendering for an appropriate view.
 		"""
-		if 'data-all' == self.wanted_key:
-			return self._download_all_data()
-		if 'data-latest' == self.wanted_key:
-			return self._download_latest_data()
-		if 'delete' == self.wanted_key:
+		if self.wanted_key == 'data':
+			return self._download_data()
+		if self.wanted_key == 'delete':
 			return self._delete_container()
-		if 'data/tensorboard' == self.wanted_key:
+		if self.wanted_key == 'data/tensorboard':
 			return self._tensorboard_link()
-		if 'health' == self.wanted_key:
+		if self.wanted_key == 'health':
 			return self._health()
-		if 'remove' == self.wanted_key:
+		if self.wanted_key == 'remove':
 			return self._remove()
-		if 'start' == self.wanted_key:
+		if self.wanted_key == 'start':
 			return self._start()
-		if 'logs' == self.wanted_key:
+		if self.wanted_key == 'logs':
 			return self._logs()
 		return self._decide_rendering()
 
@@ -136,29 +129,17 @@ class ButtonHandler():
 		Returns:
 			HttpResponse: a defined rendering
 		"""
-		raw_data = {'remove': self.request.POST['delete']}
+		raw_data = {'container_id': self.wanted_container.id}
 		if not self.wanted_container.is_archived():
 			self.message = stop_container(raw_data).status()
 
 		if self.message[0] == 'success' or self.wanted_container.is_archived():
 			self.wanted_container.delete()
+			self.wanted_container = None
 			self.message = ['success', 'You successfully removed all data']
 		return self._decide_rendering()
 
-	def _download_all_data(self) -> HttpResponse:
-		"""
-		This will download all data the webserver stored about this container i.e. all downloaded archives.
-		Will return an error in the response if no data belongs to the container.
-
-		Returns:
-			HttpResponse: A collection of all archives for the user to be saved or a response containing the error field.
-		"""
-		if not self.wanted_container.has_data():
-			self.message = ['error', 'You have not yet saved any data belonging to this container']
-			return self._decide_rendering()
-		return archive_files(self.wanted_container_id)
-
-	def _download_latest_data(self) -> HttpResponse:
+	def _download_data(self) -> HttpResponse:
 		"""
 		This will send an API  request to get the latest data of the container.
 		Will return an error in the response if the container is archived.
@@ -167,15 +148,13 @@ class ButtonHandler():
 			HttpResponse: The latest data from the container, or a response containing the error field.
 		"""
 		if self.wanted_container.is_archived():
-			self.message = ['error', 'You cannot downoload data from archived containers']
+			self.message = ['error', 'You cannot download data from archived containers']
 			return self._decide_rendering()
 		else:
-			response = send_get_request_with_streaming('data', self.wanted_container_id)
+			response = send_get_request_with_streaming('data', self.wanted_container.id)
 			if response.ok():
 				# save data from api and make it available for the user
-				response = response.content
-				path = save_data(response, self.wanted_container_id)
-				return download_file(path)
+				return download_file(response.content, self.request.POST['file_type'] == 'zip')
 			else:
 				self.message = response.status()
 				return self._decide_rendering()
@@ -193,7 +172,8 @@ class ButtonHandler():
 			update_container(response['id'], {'last_check_at': timezone.now(), 'health_status': response['status']})
 		else:
 			self.message = response.status()
-		self.wanted_container = Container.objects.get(container_id=self.wanted_container_id)
+		self.wanted_container = Container.objects.get(id=self.wanted_container.id)
+
 		return self._decide_rendering()
 
 	def _logs(self) -> HttpResponse:
@@ -207,7 +187,10 @@ class ButtonHandler():
 		response = send_get_request('logs', self.request.POST)
 		self.data = ''
 		if response.ok():
-			self.data = response.content['data']
+			# reverse the output for better readability
+			self.data = response.content['data'].splitlines()
+			self.data.reverse()
+			self.data = '\n'.join(self.data)
 		return self._decide_rendering()
 
 	def _remove(self) -> HttpResponse:
@@ -228,6 +211,7 @@ class ButtonHandler():
 			HttpResponse: An appropriate rendering, or a redirect to the `observe` view.
 		"""
 		post_request = self.request.POST
+
 		requested_command = post_request['command_selection']
 		# the start button was pressed
 		config_file = post_request['filename']
@@ -239,9 +223,16 @@ class ButtonHandler():
 		if response.ok():
 			# put container into database
 			response = response.content
+			# check if a container with the same id already exists
+			if Container.objects.filter(id=response['id']).exists():
+				# we will kindly ask the user to try it again and stop the container
+				# TODO insert better handling here
+				print('the new container has the same id, as another container')
+				self.message = ['error', 'please try again']
+				return self._remove()
 			container_name = self.request.POST['experiment_name']
 			container_name = container_name if container_name != '' else response['id'][:10]
-			Container.objects.create(container_id=response['id'], config_file=config_dict, name=container_name, command=requested_command)
+			Container.objects.create(id=response['id'], config_file=config_dict, name=container_name, command=requested_command)
 			return redirect('/observe', {'success': 'You successfully launched an experiment'})
 		else:
 			self.message = response.status()
@@ -259,7 +250,7 @@ class ButtonHandler():
 			return redirect(self.wanted_container.tensorboard_link)
 		response = send_get_request('data/tensorboard', self.request.POST)
 		if response.ok():
-			update_container(self.wanted_container_id, {'tensorboard_link': response.content['data']})
+			update_container(self.wanted_container.id, {'tensorboard_link': response.content['data']})
 			return redirect(response.content['data'])
 		else:
 			self.message = response.status()

@@ -4,10 +4,13 @@ class APIResponse():
 	"""
 	def __init__(self, status: str,	http_status: str = None, content=None) -> None:
 
-		assert status == 'error' or status == 'success', 'as status only error and success are allowed'
+		assert status in {'error', 'success'}, 'as status only error and success are allowed'
 		self.status_code = status
 		self.http_status = http_status
 		self.content = content
+
+	def __str__(self) -> str:
+		return f'status_code: {self.status_code} content: {self.content}'
 
 	def ok(self) -> bool:
 		return self.status_code == 'success'
