@@ -8,7 +8,7 @@
 		<link rel="shortcut icon" type="image/png" href="{% static 'favicon.png' %}"/>
 	</head>
 	<body>
-		<h1>You can observe all your active container here</h1>
+		<h1>You can observe all of your active containers here</h1>
 		<div class="content">
 			{% if all_saved_containers %}
 				<table class="table">
@@ -24,7 +24,7 @@
 					</tr>
 					{% for container in all_saved_containers %}
 						<tr>
-							<td><a href="/details/{{ container.container_id }}">{{ container.name }}</a></td>
+							<td><a href="/details/{{ container.id }}">{{ container.name }}</a></td>
 							<td>{{ container.command }}</td>
 							<td>{{ container.created_at }}</td>
 							<td>{{ container.last_check_at }}</td>
@@ -51,6 +51,6 @@
 			{% include "notice_field.html" %}
 		</div>
 		<br>
-		<a href="/">home</a>
+		<a href="/">Home</a>
 	</body>
 </html>

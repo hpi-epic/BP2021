@@ -17,8 +17,9 @@
 					<th>last checked at</th>
 					<th>health status</th>
 					<th>get health status</th>
-					<th>download latest data</th>
-					<th>download all data</th>
+					<th>download</th>
+					<th>logs</th>
+					<th>tensorboard</th>
 				</tr>
 				<tr>
 					<td>{{ container.command }}</td>
@@ -29,16 +30,20 @@
 						{% include "api_buttons/health_button.html" %}
 					</td>
 					<td class="button_row" >
-						{% include "api_buttons/download_latest_button.html" %}
+						{% include "api_buttons/download_button.html" %}
 					</td>
 					<td class="button_row" >
-						{% include "api_buttons/download_all_button.html" %}
+						{% include "api_buttons/logs_button.html" %}
+					</td>
+					<td class="button_row" >
+						{% include "api_buttons/tensorboard_button.html" %}
 					</td>
 				</tr>
 			</table>
+			<a href="/">Home</a>
+			<a href="/observe">Observe</a>
 			{% include "notice_field.html" %}
 			<div>
-				{% include "api_buttons/logs_button.html" %}
 				{% if data %}
 					<p > 
 						<pre class="notice terminal">{{ data }}</pre> 
@@ -47,6 +52,6 @@
 			</div>
 		</div>
 		<br>
-		<a href="/">home</a>
+
 	</body>
 </html>

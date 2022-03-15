@@ -9,8 +9,10 @@
 	- [1.1. Installing dependencies](#11-installing-dependencies)
 		- [1.1.1 Dependency Installation Troubleshooting](#111-dependency-installation-troubleshooting)
 	- [1.2. The `AlphaBusiness` package](#12-the-alphabusiness-package)
-	- [1.3. Pytest](#13-pytest)
-		- [1.3.1. Coverage](#131-coverage)
+	- [1.3. Testing](#13-testing)
+		- [1.3.1. Pytest](#131-pytest)
+		- [1.3.2.](#132)
+		- [1.3.3. Coverage](#133-coverage)
 	- [1.4. Pre-commit](#14-pre-commit)
 		- [1.4.1. Interrogate](#141-interrogate)
 		- [1.4.2. Pre-commit Troubleshooting](#142-pre-commit-troubleshooting)
@@ -107,7 +109,9 @@ Check `pip freeze` again to make sure the package was installed.
 Installing our project as a package enables us to perform [relative imports](https://realpython.com/absolute-vs-relative-python-imports/) from within subdirectories to parent directories. The most prominent example of this would be importing the tested files from within the test-files in the `tests/` subdirectory.
 Package installation adapted from [this post](https://stackoverflow.com/a/50194143).
 
-## 1.3. Pytest
+## 1.3. Testing
+
+### 1.3.1. Pytest
 
 [Pytest documentation](https://docs.pytest.org/en/latest/index.html)
 
@@ -125,7 +129,14 @@ pytest
 pytest -v
 ```
 
-### 1.3.1. Coverage
+### 1.3.2.
+To run tests you have written for the Django webserver go into the *webserver* folder and run
+
+```bash
+python3 ./manage.py test
+```
+
+### 1.3.3. Coverage
 
 [Coverage.py Documentation](https://coverage.readthedocs.io/en/6.1.2/)
 
@@ -268,6 +279,12 @@ Before starting the server you might need to apply any pending migrations using
 
 ```bash
 python3 ./manage.py migrate
+```
+
+To run tests you have written for the Django webserver go into the _webserver_ folder and run
+
+```bash
+python manage.py test
 ```
 
 ### 1.5.3. Docker API
