@@ -25,7 +25,8 @@ jobs:
       - name: webserver tests
         shell: bash -l {0}
         run: |
-          (cd ./webserver && python ./manage.py test)
+          (cd ./webserver && python ./manage.py test -v 2)
+
       - name: Report Coverage
         shell: bash -l {0}
         run: |
