@@ -46,19 +46,19 @@ class ButtonHandler():
 		Returns:
 			HttpResponse: response including the rendering for an appropriate view.
 		"""
-		if 'data' == self.wanted_key:
+		if self.wanted_key == 'data':
 			return self._download_data()
-		if 'delete' == self.wanted_key:
+		if self.wanted_key == 'delete':
 			return self._delete_container()
-		if 'data/tensorboard' == self.wanted_key:
+		if self.wanted_key == 'data/tensorboard':
 			return self._tensorboard_link()
-		if 'health' == self.wanted_key:
+		if self.wanted_key == 'health':
 			return self._health()
-		if 'remove' == self.wanted_key:
+		if self.wanted_key == 'remove':
 			return self._remove()
-		if 'start' == self.wanted_key:
+		if self.wanted_key == 'start':
 			return self._start()
-		if 'logs' == self.wanted_key:
+		if self.wanted_key == 'logs':
 			return self._logs()
 		return self._decide_rendering()
 
@@ -148,7 +148,7 @@ class ButtonHandler():
 			HttpResponse: The latest data from the container, or a response containing the error field.
 		"""
 		if self.wanted_container.is_archived():
-			self.message = ['error', 'You cannot downoload data from archived containers']
+			self.message = ['error', 'You cannot download data from archived containers']
 			return self._decide_rendering()
 		else:
 			response = send_get_request_with_streaming('data', self.wanted_container.id())

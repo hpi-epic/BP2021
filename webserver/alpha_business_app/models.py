@@ -18,7 +18,7 @@ class Container(models.Model):
 		return self.container_id
 
 	def is_archived(self):
-		return 'archived' == self.health_status
+		return self.health_status == 'archived'
 
 	def has_tensorboard_link(self):
 		return self.tensorboard_link != ''

@@ -10,8 +10,8 @@ from .models import Container
 def detail(request, container_id) -> HttpResponse:
 	try:
 		wanted_container = Container.objects.get(container_id=container_id)
-	except Container.DoesNotExist:
-		raise Http404('Container does not exist')
+	except Container.DoesNotExist as error:
+		raise Http404('Container does not exist') from error
 	button_handler = ButtonHandler(request, view='details.html', container=wanted_container)
 	return button_handler.do_button_click()
 
