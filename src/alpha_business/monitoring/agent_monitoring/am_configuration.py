@@ -83,8 +83,6 @@ class Configurator():
 
 		# Instantiate all agents. If they are not rule-based, use the marketplace parameters accordingly
 		for current_agent in agents:
-			print(current_agent[0])
-			print(current_agent[1])
 			if issubclass(current_agent[0], vendors.RuleBasedAgent):
 				# The custom_init takes two parameters: The class of the agent to be initialized and a list of arguments,
 				# e.g. for the fixed prices or names

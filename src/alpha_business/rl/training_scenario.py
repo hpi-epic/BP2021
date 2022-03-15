@@ -59,5 +59,12 @@ def train_from_config():
 	run_training_session(config.marketplace, config.agent)
 
 
-if __name__ == '__main__':
+def main():  # pragma: no cover
+	"""
+	Defines what is performed when the `agent_monitoring` command is chosen in `main.py`.
+	"""
 	train_from_config()
+
+
+if __name__ == '__main__':
+	main()

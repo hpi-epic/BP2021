@@ -91,7 +91,10 @@ class ExamplePrinter():
 		return our_profit
 
 
-if __name__ == '__main__':  # pragma: no cover
+def main():  # pragma: no cover
+	"""
+	Defines what is performed when the `agent_monitoring` command is chosen in `main.py`.
+	"""
 	printer = ExamplePrinter()
 
 	config: ExampleprinterEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_exampleprinter')
@@ -103,8 +106,12 @@ if __name__ == '__main__':  # pragma: no cover
 			agent=config.agent[0](
 				n_observations=marketplace.observation_space.shape[0],
 				n_actions=marketplace.get_n_actions(),
-				load_path=os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'data', config.agent[1]))))
+				load_path=os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir, 'data', config.agent[1]))))
 	else:
 		printer.setup_exampleprinter(marketplace=marketplace, agent=config.agent[0]())
 
 	print(f'The final profit was: {printer.run_example()}')
+
+
+if __name__ == '__main__':  # pragma: no cover
+	main()

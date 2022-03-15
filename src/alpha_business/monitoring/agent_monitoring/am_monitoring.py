@@ -95,7 +95,10 @@ def run_monitoring_session(monitor: Monitor = Monitor()) -> None:
 	monitor.evaluator.evaluate_session(rewards)
 
 
-if __name__ == '__main__':  # pragma: no cover
+def main():  # pragma: no cover
+	"""
+	Defines what is performed when the `agent_monitoring` command is chosen in `main.py`.
+	"""
 	monitor = Monitor()
 	config: AgentMonitoringEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_agent_monitoring')
 	monitor.configurator.setup_monitoring(
@@ -106,3 +109,7 @@ if __name__ == '__main__':  # pragma: no cover
 		agents=config.agent
 	)
 	run_monitoring_session(monitor)
+
+
+if __name__ == '__main__':  # pragma: no cover
+	main()

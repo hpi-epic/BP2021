@@ -15,42 +15,35 @@ class PathManager():
 				pass
 
 		with open(os.path.join(os.path.dirname(__file__), 'data_path.txt'), 'r') as path_file:
-			cls.data_path = path_file.read()
+			data_path = path_file.read()
 
 		# There is a valid path saved
-		if os.path.isdir(cls.data_path):
-			print(f'Data will be read from and saved to "{cls.data_path}"')
+		if os.path.isdir(data_path):
+			print(f'Data will be read from and saved to "{data_path}"')
 			return
 		# A path has previously been saved, but is no longer a valid directory
-		elif cls.data_path != '':
-			print(f'The current saved data path does not exist: {cls.data_path}')
+		elif data_path != '':
+			print(f'The current saved data path does not exist: {data_path}')
 
 		# No path provided as of yet
-		while not os.path.isdir(cls.data_path):
-			cls.data_path = input('Please provide a path where alpha_business will look for and save data:\n')
-			if not os.path.isdir(cls.data_path):
-				print(f'The provided path is not a valid directory: {cls.data_path}')
+		while not os.path.isdir(data_path):
+			data_path = input('Please provide a path where alpha_business will look for and save data:\n')
+			if not os.path.isdir(data_path):
+				print(f'The provided path is not a valid directory: {data_path}')
 
-		with open(os.path.join(os.path.dirname(__file__), 'data_path.txt'), 'w') as path_file:
-			path_file.write(cls.data_path)
+		cls.update_data_path(data_path)
 
-		print(f'Data will be read from and saved to "{cls.data_path}"\n')
-
-	def change_data_path(cls) -> None:
+	def update_data_path(cls, path: str) -> None:
 		"""
-		Use this to manually update the data path, even when it is valid.
+		Use this to manually update the data path.
+		Used by `main.py` if the `--datapath` argument is set.
+
+		Args:
+			path (str): The path that should be set.
 		"""
-		new_data_path = ''
+		assert os.path.isdir(path), f'The provided path is not valid: {path}'
+		cls.data_path = path
 
-		while not os.path.isdir(new_data_path):
-			new_data_path = input('Please provide a path where alpha_business will look for and save data, or "exit" to not change anything:\n')
-			if new_data_path == 'exit':
-				print(f'Data will be read from and saved to "{cls.data_path}"')
-				return
-			if not os.path.isdir(new_data_path):
-				print(f'The provided path is not a valid directory: {new_data_path}')
-
-		cls.data_path = new_data_path
 		with open(os.path.join(os.path.dirname(__file__), 'data_path.txt'), 'w') as path_file:
 			path_file.write(cls.data_path)
 
