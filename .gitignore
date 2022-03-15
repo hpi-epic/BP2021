@@ -10,6 +10,9 @@ webserver/data
 # docker related directories
 docker/occupied_ports.txt
 
+# file where the users data path is saved
+src/alpha_business/configuration/data_path.txt
+
 # file for Johanns test runner
 tests.sh
 # Johanns VM debug skripts

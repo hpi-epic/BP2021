@@ -21,6 +21,7 @@ class PathManager():
 		if os.path.isdir(cls.data_path):
 			print(f'Data will be read from and saved to "{cls.data_path}"')
 			return
+		# A path has previously been saved, but is no longer a valid directory
 		elif cls.data_path != '':
 			print(f'The current saved data path does not exist: {cls.data_path}')
 
@@ -35,7 +36,7 @@ class PathManager():
 
 		print(f'Data will be read from and saved to "{cls.data_path}"\n')
 
-	def change_data_path(cls):
+	def change_data_path(cls) -> None:
 		"""
 		Use this to manually update the data path, even when it is valid.
 		"""
