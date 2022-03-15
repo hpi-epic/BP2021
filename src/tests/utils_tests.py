@@ -1,4 +1,8 @@
 import os
+from typing import Tuple, Union
+
+import market.circular.circular_sim_market as circular_market
+import market.linear.linear_sim_market as linear_market
 
 
 def create_hyperparameter_mock_json_rl(gamma='0.99',
@@ -170,3 +174,36 @@ def create_mock_rewards(num_entries) -> list:
 		list: The list of rewards.
 	"""
 	return list(range(1, num_entries))
+
+
+def create_mock_action(market_subclass) -> Union[int, Tuple]:
+	"""
+	Create an array to be used as an action. The length of the array fits to the argument's class.
+
+	Args:
+		market_subclass (SimMarket): A non-abstract subclass for which an action will be returned.
+
+	Returns:
+		list: An action array with mocked values.
+	"""
+	if issubclass(market_subclass, linear_market.LinearEconomy):
+		return 1
+	elif issubclass(market_subclass, circular_market.CircularEconomyRebuyPrice):
+		return (1, 2, 3)
+	elif issubclass(market_subclass, circular_market.CircularEconomy):
+		return (1, 2)
+
+
+def random_offer(marketplace):
+	"""
+	Helper function that creates a random offer (state that includes the agent's price) to test customer behaviour.
+
+	This is dependent on the sim_market working!
+
+	Args:
+		marketplace (SimMarket): The marketplace for which offers should be generated.
+	"""
+	marketplace = marketplace()
+	marketplace.reset()
+	marketplace.vendor_actions[0] = marketplace._action_space.sample()
+	return marketplace._get_common_state_array(), marketplace.vendor_specific_state, marketplace.vendor_actions
