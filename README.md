@@ -85,29 +85,29 @@ python Path/To/Anaconda3/Scripts/pywin32_postinstall.py -install
 
 ## 1.2. The `AlphaBusiness` package
 
-You may have noticed the following line in the `requirements.txt`:
+In order to get our project to work, you must perform the following command:
 
 ```bash
--e ./src
+pip install -e .
 ```
 
-This installs the `src` folder (and its subdirectories) as a local pip package. The `-e` flag indicates to pip that the package should be installed in an editable state, meaning that any changes to `.py` files in the package will be integrated into the package immediately (meaning no re-install is necessary). In order to install the package, pip looks into the `setup.py` file where name, version and packages of the new package are set.
-You can confirm that the install was successfull if there is a folder called `AlphaBusiness.egg-info` within the `src`-directory, or by checking `pip freeze` for the following line:
+This installs the `alpha_business` folder (and its subdirectories) as a local pip package. The `-e` flag indicates to pip that the package should be installed in an editable state. This results in the packages not being directly written to where pip dependencies usually would, but only a "link" to you current working directory being created. In order to install the package, we use `setuptools`, which uses the `setup.py` and `setup.cfg` files located in the root directory of the project. The `setup.cfg` file includes all necessary metadata needed to correctly install the project. If you want to properly install the project as a pip package, use the following command:
 
 ```bash
--e git+https://github.com/hpi-epic/BP2021.git@da8868467690a1300ff4e11245417ec384aae15b#egg=AlphaBusiness&subdirectory=src
+pip install .
 ```
 
-If you do not see the `AlphaBusiness`-package in the resulting list, perform the following command while in the top-level-folder of the repository (e.g. `BP2021`):
+This will "copy" the packages into your pip-install folder, meaning that any changes to your source-code will only be reflected when installing the package again, therefore you should not use that command if you plan on changing the code.
+
+You can confirm that the installation was successfull if there is a folder called `alpha_business.egg-info` within the `src`-directory, or by checking `pip freeze` for the following line:
 
 ```bash
-pip install -e ./src
+-e git+https://github.com/hpi-epic/BP2021.git@hash_here#egg=alpha_business
 ```
 
-Check `pip freeze` again to make sure the package was installed.
-
-Installing our project as a package enables us to perform [relative imports](https://realpython.com/absolute-vs-relative-python-imports/) from within subdirectories to parent directories. The most prominent example of this would be importing the tested files from within the test-files in the `tests/` subdirectory.
-Package installation adapted from [this post](https://stackoverflow.com/a/50194143).
+Installing our project as a package enables us to import our project packages from anywhere on the machine, in our case we use this to import packages from parent directories. 
+Another prominent example of this would be importing the tested files from within the test-files in the `tests` directory. Note that the `tests` directory is explicitly NOT part of the pip package, as are the `docker` and `webserver` folders.
+Package installation adapted from [this repository](https://github.com/mCodingLLC/SlapThatLikeButton-TestingStarterProject).
 
 ## 1.3. Testing
 
