@@ -14,9 +14,6 @@ class Container(models.Model):
 	name = models.CharField(max_length=20)
 	tensorboard_link = models.CharField(max_length=100, default='')
 
-	def id(self):
-		return self.container_id
-
 	def is_archived(self):
 		return self.health_status == 'archived'
 
