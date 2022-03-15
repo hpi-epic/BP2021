@@ -9,7 +9,7 @@ import market.circular.circular_vendors as circular_vendors
 import market.linear.linear_vendors as linear_vendors
 import market.vendors as vendors
 import tests.utils_tests as ut_t
-from rl.q_learning_agent import QLearningAgent, QLearningCEAgent, QLearningCERebuyAgent, QLearningLEAgent
+from rl.q_learning.q_learning_agent import QLearningAgent, QLearningCEAgent, QLearningCERebuyAgent, QLearningLEAgent
 from rl.reinforcement_learning_agent import ReinforcementLearningAgent
 
 

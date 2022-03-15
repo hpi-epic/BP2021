@@ -5,7 +5,7 @@ from unittest.mock import patch
 import market.circular.circular_sim_market as circular_market
 import monitoring.agent_monitoring.am_monitoring as monitoring
 from market.circular.circular_vendors import FixedPriceCEAgent
-from rl.q_learning_agent import QLearningCEAgent
+from rl.q_learning.q_learning_agent import QLearningCEAgent
 
 monitor = monitoring.Monitor()
 

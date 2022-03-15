@@ -2,7 +2,7 @@ import numpy as np
 
 import configuration.utils as ut
 from configuration.hyperparameter_config import config
-from rl.q_learning_agent import QLearningAgent
+from rl.q_learning.q_learning_agent import QLearningAgent
 from rl.training import RLTrainer
 
 

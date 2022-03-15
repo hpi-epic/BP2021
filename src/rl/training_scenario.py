@@ -2,10 +2,10 @@ import market.circular.circular_sim_market as circular_market
 import market.linear.linear_sim_market as linear_market
 import market.sim_market as sim_market
 import market.vendors as vendors
-import rl.actorcritic_agent as actorcritic_agent
+import rl.actorcritic.actorcritic_agent as actorcritic_agent
 from configuration.environment_config import EnvironmentConfigLoader, TrainingEnvironmentConfig
-from rl.actorcritic_training import ActorCriticTrainer
-from rl.q_learning_training import QLearningTrainer
+from rl.actorcritic.actorcritic_training import ActorCriticTrainer
+from rl.q_learning.q_learning_training import QLearningTrainer
 
 
 def run_training_session(marketplace=circular_market.CircularEconomyRebuyPriceOneCompetitor, agent=vendors.QLearningCERebuyAgent):

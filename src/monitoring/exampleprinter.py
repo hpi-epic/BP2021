@@ -14,7 +14,7 @@ from market.circular.circular_vendors import RuleBasedCERebuyAgent
 from market.sim_market import SimMarket
 from market.vendors import Agent
 from monitoring.svg_manipulation import SVGManipulator
-from rl.q_learning_agent import QLearningAgent
+from rl.q_learning.q_learning_agent import QLearningAgent
 
 
 class ExamplePrinter():

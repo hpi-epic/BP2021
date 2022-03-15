@@ -8,7 +8,7 @@ import torch
 from torch.utils.tensorboard import SummaryWriter
 
 import configuration.utils as ut
-import rl.actorcritic_agent as actorcritic_agent
+import rl.actorcritic.actorcritic_agent as actorcritic_agent
 from configuration.hyperparameter_config import config
 from rl.reinforcement_learning_agent import ReinforcementLearningAgent
 

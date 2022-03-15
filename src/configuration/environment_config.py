@@ -7,8 +7,8 @@ from abc import ABC, abstractmethod
 from market.circular.circular_sim_market import CircularEconomy
 from market.circular.circular_vendors import CircularAgent
 from market.sim_market import SimMarket
-from rl.actorcritic_agent import ActorCriticAgent
-from rl.q_learning_agent import QLearningAgent
+from rl.actorcritic.actorcritic_agent import ActorCriticAgent
+from rl.q_learning.q_learning_agent import QLearningAgent
 
 
 class EnvironmentConfig(ABC):

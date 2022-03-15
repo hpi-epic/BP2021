@@ -8,11 +8,11 @@ import pytest
 
 import market.circular.circular_sim_market as circular_market
 import market.linear.linear_sim_market as linear_market
-import rl.actorcritic_agent as actorcritic_agent
+import rl.actorcritic.actorcritic_agent as actorcritic_agent
 from market.circular.circular_vendors import FixedPriceCEAgent, FixedPriceCERebuyAgent, RuleBasedCEAgent, RuleBasedCERebuyAgent
 from market.linear.linear_vendors import FixedPriceLEAgent
 from monitoring.exampleprinter import ExamplePrinter
-from rl.q_learning_agent import QLearningCEAgent, QLearningCERebuyAgent, QLearningLEAgent
+from rl.q_learning.q_learning_agent import QLearningCEAgent, QLearningCERebuyAgent, QLearningLEAgent
 
 # The load path for the agent modelfiles
 parameters_path = os.path.join('src', 'tests', 'test_data')
