@@ -20,7 +20,7 @@ parameters_path = os.path.join('src', 'tests', 'test_data')
 
 def teardown_module(module):
 	print('***TEARDOWN***')
-	# we need to sleep because sometimes the runs folder is still being used when we try to remove it
+	# We need to sleep because sometimes the runs folder is still being used when we try to remove it.
 	time.sleep(0.002)
 	for file_name in os.listdir(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'results', 'runs')):
 		if re.match('test_*', file_name):
