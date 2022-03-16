@@ -20,6 +20,7 @@ trained models will be saved to your `data_path`""")
 	PathManager.manage_user_path(PathManager, args.datapath)
 
 	# --get-defaults
+	# Copy the contents of `./src/alpha_business/default_data` to the user provided data path
 	if args.get_defaults:
 		# DO MAGIC HERE
 		# Any default files should be copied over to the data_path directory
