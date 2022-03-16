@@ -17,7 +17,7 @@ trained models will be saved to your `data_path`""")
 
 	# --datapath
 	# Update the datapath if possible
-	PathManager.manage_data_path(PathManager, args.datapath)
+	PathManager.manage_user_path(PathManager, args.datapath)
 
 	# --get-defaults
 	if args.get_defaults:

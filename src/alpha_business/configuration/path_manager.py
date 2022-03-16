@@ -17,14 +17,14 @@ def readable_dir(path) -> bool:
 	return False if not os.path.isdir(path) else bool(os.access(path, os.R_OK))
 
 
-def get_data_path():
+def get_user_path():
 	"""
 	Helper function that reads the data_path.txt and return its path.
 
 	Returns:
 		str: The data path.
 	"""
-	with open(os.path.join(os.path.dirname(__file__), 'data_path.txt'), 'r') as path_file:
+	with open(os.path.join(os.path.dirname(__file__), 'user_path.txt'), 'r') as path_file:
 		return path_file.read()
 
 
@@ -33,9 +33,11 @@ class PathManager():
 	# the correct data path without havign to call `manage_data_path`, which is why we use this function.
 	# Note: The `PathManager` is smart and knows if it has already called `get_data_path()`, so each time the program is run it will
 	# only get called once, even when `PathManager.data_path` is used multiple times.
-	data_path = get_data_path()
+	user_path = get_user_path()
+	results_path = os.path.join(user_path, 'results')
+	dat_path = os.path.join(user_path, 'data')
 
-	def manage_data_path(cls, new_path: str) -> None:
+	def manage_user_path(cls, new_path: str) -> None:
 		"""
 		Manage the data path.
 		Used by `main.py` with the `--datapath` argument.
@@ -46,13 +48,13 @@ class PathManager():
 			new_path (str | None): The path that should be set.
 		"""
 		# Make sure the file where we save the path exists
-		if not os.path.exists(os.path.join(os.path.dirname(__file__), 'data_path.txt')):
-			with open(os.path.join(os.path.dirname(__file__), 'data_path.txt'), 'w') as path_file:
+		if not os.path.exists(os.path.join(os.path.dirname(__file__), 'user_path.txt')):
+			with open(os.path.join(os.path.dirname(__file__), 'user_path.txt'), 'w') as path_file:
 				pass
 
 		# No path provided, check if a valid path is already saved
 		if new_path is None:
-			with open(os.path.join(os.path.dirname(__file__), 'data_path.txt'), 'r') as path_file:
+			with open(os.path.join(os.path.dirname(__file__), 'user_path.txt'), 'r') as path_file:
 				old_path = path_file.read()
 
 			assert old_path != '', 'No data path was saved and no data path was provided. Please provide the `--datapath` argument before proceeding'
@@ -73,17 +75,15 @@ class PathManager():
 
 	def _update_path_file(cls, new_path: str) -> None:
 		"""
-		Update the path file and instance variable with the new path.
+		Update the path file with the new path.
 
 		Args:
 			new_path (str): The data path to be saved.
 		"""
-		cls.data_path = new_path
+		with open(os.path.join(os.path.dirname(__file__), 'user_path.txt'), 'w') as path_file:
+			path_file.write(new_path)
 
-		with open(os.path.join(os.path.dirname(__file__), 'data_path.txt'), 'w') as path_file:
-			path_file.write(cls.data_path)
-
-		print(f'Data will be read from and saved to "{cls.data_path}"')
+		print(f'Data will be read from and saved to "{cls.user_path}"')
 
 
 if __name__ == '__main__':

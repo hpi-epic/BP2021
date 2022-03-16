@@ -252,8 +252,7 @@ class EnvironmentConfigLoader():
 			EnvironmentConfig: A subclass instance of EnvironmentConfig.
 		"""
 		filename += '.json'
-		print(PathManager.data_path)
-		path = os.path.join(PathManager.data_path, filename)
+		path = os.path.join(PathManager.user_path, filename)
 		with open(path) as config_file:
 			config = json.load(config_file)
 		return EnvironmentConfigLoader.validate(config)

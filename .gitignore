@@ -11,7 +11,7 @@ webserver/data
 docker/occupied_ports.txt
 
 # file where the users data path is saved
-src/alpha_business/configuration/data_path.txt
+src/alpha_business/configuration/user_path.txt
 
 # file for Johanns test runner
 tests.sh
