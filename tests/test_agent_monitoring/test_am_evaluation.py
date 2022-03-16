@@ -49,6 +49,7 @@ def test_evaluate_session(agents, rewards):
 		patch('alpha_business.monitoring.agent_monitoring.am_evaluation.plt.pause'), \
 		patch('alpha_business.monitoring.agent_monitoring.am_evaluation.plt.draw'), \
 		patch('alpha_business.monitoring.agent_monitoring.am_evaluation.plt.savefig'), \
+		patch('alpha_business.monitoring.agent_monitoring.am_configuration.os.makedirs'), \
 		patch('alpha_business.monitoring.agent_monitoring.am_configuration.os.path.exists') as exists_mock:
 		exists_mock.return_value = True
 		monitor.configurator.setup_monitoring(episodes=4, plot_interval=1, agents=agents)
@@ -90,6 +91,7 @@ def test_create_histogram(agents, rewards, plot_bins, agent_color, lower_upper_r
 		patch('alpha_business.monitoring.agent_monitoring.am_evaluation.plt.pause'), \
 		patch('alpha_business.monitoring.agent_monitoring.am_evaluation.plt.draw') as draw_mock, \
 		patch('alpha_business.monitoring.agent_monitoring.am_evaluation.plt.savefig') as save_mock, \
+		patch('alpha_business.monitoring.agent_monitoring.am_configuration.os.makedirs'), \
 		patch('alpha_business.monitoring.agent_monitoring.am_configuration.os.path.exists') as exists_mock:
 		exists_mock.return_value = True
 
@@ -104,6 +106,7 @@ def test_create_histogram(agents, rewards, plot_bins, agent_color, lower_upper_r
 def test_create_statistics_plots(agents, rewards, plot_bins, agent_color, lower_upper_range):
 	monitor.configurator.setup_monitoring(agents=agents, episodes=len(rewards[0]), plot_interval=1)
 	with patch('alpha_business.monitoring.agent_monitoring.am_evaluation.plt'), \
+		patch('alpha_business.monitoring.agent_monitoring.am_configuration.os.makedirs'), \
 		patch('alpha_business.monitoring.agent_monitoring.am_configuration.os.path.exists') as exists_mock:
 		exists_mock.return_value = True
 

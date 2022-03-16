@@ -10,6 +10,10 @@ from alpha_business.configuration.path_manager import PathManager
 monitor = monitoring.Monitor()
 
 
+# def setup_module(module):
+# 	PathManager.user_path = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
+
+
 # setup before each test
 def setup_function(function):
 	print('***SETUP***')
@@ -34,6 +38,7 @@ def teardown_module(module):
 def test_run_marketplace():
 	monitor.configurator.setup_monitoring(episodes=100, plot_interval=100, agents=[(vendors.FixedPriceCEAgent, [(5, 2)])])
 	with patch('alpha_business.monitoring.agent_monitoring.am_evaluation.plt'), \
+		patch('alpha_business.monitoring.agent_monitoring.am_configuration.os.makedirs'), \
 		patch('alpha_business.monitoring.agent_monitoring.am_configuration.os.path.exists') as exists_mock:
 		exists_mock.return_value = True
 		agent_rewards = monitor.run_marketplace()
@@ -45,6 +50,7 @@ def test_run_monitoring_session():
 	monitor.configurator.setup_monitoring(episodes=10, plot_interval=10)
 	current_configuration = monitor.configurator.get_configuration()
 	with patch('alpha_business.monitoring.agent_monitoring.am_evaluation.plt'), \
+		patch('alpha_business.monitoring.agent_monitoring.am_configuration.os.makedirs'), \
 		patch('alpha_business.monitoring.agent_monitoring.am_configuration.os.path.exists') as exists_mock:
 		exists_mock.return_value = True
 		monitoring.run_monitoring_session(monitor)
@@ -57,6 +63,7 @@ def test_run_monitoring_ratio():
 	# ratio is over 50, program should ask if we want to continue. We answer 'no'
 	with patch('alpha_business.monitoring.agent_monitoring.am_evaluation.plt'), \
 		patch('alpha_business.monitoring.agent_monitoring.am_configuration.input', create=True) as mocked_input, \
+		patch('alpha_business.monitoring.agent_monitoring.am_configuration.os.makedirs'), \
 		patch('alpha_business.monitoring.agent_monitoring.am_configuration.os.path.exists') as exists_mock:
 		mocked_input.side_effect = ['n']
 		exists_mock.return_value = True

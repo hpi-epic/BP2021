@@ -67,7 +67,7 @@ class RLTrainer(ABC):
 		self.writer = SummaryWriter(log_dir=os.path.join(PathManager.results_path, 'runs', f'{log_dir_prepend}training_{self.curr_time}'))
 		path_name = f'{self.signature}_{self.curr_time}'
 		self.model_path = os.path.join(PathManager.results_path, 'trainedModels', log_dir_prepend + path_name)
-		os.makedirs(os.path.abspath(self.model_path))
+		os.makedirs(os.path.abspath(self.model_path), exist_ok=True)
 
 	def reset_time_tracker(self) -> None:
 		self.frame_number_last_speed_update = 0

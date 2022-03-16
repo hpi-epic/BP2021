@@ -15,6 +15,10 @@ from alpha_business.configuration.path_manager import PathManager
 monitor = monitoring.Monitor()
 
 
+# def setup_module(module):
+# 	PathManager.user_path = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
+
+
 # setup before each test
 def setup_function(function):
 	print('***SETUP***')
@@ -39,12 +43,13 @@ def test_get_folder():
 	# if you change the name of this function, change it here as well!
 	foldername = 'test_plots_test_get_folder'
 	monitor.configurator.get_folder()
-	assert os.path.exists(os.path.abspath(PathManager.results_path, 'monitoring', foldername))
+	assert os.path.exists(os.path.abspath(os.path.join(PathManager.results_path, 'monitoring', foldername)))
 	shutil.rmtree(os.path.join(PathManager.results_path, 'monitoring', foldername))
 
 
 def test_get_modelfile_path():
-	with patch('alpha_business.monitoring.agent_monitoring.am_configuration.os.path.exists') as mock_exists:
+	with patch('alpha_business.monitoring.agent_monitoring.am_configuration.os.path.exists') as mock_exists, \
+		patch('alpha_business.monitoring.agent_monitoring.am_configuration.os.makedirs'):
 		mock_exists.return_value = False
 		with pytest.raises(AssertionError) as assertion_message:
 			monitor.configurator._get_modelfile_path('non_existing_modelfile')

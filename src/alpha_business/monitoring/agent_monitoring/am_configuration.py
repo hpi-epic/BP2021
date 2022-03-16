@@ -25,7 +25,7 @@ class Configurator():
 		default_agent = vendors.FixedPriceCEAgent
 		self.agents = [default_agent()]
 		self.agent_colors = [(0.0, 0.0, 1.0, 1.0)]
-		self.folder_path = os.path.join(PathManager.results_path, 'monitoring', 'plots_' + time.strftime('%b%d_%H-%M-%S'))
+		self.folder_path = os.path.abspath(os.path.join(PathManager.results_path, 'monitoring', 'plots_' + time.strftime('%b%d_%H-%M-%S')))
 
 	def get_folder(self) -> str:
 		"""
@@ -35,7 +35,7 @@ class Configurator():
 			str: The folder name
 		"""
 		# create folder with current timestamp to save diagrams at
-		os.makedirs(self.folder_path, 'histograms')
+		os.makedirs(os.path.join(self.folder_path, 'histograms'), exist_ok=True)
 		return self.folder_path
 
 	def _get_modelfile_path(self, model_name: str) -> str:
