@@ -10,6 +10,7 @@ from torch.utils.tensorboard import SummaryWriter
 import alpha_business.configuration.utils as ut
 import alpha_business.rl.actorcritic.actorcritic_agent as actorcritic_agent
 from alpha_business.configuration.hyperparameter_config import config
+from alpha_business.configuration.path_manager import PathManager
 from alpha_business.rl.reinforcement_learning_agent import ReinforcementLearningAgent
 
 
@@ -61,9 +62,10 @@ class RLTrainer(ABC):
 		ut.ensure_results_folders_exist()
 		self.curr_time = time.strftime('%b%d_%H-%M-%S')
 		self.signature = f'{type(self.RL_agent).__name__}'
-		self.writer = SummaryWriter(log_dir=os.path.join('results', 'runs', f'{log_dir_prepend}training_{self.curr_time}'))
+		self.writer = SummaryWriter(log_dir=os.path.join(PathManager.results_path, 'runs', f'{log_dir_prepend}training_{self.curr_time}'))
 		path_name = f'{self.signature}_{self.curr_time}'
-		self.model_path = os.path.join('results', 'trainedModels', log_dir_prepend + path_name)
+		self.model_path = os.path.join(PathManager.results_path, 'trainedModels', log_dir_prepend + path_name)
+		os.makedirs(os.path.abspath(self.model_path), exist_ok=True)
 
 	def reset_time_tracker(self) -> None:
 		self.frame_number_last_speed_update = 0

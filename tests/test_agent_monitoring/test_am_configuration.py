@@ -17,10 +17,6 @@ from alpha_business.rl.q_learning.q_learning_agent import QLearningCEAgent, QLea
 monitor = monitoring.Monitor()
 
 
-# def setup_module(module):
-# 	PathManager.user_path = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
-
-
 # setup before each test
 def setup_function(function):
 	print('***SETUP***')

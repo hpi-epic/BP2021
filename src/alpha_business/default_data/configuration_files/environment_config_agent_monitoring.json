@@ -6,10 +6,10 @@
 	"marketplace": "alpha_business.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario",
 	"agents": {
 		"Rule_Based Agent": {
-			"class": "alpha_business.agents.vendors.RuleBasedCERebuyAgent"
+			"class": "alpha_business.market.circular.circular_vendors.RuleBasedCERebuyAgent"
 		},
 		"CE Rebuy Agent (QLearning)": {
-			"class": "alpha_business.agents.vendors.QLearningCERebuyAgent",
+			"class": "alpha_business.rl.q_learning.q_learning_agent.QLearningCERebuyAgent",
 			"modelfile": "CircularEconomyRebuyPriceMonopolyScenario_QLearningCERebuyAgent.dat"
 		}
 	}

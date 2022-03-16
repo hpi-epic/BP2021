@@ -59,5 +59,9 @@ def train_from_config():
 	run_training_session(config.marketplace, config.agent)
 
 
-if __name__ == '__main__':
+def main():
 	train_from_config()
+
+
+if __name__ == '__main__':
+	main()
