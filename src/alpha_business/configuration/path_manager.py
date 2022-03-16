@@ -83,6 +83,8 @@ class PathManager():
 		with open(os.path.join(os.path.dirname(__file__), 'user_path.txt'), 'w') as path_file:
 			path_file.write(new_path)
 
+		cls.user_path = new_path
+
 		print(f'Data will be read from and saved to "{cls.user_path}"')
 
 

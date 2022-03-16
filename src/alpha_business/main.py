@@ -1,8 +1,9 @@
 import argparse
 import os
 import shutil
+from importlib import reload
 
-from alpha_business.configuration.path_manager import PathManager
+import alpha_business.configuration.path_manager as path_manager
 
 
 def main():
@@ -22,12 +23,14 @@ trained models will be copied to your `data_path`""")
 
 	# --datapath
 	# Update the datapath if possible
-	PathManager.manage_user_path(PathManager, args.datapath)
+	path_manager.PathManager.manage_user_path(path_manager.PathManager, args.datapath)
+	# reload to use the updated path
+	reload(path_manager)
 
 	# --get-defaults
 	# Copy the contents of `./src/alpha_business/default_data` to the user provided data path
 	if args.get_defaults:
-		shutil.copytree(os.path.join(os.path.dirname(__file__), 'default_data'), os.path.join(PathManager.user_path, 'default_data'),
+		shutil.copytree(os.path.join(os.path.dirname(__file__), 'default_data'), os.path.join(path_manager.PathManager.user_path, 'default_data'),
 			dirs_exist_ok=True)
 
 	# --command
