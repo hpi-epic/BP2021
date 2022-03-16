@@ -7,6 +7,7 @@ import pytest
 import configuration.hyperparameter_config as hyperparameter_config
 import configuration.utils as ut
 import tests.utils_tests as ut_t
+from monitoring.svg_manipulation import SVGManipulator
 
 testcases_cartesian_product = [
 	([2, 3, 4], [5, 6], [(2, 5), (2, 6), (3, 5), (3, 6), (4, 5), (4, 6)]),
@@ -27,6 +28,84 @@ testcases_softmax = [
 		[0.5, 0.5]
 	)
 ]
+
+testcases_write_dict_svg = [(
+	1,
+	{
+		'customer/buy_nothing': 2,
+		'state/in_circulation': 455,
+		'state/in_storage': {'vendor_0': 30, 'vendor_1': 79},
+		'actions/price_refurbished': {'vendor_0': 4, 'vendor_1': 3},
+		'actions/price_new': {'vendor_0': 6, 'vendor_1': 4},
+		'owner/throw_away': 0,
+		'owner/rebuys': {'vendor_0': 6, 'vendor_1': 7},
+		'profits/rebuy_cost': {'vendor_0': -12, 'vendor_1': -5},
+		'customer/purchases_refurbished': {'vendor_0': 1, 'vendor_1': 7},
+		'customer/purchases_new': {'vendor_0': 5, 'vendor_1': 5},
+		'profits/by_selling_refurbished': {'vendor_0': 4, 'vendor_1': 15},
+		'profits/by_selling_new': {'vendor_0': 15, 'vendor_1': 5},
+		'profits/storage_cost': {'vendor_0': -3.5, 'vendor_1': -7.9},
+		'actions/price_rebuy': {'vendor_0': 2, 'vendor_1': 1},
+		'profits/all': {'vendor_0': 3.5, 'vendor_1': 7.1},
+	},
+	{
+		'customer/buy_nothing': 2,
+		'state/in_circulation': 455,
+		'state/in_storage': {'vendor_0': 30, 'vendor_1': 79},
+		'actions/price_refurbished': {'vendor_0': 4, 'vendor_1': 3},
+		'actions/price_new': {'vendor_0': 6, 'vendor_1': 4},
+		'owner/throw_away': 0,
+		'owner/rebuys': {'vendor_0': 6, 'vendor_1': 7},
+		'profits/rebuy_cost': {'vendor_0': -12, 'vendor_1': -5},
+		'customer/purchases_refurbished': {'vendor_0': 1, 'vendor_1': 7},
+		'customer/purchases_new': {'vendor_0': 5, 'vendor_1': 5},
+		'profits/by_selling_refurbished': {'vendor_0': 4, 'vendor_1': 15},
+		'profits/by_selling_new': {'vendor_0': 15, 'vendor_1': 5},
+		'profits/storage_cost': {'vendor_0': -3.5, 'vendor_1': -7.9},
+		'actions/price_rebuy': {'vendor_0': 2, 'vendor_1': 1},
+		'profits/all': {'vendor_0': 3.5, 'vendor_1': 7.1},
+	},
+	{
+		'simulation_name': 'Market Simulation',
+		'simulation_episode_length': '50',
+		'simulation_current_episode': '1',
+		'consumer_total_arrivals': '20',
+		'consumer_total_sales': '18',
+		'a_competitor_name': 'vendor_0',
+		'a_throw_away': '0',
+		'a_garbage': '0',
+		'a_inventory': '30',
+		'a_profit': '3.5',
+		'a_price_new': '7',
+		'a_price_used': '5',
+		'a_rebuy_price': '3',
+		'a_repurchases': '6',
+		'a_resource_cost': '3',
+		'a_resources_in_use': '455',
+		'a_sales_new': '5',
+		'a_sales_used': '1',
+		'b_competitor_name': 'vendor_1',
+		'b_inventory': '79',
+		'b_profit': '7.1',
+		'b_price_new': '5',
+		'b_price_used': '4',
+		'b_rebuy_price': '2',
+		'b_repurchases': '7',
+		'b_resource_cost': '3',
+		'b_sales_new': '5',
+		'b_sales_used': '7',
+	}
+)]
+
+result = {}
+
+
+def mock_write_dict_to_svg(target_dictionary):
+	"""
+	Mock the write_dict_to_svg function.
+	"""
+	global result
+	result = target_dictionary
 
 
 def test_ensure_results_folders_exist():
@@ -72,8 +151,18 @@ def test_add_content_of_two_dicts():
 	pass
 
 
-def test_write_content_of_dict_to_overview_svg():
-	pass
+@pytest.mark.parametrize('episode, episode_dictionary, cumulated_dictionary, expected',
+	testcases_write_dict_svg)
+def test_write_content_of_dict_to_overview_svg(
+		episode: int,
+		episode_dictionary: dict,
+		cumulated_dictionary: dict,
+		expected: dict):
+
+	with patch('monitoring.svg_manipulation.SVGManipulator.write_dict_to_svg(self, target_dictionary)',
+	mock_write_dict_to_svg(target_dictionary={})):
+		ut.write_content_of_dict_to_overview_svg(SVGManipulator(), episode, episode_dictionary, cumulated_dictionary)
+		assert expected == result
 
 
 def import_config() -> hyperparameter_config.HyperparameterConfig:

@@ -5,6 +5,7 @@ import numpy as np
 import torch
 
 from configuration.hyperparameter_config import config
+from monitoring.svg_manipulation import SVGManipulator
 
 
 def ensure_results_folders_exist():
@@ -60,7 +61,7 @@ def cartesian_product(list_a, list_b):
 	return output_list
 
 
-def write_dict_to_tensorboard(writer, dictionary, counter, is_cumulative=False) -> None:
+def write_dict_to_tensorboard(writer, dictionary: dict, counter: int, is_cumulative: bool = False) -> None:
 	"""
 	This function takes a dictionary of data with data from one step and adds it at the specified time to the tensorboard.
 
@@ -84,7 +85,7 @@ def write_dict_to_tensorboard(writer, dictionary, counter, is_cumulative=False) 
 			writer.add_scalar(name, content, counter)
 
 
-def divide_content_of_dict(dict1, divisor) -> dict:
+def divide_content_of_dict(dict1: dict, divisor) -> dict:
 	"""
 	Recursively divide a dictionary which contains only numbers by a divisor
 
@@ -128,7 +129,11 @@ def add_content_of_two_dicts(dict1, dict2) -> dict:
 	return newdict
 
 
-def write_content_of_dict_to_overview_svg(manipulator, episode, episode_dictionary, cumulated_dictionary) -> None:
+def write_content_of_dict_to_overview_svg(
+		manipulator: SVGManipulator,
+		episode: int,
+		episode_dictionary: dict,
+		cumulated_dictionary: dict) -> None:
 	"""
 	This function takes a SVGManipulator and two dictionaries and translates the svg placeholder to the values in the dictionary
 
@@ -169,4 +174,6 @@ def write_content_of_dict_to_overview_svg(manipulator, episode, episode_dictiona
 		'b_sales_new': str(episode_dictionary['customer/purchases_new']['vendor_1']),
 		'b_sales_used': str(episode_dictionary['customer/purchases_refurbished']['vendor_1']),
 	}
+	# print((episode, episode_dictionary, cumulated_dictionary, translated_dict))
+
 	manipulator.write_dict_to_svg(target_dictionary=translated_dict)
