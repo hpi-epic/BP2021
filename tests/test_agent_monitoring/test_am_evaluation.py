@@ -2,12 +2,13 @@ import os
 import re
 from unittest.mock import patch
 
+import market.circular.circular_sim_market as circular_market
+import monitoring.agent_monitoring.am_monitoring as monitoring
 import numpy as np
 import pytest
+from market.circular.circular_vendors import FixedPriceCEAgent, RuleBasedCEAgent
+from rl.q_learning.q_learning_agent import QLearningCEAgent
 
-import alpha_business.agents.vendors as vendors
-import alpha_business.market.circular.circular_sim_market as circular_market
-import alpha_business.monitoring.agent_monitoring.am_monitoring as monitoring
 from alpha_business.configuration.path_manager import PathManager
 
 monitor = monitoring.Monitor()
@@ -23,7 +24,7 @@ def setup_function(function):
 		episodes=50,
 		plot_interval=10,
 		marketplace=circular_market.CircularEconomyMonopolyScenario,
-		agents=[(vendors.QLearningCEAgent, [os.path.join(os.path.dirname(__file__), os.pardir, 'test_data',
+		agents=[(QLearningCEAgent, [os.path.join(os.path.dirname(__file__), os.pardir, 'test_data',
 			'CircularEconomyMonopolyScenario_QLearningCEAgent.dat')])],
 		subfolder_name=f'test_plots_{function.__name__}')
 
@@ -35,8 +36,8 @@ def teardown_module(module):
 
 
 evaluate_session_testcases = [
-	([(vendors.RuleBasedCEAgent, [])], [[5, 10, 0, -5]]),
-	([(vendors.RuleBasedCEAgent, []), (vendors.FixedPriceCEAgent, [])], [[5, 10, 0, -5], [5, -10, 60, 5]])
+	([(RuleBasedCEAgent, [])], [[5, 10, 0, -5]]),
+	([(RuleBasedCEAgent, []), (FixedPriceCEAgent, [])], [[5, 10, 0, -5], [5, -10, 60, 5]])
 ]
 
 
@@ -68,10 +69,10 @@ def test_rewards_array_size():
 
 
 create_histogram_statistics_plots_testcases = [
-	([(vendors.RuleBasedCEAgent, [])], [[100, 0]], 1, [(1.0, 0.0, 0.0, 1.0)], (0.0, 1000.0)),
-	([(vendors.RuleBasedCEAgent, []), (vendors.RuleBasedCEAgent, [])],
+	([(RuleBasedCEAgent, [])], [[100, 0]], 1, [(1.0, 0.0, 0.0, 1.0)], (0.0, 1000.0)),
+	([(RuleBasedCEAgent, []), (RuleBasedCEAgent, [])],
 		[[100, 0], [10, 5]], 1, [(1.0, 0.0, 0.0, 1.0), (0.0, 1.0, 0.9531223422015865, 1.0)], (0.0, 1000.0)),
-	([(vendors.RuleBasedCEAgent, []), (vendors.RuleBasedCEAgent, []), (vendors.RuleBasedCEAgent, []), (vendors.RuleBasedCEAgent, [])],
+	([(RuleBasedCEAgent, []), (RuleBasedCEAgent, []), (RuleBasedCEAgent, []), (RuleBasedCEAgent, [])],
 		[[100, 0], [10, 5], [100, 10000], [10, 1000]],
 		10,
 		[(1.0, 0.0, 0.0, 1.0), (0.5234360234360234, 1.0, 0.0, 1.0), (0.0, 1.0, 0.9531223422015865, 1.0), (0.4296860234360234, 0.0, 1.0, 1.0)],

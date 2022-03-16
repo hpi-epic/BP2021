@@ -4,16 +4,18 @@ import signal
 import sys
 import time
 
+import configuration.utils as ut
+import market.circular.circular_sim_market as circular_market
 import torch
+from configuration.environment_config import EnvironmentConfigLoader, ExampleprinterEnvironmentConfig
+from market.circular.circular_vendors import RuleBasedCERebuyAgent
+from market.sim_market import SimMarket
+from market.vendors import Agent
+from monitoring.svg_manipulation import SVGManipulator
+from rl.q_learning.q_learning_agent import QLearningAgent
 from torch.utils.tensorboard import SummaryWriter
 
-import alpha_business.agents.vendors as vendors
-import alpha_business.configuration.utils as ut
-import alpha_business.market.circular.circular_sim_market as circular_market
-from alpha_business.configuration.environment_config import EnvironmentConfigLoader, ExampleprinterEnvironmentConfig
 from alpha_business.configuration.path_manager import PathManager
-from alpha_business.market.sim_market import SimMarket
-from alpha_business.monitoring.svg_manipulation import SVGManipulator
 
 
 class ExamplePrinter():
@@ -21,11 +23,11 @@ class ExamplePrinter():
 	def __init__(self):
 		ut.ensure_results_folders_exist()
 		self.marketplace = circular_market.CircularEconomyRebuyPriceOneCompetitor()
-		self.agent = vendors.RuleBasedCERebuyAgent()
+		self.agent = RuleBasedCERebuyAgent()
 		# Signal handler for e.g. KeyboardInterrupt
 		signal.signal(signal.SIGINT, self._signal_handler)
 
-	def setup_exampleprinter(self, marketplace: SimMarket = None, agent: vendors.Agent = None) -> None:
+	def setup_exampleprinter(self, marketplace: SimMarket = None, agent: Agent = None) -> None:
 		"""
 		Configure the current exampleprinter session.
 
@@ -102,7 +104,7 @@ def main():  # pragma: no cover
 	marketplace = config.marketplace()
 
 	# QLearningAgents need more initialization
-	if issubclass(config.agent[0], vendors.QLearningAgent):
+	if issubclass(config.agent[0], QLearningAgent):
 		printer.setup_exampleprinter(marketplace=marketplace,
 			agent=config.agent[0](
 				n_observations=marketplace.observation_space.shape[0],

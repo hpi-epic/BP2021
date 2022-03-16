@@ -1,13 +1,15 @@
 import os
 import time
 
+import configuration.utils as ut
+import market.circular.circular_sim_market as circular_market
+import market.sim_market as sim_market
 import matplotlib.pyplot as plt
+import rl.actorcritic.actorcritic_agent as actorcritic_agent
+from market.circular.circular_vendors import CircularAgent, FixedPriceCEAgent
+from market.vendors import Agent, HumanPlayer, RuleBasedAgent
+from rl.q_learning.q_learning_agent import QLearningAgent
 
-import alpha_business.agents.vendors as vendors
-import alpha_business.configuration.utils as ut
-import alpha_business.market.circular.circular_sim_market as circular_market
-import alpha_business.market.sim_market as sim_market
-import alpha_business.rl.actorcritic_agent as actorcritic_agent
 from alpha_business.configuration.path_manager import PathManager
 
 
@@ -22,7 +24,7 @@ class Configurator():
 		self.episodes = 500
 		self.plot_interval = 50
 		self.marketplace = circular_market.CircularEconomyMonopolyScenario()
-		default_agent = vendors.FixedPriceCEAgent
+		default_agent = FixedPriceCEAgent
 		self.agents = [default_agent()]
 		self.agent_colors = [(0.0, 0.0, 1.0, 1.0)]
 		self.folder_path = os.path.abspath(os.path.join(PathManager.results_path, 'monitoring', 'plots_' + time.strftime('%b%d_%H-%M-%S')))
@@ -69,29 +71,29 @@ class Configurator():
 		# All agents must be of the same type
 		assert all(isinstance(agent_tuple, tuple) for agent_tuple in agents), 'agents must be a list of tuples'
 		assert all(len(agent_tuple) == 2 for agent_tuple in agents), 'the list entries in agents must have size 2 ([agent_class, arguments])'
-		assert all(issubclass(agent_tuple[0], vendors.Agent) for agent_tuple in agents), \
+		assert all(issubclass(agent_tuple[0], Agent) for agent_tuple in agents), \
 			'the first entry in each agent-tuple must be an agent class in `vendors.py`'
 		assert all(isinstance(agent_tuple[1], list) for agent_tuple in agents), 'the second entry in each agent-tuple must be a list'
-		assert all(issubclass(agent[0], vendors.CircularAgent) == issubclass(agents[0][0], vendors.CircularAgent) for agent in agents), \
+		assert all(issubclass(agent[0], CircularAgent) == issubclass(agents[0][0], CircularAgent) for agent in agents), \
 			'the agents must all be of the same type (Linear/Circular)'
-		assert issubclass(agents[0][0], vendors.CircularAgent) == isinstance(self.marketplace, circular_market.CircularEconomy), \
+		assert issubclass(agents[0][0], CircularAgent) == isinstance(self.marketplace, circular_market.CircularEconomy), \
 			'the agent and marketplace must be of the same economy type (Linear/Circular)'
 
 		self.agents = []
 
 		# Instantiate all agents. If they are not rule-based, use the marketplace parameters accordingly
 		for current_agent in agents:
-			if issubclass(current_agent[0], vendors.RuleBasedAgent):
+			if issubclass(current_agent[0], (RuleBasedAgent, HumanPlayer)):
 				# The custom_init takes two parameters: The class of the agent to be initialized and a list of arguments,
 				# e.g. for the fixed prices or names
-				self.agents.append(vendors.Agent.custom_init(current_agent[0], current_agent[1]))
-			elif issubclass(current_agent[0], (vendors.QLearningAgent, actorcritic_agent.ActorCriticAgent)):
+				self.agents.append(Agent.custom_init(current_agent[0], current_agent[1]))
+			elif issubclass(current_agent[0], (QLearningAgent, actorcritic_agent.ActorCriticAgent)):
 				try:
 					assert (0 <= len(current_agent[1]) <= 2), 'the argument list for a RL-agent must have length between 0 and 2'
 					assert all(isinstance(argument, str) for argument in current_agent[1]), 'the arguments for a RL-agent must be of type str'
 
 					agent_modelfile = f'{type(self.marketplace).__name__}_{current_agent[0].__name__}'
-					agent_name = 'q_learning' if issubclass(current_agent[0], vendors.QLearningAgent) else 'actor_critic'
+					agent_name = 'q_learning' if issubclass(current_agent[0], QLearningAgent) else 'actor_critic'
 					# no arguments
 					if len(current_agent[1]) == 0:
 						pass
@@ -122,7 +124,7 @@ class Configurator():
 				except RuntimeError:  # pragma: no cover
 					raise RuntimeError('the modelfile is not compatible with the agent you tried to instantiate')
 			else:  # pragma: no cover
-				assert False, f'{current_agent[0]} is neither a RuleBased nor a QLearning agent'
+				assert False, f'{current_agent[0]} is neither a RuleBased nor a QLearning agent nor a HumanPlayer'
 
 		# set a color for each agent
 		color_map = plt.cm.get_cmap('hsv', len(self.agents) + 1)
