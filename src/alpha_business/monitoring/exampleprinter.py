@@ -11,6 +11,7 @@ import alpha_business.agents.vendors as vendors
 import alpha_business.configuration.utils as ut
 import alpha_business.market.circular.circular_sim_market as circular_market
 from alpha_business.configuration.environment_config import EnvironmentConfigLoader, ExampleprinterEnvironmentConfig
+from alpha_business.configuration.path_manager import PathManager
 from alpha_business.market.sim_market import SimMarket
 from alpha_business.monitoring.svg_manipulation import SVGManipulator
 
@@ -61,7 +62,7 @@ class ExamplePrinter():
 		state = self.marketplace.reset()
 
 		signature = f'{log_dir_prepend}exampleprinter_{time.strftime("%b%d_%H-%M-%S")}'
-		writer = SummaryWriter(log_dir=os.path.join('results', 'runs', signature))
+		writer = SummaryWriter(log_dir=os.path.join(PathManager.results_path, 'runs', signature))
 
 		if isinstance(self.marketplace, circular_market.CircularEconomyRebuyPriceOneCompetitor):
 			svg_manipulator = SVGManipulator(signature)
@@ -106,7 +107,7 @@ def main():  # pragma: no cover
 			agent=config.agent[0](
 				n_observations=marketplace.observation_space.shape[0],
 				n_actions=marketplace.get_n_actions(),
-				load_path=os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir, 'data', config.agent[1]))))
+				load_path=os.path.abspath(os.path.join(PathManager.data_path, config.agent[1]))))
 	else:
 		printer.setup_exampleprinter(marketplace=marketplace, agent=config.agent[0]())
 

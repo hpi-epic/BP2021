@@ -7,6 +7,7 @@ import time
 
 # include the file you want to run the performance check on here!
 import alpha_business.monitoring.agent_monitoring.am_monitoring
+from alpha_business.configuration.path_manager import PathManager
 
 
 class PerformanceMonitor():
@@ -30,19 +31,18 @@ class PerformanceMonitor():
 		"""
 		Remove the unneeded result files created by the performance runs.
 		"""
-		for file_name in os.listdir(os.path.join('results', 'performance')):
+		for file_name in os.listdir(os.path.join(PathManager.results_path, 'performance')):
 			if not file_name.endswith('.prof'):
-				os.remove(os.path.join('results', 'performance', file_name))
+				os.remove(os.path.join(PathManager.results_path, 'performance', file_name))
 
 	def run_profiling(self) -> None:
 		"""
 		Run the profiler on a specified function. Automatically starts a web server to visualize the results.
 		"""
-		if not os.path.isdir(os.path.join('results', 'performance')):
-			os.mkdir(os.path.join('results', 'performance'))
+		os.makedirs(os.path.join(PathManager.results_path, 'performance'), exist_ok=True)
 
 		date_time = time.strftime('%b%d_%H-%M-%S')
-		filename = os.path.join('results', 'performance', f'{self.function}_{date_time}')
+		filename = os.path.join(PathManager.results_path, 'performance', f'{self.function}_{date_time}')
 
 		start_time = time.perf_counter()
 		cProfile.run(self.function, filename=filename, sort=3)
@@ -50,7 +50,7 @@ class PerformanceMonitor():
 		time_frame = str(round(time.perf_counter() - start_time, 3))
 
 		p = pstats.Stats(filename)
-		dumped_filename = os.path.join('results', 'performance', f'{self.function}_{time_frame}_secs_{date_time}.prof')
+		dumped_filename = os.path.join(PathManager.results_path, 'performance', f'{self.function}_{time_frame}_secs_{date_time}.prof')
 		p.sort_stats('cumulative').dump_stats(filename=dumped_filename)
 
 		# Remove the initial file created by cProfile, not the .prof file used for snakeviz

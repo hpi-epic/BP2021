@@ -1,5 +1,7 @@
 import os
 
+from alpha_business.configuration.path_manager import PathManager
+
 
 def get_default_dict() -> dict:
 	"""
@@ -48,11 +50,11 @@ class SVGManipulator():
 	def __init__(self, save_dir: str = 'svg') -> None:
 		self.value_dictionary = get_default_dict()
 		# do not change the values in template_svg
-		path_to_template_svg = os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir, 'data')
-		with open(os.path.join(path_to_template_svg, 'MarketOverview_template.svg'), 'r') as template_svg:
+		with open(os.path.join(os.path.dirname(__file__), 'data', 'MarketOverview_template.svg'), 'r') as template_svg:
 			self.template_svg = template_svg.read()
 		self.output_svg = None
-		self.save_directory = os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir, 'results', 'exampleprinter', save_dir)
+		self.save_directory = os.path.join(PathManager.results_path, 'exampleprinter', save_dir)
+		os.makedirs(self.save_directory, exist_ok=True)
 
 	def replace_one_value(self, target_key: str, value: str) -> None:
 		"""
@@ -94,10 +96,7 @@ class SVGManipulator():
 		Args:
 			filename (str, optional): The target file name of the copy. Defaults to `MarketOverview_copy.svg`.
 		"""
-		if not os.path.isdir(self.save_directory):
-			os.mkdir(self.save_directory)
-
-		file_path = os.path.join(self.save_directory, filename + '.svg')
+		file_path = os.path.join(self.save_directory, f'{filename}.svg')
 		assert not os.path.exists(file_path), f'the specified file already exists: {os.path.abspath(file_path)}'
 
 		self.write_dict_to_svg(target_dictionary=self.value_dictionary)
@@ -166,7 +165,7 @@ class SVGManipulator():
 		svg_array_for_js = ''.join('\t\t\t{"name":"' + image[:-4] + '", "src":"./' + image + '"},\n' for image in all_svgs)
 
 		# write html to file
-		html_path = os.path.join(self.save_directory, html_name + '.html')
+		html_path = os.path.join(self.save_directory, f'{html_name}.html')
 		with open(html_path, 'w') as out_file:
 			out_file.write(self.construct_slideshow_html(svg_array_for_js[:-2], time))
 		print(f'You can find an animated overview at: {os.path.abspath(html_path)}')
