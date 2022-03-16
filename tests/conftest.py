@@ -4,6 +4,8 @@ import shutil
 
 from alpha_business.configuration.path_manager import PathManager
 
+# taken from https://stackoverflow.com/questions/17801300/how-to-run-a-method-before-all-tests-in-all-classes
+
 
 def pytest_configure(config):
 	"""
