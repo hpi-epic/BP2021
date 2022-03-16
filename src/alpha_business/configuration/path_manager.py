@@ -35,7 +35,7 @@ class PathManager():
 	# only get called once, even when `PathManager.data_path` is used multiple times.
 	user_path = get_user_path()
 	results_path = os.path.join(user_path, 'results')
-	dat_path = os.path.join(user_path, 'data')
+	data_path = os.path.join(user_path, 'data')
 
 	def manage_user_path(cls, new_path: str) -> None:
 		"""

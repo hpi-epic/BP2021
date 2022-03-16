@@ -135,7 +135,6 @@ class Evaluator():
 		plt.legend([a.name for a in self.configurator.agents])
 		plt.grid(True)
 		plt.savefig(fname=os.path.join(self.configurator.get_folder(), filename))
-		plt.savefig(fname=os.path.join(self.configurator.get_folder(), filename))
 
 
 if __name__ == '__main__':  # pragma: no cover
