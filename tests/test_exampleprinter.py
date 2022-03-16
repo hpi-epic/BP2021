@@ -10,6 +10,7 @@ import alpha_business.agents.vendors as vendors
 import alpha_business.market.circular.circular_sim_market as circular_market
 import alpha_business.market.linear.linear_sim_market as linear_market
 import alpha_business.rl.actorcritic_agent as actorcritic_agent
+from alpha_business.configuration.path_manager import PathManager
 from alpha_business.monitoring.exampleprinter import ExamplePrinter
 
 # The load path for the agent modelfiles
@@ -20,9 +21,9 @@ def teardown_module(module):
 	print('***TEARDOWN***')
 	# we need to sleep because sometimes the runs folder is still being used when we try to remove it
 	time.sleep(0.002)
-	for file_name in os.listdir(os.path.join(os.path.dirname(__file__), os.pardir, 'results', 'runs')):
+	for file_name in os.listdir(os.path.join(PathManager.results_path, 'runs')):
 		if re.match('test_*', file_name):
-			shutil.rmtree(os.path.join(os.path.dirname(__file__), os.pardir, 'results', 'runs', file_name))
+			shutil.rmtree(os.path.join(PathManager.results_path, 'runs', file_name))
 
 
 def test_setup_exampleprinter():

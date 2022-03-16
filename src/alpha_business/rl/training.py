@@ -64,7 +64,7 @@ class RLTrainer(ABC):
 		ut.ensure_results_folders_exist()
 		self.curr_time = time.strftime('%b%d_%H-%M-%S')
 		self.signature = f'{type(self.RL_agent).__name__}'
-		self.writer = SummaryWriter(log_dir=os.path.join('results', 'runs', f'{log_dir_prepend}training_{self.curr_time}'))
+		self.writer = SummaryWriter(log_dir=os.path.join(PathManager.results_path, 'runs', f'{log_dir_prepend}training_{self.curr_time}'))
 		path_name = f'{self.signature}_{self.curr_time}'
 		self.model_path = os.path.join(PathManager.results_path, 'trainedModels', log_dir_prepend + path_name)
 		os.makedirs(os.path.abspath(self.model_path))

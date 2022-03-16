@@ -60,11 +60,6 @@ class ActorCriticAgent(vendors.ReinforcementLearningAgent, ABC):
 			model_name (str): The name of the .dat file of this specific model.
 		"""
 		model_name += '.dat'
-		if not os.path.isdir(os.path.abspath(os.path.join('results', 'trainedModels'))):
-			os.mkdir(os.path.abspath(os.path.join('results', 'trainedModels')))
-
-		if not os.path.isdir(os.path.abspath(model_path)):
-			os.mkdir(os.path.abspath(model_path))
 
 		torch.save(self.actor_net.state_dict(), os.path.join(model_path, 'actor_parameters' + model_name))
 		torch.save(self.critic_net.state_dict(), os.path.join(model_path, 'critic_parameters' + model_name))

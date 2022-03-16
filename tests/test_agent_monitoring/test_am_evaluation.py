@@ -8,6 +8,7 @@ import pytest
 import alpha_business.agents.vendors as vendors
 import alpha_business.market.circular.circular_sim_market as circular_market
 import alpha_business.monitoring.agent_monitoring.am_monitoring as monitoring
+from alpha_business.configuration.path_manager import PathManager
 
 monitor = monitoring.Monitor()
 
@@ -28,7 +29,7 @@ def setup_function(function):
 
 
 def teardown_module(module):
-	for file_name in os.listdir(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'results', 'monitoring')):
+	for file_name in os.listdir(os.path.join(PathManager.results_path, 'monitoring')):
 		if re.match('test_*', file_name):
 			assert False, 'Test files were not mocked correctly'
 

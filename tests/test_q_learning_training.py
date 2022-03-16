@@ -13,15 +13,16 @@ import alpha_business.configuration.hyperparameter_config as hyperparameter_conf
 import alpha_business.market.circular.circular_sim_market as circular_market
 import alpha_business.market.linear.linear_sim_market as linear_market
 import alpha_business.rl.q_learning_training as q_learning_training
+from alpha_business.configuration.path_manager import PathManager
 
 
 def teardown_module(module):
 	print('***TEARDOWN***')
 	# we need to sleep because sometimes the subfolder is still being used when we try to remove it
 	time.sleep(0.001)
-	for file_name in os.listdir(os.path.join(os.path.dirname(__file__), os.pardir, 'results', 'trainedModels')):
+	for file_name in os.listdir(os.path.join(PathManager.results_path, 'trainedModels')):
 		if re.match('test_*', file_name):
-			shutil.rmtree(os.path.join(os.path.dirname(__file__), os.pardir, 'results', 'trainedModels', file_name))
+			shutil.rmtree(os.path.join(PathManager.results_path, 'trainedModels', file_name))
 	reload(hyperparameter_config)
 
 

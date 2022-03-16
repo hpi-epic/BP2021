@@ -23,16 +23,9 @@ def test_get_default_dict():
 
 
 def test_correct_template():
-	with open(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir,
-		'data', 'MarketOverview_template.svg')), 'r') as template:
+	with open(os.path.abspath(os.path.join(os.path.dirname(__file__), 'test_data', 'MarketOverview_template.svg')), 'r') as template:
 		correct_template = template.read()
 	assert correct_template == svg_manipulator.template_svg
-
-
-def test_template_not_changed():
-	with open(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir,
-		'data', 'MarketOverview_template.svg')), 'r') as template:
-		correct_template = template.read()
 
 	# run one exampleprinter and to make sure the template does not get changed
 	json = ut_t.create_hyperparameter_mock_json_sim_market(episode_size='3')

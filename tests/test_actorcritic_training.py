@@ -8,6 +8,7 @@ import pytest
 import alpha_business.market.circular.circular_sim_market as circular_market
 import alpha_business.market.linear.linear_sim_market as linear_market
 import alpha_business.rl.actorcritic_agent as actorcritic_agent
+from alpha_business.configuration.path_manager import PathManager
 from alpha_business.rl.actorcritic_training import ActorCriticTrainer
 
 
@@ -15,7 +16,7 @@ def teardown_module(module):
 	print('***TEARDOWN***')
 	# we need to sleep because sometimes the subfolder is still being used when we try to remove it
 	time.sleep(0.001)
-	for file_name in os.listdir(os.path.join(os.path.dirname(__file__), os.pardir, 'results', 'trainedModels')):
+	for file_name in os.listdir(os.path.join(PathManager.results_path, 'trainedModels')):
 		if re.match('test_*', file_name):
 			assert False, 'Test files were not mocked correctly'
 

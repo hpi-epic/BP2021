@@ -3,6 +3,7 @@ from typing import Tuple, Union
 
 import alpha_business.market.circular.circular_sim_market as circular_market
 import alpha_business.market.linear.linear_sim_market as linear_market
+from alpha_business.configuration.path_manager import PathManager
 
 
 def create_hyperparameter_mock_json_rl(gamma='0.99',
@@ -140,7 +141,7 @@ def check_mock_file(mock_file, json) -> None:
 		mock_file (unittest.mock.MagicMock): The mocked file.
 		json (str): The mock JSON string to be checked.
 	"""
-	path = os.path.join(os.path.dirname(__file__), os.pardir, 'config.json')
+	path = os.path.join(PathManager.user_path, 'config.json')
 	assert open(path).read() == json, 'the mock did not work correctly, as the read file was not equal to the set mock-json'
 	mock_file.assert_called_with(path)
 
