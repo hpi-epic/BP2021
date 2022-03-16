@@ -5,6 +5,7 @@ import os
 from abc import ABC, abstractmethod
 
 from alpha_business.agents.vendors import CircularAgent, QLearningAgent
+from alpha_business.configuration.path_manager import PathManager
 from alpha_business.market.circular.circular_sim_market import CircularEconomy
 from alpha_business.market.sim_market import SimMarket
 from alpha_business.rl.actorcritic_agent import ActorCriticAgent
@@ -251,7 +252,8 @@ class EnvironmentConfigLoader():
 			EnvironmentConfig: A subclass instance of EnvironmentConfig.
 		"""
 		filename += '.json'
-		path = os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir, filename)
+		print(PathManager.data_path)
+		path = os.path.join(PathManager.data_path, filename)
 		with open(path) as config_file:
 			config = json.load(config_file)
 		return EnvironmentConfigLoader.validate(config)

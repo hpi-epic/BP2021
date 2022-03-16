@@ -1,10 +1,39 @@
 import os
 
-import alpha_business.configuration.utils as ut
+
+# DO NOT move this to utils.py, this will create a circular import and break the application!
+def readable_dir(path) -> bool:
+	"""
+	Helper function defining whether or not a path is an existing and readable path.
+
+	Adapted from https://stackoverflow.com/questions/11415570/directory-path-types-with-argparse
+
+	Args:
+		path (str): The path to check.
+
+	Returns:
+		bool: If the path exists and is readable.
+	"""
+	return False if not os.path.isdir(path) else bool(os.access(path, os.R_OK))
+
+
+def get_data_path():
+	"""
+	Helper function that reads the data_path.txt and return its path.
+
+	Returns:
+		str: The data path.
+	"""
+	with open(os.path.join(os.path.dirname(__file__), 'data_path.txt'), 'r') as path_file:
+		return path_file.read()
 
 
 class PathManager():
-	data_path = None
+	# Since we want to allow devs to call different parts of the application without going through `main.py` we need a way of getting
+	# the correct data path without havign to call `manage_data_path`, which is why we use this function.
+	# Note: The `PathManager` is smart and knows if it has already called `get_data_path()`, so each time the program is run it will
+	# only get called once, even when `PathManager.data_path` is used multiple times.
+	data_path = get_data_path()
 
 	def manage_data_path(cls, new_path: str) -> None:
 		"""
@@ -28,14 +57,14 @@ class PathManager():
 
 			assert old_path != '', 'No data path was saved and no data path was provided. Please provide the `--datapath` argument before proceeding'
 			# There is a valid path saved
-			if ut.readable_dir(old_path):
+			if readable_dir(old_path):
 				print(f'Data will be read from and saved to "{old_path}"')
 				return
 			# A path has previously been saved, but is no longer a valid directory
 			raise AssertionError(f'The current saved data path is invalid: {old_path}\nPlease update it using the `--datapath` argument')
 
 		# A path was provided, but is not valid
-		elif not ut.readable_dir(new_path):
+		elif not readable_dir(new_path):
 			raise AssertionError(f'The provided path is not a valid directory: {new_path}')
 
 		# Valid path provided

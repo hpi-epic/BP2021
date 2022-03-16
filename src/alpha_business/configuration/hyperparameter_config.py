@@ -4,6 +4,8 @@
 import json
 import os
 
+from alpha_business.configuration.path_manager import PathManager
+
 
 class HyperparameterConfig():
 	_instance = None
@@ -153,7 +155,7 @@ class HyperparameterConfigLoader():
 			return HyperparameterConfig()
 
 		filename += '.json'
-		path = os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir, filename)
+		path = os.path.join(PathManager.data_path, filename)
 		with open(path) as config_file:
 			config = json.load(config_file)
 		return HyperparameterConfig(config)

@@ -4,6 +4,7 @@ import random
 import numpy as np
 
 from alpha_business.configuration.hyperparameter_config import config
+from alpha_business.configuration.path_manager import PathManager
 
 
 def ensure_results_folders_exist():
@@ -12,26 +13,11 @@ def ensure_results_folders_exist():
 
 	If your code assumes that the results folder or any of its subfolders exist, call this function beforehand.
 	"""
-	os.makedirs('results', exist_ok=True)
-	os.makedirs(os.path.join('results', 'monitoring'), exist_ok=True)
-	os.makedirs(os.path.join('results', 'exampleprinter'), exist_ok=True)
-	os.makedirs(os.path.join('results', 'runs'), exist_ok=True)
-	os.makedirs(os.path.join('results', 'trainedModels'), exist_ok=True)
-
-
-def readable_dir(path) -> bool:
-	"""
-	Helper function defining whether or not a path is an existing and readable path.
-
-	Adapted from https://stackoverflow.com/questions/11415570/directory-path-types-with-argparse
-
-	Args:
-		path (str): The path to check.
-
-	Returns:
-		bool: If the path exists and is readable.
-	"""
-	return False if not os.path.isdir(path) else bool(os.access(path, os.R_OK))
+	os.makedirs(os.path.join(PathManager.data_path, 'results'), exist_ok=True)
+	os.makedirs(os.path.join(PathManager.data_path, 'results', 'monitoring'), exist_ok=True)
+	os.makedirs(os.path.join(PathManager.data_path, 'results', 'exampleprinter'), exist_ok=True)
+	os.makedirs(os.path.join(PathManager.data_path, 'results', 'runs'), exist_ok=True)
+	os.makedirs(os.path.join(PathManager.data_path, 'results', 'trainedModels'), exist_ok=True)
 
 
 def shuffle_quality() -> int:
