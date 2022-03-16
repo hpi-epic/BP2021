@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.utils import timezone
 
-from ..models import Container, update_container
+from ..models.container import Container, update_container
 
 
 class ContainerTest(TestCase):

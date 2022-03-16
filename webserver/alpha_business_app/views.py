@@ -4,7 +4,7 @@ from django.shortcuts import render
 from .buttons import ButtonHandler
 from .forms import UploadFileForm
 from .handle_files import handle_uploaded_file
-from .models import Container
+from .models.container import Container
 
 
 def detail(request, container_id) -> HttpResponse:

@@ -7,7 +7,7 @@ from django.utils import timezone
 
 from .handle_files import download_file
 from .handle_requests import send_get_request, send_get_request_with_streaming, send_post_request, stop_container
-from .models import Container, update_container
+from .models.container import Container, update_container
 
 
 class ButtonHandler():

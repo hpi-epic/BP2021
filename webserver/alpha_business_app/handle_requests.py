@@ -2,7 +2,7 @@ import requests
 
 from .api_response import APIResponse
 from .constants import DOCKER_API
-from .models import update_container
+from .models.container import update_container
 
 
 def send_get_request(wanted_action: str, raw_data: dict) -> APIResponse:

@@ -6,7 +6,7 @@ from django.test.client import RequestFactory
 
 from ..api_response import APIResponse
 from ..buttons import ButtonHandler
-from ..models import Container, update_container
+from ..models.container import Container, update_container
 
 
 class ButtonTests(TestCase):
