@@ -1,9 +1,8 @@
 import argparse
+import os
+import shutil
 
 from alpha_business.configuration.path_manager import PathManager
-from alpha_business.monitoring import exampleprinter
-from alpha_business.monitoring.agent_monitoring import am_monitoring
-from alpha_business.rl import training_scenario
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='Customize your alpha_business experience.')
@@ -22,15 +21,17 @@ trained models will be saved to your `data_path`""")
 	# --get-defaults
 	# Copy the contents of `./src/alpha_business/default_data` to the user provided data path
 	if args.get_defaults:
-		# DO MAGIC HERE
-		# Any default files should be copied over to the data_path directory
-		pass
+		shutil.copytree(os.path.join(os.path.dirname(__file__), 'default_data'), os.path.join(PathManager.user_path, 'default_data'),
+			dirs_exist_ok=True)
 
 	# --command
 	# Choose the file to run depending on the command
 	if args.command == 'training':
+		from alpha_business.rl import training_scenario
 		training_scenario.main()
 	if args.command == 'exampleprinter':
+		from alpha_business.monitoring import exampleprinter
 		exampleprinter.main()
 	if args.command == 'agent_monitoring':
+		from alpha_business.monitoring.agent_monitoring import am_monitoring
 		am_monitoring.main()
