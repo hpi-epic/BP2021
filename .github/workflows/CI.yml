@@ -17,7 +17,7 @@ jobs:
       - name: Install AlphaBusiness package
         shell: bash -l {0}
         run: |
-          pip install -e ./src
+          pip install .
       - name: Pytest
         shell: bash -l {0}
         run: |
