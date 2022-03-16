@@ -8,10 +8,10 @@ import pytest
 
 import market.circular.circular_sim_market as circular_market
 import market.linear.linear_sim_market as linear_market
-import rl.actorcritic.actorcritic_agent as actorcritic_agent
 from market.circular.circular_vendors import FixedPriceCEAgent, FixedPriceCERebuyAgent, RuleBasedCEAgent, RuleBasedCERebuyAgent
 from market.linear.linear_vendors import FixedPriceLEAgent
 from monitoring.exampleprinter import ExamplePrinter
+from rl.actorcritic.actorcritic_agent import ContinuosActorCriticAgentFixedOneStd, DiscreteACACircularEconomyRebuy
 from rl.q_learning.q_learning_agent import QLearningCEAgent, QLearningCERebuyAgent, QLearningLEAgent
 
 # The load path for the agent modelfiles
@@ -54,10 +54,10 @@ full_episode_testcases = [
 	(circular_market.CircularEconomyRebuyPriceOneCompetitor(), RuleBasedCERebuyAgent()),
 	(circular_market.CircularEconomyRebuyPriceOneCompetitor(), QLearningCERebuyAgent(6, 1000,
 		load_path=os.path.join(parameters_path, 'CircularEconomyRebuyPriceOneCompetitor_QLearningCERebuyAgent.dat'))),
-	(circular_market.CircularEconomyRebuyPriceOneCompetitor(), actorcritic_agent.ContinuosActorCriticAgentFixedOneStd(6, 3,
+	(circular_market.CircularEconomyRebuyPriceOneCompetitor(), ContinuosActorCriticAgentFixedOneStd(6, 3,
 		load_path=os.path.join(parameters_path,
 			'actor_parametersCircularEconomyRebuyPriceOneCompetitor_ContinuosActorCriticAgentFixedOneStd.dat'))),
-	(circular_market.CircularEconomyRebuyPriceOneCompetitor(), actorcritic_agent.DiscreteACACircularEconomyRebuy(6, 1000,
+	(circular_market.CircularEconomyRebuyPriceOneCompetitor(), DiscreteACACircularEconomyRebuy(6, 1000,
 		load_path=os.path.join(parameters_path, 'actor_parametersCircularEconomyRebuyPriceOneCompetitor_DiscreteACACircularEconomyRebuy.dat')))
 ]
 
