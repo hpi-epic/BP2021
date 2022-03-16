@@ -1,53 +1,60 @@
 import os
 
+import alpha_business.configuration.utils as ut
+
 
 class PathManager():
 	data_path = None
 
-	def _get_data_path(cls) -> None:
+	def manage_data_path(cls, new_path: str) -> None:
 		"""
-		Try and load the file where the user has previously saved the path they want to use for data.
+		Manage the data path.
+		Used by `main.py` with the `--datapath` argument.
 
-		If the user has not yet provided a path, ask them for one and validate it.
+		If the provided new_path is None, check that a valid path is already saved, otherwise overwrite it.
+
+		Args:
+			new_path (str | None): The path that should be set.
 		"""
+		# Make sure the file where we save the path exists
 		if not os.path.exists(os.path.join(os.path.dirname(__file__), 'data_path.txt')):
 			with open(os.path.join(os.path.dirname(__file__), 'data_path.txt'), 'w') as path_file:
 				pass
 
-		with open(os.path.join(os.path.dirname(__file__), 'data_path.txt'), 'r') as path_file:
-			data_path = path_file.read()
+		# No path provided, check if a valid path is already saved
+		if new_path is None:
+			with open(os.path.join(os.path.dirname(__file__), 'data_path.txt'), 'r') as path_file:
+				old_path = path_file.read()
 
-		# There is a valid path saved
-		if os.path.isdir(data_path):
-			print(f'Data will be read from and saved to "{data_path}"')
-			return
-		# A path has previously been saved, but is no longer a valid directory
-		elif data_path != '':
-			print(f'The current saved data path does not exist: {data_path}')
+			assert old_path != '', 'No data path was saved and no data path was provided. Please provide the `--datapath` argument before proceeding'
+			# There is a valid path saved
+			if ut.readable_dir(old_path):
+				print(f'Data will be read from and saved to "{old_path}"')
+				return
+			# A path has previously been saved, but is no longer a valid directory
+			raise AssertionError(f'The current saved data path is invalid: {old_path}\nPlease update it using the `--datapath` argument')
 
-		# No path provided as of yet
-		while not os.path.isdir(data_path):
-			data_path = input('Please provide a path where alpha_business will look for and save data:\n')
-			if not os.path.isdir(data_path):
-				print(f'The provided path is not a valid directory: {data_path}')
+		# A path was provided, but is not valid
+		elif not ut.readable_dir(new_path):
+			raise AssertionError(f'The provided path is not a valid directory: {new_path}')
 
-		cls.update_data_path(data_path)
+		# Valid path provided
+		else:
+			cls._update_path_file(cls, new_path)
 
-	def update_data_path(cls, path: str) -> None:
+	def _update_path_file(cls, new_path: str) -> None:
 		"""
-		Use this to manually update the data path.
-		Used by `main.py` if the `--datapath` argument is set.
+		Update the path file and instance variable with the new path.
 
 		Args:
-			path (str): The path that should be set.
+			new_path (str): The data path to be saved.
 		"""
-		assert os.path.isdir(path), f'The provided path is not valid: {path}'
-		cls.data_path = path
+		cls.data_path = new_path
 
 		with open(os.path.join(os.path.dirname(__file__), 'data_path.txt'), 'w') as path_file:
 			path_file.write(cls.data_path)
 
-		print(f'Data will be read from and saved to "{cls.data_path}"\n')
+		print(f'Data will be read from and saved to "{cls.data_path}"')
 
 
 if __name__ == '__main__':

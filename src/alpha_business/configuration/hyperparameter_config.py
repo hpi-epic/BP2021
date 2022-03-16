@@ -16,7 +16,7 @@ class HyperparameterConfig():
 			HyperparameterConfig: The HyperparameterConfig instance.
 		"""
 		if cls._instance is None:
-			print('A new instance of HyperparameterConfig is being initialized')
+			# print('A new instance of HyperparameterConfig is being initialized')
 			cls._instance = super(HyperparameterConfig, cls).__new__(cls)
 			cls._instance._validate_and_set_config(config)
 		else:

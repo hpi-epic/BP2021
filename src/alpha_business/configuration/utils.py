@@ -19,6 +19,21 @@ def ensure_results_folders_exist():
 	os.makedirs(os.path.join('results', 'trainedModels'), exist_ok=True)
 
 
+def readable_dir(path) -> bool:
+	"""
+	Helper function defining whether or not a path is an existing and readable path.
+
+	Adapted from https://stackoverflow.com/questions/11415570/directory-path-types-with-argparse
+
+	Args:
+		path (str): The path to check.
+
+	Returns:
+		bool: If the path exists and is readable.
+	"""
+	return False if not os.path.isdir(path) else bool(os.access(path, os.R_OK))
+
+
 def shuffle_quality() -> int:
 	return min(max(int(np.random.normal(config.max_quality / 2, 2 * config.max_quality / 5)), 1), config.max_quality)
 
