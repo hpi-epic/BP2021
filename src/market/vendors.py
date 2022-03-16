@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-
+# This file contains all abstract vendors who are not made for a specific market situation (like circular and linear)
 class Agent(ABC):
 
 	def __init__(self, name='agent'):
