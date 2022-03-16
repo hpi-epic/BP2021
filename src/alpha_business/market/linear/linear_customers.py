@@ -1,6 +1,7 @@
-import configuration.utils as ut
 import numpy as np
-from market.customer import Customer
+
+import alpha_business.configuration.utils as ut
+from alpha_business.market.customer import Customer
 
 
 class CustomerLinear(Customer):

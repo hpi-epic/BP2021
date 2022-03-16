@@ -2,8 +2,8 @@ import math
 import random
 from abc import ABC
 
-from configuration.hyperparameter_config import config
-from market.vendors import Agent, FixedPriceAgent, HumanPlayer, RuleBasedAgent
+from alpha_business.configuration.hyperparameter_config import config
+from alpha_business.market.vendors import Agent, FixedPriceAgent, HumanPlayer, RuleBasedAgent
 
 
 class LinearAgent(Agent, ABC):

@@ -1,14 +1,13 @@
 import json
 from unittest.mock import mock_open, patch
 
-import configuration.environment_config as env_config
 import pytest
 import utils_tests as ut_t
-from market.circular.circular_sim_market import CircularEconomyRebuyPriceMonopolyScenario
-from market.circular.circular_vendors import RuleBasedCERebuyAgent
-from rl.q_learning.q_learning_agent import QLearningCERebuyAgent
 
-import tests.utils_tests as ut_t
+import alpha_business.configuration.environment_config as env_config
+from alpha_business.market.circular.circular_sim_market import CircularEconomyRebuyPriceMonopolyScenario
+from alpha_business.market.circular.circular_vendors import RuleBasedCERebuyAgent
+from alpha_business.rl.q_learning.q_learning_agent import QLearningCERebuyAgent
 
 valid_training_dict = {
 	'task': 'training',

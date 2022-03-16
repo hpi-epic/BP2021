@@ -3,11 +3,10 @@ import random
 import numpy as np
 import torch
 
-import configuration.utils as ut
-import rl.actorcritic.actorcritic_agent as actorcritic_agent
-from configuration.hyperparameter_config import config
-from rl.training import RLTrainer
-
+import alpha_business.configuration.utils as ut
+import alpha_business.rl.actorcritic.actorcritic_agent as actorcritic_agent
+from alpha_business.configuration.hyperparameter_config import config
+from alpha_business.rl.training import RLTrainer
 
 
 class ActorCriticTrainer(RLTrainer):

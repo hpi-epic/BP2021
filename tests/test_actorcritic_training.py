@@ -1,10 +1,11 @@
 from unittest.mock import patch
 
-import market.circular.circular_sim_market as circular_market
-import market.linear.linear_sim_market as linear_market
 import pytest
-import rl.actorcritic.actorcritic_agent as actorcritic_agent
-from rl.actorcritic.actorcritic_training import ActorCriticTrainer
+
+import alpha_business.market.circular.circular_sim_market as circular_market
+import alpha_business.market.linear.linear_sim_market as linear_market
+import alpha_business.rl.actorcritic.actorcritic_agent as actorcritic_agent
+from alpha_business.rl.actorcritic.actorcritic_training import ActorCriticTrainer
 
 test_scenarios = [
 	(linear_market.ClassicScenario, actorcritic_agent.DiscreteACALinear, True),

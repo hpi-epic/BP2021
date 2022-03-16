@@ -4,13 +4,12 @@ import json
 import os
 from abc import ABC, abstractmethod
 
-from market.circular.circular_sim_market import CircularEconomy
-from market.circular.circular_vendors import CircularAgent
-from market.sim_market import SimMarket
-from rl.actorcritic.actorcritic_agent import ActorCriticAgent
-from rl.q_learning.q_learning_agent import QLearningAgent
-
 from alpha_business.configuration.path_manager import PathManager
+from alpha_business.market.circular.circular_sim_market import CircularEconomy
+from alpha_business.market.circular.circular_vendors import CircularAgent
+from alpha_business.market.sim_market import SimMarket
+from alpha_business.rl.actorcritic.actorcritic_agent import ActorCriticAgent
+from alpha_business.rl.q_learning.q_learning_agent import QLearningAgent
 
 
 class EnvironmentConfig(ABC):

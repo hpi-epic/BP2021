@@ -4,18 +4,18 @@ import signal
 import sys
 import time
 
-import configuration.utils as ut
-import market.circular.circular_sim_market as circular_market
 import torch
-from configuration.environment_config import EnvironmentConfigLoader, ExampleprinterEnvironmentConfig
-from market.circular.circular_vendors import RuleBasedCERebuyAgent
-from market.sim_market import SimMarket
-from market.vendors import Agent
-from monitoring.svg_manipulation import SVGManipulator
-from rl.q_learning.q_learning_agent import QLearningAgent
 from torch.utils.tensorboard import SummaryWriter
 
+import alpha_business.configuration.utils as ut
+import alpha_business.market.circular.circular_sim_market as circular_market
+from alpha_business.configuration.environment_config import EnvironmentConfigLoader, ExampleprinterEnvironmentConfig
 from alpha_business.configuration.path_manager import PathManager
+from alpha_business.market.circular.circular_vendors import RuleBasedCERebuyAgent
+from alpha_business.market.sim_market import SimMarket
+from alpha_business.market.vendors import Agent
+from alpha_business.monitoring.svg_manipulation import SVGManipulator
+from alpha_business.rl.q_learning.q_learning_agent import QLearningAgent
 
 
 class ExamplePrinter():

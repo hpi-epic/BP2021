@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from market.vendors import Agent
+from alpha_business.market.vendors import Agent
 
 
 class ReinforcementLearningAgent(Agent, ABC):

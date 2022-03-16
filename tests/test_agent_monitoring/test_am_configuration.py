@@ -3,16 +3,16 @@ import re
 import shutil
 from unittest.mock import patch
 
-import market.circular.circular_sim_market as circular_market
-import market.linear.linear_sim_market as linear_market
-import monitoring.agent_monitoring.am_monitoring as monitoring
 import pytest
-import rl.actorcritic.actorcritic_agent as actorcritic_agent
-from market.circular.circular_vendors import FixedPriceCEAgent, FixedPriceCERebuyAgent, HumanPlayerCERebuy, RuleBasedCEAgent
-from market.linear.linear_vendors import FixedPriceLEAgent
-from rl.q_learning.q_learning_agent import QLearningCEAgent, QLearningCERebuyAgent, QLearningLEAgent
 
+import alpha_business.market.circular.circular_sim_market as circular_market
+import alpha_business.market.linear.linear_sim_market as linear_market
+import alpha_business.monitoring.agent_monitoring.am_monitoring as monitoring
+import alpha_business.rl.actorcritic.actorcritic_agent as actorcritic_agent
 from alpha_business.configuration.path_manager import PathManager
+from alpha_business.market.circular.circular_vendors import FixedPriceCEAgent, FixedPriceCERebuyAgent, HumanPlayerCERebuy, RuleBasedCEAgent
+from alpha_business.market.linear.linear_vendors import FixedPriceLEAgent
+from alpha_business.rl.q_learning.q_learning_agent import QLearningCEAgent, QLearningCERebuyAgent, QLearningLEAgent
 
 monitor = monitoring.Monitor()
 

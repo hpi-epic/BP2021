@@ -2,12 +2,11 @@ import os
 import re
 from unittest.mock import patch
 
-import market.circular.circular_sim_market as circular_market
-import monitoring.agent_monitoring.am_monitoring as monitoring
-from market.circular.circular_vendors import FixedPriceCEAgent
-from rl.q_learning.q_learning_agent import QLearningCEAgent
-
+import alpha_business.market.circular.circular_sim_market as circular_market
+import alpha_business.monitoring.agent_monitoring.am_monitoring as monitoring
 from alpha_business.configuration.path_manager import PathManager
+from alpha_business.market.circular.circular_vendors import FixedPriceCEAgent
+from alpha_business.rl.q_learning.q_learning_agent import QLearningCEAgent
 
 monitor = monitoring.Monitor()
 

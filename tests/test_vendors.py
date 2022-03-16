@@ -1,17 +1,16 @@
 from importlib import reload
 from unittest.mock import mock_open, patch
 
-import configuration.hyperparameter_config as hyperparameter_config
-import market.circular.circular_vendors as circular_vendors
-import market.linear.linear_vendors as linear_vendors
-import market.vendors as vendors
 import pytest
 import utils_tests as ut_t
 from numpy import random
-from rl.q_learning.q_learning_agent import QLearningAgent, QLearningCEAgent, QLearningCERebuyAgent, QLearningLEAgent
-from rl.reinforcement_learning_agent import ReinforcementLearningAgent
 
-import tests.utils_tests as ut_t
+import alpha_business.configuration.hyperparameter_config as hyperparameter_config
+import alpha_business.market.circular.circular_vendors as circular_vendors
+import alpha_business.market.linear.linear_vendors as linear_vendors
+import alpha_business.market.vendors as vendors
+from alpha_business.rl.q_learning.q_learning_agent import QLearningAgent, QLearningCEAgent, QLearningCERebuyAgent, QLearningLEAgent
+from alpha_business.rl.reinforcement_learning_agent import ReinforcementLearningAgent
 
 
 def teardown_module(module):

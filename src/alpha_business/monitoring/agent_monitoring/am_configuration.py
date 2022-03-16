@@ -1,16 +1,16 @@
 import os
 import time
 
-import configuration.utils as ut
-import market.circular.circular_sim_market as circular_market
-import market.sim_market as sim_market
 import matplotlib.pyplot as plt
-import rl.actorcritic.actorcritic_agent as actorcritic_agent
-from market.circular.circular_vendors import CircularAgent, FixedPriceCEAgent
-from market.vendors import Agent, HumanPlayer, RuleBasedAgent
-from rl.q_learning.q_learning_agent import QLearningAgent
 
+import alpha_business.configuration.utils as ut
+import alpha_business.market.circular.circular_sim_market as circular_market
+import alpha_business.market.sim_market as sim_market
+import alpha_business.rl.actorcritic.actorcritic_agent as actorcritic_agent
 from alpha_business.configuration.path_manager import PathManager
+from alpha_business.market.circular.circular_vendors import CircularAgent, FixedPriceCEAgent
+from alpha_business.market.vendors import Agent, HumanPlayer, RuleBasedAgent
+from alpha_business.rl.q_learning.q_learning_agent import QLearningAgent
 
 
 class Configurator():

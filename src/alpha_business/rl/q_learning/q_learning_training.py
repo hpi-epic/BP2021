@@ -1,10 +1,9 @@
 import numpy as np
 
-import configuration.utils as ut
-from configuration.hyperparameter_config import config
-from rl.q_learning.q_learning_agent import QLearningAgent
-from rl.training import RLTrainer
-
+import alpha_business.configuration.utils as ut
+from alpha_business.configuration.hyperparameter_config import config
+from alpha_business.rl.q_learning.q_learning_agent import QLearningAgent
+from alpha_business.rl.training import RLTrainer
 
 
 class QLearningTrainer(RLTrainer):

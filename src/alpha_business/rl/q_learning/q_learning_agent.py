@@ -4,13 +4,14 @@ import random
 from abc import ABC, abstractmethod
 
 import numpy as np
-import rl.model as model
 import torch
-from configuration.hyperparameter_config import config
-from market.circular.circular_vendors import CircularAgent
-from market.linear.linear_vendors import LinearAgent
-from rl.experience_buffer import ExperienceBuffer
-from rl.reinforcement_learning_agent import ReinforcementLearningAgent
+
+import alpha_business.rl.model as model
+from alpha_business.configuration.hyperparameter_config import config
+from alpha_business.market.circular.circular_vendors import CircularAgent
+from alpha_business.market.linear.linear_vendors import LinearAgent
+from alpha_business.rl.experience_buffer import ExperienceBuffer
+from alpha_business.rl.reinforcement_learning_agent import ReinforcementLearningAgent
 
 
 class QLearningAgent(ReinforcementLearningAgent, ABC):

@@ -5,16 +5,15 @@ import time
 from importlib import reload
 from unittest.mock import mock_open, patch
 
-import configuration.hyperparameter_config as hyperparameter_config
-import market.circular.circular_sim_market as circular_market
-import market.linear.linear_sim_market as linear_market
 import pytest
-import rl.q_learning.q_learning_training as q_learning_training
 import utils_tests as ut_t
-from rl.q_learning.q_learning_agent import QLearningCEAgent, QLearningCERebuyAgent, QLearningLEAgent
 
-import tests.utils_tests as ut_t
+import alpha_business.configuration.hyperparameter_config as hyperparameter_config
+import alpha_business.market.circular.circular_sim_market as circular_market
+import alpha_business.market.linear.linear_sim_market as linear_market
+import alpha_business.rl.q_learning.q_learning_training as q_learning_training
 from alpha_business.configuration.path_manager import PathManager
+from alpha_business.rl.q_learning.q_learning_agent import QLearningCEAgent, QLearningCERebuyAgent, QLearningLEAgent
 
 
 def teardown_module(module):

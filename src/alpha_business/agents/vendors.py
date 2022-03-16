@@ -9,7 +9,7 @@ import torch
 
 import alpha_business.rl.model as model
 from alpha_business.configuration.hyperparameter_config import config
-from alpha_business.market.customer import CustomerCircular
+from alpha_business.market.circular.circular_customers import CustomerCircular
 from alpha_business.rl.experience_buffer import ExperienceBuffer
 
 
