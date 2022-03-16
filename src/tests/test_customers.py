@@ -38,7 +38,7 @@ generate_purchase_probabilities_from_offer_testcases = [
 	generate_purchase_probabilities_from_offer_testcases)
 def test_generate_purchase_probabilities_from_offer(customer, common_state, vendor_specific_state, vendor_actions, expected_message):
 	with pytest.raises(AssertionError) as assertion_message:
-		customer().generate_purchase_probabilities_from_offer(common_state, vendor_specific_state, vendor_actions)
+		customer.generate_purchase_probabilities_from_offer(customer, common_state, vendor_specific_state, vendor_actions)
 	assert expected_message in str(assertion_message.value)
 
 
