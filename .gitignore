@@ -3,6 +3,9 @@
 # all files and subfolders of the results folder should be ignored
 results
 
+# results from the tests
+tests/test_results
+
 # all webserver related directories
 webserver/configurations
 webserver/data
