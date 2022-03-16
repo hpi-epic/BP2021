@@ -4,11 +4,17 @@ import shutil
 
 from alpha_business.configuration.path_manager import PathManager
 
-if __name__ == '__main__':
+
+def main():
+	"""
+	The entrypoint for the `alpha_business` application.
+
+	Needs to be wrapped in a function to be callable as an entrypoint by the pip package.
+	"""
 	parser = argparse.ArgumentParser(description='Customize your alpha_business experience.')
-	parser.add_argument('--datapath', type=str, help='Provide the path where alpha_business will look for and save data')
+	parser.add_argument('--datapath', type=str, help='Provide the path where `alpha_business` will look for and save data')
 	parser.add_argument('--get-defaults', action='store_true', help="""Default files, such as a `hyperparameter_config.json` and
-trained models will be saved to your `data_path`""")
+trained models will be copied to your `data_path`""")
 	parser.add_argument('-c', '--command', type=str, choices=['training', 'exampleprinter', 'agent_monitoring'],
 		default='training', help='Choose the command to run')
 
@@ -35,3 +41,7 @@ trained models will be saved to your `data_path`""")
 	if args.command == 'agent_monitoring':
 		from alpha_business.monitoring.agent_monitoring import am_monitoring
 		am_monitoring.main()
+
+
+if __name__ == '__main__':
+	main()
