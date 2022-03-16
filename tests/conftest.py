@@ -30,7 +30,8 @@ def pytest_sessionfinish(session, exitstatus):
 	Called after whole test run finished, right before
 	returning the exit status to the system.
 	"""
-	shutil.rmtree(PathManager.results_path)
+	if os.path.exists(PathManager.results_path):
+		shutil.rmtree(PathManager.results_path)
 
 
 def pytest_unconfigure(config):

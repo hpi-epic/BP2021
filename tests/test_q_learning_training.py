@@ -1,7 +1,3 @@
-import os
-import re
-import shutil
-import time
 from importlib import reload
 from unittest.mock import mock_open, patch
 
@@ -12,17 +8,11 @@ import alpha_business.configuration.hyperparameter_config as hyperparameter_conf
 import alpha_business.market.circular.circular_sim_market as circular_market
 import alpha_business.market.linear.linear_sim_market as linear_market
 import alpha_business.rl.q_learning.q_learning_training as q_learning_training
-from alpha_business.configuration.path_manager import PathManager
 from alpha_business.rl.q_learning.q_learning_agent import QLearningCEAgent, QLearningCERebuyAgent, QLearningLEAgent
 
 
 def teardown_module(module):
 	print('***TEARDOWN***')
-	# we need to sleep because sometimes the subfolder is still being used when we try to remove it
-	time.sleep(0.001)
-	for file_name in os.listdir(os.path.join(PathManager.results_path, 'trainedModels')):
-		if re.match('test_*', file_name):
-			shutil.rmtree(os.path.join(PathManager.results_path, 'trainedModels', file_name))
 	reload(hyperparameter_config)
 
 
@@ -50,8 +40,8 @@ test_scenarios = [
 def test_market_scenario(market_class, agent_class):
 	json = ut_t.create_hyperparameter_mock_json(rl=ut_t.create_hyperparameter_mock_json_rl(replay_start_size='500', sync_target_frames='100'))
 	with patch('builtins.open', mock_open(read_data=json)) as mock_file, \
-		patch('rl.training.SummaryWriter'), \
-		patch('rl.q_learning.q_learning_agent.QLearningAgent.save'):
+		patch('alpha_business.rl.training.SummaryWriter'), \
+		patch('alpha_business.rl.q_learning.q_learning_agent.QLearningAgent.save'):
 		ut_t.check_mock_file(mock_file, json)
 
 		config = import_config()
@@ -61,8 +51,8 @@ def test_market_scenario(market_class, agent_class):
 def test_training_with_tensorboard():
 	json = ut_t.create_hyperparameter_mock_json(rl=ut_t.create_hyperparameter_mock_json_rl(replay_start_size='500', sync_target_frames='100'))
 	with patch('builtins.open', mock_open(read_data=json)) as mock_file, \
-		patch('rl.training.SummaryWriter'), \
-		patch('rl.q_learning.q_learning_agent.QLearningAgent.save'):
+		patch('alpha_business.rl.training.SummaryWriter'), \
+		patch('alpha_business.rl.q_learning.q_learning_agent.QLearningAgent.save'):
 		ut_t.check_mock_file(mock_file, json)
 
 		config = import_config()

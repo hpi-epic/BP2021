@@ -1,18 +1,12 @@
 import os
-import re
 from unittest.mock import patch
 
 import alpha_business.market.circular.circular_sim_market as circular_market
 import alpha_business.monitoring.agent_monitoring.am_monitoring as monitoring
-from alpha_business.configuration.path_manager import PathManager
 from alpha_business.market.circular.circular_vendors import FixedPriceCEAgent
 from alpha_business.rl.q_learning.q_learning_agent import QLearningCEAgent
 
 monitor = monitoring.Monitor()
-
-
-# def setup_module(module):
-# 	PathManager.user_path = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
 
 
 # setup before each test
@@ -30,17 +24,11 @@ def setup_function(function):
 		subfolder_name=f'test_plots_{function.__name__}')
 
 
-def teardown_module(module):
-	for file_name in os.listdir(os.path.join(PathManager.results_path, 'monitoring')):
-		if re.match('test_*', file_name):
-			assert False, 'Test files were not mocked correctly'
-
-
 def test_run_marketplace():
 	monitor.configurator.setup_monitoring(episodes=100, plot_interval=100, agents=[(FixedPriceCEAgent, [(5, 2)])])
-	with patch('monitoring.agent_monitoring.am_evaluation.plt'), \
+	with patch('alpha_business.monitoring.agent_monitoring.am_evaluation.plt'), \
 		patch('alpha_business.monitoring.agent_monitoring.am_configuration.os.makedirs'), \
-		patch('monitoring.agent_monitoring.am_configuration.os.path.exists') as exists_mock:
+		patch('alpha_business.monitoring.agent_monitoring.am_configuration.os.path.exists') as exists_mock:
 		exists_mock.return_value = True
 		agent_rewards = monitor.run_marketplace()
 		assert 1 == len(agent_rewards)
