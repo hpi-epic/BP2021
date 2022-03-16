@@ -91,7 +91,7 @@ class EnvironmentConfig(ABC):
 					assert isinstance(modelfile, str), \
 						f'The "modelfile" field of this agent must be a str: {agent_classes[current_agent]} ({type(modelfile)})'
 					# Check that the modelfile exists. Implies that it must end in .dat Taken from am_configuration::_get_modelfile_path()
-					full_path = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir, 'data', modelfile))
+					full_path = os.path.join(PathManager.data_path, modelfile)
 					assert os.path.exists(full_path), f'the specified modelfile does not exist: {full_path}'
 					modelfile_list.append(modelfile)
 
