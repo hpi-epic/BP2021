@@ -2,7 +2,7 @@ import pytest
 import torch
 
 import configuration.utils as ut
-import rl.actorcritic_agent as actorcritic_agent
+import rl.actorcritic.actorcritic_agent as actorcritic_agent
 
 abstract_agent_classes_testcases = [
 	actorcritic_agent.ActorCriticAgent,

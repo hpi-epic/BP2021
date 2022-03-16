@@ -4,7 +4,7 @@ import numpy as np
 import torch
 
 import configuration.utils as ut
-import rl.actorcritic_agent as actorcritic_agent
+import rl.actorcritic.actorcritic_agent as actorcritic_agent
 from configuration.hyperparameter_config import config
 from rl.training import RLTrainer
 
