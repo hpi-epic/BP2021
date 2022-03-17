@@ -17,16 +17,15 @@ jobs:
       - name: Install AlphaBusiness package
         shell: bash -l {0}
         run: |
-          pip install -e .
+          pip install .
       - name: Pytest
         shell: bash -l {0}
         run: |
           coverage run --source=. -m pytest
-      - name: webserver tests
+      - name: Test Webserver
         shell: bash -l {0}
         run: |
           (cd ./webserver && python ./manage.py test -v 2)
-
       - name: Report Coverage
         shell: bash -l {0}
         run: |
