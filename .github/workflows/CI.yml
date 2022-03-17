@@ -21,8 +21,7 @@ jobs:
       - name: Setup Recommerce
         shell: bash -l {0}
         run: |
-          recommerce --datapath .
-          recommerce --get-defaults --unpack
+          recommerce --datapath . --get-defaults --unpack --no-action
       - name: Pytest
         shell: bash -l {0}
         run: |
