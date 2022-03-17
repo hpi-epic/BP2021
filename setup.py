@@ -1,10 +1,21 @@
 # used when installing the project as a pip package
+import os
+
 from setuptools import setup
+
+
+def package_files(directory):
+	paths = []
+	for (path, directories, filenames) in os.walk(directory):
+		paths.extend(os.path.join('..', path, filename) for filename in filenames)
+	return paths
+
+
+extra_files = package_files('src/alpha_business')
 
 if __name__ == '__main__':
 	# package data defines folders with non-.py files which should also be included in the pip package
-	setup(package_data={
-		'alpha_business': ['default_data/*/*',
-			'monitoring/data/MarketOverview_template.svg',
-			'configuration/user_path.txt']
-	})
+	setup(
+		packages=['src'],
+		package_data={'': extra_files, 'alpha_business': ['default_data/*/*']}
+	)
