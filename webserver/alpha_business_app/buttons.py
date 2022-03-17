@@ -55,9 +55,7 @@ class ButtonHandler():
 		if self.wanted_key == 'health':
 			return self._health()
 		if self.wanted_key == 'pause':
-			return self._toggle_pause(True)
-		if self.wanted_key == 'unpause':
-			return self._toggle_pause(False)
+			return self._toggle_pause()
 		if self.wanted_key == 'remove':
 			return self._remove()
 		if self.wanted_key == 'start':
@@ -180,28 +178,6 @@ class ButtonHandler():
 
 		return self._decide_rendering()
 
-	def _toggle_pause(self, pause_application: bool) -> HttpResponse:
-		"""
-		This will send an API request to pause/unpause the currently running container.
-
-		Returns:
-			HttpResponse: A default response with default values or a response containing the error field.
-		"""
-		# check, whether the request wants to pause or to unpause the container
-		if pause_application:
-			response = send_get_request('pause', self.request.POST)
-		else:
-			response = send_get_request('unpause', self.request.POST)
-
-		if response.ok():
-			response = response.content
-			update_container(response['id'], {'last_check_at': timezone.now(), 'health_status': response['status']})
-		else:
-			self.message = response.status()
-		self.wanted_container = Container.objects.get(id=self.wanted_container.id)
-
-		return self._decide_rendering()
-
 	def _logs(self) -> HttpResponse:
 		"""
 		This will send an API request to get the logs of the container.
@@ -281,3 +257,25 @@ class ButtonHandler():
 		else:
 			self.message = response.status()
 			return self._decide_rendering()
+
+	def _toggle_pause(self) -> HttpResponse:
+		"""
+		This will send an API request to pause/unpause the currently running container.
+
+		Returns:
+			HttpResponse: A default response with default values or a response containing the error field.
+		"""
+		# check, whether the request wants to pause or to unpause the container
+		if self.wanted_container.is_paused():
+			response = response = send_get_request('unpause', self.request.POST)
+		else:
+			response = send_get_request('pause', self.request.POST)
+
+		if response.ok():
+			response = response.content
+			update_container(response['id'], {'last_check_at': timezone.now(), 'health_status': response['status']})
+		else:
+			self.message = response.status()
+		self.wanted_container = Container.objects.get(id=self.wanted_container.id)
+
+		return self._decide_rendering()

@@ -1,11 +1,15 @@
 <form method="post" enctype="multipart/form-data">
 	{% csrf_token %}
-	<input type="hidden" name="action" , value="pause">
-	<button class="action_button pause_button" 
-		title="pauses execution of the script in the running container"
-		name="container_id" 
-		value="{{ container.id }}" 
-		type="submit">
-		pause
-	</button>
+<input type="hidden" name="action" , value="pause">
+<button class="action_button {% if container.is_paused %}unpause_button{% else %}pause_button{% endif %}" 
+	title="{% if container.is_paused %}un{% endif %}pauses execution of the script in the running container"
+	name="container_id" 
+	value="{{ container.id }}" 
+	type="submit">
+	{% if container.is_paused %}
+		   unpause
+	{% else %}
+		   pause
+	{% endif %}
+</button>
 </form>

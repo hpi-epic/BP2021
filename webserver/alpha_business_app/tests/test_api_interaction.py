@@ -68,7 +68,7 @@ class ButtonTests(TestCase):
 
 	def test_unpause_button(self):
 		# mock a request that is send when user presses a button
-		request = self._setup_request('/details', 'unpause')
+		request = self._setup_request('/details', 'pause')
 
 		# setup a button handler for this request
 		test_button_handler = self._setup_button_handler('details.html', request)
