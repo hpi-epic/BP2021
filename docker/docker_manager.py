@@ -226,7 +226,6 @@ class DockerManager():
 			data=f'archive_{container_path.rpartition("/")[2]}_{time.strftime("%b%d_%H-%M-%S")}', stream=bits)
 
 	def remove_container(self, container_id: str) -> DockerInfo:
-		# sourcery skip: extract-method
 		"""
 		To be called by the REST API. Stop and remove a container.
 
