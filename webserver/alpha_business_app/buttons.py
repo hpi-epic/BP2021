@@ -182,7 +182,7 @@ class ButtonHandler():
 
 	def _toggle_pause(self, pause_application: bool) -> HttpResponse:
 		"""
-		This will send an API request to get the health status of a container and updates the container in the database.
+		This will send an API request to pause/unpause the currently running container.
 
 		Returns:
 			HttpResponse: A default response with default values or a response containing the error field.
