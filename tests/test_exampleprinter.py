@@ -3,13 +3,13 @@ from unittest.mock import patch
 
 import pytest
 
-import alpha_business.market.circular.circular_sim_market as circular_market
-import alpha_business.market.circular.circular_vendors as circular_vendors
-import alpha_business.market.linear.linear_sim_market as linear_market
-from alpha_business.market.linear.linear_vendors import FixedPriceLEAgent
-from alpha_business.monitoring.exampleprinter import ExamplePrinter
-from alpha_business.rl.actorcritic.actorcritic_agent import ContinuosActorCriticAgentFixedOneStd, DiscreteACACircularEconomyRebuy
-from alpha_business.rl.q_learning.q_learning_agent import QLearningCEAgent, QLearningCERebuyAgent, QLearningLEAgent
+import recommerce.market.circular.circular_sim_market as circular_market
+import recommerce.market.circular.circular_vendors as circular_vendors
+import recommerce.market.linear.linear_sim_market as linear_market
+from recommerce.market.linear.linear_vendors import FixedPriceLEAgent
+from recommerce.monitoring.exampleprinter import ExamplePrinter
+from recommerce.rl.actorcritic.actorcritic_agent import ContinuosActorCriticAgentFixedOneStd, DiscreteACACircularEconomyRebuy
+from recommerce.rl.q_learning.q_learning_agent import QLearningCEAgent, QLearningCERebuyAgent, QLearningLEAgent
 
 # The load path for the agent modelfiles
 parameters_path = os.path.join('tests', 'test_data')
@@ -52,13 +52,13 @@ full_episode_testcases = [
 
 @pytest.mark.parametrize('marketplace, agent', full_episode_testcases)
 def test_full_episode(marketplace, agent):
-	with patch('alpha_business.monitoring.exampleprinter.SVGManipulator'),\
-		patch('alpha_business.monitoring.exampleprinter.SummaryWriter'):
+	with patch('recommerce.monitoring.exampleprinter.SVGManipulator'),\
+		patch('recommerce.monitoring.exampleprinter.SummaryWriter'):
 		printer = ExamplePrinter()
 		printer.setup_exampleprinter(marketplace, agent)
 		assert printer.run_example(log_dir_prepend='test_') >= -5000
 
 
 def test_exampleprinter_with_tensorboard():
-	with patch('alpha_business.monitoring.exampleprinter.SVGManipulator'):
+	with patch('recommerce.monitoring.exampleprinter.SVGManipulator'):
 		assert ExamplePrinter().run_example(log_dir_prepend='test_') >= -5000

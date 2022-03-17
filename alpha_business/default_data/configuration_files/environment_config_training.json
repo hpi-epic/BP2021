@@ -1,9 +1,0 @@
-{
-	"task": "training",
-	"marketplace": "alpha_business.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario",
-	"agents": {
-		"CE Rebuy Agent (QLearning)": {
-			"class": "alpha_business.rl.q_learning.q_learning_agent.QLearningCERebuyAgent"
-		}
-	}
-}

@@ -3,13 +3,13 @@ omit =
 	# ignore __init__.py files
 	*/__init__.py
 	# ignore test files
-	src/tests/*
+	recommerce/tests/*
 	docker/test_docker_manager.py
 	webserver/alpha_business_app/tests/*
 	# ignore files only used as helpers
-	src/setup.py
-	src/rl/training_scenario.py
-	src/monitoring/performance.py
+	setup.py
+	recommerce/rl/training_scenario.py
+	recommerce/monitoring/performance.py
 	webserver/webserver/*
 	webserver/manage.py
 	webserver/templates/*

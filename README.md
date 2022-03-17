@@ -8,7 +8,7 @@
 - [1. Online Marketplace Simulation: A Testbed for Self-Learning Agents](#1-online-marketplace-simulation-a-testbed-for-self-learning-agents)
 	- [1.1. Installing dependencies](#11-installing-dependencies)
 		- [1.1.1 Dependency Installation Troubleshooting](#111-dependency-installation-troubleshooting)
-	- [1.2. The `AlphaBusiness` package](#12-the-alphabusiness-package)
+	- [1.2. The `Recommerce` package](#12-the-recommerce-package)
 	- [1.3. Testing](#13-testing)
 		- [1.3.1. Pytest](#131-pytest)
 		- [1.3.2. Webserver Tests](#132-webserver-tests)
@@ -84,7 +84,7 @@ you have to run the `pywin32_postinstall.py` script. To do so, run the following
 python Path/To/Anaconda3/Scripts/pywin32_postinstall.py -install
 ```
 
-## 1.2. The `AlphaBusiness` package
+## 1.2. The `Recommerce` package
 
 In order to get our project to work, you must perform the following command:
 
@@ -92,7 +92,7 @@ In order to get our project to work, you must perform the following command:
 pip install -e .
 ```
 
-This installs the `alpha_business` folder (and its subdirectories) as a local pip package. The `-e` flag indicates to pip that the package should be installed in an editable state. This results in the packages not being directly written to where pip dependencies usually would, but only a "link" to you current working directory being created. In order to install the package, we use `setuptools`, which uses the `setup.py` and `setup.cfg` files located in the root directory of the project. The `setup.cfg` file includes all necessary metadata needed to correctly install the project. If you want to properly install the project as a pip package, use the following command:
+This installs the `recommerce` folder (and its subdirectories) as a local pip package. The `-e` flag indicates to pip that the package should be installed in an editable state. This results in the packages not being directly written to where pip dependencies usually would, but only a "link" to you current working directory being created. In order to install the package, we use `setuptools`, which uses the `setup.py` and `setup.cfg` files located in the root directory of the project. The `setup.cfg` file includes all necessary metadata needed to correctly install the project. If you want to properly install the project as a pip package, use the following command:
 
 ```bash
 pip install .
@@ -100,10 +100,10 @@ pip install .
 
 This will "copy" the packages into your pip-install folder, meaning that any changes to your source-code will only be reflected when installing the package again, therefore you should not use that command if you plan on changing the code.
 
-You can confirm that the installation was successfull if there is a folder called `alpha_business.egg-info` within the `src`-directory, or by checking `pip freeze` for the following line:
+You can confirm that the installation was successfull if there is a folder called `recommerce.egg-info` within the root-directory, or by checking `pip freeze` for the following line:
 
 ```bash
--e git+https://github.com/hpi-epic/BP2021.git@hash_here#egg=alpha_business
+-e git+https://github.com/hpi-epic/BP2021.git@hash_here#egg=recommerce
 ```
 
 Installing our project as a package enables us to import our project packages from anywhere on the machine, in our case we use this to import packages from parent directories. 

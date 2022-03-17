@@ -4,8 +4,8 @@ from unittest.mock import mock_open, patch
 import pytest
 import utils_tests as ut_t
 
-import alpha_business.monitoring.svg_manipulation as svg_manipulation
-from alpha_business.monitoring.exampleprinter import ExamplePrinter
+import recommerce.monitoring.svg_manipulation as svg_manipulation
+from recommerce.monitoring.exampleprinter import ExamplePrinter
 
 svg_manipulator = svg_manipulation.SVGManipulator()
 
@@ -32,13 +32,13 @@ def test_correct_template():
 	with patch('builtins.open', mock_open(read_data=json)) as utils_mock_file:
 		ut_t.check_mock_file(utils_mock_file, json)
 		# initialize all functions to be mocked
-		with patch('alpha_business.monitoring.exampleprinter.ut.write_dict_to_tensorboard'), \
-			patch('alpha_business.monitoring.svg_manipulation.os.path.isfile') as mock_isfile, \
-			patch('alpha_business.monitoring.svg_manipulation.os.path.isdir') as mock_isdir, \
-			patch('alpha_business.monitoring.svg_manipulation.os.listdir') as mock_list_dir, \
-			patch('alpha_business.monitoring.svg_manipulation.os.path.exists') as mock_exists, \
-			patch('alpha_business.monitoring.svg_manipulation.os.mkdir') as mock_mkdir, \
-			patch('alpha_business.monitoring.exampleprinter.SummaryWriter'), \
+		with patch('recommerce.monitoring.exampleprinter.ut.write_dict_to_tensorboard'), \
+			patch('recommerce.monitoring.svg_manipulation.os.path.isfile') as mock_isfile, \
+			patch('recommerce.monitoring.svg_manipulation.os.path.isdir') as mock_isdir, \
+			patch('recommerce.monitoring.svg_manipulation.os.listdir') as mock_list_dir, \
+			patch('recommerce.monitoring.svg_manipulation.os.path.exists') as mock_exists, \
+			patch('recommerce.monitoring.svg_manipulation.os.mkdir') as mock_mkdir, \
+			patch('recommerce.monitoring.exampleprinter.SummaryWriter'), \
 			patch('builtins.open', mock_open()):
 			mock_isfile.return_value = True
 			mock_isdir.return_value = True
@@ -84,8 +84,8 @@ def test_write_dict_to_svg():
 # tests below test save_overview_svg()
 def test_file_should_not_exist():
 	# initialize all functions to be mocked
-	with patch('alpha_business.monitoring.svg_manipulation.os.path.exists') as mock_exists, \
-		patch('alpha_business.monitoring.svg_manipulation.os.path.isdir') as mock_isdir, \
+	with patch('recommerce.monitoring.svg_manipulation.os.path.exists') as mock_exists, \
+		patch('recommerce.monitoring.svg_manipulation.os.path.isdir') as mock_isdir, \
 		patch('builtins.open', mock_open()):
 		mock_isdir.return_value = True
 		mock_exists.return_value = False
@@ -99,8 +99,8 @@ def test_file_should_not_exist():
 
 def test_write_only_strings_to_dict():
 	# initialize all functions to be mocked
-	with patch('alpha_business.monitoring.svg_manipulation.os.path.exists') as mock_exists, \
-		patch('alpha_business.monitoring.svg_manipulation.os.path.isdir') as mock_isdir:
+	with patch('recommerce.monitoring.svg_manipulation.os.path.exists') as mock_exists, \
+		patch('recommerce.monitoring.svg_manipulation.os.path.isdir') as mock_isdir:
 		mock_isdir.return_value = True
 		mock_exists.return_value = False
 
@@ -112,9 +112,9 @@ def test_write_only_strings_to_dict():
 def test_replace_values():
 	svg_manipulator.output_svg = 'Hello World!'
 	# initialize all functions to be mocked
-	with patch('alpha_business.monitoring.svg_manipulation.os.path.isdir') as mock_isdir, \
-		patch('alpha_business.monitoring.svg_manipulation.os.path.exists') as mock_exists, \
-		patch('alpha_business.monitoring.svg_manipulation.SVGManipulator.write_dict_to_svg'), \
+	with patch('recommerce.monitoring.svg_manipulation.os.path.isdir') as mock_isdir, \
+		patch('recommerce.monitoring.svg_manipulation.os.path.exists') as mock_exists, \
+		patch('recommerce.monitoring.svg_manipulation.SVGManipulator.write_dict_to_svg'), \
 		patch('builtins.open', mock_open()) as mock_file:
 		mock_isdir.return_value = True
 		mock_exists.return_value = False
@@ -129,8 +129,8 @@ def test_replace_values():
 
 def test_files_are_svgs():
 	files_in_dir = ['MarketOverview_001.svg', 'MarketOverview_002.svg', 'MarketOverview_003.svg']
-	with patch('alpha_business.monitoring.svg_manipulation.os.path.isfile') as mock_isfile, \
-		patch('alpha_business.monitoring.svg_manipulation.os.listdir') as mock_list_dir:
+	with patch('recommerce.monitoring.svg_manipulation.os.path.isfile') as mock_isfile, \
+		patch('recommerce.monitoring.svg_manipulation.os.listdir') as mock_list_dir:
 		mock_isfile.return_value = True
 		mock_list_dir.return_value = files_in_dir
 
@@ -171,8 +171,8 @@ correct_html = '<!doctype html>\n' + \
 
 def test_correct_html():
 	# initialize all functions to be mocked
-	with patch('alpha_business.monitoring.svg_manipulation.os.path.isfile') as mock_isfile, \
-		patch('alpha_business.monitoring.svg_manipulation.os.listdir') as mock_list_dir, \
+	with patch('recommerce.monitoring.svg_manipulation.os.path.isfile') as mock_isfile, \
+		patch('recommerce.monitoring.svg_manipulation.os.listdir') as mock_list_dir, \
 		patch('builtins.open', mock_open()) as mock_file:
 		mock_isfile.return_value = True
 		mock_list_dir.return_value = ['MarketOverview_001.svg', 'MarketOverview_002.svg', 'MarketOverview_003.svg']
@@ -197,13 +197,13 @@ def test_one_exampleprinter_run():
 	with patch('builtins.open', mock_open(read_data=json)) as utils_mock_file:
 		ut_t.check_mock_file(utils_mock_file, json)
 		# initialize all functions to be mocked
-		with patch('alpha_business.monitoring.exampleprinter.ut.write_dict_to_tensorboard'), \
-			patch('alpha_business.monitoring.svg_manipulation.os.path.isfile') as mock_isfile, \
-			patch('alpha_business.monitoring.svg_manipulation.os.path.isdir') as mock_isdir, \
-			patch('alpha_business.monitoring.svg_manipulation.os.listdir') as mock_list_dir, \
-			patch('alpha_business.monitoring.svg_manipulation.os.path.exists') as mock_exists, \
-			patch('alpha_business.monitoring.svg_manipulation.os.mkdir') as mock_mkdir, \
-			patch('alpha_business.monitoring.exampleprinter.SummaryWriter'), \
+		with patch('recommerce.monitoring.exampleprinter.ut.write_dict_to_tensorboard'), \
+			patch('recommerce.monitoring.svg_manipulation.os.path.isfile') as mock_isfile, \
+			patch('recommerce.monitoring.svg_manipulation.os.path.isdir') as mock_isdir, \
+			patch('recommerce.monitoring.svg_manipulation.os.listdir') as mock_list_dir, \
+			patch('recommerce.monitoring.svg_manipulation.os.path.exists') as mock_exists, \
+			patch('recommerce.monitoring.svg_manipulation.os.mkdir') as mock_mkdir, \
+			patch('recommerce.monitoring.exampleprinter.SummaryWriter'), \
 			patch('builtins.open', mock_open()) as mock_file:
 			mock_isfile.return_value = True
 			mock_isdir.return_value = True

@@ -4,11 +4,11 @@ from unittest.mock import mock_open, patch
 import pytest
 import utils_tests as ut_t
 
-import alpha_business.configuration.hyperparameter_config as hyperparameter_config
-import alpha_business.market.circular.circular_sim_market as circular_market
-import alpha_business.market.linear.linear_sim_market as linear_market
-import alpha_business.rl.q_learning.q_learning_training as q_learning_training
-from alpha_business.rl.q_learning.q_learning_agent import QLearningCEAgent, QLearningCERebuyAgent, QLearningLEAgent
+import recommerce.configuration.hyperparameter_config as hyperparameter_config
+import recommerce.market.circular.circular_sim_market as circular_market
+import recommerce.market.linear.linear_sim_market as linear_market
+import recommerce.rl.q_learning.q_learning_training as q_learning_training
+from recommerce.rl.q_learning.q_learning_agent import QLearningCEAgent, QLearningCERebuyAgent, QLearningLEAgent
 
 
 def teardown_module(module):
@@ -40,8 +40,8 @@ test_scenarios = [
 def test_market_scenario(market_class, agent_class):
 	json = ut_t.create_hyperparameter_mock_json(rl=ut_t.create_hyperparameter_mock_json_rl(replay_start_size='500', sync_target_frames='100'))
 	with patch('builtins.open', mock_open(read_data=json)) as mock_file, \
-		patch('alpha_business.rl.training.SummaryWriter'), \
-		patch('alpha_business.rl.q_learning.q_learning_agent.QLearningAgent.save'):
+		patch('recommerce.rl.training.SummaryWriter'), \
+		patch('recommerce.rl.q_learning.q_learning_agent.QLearningAgent.save'):
 		ut_t.check_mock_file(mock_file, json)
 
 		config = import_config()
@@ -51,8 +51,8 @@ def test_market_scenario(market_class, agent_class):
 def test_training_with_tensorboard():
 	json = ut_t.create_hyperparameter_mock_json(rl=ut_t.create_hyperparameter_mock_json_rl(replay_start_size='500', sync_target_frames='100'))
 	with patch('builtins.open', mock_open(read_data=json)) as mock_file, \
-		patch('alpha_business.rl.training.SummaryWriter'), \
-		patch('alpha_business.rl.q_learning.q_learning_agent.QLearningAgent.save'):
+		patch('recommerce.rl.training.SummaryWriter'), \
+		patch('recommerce.rl.q_learning.q_learning_agent.QLearningAgent.save'):
 		ut_t.check_mock_file(mock_file, json)
 
 		config = import_config()

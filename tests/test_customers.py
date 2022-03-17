@@ -2,11 +2,11 @@ import numpy as np
 import pytest
 import utils_tests as ut_t
 
-import alpha_business.market.circular.circular_sim_market as circular_market
-import alpha_business.market.customer as customer
-import alpha_business.market.linear.linear_sim_market as linear_market
-from alpha_business.market.circular.circular_customers import CustomerCircular
-from alpha_business.market.linear.linear_customers import CustomerLinear
+import recommerce.market.circular.circular_sim_market as circular_market
+import recommerce.market.customer as customer
+import recommerce.market.linear.linear_sim_market as linear_market
+from recommerce.market.circular.circular_customers import CustomerCircular
+from recommerce.market.linear.linear_customers import CustomerLinear
 
 
 # Test the Customer parent class, i.e. make sure it cannot be used

@@ -1,8 +1,8 @@
 import pytest
 import torch
 
-import alpha_business.configuration.utils as ut
-import alpha_business.rl.actorcritic.actorcritic_agent as actorcritic_agent
+import recommerce.configuration.utils as ut
+import recommerce.rl.actorcritic.actorcritic_agent as actorcritic_agent
 
 abstract_agent_classes_testcases = [
 	actorcritic_agent.ActorCriticAgent,

@@ -5,14 +5,14 @@ from unittest.mock import patch
 
 import pytest
 
-import alpha_business.market.circular.circular_sim_market as circular_market
-import alpha_business.market.linear.linear_sim_market as linear_market
-import alpha_business.monitoring.agent_monitoring.am_monitoring as monitoring
-import alpha_business.rl.actorcritic.actorcritic_agent as actorcritic_agent
-from alpha_business.configuration.path_manager import PathManager
-from alpha_business.market.circular.circular_vendors import FixedPriceCEAgent, FixedPriceCERebuyAgent, HumanPlayerCERebuy, RuleBasedCEAgent
-from alpha_business.market.linear.linear_vendors import FixedPriceLEAgent
-from alpha_business.rl.q_learning.q_learning_agent import QLearningCEAgent, QLearningCERebuyAgent, QLearningLEAgent
+import recommerce.market.circular.circular_sim_market as circular_market
+import recommerce.market.linear.linear_sim_market as linear_market
+import recommerce.monitoring.agent_monitoring.am_monitoring as monitoring
+import recommerce.rl.actorcritic.actorcritic_agent as actorcritic_agent
+from recommerce.configuration.path_manager import PathManager
+from recommerce.market.circular.circular_vendors import FixedPriceCEAgent, FixedPriceCERebuyAgent, HumanPlayerCERebuy, RuleBasedCEAgent
+from recommerce.market.linear.linear_vendors import FixedPriceLEAgent
+from recommerce.rl.q_learning.q_learning_agent import QLearningCEAgent, QLearningCERebuyAgent, QLearningLEAgent
 
 monitor = monitoring.Monitor()
 
@@ -46,8 +46,8 @@ def test_get_folder():
 
 
 def test_get_modelfile_path():
-	with patch('alpha_business.monitoring.agent_monitoring.am_configuration.os.path.exists') as mock_exists, \
-		patch('alpha_business.monitoring.agent_monitoring.am_configuration.os.makedirs'):
+	with patch('recommerce.monitoring.agent_monitoring.am_configuration.os.path.exists') as mock_exists, \
+		patch('recommerce.monitoring.agent_monitoring.am_configuration.os.makedirs'):
 		mock_exists.return_value = False
 		with pytest.raises(AssertionError) as assertion_message:
 			monitor.configurator._get_modelfile_path('non_existing_modelfile')
@@ -317,6 +317,6 @@ def test_print_configuration(agents):
 def test_print_configuration_ratio(agents):
 	monitor.configurator.setup_monitoring(episodes=51, plot_interval=1, agents=agents)
 
-	with patch('alpha_business.monitoring.agent_monitoring.am_configuration.input', create=True) as mocked_input:
+	with patch('recommerce.monitoring.agent_monitoring.am_configuration.input', create=True) as mocked_input:
 		mocked_input.side_effect = ['n']
 		monitor.configurator.print_configuration()

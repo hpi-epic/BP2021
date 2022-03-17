@@ -1,9 +1,9 @@
 import os
 from typing import Tuple, Union
 
-import alpha_business.market.circular.circular_sim_market as circular_market
-import alpha_business.market.linear.linear_sim_market as linear_market
-from alpha_business.configuration.path_manager import PathManager
+import recommerce.market.circular.circular_sim_market as circular_market
+import recommerce.market.linear.linear_sim_market as linear_market
+from recommerce.configuration.path_manager import PathManager
 
 
 def create_hyperparameter_mock_json_rl(gamma='0.99',

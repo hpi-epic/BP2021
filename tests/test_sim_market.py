@@ -1,8 +1,8 @@
 import pytest
 import utils_tests as ut_t
 
-import alpha_business.market.circular.circular_sim_market as circular_market
-import alpha_business.market.linear.linear_sim_market as linear_market
+import recommerce.market.circular.circular_sim_market as circular_market
+import recommerce.market.linear.linear_sim_market as linear_market
 
 unique_output_dict_testcases = [
 	linear_market.ClassicScenario,

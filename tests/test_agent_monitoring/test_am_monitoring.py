@@ -1,10 +1,10 @@
 import os
 from unittest.mock import patch
 
-import alpha_business.market.circular.circular_sim_market as circular_market
-import alpha_business.monitoring.agent_monitoring.am_monitoring as monitoring
-from alpha_business.market.circular.circular_vendors import FixedPriceCEAgent
-from alpha_business.rl.q_learning.q_learning_agent import QLearningCEAgent
+import recommerce.market.circular.circular_sim_market as circular_market
+import recommerce.monitoring.agent_monitoring.am_monitoring as monitoring
+from recommerce.market.circular.circular_vendors import FixedPriceCEAgent
+from recommerce.rl.q_learning.q_learning_agent import QLearningCEAgent
 
 monitor = monitoring.Monitor()
 
@@ -26,9 +26,9 @@ def setup_function(function):
 
 def test_run_marketplace():
 	monitor.configurator.setup_monitoring(episodes=100, plot_interval=100, agents=[(FixedPriceCEAgent, [(5, 2)])])
-	with patch('alpha_business.monitoring.agent_monitoring.am_evaluation.plt'), \
-		patch('alpha_business.monitoring.agent_monitoring.am_configuration.os.makedirs'), \
-		patch('alpha_business.monitoring.agent_monitoring.am_configuration.os.path.exists') as exists_mock:
+	with patch('recommerce.monitoring.agent_monitoring.am_evaluation.plt'), \
+		patch('recommerce.monitoring.agent_monitoring.am_configuration.os.makedirs'), \
+		patch('recommerce.monitoring.agent_monitoring.am_configuration.os.path.exists') as exists_mock:
 		exists_mock.return_value = True
 		agent_rewards = monitor.run_marketplace()
 		assert 1 == len(agent_rewards)
@@ -38,9 +38,9 @@ def test_run_marketplace():
 def test_run_monitoring_session():
 	monitor.configurator.setup_monitoring(episodes=10, plot_interval=10)
 	current_configuration = monitor.configurator.get_configuration()
-	with patch('alpha_business.monitoring.agent_monitoring.am_evaluation.plt'), \
-		patch('alpha_business.monitoring.agent_monitoring.am_configuration.os.makedirs'), \
-		patch('alpha_business.monitoring.agent_monitoring.am_configuration.os.path.exists') as exists_mock:
+	with patch('recommerce.monitoring.agent_monitoring.am_evaluation.plt'), \
+		patch('recommerce.monitoring.agent_monitoring.am_configuration.os.makedirs'), \
+		patch('recommerce.monitoring.agent_monitoring.am_configuration.os.path.exists') as exists_mock:
 		exists_mock.return_value = True
 		monitoring.run_monitoring_session(monitor)
 		assert current_configuration == monitor.configurator.get_configuration(), \
@@ -50,10 +50,10 @@ def test_run_monitoring_session():
 
 def test_run_monitoring_ratio():
 	# ratio is over 50, program should ask if we want to continue. We answer 'no'
-	with patch('alpha_business.monitoring.agent_monitoring.am_evaluation.plt'), \
-		patch('alpha_business.monitoring.agent_monitoring.am_configuration.input', create=True) as mocked_input, \
-		patch('alpha_business.monitoring.agent_monitoring.am_configuration.os.makedirs'), \
-		patch('alpha_business.monitoring.agent_monitoring.am_configuration.os.path.exists') as exists_mock:
+	with patch('recommerce.monitoring.agent_monitoring.am_evaluation.plt'), \
+		patch('recommerce.monitoring.agent_monitoring.am_configuration.input', create=True) as mocked_input, \
+		patch('recommerce.monitoring.agent_monitoring.am_configuration.os.makedirs'), \
+		patch('recommerce.monitoring.agent_monitoring.am_configuration.os.path.exists') as exists_mock:
 		mocked_input.side_effect = ['n']
 		exists_mock.return_value = True
 		monitor.configurator.setup_monitoring(episodes=51, plot_interval=1)

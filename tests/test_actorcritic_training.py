@@ -2,10 +2,10 @@ from unittest.mock import patch
 
 import pytest
 
-import alpha_business.market.circular.circular_sim_market as circular_market
-import alpha_business.market.linear.linear_sim_market as linear_market
-import alpha_business.rl.actorcritic.actorcritic_agent as actorcritic_agent
-from alpha_business.rl.actorcritic.actorcritic_training import ActorCriticTrainer
+import recommerce.market.circular.circular_sim_market as circular_market
+import recommerce.market.linear.linear_sim_market as linear_market
+import recommerce.rl.actorcritic.actorcritic_agent as actorcritic_agent
+from recommerce.rl.actorcritic.actorcritic_training import ActorCriticTrainer
 
 test_scenarios = [
 	(linear_market.ClassicScenario, actorcritic_agent.DiscreteACALinear, True),
@@ -28,8 +28,8 @@ test_scenarios = [
 
 @pytest.mark.parametrize('marketplace, agent, verbose', test_scenarios)
 def test_training_configurations(marketplace, agent, verbose):
-	with patch('alpha_business.rl.training.SummaryWriter'), \
-		patch('alpha_business.rl.actorcritic.actorcritic_agent.ActorCriticAgent.save'):
+	with patch('recommerce.rl.training.SummaryWriter'), \
+		patch('recommerce.rl.actorcritic.actorcritic_agent.ActorCriticAgent.save'):
 		ActorCriticTrainer(marketplace, agent, log_dir_prepend='test_').train_agent(
 			verbose=verbose,
 			number_of_training_steps=120,

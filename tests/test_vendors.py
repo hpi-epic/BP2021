@@ -5,12 +5,12 @@ import pytest
 import utils_tests as ut_t
 from numpy import random
 
-import alpha_business.configuration.hyperparameter_config as hyperparameter_config
-import alpha_business.market.circular.circular_vendors as circular_vendors
-import alpha_business.market.linear.linear_vendors as linear_vendors
-import alpha_business.market.vendors as vendors
-from alpha_business.rl.q_learning.q_learning_agent import QLearningAgent, QLearningCEAgent, QLearningCERebuyAgent, QLearningLEAgent
-from alpha_business.rl.reinforcement_learning_agent import ReinforcementLearningAgent
+import recommerce.configuration.hyperparameter_config as hyperparameter_config
+import recommerce.market.circular.circular_vendors as circular_vendors
+import recommerce.market.linear.linear_vendors as linear_vendors
+import recommerce.market.vendors as vendors
+from recommerce.rl.q_learning.q_learning_agent import QLearningAgent, QLearningCEAgent, QLearningCERebuyAgent, QLearningLEAgent
+from recommerce.rl.reinforcement_learning_agent import ReinforcementLearningAgent
 
 
 def teardown_module(module):

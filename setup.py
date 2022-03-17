@@ -11,10 +11,10 @@ def package_files(directory):
 	return paths
 
 
-extra_files = package_files('alpha_business')
+extra_files = package_files('recommerce')
 
 if __name__ == '__main__':
 	# package data defines folders with non-.py files which should also be included in the pip package
 	setup(
-		packages=['alpha_business']
+		packages=['recommerce']
 	)
