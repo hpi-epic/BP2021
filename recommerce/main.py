@@ -75,6 +75,8 @@ the correct relative locations to be used by the program.
 NOTE: Any existing files with the same name as the default files will be overwritten!""")
 	parser.add_argument('-c', '--command', type=str, choices=['training', 'exampleprinter', 'agent_monitoring'],
 		default='training', help='The command to run')
+	parser.add_argument('--no-action', action='store_true', help="""Set this flag if you do not want to run any command.
+The default command is `training`""")
 
 	args = parser.parse_args()
 
@@ -83,14 +85,15 @@ NOTE: Any existing files with the same name as the default files will be overwri
 	# if default data was requested and should be unpacked, we can run the program
 	if args.get_defaults and args.unpack:
 		handle_unpack()
-		handle_command(args.command)
+		if not args.no_action:
+			handle_command(args.command)
 	# if only default data was requested but not unpacked, the user probably doesn't have valid configuration files
 	# so we don't start the command
 	elif args.get_defaults:
 		handle_get_defaults()
 	elif args.unpack:
 		raise argparse.ArgumentTypeError('The `--unpack` flag can only be used together with the `--get-defaults` flag')
-	else:
+	elif not args.no_action:
 		handle_command(args.command)
 
 

@@ -22,7 +22,7 @@ jobs:
         shell: bash -l {0}
         run: |
           recommerce --datapath .
-          recommerce --get-defaults
+          recommerce --get-defaults --unpack
       - name: Pytest
         shell: bash -l {0}
         run: |

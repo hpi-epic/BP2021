@@ -24,6 +24,7 @@ def get_user_path() -> str:
 	Returns:
 		str: The data path.
 	"""
+	print(os.path.join(os.path.dirname(__file__), 'user_path.txt'))
 	with open(os.path.join(os.path.dirname(__file__), 'user_path.txt'), 'r') as path_file:
 		return path_file.read()
 
