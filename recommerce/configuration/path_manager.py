@@ -30,9 +30,9 @@ def get_user_path() -> str:
 
 class PathManager():
 	# Since we want to allow devs to call different parts of the application without going through `main.py` we need a way of getting
-	# the correct data path without havign to call `manage_data_path`, which is why we use this function.
-	# Note: The `PathManager` is smart and knows if it has already called `get_data_path()`, so each time the program is run it will
-	# only get called once, even when `PathManager.data_path` is used multiple times.
+	# the correct data path without havign to call `manage_data_path`, which is why we use `get_user_path()`.
+	# Note: The `PathManager` is smart and knows if it has already called `get_user_path()`, so each time the program is run it will
+	# only get called once, even when `PathManager.user_path` is used multiple times.
 	user_path = get_user_path()
 	results_path = os.path.join(user_path, 'results')
 	data_path = os.path.join(user_path, 'data')
