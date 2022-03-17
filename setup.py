@@ -16,6 +16,5 @@ extra_files = package_files('alpha_business')
 if __name__ == '__main__':
 	# package data defines folders with non-.py files which should also be included in the pip package
 	setup(
-		packages=['alpha_business'],
-		package_data={'': extra_files, 'alpha_business': ['default_data/*/*']}
+		packages=['alpha_business']
 	)
