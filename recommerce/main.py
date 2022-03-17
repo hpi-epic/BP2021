@@ -67,10 +67,10 @@ def main():
 	Needs to be wrapped in a function to be callable as an entrypoint by the pip package.
 	"""
 	parser = argparse.ArgumentParser(description='Customize your recommerce experience.')
-	parser.add_argument('--datapath', type=str, help='Provide the path where `recommerce` will look for and save data')
+	parser.add_argument('-d', '--datapath', type=str, help='Provide the path where `recommerce` will look for and save data')
 	parser.add_argument('--get-defaults', action='store_true', help="""Default files, such as a `hyperparameter_config.json` and
 trained models will be copied to your DATAPATH""")
-	parser.add_argument('--unpack', action='store_true', help="""Use together with `--get-defaults`. Unpacks the default files so they are in
+	parser.add_argument('-u', '--unpack', action='store_true', help="""Use together with `--get-defaults`. Unpacks the default files so they are in
 the correct relative locations to be used by the program.
 NOTE: Any existing files with the same name as the default files will be overwritten!""")
 	parser.add_argument('-c', '--command', type=str, choices=['training', 'exampleprinter', 'agent_monitoring'],
