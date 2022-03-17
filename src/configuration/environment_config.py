@@ -7,6 +7,7 @@ from abc import ABC, abstractmethod
 from market.circular.circular_sim_market import CircularEconomy
 from market.circular.circular_vendors import CircularAgent
 from market.sim_market import SimMarket
+from market.vendors import FixedPriceAgent
 from rl.actorcritic.actorcritic_agent import ActorCriticAgent
 from rl.q_learning.q_learning_agent import QLearningAgent
 
@@ -53,8 +54,9 @@ class EnvironmentConfig(ABC):
 		assert isinstance(config['marketplace'], str), \
 			f'The "marketplace" field must be a str: {config["marketplace"]} ({type(config["marketplace"])})'
 
-		self.marketplace = self._get_class(config['marketplace'])
-		assert issubclass(self.marketplace, SimMarket), f'The marketplace passed must be a subclass of SimMarket: {self.marketplace}'
+		self.marketplace = self._get_class(config['marketplace'])()
+		assert issubclass(type(self.marketplace), SimMarket), \
+			f'The type of the passed marketplace must be a subclass of SimMarket: {type(self.marketplace)}'
 
 		# CHECK: Agents
 		assert isinstance(config['agents'], dict), \
@@ -80,36 +82,39 @@ class EnvironmentConfig(ABC):
 		# CHECK: Agents::Modelfile
 		agent_classes = [self._get_class(agent['class']) for agent in agent_dictionaries]
 		# If a modelfile is needed, the self.agents will be a list of tuples (as required by agent_monitoring), else just a list of classes
-		if needs_modelfile:
-			modelfile_list = []
-			for current_agent in range(len(agent_classes)):
-				if issubclass(agent_classes[current_agent], (QLearningAgent, ActorCriticAgent)):
-					assert 'modelfile' in agent_dictionaries[current_agent], f'This agent must have a "modelfile" field: {agent_classes[current_agent]}'
+		# if needs_modelfile:
+		argument_list = []
+		for current_agent in range(len(agent_classes)):
+			assert 'argument' in agent_dictionaries[current_agent], f'This agent must have an "argument" field: {agent_classes[current_agent]}'
+			current_config_argument = agent_dictionaries[current_agent]['argument']
 
-					modelfile = agent_dictionaries[current_agent]['modelfile']
+			if needs_modelfile and issubclass(agent_classes[current_agent], (QLearningAgent, ActorCriticAgent)):
+				assert isinstance(current_config_argument, str), \
+					f'The "argument" field of this agent must be a str: {agent_classes[current_agent]} ({type(current_config_argument)})'
+				assert current_config_argument.endswith('.dat'), f'The "argument" field must end with .dat: {current_config_argument}'
+				# Check that the modelfile exists. Taken from am_configuration::_get_modelfile_path()
+				full_path = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'data', current_config_argument))
+				assert os.path.exists(full_path), f'the specified modelfile does not exist: {full_path}'
 
-					assert isinstance(modelfile, str), \
-						f'The "modelfile" field of this agent must be a str: {agent_classes[current_agent]} ({type(modelfile)})'
-					# Check that the modelfile exists. Implies that it must end in .dat Taken from am_configuration::_get_modelfile_path()
-					full_path = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'data', modelfile))
-					assert os.path.exists(full_path), f'the specified modelfile does not exist: {full_path}'
-					modelfile_list.append(modelfile)
+				argument_list.append(current_config_argument)
 
-				# if this agent doesn't have modelfiles, append None
-				# we need to append *something* since the subsequent call creates a list of tuples using the `modelfile_list`
-				# if we were to only append items for agents with modelfiles, the lists would have different lengths and the
-				# process of matching the correct ones would get a lot more difficult
-				else:
-					modelfile_list.append(None)
-			# Create a list of tuples (agent_class, modelfile_string)
-			self.agent = list(zip(agent_classes, iter(modelfile_list)))
+			elif issubclass(agent_classes[current_agent], FixedPriceAgent):
+				assert isinstance(current_config_argument, list), \
+					f'The "argument" field of this agent must be a list: {agent_classes[current_agent]} ({type(current_config_argument)})'
+				# Subclasses of FixedPriceAgent solely accept tuples
+				argument_list.append(tuple(current_config_argument))
 
-			assert all(issubclass(agent[0], CircularAgent) == issubclass(self.marketplace, CircularEconomy) for agent in self.agent), \
-				f'The agents and marketplace must be of the same economy type (Linear/Circular): {self.agent} and {self.marketplace}'
-		else:
-			self.agent = agent_classes
-			assert all(issubclass(agent, CircularAgent) == issubclass(self.marketplace, CircularEconomy) for agent in self.agent), \
-				f'The agents and marketplace must be of the same economy type (Linear/Circular): {self.agent} and {self.marketplace}'
+			# if this agent doesn't have modelfiles or *fixed_price-lists*, append None
+			# we need to append *something* since the subsequent call creates a list of tuples using the `argument_list`
+			# if we were to only append items for agents with modelfiles or *fixed_price-lists*, the lists would have different lengths and the
+			# process of matching the correct ones would get a lot more difficult
+			else:
+				argument_list.append(None)
+		# Create a list of tuples (agent_class, modelfile_string)
+		self.agent = list(zip(agent_classes, iter(argument_list)))
+
+		assert all(issubclass(agent[0], CircularAgent) == issubclass(type(self.marketplace), CircularEconomy) for agent in self.agent), \
+			f'The agents and marketplace must be of the same economy type (Linear/Circular): {self.agent} and {self.marketplace}'
 
 		# If only one agent is needed, we just use the first agent from the list we created before
 		if single_agent:
@@ -299,11 +304,11 @@ class EnvironmentConfigLoader():
 
 
 if __name__ == '__main__':  # pragma: no cover
-	config: ExampleprinterEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_exampleprinter')
-	print(config)
-	print()
+	# config: ExampleprinterEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_exampleprinter')
+	# print(config)
+	# print()
 	config: AgentMonitoringEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_agent_monitoring')
 	print(config)
-	print()
-	config: TrainingEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_training')
-	print(config)
+	# print()
+	# config: TrainingEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_training')
+	# print(config)
