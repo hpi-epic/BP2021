@@ -17,7 +17,7 @@ def readable_dir(path) -> bool:
 	return False if not os.path.isdir(path) else bool(os.access(path, os.R_OK))
 
 
-def get_user_path():
+def get_user_path() -> str:
 	"""
 	Helper function that reads the data_path.txt and return its path.
 
@@ -57,7 +57,7 @@ class PathManager():
 			with open(os.path.join(os.path.dirname(__file__), 'user_path.txt'), 'r') as path_file:
 				old_path = path_file.read()
 
-			assert old_path != '', 'No data path was saved and no data path was provided. Please provide the `--datapath` argument before proceeding'
+			assert old_path != '', 'Please provide the `--datapath` argument before proceeding. Use "." to use the current directory'
 			# There is a valid path saved
 			if readable_dir(old_path):
 				print(f'Data will be read from and saved to "{old_path}"')
@@ -81,9 +81,9 @@ class PathManager():
 			new_path (str): The data path to be saved.
 		"""
 		with open(os.path.join(os.path.dirname(__file__), 'user_path.txt'), 'w') as path_file:
-			path_file.write(new_path)
+			path_file.write(os.path.abspath(new_path))
 
-		cls.user_path = new_path
+		cls.user_path = os.path.abspath(new_path)
 
 		print(f'Data will be read from and saved to "{cls.user_path}"')
 
