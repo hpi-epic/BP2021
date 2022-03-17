@@ -1,12 +1,11 @@
 from importlib import reload
-from unittest.mock import mock_open, patch
+from unittest.mock import patch
 
 import numpy as np
 import pytest
 
 import configuration.hyperparameter_config as hyperparameter_config
 import configuration.utils as ut
-import tests.utils_tests as ut_t
 from monitoring.svg_manipulation import SVGManipulator
 
 testcases_cartesian_product = [
@@ -16,7 +15,7 @@ testcases_cartesian_product = [
 	([('a', 'b'), ('c', 'd')], [1, 2], [(('a', 'b'), 1), (('a', 'b'), 2), (('c', 'd'), 1), (('c', 'd'), 2)])
 ]
 
-testcases_shuffle_quality = [1, 10, 100, 1000]
+testcases_shuffle_quality = [1, 10, 100, 1000, 10000]
 
 testcases_softmax = [
 	(
@@ -30,7 +29,7 @@ testcases_softmax = [
 ]
 
 testcases_write_dict_svg = [(
-	1,
+	0,
 	{
 		'customer/buy_nothing': 2,
 		'state/in_circulation': 455,
@@ -97,30 +96,16 @@ testcases_write_dict_svg = [(
 	}
 )]
 
-result = {}
-
-
-def mock_write_dict_to_svg(target_dictionary):
-	"""
-	Mock the write_dict_to_svg function.
-	"""
-	global result
-	result = target_dictionary
-
 
 def test_ensure_results_folders_exist():
 	pass
 
 
 @pytest.mark.parametrize('max_quality', testcases_shuffle_quality)
-def test_shuffle_quality(max_quality: str):
-	# with patch('configuration.hyperparameter_config.config.max_quality', max_quality):
-	mock_json = (ut_t.create_hyperparameter_mock_json(
-		sim_market=ut_t.create_hyperparameter_mock_json_sim_market(max_quality=str(max_quality))))
-	with patch('builtins.open', mock_open(read_data=mock_json)) as mock_file:
-		ut_t.check_mock_file(mock_file, mock_json)
-		import_config()
-		reload(ut)
+def test_shuffle_quality(max_quality: int):
+	with patch('configuration.hyperparameter_config.config') as config:
+		config = hyperparameter_config.HyperparameterConfig()
+		config.max_quality = max_quality
 		quality = ut.shuffle_quality()
 		assert quality <= max_quality and quality >= 1
 
@@ -159,10 +144,9 @@ def test_write_content_of_dict_to_overview_svg(
 		cumulated_dictionary: dict,
 		expected: dict):
 
-	with patch('monitoring.svg_manipulation.SVGManipulator.write_dict_to_svg(self, target_dictionary)',
-	mock_write_dict_to_svg(target_dictionary={})):
+	with patch('monitoring.svg_manipulation.SVGManipulator.write_dict_to_svg') as mock_write_dict_to_svg:
 		ut.write_content_of_dict_to_overview_svg(SVGManipulator(), episode, episode_dictionary, cumulated_dictionary)
-		assert expected == result
+		mock_write_dict_to_svg.assert_called_once_with(target_dictionary=expected)
 
 
 def import_config() -> hyperparameter_config.HyperparameterConfig:
