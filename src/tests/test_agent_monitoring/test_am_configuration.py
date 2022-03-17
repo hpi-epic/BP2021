@@ -288,26 +288,6 @@ def test_incorrect_setup_monitoring_type_errors(parameters):
 		)
 
 
-def test_get_configuration():
-	monitor.configurator.setup_monitoring(
-		enable_live_draw=False,
-		episodes=10,
-		plot_interval=2,
-		marketplace=circular_market.CircularEconomyMonopolyScenario,
-		agents=[(HumanPlayerCERebuy, ['reptiloid']),
-			(QLearningCERebuyAgent, ['CircularEconomyMonopolyScenario_QLearningCEAgent.dat', 'q_learner'])],
-		subfolder_name='subfoldername')
-	current_configuration = monitor.configurator.get_configuration()
-	assert len(current_configuration) == 7, 'parameters were updated in agent_monitoring.py, but not updated in the tests!'
-	assert 'enable_live_draw' in current_configuration
-	assert 'episodes' in current_configuration
-	assert 'plot_interval' in current_configuration
-	assert 'marketplace' in current_configuration
-	assert 'agents' in current_configuration
-	assert 'agent_colors' in current_configuration
-	assert 'folder_path' in current_configuration
-
-
 print_configuration_testcases = [
 	([(RuleBasedCEAgent, [])]),
 	([(RuleBasedCEAgent, []), (FixedPriceCEAgent, [])])

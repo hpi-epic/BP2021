@@ -1,6 +1,7 @@
 import os
 import signal
 import sys
+from copy import deepcopy
 
 import monitoring.agent_monitoring.am_configuration as am_configuration
 import monitoring.agent_monitoring.am_evaluation as am_evaluation
@@ -42,16 +43,16 @@ class Monitor():
 		rewards = [[] for _ in range(len(self.configurator.agents))]
 
 		for episode in range(1, self.configurator.episodes + 1):
-			# reset the state once to be used by all agents
-			default_state = self.configurator.marketplace.reset()
+			# reset the state & marketplace once to be used by all agents
+			source_state = self.configurator.marketplace.reset()
+			source_marketplace = self.configurator.marketplace
 
 			for i in range(len(self.configurator.agents)):
-				# reset marketplace, bit hacky, if you find a better solution feel free
-				self.configurator.marketplace.reset()
-				self.configurator.marketplace.state = default_state
+				# for every agent, set an equivalent "start-market"
+				self.configurator.marketplace = deepcopy(source_marketplace)
 
 				# reset values for all agents
-				state = default_state
+				state = source_state
 				episode_reward = 0
 				is_done = False
 
