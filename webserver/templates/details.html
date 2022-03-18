@@ -20,6 +20,7 @@
 					<th>toggle pause</th>
 					<th>download</th>
 					<th>logs</th>
+					<th>stop and remove container</th>
 					<th>tensorboard</th>
 				</tr>
 				<tr>
@@ -38,6 +39,9 @@
 					</td>
 					<td class="button_row" >
 						{% include "api_buttons/logs_button.html" %}
+					</td>
+					<td class="button_row">
+						{% include "api_buttons/stop_button.html" %}
 					</td>
 					<td class="button_row" >
 						{% include "api_buttons/tensorboard_button.html" %}
