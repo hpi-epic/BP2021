@@ -6,16 +6,15 @@ EXPOSE 6006
 # Do not buffer stdout so we can see it live
 ENV PYTHONUNBUFFERED 1
 
-# copy the src folder and install the pip requirements (includes our project as a pip dependency)
+# copy the src folder and install the pip requirements
 RUN python3 -m ensurepip --upgrade
 RUN pip install --upgrade pip
-COPY requirements.txt .
-COPY ./src ./src
-RUN python3 -m pip install -r requirements.txt -f https://download.pytorch.org/whl/cu113/torch_stable.html
-COPY environment_config_agent_monitoring.json .
 
-# copy all relevant files to the container
-COPY ./data ./data
+COPY ./recommerce ./recommerce
+# Install the recommerce package
+RUN pip install ./recommerce
+# set the datapath and unpack the default data
+RUN recommerce --datapath . --get-defaults --unpack --no-action
 
 # Perform the specified action when starting the container
-ENTRYPOINT ["python3", "-O", "./src/monitoring/agent_monitoring/am_monitoring.py"]
+ENTRYPOINT ["recommerce", "-c", "agent_monitoring"]

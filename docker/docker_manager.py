@@ -327,14 +327,14 @@ class DockerManager():
 		except docker.errors.ImageNotFound:
 			old_img = None
 		try:
-			img, _ = self._client.images.build(path=os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir)),
+			img, _ = self._client.images.build(path=os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)),
 				tag=command_id, forcerm=True, network_mode='host')
 		except docker.errors.BuildError or docker.errors.APIError as error:
 			print(f'An error occurred while building the image for command: {command_id}\n{error}')
 			exit(1)
 		# No matter what happens during the build, we reset our default dockerfile
 		finally:
-			with open(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'dockerfile'), 'w') as dockerfile:
+			with open(os.path.join(os.path.dirname(__file__), os.pardir, 'dockerfile'), 'w') as dockerfile:
 				dockerfile.write(template)
 
 		if old_img is not None and old_img.id != img.id:
