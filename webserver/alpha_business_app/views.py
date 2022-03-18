@@ -38,8 +38,8 @@ def start_container(request) -> HttpResponse:
 def upload(request) -> HttpResponse:
 	if request.method == 'POST':
 		form = UploadFileForm(request.POST, request.FILES)
-		handle_uploaded_file(request.FILES['upload_config'])
-		return HttpResponseRedirect('/start_container', {'success': 'You successfully uploaded a config file'})
+		return handle_uploaded_file(request, request.FILES['upload_config'])
+		# return HttpResponseRedirect('/start_container', {'success': 'You successfully uploaded a config file'})
 	else:
 		form = UploadFileForm()
 	return render(request, 'upload.html', {'form': form})

@@ -9,12 +9,17 @@
 	</head>
 	<body>
 		<h1>Upload your config file here</h1>
-		<form method="post" enctype="multipart/form-data">
-			{% csrf_token %}
-			<input type="file" name="upload_config" accept="application/json"/>
-			<button>Submit</button>
-		</form>
 		<br>
-		<a href="/">Home</a>
+			<div class="content">
+			<form method="post" enctype="multipart/form-data">
+				{% csrf_token %}
+				<input type="file" name="upload_config" accept="application/json"/>
+				<button>Submit</button>
+			</form>
+			<br>
+			{% include "notice_field.html" %}
+			<br>
+			<a href="/">Home</a>
+		</div>
 	</body>
 </html>

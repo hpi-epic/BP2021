@@ -1,28 +1,69 @@
+import json
 import os
 import tarfile
 import zipfile
 from io import BytesIO
 
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
+from django.shortcuts import render
 
-from .constants import CONFIGURATION_DIR
+from .models.config import *
+from .models.config import EnvironmentConfig, HyperparameterConfig
 
 
-def handle_uploaded_file(uploaded_config) -> None:
-	"""
-	Writes an uploaded config to our internal storage.
+def handle_uploaded_file(request, uploaded_config) -> None:
 
-	Args:
-		uploaded_config (InMemoryUploadedFile): The file the user just uploaded.
-	"""
-	path_to_configurations = CONFIGURATION_DIR
-	if not os.path.exists(path_to_configurations):
-		os.mkdir(path_to_configurations)
+	if uploaded_config.name[-5:] != '.json':
+		return render(request, 'upload.html', {'error': 'You can only upload files in JSON format.'})
 
-	with open(os.path.join(path_to_configurations, uploaded_config.name), 'wb') as destination:
-		for chunk in uploaded_config.chunks():
-			destination.write(chunk)
+	file_content = b''
+	for chunk in uploaded_config.chunks():
+		file_content += chunk
 
+	try:
+		content_as_dict = json.loads(file_content)
+	except:
+		return render(request, 'upload.html', {'error': 'Your JSON is not valid'})
+
+	# hyperparameter_configs = []
+	# environment_configs = []
+	# for key in content_as_dict.keys():
+	# 	if key in HYPERPARAMETER_CONFIG_KEYS:
+	# 		hyperparameter_configs += [content_as_dict[key]]
+	# 	elif key in ENVIRONMENT_CONFIG_KEYS:
+	# 		environment_configs += [content_as_dict[key]]
+	# 	else:
+	# 		return render(request, 'upload.html', {'error': f'The key {key} is unknown'})
+
+	parse_dict_to_database('hyperparameter', content_as_dict)
+
+	return HttpResponseRedirect('/start_container', {'success': 'You successfully uploaded a config file'})
+
+
+def parse_dict_to_database(name: str, content: dict):
+	containing_dict = [(name, value) for name, value in content.items() if type(value) == dict]
+	print('++++++++++++++++++++++++++++++++')
+	print(name)
+	print(containing_dict)
+	# print(content)
+	obj = []
+	for keyword, config in containing_dict:
+		obj += [(keyword, parse_dict_to_database(keyword, config))]
+
+	not_containing_dict = dict([(name, value) for name, value in content.items() if type(value) != dict])
+	# print(dict(not_containing_dict))
+	config_class = _to_class_name(name)
+	print(not_containing_dict)
+	print(obj)
+	for keyword, model_instance in obj:
+		not_containing_dict[keyword] = model_instance
+
+	print(globals()[config_class])
+	print('####################')
+	return globals()[config_class].objects.create(**not_containing_dict)
+
+def _to_class_name(name: str) -> str:
+	return ''.join([x.capitalize() for x in name.split('_')]) + 'Config'
 
 def download_file(response, wants_zip: bool) -> HttpResponse:
 	"""
