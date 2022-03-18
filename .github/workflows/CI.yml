@@ -17,7 +17,7 @@ jobs:
       - name: Install Recommerce package
         shell: bash -l {0}
         run: |
-          pip install -e .
+          pip install -e ./recommerce
       - name: Setup Recommerce
         shell: bash -l {0}
         run: |
