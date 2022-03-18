@@ -5,7 +5,7 @@ extend-ignore = W191, E128, F403, F405
 max-line-length = 140
 
 # we don't write migration files ourselves
-exclude = webserver/alpha_business_app/migrations
+exclude = webserver/alpha_business_app/migrations/*
 
 # F401: module imported but unused
 per-file-ignores =

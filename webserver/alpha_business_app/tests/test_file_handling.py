@@ -6,7 +6,7 @@ from unittest.mock import patch
 from django.test import TestCase
 
 from ..handle_files import download_file, handle_uploaded_file, parse_dict_to_database
-from ..models.config import RlConfig, SimMarketConfig, get_config_field_names
+from ..models.config import *
 
 
 class MockedResponse():
@@ -102,3 +102,85 @@ class FileHandling(TestCase):
 				assert getattr(resulting_config.rl, name) is None
 			else:
 				assert 32 == getattr(resulting_config.rl, name)
+
+	def test_parsing_with_only_hyperparameter(self):
+		# get a test config to be parsed
+		path_to_test_data = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'test_data')
+		with open(os.path.join(path_to_test_data, 'test_hyperparameter_config.json'), 'r') as file:
+			content = file.read()
+		# mock uploaded file with test config
+		test_uploaded_file = MockedUploadedFile('config.json', content.encode())
+		# test method
+		with patch('alpha_business_app.handle_files.redirect') as redirect_mock:
+			handle_uploaded_file('this is not important', test_uploaded_file)
+			redirect_mock.assert_called_once()
+		# assert the datastructure, that should be present afterwards
+		final_config: Config = Config.objects.all().first()
+		assert Config == type(final_config)
+		assert final_config.environment is None
+		assert final_config.hyperparameter is not None
+
+		hyperparameter_rl_config = final_config.hyperparameter.rl
+		hyperparameter_sim_market_config = final_config.hyperparameter.sim_market
+
+		assert hyperparameter_rl_config is not None
+		assert final_config.hyperparameter.sim_market is not None
+
+		assert 0.99 == hyperparameter_rl_config.gamma
+		assert 32 == hyperparameter_rl_config.batch_size
+		assert 100000 == hyperparameter_rl_config.replay_size
+		assert 1e-6 == hyperparameter_rl_config.learning_rate
+		assert 1000 == hyperparameter_rl_config.sync_target_frames
+		assert 10000 == hyperparameter_rl_config.replay_start_size
+		assert 75000 == hyperparameter_rl_config.epsilon_decay_last_frame
+		assert 1.0 == hyperparameter_rl_config.epsilon_start
+		assert 0.1 == hyperparameter_rl_config.epsilon_final
+
+		assert 100 == hyperparameter_sim_market_config.max_storage
+		assert 50 == hyperparameter_sim_market_config.episode_size
+		assert 10 == hyperparameter_sim_market_config.max_price
+		assert 50 == hyperparameter_sim_market_config.max_quality
+		assert 20 == hyperparameter_sim_market_config.number_of_customers
+		assert 3 == hyperparameter_sim_market_config.production_price
+		assert 0.1 == hyperparameter_sim_market_config.storage_cost_per_product
+
+	def test_parsing_with_only_environment(self):
+		# get a test config to be parsed
+		path_to_test_data = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'test_data')
+		with open(os.path.join(path_to_test_data, 'test_environment_config.json'), 'r') as file:
+			content = file.read()
+		# mock uploaded file with test config
+		test_uploaded_file = MockedUploadedFile('config.json', content.encode())
+		# test method
+		with patch('alpha_business_app.handle_files.redirect') as redirect_mock:
+			handle_uploaded_file('this is not important', test_uploaded_file)
+			redirect_mock.assert_called_once()
+		# assert the datastructure, that should be present afterwards
+		final_config: Config = Config.objects.all().first()
+		assert Config == type(final_config)
+		assert final_config.environment is not None
+		assert final_config.hyperparameter is None
+
+		environment_config: EnvironmentConfig = final_config.environment
+
+		assert 'agent_monitoring' == environment_config.task
+		assert environment_config.enable_live_draw is False
+		assert 50 == environment_config.episodes
+		assert 25 == environment_config.plot_interval
+		assert 'market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario' == environment_config.marketplace
+		assert environment_config.agents is not None
+
+		environment_agents = environment_config.agents
+
+		all_rule_based_agents = list(environment_agents.rulebasedagentconfig_set.all())
+		assert 1 == len(all_rule_based_agents)
+		assert 'agents.vendors.RuleBasedCERebuyAgent' == all_rule_based_agents[0].agent_class
+		assert all_rule_based_agents[0].argument is None
+
+		all_qlearning_agents = list(environment_agents.cerebuyagentqlearningconfig_set.all())
+		assert 1 == len(all_qlearning_agents)
+		assert 'agents.vendors.QLearningCERebuyAgent' == all_qlearning_agents[0].agent_class
+		assert 'CircularEconomyRebuyPriceMonopolyScenario_QLearningCERebuyAgent.dat' == all_qlearning_agents[0].argument
+
+	def test_parsing_mixed_config(self):
+		pass

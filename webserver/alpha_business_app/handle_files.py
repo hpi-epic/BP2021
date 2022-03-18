@@ -4,17 +4,19 @@ import tarfile
 import zipfile
 from io import BytesIO
 
-from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render
+from django.http import HttpResponse
+from django.shortcuts import redirect, render
 
 from .constants import CONFIGURATION_DIR
 from .models.config import *
-from .models.config import EnvironmentConfig, HyperparameterConfig
+
+# from .models.config import CERebuyAgentQLearningConfig, EnvironmentConfig, HyperparameterConfig, RuleBasedAgentConfig
 
 
 def handle_uploaded_file(request, uploaded_config) -> None:
 	# we only accept json files
 	if uploaded_config.name[-5:] != '.json':
+		print('got invalid file, no json')
 		return render(request, 'upload.html', {'error': 'You can only upload files in JSON format.'})
 
 	# read the file content
@@ -26,6 +28,7 @@ def handle_uploaded_file(request, uploaded_config) -> None:
 	try:
 		content_as_dict = json.loads(file_content)
 	except json.JSONDecodeError:
+		print('uploaded file does not contain valid json')
 		return render(request, 'upload.html', {'error': 'Your JSON is not valid'})
 
 	# figure out which parts of the config file belong to hyperparameter or environment config
@@ -49,38 +52,57 @@ def handle_uploaded_file(request, uploaded_config) -> None:
 	# print(hyperparameter_configs)
 	# print('-------------------------')
 	# print(environment_configs)
-
+	hyperparameter_config = None
+	environment_config = None
 	if contains_hyperparameter is True:
 		hyperparameter_config = parse_dict_to_database('hyperparameter', hyperparameter_configs)
 	if contains_environment is True:
 		environment_config = parse_dict_to_database('environment', environment_configs)
-	print(hyperparameter_config)
-	print(environment_config)
 
-	return HttpResponseRedirect('/start_container', {'success': 'You successfully uploaded a config file'})
+	print('creating config object')
+	Config.objects.create(environment=environment_config, hyperparameter=hyperparameter_config)
+	print(Config.objects.all())
+	return redirect('/start_container', {'success': 'You successfully uploaded a config file'})
 
 
 def parse_dict_to_database(name: str, content: dict):
+	print(name, content)
+	if name == 'agents':
+		# since django does only support many-to-one relationships (not one-to-many),
+		# we need to parse the agents slightly different, to be able to reference many agents with the agents keyword
+		return parse_agents(content)
+	# get all key value pairs, that contain another dict
 	containing_dict = [(name, value) for name, value in content.items() if type(value) == dict]
-	print('++++++++++++++++++++++++++++++++')
-	print(name)
-	print(containing_dict)
-	obj = []
+	# loop through of these pairs, in order to parse these dictionaries and add
+	# the parsed sub-element to the current element
+	sub_elements = []
 	for keyword, config in containing_dict:
-		obj += [(keyword, parse_dict_to_database(keyword, config))]
+		sub_elements += [(keyword, parse_dict_to_database(keyword, config))]
 
+	# get all elements that do not contain another dictionary
 	not_containing_dict = dict([(name, value) for name, value in content.items() if type(value) != dict])
-	print(dict(not_containing_dict))
-	config_class = _to_class_name(name)
-	print(config_class)
-	for keyword, model_instance in obj:
+
+	# add the sub-elements to the dictionary with the other key value pairs not containing another dictionary
+	# TODO: check if all keys are possible
+	for keyword, model_instance in sub_elements:
 		not_containing_dict[keyword] = model_instance
 
-	return globals()[config_class].objects.create(**not_containing_dict)
+	# figure out which config object to create and return the created objects
+	config_class = to_config_class_name(name)
+	return _create_object_from(config_class, not_containing_dict)
 
 
-def _to_class_name(name: str) -> str:
-	return ''.join([x.capitalize() for x in name.split('_')]) + 'Config'
+def parse_agents(agents_in_dict: dict) -> AgentsConfig:
+	agents = AgentsConfig.objects.create()
+	for agent_name, agent_parameters in agents_in_dict.items():
+		agent_parameters['agents_config'] = agents
+		_create_object_from(to_config_class_name(agent_name), agent_parameters)
+	print(CERebuyAgentQLearningConfig.objects.all())
+	return agents
+
+
+def _create_object_from(class_name: str, parameters: dict):
+	return globals()[class_name].objects.create(**parameters)
 
 
 def download_file(response, wants_zip: bool) -> HttpResponse:

@@ -2,14 +2,12 @@ from django.db import models
 
 
 class Config(models.Model):
-	# id = models.CharField(max_length=50, primary_key=True)
 	environment = models.ForeignKey('EnvironmentConfig', on_delete=models.DO_NOTHING, null=True)
 	hyperparameter = models.ForeignKey('HyperparameterConfig', on_delete=models.DO_NOTHING, null=True)
 
 
 class EnvironmentConfig(models.Model):
-	# id = models.CharField(max_length=50, primary_key=True)
-	agent = models.ForeignKey('AgentsConfig', on_delete=models.DO_NOTHING, null=True)
+	agents = models.ForeignKey('AgentsConfig', on_delete=models.DO_NOTHING, null=True)
 	enable_live_draw = models.BooleanField(null=True)
 	episodes = models.IntegerField(null=True)
 	plot_interval = models.IntegerField(null=True)
@@ -18,20 +16,27 @@ class EnvironmentConfig(models.Model):
 
 
 class AgentsConfig(models.Model):
-	# id = models.CharField(max_length=50, primary_key=True)
-	name = models.CharField(max_length=50, null=True)
+	pass
+
+
+class RuleBasedAgentConfig(models.Model):
+	agents_config = models.ForeignKey('AgentsConfig', on_delete=models.DO_NOTHING, null=True)
 	agent_class = models.CharField(max_length=100, null=True)
-	modelfile = models.CharField(max_length=200, null=True)
+	argument = models.CharField(max_length=200, null=True)
+
+
+class CERebuyAgentQLearningConfig(models.Model):
+	agents_config = models.ForeignKey('AgentsConfig', on_delete=models.DO_NOTHING, null=True)
+	agent_class = models.CharField(max_length=100, null=True)
+	argument = models.CharField(max_length=200, null=True)
 
 
 class HyperparameterConfig(models.Model):
-	# id = models.CharField(max_length=50, primary_key=True)
 	rl = models.ForeignKey('RLConfig', on_delete=models.DO_NOTHING, null=True)
 	sim_market = models.ForeignKey('SimMarketConfig', on_delete=models.DO_NOTHING, null=True)
 
 
 class RlConfig(models.Model):
-	# id = models.CharField(max_length=50, primary_key=True)
 	gamma = models.FloatField(null=True)
 	batch_size = models.IntegerField(null=True)
 	replay_size = models.IntegerField(null=True)
@@ -62,3 +67,15 @@ def get_config_field_names(model):
 	if 'id' in ret:
 		ret.remove('id')
 	return ret
+
+
+def capitalize(word: str) -> str:
+	return word.upper() if len(word) <= 1 else word[0].upper() + word[1:]
+
+
+def to_config_class_name(name: str) -> str:
+	# replace all brackets
+	class_name = name.replace('(', '').replace(')', '')
+	# remove all whitespaces:
+	class_name = ''.join([capitalize(x) for x in class_name.split(' ')])
+	return ''.join([capitalize(x) for x in class_name.split('_')]) + 'Config'
