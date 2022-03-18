@@ -6,11 +6,11 @@
 	"marketplace": "market.circular.circular_sim_market.CircularEconomyRebuyPriceOneCompetitor",
 	"agents": {
 		"Fixed Price Agent": {
-			"class": "market.circular.circular_vendors.FixedPriceCERebuyAgent",
+			"agent_class": "market.circular.circular_vendors.FixedPriceCERebuyAgent",
 			"argument": [1, 2, 3]
 		},
 		"CE Rebuy Agent (QLearning)": {
-			"class": "rl.q_learning.q_learning_agent.QLearningCERebuyAgent",
+			"agent_class": "rl.q_learning.q_learning_agent.QLearningCERebuyAgent",
 			"argument": "CircularEconomyRebuyPriceOneCompetitor_QLearningCERebuyAgent.dat"
 		}
 	}

@@ -74,15 +74,14 @@ class EnvironmentConfig(ABC):
 		assert all(isinstance(agent, dict) for agent in agent_dictionaries), \
 			f'All agents in the "agents" field must be dictionaries: {[config["agents"][agent] for agent in config["agents"]]}'
 
-		# CHECK: Agents::Class
-		assert all('class' in agent for agent in agent_dictionaries), f'Each agent must have a "class" field: {agent_dictionaries}'
-		assert all(isinstance(agent['class'], str) for agent in agent_dictionaries), \
-			f'The "class" fields must be strings: {agent_dictionaries} ({[type(agent["class"]) for agent in agent_dictionaries]})'
+		# CHECK: Agents::agent_class
+		assert all('agent_class' in agent for agent in agent_dictionaries), f'Each agent must have a "agent_class" field: {agent_dictionaries}'
+		assert all(isinstance(agent['agent_class'], str) for agent in agent_dictionaries), \
+			f'The "agent_class" fields must be strings: {agent_dictionaries} ({[type(agent["agent_class"]) for agent in agent_dictionaries]})'
 
-		# CHECK: Agents::Modelfile
-		agent_classes = [self._get_class(agent['class']) for agent in agent_dictionaries]
+		# CHECK: Agents::argument
+		agent_classes = [self._get_class(agent['agent_class']) for agent in agent_dictionaries]
 		# If a modelfile is needed, the self.agents will be a list of tuples (as required by agent_monitoring), else just a list of classes
-		# if needs_modelfile:
 		argument_list = []
 		for current_agent in range(len(agent_classes)):
 			assert 'argument' in agent_dictionaries[current_agent], f'This agent must have an "argument" field: {agent_classes[current_agent]}'
@@ -162,8 +161,14 @@ class TrainingEnvironmentConfig(EnvironmentConfig):
 	def _validate_config(self, config: dict) -> None:
 		super(TrainingEnvironmentConfig, self)._validate_config(config, single_agent=True, needs_modelfile=False)
 
-		assert issubclass(self.agent, (QLearningAgent, ActorCriticAgent)), \
-			f'The agent class passed must be subclasses of either QLearningAgent or ActorCriticAgent: {self.agent}'
+		# Since we don't want self.agent as a class variable, we leave it as a tuple consisting of (class, None) and just
+		# access the class in the training_scenario
+		assert isinstance(self.agent, tuple), \
+			f'The agent instance variable must be a tuple: {self.agent}'
+		assert issubclass(self.agent[0], (QLearningAgent, ActorCriticAgent)), \
+			f'The first component must be a subclass of either QLearningAgent or ActorCriticAgent: {self.agent[0]}'
+		assert self.agent[1] is None, \
+			f'The second component must be None: {self.agent[1]}'
 
 	def _get_task(self) -> str:
 		return 'training'
@@ -204,8 +209,7 @@ class AgentMonitoringEnvironmentConfig(EnvironmentConfig):
 		self.plot_interval = config['plot_interval']
 
 		# We do the super call last because getting the classes takes longer than the other operations, so we save time in case of an error.
-		super(AgentMonitoringEnvironmentConfig, self)._validate_config(
-			config, single_agent=False, needs_modelfile=True)
+		super(AgentMonitoringEnvironmentConfig, self)._validate_config(config, single_agent=False, needs_modelfile=True)
 
 		# Since RuleBasedAgents do not have modelfiles, we need to adjust the passed lists to remove the "None" entry
 		passed_agents = self.agent
