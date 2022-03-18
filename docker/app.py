@@ -137,6 +137,42 @@ async def get_tensorboard_link(id: str) -> JSONResponse:
 		return JSONResponse(vars(container_info))
 
 
+@app.get('/pause/')
+async def pause_container(id: str) -> JSONResponse:
+	"""
+	Pause a container.
+
+	Args:
+		id (str): The id of the container.
+
+	Returns:
+		JSONResponse: The response of the pause request encapsuled in a DockerInfo JSON.
+	"""
+	container_info = manager.pause(id)
+	if container_info.status.__contains__('Container not found') or container_info.status.__contains__('Container not paused successfully'):
+		return JSONResponse(status_code=404, content=vars(container_info))
+	else:
+		return JSONResponse(vars(container_info))
+
+
+@app.get('/unpause/')
+async def unpause_container(id: str) -> JSONResponse:
+	"""
+	Unpause a container.
+
+	Args:
+		id (str): The id of the container.
+
+	Returns:
+		JSONResponse: The response of the unpause request encapsuled in a DockerInfo JSON.
+	"""
+	container_info = manager.unpause(id)
+	if container_info.status.__contains__('Container not found') or container_info.status.__contains__('Container not unpaused successfully'):
+		return JSONResponse(status_code=404, content=vars(container_info))
+	else:
+		return JSONResponse(vars(container_info))
+
+
 @app.get('/remove/')
 async def remove_container(id: str) -> JSONResponse:
 	"""
