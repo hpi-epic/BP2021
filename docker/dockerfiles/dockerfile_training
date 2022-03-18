@@ -14,7 +14,7 @@ COPY ./recommerce ./recommerce
 # Install the recommerce package
 RUN pip install ./recommerce
 # set the datapath and unpack the default data
-RUN recommerce --datapath . --get-defaults --unpack --no-action
+RUN recommerce --datapath . --get-defaults-unpack
 
 # Perform the specified action when starting the container
 ENTRYPOINT ["recommerce", "-c", "training"]
