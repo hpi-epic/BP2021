@@ -140,7 +140,7 @@ async def get_tensorboard_link(id: str) -> JSONResponse:
 @app.get('/pause/')
 async def pause_container(id: str) -> JSONResponse:
 	"""
-	Pause a container.logs
+	Pause a container.
 
 	Args:
 		id (str): The id of the container.
@@ -158,7 +158,7 @@ async def pause_container(id: str) -> JSONResponse:
 @app.get('/unpause/')
 async def unpause_container(id: str) -> JSONResponse:
 	"""
-	Unpause a container.logs
+	Unpause a container.
 
 	Args:
 		id (str): The id of the container.
