@@ -90,7 +90,7 @@ class ButtonTests(TestCase):
 			assert 'running' == Container.objects.get(id='1234').health_status
 
 	def test_logs_button(self):
-		# mock a request that is send when user presses a button
+		# mock a request that is sent when user presses a button
 		request = self._setup_request('/details', 'logs')
 
 		# setup a button handler for this request

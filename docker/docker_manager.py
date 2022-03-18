@@ -108,7 +108,8 @@ class DockerManager():
 		return DockerInfo(container_id, status=container.status)
 
 	def pause(self, container_id: str) -> DockerInfo:
-		"""To be called by the REST API. Pauses the container if it is not already paused.
+		"""
+		To be called by the REST API. Pauses the container if it is not already paused.
 
 		Args:
 			container_id (str): The id of the container.
@@ -134,7 +135,8 @@ class DockerManager():
 			return DockerInfo(container_id, status=f'APIError encountered while pausing container.\n{error}')
 
 	def unpause(self, container_id: str) -> DockerInfo:
-		"""To be called by the REST API. Unpauses the container if it is paused.
+		"""
+		To be called by the REST API. Unpauses the container if it is paused.
 
 		Args:
 			container_id (str): The id of the container.
