@@ -42,14 +42,14 @@ def handle_get_defaults() -> None:
 
 def handle_command(command: str) -> None:
 	"""
-	Choose the file to run depending on the command given by the user.
-
-	Default command is 'training'.
+	If a command is given, choose the file to run.
 
 	Args:
-		command (str): The command to perform.
+		command (str | None): The command to perform.
 	"""
-	if command == 'training':
+	if command is None:
+		return
+	elif command == 'training':
 		from recommerce.rl import training_scenario
 		training_scenario.main()
 	elif command == 'exampleprinter':
@@ -66,36 +66,35 @@ def main():
 
 	Needs to be wrapped in a function to be callable as an entrypoint by the pip package.
 	"""
-	parser = argparse.ArgumentParser(description='Customize your recommerce experience.')
-	parser.add_argument('-v', '--version', action='version', version=f'Recommerce Version {metadata.version("recommerce")}')
-	parser.add_argument('-d', '--datapath', type=str, help='Provide the path where `recommerce` will look for and save data')
-	parser.add_argument('--get-defaults', action='store_true', help="""Default files, such as a `hyperparameter_config.json` and
+	parser = argparse.ArgumentParser(description='Train and Monitor Reinforcement-Learning Agents on various Circular-Economy models.')
+
+	parser.add_argument('-c', '--command', choices=('training', 'exampleprinter', 'agent_monitoring'),
+		help='choose the command to run')
+
+	parser.add_argument('-d', '--datapath', type=str, help="""provide the path where `recommerce` will look for and save data.
+Relative paths are supported""")
+
+	parser.add_argument('--get-defaults', action='store_true', help="""default files, such as a hyperparameter_config.json and
 trained models will be copied to your DATAPATH""")
-	parser.add_argument('-u', '--unpack', action='store_true', help="""Use together with `--get-defaults`. Unpacks the default files so they are in
-the correct relative locations to be used by the program.
+	parser.add_argument('--get-defaults-unpack', action='store_true', dest='unpack',
+		help="""Works the same as --get-defaults, but also unpacks the
+default files so they are in the correct relative locations to be used by the program.
+--get-defaults-unpack has priority over --get-defaults.
 NOTE: Any existing files with the same name as the default files will be overwritten!""")
-	parser.add_argument('-c', '--command', type=str, choices=['training', 'exampleprinter', 'agent_monitoring'],
-		default='training', help='The command to run')
-	parser.add_argument('--no-action', action='store_true', help="""Set this flag if you do not want to run any command.
-The default command is `training`""")
+
+	parser.add_argument('-v', '--version', action='version', version=f'Recommerce Version {metadata.version("recommerce")}')
 
 	args = parser.parse_args()
 
 	# Handle provided arguments
 	handle_datapath(args.datapath)
-	# if default data was requested and should be unpacked, we can run the program
-	if args.get_defaults and args.unpack:
+
+	if args.unpack:
 		handle_unpack()
-		if not args.no_action:
-			handle_command(args.command)
-	# if only default data was requested but not unpacked, the user probably doesn't have valid configuration files
-	# so we don't start the command
 	elif args.get_defaults:
 		handle_get_defaults()
-	elif args.unpack:
-		raise argparse.ArgumentTypeError('The `--unpack` flag can only be used together with the `--get-defaults` flag')
-	elif not args.no_action:
-		handle_command(args.command)
+
+	handle_command(args.command)
 
 
 if __name__ == '__main__':
