@@ -17,6 +17,7 @@
 					<th>last checked at</th>
 					<th>health status</th>
 					<th>get health status</th>
+					<th>toggle pause</th>
 					<th>download</th>
 					<th>logs</th>
 					<th>tensorboard</th>
@@ -28,6 +29,9 @@
 					<td>{{ container.health_status }}</td>
 					<td class="button_row" >
 						{% include "api_buttons/health_button.html" %}
+					</td>
+					<td class="button_row">
+						{% include "api_buttons/pause_button.html" %}
 					</td>
 					<td class="button_row" >
 						{% include "api_buttons/download_button.html" %}
@@ -52,6 +56,5 @@
 			</div>
 		</div>
 		<br>
-
 	</body>
 </html>
