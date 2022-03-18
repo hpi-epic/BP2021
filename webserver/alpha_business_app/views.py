@@ -12,7 +12,6 @@ def detail(request, container_id) -> HttpResponse:
 		wanted_container = Container.objects.get(id=container_id)
 	except Container.DoesNotExist as error:
 		raise Http404('Container does not exist') from error
-	# https: // stackoverflow.com/questions/5895588/django-multivaluedictkeyerror-error-how-do-i-deal-with-it
 	if request.POST.get('action', '') == 'remove':
 		# if we  want to remove the container, we need to redirect to a different site
 		button_handler = ButtonHandler(request, view='observe.html', container=wanted_container, rendering_method='archived')
