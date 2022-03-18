@@ -1,4 +1,4 @@
-from django.http import Http404, HttpResponse, HttpResponseRedirect
+from django.http import Http404, HttpResponse
 from django.shortcuts import render
 
 from .buttons import ButtonHandler

@@ -1,11 +1,12 @@
 import os
 from unittest.mock import patch
 
-from django.contrib.sessions.middleware import SessionMiddleware
+# from django.contrib.sessions.middleware import SessionMiddleware
+# from django.test.client import RequestFactory
 from django.test import TestCase
-from django.test.client import RequestFactory
 
-from ..handle_files import download_file, handle_uploaded_file
+from ..handle_files import download_file, handle_uploaded_file, parse_dict_to_database
+from ..models.config import RlConfig, SimMarketConfig, get_config_field_names
 
 
 class MockedResponse():
@@ -23,6 +24,7 @@ class MockedUploadedFile():
 
 	def chunks(self):
 		return [self.content]
+
 
 class FileHandling(TestCase):
 	def test_right_zip_file_is_provided_for_download(self):
@@ -77,3 +79,26 @@ class FileHandling(TestCase):
 			render_mock.assert_called_once()
 			assert 'upload.html' == actual_arguments[1]
 			assert {'error': 'The key test is unknown'} == actual_arguments[2]
+
+	def test_objects_from_parse_dict(self):
+		test_dict = {'rl': {'batch_size': 32}, 'sim_market': {'episode_size': 50}}
+		resulting_config = parse_dict_to_database('hyperparameter', test_dict)
+
+		assert resulting_config.sim_market is not None
+		assert resulting_config.rl is not None
+
+		# test all sim_market values
+		sim_market_field_names = get_config_field_names(SimMarketConfig)
+		for name in sim_market_field_names:
+			if name != 'episode_size':
+				assert getattr(resulting_config.sim_market, name) is None
+			else:
+				assert 50 == getattr(resulting_config.sim_market, name)
+
+		# test all rl values
+		rl_field_names = get_config_field_names(RlConfig)
+		for name in rl_field_names:
+			if name != 'batch_size':
+				assert getattr(resulting_config.rl, name) is None
+			else:
+				assert 32 == getattr(resulting_config.rl, name)

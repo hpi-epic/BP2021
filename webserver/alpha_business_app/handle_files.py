@@ -7,35 +7,55 @@ from io import BytesIO
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 
+from .constants import CONFIGURATION_DIR
 from .models.config import *
 from .models.config import EnvironmentConfig, HyperparameterConfig
 
 
 def handle_uploaded_file(request, uploaded_config) -> None:
-
+	# we only accept json files
 	if uploaded_config.name[-5:] != '.json':
 		return render(request, 'upload.html', {'error': 'You can only upload files in JSON format.'})
 
+	# read the file content
 	file_content = b''
 	for chunk in uploaded_config.chunks():
 		file_content += chunk
 
+	# try to convert the file content to dict
 	try:
 		content_as_dict = json.loads(file_content)
-	except:
+	except json.JSONDecodeError:
 		return render(request, 'upload.html', {'error': 'Your JSON is not valid'})
 
-	# hyperparameter_configs = []
-	# environment_configs = []
-	# for key in content_as_dict.keys():
-	# 	if key in HYPERPARAMETER_CONFIG_KEYS:
-	# 		hyperparameter_configs += [content_as_dict[key]]
-	# 	elif key in ENVIRONMENT_CONFIG_KEYS:
-	# 		environment_configs += [content_as_dict[key]]
-	# 	else:
-	# 		return render(request, 'upload.html', {'error': f'The key {key} is unknown'})
+	# figure out which parts of the config file belong to hyperparameter or environment config
+	hyperparameter_fields = get_config_field_names(HyperparameterConfig)
+	environment_fields = get_config_field_names(EnvironmentConfig)
 
-	parse_dict_to_database('hyperparameter', content_as_dict)
+	hyperparameter_configs = {}
+	environment_configs = {}
+	contains_hyperparameter = False
+	contains_environment = False
+	for key in content_as_dict.keys():
+		if key in hyperparameter_fields:
+			hyperparameter_configs[key] = content_as_dict[key]
+			contains_hyperparameter = True
+		elif key in environment_fields:
+			environment_configs[key] = content_as_dict[key]
+			contains_environment = True
+		else:
+			return render(request, 'upload.html', {'error': f'The key {key} is unknown'})
+	# print('+++++++++++++++++++++++++++')
+	# print(hyperparameter_configs)
+	# print('-------------------------')
+	# print(environment_configs)
+
+	if contains_hyperparameter is True:
+		hyperparameter_config = parse_dict_to_database('hyperparameter', hyperparameter_configs)
+	if contains_environment is True:
+		environment_config = parse_dict_to_database('environment', environment_configs)
+	print(hyperparameter_config)
+	print(environment_config)
 
 	return HttpResponseRedirect('/start_container', {'success': 'You successfully uploaded a config file'})
 
@@ -45,25 +65,23 @@ def parse_dict_to_database(name: str, content: dict):
 	print('++++++++++++++++++++++++++++++++')
 	print(name)
 	print(containing_dict)
-	# print(content)
 	obj = []
 	for keyword, config in containing_dict:
 		obj += [(keyword, parse_dict_to_database(keyword, config))]
 
 	not_containing_dict = dict([(name, value) for name, value in content.items() if type(value) != dict])
-	# print(dict(not_containing_dict))
+	print(dict(not_containing_dict))
 	config_class = _to_class_name(name)
-	print(not_containing_dict)
-	print(obj)
+	print(config_class)
 	for keyword, model_instance in obj:
 		not_containing_dict[keyword] = model_instance
 
-	print(globals()[config_class])
-	print('####################')
 	return globals()[config_class].objects.create(**not_containing_dict)
+
 
 def _to_class_name(name: str) -> str:
 	return ''.join([x.capitalize() for x in name.split('_')]) + 'Config'
+
 
 def download_file(response, wants_zip: bool) -> HttpResponse:
 	"""

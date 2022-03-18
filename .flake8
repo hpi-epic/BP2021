@@ -1,8 +1,11 @@
 [flake8]
 # W191: Indentation contains tabs
 # E128: Continuation line under-indented for visual indent
-extend-ignore = W191, E128
+extend-ignore = W191, E128, F403, F405
 max-line-length = 140
+
+# we don't write migration files ourselves
+exclude = webserver/alpha_business_app/migrations
 
 # F401: module imported but unused
 per-file-ignores =
