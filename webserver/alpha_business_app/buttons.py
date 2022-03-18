@@ -62,6 +62,7 @@ class ButtonHandler():
 			return self._start()
 		if self.wanted_key == 'logs':
 			return self._logs()
+		# no button was clicked?
 		return self._decide_rendering()
 
 	# PRIVATE METHODS
@@ -123,7 +124,6 @@ class ButtonHandler():
 			file_names = os.listdir('configurations')
 		return render(self.request, self.view_to_render, {'file_names': file_names, self.message[0]: self.message[1]})
 
-	# BUTTON ACTION HANDLING
 	def _delete_container(self) -> HttpResponse:
 		"""
 		This will delete the selected container and all data belonging to this container.
@@ -267,7 +267,7 @@ class ButtonHandler():
 		"""
 		# check, whether the request wants to pause or to unpause the container
 		if self.wanted_container.is_paused():
-			response = response = send_get_request('unpause', self.request.POST)
+			response = send_get_request('unpause', self.request.POST)
 		else:
 			response = send_get_request('pause', self.request.POST)
 
