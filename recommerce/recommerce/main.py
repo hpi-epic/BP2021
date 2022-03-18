@@ -1,7 +1,7 @@
 import argparse
 import os
 import shutil
-from importlib import reload
+from importlib import metadata, reload
 
 import recommerce.configuration.path_manager as path_manager
 
@@ -67,6 +67,7 @@ def main():
 	Needs to be wrapped in a function to be callable as an entrypoint by the pip package.
 	"""
 	parser = argparse.ArgumentParser(description='Customize your recommerce experience.')
+	parser.add_argument('-v', '--version', action='version', version=f'Recommerce Version {metadata.version("recommerce")}')
 	parser.add_argument('-d', '--datapath', type=str, help='Provide the path where `recommerce` will look for and save data')
 	parser.add_argument('--get-defaults', action='store_true', help="""Default files, such as a `hyperparameter_config.json` and
 trained models will be copied to your DATAPATH""")
