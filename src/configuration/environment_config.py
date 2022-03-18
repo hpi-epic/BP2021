@@ -71,7 +71,7 @@ class EnvironmentConfig(ABC):
 		# Save the agents in config['agents'] in a list for easier access
 		agent_dictionaries = [config['agents'][agent] for agent in config['agents']]
 
-		assert (isinstance(agent, dict) for agent in agent_dictionaries), \
+		assert all(isinstance(agent, dict) for agent in agent_dictionaries), \
 			f'All agents in the "agents" field must be dictionaries: {[config["agents"][agent] for agent in config["agents"]]}'
 
 		# CHECK: Agents::Class
@@ -110,8 +110,8 @@ class EnvironmentConfig(ABC):
 			# process of matching the correct ones would get a lot more difficult
 			else:
 				argument_list.append(None)
-		# Create a list of tuples (agent_class, modelfile_string)
-		self.agent = list(zip(agent_classes, iter(argument_list)))
+		# Create a list of tuples (agent_class, argument)
+		self.agent = list(zip(agent_classes, argument_list))
 
 		assert all(issubclass(agent[0], CircularAgent) == issubclass(type(self.marketplace), CircularEconomy) for agent in self.agent), \
 			f'The agents and marketplace must be of the same economy type (Linear/Circular): {self.agent} and {self.marketplace}'
@@ -304,11 +304,11 @@ class EnvironmentConfigLoader():
 
 
 if __name__ == '__main__':  # pragma: no cover
-	# config: ExampleprinterEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_exampleprinter')
-	# print(config)
-	# print()
+	config: ExampleprinterEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_exampleprinter')
+	print(config)
+	print()
 	config: AgentMonitoringEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_agent_monitoring')
 	print(config)
-	# print()
-	# config: TrainingEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_training')
-	# print(config)
+	print()
+	config: TrainingEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_training')
+	print(config)
