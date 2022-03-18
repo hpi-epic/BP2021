@@ -14,7 +14,8 @@ valid_training_dict = {
 	'marketplace': 'market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
 	'agents': {
 		'CE Rebuy Agent (QLearning)': {
-			'class': 'rl.q_learning.q_learning_agent.QLearningCERebuyAgent'
+			'class': 'rl.q_learning.q_learning_agent.QLearningCERebuyAgent',
+			'argument': None
 		}
 	}
 }
@@ -27,11 +28,12 @@ valid_agent_monitoring_dict = {
 	'marketplace': 'market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
 	'agents': {
 		'Rule_Based Agent': {
-			'class': 'market.circular.circular_vendors.RuleBasedCERebuyAgent'
+			'class': 'market.circular.circular_vendors.RuleBasedCERebuyAgent',
+			'argument': None
 		},
 		'CE Rebuy Agent (QLearning)': {
 			'class': 'rl.q_learning.q_learning_agent.QLearningCERebuyAgent',
-			'modelfile': 'CircularEconomyRebuyPriceMonopolyScenario_QLearningCERebuyAgent.dat'
+			'argument': 'CircularEconomyRebuyPriceMonopolyScenario_QLearningCERebuyAgent.dat'
 		}
 	}
 }
@@ -42,7 +44,7 @@ valid_exampleprinter_dict = {
 	'agents': {
 		'CE Rebuy Agent (QLearning)': {
 			'class': 'rl.q_learning.q_learning_agent.QLearningCERebuyAgent',
-			'modelfile': 'CircularEconomyRebuyPriceMonopolyScenario_QLearningCERebuyAgent.dat'
+			'argument': 'CircularEconomyRebuyPriceMonopolyScenario_QLearningCERebuyAgent.dat'
 		}
 	}
 }
@@ -53,6 +55,7 @@ invalid_agent_dict = {
 	'agents': {
 		'Agent_name': {
 			'class': 'rl.q_learning.q_learning_agent.QLearningCERebuyAgent',
+			'argument': None
 		}
 	}
 }
@@ -63,7 +66,7 @@ invalid_task_dict = {
 	'agents': {
 		'Agent_name': {
 			'class': 'rl.q_learning.q_learning_agent.QLearningCERebuyAgent',
-			'modelfile': 'CircularEconomyRebuyPriceMonopolyScenario_QLearningCERebuyAgent.dat'
+			'argument': 'CircularEconomyRebuyPriceMonopolyScenario_QLearningCERebuyAgent.dat'
 		}
 	}
 }
