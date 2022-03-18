@@ -4,13 +4,15 @@ from abc import ABC, abstractmethod
 import numpy as np
 import torch
 
-import agents.vendors as vendors
 import configuration.utils as ut
 import rl.model as model
 from configuration.hyperparameter_config import config
+from market.circular.circular_vendors import CircularAgent
+from market.linear.linear_vendors import LinearAgent
+from rl.reinforcement_learning_agent import ReinforcementLearningAgent
 
 
-class ActorCriticAgent(vendors.ReinforcementLearningAgent, ABC):
+class ActorCriticAgent(ReinforcementLearningAgent, ABC):
 	"""
 	This is an implementation of an (one step) actor critic agent as proposed in Richard Suttons textbook on page 332.
 	"""
@@ -194,17 +196,17 @@ class DiscreteActorCriticAgent(ActorCriticAgent):
 		return -torch.log(torch.softmax(self.actor_net(states), dim=0).gather(1, actions.unsqueeze(-1)))
 
 
-class DiscreteACALinear(DiscreteActorCriticAgent, vendors.LinearAgent):
+class DiscreteACALinear(DiscreteActorCriticAgent, LinearAgent):
 	def agent_output_to_market_form(self, action):
 		return action
 
 
-class DiscreteACACircularEconomy(DiscreteActorCriticAgent, vendors.CircularAgent):
+class DiscreteACACircularEconomy(DiscreteActorCriticAgent, CircularAgent):
 	def agent_output_to_market_form(self, action):
 		return (int(action % config.max_price), int(action / config.max_price))
 
 
-class DiscreteACACircularEconomyRebuy(DiscreteActorCriticAgent, vendors.CircularAgent):
+class DiscreteACACircularEconomyRebuy(DiscreteActorCriticAgent, CircularAgent):
 	def agent_output_to_market_form(self, action):
 		return (
 			int(action / (config.max_price * config.max_price)),
@@ -212,7 +214,7 @@ class DiscreteACACircularEconomyRebuy(DiscreteActorCriticAgent, vendors.Circular
 			int(action % config.max_price))
 
 
-class ContinuosActorCriticAgent(ActorCriticAgent, vendors.LinearAgent, vendors.CircularAgent):
+class ContinuosActorCriticAgent(ActorCriticAgent, LinearAgent, CircularAgent):
 	"""
 	This is an actor critic agent with continuos action space.
 	It's distribution is a normal distribution parameterized by mean and standard deviation.
