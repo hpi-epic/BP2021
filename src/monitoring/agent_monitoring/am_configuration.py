@@ -174,8 +174,8 @@ class Configurator():
 			self.plot_interval = plot_interval
 
 		if(marketplace is not None):
-			assert issubclass(marketplace, sim_market.SimMarket), 'the marketplace must be a subclass of SimMarket'
-			self.marketplace = marketplace()
+			assert issubclass(type(marketplace), sim_market.SimMarket), 'the marketplace must be a subclass of SimMarket'
+			self.marketplace = marketplace
 			# If the agents have not been changed, we reuse the old agents
 			if(agents is None):
 				print('Warning: Your agents are being overwritten by new instances of themselves!')
