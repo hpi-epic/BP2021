@@ -3,6 +3,9 @@ import os
 import shutil
 from importlib import metadata, reload
 
+import coverage
+import pytest
+
 import recommerce.configuration.path_manager as path_manager
 
 
@@ -38,6 +41,28 @@ def handle_get_defaults() -> None:
 	shutil.copytree(os.path.join(os.path.dirname(__file__), 'default_data'), os.path.join(path_manager.PathManager.user_path, 'default_data'),
 		dirs_exist_ok=True)
 	print(f'The default data was copied to your datapath at "{path_manager.PathManager.user_path}"')
+
+
+def handle_tests() -> None:
+	"""
+	Run the test suite located in the datapath while tracking coverage. Also writes a coverage.svg to the datapath
+	"""
+	print('Running tests...')
+	cov = coverage.Coverage()
+	cov.start()
+
+	pytest.main([])
+
+	cov.stop()
+	cov.save()
+
+	cov.json_report()
+
+	# coverage-badge unfortunately does not provide an interface
+	os.makedirs(os.path.join(path_manager.PathManager.user_path, os.pardir, os.pardir, 'badges'), exist_ok=True)
+	os.system(f'coverage-badge -f -o "{os.path.join(path_manager.PathManager.user_path, os.pardir, os.pardir, "badges", "coverage.svg")}"')
+
+	cov.report()
 
 
 def handle_command(command: str) -> None:
@@ -77,10 +102,12 @@ Relative paths are supported""")
 	parser.add_argument('--get-defaults', action='store_true', help="""default files, such as a hyperparameter_config.json and
 trained models will be copied to your DATAPATH""")
 	parser.add_argument('--get-defaults-unpack', action='store_true', dest='unpack',
-		help="""Works the same as --get-defaults, but also unpacks the
-default files so they are in the correct relative locations to be used by the program.
---get-defaults-unpack has priority over --get-defaults.
+		help="""Works the same as --get-defaults, but also unpacks the default files so they are in the correct relative
+locations to be used by the program. Has priority over --get-defaults.
 NOTE: Any existing files with the same name as the default files will be overwritten!""")
+
+	parser.add_argument('-t', '--test', action='store_true', help="""run pytest on tests stored in the datapath.
+Also tracks coverage and creates a coverage badge in datapath/badges/coverage.svg. Has priority over --command""")
 
 	parser.add_argument('-v', '--version', action='version', version=f'Recommerce Version {metadata.version("recommerce")}')
 
@@ -94,7 +121,10 @@ NOTE: Any existing files with the same name as the default files will be overwri
 	elif args.get_defaults:
 		handle_get_defaults()
 
-	handle_command(args.command)
+	if args.test:
+		handle_tests()
+	else:
+		handle_command(args.command)
 
 
 if __name__ == '__main__':
