@@ -3,6 +3,7 @@ from unittest.mock import patch
 
 import numpy as np
 import pytest
+from torch.utils.tensorboard import SummaryWriter
 
 import configuration.hyperparameter_config as hyperparameter_config
 import configuration.utils as ut
@@ -27,6 +28,44 @@ testcases_softmax = [
 		[0.5, 0.5]
 	)
 ]
+
+# contains two dicts with the same keys, the first one is the dict to divide by 2, the second one contains the expected result
+testcases_divide_content_of_dict = [(	{
+		'customer/buy_nothing': 2,
+		'state/in_circulation': 454,
+		'state/in_storage': {'vendor_0': 30, 'vendor_1': 79},
+		'actions/price_refurbished': {'vendor_0': 4, 'vendor_1': 3},
+		'actions/price_new': {'vendor_0': 6, 'vendor_1': 4},
+		'owner/throw_away': 0,
+		'owner/rebuys': {'vendor_0': 6, 'vendor_1': 7},
+		'profits/rebuy_cost': {'vendor_0': -12, 'vendor_1': -5},
+		'customer/purchases_refurbished': {'vendor_0': 1, 'vendor_1': 7},
+		'customer/purchases_new': {'vendor_0': 5, 'vendor_1': 5},
+		'profits/by_selling_refurbished': {'vendor_0': 4, 'vendor_1': 15},
+		'profits/by_selling_new': {'vendor_0': 15, 'vendor_1': 5},
+		'profits/storage_cost': {'vendor_0': -3.5, 'vendor_1': -7.9},
+		'actions/price_rebuy': {'vendor_0': 2, 'vendor_1': 1},
+		'profits/all': {'vendor_0': 3.5, 'vendor_1': 7.1},
+	},
+	2,
+	{
+		'customer/buy_nothing': 1.,
+		'state/in_circulation': 227.,
+		'state/in_storage': {'vendor_0': 15.0, 'vendor_1': 39.5},
+		'actions/price_refurbished': {'vendor_0': 2., 'vendor_1': 1.5},
+		'actions/price_new': {'vendor_0': 3., 'vendor_1': 2.},
+		'owner/throw_away': 0.,
+		'owner/rebuys': {'vendor_0': 3., 'vendor_1': 3.5},
+		'profits/rebuy_cost': {'vendor_0': -6., 'vendor_1': -2.5},
+		'customer/purchases_refurbished': {'vendor_0': 0.5, 'vendor_1': 3.5},
+		'customer/purchases_new': {'vendor_0': 2.5, 'vendor_1': 2.5},
+		'profits/by_selling_refurbished': {'vendor_0': 2, 'vendor_1': 7.5},
+		'profits/by_selling_new': {'vendor_0': 7.5, 'vendor_1': 2.5},
+		'profits/storage_cost': {'vendor_0': -1.75, 'vendor_1': -3.95},
+		'actions/price_rebuy': {'vendor_0': 1., 'vendor_1': 0.5},
+		'profits/all': {'vendor_0': 1.75, 'vendor_1': 3.55},
+	})]
+
 
 testcases_write_dict_svg = [(
 	0,
@@ -96,6 +135,10 @@ testcases_write_dict_svg = [(
 	}
 )]
 
+testcases_write_dict_tensorboard = [
+	({'value_A': 1, 'value_B': 100}, 10, False),
+	({'value_A': {1: 10, 2: 20}, 'value_B': {1: 9, 2: 19}}, 10, True)]
+
 
 def test_ensure_results_folders_exist():
 	pass
@@ -103,8 +146,10 @@ def test_ensure_results_folders_exist():
 
 @pytest.mark.parametrize('max_quality', testcases_shuffle_quality)
 def test_shuffle_quality(max_quality: int):
+	# pytest.set_trace()
 	with patch('configuration.hyperparameter_config.config') as config:
 		config = hyperparameter_config.HyperparameterConfig()
+		# reload(hyperparameter_config)
 		config.max_quality = max_quality
 		quality = ut.shuffle_quality()
 		assert quality <= max_quality and quality >= 1
@@ -124,12 +169,22 @@ def test_cartesian_product(list_a, list_b, expected):
 	assert ut.cartesian_product(list_a, list_b) == expected
 
 
-def test_write_dict_to_tensorboard():
-	pass
+@pytest.mark.parametrize('dictionary, counter, is_cumulative', testcases_write_dict_tensorboard)
+def test_write_dict_to_tensorboard(dictionary: dict, counter: int, is_cumulative: bool):
+	with patch('torch.utils.tensorboard.SummaryWriter.write_dict_to_svg.add_scalars') as mock_add_scalars:
+		with patch('torch.utils.tensorboard.SummaryWriter.add_scalar') as mock_add_scalar:
+			ut.write_dict_to_tensorboard(SummaryWriter(), dictionary, counter, is_cumulative)
+			if(is_cumulative):
+				for name, content in dictionary.items():
+					mock_add_scalars.assert_called_with((name, content, counter))
+			else:
+				for name, content in dictionary.items():
+					mock_add_scalar.assert_called_with((name, content, counter))
 
 
-def test_divide_content_of_dict():
-	pass
+@pytest.mark.parametrize('input_dict, divisor, expected_dict', testcases_divide_content_of_dict)
+def test_divide_content_of_dict(input_dict: dict, divisor: float, expected_dict: dict):
+	assert ut.divide_content_of_dict(input_dict, divisor) == expected_dict
 
 
 def test_add_content_of_two_dicts():
