@@ -5,6 +5,11 @@ class Config(models.Model):
 	environment = models.ForeignKey('EnvironmentConfig', on_delete=models.DO_NOTHING, null=True)
 	hyperparameter = models.ForeignKey('HyperparameterConfig', on_delete=models.DO_NOTHING, null=True)
 
+	def as_dict(self) -> dict:
+		environment_dict = self.environment.as_dict() if self.environment is not None else {'environment': None}
+		hyperparameter_dict = self.hyperparameter.as_dict() if self.hyperparameter is not None else {'hyperparameter': None}
+		return {'environment': environment_dict, 'hyperparameter': hyperparameter_dict}
+
 
 class EnvironmentConfig(models.Model):
 	agents = models.ForeignKey('AgentsConfig', on_delete=models.DO_NOTHING, null=True)
@@ -13,6 +18,15 @@ class EnvironmentConfig(models.Model):
 	plot_interval = models.IntegerField(null=True)
 	marketplace = models.CharField(max_length=100, null=True)
 	task = models.CharField(max_length=14, choices=((1, 'training'), (2, 'monitoring'), (3, 'exampleprinter')), null=True)
+
+	def as_dict(self) -> dict:
+		return {
+			'enable_live_draw': self.enable_live_draw,
+			'episodes': self.episodes,
+			'plot_interval': self.plot_interval,
+			'marketplace': self.marketplace,
+			'task': self.task
+		}
 
 
 class AgentsConfig(models.Model):
@@ -34,6 +48,9 @@ class CERebuyAgentQLearningConfig(models.Model):
 class HyperparameterConfig(models.Model):
 	rl = models.ForeignKey('RLConfig', on_delete=models.DO_NOTHING, null=True)
 	sim_market = models.ForeignKey('SimMarketConfig', on_delete=models.DO_NOTHING, null=True)
+
+	def as_dict(self) -> dict:
+		return {'test': 'bla'}
 
 
 class RlConfig(models.Model):

@@ -1,17 +1,21 @@
 from django.test import TestCase
 from django.utils import timezone
 
+from ..models.config import Config
 from ..models.container import Container, update_container
 
 
 class ContainerTest(TestCase):
 	def setUp(self):
+		# get a container for testing
+		config = Config.objects.create()
 		Container.objects.create(
 								command='training',
 								id='123',
 								created_at='01.01.1970',
 								last_check_at='now',
-								name='test_container'
+								name='test_container',
+								config_file=config
 								)
 
 	def test_container_is_archived(self):

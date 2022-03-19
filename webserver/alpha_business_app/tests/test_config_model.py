@@ -50,7 +50,6 @@ class ConfigTest(TestCase):
 		assert 'RuleBasedAgentConfig' == to_config_class_name('Rule_Based Agent')
 
 	def test_class_name_q_learing_config(self):
-		print('HERE', to_config_class_name('CE Rebuy Agent (QLearning)'))
 		assert 'CERebuyAgentQLearningConfig' == to_config_class_name('CE Rebuy Agent (QLearning)')
 
 	def test_class_name_hyperparameter_config(self):
@@ -70,3 +69,75 @@ class ConfigTest(TestCase):
 
 	def test_capitalize_one_letter_strings(self):
 		assert 'A' == capitalize('a')
+
+	def test_config_to_dict(self):
+		# create a small valid config for this test
+		agents_config = AgentsConfig.objects.create()
+
+		RuleBasedAgentConfig.objects.create(agent_class='agents.vendors.RuleBasedCERebuyAgent',
+			agents_config=agents_config)
+
+		env_config = EnvironmentConfig.objects.create(agents=agents_config,
+			marketplace='market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
+			task='training')
+
+		rl_config = RlConfig.objects.create(gamma=0.99,
+			batch_size=32,
+			replay_size=100000,
+			learning_rate=1e-6,
+			sync_target_frames=1000,
+			replay_start_size=10000,
+			epsilon_decay_last_frame=75000,
+			epsilon_start=1.0,
+			epsilon_final=0.1)
+
+		sim_market_config = SimMarketConfig.objects.create(max_storage=100,
+			episode_size=50,
+			max_price=10,
+			max_quality=50,
+			number_of_customers=20,
+			production_price=3,
+			storage_cost_per_product=0.1)
+
+		hyperparameter_config = HyperparameterConfig.objects.create(sim_market=sim_market_config,
+			rl=rl_config)
+
+		final_config = Config.objects.create(environment=env_config,
+			hyperparameter=hyperparameter_config)
+
+		expected_dict = {
+			'hyperparameters': {
+				'rl': {
+					'gamma': 0.99,
+					'batch_size': 32,
+					'replay_size': 100000,
+					'learning_rate': 1e-6,
+					'sync_target_frames': 1000,
+					'replay_start_size': 10000,
+					'epsilon_decay_last_frame': 75000,
+					'epsilon_start': 1.0,
+					'epsilon_final': 0.1
+				},
+				'sim_market': {
+					'max_storage': 100,
+					'episode_size': 50,
+					'max_price': 10,
+					'max_quality': 50,
+					'number_of_customers': 20,
+					'production_price': 3,
+					'storage_cost_per_product': 0.1
+				}
+			},
+			'environment': {
+				'task': 'training',
+				'marketplace': 'market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
+				'agents': {
+					'Rule_Based Agent': {
+						'agent_class': 'agents.vendors.RuleBasedCERebuyAgent'
+					}
+				}
+			}
+		}
+		print('TEST STARTS HERE')
+		assert expected_dict == final_config.as_dict()
+		print('TEST ENDS HERE')

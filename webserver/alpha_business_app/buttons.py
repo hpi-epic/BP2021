@@ -1,4 +1,3 @@
-import json
 import os
 
 from django.http import HttpResponse
@@ -7,6 +6,7 @@ from django.utils import timezone
 
 from .handle_files import download_file
 from .handle_requests import send_get_request, send_get_request_with_streaming, send_post_request, stop_container
+from .models.config import Config
 from .models.container import Container, update_container
 
 
@@ -214,11 +214,11 @@ class ButtonHandler():
 
 		requested_command = post_request['command_selection']
 		# the start button was pressed
-		config_file = post_request['filename']
+		config = Config.objects.get(id=post_request['config_id'])
 		# read the right config file
-		with open(os.path.join('configurations', config_file), 'r') as file:
-			config_dict = json.load(file)
-			response = send_post_request('start', config_dict, requested_command)
+		# with open(os.path.join('configurations', config_file), 'r') as file:
+		# 	config_dict = json.load(file)
+		response = send_post_request('start', config.as_dict(), requested_command)
 
 		if response.ok():
 			# put container into database
@@ -232,7 +232,7 @@ class ButtonHandler():
 				return self._remove()
 			container_name = self.request.POST['experiment_name']
 			container_name = container_name if container_name != '' else response['id'][:10]
-			Container.objects.create(id=response['id'], config_file=config_dict, name=container_name, command=requested_command)
+			Container.objects.create(id=response['id'], config_file=config, name=container_name, command=requested_command)
 			return redirect('/observe', {'success': 'You successfully launched an experiment'})
 		else:
 			self.message = response.status()

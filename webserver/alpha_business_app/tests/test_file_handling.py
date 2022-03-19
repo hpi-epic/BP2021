@@ -145,7 +145,6 @@ class FileHandling(TestCase):
 		assert 0.1 == hyperparameter_sim_market_config.storage_cost_per_product
 
 	def test_parsing_with_only_environment(self):
-		print('TST')
 		# get a test config to be parsed
 		path_to_test_data = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'test_data')
 		with open(os.path.join(path_to_test_data, 'test_environment_config.json'), 'r') as file:
@@ -250,3 +249,14 @@ class FileHandling(TestCase):
 
 		assert status is False
 		assert 'The keyword(s) [\'test\'] are not allowed in Rule_Based Agent' == error_msg
+
+	# def test_invalid_values(self):
+	# 	test_uploaded_file = MockedUploadedFile('config.json', b'{"rl": {"gamma": "bla"}')
+	# 	with patch('alpha_business_app.handle_files.render') as render_mock:
+	# 		handle_uploaded_file('this is not important', test_uploaded_file)
+
+	# 		actual_arguments = render_mock.call_args.args
+
+	# 		render_mock.assert_called_once()
+	# 		assert 'upload.html' == actual_arguments[1]
+	# 		assert {'error': ''} == actual_arguments[2]
