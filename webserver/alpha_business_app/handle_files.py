@@ -10,13 +10,23 @@ from django.shortcuts import redirect, render
 from .constants import CONFIGURATION_DIR
 from .models.config import *
 
-# from .models.config import CERebuyAgentQLearningConfig, EnvironmentConfig, HyperparameterConfig, RuleBasedAgentConfig
+
+# https://stackoverflow.com/questions/14902299/json-loads-allows-duplicate-keys-in-a-dictionary-overwriting-the-first-value
+def dict_raise_on_duplicates(ordered_pairs):
+	"""Reject duplicate keys."""
+	d = {}
+	for k, v in ordered_pairs:
+		if k in d:
+			raise ValueError('Your config contains duplicate keys: %r' % (k,))
+		else:
+			d[k] = v
+	return d
 
 
 def handle_uploaded_file(request, uploaded_config) -> None:
 	# we only accept json files
 	if uploaded_config.name[-5:] != '.json':
-		print('got invalid file, no json')
+		print('file not json')
 		return render(request, 'upload.html', {'error': 'You can only upload files in JSON format.'})
 
 	# read the file content
@@ -26,15 +36,19 @@ def handle_uploaded_file(request, uploaded_config) -> None:
 
 	# try to convert the file content to dict
 	try:
-		content_as_dict = json.loads(file_content)
+		content_as_dict = json.loads(file_content, object_pairs_hook=dict_raise_on_duplicates)
 	except json.JSONDecodeError:
-		print('uploaded file does not contain valid json')
+		print('json error')
 		return render(request, 'upload.html', {'error': 'Your JSON is not valid'})
+	except ValueError as value:
+		print('duplicte keys')
+		return render(request, 'upload.html', {'error': str(value)})
 
 	# figure out which parts of the config file belong to hyperparameter or environment config
 	hyperparameter_fields = get_config_field_names(HyperparameterConfig)
 	environment_fields = get_config_field_names(EnvironmentConfig)
 
+	# figure out which keywords belong to hyperparameter and which keywords belong to environment
 	hyperparameter_configs = {}
 	environment_configs = {}
 	contains_hyperparameter = False
@@ -47,11 +61,19 @@ def handle_uploaded_file(request, uploaded_config) -> None:
 			environment_configs[key] = content_as_dict[key]
 			contains_environment = True
 		else:
+			print('unknown key')
 			return render(request, 'upload.html', {'error': f'The key {key} is unknown'})
-	# print('+++++++++++++++++++++++++++')
-	# print(hyperparameter_configs)
-	# print('-------------------------')
-	# print(environment_configs)
+
+	# check if all keys in the dictionaries are valid
+	status, error_msg = check_dict_keys('environment', environment_configs)
+	if not status:
+		print('unknown key in environment', error_msg)
+		return render(request, 'upload.html', {'error': error_msg})
+	status, error_msg = check_dict_keys('hyperparameter', hyperparameter_configs)
+	if not status:
+		print('unknown key in environment', error_msg)
+		return render(request, 'upload.html', {'error': error_msg})
+
 	hyperparameter_config = None
 	environment_config = None
 	if contains_hyperparameter is True:
@@ -59,14 +81,52 @@ def handle_uploaded_file(request, uploaded_config) -> None:
 	if contains_environment is True:
 		environment_config = parse_dict_to_database('environment', environment_configs)
 
-	print('creating config object')
 	Config.objects.create(environment=environment_config, hyperparameter=hyperparameter_config)
-	print(Config.objects.all())
 	return redirect('/start_container', {'success': 'You successfully uploaded a config file'})
 
 
+def check_dict_keys(name: str, content: dict) -> tuple:
+	if name == 'agents':
+		status, error_msg = check_agents(content)
+		if not status:
+			return False, error_msg
+		else:
+			return True, ''
+	containing_dict = [(name, value) for name, value in content.items() if type(value) == dict]
+
+	for keyword, config in containing_dict:
+		status, error_msg = check_dict_keys(keyword, config)
+		if not status:
+			return False, error_msg
+
+	class_name = to_config_class_name(name)
+	allowed_keys = get_config_field_names(globals()[class_name])
+	used_keys = list(content.keys())
+	difference = list(set(used_keys) - set(allowed_keys))
+	if difference != []:
+		return False, f'The keyword(s) {difference} are not allowed in {name}'
+
+	return True, ''
+
+
+def check_agents(content: dict) -> tuple:
+	# print(content)
+	# print('---------------------------')
+	for agent_name, agent_parameters in content.items():
+		# print(agent_name, agent_parameters)
+		agent_class = to_config_class_name(agent_name)
+		allowed_keys = get_config_field_names(globals()[agent_class])
+		# print(allowed_keys, agent_class)
+		used_keys = list(agent_parameters.keys())
+		difference = list(set(used_keys) - set(allowed_keys))
+		# print('DIFF', difference)
+		if difference != []:
+			return False, f'The keyword(s) {difference} are not allowed in {agent_name}'
+	# print('---------------------')
+	return True, ''
+
+
 def parse_dict_to_database(name: str, content: dict):
-	print(name, content)
 	if name == 'agents':
 		# since django does only support many-to-one relationships (not one-to-many),
 		# we need to parse the agents slightly different, to be able to reference many agents with the agents keyword
@@ -83,7 +143,6 @@ def parse_dict_to_database(name: str, content: dict):
 	not_containing_dict = dict([(name, value) for name, value in content.items() if type(value) != dict])
 
 	# add the sub-elements to the dictionary with the other key value pairs not containing another dictionary
-	# TODO: check if all keys are possible
 	for keyword, model_instance in sub_elements:
 		not_containing_dict[keyword] = model_instance
 
@@ -97,7 +156,6 @@ def parse_agents(agents_in_dict: dict) -> AgentsConfig:
 	for agent_name, agent_parameters in agents_in_dict.items():
 		agent_parameters['agents_config'] = agents
 		_create_object_from(to_config_class_name(agent_name), agent_parameters)
-	print(CERebuyAgentQLearningConfig.objects.all())
 	return agents
 
 
