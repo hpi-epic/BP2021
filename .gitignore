@@ -17,7 +17,7 @@ webserver/data
 docker/occupied_ports.txt
 
 # file where the users data path is saved
-recommerce/recommerce/configuration/user_path.txt
+recommerce/configuration/user_path.txt
 
 # file for Johanns test runner
 tests.sh

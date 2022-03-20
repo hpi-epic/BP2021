@@ -17,7 +17,7 @@ def package_files(directory) -> list:
 	"""
 	paths = []
 	for (path, directories, filenames) in os.walk(directory):
-		paths.extend(os.path.join('..', path, filename) for filename in filenames)
+		paths.extend(os.path.join('..', path, filename) for filename in filenames if '__pycache__' not in path)
 	return paths
 
 

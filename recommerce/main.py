@@ -1,6 +1,7 @@
 import argparse
 import os
 import shutil
+import sys
 from importlib import metadata, reload
 
 import pytest
@@ -98,6 +99,12 @@ Has priority over --command""")
 	parser.add_argument('-v', '--version', action='version', version=f'Recommerce Version {metadata.version("recommerce")}')
 
 	args = parser.parse_args()
+
+	if len(sys.argv) == 1:
+		# display help message when no args are passed.
+		print('Please provide an argument!')
+		parser.print_help()
+		sys.exit(1)
 
 	# Handle provided arguments
 	handle_datapath(args.datapath)
