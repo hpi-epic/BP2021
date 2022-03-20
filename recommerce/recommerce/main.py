@@ -3,7 +3,6 @@ import os
 import shutil
 from importlib import metadata, reload
 
-import coverage
 import pytest
 
 import recommerce.configuration.path_manager as path_manager
@@ -45,24 +44,11 @@ def handle_get_defaults() -> None:
 
 def handle_tests() -> None:
 	"""
-	Run the test suite located in the datapath while tracking coverage. Also writes a coverage.svg to the datapath
+	Run the test suite located in the datapath.
 	"""
 	print('Running tests...')
-	cov = coverage.Coverage()
-	cov.start()
 
 	pytest.main([])
-
-	cov.stop()
-	cov.save()
-
-	cov.json_report()
-
-	# coverage-badge unfortunately does not provide an interface
-	os.makedirs(os.path.join(path_manager.PathManager.user_path, os.pardir, os.pardir, 'badges'), exist_ok=True)
-	os.system(f'coverage-badge -f -o "{os.path.join(path_manager.PathManager.user_path, os.pardir, os.pardir, "badges", "coverage.svg")}"')
-
-	cov.report()
 
 
 def handle_command(command: str) -> None:
@@ -107,7 +93,7 @@ locations to be used by the program. Has priority over --get-defaults.
 NOTE: Any existing files with the same name as the default files will be overwritten!""")
 
 	parser.add_argument('-t', '--test', action='store_true', help="""run pytest on tests stored in the datapath.
-Also tracks coverage and creates a coverage badge in datapath/badges/coverage.svg. Has priority over --command""")
+Has priority over --command""")
 
 	parser.add_argument('-v', '--version', action='version', version=f'Recommerce Version {metadata.version("recommerce")}')
 

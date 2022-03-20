@@ -165,7 +165,7 @@ pytest
 pytest -v
 ```
 
-Additionally, if you have installed the `recommerce` package and the `tests`-folder is located in your `datapath`, you can use the following command to run the tests with coverage as outlined in [Coverage](#coverage):
+Additionally, if you have installed the `recommerce` package and the `tests`-folder is located in your `datapath`, you can use the following command to run the tests:
 
 ```terminal
 recommerce --test
