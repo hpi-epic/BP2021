@@ -110,7 +110,7 @@ def create_environment_mock_dict(
 		marketplace (str, optional): What marketplace to run on.
 			Defaults to "market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario".
 		agents (dict, optional): What agents to use.
-			Defaults to {"Fixed CE Rebuy Agent": {"class": "agents.vendors.FixedPriceCERebuyAgent"}}.
+			Defaults to {"Fixed CE Rebuy Agent": {"class": "market.vendors.FixedPriceCERebuyAgent"}}.
 
 	Returns:
 		dict: The mock dictionary.
@@ -118,7 +118,7 @@ def create_environment_mock_dict(
 	if agents is None:
 		agents = {
 			'Fixed CE Rebuy Agent': {
-				'class': 'agents.vendors.FixedPriceCERebuyAgent'
+				'class': 'market.vendors.FixedPriceCERebuyAgent'
 			}
 		}
 

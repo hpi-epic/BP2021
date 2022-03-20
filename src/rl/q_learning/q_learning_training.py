@@ -1,14 +1,14 @@
 import numpy as np
 
-import agents.vendors as vendors
 import configuration.utils as ut
 from configuration.hyperparameter_config import config
+from rl.q_learning.q_learning_agent import QLearningAgent
 from rl.training import RLTrainer
 
 
 class QLearningTrainer(RLTrainer):
 	def trainer_agent_fit(self) -> bool:
-		return isinstance(self.RL_agent, vendors.QLearningAgent), f'the passed agent must be a QLearningAgent: {self.RL_agent}'
+		return isinstance(self.RL_agent, QLearningAgent), f'the passed agent must be a QLearningAgent: {self.RL_agent}'
 
 	def train_agent(self, number_of_training_steps=2 * config.epsilon_decay_last_frame) -> None:
 		"""

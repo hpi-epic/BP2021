@@ -46,6 +46,52 @@ class ButtonTests(TestCase):
 			assert expected_arguments == actual_arguments
 			assert 'healthy :)' == Container.objects.get(id='1234').health_status
 
+	def test_pause_button(self):
+		# mock a request that is send when user presses a button
+		request = self._setup_request('/details', 'pause')
+
+		# setup a button handler for this request
+		test_button_handler = self._setup_button_handler('details.html', request)
+
+		with patch('alpha_business_app.buttons.render') as render_mock, \
+			patch('alpha_business_app.buttons.send_get_request') as get_request_mock:
+			get_request_mock.return_value = APIResponse('success', '200', {'id': '1234', 'status': 'paused'})
+
+			test_button_handler.do_button_click()
+
+			expected_arguments = self._get_expected_arguments('details.html', request)
+
+			actual_arguments = render_mock.call_args.args
+			# cast the query set to list as well
+			actual_arguments[2]['all_saved_containers'] = list(actual_arguments[2]['all_saved_containers'])
+
+			render_mock.assert_called_once()
+			assert expected_arguments == actual_arguments
+			assert 'paused' == Container.objects.get(id='1234').health_status
+
+	def test_unpause_button(self):
+		# mock a request that is send when user presses a button
+		request = self._setup_request('/details', 'pause')
+
+		# setup a button handler for this request
+		test_button_handler = self._setup_button_handler('details.html', request)
+
+		with patch('alpha_business_app.buttons.render') as render_mock, \
+			patch('alpha_business_app.buttons.send_get_request') as get_request_mock:
+			get_request_mock.return_value = APIResponse('success', '200', {'id': '1234', 'status': 'running'})
+
+			test_button_handler.do_button_click()
+
+			expected_arguments = self._get_expected_arguments('details.html', request)
+
+			actual_arguments = render_mock.call_args.args
+			# cast the query set to list as well
+			actual_arguments[2]['all_saved_containers'] = list(actual_arguments[2]['all_saved_containers'])
+
+			render_mock.assert_called_once()
+			assert expected_arguments == actual_arguments
+			assert 'running' == Container.objects.get(id='1234').health_status
+
 	def test_logs_button(self):
 		# mock a request that is sent when user presses a button
 		request = self._setup_request('/details', 'logs')

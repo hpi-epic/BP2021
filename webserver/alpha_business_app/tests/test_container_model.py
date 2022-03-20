@@ -25,6 +25,13 @@ class ContainerTest(TestCase):
 		test_container.health_status = 'archived'
 		assert test_container.is_archived() is True
 
+	def test_container_is_paused(self):
+		test_container: Container = Container.objects.get(id='123')
+		assert test_container.is_paused() is False
+
+		test_container.health_status = 'paused'
+		assert test_container.is_paused() is True
+
 	def test_tensorboard_link(self):
 		test_container: Container = Container.objects.get(id='123')
 		assert test_container.has_tensorboard_link() is False

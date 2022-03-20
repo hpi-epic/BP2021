@@ -54,12 +54,15 @@ class ButtonHandler():
 			return self._tensorboard_link()
 		if self.wanted_key == 'health':
 			return self._health()
+		if self.wanted_key == 'pause':
+			return self._toggle_pause()
 		if self.wanted_key == 'remove':
 			return self._remove()
 		if self.wanted_key == 'start':
 			return self._start()
 		if self.wanted_key == 'logs':
 			return self._logs()
+		# no button was clicked?
 		return self._decide_rendering()
 
 	# PRIVATE METHODS
@@ -121,7 +124,6 @@ class ButtonHandler():
 			file_names = os.listdir('configurations')
 		return render(self.request, self.view_to_render, {'file_names': file_names, self.message[0]: self.message[1]})
 
-	# BUTTON ACTION HANDLING
 	def _delete_container(self) -> HttpResponse:
 		"""
 		This will delete the selected container and all data belonging to this container.
@@ -255,3 +257,25 @@ class ButtonHandler():
 		else:
 			self.message = response.status()
 			return self._decide_rendering()
+
+	def _toggle_pause(self) -> HttpResponse:
+		"""
+		This will send an API request to pause/unpause the currently running container.
+
+		Returns:
+			HttpResponse: A default response with default values or a response containing the error field.
+		"""
+		# check, whether the request wants to pause or to unpause the container
+		if self.wanted_container.is_paused():
+			response = send_get_request('unpause', self.request.POST)
+		else:
+			response = send_get_request('pause', self.request.POST)
+
+		if response.ok():
+			response = response.content
+			update_container(response['id'], {'last_check_at': timezone.now(), 'health_status': response['status']})
+		else:
+			self.message = response.status()
+		self.wanted_container = Container.objects.get(id=self.wanted_container.id)
+
+		return self._decide_rendering()

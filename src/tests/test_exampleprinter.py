@@ -6,11 +6,13 @@ from unittest.mock import patch
 
 import pytest
 
-import agents.vendors as vendors
 import market.circular.circular_sim_market as circular_market
 import market.linear.linear_sim_market as linear_market
-import rl.actorcritic_agent as actorcritic_agent
+from market.circular.circular_vendors import FixedPriceCEAgent, FixedPriceCERebuyAgent, RuleBasedCEAgent, RuleBasedCERebuyAgent
+from market.linear.linear_vendors import FixedPriceLEAgent
 from monitoring.exampleprinter import ExamplePrinter
+from rl.actorcritic.actorcritic_agent import ContinuosActorCriticAgentFixedOneStd, DiscreteACACircularEconomyRebuy
+from rl.q_learning.q_learning_agent import QLearningCEAgent, QLearningCERebuyAgent, QLearningLEAgent
 
 # The load path for the agent modelfiles
 parameters_path = os.path.join('src', 'tests', 'test_data')
@@ -18,7 +20,7 @@ parameters_path = os.path.join('src', 'tests', 'test_data')
 
 def teardown_module(module):
 	print('***TEARDOWN***')
-	# we need to sleep because sometimes the runs folder is still being used when we try to remove it
+	# We need to sleep because sometimes the runs folder is still being used when we try to remove it.
 	time.sleep(0.002)
 	for file_name in os.listdir(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'results', 'runs')):
 		if re.match('test_*', file_name):
@@ -27,35 +29,35 @@ def teardown_module(module):
 
 def test_setup_exampleprinter():
 	printer = ExamplePrinter()
-	printer.setup_exampleprinter(marketplace=linear_market.ClassicScenario(), agent=vendors.FixedPriceLEAgent())
+	printer.setup_exampleprinter(marketplace=linear_market.ClassicScenario(), agent=FixedPriceLEAgent())
 	assert isinstance(printer.marketplace, linear_market.ClassicScenario)
-	assert isinstance(printer.agent, vendors.FixedPriceLEAgent)
+	assert isinstance(printer.agent, FixedPriceLEAgent)
 
 
 full_episode_testcases = [
-	(linear_market.ClassicScenario(), vendors.FixedPriceLEAgent()),
-	(linear_market.ClassicScenario(), vendors.QLearningLEAgent(3, 10,
+	(linear_market.ClassicScenario(), FixedPriceLEAgent()),
+	(linear_market.ClassicScenario(), QLearningLEAgent(3, 10,
 		load_path=os.path.join(parameters_path, 'ClassicScenario_QLearningLEAgent.dat'))),
-	(linear_market.MultiCompetitorScenario(), vendors.FixedPriceLEAgent()),
-	(circular_market.CircularEconomyMonopolyScenario(), vendors.FixedPriceCEAgent()),
-	(circular_market.CircularEconomyMonopolyScenario(), vendors.RuleBasedCEAgent()),
-	(circular_market.CircularEconomyMonopolyScenario(), vendors.QLearningCEAgent(2, 100,
+	(linear_market.MultiCompetitorScenario(), FixedPriceLEAgent()),
+	(circular_market.CircularEconomyMonopolyScenario(), FixedPriceCEAgent()),
+	(circular_market.CircularEconomyMonopolyScenario(), RuleBasedCEAgent()),
+	(circular_market.CircularEconomyMonopolyScenario(), QLearningCEAgent(2, 100,
 		load_path=os.path.join(parameters_path, 'CircularEconomyMonopolyScenario_QLearningCEAgent.dat'))),
-	(circular_market.CircularEconomyRebuyPriceMonopolyScenario(), vendors.FixedPriceCERebuyAgent()),
-	(circular_market.CircularEconomyRebuyPriceMonopolyScenario(), vendors.RuleBasedCERebuyAgent()),
-	(circular_market.CircularEconomyRebuyPriceMonopolyScenario(), vendors.QLearningCERebuyAgent(2, 1000,
+	(circular_market.CircularEconomyRebuyPriceMonopolyScenario(), FixedPriceCERebuyAgent()),
+	(circular_market.CircularEconomyRebuyPriceMonopolyScenario(), RuleBasedCERebuyAgent()),
+	(circular_market.CircularEconomyRebuyPriceMonopolyScenario(), QLearningCERebuyAgent(2, 1000,
 		load_path=os.path.join(parameters_path, 'CircularEconomyRebuyPriceMonopolyScenario_QLearningCERebuyAgent.dat'))),
 	# (circular_market.CircularEconomyRebuyPriceMonopolyScenario(), actorcritic_agent.ContinuosActorCriticAgentEstimatingStd(2, 3,
 	# 	load_path=os.path.join(parameters_path,
 	# 		'actor_parametersCircularEconomyRebuyPriceMonopolyScenario_ContinuosActorCriticAgentEstimatingStd.dat'))),
-	(circular_market.CircularEconomyRebuyPriceOneCompetitor(), vendors.FixedPriceCERebuyAgent()),
-	(circular_market.CircularEconomyRebuyPriceOneCompetitor(), vendors.RuleBasedCERebuyAgent()),
-	(circular_market.CircularEconomyRebuyPriceOneCompetitor(), vendors.QLearningCERebuyAgent(6, 1000,
+	(circular_market.CircularEconomyRebuyPriceOneCompetitor(), FixedPriceCERebuyAgent()),
+	(circular_market.CircularEconomyRebuyPriceOneCompetitor(), RuleBasedCERebuyAgent()),
+	(circular_market.CircularEconomyRebuyPriceOneCompetitor(), QLearningCERebuyAgent(6, 1000,
 		load_path=os.path.join(parameters_path, 'CircularEconomyRebuyPriceOneCompetitor_QLearningCERebuyAgent.dat'))),
-	(circular_market.CircularEconomyRebuyPriceOneCompetitor(), actorcritic_agent.ContinuosActorCriticAgentFixedOneStd(6, 3,
+	(circular_market.CircularEconomyRebuyPriceOneCompetitor(), ContinuosActorCriticAgentFixedOneStd(6, 3,
 		load_path=os.path.join(parameters_path,
 			'actor_parametersCircularEconomyRebuyPriceOneCompetitor_ContinuosActorCriticAgentFixedOneStd.dat'))),
-	(circular_market.CircularEconomyRebuyPriceOneCompetitor(), actorcritic_agent.DiscreteACACircularEconomyRebuy(6, 1000,
+	(circular_market.CircularEconomyRebuyPriceOneCompetitor(), DiscreteACACircularEconomyRebuy(6, 1000,
 		load_path=os.path.join(parameters_path, 'actor_parametersCircularEconomyRebuyPriceOneCompetitor_DiscreteACACircularEconomyRebuy.dat')))
 ]
 
