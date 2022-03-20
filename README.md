@@ -58,14 +58,15 @@ You should see the following message indicating your path is valid:
 Data will be read from and saved to "your_preferred_path"
 ```
 
-To start your first training or exampleprinter session, `recommerce` requires you to provide two configuration files. You can either write those yourself or use the following command to have `recommerce` copy over default files which you can immediately use or modify as you wish:
+To start your first training or exampleprinter session, `recommerce` requires you to provide two configuration files. You can either write those yourself or use the following command to have `recommerce` copy over default files which you can immediately use or modify as you wish.
+
+*WARNING*: By using the following command, any files with the same names as the default data will be overwritten, so use with caution! To get the data in a folder called `default_data` use the flag `--get-defaults` instead.
 
 ```terminal
-recommerce --get-defaults --unpack
+recommerce --get-defaults-unpack
 ```
 
-The `--unpack` flag makes sure that the default files are not just stored in the `default-data` folder in your datapath, but unpacked in a way that `recommerce` can find them.
-*WARNING*: By using `--unpack`, any files with the same names will be overwritten, so use with caution!
+The `-unpack` part flag makes sure that the default files are not just stored in the `default-data` folder in your datapath, but unpacked in a way that `recommerce` can find them.
 
 Now you are ready to run your first exampleprinter session:
 
@@ -162,6 +163,12 @@ pytest
 
 ```terminal
 pytest -v
+```
+
+Additionally, if you have installed the `recommerce` package and the `tests`-folder is located in your `datapath`, you can use the following command to run the tests with coverage as outlined in [Coverage](#coverage):
+
+```terminal
+recommerce --test
 ```
 
 ### 4.2. Webserver Tests
