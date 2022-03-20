@@ -8,7 +8,7 @@ class Config(models.Model):
 	def as_dict(self) -> dict:
 		environment_dict = self.environment.as_dict() if self.environment is not None else {'environment': None}
 		hyperparameter_dict = self.hyperparameter.as_dict() if self.hyperparameter is not None else {'hyperparameter': None}
-		return {'environment': environment_dict, 'hyperparameter': hyperparameter_dict}
+		return remove_none_values_from_dict({'environment': environment_dict, 'hyperparameter': hyperparameter_dict})
 
 
 class EnvironmentConfig(models.Model):
@@ -20,23 +20,39 @@ class EnvironmentConfig(models.Model):
 	task = models.CharField(max_length=14, choices=((1, 'training'), (2, 'monitoring'), (3, 'exampleprinter')), null=True)
 
 	def as_dict(self) -> dict:
-		return {
+		agents_dict = self.agents.as_dict() if self.agents is not None else None
+		return remove_none_values_from_dict({
 			'enable_live_draw': self.enable_live_draw,
 			'episodes': self.episodes,
 			'plot_interval': self.plot_interval,
 			'marketplace': self.marketplace,
-			'task': self.task
-		}
+			'task': self.task,
+			'agents': agents_dict
+		})
 
 
 class AgentsConfig(models.Model):
-	pass
-
+	def as_dict(self) -> dict:
+		rulebased = self.rulebasedagentconfig_set.all().first()
+		cerebuy = self.cerebuyagentqlearningconfig_set.all().first()
+		# at the moment, this can be at most one each
+		rulebased_dict = rulebased.as_dict() if rulebased is not None else None
+		cerbuy_dict = cerebuy.as_dict() if cerebuy is not None else None
+		return remove_none_values_from_dict({
+			'CE Rebuy Agent (QLearning)': cerbuy_dict,
+			'Rule_Based Agent': rulebased_dict
+		})
 
 class RuleBasedAgentConfig(models.Model):
 	agents_config = models.ForeignKey('AgentsConfig', on_delete=models.DO_NOTHING, null=True)
 	agent_class = models.CharField(max_length=100, null=True)
 	argument = models.CharField(max_length=200, null=True)
+
+	def as_dict(self) -> dict:
+		return remove_none_values_from_dict({
+			'agent_class': self.agent_class,
+			'argument': self.argument
+		})
 
 
 class CERebuyAgentQLearningConfig(models.Model):
@@ -44,13 +60,24 @@ class CERebuyAgentQLearningConfig(models.Model):
 	agent_class = models.CharField(max_length=100, null=True)
 	argument = models.CharField(max_length=200, null=True)
 
+	def as_dict(self) -> dict:
+		return remove_none_values_from_dict({
+			'agent_class': self.agent_class,
+			'argument': self.argument
+		})
+
 
 class HyperparameterConfig(models.Model):
 	rl = models.ForeignKey('RLConfig', on_delete=models.DO_NOTHING, null=True)
 	sim_market = models.ForeignKey('SimMarketConfig', on_delete=models.DO_NOTHING, null=True)
 
 	def as_dict(self) -> dict:
-		return {'test': 'bla'}
+		sim_market_dict = self.sim_market.as_dict() if self.sim_market is not None else {'sim_market': None}
+		rl_dict = self.rl.as_dict() if self.rl is not None else {'rl': None}
+		return remove_none_values_from_dict({
+			'rl': rl_dict,
+			'sim_market': sim_market_dict
+		})
 
 
 class RlConfig(models.Model):
@@ -64,9 +91,21 @@ class RlConfig(models.Model):
 	epsilon_start = models.FloatField(null=True)
 	epsilon_final = models.FloatField(null=True)
 
+	def as_dict(self) -> dict:
+		return remove_none_values_from_dict({
+			'gamma': self.gamma,
+			'batch_size': self.batch_size,
+			'replay_size': self.replay_size,
+			'learning_rate': self.learning_rate,
+			'sync_target_frames': self.sync_target_frames,
+			'replay_start_size': self.replay_start_size,
+			'epsilon_decay_last_frame': self.epsilon_decay_last_frame,
+			'epsilon_start': self.epsilon_start,
+			'epsilon_final': self.epsilon_final
+		})
+
 
 class SimMarketConfig(models.Model):
-	# id = models.CharField(max_length=50, primary_key=True)
 	max_storage = models.IntegerField(null=True)
 	episode_size = models.IntegerField(null=True)
 	max_price = models.IntegerField(null=True)
@@ -74,6 +113,17 @@ class SimMarketConfig(models.Model):
 	number_of_customers = models.IntegerField(null=True)
 	production_price = models.IntegerField(null=True)
 	storage_cost_per_product = models.FloatField(null=True)
+
+	def as_dict(self) -> dict:
+		return remove_none_values_from_dict({
+			'max_storage': self.max_storage,
+			'episode_size': self.episode_size,
+			'max_price': self.max_price,
+			'max_quality': self.max_quality,
+			'number_of_customers': self.number_of_customers,
+			'production_price': self.production_price,
+			'storage_cost_per_product': self.storage_cost_per_product
+		})
 
 
 def get_config_field_names(model):
@@ -96,3 +146,6 @@ def to_config_class_name(name: str) -> str:
 	# remove all whitespaces:
 	class_name = ''.join([capitalize(x) for x in class_name.split(' ')])
 	return ''.join([capitalize(x) for x in class_name.split('_')]) + 'Config'
+
+def remove_none_values_from_dict(dict_with_none_values: dict) -> dict:
+	return {k: v for k, v in dict_with_none_values.items() if v is not None}

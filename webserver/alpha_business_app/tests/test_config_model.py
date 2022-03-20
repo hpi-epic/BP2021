@@ -1,7 +1,8 @@
+from cgi import test
 from django.test import TestCase
 
 from ..models.config import *
-from ..models.config import get_config_field_names
+from ..models.config import get_config_field_names, remove_none_values_from_dict
 
 
 class ConfigTest(TestCase):
@@ -139,5 +140,11 @@ class ConfigTest(TestCase):
 			}
 		}
 		print('TEST STARTS HERE')
+		print(final_config.as_dict())
+		print(expected_dict)
 		assert expected_dict == final_config.as_dict()
 		print('TEST ENDS HERE')
+
+	def test_remove_none_values_from_dict(self):
+		test_dict = {'test': 'test', 'test2': None}
+		assert {'test': 'test'} == remove_none_values_from_dict(test_dict)
