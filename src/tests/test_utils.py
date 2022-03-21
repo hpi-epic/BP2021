@@ -1,9 +1,8 @@
 from importlib import reload
-from unittest.mock import mock_open, patch
+from unittest.mock import Mock, mock_open, patch
 
 import numpy as np
 import pytest
-from torch.utils.tensorboard import SummaryWriter
 
 import configuration.hyperparameter_config as hyperparameter_config
 import configuration.utils as ut
@@ -77,15 +76,16 @@ testcases_write_dict_tensorboard = [
 
 @pytest.mark.parametrize('dictionary, counter, is_cumulative', testcases_write_dict_tensorboard)
 def test_write_dict_to_tensorboard(dictionary: dict, counter: int, is_cumulative: bool):
-	with patch('torch.utils.tensorboard.SummaryWriter.add_scalars') as mock_add_scalars:
-		with patch('torch.utils.tensorboard.SummaryWriter.add_scalar') as mock_add_scalar:
-			ut.write_dict_to_tensorboard(SummaryWriter(), dictionary, counter, is_cumulative)
 
-			for name, content in dictionary.items():
-				if is_cumulative:
-					mock_add_scalars.assert_any_call(f'cumulated_{name}', content, counter)
-				else:
-					mock_add_scalar.assert_any_call(name, content, counter)
+	mock_writer = Mock()
+
+	ut.write_dict_to_tensorboard(mock_writer, dictionary, counter, is_cumulative)
+
+	for name, content in dictionary.items():
+		if is_cumulative:
+			mock_writer.add_scalars.assert_any_call(f'cumulated_{name}', content, counter)
+		else:
+			mock_writer.add_scalar.assert_any_call(name, content, counter)
 
 
 # contains two dicts with the same keys, the first one is the dict to divide by 2, the second one contains the expected result
