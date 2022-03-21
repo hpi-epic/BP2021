@@ -17,8 +17,10 @@
 					<th>last checked at</th>
 					<th>health status</th>
 					<th>get health status</th>
+					<th>toggle pause</th>
 					<th>download</th>
 					<th>logs</th>
+					<th>stop and remove container</th>
 					<th>tensorboard</th>
 				</tr>
 				<tr>
@@ -29,11 +31,17 @@
 					<td class="button_row" >
 						{% include "api_buttons/health_button.html" %}
 					</td>
+					<td class="button_row">
+						{% include "api_buttons/pause_button.html" %}
+					</td>
 					<td class="button_row" >
 						{% include "api_buttons/download_button.html" %}
 					</td>
 					<td class="button_row" >
 						{% include "api_buttons/logs_button.html" %}
+					</td>
+					<td class="button_row">
+						{% include "api_buttons/stop_button.html" %}
 					</td>
 					<td class="button_row" >
 						{% include "api_buttons/tensorboard_button.html" %}
@@ -52,6 +60,5 @@
 			</div>
 		</div>
 		<br>
-
 	</body>
 </html>
