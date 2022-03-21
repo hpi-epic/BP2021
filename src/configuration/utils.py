@@ -2,7 +2,6 @@ import os
 import random
 
 import numpy as np
-import torch
 
 from configuration.hyperparameter_config import config
 from monitoring.svg_manipulation import SVGManipulator
@@ -26,11 +25,9 @@ def shuffle_quality() -> int:
 
 
 def softmax(preferences: np.array) -> np.array:
-	# preferences = np.minimum(np.ones(len(preferences)) * 20, preferences)  # This avoids an overflow error in the next line
-	# exp_preferences = np.exp(preferences)
-	# return exp_preferences / sum(exp_preferences)
-	tensor_preferences = torch.tensor(preferences)
-	return torch.nn.functional.softmax(tensor_preferences, dim=0).numpy()
+	preferences = np.minimum(np.ones(len(preferences)) * 20, preferences)  # This avoids an overflow error in the next line
+	exp_preferences = np.exp(preferences)
+	return exp_preferences / sum(exp_preferences)
 
 
 def shuffle_from_probabilities(probabilities: np.array) -> int:
