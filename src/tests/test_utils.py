@@ -1,5 +1,5 @@
 from importlib import reload
-from unittest.mock import PropertyMock, patch
+from unittest.mock import mock_open, patch
 
 import numpy as np
 import pytest
@@ -7,6 +7,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 import configuration.hyperparameter_config as hyperparameter_config
 import configuration.utils as ut
+import tests.utils_tests as ut_t
 from monitoring.svg_manipulation import SVGManipulator
 
 testcases_cartesian_product = [
@@ -66,6 +67,7 @@ testcases_divide_content_of_dict = [(	{
 		'profits/all': {'vendor_0': 1.75, 'vendor_1': 3.55},
 	})]
 
+# contains three dicts with the same keys, the third is the sum of the first two key by key
 testcases_add_content_dicts = [(
 	{
 		'customer/buy_nothing': 1.,
@@ -91,7 +93,7 @@ testcases_add_content_dicts = [(
 		'actions/price_new': {'vendor_0': 4., 'vendor_1': 3.},
 		'owner/throw_away': 1.,
 		'owner/rebuys': {'vendor_0': 4., 'vendor_1': 4.5},
-		'profits/rebuy_cost': {'vendor_0': -6., 'vendor_1': -1.5},
+		'profits/rebuy_cost': {'vendor_0': -5., 'vendor_1': -1.5},
 		'customer/purchases_refurbished': {'vendor_0': 1.5, 'vendor_1': 4.5},
 		'customer/purchases_new': {'vendor_0': 3.5, 'vendor_1': 3.5},
 		'profits/by_selling_refurbished': {'vendor_0': 3, 'vendor_1': 8.5},
@@ -112,7 +114,7 @@ testcases_add_content_dicts = [(
 		'customer/purchases_new': {'vendor_0': 6, 'vendor_1': 6},
 		'profits/by_selling_refurbished': {'vendor_0': 5, 'vendor_1': 16},
 		'profits/by_selling_new': {'vendor_0': 16, 'vendor_1': 6},
-		'profits/storage_cost': {'vendor_0': -4.5, 'vendor_1': -8.9},
+		'profits/storage_cost': {'vendor_0': -2.5, 'vendor_1': -8.9},
 		'actions/price_rebuy': {'vendor_0': 3, 'vendor_1': 2},
 		'profits/all': {'vendor_0': 4.5, 'vendor_1': 8.1},
 	})]
@@ -192,12 +194,14 @@ testcases_write_dict_tensorboard = [
 
 
 @pytest.mark.parametrize('max_quality', testcases_shuffle_quality)
-def test_shuffle_quality(max_quality: int):
-	# pytest.set_trace()
-	with patch.object(hyperparameter_config.config, 'max_quality', new_callable=PropertyMock) as mock_quality:
-		# config = hyperparameter_config.HyperparameterConfig()
-		# reload(hyperparameter_config)
-		mock_quality.return_value = max_quality
+def test_shuffle_quality(max_quality: str):
+	# with patch('configuration.hyperparameter_config.config.max_quality', max_quality):
+	mock_json = (ut_t.create_hyperparameter_mock_json(
+		sim_market=ut_t.create_hyperparameter_mock_json_sim_market(max_quality=str(max_quality))))
+	with patch('builtins.open', mock_open(read_data=mock_json)) as mock_file:
+		ut_t.check_mock_file(mock_file, mock_json)
+		import_config()
+		reload(ut)
 		quality = ut.shuffle_quality()
 		assert quality <= max_quality and quality >= 1
 
@@ -248,10 +252,15 @@ def test_write_content_of_dict_to_overview_svg(
 		episode_dictionary: dict,
 		cumulated_dictionary: dict,
 		expected: dict):
-
-	with patch('monitoring.svg_manipulation.SVGManipulator.write_dict_to_svg') as mock_write_dict_to_svg:
-		ut.write_content_of_dict_to_overview_svg(SVGManipulator(), episode, episode_dictionary, cumulated_dictionary)
-		mock_write_dict_to_svg.assert_called_once_with(target_dictionary=expected)
+	mock_json = (ut_t.create_hyperparameter_mock_json(
+		sim_market=ut_t.create_hyperparameter_mock_json_sim_market(episode_size=str(50), number_of_customers=str(20), production_price=str(3))))
+	with patch('builtins.open', mock_open(read_data=mock_json)) as mock_file:
+		ut_t.check_mock_file(mock_file, mock_json)
+		import_config()
+		reload(ut)
+		with patch('monitoring.svg_manipulation.SVGManipulator.write_dict_to_svg') as mock_write_dict_to_svg:
+			ut.write_content_of_dict_to_overview_svg(SVGManipulator(), episode, episode_dictionary, cumulated_dictionary)
+			mock_write_dict_to_svg.assert_called_once_with(target_dictionary=expected)
 
 
 def import_config() -> hyperparameter_config.HyperparameterConfig:
