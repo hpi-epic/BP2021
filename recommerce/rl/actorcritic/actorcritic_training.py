@@ -53,9 +53,7 @@ class ActorCriticTrainer(RLTrainer):
 		environments = [self.marketplace_class() for _ in range(total_envs)]
 		info_accumulators = [None for _ in range(total_envs)]
 
-		self.progress_bar = trange(number_of_training_steps, unit=' frames')
-
-		for step_number in self.progress_bar:
+		for step_number in trange(number_of_training_steps, unit=' frames', leave=False):
 			chosen_envs = self.choose_random_envs(total_envs)
 
 			states = []

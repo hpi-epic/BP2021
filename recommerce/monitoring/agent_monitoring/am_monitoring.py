@@ -2,6 +2,8 @@ import os
 import signal
 import sys
 
+from tqdm import trange
+
 import recommerce.monitoring.agent_monitoring.am_configuration as am_configuration
 import recommerce.monitoring.agent_monitoring.am_evaluation as am_evaluation
 from recommerce.configuration.environment_config import AgentMonitoringEnvironmentConfig, EnvironmentConfigLoader
@@ -41,11 +43,11 @@ class Monitor():
 		# initialize the rewards list with a list for each agent
 		rewards = [[] for _ in range(len(self.configurator.agents))]
 
-		for episode in range(1, self.configurator.episodes + 1):
+		for episode in trange(1, self.configurator.episodes + 1, unit=' episodes', leave=False):
 			# reset the state once to be used by all agents
 			default_state = self.configurator.marketplace.reset()
 
-			for i in range(len(self.configurator.agents)):
+			for current_agent in range(len(self.configurator.agents)):
 				# reset marketplace, bit hacky, if you find a better solution feel free
 				self.configurator.marketplace.reset()
 				self.configurator.marketplace.state = default_state
@@ -57,18 +59,14 @@ class Monitor():
 
 				# run marketplace for this agent
 				while not is_done:
-					action = self.configurator.agents[i].policy(state)
+					action = self.configurator.agents[current_agent].policy(state)
 					state, step_reward, is_done, _ = self.configurator.marketplace.step(action)
 					episode_reward += step_reward
 
 				# removing this will decrease our performance when we still want to do live drawing
 				# could think about a caching strategy for live drawing
 				# add the reward to the current agent's reward-Array
-				rewards[i] += [episode_reward]
-
-			# after all agents have run the episode
-			if (episode % 100) == 0:
-				print(f'Running {episode}th episode...')
+				rewards[current_agent] += [episode_reward]
 
 			if (episode % self.configurator.plot_interval) == 0:
 				self.evaluator.create_histogram(rewards, f'episode_{episode}')

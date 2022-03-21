@@ -49,7 +49,6 @@ class RLTrainer(ABC):
 		"""
 		Handle any interruptions to the running process, such as a `KeyboardInterrupt`-event.
 		"""
-		self.progress_bar.close()
 		print('\nAborting training...')
 		self._end_of_training()
 		sys.exit(0)
