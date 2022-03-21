@@ -103,6 +103,21 @@ def test_get_class_invalid_class():
 	assert 'The string you passed could not be resolved to a class' in str(error_message.value)
 
 
+instantiate_invalid_get_class_return_testcases = [
+	('market.circular.circular_sim_market.CircularEconomy', 'CircularEconomy'),
+	('market.circular.circular_sim_market.CircularEconomyRebuyPrice', 'CircularEconomyRebuyPrice'),
+	('market.sim_market.SimMarket', 'SimMarket'),
+	('market.linear.linear_sim_market.LinearEconomy', 'LinearEconomy')
+]
+
+
+@pytest.mark.parametrize('class_string, splitted_class_string', instantiate_invalid_get_class_return_testcases)
+def test_instantiate_invalid_get_class_return(class_string, splitted_class_string):
+	with pytest.raises(TypeError) as error_message:
+		env_config.EnvironmentConfig._get_class(env_config.EnvironmentConfig, class_string)()
+	assert str(error_message.value).startswith(f'Can\'t instantiate abstract class {splitted_class_string} with abstract methods')
+
+
 def test_get_class_invalid_module():
 	with pytest.raises(ModuleNotFoundError) as error_message:
 		env_config.EnvironmentConfig._get_class(env_config.EnvironmentConfig, 'notAModule.ValidClass')
