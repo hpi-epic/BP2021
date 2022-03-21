@@ -171,6 +171,5 @@ def write_content_of_dict_to_overview_svg(
 		'b_sales_new': str(episode_dictionary['customer/purchases_new']['vendor_1']),
 		'b_sales_used': str(episode_dictionary['customer/purchases_refurbished']['vendor_1']),
 	}
-	# print((episode, episode_dictionary, cumulated_dictionary, translated_dict))
 
 	manipulator.write_dict_to_svg(target_dictionary=translated_dict)

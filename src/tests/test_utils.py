@@ -10,14 +10,31 @@ import configuration.utils as ut
 import tests.utils_tests as ut_t
 from monitoring.svg_manipulation import SVGManipulator
 
-testcases_cartesian_product = [
-	([2, 3, 4], [5, 6], [(2, 5), (2, 6), (3, 5), (3, 6), (4, 5), (4, 6)]),
-	([7, 5], [9, 4], [(7, 9), (7, 4), (5, 9), (5, 4)]),
-	(['Hund', 'Katze'], ['Maus'], [('Hund', 'Maus'), ('Katze', 'Maus')]),
-	([('a', 'b'), ('c', 'd')], [1, 2], [(('a', 'b'), 1), (('a', 'b'), 2), (('c', 'd'), 1), (('c', 'd'), 2)])
-]
 
-testcases_shuffle_quality = [1., 10., 100., 1000.]
+def import_config() -> hyperparameter_config.HyperparameterConfig:
+	"""
+	Reload the hyperparameter_config file to update the config variable with the mocked values.
+
+	Returns:
+		HyperparameterConfig: The config object.
+	"""
+	reload(hyperparameter_config)
+	return hyperparameter_config.config
+
+
+testcases_shuffle_quality = [1, 10, 100, 1000]
+
+
+@pytest.mark.parametrize('max_quality', testcases_shuffle_quality)
+def test_shuffle_quality(max_quality: int):
+	mock_json = ut_t.create_hyperparameter_mock_json(sim_market=ut_t.create_hyperparameter_mock_json_sim_market(max_quality=str(max_quality)))
+	with patch('builtins.open', mock_open(read_data=mock_json)) as mock_file:
+		ut_t.check_mock_file(mock_file, mock_json)
+		import_config()
+		reload(ut)
+		quality = ut.shuffle_quality()
+		assert quality <= max_quality and quality >= 1
+
 
 testcases_softmax = [
 	(
@@ -29,6 +46,47 @@ testcases_softmax = [
 		[0.5, 0.5]
 	)
 ]
+
+
+@pytest.mark.parametrize('input_array, expected', testcases_softmax)
+def test_softmax(input_array: np.array, expected: np.array):
+	assert np.allclose(ut.softmax(input_array), expected)
+
+
+def test_shuffle_from_probabilities():
+	pass
+
+
+testcases_cartesian_product = [
+	([2, 3, 4], [5, 6], [(2, 5), (2, 6), (3, 5), (3, 6), (4, 5), (4, 6)]),
+	([7, 5], [9, 4], [(7, 9), (7, 4), (5, 9), (5, 4)]),
+	(['Hund', 'Katze'], ['Maus'], [('Hund', 'Maus'), ('Katze', 'Maus')]),
+	([('a', 'b'), ('c', 'd')], [1, 2], [(('a', 'b'), 1), (('a', 'b'), 2), (('c', 'd'), 1), (('c', 'd'), 2)])
+]
+
+
+@pytest.mark.parametrize('list_a, list_b, expected', testcases_cartesian_product)
+def test_cartesian_product(list_a, list_b, expected):
+	assert ut.cartesian_product(list_a, list_b) == expected
+
+
+testcases_write_dict_tensorboard = [
+	({'value_A': 1, 'value_B': 100}, 10, False),
+	({'value_A': {1: 10, 2: 20}, 'value_B': {1: 9, 2: 19}}, 11, True)]
+
+
+@pytest.mark.parametrize('dictionary, counter, is_cumulative', testcases_write_dict_tensorboard)
+def test_write_dict_to_tensorboard(dictionary: dict, counter: int, is_cumulative: bool):
+	with patch('torch.utils.tensorboard.SummaryWriter.add_scalars') as mock_add_scalars:
+		with patch('torch.utils.tensorboard.SummaryWriter.add_scalar') as mock_add_scalar:
+			ut.write_dict_to_tensorboard(SummaryWriter(), dictionary, counter, is_cumulative)
+
+			for name, content in dictionary.items():
+				if is_cumulative:
+					mock_add_scalars.assert_any_call(f'cumulated_{name}', content, counter)
+				else:
+					mock_add_scalar.assert_any_call(name, content, counter)
+
 
 # contains two dicts with the same keys, the first one is the dict to divide by 2, the second one contains the expected result
 testcases_divide_content_of_dict = [(	{
@@ -66,6 +124,12 @@ testcases_divide_content_of_dict = [(	{
 		'actions/price_rebuy': {'vendor_0': 1., 'vendor_1': 0.5},
 		'profits/all': {'vendor_0': 1.75, 'vendor_1': 3.55},
 	})]
+
+
+@pytest.mark.parametrize('input_dict, divisor, expected_dict', testcases_divide_content_of_dict)
+def test_divide_content_of_dict(input_dict: dict, divisor: float, expected_dict: dict):
+	assert ut.divide_content_of_dict(input_dict, divisor) == expected_dict
+
 
 # contains three dicts with the same keys, the third is the sum of the first two key by key
 testcases_add_content_dicts = [(
@@ -118,6 +182,11 @@ testcases_add_content_dicts = [(
 		'actions/price_rebuy': {'vendor_0': 3, 'vendor_1': 2},
 		'profits/all': {'vendor_0': 4.5, 'vendor_1': 8.1},
 	})]
+
+
+@pytest.mark.parametrize('dict_a, dict_b, expected_dict', testcases_add_content_dicts)
+def test_add_content_of_two_dicts(dict_a: dict, dict_b: dict, expected_dict: dict):
+	assert ut.add_content_of_two_dicts(dict_a, dict_b) == expected_dict
 
 
 testcases_write_dict_svg = [(
@@ -188,87 +257,19 @@ testcases_write_dict_svg = [(
 	}
 )]
 
-testcases_write_dict_tensorboard = [
-	({'value_A': 1, 'value_B': 100}, 10, False),
-	({'value_A': {1: 10, 2: 20}, 'value_B': {1: 9, 2: 19}}, 11, True)]
 
-
-@pytest.mark.parametrize('max_quality', testcases_shuffle_quality)
-def test_shuffle_quality(max_quality: str):
-	# with patch('configuration.hyperparameter_config.config.max_quality', max_quality):
-	mock_json = (ut_t.create_hyperparameter_mock_json(
-		sim_market=ut_t.create_hyperparameter_mock_json_sim_market(max_quality=str(max_quality))))
-	with patch('builtins.open', mock_open(read_data=mock_json)) as mock_file:
-		ut_t.check_mock_file(mock_file, mock_json)
-		import_config()
-		reload(ut)
-		quality = ut.shuffle_quality()
-		assert quality <= max_quality and quality >= 1
-
-
-@pytest.mark.parametrize('input_array, expected', testcases_softmax)
-def test_softmax(input_array: np.array, expected: np.array):
-	assert np.allclose(ut.softmax(input_array), expected)
-
-
-def test_shuffle_from_probabilities():
-	pass
-
-
-@pytest.mark.parametrize('list_a, list_b, expected', testcases_cartesian_product)
-def test_cartesian_product(list_a, list_b, expected):
-	assert ut.cartesian_product(list_a, list_b) == expected
-
-
-@pytest.mark.parametrize('dictionary, counter, is_cumulative', testcases_write_dict_tensorboard)
-def test_write_dict_to_tensorboard(dictionary: dict, counter: int, is_cumulative: bool):
-	# sourcery skip: hoist-loop-from-if, hoist-statement-from-if
-	with patch('torch.utils.tensorboard.SummaryWriter.add_scalars') as mock_add_scalars:
-		with patch('torch.utils.tensorboard.SummaryWriter.add_scalar') as mock_add_scalar:
-			ut.write_dict_to_tensorboard(SummaryWriter(), dictionary, counter, is_cumulative)
-
-			if(is_cumulative):
-				for name, content in dictionary.items():
-					mock_add_scalars.assert_any_call(f'cumulated_{name}', content, counter)
-			else:
-				for name, content in dictionary.items():
-					mock_add_scalar.assert_any_call(name, content, counter)
-
-
-@pytest.mark.parametrize('input_dict, divisor, expected_dict', testcases_divide_content_of_dict)
-def test_divide_content_of_dict(input_dict: dict, divisor: float, expected_dict: dict):
-	assert ut.divide_content_of_dict(input_dict, divisor) == expected_dict
-
-
-@pytest.mark.parametrize('dict_a, dict_b, expected_dict', testcases_add_content_dicts)
-def test_add_content_of_two_dicts(dict_a: dict, dict_b: dict, expected_dict: dict):
-	assert ut.add_content_of_two_dicts(dict_a, dict_b) == expected_dict
-
-
-@pytest.mark.parametrize('episode, episode_dictionary, cumulated_dictionary, expected',
-	testcases_write_dict_svg)
+@pytest.mark.parametrize('episode, episode_dictionary, cumulated_dictionary, expected', testcases_write_dict_svg)
 def test_write_content_of_dict_to_overview_svg(
 		episode: int,
 		episode_dictionary: dict,
 		cumulated_dictionary: dict,
 		expected: dict):
 	mock_json = (ut_t.create_hyperparameter_mock_json(
-		sim_market=ut_t.create_hyperparameter_mock_json_sim_market(episode_length=str(50), number_of_customers=str(20), production_price=str(3))))
+		sim_market=ut_t.create_hyperparameter_mock_json_sim_market(episode_length='50', number_of_customers='20', production_price='3')))
 	with patch('builtins.open', mock_open(read_data=mock_json)) as mock_file:
 		ut_t.check_mock_file(mock_file, mock_json)
 		import_config()
 		reload(ut)
 		with patch('monitoring.svg_manipulation.SVGManipulator.write_dict_to_svg') as mock_write_dict_to_svg:
 			ut.write_content_of_dict_to_overview_svg(SVGManipulator(), episode, episode_dictionary, cumulated_dictionary)
-			mock_write_dict_to_svg.assert_called_once_with(target_dictionary=expected)
-
-
-def import_config() -> hyperparameter_config.HyperparameterConfig:
-	"""
-	Reload the hyperparameter_config file to update the config variable with the mocked values.
-
-	Returns:
-		HyperparameterConfig: The config object.
-	"""
-	reload(hyperparameter_config)
-	return hyperparameter_config.config
+		mock_write_dict_to_svg.assert_called_once_with(target_dictionary=expected)
