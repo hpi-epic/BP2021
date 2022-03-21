@@ -52,8 +52,16 @@ def test_softmax(input_array: np.array, expected: np.array):
 	assert np.allclose(ut.softmax(input_array), expected)
 
 
-def test_shuffle_from_probabilities():
-	pass
+testcases_shuffle_from_probabilities = [
+	np.array([0.1, 0.2, 0.3, 0.4, 0.5]),
+	np.array([0.1, 0.2, 0.3, 0.3, 0.01, 0.05, 0.04]),
+	np.array([0., 1.])
+	]
+
+
+@pytest.mark.parametrize('probabilities', testcases_shuffle_from_probabilities)
+def test_shuffle_from_probabilities(probabilities: np.array):
+	assert ut.shuffle_from_probabilities(probabilities) < len(probabilities)
 
 
 testcases_cartesian_product = [
