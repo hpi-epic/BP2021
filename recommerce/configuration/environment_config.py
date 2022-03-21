@@ -105,6 +105,8 @@ class EnvironmentConfig(ABC):
 			# Create a list of tuples (agent_class, modelfile_string)
 			self.agent = list(zip(agent_classes, iter(modelfile_list)))
 
+			print([agent[0] for agent in self.agent])
+
 			assert all(issubclass(agent[0], CircularAgent) == issubclass(self.marketplace, CircularEconomy) for agent in self.agent), \
 				f'The agents and marketplace must be of the same economy type (Linear/Circular): {self.agent} and {self.marketplace}'
 		else:
