@@ -52,4 +52,6 @@ def upload(request) -> HttpResponse:
 
 
 def configurator(request):
+	if request.method == 'POST':
+		print(request.POST)
 	return render(request, 'configurator.html', {'all_configurations': Config.objects.all()})

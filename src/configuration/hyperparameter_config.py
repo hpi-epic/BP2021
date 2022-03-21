@@ -89,6 +89,7 @@ class HyperparameterConfig():
 		Args:
 			config (dict): The dictionary from which to read the new values.
 		"""
+		# no asserts for epsilon start and epsilon final
 		assert config['learning_rate'] > 0 and config['learning_rate'] < 1, 'learning_rate should be between 0 and 1 (excluded)'
 		assert config['gamma'] >= 0 and config['gamma'] < 1, 'gamma should be between 0 (included) and 1 (excluded)'
 		assert config['batch_size'] > 0, 'batch_size should be greater than 0'
