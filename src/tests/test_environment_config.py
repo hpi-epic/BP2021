@@ -14,7 +14,7 @@ valid_training_dict = {
 	'marketplace': 'market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
 	'agents': {
 		'CE Rebuy Agent (QLearning)': {
-			'class': 'rl.q_learning.q_learning_agent.QLearningCERebuyAgent',
+			'agent_class': 'rl.q_learning.q_learning_agent.QLearningCERebuyAgent',
 			'argument': None
 		}
 	}
@@ -28,11 +28,11 @@ valid_agent_monitoring_dict = {
 	'marketplace': 'market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
 	'agents': {
 		'Rule_Based Agent': {
-			'class': 'market.circular.circular_vendors.RuleBasedCERebuyAgent',
+			'agent_class': 'market.circular.circular_vendors.RuleBasedCERebuyAgent',
 			'argument': None
 		},
 		'CE Rebuy Agent (QLearning)': {
-			'class': 'rl.q_learning.q_learning_agent.QLearningCERebuyAgent',
+			'agent_class': 'rl.q_learning.q_learning_agent.QLearningCERebuyAgent',
 			'argument': 'CircularEconomyRebuyPriceMonopolyScenario_QLearningCERebuyAgent.dat'
 		}
 	}
@@ -43,7 +43,7 @@ valid_exampleprinter_dict = {
 	'marketplace': 'market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
 	'agents': {
 		'CE Rebuy Agent (QLearning)': {
-			'class': 'rl.q_learning.q_learning_agent.QLearningCERebuyAgent',
+			'agent_class': 'rl.q_learning.q_learning_agent.QLearningCERebuyAgent',
 			'argument': 'CircularEconomyRebuyPriceMonopolyScenario_QLearningCERebuyAgent.dat'
 		}
 	}
@@ -54,7 +54,7 @@ invalid_agent_dict = {
 	'marketplace': 'market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
 	'agents': {
 		'Agent_name': {
-			'class': 'rl.q_learning.q_learning_agent.QLearningCERebuyAgent',
+			'agent_class': 'rl.q_learning.q_learning_agent.QLearningCERebuyAgent',
 			'argument': None
 		}
 	}
@@ -65,7 +65,7 @@ invalid_task_dict = {
 	'marketplace': 'market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
 	'agents': {
 		'Agent_name': {
-			'class': 'rl.q_learning.q_learning_agent.QLearningCERebuyAgent',
+			'agent_class': 'rl.q_learning.q_learning_agent.QLearningCERebuyAgent',
 			'argument': 'CircularEconomyRebuyPriceMonopolyScenario_QLearningCERebuyAgent.dat'
 		}
 	}
@@ -80,9 +80,9 @@ def test_abstract_parent_class():
 
 def test_str_representation():
 	config = env_config.TrainingEnvironmentConfig(valid_training_dict)
-	assert str(config) == "TrainingEnvironmentConfig: {'task': 'training', \
-'marketplace': <class 'market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario'>, \
-'agent': <class 'rl.q_learning.q_learning_agent.QLearningCERebuyAgent'>}"
+	assert str(config) == ("TrainingEnvironmentConfig: {'task': 'training', "
+		"'marketplace': <market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario>, "
+		"'agent': (<class 'rl.q_learning.q_learning_agent.QLearningCERebuyAgent'>, None)}")
 
 
 get_class_testcases = [
@@ -151,7 +151,7 @@ def test_valid_ConfigLoader_load_training(task, marketplace, agents):
 
 
 configLoader_is_valid_testcases = [
-	(invalid_agent_dict, False, 'This agent must have a "modelfile" field'),
+	(invalid_agent_dict, False, 'The "argument" field of this agent must be a str'),
 	(invalid_task_dict, False, 'The specified task is unknown: not_existing_test_task'),
 	(valid_exampleprinter_dict, True, 'Your config is valid.')
 ]

@@ -2,6 +2,7 @@
 import importlib
 import json
 import os
+import re
 from abc import ABC, abstractmethod
 
 from market.circular.circular_sim_market import CircularEconomy
@@ -30,7 +31,8 @@ class EnvironmentConfig(ABC):
 		Returns:
 			str: The instance variables as a dictionary.
 		"""
-		return f'{self.__class__.__name__}: {self.__dict__}'
+		current_print = f'{self.__class__.__name__}: {self.__dict__}'
+		return re.sub(r'\b object at 0x([0-9]|[A-F])*', '', current_print)
 
 	def _validate_config(self, config: dict, single_agent: bool, needs_modelfile: bool) -> None:
 		"""
