@@ -1,5 +1,5 @@
 from importlib import reload
-from unittest.mock import patch
+from unittest.mock import PropertyMock, patch
 
 import numpy as np
 import pytest
@@ -16,7 +16,7 @@ testcases_cartesian_product = [
 	([('a', 'b'), ('c', 'd')], [1, 2], [(('a', 'b'), 1), (('a', 'b'), 2), (('c', 'd'), 1), (('c', 'd'), 2)])
 ]
 
-testcases_shuffle_quality = [1, 10, 100, 1000, 10000]
+testcases_shuffle_quality = [1., 10., 100., 1000.]
 
 testcases_softmax = [
 	(
@@ -64,6 +64,57 @@ testcases_divide_content_of_dict = [(	{
 		'profits/storage_cost': {'vendor_0': -1.75, 'vendor_1': -3.95},
 		'actions/price_rebuy': {'vendor_0': 1., 'vendor_1': 0.5},
 		'profits/all': {'vendor_0': 1.75, 'vendor_1': 3.55},
+	})]
+
+testcases_add_content_dicts = [(
+	{
+		'customer/buy_nothing': 1.,
+		'state/in_circulation': 227.,
+		'state/in_storage': {'vendor_0': 15.0, 'vendor_1': 39.5},
+		'actions/price_refurbished': {'vendor_0': 2., 'vendor_1': 1.5},
+		'actions/price_new': {'vendor_0': 3., 'vendor_1': 2.},
+		'owner/throw_away': 0.,
+		'owner/rebuys': {'vendor_0': 3., 'vendor_1': 3.5},
+		'profits/rebuy_cost': {'vendor_0': -6., 'vendor_1': -2.5},
+		'customer/purchases_refurbished': {'vendor_0': 0.5, 'vendor_1': 3.5},
+		'customer/purchases_new': {'vendor_0': 2.5, 'vendor_1': 2.5},
+		'profits/by_selling_refurbished': {'vendor_0': 2, 'vendor_1': 7.5},
+		'profits/by_selling_new': {'vendor_0': 7.5, 'vendor_1': 2.5},
+		'profits/storage_cost': {'vendor_0': -1.75, 'vendor_1': -3.95},
+		'actions/price_rebuy': {'vendor_0': 1., 'vendor_1': 0.5},
+		'profits/all': {'vendor_0': 1.75, 'vendor_1': 3.55},
+	}, {
+		'customer/buy_nothing': 2.,
+		'state/in_circulation': 228.,
+		'state/in_storage': {'vendor_0': 16.0, 'vendor_1': 40.5},
+		'actions/price_refurbished': {'vendor_0': 3., 'vendor_1': 2.5},
+		'actions/price_new': {'vendor_0': 4., 'vendor_1': 3.},
+		'owner/throw_away': 1.,
+		'owner/rebuys': {'vendor_0': 4., 'vendor_1': 4.5},
+		'profits/rebuy_cost': {'vendor_0': -6., 'vendor_1': -1.5},
+		'customer/purchases_refurbished': {'vendor_0': 1.5, 'vendor_1': 4.5},
+		'customer/purchases_new': {'vendor_0': 3.5, 'vendor_1': 3.5},
+		'profits/by_selling_refurbished': {'vendor_0': 3, 'vendor_1': 8.5},
+		'profits/by_selling_new': {'vendor_0': 8.5, 'vendor_1': 3.5},
+		'profits/storage_cost': {'vendor_0': -0.75, 'vendor_1': -4.95},
+		'actions/price_rebuy': {'vendor_0': 2., 'vendor_1': 1.5},
+		'profits/all': {'vendor_0': 2.75, 'vendor_1': 4.55}
+	}, {
+		'customer/buy_nothing': 3,
+		'state/in_circulation': 455,
+		'state/in_storage': {'vendor_0': 31, 'vendor_1': 80},
+		'actions/price_refurbished': {'vendor_0': 5, 'vendor_1': 4},
+		'actions/price_new': {'vendor_0': 7, 'vendor_1': 5},
+		'owner/throw_away': 1,
+		'owner/rebuys': {'vendor_0': 7, 'vendor_1': 8},
+		'profits/rebuy_cost': {'vendor_0': -11, 'vendor_1': -4},
+		'customer/purchases_refurbished': {'vendor_0': 2, 'vendor_1': 8},
+		'customer/purchases_new': {'vendor_0': 6, 'vendor_1': 6},
+		'profits/by_selling_refurbished': {'vendor_0': 5, 'vendor_1': 16},
+		'profits/by_selling_new': {'vendor_0': 16, 'vendor_1': 6},
+		'profits/storage_cost': {'vendor_0': -4.5, 'vendor_1': -8.9},
+		'actions/price_rebuy': {'vendor_0': 3, 'vendor_1': 2},
+		'profits/all': {'vendor_0': 4.5, 'vendor_1': 8.1},
 	})]
 
 
@@ -137,20 +188,16 @@ testcases_write_dict_svg = [(
 
 testcases_write_dict_tensorboard = [
 	({'value_A': 1, 'value_B': 100}, 10, False),
-	({'value_A': {1: 10, 2: 20}, 'value_B': {1: 9, 2: 19}}, 10, True)]
-
-
-def test_ensure_results_folders_exist():
-	pass
+	({'value_A': {1: 10, 2: 20}, 'value_B': {1: 9, 2: 19}}, 11, True)]
 
 
 @pytest.mark.parametrize('max_quality', testcases_shuffle_quality)
 def test_shuffle_quality(max_quality: int):
 	# pytest.set_trace()
-	with patch('configuration.hyperparameter_config.config') as config:
-		config = hyperparameter_config.HyperparameterConfig()
+	with patch.object(hyperparameter_config.config, 'max_quality', new_callable=PropertyMock) as mock_quality:
+		# config = hyperparameter_config.HyperparameterConfig()
 		# reload(hyperparameter_config)
-		config.max_quality = max_quality
+		mock_quality.return_value = max_quality
 		quality = ut.shuffle_quality()
 		assert quality <= max_quality and quality >= 1
 
@@ -171,15 +218,17 @@ def test_cartesian_product(list_a, list_b, expected):
 
 @pytest.mark.parametrize('dictionary, counter, is_cumulative', testcases_write_dict_tensorboard)
 def test_write_dict_to_tensorboard(dictionary: dict, counter: int, is_cumulative: bool):
-	with patch('torch.utils.tensorboard.SummaryWriter.write_dict_to_svg.add_scalars') as mock_add_scalars:
+	# sourcery skip: hoist-loop-from-if, hoist-statement-from-if
+	with patch('torch.utils.tensorboard.SummaryWriter.add_scalars') as mock_add_scalars:
 		with patch('torch.utils.tensorboard.SummaryWriter.add_scalar') as mock_add_scalar:
 			ut.write_dict_to_tensorboard(SummaryWriter(), dictionary, counter, is_cumulative)
+
 			if(is_cumulative):
 				for name, content in dictionary.items():
-					mock_add_scalars.assert_called_with((name, content, counter))
+					mock_add_scalars.assert_any_call(f'cumulated_{name}', content, counter)
 			else:
 				for name, content in dictionary.items():
-					mock_add_scalar.assert_called_with((name, content, counter))
+					mock_add_scalar.assert_any_call(name, content, counter)
 
 
 @pytest.mark.parametrize('input_dict, divisor, expected_dict', testcases_divide_content_of_dict)
@@ -187,8 +236,9 @@ def test_divide_content_of_dict(input_dict: dict, divisor: float, expected_dict:
 	assert ut.divide_content_of_dict(input_dict, divisor) == expected_dict
 
 
-def test_add_content_of_two_dicts():
-	pass
+@pytest.mark.parametrize('dict_a, dict_b, expected_dict', testcases_add_content_dicts)
+def test_add_content_of_two_dicts(dict_a: dict, dict_b: dict, expected_dict: dict):
+	assert ut.add_content_of_two_dicts(dict_a, dict_b) == expected_dict
 
 
 @pytest.mark.parametrize('episode, episode_dictionary, cumulated_dictionary, expected',
