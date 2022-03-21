@@ -126,7 +126,7 @@ python Path/To/Anaconda3/Scripts/pywin32_postinstall.py -install
 In order to use our project, you must perform the following command:
 
 ```terminal
-pip install -e ./recommerce
+pip install -e .
 ```
 
 This installs the `recommerce` folder (and its subdirectories) as a local pip package. The `-e` flag indicates to pip that the package should be installed in an editable state. This results in the packages not being directly written to where pip dependencies usually would, but only a "link" to you current working directory being created. In order to install the package, we use `setuptools`, which uses the `setup.py`, `setup.cfg` and `pyproject.toml` files located in the `recommerce` directory of the project. The `setup.cfg` file includes all necessary metadata needed to correctly install the project. If you want to properly install the project as a pip package, use the following command:
