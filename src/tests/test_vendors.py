@@ -4,9 +4,13 @@ from unittest.mock import mock_open, patch
 import pytest
 from numpy import random
 
-import agents.vendors as vendors
 import configuration.hyperparameter_config as hyperparameter_config
+import market.circular.circular_vendors as circular_vendors
+import market.linear.linear_vendors as linear_vendors
+import market.vendors as vendors
 import tests.utils_tests as ut_t
+from rl.q_learning.q_learning_agent import QLearningAgent, QLearningCEAgent, QLearningCERebuyAgent, QLearningLEAgent
+from rl.reinforcement_learning_agent import ReinforcementLearningAgent
 
 
 def teardown_module(module):
@@ -29,12 +33,13 @@ config = import_config()
 
 abstract_agent_classes_testcases = [
 	vendors.Agent,
-	vendors.CircularAgent,
-	vendors.LinearAgent,
+	circular_vendors.CircularAgent,
+	linear_vendors.LinearAgent,
 	vendors.HumanPlayer,
+	vendors.RuleBasedAgent,
 	vendors.FixedPriceAgent,
-	vendors.ReinforcementLearningAgent,
-	vendors.QLearningAgent
+	ReinforcementLearningAgent,
+	QLearningAgent
 ]
 
 
@@ -46,14 +51,14 @@ def test_abstract_agent_classes(agent):
 
 
 non_abstract_agent_classes_testcases = [
-	vendors.HumanPlayerLE,
-	vendors.HumanPlayerCE,
-	vendors.HumanPlayerCERebuy,
-	vendors.FixedPriceCEAgent,
-	vendors.FixedPriceCERebuyAgent,
-	vendors.FixedPriceLEAgent,
-	vendors.RuleBasedCEAgent,
-	vendors.RuleBasedCERebuyAgent
+	linear_vendors.HumanPlayerLE,
+	circular_vendors.HumanPlayerCE,
+	circular_vendors.HumanPlayerCERebuy,
+	circular_vendors.FixedPriceCEAgent,
+	circular_vendors.FixedPriceCERebuyAgent,
+	linear_vendors.FixedPriceLEAgent,
+	circular_vendors.RuleBasedCEAgent,
+	circular_vendors.RuleBasedCERebuyAgent
 ]
 
 
@@ -64,9 +69,9 @@ def test_non_abstract_agent_classes(agent):
 
 # actual n_observation and n_action are not needed, we just test if the initialization fails or not
 non_abstract_qlearning_agent_classes_testcases = [
-	(vendors.QLearningLEAgent, 10, 10),
-	(vendors.QLearningCEAgent, 10, 10),
-	(vendors.QLearningCERebuyAgent, 10, 10)
+	(QLearningLEAgent, 10, 10),
+	(QLearningCEAgent, 10, 10),
+	(QLearningCERebuyAgent, 10, 10)
 ]
 
 
@@ -76,12 +81,12 @@ def test_non_abstract_qlearning_agent_classes(agent, n_observation, n_actions):
 
 
 fixed_price_agent_observation_policy_pairs_testcases = [
-	(vendors.FixedPriceLEAgent(), config.production_price + 3),
-	(vendors.FixedPriceLEAgent(7), 7),
-	(vendors.FixedPriceCEAgent(), (2, 4)),
-	(vendors.FixedPriceCEAgent((3, 5)), (3, 5)),
-	(vendors.FixedPriceCERebuyAgent(), (3, 6, 2)),
-	(vendors.FixedPriceCERebuyAgent((4, 7, 3)), (4, 7, 3))
+	(linear_vendors.FixedPriceLEAgent(), config.production_price + 3),
+	(linear_vendors.FixedPriceLEAgent(7), 7),
+	(circular_vendors.FixedPriceCEAgent(), (2, 4)),
+	(circular_vendors.FixedPriceCEAgent((3, 5)), (3, 5)),
+	(circular_vendors.FixedPriceCERebuyAgent(), (3, 6, 2)),
+	(circular_vendors.FixedPriceCERebuyAgent((4, 7, 3)), (4, 7, 3))
 ]
 
 
@@ -106,7 +111,7 @@ def test_storage_evaluation(state, expected_prices):
 	with patch('builtins.open', mock_open(read_data=json)) as mock_file:
 		ut_t.check_mock_file(mock_file, json)
 		import_config()
-		agent = vendors.RuleBasedCEAgent()
+		agent = circular_vendors.RuleBasedCEAgent()
 		assert expected_prices == agent.policy(state)
 
 
@@ -125,7 +130,7 @@ def test_storage_evaluation_with_rebuy_price(state, expected_prices):
 	with patch('builtins.open', mock_open(read_data=json)) as mock_file:
 		ut_t.check_mock_file(mock_file, json)
 		import_config()
-		agent = vendors.RuleBasedCERebuyAgent()
+		agent = circular_vendors.RuleBasedCERebuyAgent()
 		assert expected_prices == agent.policy(state)
 
 
@@ -135,7 +140,7 @@ def test_prices_are_not_higher_than_allowed():
 	with patch('builtins.open', mock_open(read_data=json)) as mock_file:
 		ut_t.check_mock_file(mock_file, json)
 		import_config()
-		test_agent = vendors.RuleBasedCEAgent()
+		test_agent = circular_vendors.RuleBasedCEAgent()
 		assert (9, 9) >= test_agent.policy([50, 60])
 
 
@@ -147,7 +152,7 @@ def random_offer():
 
 
 policy_testcases = [
-	(vendors.CompetitorJust2Players, random_offer())
+	(linear_vendors.CompetitorJust2Players, random_offer())
 ]
 
 
@@ -166,8 +171,8 @@ def test_policy(competitor_class, state):
 
 
 policy_plus_one_testcases = [
-	(vendors.CompetitorLinearRatio1, random_offer()),
-	(vendors.CompetitorRandom, random_offer())
+	(linear_vendors.CompetitorLinearRatio1, random_offer()),
+	(linear_vendors.CompetitorRandom, random_offer())
 ]
 
 

@@ -7,8 +7,8 @@ import pytest
 
 import market.circular.circular_sim_market as circular_market
 import market.linear.linear_sim_market as linear_market
-import rl.actorcritic_agent as actorcritic_agent
-from rl.actorcritic_training import ActorCriticTrainer
+import rl.actorcritic.actorcritic_agent as actorcritic_agent
+from rl.actorcritic.actorcritic_training import ActorCriticTrainer
 
 
 def teardown_module(module):
@@ -42,7 +42,7 @@ test_scenarios = [
 @pytest.mark.parametrize('marketplace, agent, verbose', test_scenarios)
 def test_training_configurations(marketplace, agent, verbose):
 	with patch('rl.training.SummaryWriter'), \
-		patch('rl.actorcritic_agent.ActorCriticAgent.save'):
+		patch('rl.actorcritic.actorcritic_agent.ActorCriticAgent.save'):
 		ActorCriticTrainer(marketplace, agent, log_dir_prepend='test_').train_agent(
 			verbose=verbose,
 			number_of_training_steps=120,

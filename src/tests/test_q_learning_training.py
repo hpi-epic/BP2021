@@ -7,12 +7,12 @@ from unittest.mock import mock_open, patch
 
 import pytest
 
-import agents.vendors as vendors
 import configuration.hyperparameter_config as hyperparameter_config
 import market.circular.circular_sim_market as circular_market
 import market.linear.linear_sim_market as linear_market
-import rl.q_learning_training as q_learning_training
+import rl.q_learning.q_learning_training as q_learning_training
 import tests.utils_tests as ut_t
+from rl.q_learning.q_learning_agent import QLearningCEAgent, QLearningCERebuyAgent, QLearningLEAgent
 
 
 def teardown_module(module):
@@ -37,11 +37,11 @@ def import_config() -> hyperparameter_config.HyperparameterConfig:
 
 
 test_scenarios = [
-	(linear_market.ClassicScenario, vendors.QLearningLEAgent),
-	(linear_market.MultiCompetitorScenario, vendors.QLearningLEAgent),
-	(circular_market.CircularEconomyMonopolyScenario, vendors.QLearningCEAgent),
-	(circular_market.CircularEconomyRebuyPriceMonopolyScenario, vendors.QLearningCERebuyAgent),
-	(circular_market.CircularEconomyRebuyPriceOneCompetitor, vendors.QLearningCERebuyAgent)
+	(linear_market.ClassicScenario, QLearningLEAgent),
+	(linear_market.MultiCompetitorScenario, QLearningLEAgent),
+	(circular_market.CircularEconomyMonopolyScenario, QLearningCEAgent),
+	(circular_market.CircularEconomyRebuyPriceMonopolyScenario, QLearningCERebuyAgent),
+	(circular_market.CircularEconomyRebuyPriceOneCompetitor, QLearningCERebuyAgent)
 ]
 
 
@@ -50,7 +50,7 @@ def test_market_scenario(market_class, agent_class):
 	json = ut_t.create_hyperparameter_mock_json(rl=ut_t.create_hyperparameter_mock_json_rl(replay_start_size='500', sync_target_frames='100'))
 	with patch('builtins.open', mock_open(read_data=json)) as mock_file, \
 		patch('rl.training.SummaryWriter'), \
-		patch('agents.vendors.QLearningAgent.save'):
+		patch('rl.q_learning.q_learning_agent.QLearningAgent.save'):
 		ut_t.check_mock_file(mock_file, json)
 
 		config = import_config()
@@ -61,10 +61,10 @@ def test_training_with_tensorboard():
 	json = ut_t.create_hyperparameter_mock_json(rl=ut_t.create_hyperparameter_mock_json_rl(replay_start_size='500', sync_target_frames='100'))
 	with patch('builtins.open', mock_open(read_data=json)) as mock_file, \
 		patch('rl.training.SummaryWriter'), \
-		patch('agents.vendors.QLearningAgent.save'):
+		patch('rl.q_learning.q_learning_agent.QLearningAgent.save'):
 		ut_t.check_mock_file(mock_file, json)
 
 		config = import_config()
 		market_class = linear_market.ClassicScenario
-		agent_class = vendors.QLearningLEAgent
+		agent_class = QLearningLEAgent
 		q_learning_training.QLearningTrainer(market_class, agent_class, log_dir_prepend='test_').train_agent(int(config.replay_start_size * 1.2))

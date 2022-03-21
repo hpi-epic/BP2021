@@ -283,10 +283,10 @@ Before starting the server you might need to apply any pending migrations using
 python3 ./manage.py migrate
 ```
 
-To run tests you have written for the Django webserver go into the _webserver_ folder and run
+To run tests you have written for the Django webserver go into the *webserver* folder and run
 
 ```bash
-python manage.py test
+python3 ./manage.py test
 ```
 
 ### 1.5.3. Docker API
