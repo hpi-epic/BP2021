@@ -1,4 +1,5 @@
 import numpy as np
+from tqdm.auto import trange
 
 import recommerce.configuration.utils as ut
 from recommerce.configuration.hyperparameter_config import config
@@ -27,7 +28,9 @@ class QLearningTrainer(RLTrainer):
 		rmse_losses = []
 		selected_q_vals = []
 
-		for frame_idx in range(number_of_training_steps):
+		self.progress_bar = trange(number_of_training_steps, unit=' frames')
+
+		for frame_idx in self.progress_bar:
 			epsilon = max(config.epsilon_final, config.epsilon_start - frame_idx / config.epsilon_decay_last_frame)
 
 			action = self.RL_agent.policy(state, epsilon)

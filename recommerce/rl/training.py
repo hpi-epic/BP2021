@@ -6,6 +6,7 @@ from abc import ABC, abstractmethod
 
 import torch
 from torch.utils.tensorboard import SummaryWriter
+from tqdm import tqdm
 
 import recommerce.configuration.utils as ut
 import recommerce.rl.actorcritic.actorcritic_agent as actorcritic_agent
@@ -48,6 +49,7 @@ class RLTrainer(ABC):
 		"""
 		Handle any interruptions to the running process, such as a `KeyboardInterrupt`-event.
 		"""
+		self.progress_bar.close()
 		print('\nAborting training...')
 		self._end_of_training()
 		sys.exit(0)
@@ -88,18 +90,10 @@ class RLTrainer(ABC):
 		averaged_info = ut.divide_content_of_dict(averaged_info, len(sliced_dicts))
 		return averaged_info
 
-	def calculate_frames_per_second(self, frame_idx) -> float:
-		speed = (frame_idx - self.frame_number_last_speed_update) / (
-			(time.time() - self.time_last_speed_update) if (time.time() - self.time_last_speed_update) > 0 else 1)
-		self.frame_number_last_speed_update = frame_idx
-		self.time_last_speed_update = time.time()
-		return speed
-
 	def consider_print_info(self, frame_idx, episode_number, averaged_info, epsilon=None) -> None:
 		if (episode_number) % 10 == 0:
-			speed = self.calculate_frames_per_second(frame_idx)
-			print(f"{frame_idx + 1}: {episode_number} episodes trained, mean return {averaged_info['profits/all']['vendor_0']:.3f}, " + (
-				f'eps {epsilon:.2f}, ' if epsilon is not None else '') + f'speed {speed:.2f} f/s')
+			tqdm.write(f"{frame_idx + 1}: {episode_number} episodes trained, mean return {averaged_info['profits/all']['vendor_0']:.3f}, " + (
+				f'eps {epsilon:.2f}' if epsilon is not None else ''))
 
 	def consider_update_best_model(self, averaged_info: dict, frame_idx: int) -> None:
 		"""
@@ -117,7 +111,7 @@ class RLTrainer(ABC):
 		if frame_idx > config.epsilon_decay_last_frame and mean_reward > self.best_mean_reward:
 			self.RL_agent.save(model_path=self.model_path, model_name=f'{self.signature}_{mean_reward:.3f}')
 			if self.best_mean_reward != 0:
-				print(f'Best reward updated {self.best_mean_reward:.3f} -> {mean_reward:.3f}')
+				tqdm.write(f'Best reward updated {self.best_mean_reward:.3f} -> {mean_reward:.3f}')
 			self.best_mean_reward = mean_reward
 
 	def consider_sync_tgt_net(self, frame_idx) -> None:
