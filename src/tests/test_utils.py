@@ -253,7 +253,7 @@ def test_write_content_of_dict_to_overview_svg(
 		cumulated_dictionary: dict,
 		expected: dict):
 	mock_json = (ut_t.create_hyperparameter_mock_json(
-		sim_market=ut_t.create_hyperparameter_mock_json_sim_market(episode_size=str(50), number_of_customers=str(20), production_price=str(3))))
+		sim_market=ut_t.create_hyperparameter_mock_json_sim_market(episode_length=str(50), number_of_customers=str(20), production_price=str(3))))
 	with patch('builtins.open', mock_open(read_data=mock_json)) as mock_file:
 		ut_t.check_mock_file(mock_file, mock_json)
 		import_config()

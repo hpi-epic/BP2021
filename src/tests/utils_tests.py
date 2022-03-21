@@ -45,7 +45,7 @@ def create_hyperparameter_mock_json_rl(gamma='0.99',
 
 def create_hyperparameter_mock_json_sim_market(
 	max_storage='20',
-	episode_size='20',
+	episode_length='20',
 	max_price='15',
 	max_quality='100',
 	number_of_customers='30',
@@ -56,7 +56,7 @@ def create_hyperparameter_mock_json_sim_market(
 
 	Args:
 		max_storage (str, optional): Defaults to '20'.
-		episode_size (str, optional): Defaults to '20'.
+		episode_length (str, optional): Defaults to '20'.
 		max_price (str, optional): Defaults to '15'.
 		max_quality (str, optional): Defaults to '100'.
 		number_of_customers (str, optional): Defaults to '30'.
@@ -67,7 +67,7 @@ def create_hyperparameter_mock_json_sim_market(
 		str: A string in JSON format.
 	"""
 	return '{\n\t\t"max_storage": ' + max_storage + ',\n' + \
-		'\t\t"episode_size": ' + episode_size + ',\n' + \
+		'\t\t"episode_length": ' + episode_length + ',\n' + \
 		'\t\t"max_price": ' + max_price + ',\n' + \
 		'\t\t"max_quality": ' + max_quality + ',\n' + \
 		'\t\t"number_of_customers": ' + number_of_customers + ',\n' + \
