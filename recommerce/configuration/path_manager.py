@@ -14,7 +14,7 @@ def readable_dir(path) -> bool:
 	Returns:
 		bool: If the path exists and is readable.
 	"""
-	return False if not os.path.isdir(path) else bool(os.access(path, os.R_OK))
+	return bool(os.access(path, os.R_OK)) if os.path.isdir(path) else False
 
 
 def get_user_path() -> str:

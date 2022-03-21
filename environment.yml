@@ -12,7 +12,5 @@ dependencies:
   - django=4.0.1
   - uvicorn==0.17.0.post1
   - fastapi==0.73.0
-  - pytest>=6.2.4
-  - pytest-randomly>=3.11.0
   - coverage>=5.5
   - coverage-badge>=1.1.0
