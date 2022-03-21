@@ -4,6 +4,7 @@ from django.shortcuts import render
 from .buttons import ButtonHandler
 from .forms import UploadFileForm
 from .handle_files import handle_uploaded_file
+from .models.config import Config
 from .models.container import Container
 
 
@@ -48,3 +49,7 @@ def upload(request) -> HttpResponse:
 	else:
 		form = UploadFileForm()
 	return render(request, 'upload.html', {'form': form})
+
+
+def configurator(request):
+	return render(request, 'configurator.html', {'all_configurations': Config.objects.all()})

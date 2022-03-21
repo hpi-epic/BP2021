@@ -1,13 +1,4 @@
-<!doctype html>
-<html lang="en">
-	<head>
-		<meta charset="utf-8"/>
-		<title>Upload Config files</title>
-		{% load static %}
-		<link rel="stylesheet" type="text/css" href="{% static 'style.css' %}">
-		<link rel="shortcut icon" type="image/png" href="{% static 'favicon.png' %}"/>
-	</head>
-	<body>
+{% include "header.html" %}
 		<h1>Upload your config file here</h1>
 		<br>
 			<div class="content">
@@ -21,5 +12,4 @@
 			<br>
 			<a href="/">Home</a>
 		</div>
-	</body>
-</html>
+{% include "footer.html" %}

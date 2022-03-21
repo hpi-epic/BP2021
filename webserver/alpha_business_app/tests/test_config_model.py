@@ -1,4 +1,3 @@
-from cgi import test
 from django.test import TestCase
 
 from ..models.config import *

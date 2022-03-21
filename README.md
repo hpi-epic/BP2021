@@ -131,6 +131,7 @@ pytest -v
 ```
 
 ### 1.3.2. Webserver Tests
+
 To run tests you have written for the Django webserver go into the *webserver* folder and run
 
 ```bash
@@ -288,6 +289,8 @@ To run tests you have written for the Django webserver go into the *webserver* f
 ```bash
 python3 ./manage.py test
 ```
+
+We use bootstrap for layout stuff. When developing, you need to run `npm install` in the webserver directory.
 
 ### 1.5.3. Docker API
 

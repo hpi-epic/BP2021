@@ -43,6 +43,7 @@ class AgentsConfig(models.Model):
 			'Rule_Based Agent': rulebased_dict
 		})
 
+
 class RuleBasedAgentConfig(models.Model):
 	agents_config = models.ForeignKey('AgentsConfig', on_delete=models.DO_NOTHING, null=True)
 	agent_class = models.CharField(max_length=100, null=True)
@@ -146,6 +147,7 @@ def to_config_class_name(name: str) -> str:
 	# remove all whitespaces:
 	class_name = ''.join([capitalize(x) for x in class_name.split(' ')])
 	return ''.join([capitalize(x) for x in class_name.split('_')]) + 'Config'
+
 
 def remove_none_values_from_dict(dict_with_none_values: dict) -> dict:
 	return {k: v for k, v in dict_with_none_values.items() if v is not None}
