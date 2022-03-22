@@ -20,7 +20,13 @@ COPY README.md README.md
 # Install the recommerce package
 RUN pip install .
 # set the datapath and unpack the default data
+# we only want the modelfiles and remove the config files to make sure we can only use the ones provided by the user
+# (i.e. if the upload fails, the program can't start and won't just use the default one from the recommerce package)
 RUN recommerce --datapath . --get-defaults-unpack
+RUN rm hyperparameter_config.json
+RUN rm environment_config_training.json
+RUN rm environment_config_exampleprinter.json
+RUN rm environment_config_agent_monitoring.json
 
 # Perform the specified action when starting the container
 ENTRYPOINT ["echo", "ENTRYPOINT not overwritten!"]
