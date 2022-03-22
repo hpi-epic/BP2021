@@ -101,15 +101,18 @@ class RuleBasedCERebuyAgent(RuleBasedCEAgent):
 
 
 class RuleBasedCERebuyAgentCompetitive(RuleBasedAgent, CircularAgent):
-	def policy(self, observation, *_):
+	def __init__(self, name='rule_based_ce_rebuy_competitive'):
+		self.name = name
+
+	def policy(self, observation, *_) -> tuple:
 		assert isinstance(observation, np.ndarray), 'observation must be a np.ndarray'
 		assert len(observation) == 6, 'observation is made for this agent and one competitor -> length must be 6'
 
 		# in_circulation is ignored
-		own_storage = observation[1]
-		competitor_old_price = observation[2]
-		competitor_new_price = observation[3]
-		competitor_rebuy_price = observation[4]
+		own_storage = observation[1].item()
+		competitor_old_price = observation[2].item()
+		competitor_new_price = observation[3].item()
+		competitor_rebuy_price = observation[4].item()
 
 		price_new = competitor_new_price - 1
 		# competitor's storage is ignored

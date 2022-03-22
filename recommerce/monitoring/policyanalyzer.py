@@ -20,7 +20,7 @@ class PolicyAnalyzer():
 
 	def _access_and_adjust_policy(self, policy_value, policy_access):
 		policy_value = policy_value if policy_access is None else policy_value[policy_access]
-		assert isinstance(policy_value, int)
+		assert isinstance(policy_value, int), f'policy_value must be an int but is {policy_value}, a {type(policy_value)}'
 		return policy_value + 1
 
 	def analyze_policy(self, base_input, analyzed_features, title='add a title here', policyaccess=None):

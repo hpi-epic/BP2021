@@ -79,22 +79,46 @@ def test_circular_monopoly_q_learning(title, policyaccess, expected_filename):
 
 
 one_competitor_test_cases = [
-	('own refurbished price', 0, 'own_refurbished_price.png'),
-	('own new price', 1, 'own_new_price.png'),
-	('own rebuy price', 2, 'own_rebuy_price.png')
+	('ql own refurbished price', 0, 'ql_own_refurbished_price.png'),
+	('ql own new price', 1, 'ql_own_new_price.png'),
+	('ql own rebuy price', 2, 'ql_own_rebuy_price.png')
+]
+
+
+@pytest.mark.parametrize('title, policyaccess, expected_filename', one_competitor_test_cases)
+def test_circular_duopol_q_learning(title, policyaccess, expected_filename):
+	q_learing_agent = QLearningCERebuyAgent(
+		6, 1000, load_path=os.path.join(parameters_path,
+		'CircularEconomyRebuyPriceOneCompetitor_QLearningCERebuyAgent.dat')
+	)
+	pa = PolicyAnalyzer(q_learing_agent)
+	given_path = pa.analyze_policy(
+		np.array([75, 10, -1, -1, 2, 12]),
+		[(2, "competitor's refurbished price", range(0, 10)), (3, "competitor's new price", range(0, 10))],
+		title, policyaccess
+	)
+	expected_path = os.path.join(write_to_path, expected_filename)
+	assert expected_path in given_path
+	assert os.path.exists(expected_path)
+
+
+one_competitor_test_cases = [
+	('a2c own refurbished price', 0, 'a2c_own_refurbished_price.png'),
+	('a2c own new price', 1, 'a2c_own_new_price.png'),
+	('a2c own rebuy price', 2, 'a2c_own_rebuy_price.png')
 ]
 
 
 @pytest.mark.parametrize('title, policyaccess, expected_filename', one_competitor_test_cases)
 def test_circular_duopol_continuos_actorcritic(title, policyaccess, expected_filename):
-	q_learing_agent = ContinuosActorCriticAgentFixedOneStd(
+	a2c_agent = ContinuosActorCriticAgentFixedOneStd(
 		6, 3, load_path=os.path.join(parameters_path,
 			'actor_parametersCircularEconomyRebuyPriceOneCompetitor_ContinuosActorCriticAgentFixedOneStd.dat')
 	)
-	pa = PolicyAnalyzer(q_learing_agent)
+	pa = PolicyAnalyzer(a2c_agent)
 	given_path = pa.analyze_policy(
 		np.array([75, 10, -1, -1, 2, 12]),
-		[(1, "competitor's refurbished price", range(0, 10)), (0, "competitor's new price", range(0, 10))],
+		[(2, "competitor's refurbished price", range(0, 10)), (3, "competitor's new price", range(0, 10))],
 		title, policyaccess
 	)
 	expected_path = os.path.join(write_to_path, expected_filename)
@@ -111,10 +135,10 @@ one_competitor_test_cases = [
 
 @pytest.mark.parametrize('title, policyaccess, expected_filename', one_competitor_test_cases)
 def test_circular_duopol_rule_based_agent(title, policyaccess, expected_filename):
-	pa = PolicyAnalyzer(RuleBasedCERebuyAgentCompetitive)
+	pa = PolicyAnalyzer(RuleBasedCERebuyAgentCompetitive())
 	given_path = pa.analyze_policy(
 		np.array([75, 10, -1, -1, 2, 12]),
-		[(1, "competitor's refurbished price", range(0, 10)), (0, "competitor's new price", range(0, 10))],
+		[(2, "competitor's refurbished price", range(0, 10)), (3, "competitor's new price", range(0, 10))],
 		title, policyaccess
 	)
 	expected_path = os.path.join(write_to_path, expected_filename)
