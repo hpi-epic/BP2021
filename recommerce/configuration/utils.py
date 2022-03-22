@@ -13,10 +13,9 @@ def ensure_results_folders_exist():
 
 	If your code assumes that the results folder or any of its subfolders exist, call this function beforehand.
 	"""
-	os.makedirs(os.path.join(PathManager.results_path, 'monitoring'), exist_ok=True)
-	os.makedirs(os.path.join(PathManager.results_path, 'exampleprinter'), exist_ok=True)
-	os.makedirs(os.path.join(PathManager.results_path, 'runs'), exist_ok=True)
-	os.makedirs(os.path.join(PathManager.results_path, 'trainedModels'), exist_ok=True)
+	folders = ['monitoring', 'exampleprinter', 'runs', 'trainedModels', 'policyanalyzer']
+	for folder in folders:
+		os.makedirs(os.path.join(PathManager.results_path, folder), exist_ok=True)
 
 
 def shuffle_quality() -> int:
