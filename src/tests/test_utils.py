@@ -10,6 +10,11 @@ import tests.utils_tests as ut_t
 from monitoring.svg_manipulation import SVGManipulator
 
 
+def teardown_module(module):
+	reload(hyperparameter_config)
+	reload(ut)
+
+
 def import_config() -> hyperparameter_config.HyperparameterConfig:
 	"""
 	Reload the hyperparameter_config file to update the config variable with the mocked values.
