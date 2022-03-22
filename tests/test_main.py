@@ -3,6 +3,7 @@ from unittest.mock import mock_open, patch
 import pytest
 
 import recommerce.main as main
+from recommerce.configuration.path_manager import PathManager
 
 handle_datapath_valid_testcases = [
 	'.',
@@ -12,7 +13,7 @@ handle_datapath_valid_testcases = [
 
 @pytest.mark.parametrize('datapath', handle_datapath_valid_testcases)
 def test_handle_datapath_valid(datapath):
-	with patch('builtins.open', mock_open(read_data='')), \
+	with patch('builtins.open', mock_open(read_data=PathManager.user_path)), \
 		patch('recommerce.configuration.path_manager.PathManager._update_path_file'):
 		main.handle_datapath(datapath)
 
@@ -25,7 +26,7 @@ handle_datapath_invalid_testcases = [
 
 @pytest.mark.parametrize('datapath', handle_datapath_invalid_testcases)
 def test_handle_datapath_invalid(datapath):
-	with patch('builtins.open', mock_open(read_data='')):
+	with patch('builtins.open', mock_open(read_data=PathManager.user_path)):
 		with pytest.raises(AssertionError) as assertion_message:
 			main.handle_datapath(datapath)
 		assert 'The provided path is not a valid directory' in str(assertion_message.value)
