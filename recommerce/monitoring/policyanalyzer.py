@@ -69,4 +69,6 @@ class PolicyAnalyzer():
 
 		plt.title(title)
 		underscore_title = title.replace(' ', '_')
-		plt.savefig(fname=os.path.join(self.folder_path, f'{underscore_title}.png'))
+		savepath = os.path.join(self.folder_path, f'{underscore_title}.png')
+		plt.savefig(fname=savepath)
+		return savepath

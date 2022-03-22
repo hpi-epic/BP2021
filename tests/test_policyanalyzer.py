@@ -16,31 +16,42 @@ write_to_path = os.path.join('tests', 'test_results', 'policyanalyzer')
 
 def test_rule_based_linear_competitor1():
 	pa = PolicyAnalyzer(CompetitorLinearRatio1())
-	pa.analyze_policy(np.array([15, -1, 10]), [(1, 'competitor price', range(1, 11))])
-	assert os.path.exists(os.path.join(write_to_path, 'add_a_title_here.png'))
+	given_path = pa.analyze_policy(np.array([15, -1, 10]), [(1, 'competitor price', range(1, 11))])
+	expected_path = os.path.join(write_to_path, 'add_a_title_here.png')
+	assert expected_path in given_path
+	assert os.path.exists(expected_path)
 
 
 def test_rule_based_linear_competitor2():
 	pa = PolicyAnalyzer(CompetitorLinearRatio1())
-	pa.analyze_policy(np.array([-1, -1, 10]), [(0, 'own quality', range(5, 20)), (1, 'competitor price', range(1, 11))], "agent's policy")
-	assert os.path.exists(os.path.join(write_to_path, 'agent\'s_policy.png'))
+	given_path = pa.analyze_policy(
+		np.array([-1, -1, 10]),
+		[(0, 'own quality', range(5, 20)), (1, 'competitor price', range(1, 11))],
+		"agent's policy"
+	)
+	expected_path = os.path.join(write_to_path, 'agent\'s_policy.png')
+	assert expected_path in given_path
+	assert os.path.exists(expected_path)
 
 
 def test_rule_based_circular_competitor1():
 	pa = PolicyAnalyzer(RuleBasedCERebuyAgent())
-	pa.analyze_policy(np.array([50, -1]), [(1, 'self storage stock', range(0, 30))], 'refurbished price only on storage', 0)
-	assert os.path.exists(os.path.join(write_to_path, 'refurbished_price_only_on_storage.png'))
+	given_path = pa.analyze_policy(np.array([50, -1]), [(1, 'self storage stock', range(0, 30))], 'refurbished price only on storage', 0)
+	expected_path = os.path.join(write_to_path, 'refurbished_price_only_on_storage.png')
+	assert expected_path in given_path
+	assert os.path.exists(expected_path)
 
 
 def test_rule_based_circular_competitor2():
 	pa = PolicyAnalyzer(RuleBasedCERebuyAgent())
-	pa.analyze_policy(
+	given_path = pa.analyze_policy(
 		np.array([-1, -1]),
-		[(1, 'self storage stock', range(0, 30)),
-		(0, 'in circulation', range(0, 200))],
+		[(1, 'self storage stock', range(0, 30)), (0, 'in circulation', range(0, 200))],
 		'refurbished price', 0
 	)
-	assert os.path.exists(os.path.join(write_to_path, 'refurbished_price.png'))
+	expected_path = os.path.join(write_to_path, 'refurbished_price.png')
+	assert expected_path in given_path
+	assert os.path.exists(expected_path)
 
 
 monopoly_test_cases = [
@@ -57,13 +68,14 @@ def test_circular_monopoly_q_learning(title, policyaccess, expected_filename):
 		'CircularEconomyRebuyPriceMonopolyScenario_QLearningCERebuyAgent.dat')
 	)
 	pa = PolicyAnalyzer(q_learing_agent)
-	pa.analyze_policy(
+	given_path = pa.analyze_policy(
 		np.array([-1, -1]),
-		[(1, 'self storage stock', range(0, 30)),
-		(0, 'in circulation', range(0, 200))],
+		[(1, 'self storage stock', range(0, 30)), (0, 'in circulation', range(0, 200))],
 		title, policyaccess
 	)
-	assert os.path.exists(os.path.join(write_to_path, expected_filename))
+	expected_path = os.path.join(write_to_path, expected_filename)
+	assert expected_path in given_path
+	assert os.path.exists(expected_path)
 
 
 one_competitor_test_cases = [
@@ -80,10 +92,11 @@ def test_circular_duopol_continuos_actorcritic(title, policyaccess, expected_fil
 			'actor_parametersCircularEconomyRebuyPriceOneCompetitor_ContinuosActorCriticAgentFixedOneStd.dat')
 	)
 	pa = PolicyAnalyzer(q_learing_agent)
-	pa.analyze_policy(
+	given_path = pa.analyze_policy(
 		np.array([75, 10, -1, -1, 2, 12]),
-		[(1, "competitor's refurbished price", range(0, 10)),
-		(0, "competitor's new price", range(0, 10))],
+		[(1, "competitor's refurbished price", range(0, 10)), (0, "competitor's new price", range(0, 10))],
 		title, policyaccess
 	)
-	assert os.path.exists(os.path.join(write_to_path, expected_filename))
+	expected_path = os.path.join(write_to_path, expected_filename)
+	assert expected_path in given_path
+	assert os.path.exists(expected_path)
