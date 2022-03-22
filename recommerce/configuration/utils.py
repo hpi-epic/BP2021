@@ -5,6 +5,7 @@ import numpy as np
 
 from recommerce.configuration.hyperparameter_config import config
 from recommerce.configuration.path_manager import PathManager
+from recommerce.monitoring.svg_manipulation import SVGManipulator
 
 
 def ensure_results_folders_exist():
@@ -23,14 +24,13 @@ def shuffle_quality() -> int:
 	return min(max(int(np.random.normal(config.max_quality / 2, 2 * config.max_quality / 5)), 1), config.max_quality)
 
 
-# The following methods should be library calls in the future.
-def softmax(preferences) -> np.array:
+def softmax(preferences: np.array) -> np.array:
 	preferences = np.minimum(np.ones(len(preferences)) * 20, preferences)  # This avoids an overflow error in the next line
 	exp_preferences = np.exp(preferences)
 	return exp_preferences / sum(exp_preferences)
 
 
-def shuffle_from_probabilities(probabilities) -> int:
+def shuffle_from_probabilities(probabilities: np.array) -> int:
 	randomnumber = random.random()
 	sum = 0
 	for i, p in enumerate(probabilities):
@@ -58,7 +58,7 @@ def cartesian_product(list_a, list_b):
 	return output_list
 
 
-def write_dict_to_tensorboard(writer, dictionary, counter, is_cumulative=False) -> None:
+def write_dict_to_tensorboard(writer, dictionary: dict, counter: int, is_cumulative: bool = False) -> None:
 	"""
 	This function takes a dictionary of data with data from one step and adds it at the specified time to the tensorboard.
 
@@ -82,7 +82,7 @@ def write_dict_to_tensorboard(writer, dictionary, counter, is_cumulative=False) 
 			writer.add_scalar(name, content, counter)
 
 
-def divide_content_of_dict(dict1, divisor) -> dict:
+def divide_content_of_dict(dict1: dict, divisor) -> dict:
 	"""
 	Recursively divide a dictionary which contains only numbers by a divisor
 
@@ -126,7 +126,11 @@ def add_content_of_two_dicts(dict1, dict2) -> dict:
 	return newdict
 
 
-def write_content_of_dict_to_overview_svg(manipulator, episode, episode_dictionary, cumulated_dictionary) -> None:
+def write_content_of_dict_to_overview_svg(
+		manipulator: SVGManipulator,
+		episode: int,
+		episode_dictionary: dict,
+		cumulated_dictionary: dict) -> None:
 	"""
 	This function takes a SVGManipulator and two dictionaries and translates the svg placeholder to the values in the dictionary
 
@@ -167,4 +171,5 @@ def write_content_of_dict_to_overview_svg(manipulator, episode, episode_dictiona
 		'b_sales_new': str(episode_dictionary['customer/purchases_new']['vendor_1']),
 		'b_sales_used': str(episode_dictionary['customer/purchases_refurbished']['vendor_1']),
 	}
+
 	manipulator.write_dict_to_svg(target_dictionary=translated_dict)
