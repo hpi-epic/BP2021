@@ -3,7 +3,7 @@ import os
 import numpy as np
 import pytest
 
-from recommerce.market.circular.circular_vendors import RuleBasedCERebuyAgent
+from recommerce.market.circular.circular_vendors import RuleBasedCERebuyAgent, RuleBasedCERebuyAgentCompetitive
 from recommerce.market.linear.linear_vendors import CompetitorLinearRatio1
 from recommerce.monitoring.policyanalyzer import PolicyAnalyzer
 from recommerce.rl.actorcritic.actorcritic_agent import ContinuosActorCriticAgentFixedOneStd
@@ -92,6 +92,26 @@ def test_circular_duopol_continuos_actorcritic(title, policyaccess, expected_fil
 			'actor_parametersCircularEconomyRebuyPriceOneCompetitor_ContinuosActorCriticAgentFixedOneStd.dat')
 	)
 	pa = PolicyAnalyzer(q_learing_agent)
+	given_path = pa.analyze_policy(
+		np.array([75, 10, -1, -1, 2, 12]),
+		[(1, "competitor's refurbished price", range(0, 10)), (0, "competitor's new price", range(0, 10))],
+		title, policyaccess
+	)
+	expected_path = os.path.join(write_to_path, expected_filename)
+	assert expected_path in given_path
+	assert os.path.exists(expected_path)
+
+
+one_competitor_test_cases = [
+	('rule based own refurbished price', 0, 'rule_based_own_refurbished_price.png'),
+	('rule based own new price', 1, 'rule_based_own_new_price.png'),
+	('rule based own rebuy price', 2, 'rule_based_own_rebuy_price.png')
+]
+
+
+@pytest.mark.parametrize('title, policyaccess, expected_filename', one_competitor_test_cases)
+def test_circular_duopol_rule_based_agent(title, policyaccess, expected_filename):
+	pa = PolicyAnalyzer(RuleBasedCERebuyAgentCompetitive)
 	given_path = pa.analyze_policy(
 		np.array([75, 10, -1, -1, 2, 12]),
 		[(1, "competitor's refurbished price", range(0, 10)), (0, "competitor's new price", range(0, 10))],
