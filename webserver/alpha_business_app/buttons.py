@@ -1,9 +1,8 @@
-import os
-
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
 
+from .configuration_parser import ConfigurationParser
 from .handle_files import download_file
 from .handle_requests import send_get_request, send_get_request_with_streaming, send_post_request, stop_container
 from .models.config import Config
@@ -76,7 +75,7 @@ class ButtonHandler():
 		"""
 		if self.rendering_method == 'default':
 			return self._render_default()
-		elif self.rendering_method == 'files':
+		elif self.rendering_method == 'config_files':
 			return self._render_files()
 		return self._render_without_archived()
 
@@ -113,16 +112,7 @@ class ButtonHandler():
 		return render(self.request, self.view_to_render, self._default_params_for_view())
 
 	def _render_files(self):
-		"""
-		This will return a rendering for `self.view` with all `file_names` from `configurations`.
-
-		Returns:
-			HttpResponse: A rendering with all file names and the error or success message.
-		"""
-		file_names = None
-		if os.path.exists('configurations'):
-			file_names = os.listdir('configurations')
-		return render(self.request, self.view_to_render, {'file_names': file_names, self.message[0]: self.message[1]})
+		return render(self.request, self.view_to_render, {'all_configurations': Config.objects.all()})
 
 	def _delete_container(self) -> HttpResponse:
 		"""
@@ -212,33 +202,34 @@ class ButtonHandler():
 		Returns:
 			HttpResponse: An appropriate rendering, or a redirect to the `observe` view.
 		"""
-		post_request = self.request.POST
+		# convert post request to normal dict
 
-		requested_command = post_request['command_selection']
-		# the start button was pressed
-		config = Config.objects.get(id=post_request['config_id'])
-		# read the right config file
-		# with open(os.path.join('configurations', config_file), 'r') as file:
-		# 	config_dict = json.load(file)
-		response = send_post_request('start', config.as_dict(), requested_command)
+		post_request = dict(self.request.POST.lists())
+		# print(dict(raw_post_request.lists()))
 
-		if response.ok():
-			# put container into database
-			response = response.content
-			# check if a container with the same id already exists
-			if Container.objects.filter(id=response['id']).exists():
-				# we will kindly ask the user to try it again and stop the container
-				# TODO insert better handling here
-				print('the new container has the same id, as another container')
-				self.message = ['error', 'please try again']
-				return self._remove()
-			container_name = self.request.POST['experiment_name']
-			container_name = container_name if container_name != '' else response['id'][:10]
-			Container.objects.create(id=response['id'], config_file=config, name=container_name, command=requested_command)
-			return redirect('/observe', {'success': 'You successfully launched an experiment'})
-		else:
-			self.message = response.status()
-			return self._decide_rendering()
+		# TODO: error, when multiple agents have the same name!
+		parser = ConfigurationParser()
+		config_dict = parser.flat_dict_to_hierarchical_config_dict(post_request)
+		# TODO: assert config dict is valid
+		send_post_request('start', config_dict)
+		return self._decide_rendering()
+		# if response.ok():
+		# 	# put container into database
+		# 	response = response.content
+		# 	# check if a container with the same id already exists
+		# 	if Container.objects.filter(id=response['id']).exists():
+		# 		# we will kindly ask the user to try it again and stop the container
+		# 		# TODO insert better handling here
+		# 		print('the new container has the same id, as another container')
+		# 		self.message = ['error', 'please try again']
+		# 		return self._remove()
+		# 	container_name = self.request.POST['experiment_name']
+		# 	container_name = container_name if container_name != '' else response['id'][:10]
+		# 	Container.objects.create(id=response['id'], config_file=config, name=container_name, command=requested_command)
+		# 	return redirect('/observe', {'success': 'You successfully launched an experiment'})
+		# else:
+		# 	self.message = response.status()
+		# 	return self._decide_rendering()
 
 	def _tensorboard_link(self) -> HttpResponse:
 		"""

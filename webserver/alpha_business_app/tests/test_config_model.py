@@ -6,7 +6,7 @@ from ..models.config import get_config_field_names, remove_none_values_from_dict
 
 class ConfigTest(TestCase):
 	def test_right_field_names_config(self):
-		expected_field_names = ['environment', 'hyperparameter']
+		expected_field_names = ['environment', 'hyperparameter', 'name']
 		actual_field_names = get_config_field_names(Config)
 		assert expected_field_names == actual_field_names
 
@@ -32,7 +32,7 @@ class ConfigTest(TestCase):
 		assert expected_field_names == actual_field_names
 
 	def test_right_field_names_sim_market_config(self):
-		expected_field_names = ['max_storage', 'episode_size', 'max_price', 'max_quality', 'number_of_customers', 'production_price',
+		expected_field_names = ['max_storage', 'episode_length', 'max_price', 'max_quality', 'number_of_customers', 'production_price',
 			'storage_cost_per_product']
 		actual_field_names = get_config_field_names(SimMarketConfig)
 		assert expected_field_names == actual_field_names
@@ -92,7 +92,7 @@ class ConfigTest(TestCase):
 			epsilon_final=0.1)
 
 		sim_market_config = SimMarketConfig.objects.create(max_storage=100,
-			episode_size=50,
+			episode_length=50,
 			max_price=10,
 			max_quality=50,
 			number_of_customers=20,
@@ -104,45 +104,40 @@ class ConfigTest(TestCase):
 
 		final_config = Config.objects.create(environment=env_config,
 			hyperparameter=hyperparameter_config)
-
 		expected_dict = {
-			'hyperparameters': {
-				'rl': {
-					'gamma': 0.99,
-					'batch_size': 32,
-					'replay_size': 100000,
-					'learning_rate': 1e-6,
-					'sync_target_frames': 1000,
-					'replay_start_size': 10000,
-					'epsilon_decay_last_frame': 75000,
-					'epsilon_start': 1.0,
-					'epsilon_final': 0.1
+				'hyperparameter': {
+					'rl': {
+						'gamma': 0.99,
+						'batch_size': 32,
+						'replay_size': 100000,
+						'learning_rate': 1e-6,
+						'sync_target_frames': 1000,
+						'replay_start_size': 10000,
+						'epsilon_decay_last_frame': 75000,
+						'epsilon_start': 1.0,
+						'epsilon_final': 0.1
+					},
+					'sim_market': {
+						'max_storage': 100,
+						'episode_length': 50,
+						'max_price': 10,
+						'max_quality': 50,
+						'number_of_customers': 20,
+						'production_price': 3,
+						'storage_cost_per_product': 0.1
+					}
 				},
-				'sim_market': {
-					'max_storage': 100,
-					'episode_size': 50,
-					'max_price': 10,
-					'max_quality': 50,
-					'number_of_customers': 20,
-					'production_price': 3,
-					'storage_cost_per_product': 0.1
-				}
-			},
-			'environment': {
-				'task': 'training',
-				'marketplace': 'market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
-				'agents': {
-					'Rule_Based Agent': {
-						'agent_class': 'agents.vendors.RuleBasedCERebuyAgent'
+				'environment': {
+					'task': 'training',
+					'marketplace': 'market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
+					'agents': {
+						'Rule_Based Agent': {
+							'agent_class': 'agents.vendors.RuleBasedCERebuyAgent'
+						}
 					}
 				}
 			}
-		}
-		print('TEST STARTS HERE')
-		print(final_config.as_dict())
-		print(expected_dict)
 		assert expected_dict == final_config.as_dict()
-		print('TEST ENDS HERE')
 
 	def test_remove_none_values_from_dict(self):
 		test_dict = {'test': 'test', 'test2': None}

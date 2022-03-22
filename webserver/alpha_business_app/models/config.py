@@ -4,6 +4,7 @@ from django.db import models
 class Config(models.Model):
 	environment = models.ForeignKey('EnvironmentConfig', on_delete=models.DO_NOTHING, null=True)
 	hyperparameter = models.ForeignKey('HyperparameterConfig', on_delete=models.DO_NOTHING, null=True)
+	name = models.CharField(max_length=100, editable=False, default='')
 
 	def as_dict(self) -> dict:
 		environment_dict = self.environment.as_dict() if self.environment is not None else {'environment': None}
@@ -108,7 +109,7 @@ class RlConfig(models.Model):
 
 class SimMarketConfig(models.Model):
 	max_storage = models.IntegerField(null=True)
-	episode_size = models.IntegerField(null=True)
+	episode_length = models.IntegerField(null=True)
 	max_price = models.IntegerField(null=True)
 	max_quality = models.IntegerField(null=True)
 	number_of_customers = models.IntegerField(null=True)
@@ -118,7 +119,7 @@ class SimMarketConfig(models.Model):
 	def as_dict(self) -> dict:
 		return remove_none_values_from_dict({
 			'max_storage': self.max_storage,
-			'episode_size': self.episode_size,
+			'episode_length': self.episode_length,
 			'max_price': self.max_price,
 			'max_quality': self.max_quality,
 			'number_of_customers': self.number_of_customers,

@@ -4,7 +4,6 @@ from django.shortcuts import render
 from .buttons import ButtonHandler
 from .forms import UploadFileForm
 from .handle_files import handle_uploaded_file
-from .models.config import Config
 from .models.container import Container
 
 
@@ -52,6 +51,5 @@ def upload(request) -> HttpResponse:
 
 
 def configurator(request):
-	if request.method == 'POST':
-		print(request.POST)
-	return render(request, 'configurator.html', {'all_configurations': Config.objects.all()})
+	button_handler = ButtonHandler(request, view='configurator.html', rendering_method='config_files')
+	return button_handler.do_button_click()

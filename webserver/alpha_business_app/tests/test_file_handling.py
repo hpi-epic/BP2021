@@ -81,7 +81,7 @@ class FileHandling(TestCase):
 			assert {'error': 'The key test is unknown'} == actual_arguments[2]
 
 	def test_objects_from_parse_dict(self):
-		test_dict = {'rl': {'batch_size': 32}, 'sim_market': {'episode_size': 50}}
+		test_dict = {'rl': {'batch_size': 32}, 'sim_market': {'episode_length': 50}}
 		resulting_config = parse_dict_to_database('hyperparameter', test_dict)
 
 		assert resulting_config.sim_market is not None
@@ -90,7 +90,7 @@ class FileHandling(TestCase):
 		# test all sim_market values
 		sim_market_field_names = get_config_field_names(SimMarketConfig)
 		for name in sim_market_field_names:
-			if name != 'episode_size':
+			if name != 'episode_length':
 				assert getattr(resulting_config.sim_market, name) is None
 			else:
 				assert 50 == getattr(resulting_config.sim_market, name)
@@ -137,7 +137,7 @@ class FileHandling(TestCase):
 		assert 0.1 == hyperparameter_rl_config.epsilon_final
 
 		assert 100 == hyperparameter_sim_market_config.max_storage
-		assert 50 == hyperparameter_sim_market_config.episode_size
+		assert 50 == hyperparameter_sim_market_config.episode_length
 		assert 10 == hyperparameter_sim_market_config.max_price
 		assert 50 == hyperparameter_sim_market_config.max_quality
 		assert 20 == hyperparameter_sim_market_config.number_of_customers
@@ -210,7 +210,7 @@ class FileHandling(TestCase):
 		assert hyperparameter_config.rl is not None
 
 		assert 100 == hyperparameter_config.sim_market.max_storage
-		assert 50 == hyperparameter_config.sim_market.episode_size
+		assert 50 == hyperparameter_config.sim_market.episode_length
 		assert 0.99 == hyperparameter_config.rl.gamma
 		assert 32 == hyperparameter_config.rl.batch_size
 

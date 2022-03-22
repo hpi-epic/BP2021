@@ -47,20 +47,19 @@ def send_get_request_with_streaming(wanted_action: str, wanted_container: str) -
 	return _error_handling_API(response)
 
 
-def send_post_request(route: str, body: dict, command: str) -> APIResponse:
+def send_post_request(route: str, body: dict) -> APIResponse:
 	"""
 	Sends a post request to the API with the requested parameter, a body and a command as parameter
 
 	Args:
 		route (str): A post route from the API.
 		body (dict): The body that should be send to the API.
-		command (str): A command parameter for the API, currently these are `training, monitoring, exampleprinter`
 
 	Returns:
 		APIResponse: Response from the API converted into our special format.
 	"""
 	try:
-		response = requests.post(f'{DOCKER_API}/{route}', json=body, params={'command': command})
+		response = requests.post(f'{DOCKER_API}/{route}', json=body)
 	except requests.exceptions.RequestException:
 		return APIResponse('error', content='The API is unavailable')
 	if response.ok:

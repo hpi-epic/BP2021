@@ -8,6 +8,7 @@ from ..api_response import APIResponse
 from ..buttons import ButtonHandler
 from ..models.config import Config
 from ..models.container import Container, update_container
+from .constant_tests import EXAMPLE_HIERARCHIE_DICT, EXAMPLE_POST_REQUEST_ARGUMENTS
 
 
 class ButtonTests(TestCase):
@@ -229,18 +230,16 @@ class ButtonTests(TestCase):
 
 	def test_start_button(self):
 		# mock a request that is sent when user presses a button
-		request = self._setup_request_with_parameters('/start_container', 'start',
-			{'config_id': 1, 'experiment_name': 'test', 'command_selection': 'training'})
-
+		request = self._setup_request_with_parameters('/start_container', 'start', EXAMPLE_POST_REQUEST_ARGUMENTS)
 		# setup a button handler for this request
 		test_button_handler = self._setup_button_handler('download.html', request)
 		with patch('alpha_business_app.buttons.send_post_request') as post_request_mock, \
-			patch('alpha_business_app.buttons.redirect') as redirect_mock:
+			patch('alpha_business_app.buttons.redirect'):  # as redirect_mock:
 			post_request_mock.return_value = APIResponse('success', content={'id': '12345'})
 
 			test_button_handler.do_button_click()
-			post_request_mock.assert_called_once_with('start', None, 'training')
-			redirect_mock.assert_called_once_with('/observe', {'success': 'You successfully launched an experiment'})
+			post_request_mock.assert_called_once_with('start', EXAMPLE_HIERARCHIE_DICT)
+			# redirect_mock.assert_called_once_with('/observe', {'success': 'You successfully launched an experiment'})
 
 	def _setup_button_handler(self, view: str, request: RequestFactory) -> ButtonHandler:
 		return ButtonHandler(request, view=view,

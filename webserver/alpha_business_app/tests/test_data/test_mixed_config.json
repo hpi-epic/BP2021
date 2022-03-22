@@ -2,7 +2,7 @@
 	"task": "training",
 	"sim_market": {
 		"max_storage": 100,
-		"episode_size": 50
+		"episode_length": 50
 	},
 	"enable_live_draw": false,
 	"rl": {
