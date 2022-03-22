@@ -89,5 +89,4 @@ class PathManager():
 
 
 if __name__ == '__main__':
-	PathManager._get_data_path(PathManager)
-	PathManager.change_data_path(PathManager)
+	print('Looking to update your datapath? Use `recommerce --datapath "YourDatapathHere"`!')
