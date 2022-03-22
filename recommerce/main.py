@@ -72,7 +72,7 @@ def handle_command(command: str) -> None:
 		am_monitoring.main()
 
 
-def main():
+def main():  # pragma: no cover
 	"""
 	The entrypoint for the `recommerce` application.
 
