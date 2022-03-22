@@ -12,7 +12,18 @@ class PolicyAnalyzer():
 		self.agent_to_analyze = agent_to_analyze
 		self.folder_path = os.path.abspath(os.path.join(PathManager.results_path, 'policyanalyzer'))
 
-	def _agents_policy(self, observation):
+	def _agents_policy(self, observation) -> tuple:
+		"""
+		Some agents generate a randomized policy.
+		This method is made to wrap the policy call.
+		If necessary, it will ask for the mean parameter and not a shuffled value.
+
+		Args:
+			observation (np.array): The observation which should be used.
+
+		Returns:
+			tuple: The requested policy value
+		"""
 		if isinstance(self.agent_to_analyze, ContinuosActorCriticAgent):
 			return self.agent_to_analyze.policy(observation, mean_only=True)
 		else:
@@ -30,7 +41,21 @@ class PolicyAnalyzer():
 		# assert isinstance(policy_value, int), f'policy_value must be an int but is {policy_value}, a {type(policy_value)}'
 		return policy_value + 1
 
-	def analyze_policy(self, base_input, analyzed_features, title='add a title here', policyaccess=None):
+	def analyze_policy(self, base_input, analyzed_features, title='add a title here', policyaccess=None) -> str:
+		"""
+		This method generates a pyplotlib diagram which visualizes the policy.
+		Because an observation can be high-dimensional, base_input gives a template in which up to two combinations of features can be inserted.
+
+		Args:
+			base_input (np.array): The template for an observation accepted by the agent
+			analyzed_features (list): The list of one or two features to analyze. Look the assert for further details
+			title (str, optional): You can provide a title to your graphics.
+			The diagram will be saved under this title. Defaults to 'add a title here'.
+			policyaccess (int, optional): If the policy-output is more-dimensional, policyaccess says which output to take. Defaults to None.
+
+		Returns:
+			str: The path to the saved diagram.
+		"""
 		assert isinstance(base_input, np.ndarray), 'base_input must be a numpy ndarray'
 		assert isinstance(analyzed_features, list), 'analyzed_features must be a list containing triples'
 		assert 1 <= len(analyzed_features) and len(analyzed_features) <= 2, 'you can analyze either one or two features at once'
