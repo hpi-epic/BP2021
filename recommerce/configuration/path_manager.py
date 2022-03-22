@@ -19,7 +19,7 @@ def readable_dir(path) -> bool:
 
 def get_user_path() -> str:
 	"""
-	Helper function that reads the data_path.txt and return its path.
+	Helper function that reads the user_path.txt and return its path.
 
 	Returns:
 		str: The data path.
