@@ -13,8 +13,8 @@ class PolicyAnalyzer():
 		self.folder_path = os.path.abspath(os.path.join(PathManager.results_path, 'policyanalyzer'))
 
 	def _agents_policy(self, observation):
-		if isinstance(observation, ContinuosActorCriticAgent):
-			return self.agent_to_analyze.policy(observation, raw_action=True)
+		if isinstance(self.agent_to_analyze, ContinuosActorCriticAgent):
+			return self.agent_to_analyze.policy(observation, mean_only=True)
 		else:
 			return self.agent_to_analyze.policy(observation)
 
@@ -27,7 +27,7 @@ class PolicyAnalyzer():
 
 	def _access_and_adjust_policy(self, policy_value, policy_access):
 		policy_value = policy_value if policy_access is None else policy_value[policy_access]
-		assert isinstance(policy_value, int), f'policy_value must be an int but is {policy_value}, a {type(policy_value)}'
+		# assert isinstance(policy_value, int), f'policy_value must be an int but is {policy_value}, a {type(policy_value)}'
 		return policy_value + 1
 
 	def analyze_policy(self, base_input, analyzed_features, title='add a title here', policyaccess=None):
