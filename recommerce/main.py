@@ -60,7 +60,7 @@ def handle_command(command: str) -> None:
 		command (str | None): The command to perform.
 	"""
 	if command is None:
-		return
+		print('No --command provided, exiting...')
 	elif command == 'training':
 		from recommerce.rl import training_scenario
 		training_scenario.main()
