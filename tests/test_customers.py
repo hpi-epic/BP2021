@@ -7,8 +7,6 @@ import recommerce.market.linear.linear_sim_market as linear_market
 from recommerce.market.circular.circular_customers import CustomerCircular
 from recommerce.market.linear.linear_customers import CustomerLinear
 
-# import utils_tests as ut_t
-
 
 # Test the Customer parent class, i.e. make sure it cannot be used
 def test_customer_parent_class():
