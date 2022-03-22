@@ -1,5 +1,6 @@
 import json
 import os
+import shutil
 import tarfile
 import time
 from itertools import count, filterfalse
@@ -22,7 +23,7 @@ class DockerInfo():
 			data ([str, bool, int], optional): Any other data, dependent on the function called this differs.
 			stream (stream generator, optional): A stream generator.
 		"""
-		assert isinstance(id, str), f'id must be a string: {id}'
+		assert isinstance(id, (str, type(None))), f'id must be a string: {id}'
 		assert isinstance(status, str), f'status must be a string: {status}'
 		assert isinstance(data, (str, bool, int, type(None))), f'data must be a string, bool or int: {data}'
 		assert isinstance(stream, (GeneratorType, type(None))), f'stream must be a stream Generator (GeneratorType): {stream} ({type(stream)})'
@@ -42,7 +43,6 @@ class DockerManager():
 	_client = None
 	_observers = []
 	# This is a list of commands that should be supported by our docker implementation
-	# For each command, there must be a dockerfile of the format 'dockerfile_command' in the docker/dockerfiles folder
 	_allowed_commands = ['training', 'exampleprinter', 'agent_monitoring']
 	# dictionary of container_id:host-port pairs
 	_port_mapping = {}
@@ -62,17 +62,23 @@ class DockerManager():
 		cls._initialize_port_mapping(cls)
 		return cls._instance
 
-	def start(self, command_id: str, hyperparameter_config: dict) -> DockerInfo:
+	def start(self, config: dict) -> DockerInfo:
 		"""
 		To be called by the REST API. Create and start a new docker container from the image of the specified command.
 
 		Args:
-			command_id (str): The command for which to start a container.
-			hyperparameter_config (dict): The hyperparameter_config.json to replace the default one with.
+			config (dict): The combined hyperparameter_config and environment_config_command dictionaries that should be sent to the container.
 
 		Returns:
 			DockerInfo: A JSON serializable object containing the id and the status of the new container.
 		"""
+		if 'hyperparameter' not in config:
+			return DockerInfo(id=None, status='The config is missing the "hyperparameter"-field')
+		if 'environment' not in config:
+			return DockerInfo(id=None, status='The config is missing the "environment"-field')
+
+		command_id = config['environment']['task']
+
 		if command_id not in self._allowed_commands:
 			print(f'Command with ID {command_id} not allowed')
 			return DockerInfo(id=None, status=f'Command not allowed: {command_id}')
@@ -80,7 +86,7 @@ class DockerManager():
 		self._confirm_image_exists()
 
 		# start a container for the image of the requested command
-		container_info: DockerInfo = self._create_container(command_id, hyperparameter_config, use_gpu=False)
+		container_info: DockerInfo = self._create_container(command_id, config, use_gpu=False)
 		if container_info.status.__contains__('Image not found') or container_info.data is False:
 			self.remove_container(container_info.id)
 			return container_info
@@ -323,13 +329,13 @@ class DockerManager():
 		# return id without the 'sha256:'-prefix
 		return img.id[7:]
 
-	def _create_container(self, command_id: str, hyperparameter_config: dict, use_gpu: bool = True) -> DockerInfo:
+	def _create_container(self, command_id: str, config: dict, use_gpu: bool = True) -> DockerInfo:
 		"""
 		Create a container for the given image.
 
 		Args:
-			command_id (str): The id of the image to create the container for.
-			hyperparameter_config (str): A json containing parameters for the simulation.
+			command_id (str): The command to run in the container.
+			config (dict): A dict containing parameters for the simulation.
 			use_gpu (bool) Whether or not to request access to GPU's. Defaults to True.
 
 		Returns:
@@ -365,7 +371,7 @@ class DockerManager():
 			port_file.write(f'{container.id}\n{used_port}\n')
 		self._port_mapping.update({container.id: used_port})
 
-		upload_info = self._upload_config(container.id, hyperparameter_config)
+		upload_info = self._upload_config(container.id, command_id, config)
 		if not upload_info.data:
 			print('Failed to upload configuration file!')
 		return upload_info
@@ -438,13 +444,14 @@ class DockerManager():
 		except docker.errors.APIError as error:
 			return DockerInfo(container_id, status=f'APIError encountered while stopping container.\n{error}')
 
-	def _upload_config(self, container_id: str, hyperparameter_config_dict: dict) -> DockerInfo:
+	def _upload_config(self, container_id: str, command_id: str, config_dict: dict) -> DockerInfo:
 		"""
-		Upload a file to the specified container.
+		Upload the config-files to the specified container.
 
 		Args:
 			container_id (str): The id of the container.
-			hyperparameter_config_dict (dict): The config dictionary to upload.
+			command_id (str): The command to run in the container.
+			config_dict (dict): The config dictionary to upload.
 
 		Returns:
 			DockerInfo: A DockerInfo object with the id of the container and the status of the upload in the data field.
@@ -454,13 +461,14 @@ class DockerManager():
 			return DockerInfo(id=container_id, status='Container not found.')
 
 		# create a directory to store the files safely
-		if not os.path.exists('hyperparameter_config_tmp'):
-			os.mkdir('hyperparameter_config_tmp')
-		os.chdir('hyperparameter_config_tmp')
+		os.makedirs('config_tmp', exist_ok=True)
+		os.chdir('config_tmp')
 
 		# write dict to json
 		with open('hyperparameter_config.json', 'w') as config_json:
-			config_json.write(json.dumps(hyperparameter_config_dict))
+			config_json.write(json.dumps(config_dict['hyperparameter']))
+		with open(f'environement_config_{command_id}.json', 'w') as config_json:
+			config_json.write(json.dumps(config_dict['environment']))
 
 		# put config.json in tar archive
 		with tarfile.open('hyperparameter_config.tar', 'w') as tar:
@@ -468,19 +476,25 @@ class DockerManager():
 				tar.add('hyperparameter_config.json')
 			finally:
 				tar.close()
+		with tarfile.open(f'environement_config_{command_id}.tar', 'w') as tar:
+			try:
+				tar.add(f'environement_config_{command_id}.json')
+			finally:
+				tar.close()
 
 		# uploading the tar to the container
-		ok = False
-		with open('hyperparameter_config.tar', 'rb') as fd:
-			ok = container.put_archive(path='/app', data=fd)
+		hyper_ok = False
+		env_ok = False
+		with open('hyperparameter_config.tar', 'rb') as tar_archive:
+			hyper_ok = container.put_archive(path='/app', data=tar_archive)
+		with open(f'environement_config_{command_id}.tar', 'rb') as tar_archive:
+			env_ok = container.put_archive(path='/app', data=tar_archive)
 
 		# remove obsolete files
-		if ok:
-			os.remove('hyperparameter_config.json')
-			os.remove('hyperparameter_config.tar')
+		if hyper_ok and env_ok:
 			os.chdir('..')
-			os.rmdir('hyperparameter_config_tmp')
-		return DockerInfo(id=container_id, status=container.status, data=ok)
+			shutil.rmtree('config_tmp')
+		return DockerInfo(id=container_id, status=container.status, data=hyper_ok and env_ok)
 
 	def _initialize_port_mapping(cls):
 		"""
