@@ -2,7 +2,7 @@ import os
 
 
 # DO NOT move this to utils.py, this will create a circular import and break the application!
-def readable_dir(path) -> bool:
+def is_readable_dir(path) -> bool:
 	"""
 	Helper function defining whether or not a path is an existing and readable path.
 
@@ -59,14 +59,14 @@ class PathManager():
 
 			assert old_path != '', 'Please provide the `--datapath` argument before proceeding. Use "." to use the current directory'
 			# There is a valid path saved
-			if readable_dir(old_path):
+			if is_readable_dir(old_path):
 				print(f'Data will be read from and saved to "{old_path}"')
 				return
 			# A path has previously been saved, but is no longer a valid directory
 			raise AssertionError(f'The current saved data path is invalid: {old_path}\nPlease update it using the `--datapath` argument')
 
 		# A path was provided, but is not valid
-		elif not readable_dir(new_path):
+		elif not is_readable_dir(new_path):
 			raise AssertionError(f'The provided path is not a valid directory: {new_path}')
 
 		# Valid path provided
