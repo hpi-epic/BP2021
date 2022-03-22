@@ -104,6 +104,12 @@ class RuleBasedCERebuyAgentCompetitive(RuleBasedAgent, CircularAgent):
 	def __init__(self, name='rule_based_ce_rebuy_competitive'):
 		self.name = name
 
+	def _clamp_price(self, price, min_price=0, max_price=config.max_price - 1) -> int:
+		price = int(price)
+		price = max(price, min_price)
+		price = min(price, max_price)
+		return price
+
 	def policy(self, observation, *_) -> tuple:
 		assert isinstance(observation, np.ndarray), 'observation must be a np.ndarray'
 		assert len(observation) == 6, 'observation is made for this agent and one competitor -> length must be 6'
@@ -114,7 +120,7 @@ class RuleBasedCERebuyAgentCompetitive(RuleBasedAgent, CircularAgent):
 		competitor_new_price = observation[3].item()
 		competitor_rebuy_price = observation[4].item()
 
-		price_new = competitor_new_price - 1
+		price_new = max(competitor_new_price - 1, config.production_price + 1)
 		# competitor's storage is ignored
 		if own_storage < config.max_storage / 15:
 			# fill up the storage immediately
@@ -133,4 +139,4 @@ class RuleBasedCERebuyAgentCompetitive(RuleBasedAgent, CircularAgent):
 			rebuy_price = max(competitor_rebuy_price - 2, 1)
 			price_old = max(competitor_old_price - 2, rebuy_price + 1)
 
-		return (price_old, price_new, rebuy_price)
+		return (self._clamp_price(price_old), self._clamp_price(price_new), self._clamp_price(rebuy_price))

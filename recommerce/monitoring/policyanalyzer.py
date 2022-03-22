@@ -4,12 +4,19 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from recommerce.configuration.path_manager import PathManager
+from recommerce.rl.actorcritic.actorcritic_agent import ContinuosActorCriticAgent
 
 
 class PolicyAnalyzer():
 	def __init__(self, agent_to_analyze):
 		self.agent_to_analyze = agent_to_analyze
 		self.folder_path = os.path.abspath(os.path.join(PathManager.results_path, 'policyanalyzer'))
+
+	def _agents_policy(self, observation):
+		if isinstance(observation, ContinuosActorCriticAgent):
+			return self.agent_to_analyze.policy(observation, raw_action=True)
+		else:
+			return self.agent_to_analyze.policy(observation)
 
 	def _assert_analyzed_feature_valid(self, feature):
 		assert isinstance(feature, tuple), f'{feature}: such a feature must be a tuple'
@@ -41,7 +48,7 @@ class PolicyAnalyzer():
 			pointsy = []
 			for x in analyzed_features[0][2]:
 				base_input[analyzed_features[0][0]] = x
-				y = self.agent_to_analyze.policy(base_input)
+				y = self._agents_policy(base_input)
 				y = self._access_and_adjust_policy(y, policyaccess)
 				pointsx.append(x)
 				pointsy.append(y)
@@ -57,7 +64,7 @@ class PolicyAnalyzer():
 				for x2 in analyzed_features[1][2]:
 					base_input[analyzed_features[0][0]] = x1
 					base_input[analyzed_features[1][0]] = x2
-					y = self.agent_to_analyze.policy(base_input)
+					y = self._agents_policy(base_input)
 					y = self._access_and_adjust_policy(y, policyaccess)
 					policyval[x2 - x2base][x1 - x1base] = y
 
