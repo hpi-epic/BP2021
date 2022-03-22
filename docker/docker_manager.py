@@ -467,7 +467,7 @@ class DockerManager():
 		# write dict to json
 		with open('hyperparameter_config.json', 'w') as config_json:
 			config_json.write(json.dumps(config_dict['hyperparameter']))
-		with open(f'environement_config_{command_id}.json', 'w') as config_json:
+		with open(f'environment_config_{command_id}.json', 'w') as config_json:
 			config_json.write(json.dumps(config_dict['environment']))
 
 		# put config.json in tar archive
@@ -476,9 +476,9 @@ class DockerManager():
 				tar.add('hyperparameter_config.json')
 			finally:
 				tar.close()
-		with tarfile.open(f'environement_config_{command_id}.tar', 'w') as tar:
+		with tarfile.open(f'environment_config_{command_id}.tar', 'w') as tar:
 			try:
-				tar.add(f'environement_config_{command_id}.json')
+				tar.add(f'environment_config_{command_id}.json')
 			finally:
 				tar.close()
 
@@ -487,7 +487,7 @@ class DockerManager():
 		env_ok = False
 		with open('hyperparameter_config.tar', 'rb') as tar_archive:
 			hyper_ok = container.put_archive(path='/app', data=tar_archive)
-		with open(f'environement_config_{command_id}.tar', 'rb') as tar_archive:
+		with open(f'environment_config_{command_id}.tar', 'rb') as tar_archive:
 			env_ok = container.put_archive(path='/app', data=tar_archive)
 
 		# remove obsolete files
