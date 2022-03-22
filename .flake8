@@ -1,9 +1,0 @@
-[flake8]
-# W191: Indentation contains tabs
-# E128: Continuation line under-indented for visual indent
-extend-ignore = W191, E128
-max-line-length = 140
-
-# F401: module imported but unused
-per-file-ignores =
-	src/monitoring/performance.py:F401
