@@ -283,6 +283,6 @@ def test_write_content_of_dict_to_overview_svg(
 		ut_t.check_mock_file(mock_file, mock_json)
 		import_config()
 		reload(ut)
-		with patch('monitoring.svg_manipulation.SVGManipulator.write_dict_to_svg') as mock_write_dict_to_svg:
+		with patch('recommerce.monitoring.svg_manipulation.SVGManipulator.write_dict_to_svg') as mock_write_dict_to_svg:
 			ut.write_content_of_dict_to_overview_svg(SVGManipulator(), episode, episode_dictionary, cumulated_dictionary)
 		mock_write_dict_to_svg.assert_called_once_with(target_dictionary=expected)
