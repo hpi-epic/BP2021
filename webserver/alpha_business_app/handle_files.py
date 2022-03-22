@@ -7,12 +7,14 @@ from io import BytesIO
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 
+from .configuration_parser import ConfigurationParser
 from .constants import CONFIGURATION_DIR
 from .models.config import *
+from .validation import check_dict_keys
 
 
 # https://stackoverflow.com/questions/14902299/json-loads-allows-duplicate-keys-in-a-dictionary-overwriting-the-first-value
-def dict_raise_on_duplicates(ordered_pairs):
+def _dict_raise_on_duplicates(ordered_pairs):
 	"""Reject duplicate keys."""
 	d = {}
 	for k, v in ordered_pairs:
@@ -35,7 +37,7 @@ def handle_uploaded_file(request, uploaded_config) -> None:
 
 	# try to convert the file content to dict
 	try:
-		content_as_dict = json.loads(file_content, object_pairs_hook=dict_raise_on_duplicates)
+		content_as_dict = json.loads(file_content, object_pairs_hook=_dict_raise_on_duplicates)
 	except json.JSONDecodeError:
 		return render(request, 'upload.html', {'error': 'Your JSON is not valid'})
 	except ValueError as value:
@@ -46,6 +48,7 @@ def handle_uploaded_file(request, uploaded_config) -> None:
 	environment_fields = get_config_field_names(EnvironmentConfig)
 
 	# figure out which keywords belong to hyperparameter and which keywords belong to environment
+	# TODO: should be outsourced to check
 	hyperparameter_configs = {}
 	environment_configs = {}
 	contains_hyperparameter = False
@@ -69,87 +72,16 @@ def handle_uploaded_file(request, uploaded_config) -> None:
 	if not status:
 		return render(request, 'upload.html', {'error': error_msg})
 
+	parser = ConfigurationParser()
 	hyperparameter_config = None
 	environment_config = None
 	if contains_hyperparameter is True:
-		hyperparameter_config = parse_dict_to_database('hyperparameter', hyperparameter_configs)
+		hyperparameter_config = parser.parse_config_dict_to_datastructure('hyperparameter', hyperparameter_configs)
 	if contains_environment is True:
-		environment_config = parse_dict_to_database('environment', environment_configs)
+		environment_config = parser.parse_config_dict_to_datastructure('environment', environment_configs)
 
 	Config.objects.create(environment=environment_config, hyperparameter=hyperparameter_config)
 	return redirect('/start_container', {'success': 'You successfully uploaded a config file'})
-
-
-def check_dict_keys(name: str, content: dict) -> tuple:
-	if name == 'agents':
-		status, error_msg = check_agents(content)
-		if not status:
-			return False, error_msg
-		else:
-			return True, ''
-	containing_dict = [(name, value) for name, value in content.items() if type(value) == dict]
-
-	for keyword, config in containing_dict:
-		status, error_msg = check_dict_keys(keyword, config)
-		if not status:
-			return False, error_msg
-
-	class_name = to_config_class_name(name)
-	allowed_keys = get_config_field_names(globals()[class_name])
-	used_keys = list(content.keys())
-	difference = list(set(used_keys) - set(allowed_keys))
-	if difference != []:
-		return False, f'The keyword(s) {difference} are not allowed in {name}'
-
-	return True, ''
-
-
-def check_agents(content: dict) -> tuple:
-	for agent_name, agent_parameters in content.items():
-		agent_class = to_config_class_name(agent_name)
-		allowed_keys = get_config_field_names(globals()[agent_class])
-		used_keys = list(agent_parameters.keys())
-		difference = list(set(used_keys) - set(allowed_keys))
-		if difference != []:
-			return False, f'The keyword(s) {difference} are not allowed in {agent_name}'
-	return True, ''
-
-
-def parse_dict_to_database(name: str, content: dict):
-	if name == 'agents':
-		# since django does only support many-to-one relationships (not one-to-many),
-		# we need to parse the agents slightly different, to be able to reference many agents with the agents keyword
-		return parse_agents(content)
-	# get all key value pairs, that contain another dict
-	containing_dict = [(name, value) for name, value in content.items() if type(value) == dict]
-	# loop through of these pairs, in order to parse these dictionaries and add
-	# the parsed sub-element to the current element
-	sub_elements = []
-	for keyword, config in containing_dict:
-		sub_elements += [(keyword, parse_dict_to_database(keyword, config))]
-
-	# get all elements that do not contain another dictionary
-	not_containing_dict = dict([(name, value) for name, value in content.items() if type(value) != dict])
-
-	# add the sub-elements to the dictionary with the other key value pairs not containing another dictionary
-	for keyword, model_instance in sub_elements:
-		not_containing_dict[keyword] = model_instance
-
-	# figure out which config object to create and return the created objects
-	config_class = to_config_class_name(name)
-	return _create_object_from(config_class, not_containing_dict)
-
-
-def parse_agents(agents_in_dict: dict) -> AgentsConfig:
-	agents = AgentsConfig.objects.create()
-	for agent_name, agent_parameters in agents_in_dict.items():
-		agent_parameters['agents_config'] = agents
-		_create_object_from(to_config_class_name(agent_name), agent_parameters)
-	return agents
-
-
-def _create_object_from(class_name: str, parameters: dict):
-	return globals()[class_name].objects.create(**parameters)
 
 
 def download_file(response, wants_zip: bool) -> HttpResponse:

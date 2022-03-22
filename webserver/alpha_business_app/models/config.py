@@ -34,39 +34,26 @@ class EnvironmentConfig(models.Model):
 
 class AgentsConfig(models.Model):
 	def as_dict(self) -> dict:
-		rulebased = self.rulebasedagentconfig_set.all().first()
-		cerebuy = self.cerebuyagentqlearningconfig_set.all().first()
-		# at the moment, this can be at most one each
-		rulebased_dict = rulebased.as_dict() if rulebased is not None else None
-		cerbuy_dict = cerebuy.as_dict() if cerebuy is not None else None
-		return remove_none_values_from_dict({
-			'CE Rebuy Agent (QLearning)': cerbuy_dict,
-			'Rule_Based Agent': rulebased_dict
-		})
+		referencing_agents = self.agentconfig_set.all()
+		final_dict = {}
+		for agent in referencing_agents:
+			final_dict = {**final_dict, **agent.as_dict()}
+		return final_dict
 
 
-class RuleBasedAgentConfig(models.Model):
+class AgentConfig(models.Model):
 	agents_config = models.ForeignKey('AgentsConfig', on_delete=models.DO_NOTHING, null=True)
+	name = models.CharField(max_length=100, default='')
 	agent_class = models.CharField(max_length=100, null=True)
 	argument = models.CharField(max_length=200, null=True)
 
 	def as_dict(self) -> dict:
-		return remove_none_values_from_dict({
-			'agent_class': self.agent_class,
-			'argument': self.argument
-		})
-
-
-class CERebuyAgentQLearningConfig(models.Model):
-	agents_config = models.ForeignKey('AgentsConfig', on_delete=models.DO_NOTHING, null=True)
-	agent_class = models.CharField(max_length=100, null=True)
-	argument = models.CharField(max_length=200, null=True)
-
-	def as_dict(self) -> dict:
-		return remove_none_values_from_dict({
-			'agent_class': self.agent_class,
-			'argument': self.argument
-		})
+		return {
+			self.name: remove_none_values_from_dict({
+				'agent_class': self.agent_class,
+				'argument': self.argument
+				})
+			}
 
 
 class HyperparameterConfig(models.Model):

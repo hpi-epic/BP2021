@@ -5,7 +5,8 @@ from unittest.mock import patch
 # from django.test.client import RequestFactory
 from django.test import TestCase
 
-from ..handle_files import check_agents, download_file, handle_uploaded_file, parse_dict_to_database
+from ..configuration_parser import ConfigurationParser
+from ..handle_files import download_file, handle_uploaded_file
 from ..models.config import *
 
 
@@ -82,7 +83,8 @@ class FileHandling(TestCase):
 
 	def test_objects_from_parse_dict(self):
 		test_dict = {'rl': {'batch_size': 32}, 'sim_market': {'episode_length': 50}}
-		resulting_config = parse_dict_to_database('hyperparameter', test_dict)
+		parser = ConfigurationParser()
+		resulting_config = parser.parse_config_dict_to_datastructure('hyperparameter', test_dict)
 
 		assert resulting_config.sim_market is not None
 		assert resulting_config.rl is not None
@@ -172,15 +174,12 @@ class FileHandling(TestCase):
 
 		environment_agents: AgentsConfig = environment_config.agents
 
-		all_rule_based_agents = list(environment_agents.rulebasedagentconfig_set.all())
-		assert 1 == len(all_rule_based_agents)
-		assert 'agents.vendors.RuleBasedCERebuyAgent' == all_rule_based_agents[0].agent_class
-		assert all_rule_based_agents[0].argument is None
-
-		all_qlearning_agents = list(environment_agents.cerebuyagentqlearningconfig_set.all())
-		assert 1 == len(all_qlearning_agents)
-		assert 'agents.vendors.QLearningCERebuyAgent' == all_qlearning_agents[0].agent_class
-		assert 'CircularEconomyRebuyPriceMonopolyScenario_QLearningCERebuyAgent.dat' == all_qlearning_agents[0].argument
+		all_agents = environment_agents.agentconfig_set.all()
+		assert 2 == len(all_agents)
+		assert 'agents.vendors.RuleBasedCERebuyAgent' == all_agents[0].agent_class
+		assert all_agents[0].argument is None
+		assert 'agents.vendors.QLearningCERebuyAgent' == all_agents[1].agent_class
+		assert 'CircularEconomyRebuyPriceMonopolyScenario_QLearningCERebuyAgent.dat' == all_agents[1].argument
 
 	def test_parsing_mixed_config(self):
 		# get a test config to be parsed
@@ -235,28 +234,3 @@ class FileHandling(TestCase):
 			render_mock.assert_called_once()
 			assert 'upload.html' == actual_arguments[1]
 			assert {'error': 'Your config contains duplicate keys: \'rl\''} == actual_arguments[2]
-
-	def test_valid_agents(self):
-		status, error_msg = check_agents({'Rule_Based Agent': {'agent_class': 'agents.vendors.RuleBasedCERebuyAgent'},
-			'CE Rebuy Agent (QLearning)': {'agent_class': 'agents.vendors.QLearningCERebuyAgent',
-				'argument': 'CircularEconomyRebuyPriceMonopolyScenario_QLearningCERebuyAgent.dat'}})
-
-		assert status is True
-		assert '' == error_msg
-
-	def test_invalid_agents(self):
-		status, error_msg = check_agents({'Rule_Based Agent': {'test': 'agents.vendors.RuleBasedCERebuyAgent'}})
-
-		assert status is False
-		assert 'The keyword(s) [\'test\'] are not allowed in Rule_Based Agent' == error_msg
-
-	# def test_invalid_values(self):
-	# 	test_uploaded_file = MockedUploadedFile('config.json', b'{"rl": {"gamma": "bla"}')
-	# 	with patch('alpha_business_app.handle_files.render') as render_mock:
-	# 		handle_uploaded_file('this is not important', test_uploaded_file)
-
-	# 		actual_arguments = render_mock.call_args.args
-
-	# 		render_mock.assert_called_once()
-	# 		assert 'upload.html' == actual_arguments[1]
-	# 		assert {'error': ''} == actual_arguments[2]

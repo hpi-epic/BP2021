@@ -1,6 +1,7 @@
 EXAMPLE_POST_REQUEST_ARGUMENTS = {
 		'csrfmiddlewaretoken': ['PHZ3VkxiJkrk2gnBCkgNfYJAdUsdb4V5e7CO26nJuENMtSas7BVapRGJJ0B3t9HZ'],
 		'action': ['start'],
+		'experiment_name': ['test_experiment'],
 		'environment-task': ['training'],
 		'environment-episodes': [''],
 		'environment-plot_interval': [''],
@@ -30,6 +31,42 @@ EXAMPLE_HIERARCHIE_DICT = {
 		'environment': {
 			'task': 'training',
 			'marketplace': 'market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
+			'enable_live_draw': False,
+			'agents': {
+				'Rule_Based Agent': {
+					'agent_class': 'agents.vendors.RuleBasedCERebuyAgent'
+				}
+			}
+		},
+		'hyperparameter': {
+			'rl': {
+				'gamma': '0.99',
+				'batch_size': '32',
+				'replay_size': '100000',
+				'learning_rate': '1e-06',
+				'sync_target_frames': '1000',
+				'replay_start_size': '10000',
+				'epsilon_decay_last_frame': '75000',
+				'epsilon_start': '1.0',
+				'epsilon_final': '0.1'
+			},
+			'sim_market': {
+				'max_storage': '100',
+				'episode_length': '50',
+				'max_price': '10',
+				'max_quality': '50',
+				'number_of_customers': '20',
+				'production_price': '3',
+				'storage_cost_per_product': '0.1'
+			}
+		}
+	}
+
+EXAMPLE_HIERARCHIE_DICT2 = {
+		'environment': {
+			'task': 'training',
+			'marketplace': 'market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
+			'enable_live_draw': False,
 			'agents': {
 				'Rule_Based Agent': {
 					'agent_class': 'agents.vendors.RuleBasedCERebuyAgent'

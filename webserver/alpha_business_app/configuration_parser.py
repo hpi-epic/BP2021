@@ -1,4 +1,4 @@
-from .models.config import Config, remove_none_values_from_dict
+from .models.config import *
 
 
 class ConfigurationParser():
@@ -16,6 +16,36 @@ class ConfigurationParser():
 			'hyperparameter': self._flat_hyperparameter_to_hierarchical(hyperparameter)
 			}
 
+	def parse_config(self, config_dict: dict):
+		return self.parse_config_dict_to_datastructure('', config_dict)
+
+	def parse_config_dict_to_datastructure(self, name, config_dict: dict):
+		if config_dict == {}:
+			return
+
+		if name == 'agents':
+			# since django does only support many-to-one relationships (not one-to-many),
+			# we need to parse the agents slightly different, to be able to reference many agents with the agents keyword
+			return self._parse_agents_to_datastructure(config_dict)
+		# get all key value pairs, that contain another dict
+		containing_dict = [(name, value) for name, value in config_dict.items() if type(value) == dict]
+		# loop through of these pairs, in order to parse these dictionaries and add
+		# the parsed sub-element to the current element
+		sub_elements = []
+		for keyword, config in containing_dict:
+			sub_elements += [(keyword, self.parse_config_dict_to_datastructure(keyword, config))]
+
+		# get all elements that do not contain another dictionary
+		not_containing_dict = dict([(name, value) for name, value in config_dict.items() if type(value) != dict])
+
+		# add the sub-elements to the dictionary with the other key value pairs not containing another dictionary
+		for keyword, model_instance in sub_elements:
+			not_containing_dict[keyword] = model_instance
+
+		# figure out which config object to create and return the created objects
+		config_class = to_config_class_name(name)
+		return self._create_object_from(config_class, not_containing_dict)
+
 	def _flat_environment_to_hierarchical(self, flat_dict: dict) -> dict:
 		# get all agents components form dict
 		raw_agents_dict = self._get_items_key_starts_with(flat_dict, 'agents-')
@@ -25,6 +55,8 @@ class ConfigurationParser():
 		environment_dict = self._first_list_element_without_empty(environment_dict)
 		# add parsed agents
 		environment_dict['agents'] = self._flat_agents_to_hierarchical(raw_agents_dict)
+		# add enable_live_draw if exists#
+		environment_dict['enable_live_draw'] = 'enable_live_draw' in flat_dict
 		return environment_dict
 
 	def _flat_agents_to_hierarchical(self, flat_dict: dict) -> dict:
@@ -47,6 +79,17 @@ class ConfigurationParser():
 		sim_market = self._first_list_element_without_empty(sim_market)
 
 		return {'rl': rl, 'sim_market': sim_market}
+
+	def _parse_agents_to_datastructure(self, agent_dict: dict) -> AgentsConfig:
+		agents = AgentsConfig.objects.create()
+		for agent_name, agent_parameters in agent_dict.items():
+			agent_parameters['agents_config'] = agents
+			agent_parameters['name'] = agent_name
+			AgentConfig.objects.create(**agent_parameters)
+		return agents
+
+	def _create_object_from(self, class_name: str, parameters: dict):
+		return globals()[class_name].objects.create(**parameters)
 
 	# HELPER
 	def _get_items_key_starts_with(self, dict_with_complete_keyword: dict, keyword_part: str) -> dict:

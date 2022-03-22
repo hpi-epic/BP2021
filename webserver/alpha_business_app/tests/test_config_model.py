@@ -74,8 +74,8 @@ class ConfigTest(TestCase):
 		# create a small valid config for this test
 		agents_config = AgentsConfig.objects.create()
 
-		RuleBasedAgentConfig.objects.create(agent_class='agents.vendors.RuleBasedCERebuyAgent',
-			agents_config=agents_config)
+		AgentConfig.objects.create(agent_class='agents.vendors.RuleBasedCERebuyAgent',
+			agents_config=agents_config, name='Rule_Based Agent')
 
 		env_config = EnvironmentConfig.objects.create(agents=agents_config,
 			marketplace='market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
@@ -138,6 +138,26 @@ class ConfigTest(TestCase):
 				}
 			}
 		assert expected_dict == final_config.as_dict()
+
+	def test_dict_representation_of_agent(self):
+		test_agent = AgentConfig.objects.create(name='test_agent', agent_class='test_class', argument='1234')
+		expected_dict = {'test_agent': {'agent_class': 'test_class', 'argument': '1234'}}
+		assert expected_dict == test_agent.as_dict()
+
+	def test_dict_representation_of_agents(self):
+		test_agents = AgentsConfig.objects.create()
+		AgentConfig.objects.create(name='test_agent1', agent_class='test_class', agents_config=test_agents)
+		AgentConfig.objects.create(name='test_agent2', agent_class='test_class', agents_config=test_agents)
+
+		expected_dict = {
+				'test_agent1': {
+					'agent_class': 'test_class'
+				},
+				'test_agent2': {
+					'agent_class': 'test_class'
+				}
+			}
+		assert expected_dict == test_agents.as_dict()
 
 	def test_remove_none_values_from_dict(self):
 		test_dict = {'test': 'test', 'test2': None}

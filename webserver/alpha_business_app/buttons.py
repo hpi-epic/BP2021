@@ -210,26 +210,30 @@ class ButtonHandler():
 		# TODO: error, when multiple agents have the same name!
 		parser = ConfigurationParser()
 		config_dict = parser.flat_dict_to_hierarchical_config_dict(post_request)
+		print('bevor post', config_dict)
 		# TODO: assert config dict is valid
-		send_post_request('start', config_dict)
-		return self._decide_rendering()
-		# if response.ok():
-		# 	# put container into database
-		# 	response = response.content
-		# 	# check if a container with the same id already exists
-		# 	if Container.objects.filter(id=response['id']).exists():
-		# 		# we will kindly ask the user to try it again and stop the container
-		# 		# TODO insert better handling here
-		# 		print('the new container has the same id, as another container')
-		# 		self.message = ['error', 'please try again']
-		# 		return self._remove()
-		# 	container_name = self.request.POST['experiment_name']
-		# 	container_name = container_name if container_name != '' else response['id'][:10]
-		# 	Container.objects.create(id=response['id'], config_file=config, name=container_name, command=requested_command)
-		# 	return redirect('/observe', {'success': 'You successfully launched an experiment'})
-		# else:
-		# 	self.message = response.status()
-		# 	return self._decide_rendering()
+		response = send_post_request('start', config_dict)
+		if response.ok():
+			# put container into database
+			response = response.content
+			# check if a container with the same id already exists
+			if Container.objects.filter(id=response['id']).exists():
+				# we will kindly ask the user to try it again and stop the container
+				# TODO insert better handling here
+				print('the new container has the same id, as another container')
+				self.message = ['error', 'please try again']
+				return self._remove()
+			# get all necessary parameters for container object
+			container_name = self.request.POST['experiment_name']
+			container_name = container_name if container_name != '' else response['id'][:10]
+			config_object = parser.parse_config(config_dict.copy())
+			print(config_dict)
+			command = config_object.environment.task
+			Container.objects.create(id=response['id'], config_file=config_object, name=container_name, command=command)
+			return redirect('/observe', {'success': 'You successfully launched an experiment'})
+		else:
+			self.message = response.status()
+			return self._decide_rendering()
 
 	def _tensorboard_link(self) -> HttpResponse:
 		"""
