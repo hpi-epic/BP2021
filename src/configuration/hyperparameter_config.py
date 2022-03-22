@@ -96,6 +96,8 @@ class HyperparameterConfig():
 		assert config['sync_target_frames'] > 0, 'sync_target_frames should be greater than 0'
 		assert config['replay_start_size'] > 0, 'replay_start_size should be greater than 0'
 		assert config['epsilon_decay_last_frame'] >= 0, 'epsilon_decay_last_frame should not be negative'
+		assert config['epsilon_start'] > 0 and config['epsilon_start'] <= 1, 'epsilon_start should be between 0 and 1 (excluded)'
+		assert config['epsilon_final'] > 0 and config['epsilon_final'] <= 1, 'epsilon_final should be between 0 and 1 (excluded)'
 
 		self.gamma = config['gamma']
 		self.learning_rate = config['learning_rate']
