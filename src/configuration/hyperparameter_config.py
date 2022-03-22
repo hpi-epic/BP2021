@@ -75,7 +75,7 @@ class HyperparameterConfig():
 			config (dict): The dictionary to be checked.
 		"""
 		assert 'max_storage' in config, 'your config is missing max_storage'
-		assert 'episode_size' in config, 'your config is missing episode_size'
+		assert 'episode_length' in config, 'your config is missing episode_length'
 		assert 'max_price' in config, 'your config is missing max_price'
 		assert 'max_quality' in config, 'your config is missing max_quality'
 		assert 'number_of_customers' in config, 'your config is missing number_of_customers'
@@ -96,6 +96,8 @@ class HyperparameterConfig():
 		assert config['sync_target_frames'] > 0, 'sync_target_frames should be greater than 0'
 		assert config['replay_start_size'] > 0, 'replay_start_size should be greater than 0'
 		assert config['epsilon_decay_last_frame'] >= 0, 'epsilon_decay_last_frame should not be negative'
+		assert config['epsilon_start'] > 0 and config['epsilon_start'] <= 1, 'epsilon_start should be between 0 and 1 (excluded)'
+		assert config['epsilon_final'] > 0 and config['epsilon_final'] <= 1, 'epsilon_final should be between 0 and 1 (excluded)'
 
 		self.gamma = config['gamma']
 		self.learning_rate = config['learning_rate']
@@ -121,11 +123,11 @@ class HyperparameterConfig():
 			'production_price needs to be smaller than max_price and >=0'
 		assert config['max_quality'] > 0, 'max_quality should be positive'
 		assert config['max_price'] > 0, 'max_price should be positive'
-		assert config['episode_size'] > 0, 'episode_size should be positive'
+		assert config['episode_length'] > 0, 'episode_length should be positive'
 		assert config['storage_cost_per_product'] >= 0, 'storage_cost_per_product should be non-negative'
 
 		self.max_storage = config['max_storage']
-		self.episode_length = config['episode_size']
+		self.episode_length = config['episode_length']
 		self.max_price = config['max_price']
 		self.max_quality = config['max_quality']
 		self.number_of_customers = config['number_of_customers']
