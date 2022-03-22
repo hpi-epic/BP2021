@@ -23,7 +23,7 @@ class DockerInfo():
 			data ([str, bool, int], optional): Any other data, dependent on the function called this differs.
 			stream (stream generator, optional): A stream generator.
 		"""
-		assert isinstance(id, (str, type(None))), f'id must be a string: {id}'
+		assert isinstance(id, str), f'id must be a string: {id}'
 		assert isinstance(status, str), f'status must be a string: {status}'
 		assert isinstance(data, (str, bool, int, type(None))), f'data must be a string, bool or int: {data}'
 		assert isinstance(stream, (GeneratorType, type(None))), f'stream must be a stream Generator (GeneratorType): {stream} ({type(stream)})'
@@ -73,15 +73,15 @@ class DockerManager():
 			DockerInfo: A JSON serializable object containing the id and the status of the new container.
 		"""
 		if 'hyperparameter' not in config:
-			return DockerInfo(id=None, status='The config is missing the "hyperparameter"-field')
+			return DockerInfo(id='No container was started', status='The config is missing the "hyperparameter"-field')
 		if 'environment' not in config:
-			return DockerInfo(id=None, status='The config is missing the "environment"-field')
+			return DockerInfo(id='No container was started', status='The config is missing the "environment"-field')
 
 		command_id = config['environment']['task']
 
 		if command_id not in self._allowed_commands:
 			print(f'Command with ID {command_id} not allowed')
-			return DockerInfo(id=None, status=f'Command not allowed: {command_id}')
+			return DockerInfo(id='No container was started', status=f'Command not allowed: {command_id}')
 
 		self._confirm_image_exists()
 
@@ -298,7 +298,7 @@ class DockerManager():
 		if 'recommerce' not in tagged_images:
 			print('Recommerce image does not exist and will be created')
 			return self._build_image()
-		print('recommerce image already exists')
+		print('Recommerce image already exists')
 		return self._client.images.get('recommerce').id[7:]
 
 	def _build_image(self) -> str:
