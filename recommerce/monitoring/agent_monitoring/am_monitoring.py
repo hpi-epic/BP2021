@@ -47,7 +47,7 @@ class Monitor():
 			# reset the state once to be used by all agents
 			default_state = self.configurator.marketplace.reset()
 
-			for current_agent in range(len(self.configurator.agents)):
+			for current_agent_index in range(len(self.configurator.agents)):
 				# reset marketplace, bit hacky, if you find a better solution feel free
 				self.configurator.marketplace.reset()
 				self.configurator.marketplace.state = default_state
@@ -59,14 +59,14 @@ class Monitor():
 
 				# run marketplace for this agent
 				while not is_done:
-					action = self.configurator.agents[current_agent].policy(state)
+					action = self.configurator.agents[current_agent_index].policy(state)
 					state, step_reward, is_done, _ = self.configurator.marketplace.step(action)
 					episode_reward += step_reward
 
 				# removing this will decrease our performance when we still want to do live drawing
 				# could think about a caching strategy for live drawing
 				# add the reward to the current agent's reward-Array
-				rewards[current_agent] += [episode_reward]
+				rewards[current_agent_index] += [episode_reward]
 
 			if (episode % self.configurator.plot_interval) == 0:
 				self.evaluator.create_histogram(rewards, f'episode_{episode}')
