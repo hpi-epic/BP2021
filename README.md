@@ -34,7 +34,7 @@ The simulation should cover the interaction between customers and particularly c
 
 ## 1. Using the `recommerce` package
 
-If you have not yet done so, first install the package by following [Installing dependencies](#installing-dependencies) and [Installing the `recommerce` package](#installing-the-recommerce-package).
+If you have not yet done so, first install the package by following [Installing dependencies](#2-installing-dependencies) and [Installing the `recommerce` package](#3-installing-the-recommerce-package).
 
 At any point, use
 
@@ -270,7 +270,7 @@ python3 ./docker/docker_manager.py
 
 #### 6.1.1. Docker-API
 
-We recommend interacting with Docker using the Webserver as outlined in the [Webserver](#webserver) section. If you still want to use Docker from you commandline, refer to [Using Docker natively](#using-docker-natively).
+We recommend interacting with Docker using the Webserver as outlined in the [Webserver](#62-webserver) section. If you still want to use Docker from you commandline, refer to [Using Docker natively](#612-using-docker-natively).
 
 #### 6.1.2. Using Docker natively
 

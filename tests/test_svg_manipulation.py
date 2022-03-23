@@ -28,7 +28,7 @@ def test_correct_template():
 	assert correct_template == svg_manipulator.template_svg
 
 	# run one exampleprinter and to make sure the template does not get changed
-	json = ut_t.create_hyperparameter_mock_json_sim_market(episode_size='3')
+	json = ut_t.create_hyperparameter_mock_json_sim_market(episode_length='3')
 	with patch('builtins.open', mock_open(read_data=json)) as utils_mock_file:
 		ut_t.check_mock_file(utils_mock_file, json)
 		# initialize all functions to be mocked
@@ -193,7 +193,7 @@ def test_time_not_int():
 
 def test_one_exampleprinter_run():
 	# run only three episodes to be able to reuse the correct_html
-	json = ut_t.create_hyperparameter_mock_json_sim_market(episode_size='3')
+	json = ut_t.create_hyperparameter_mock_json_sim_market(episode_length='3')
 	with patch('builtins.open', mock_open(read_data=json)) as utils_mock_file:
 		ut_t.check_mock_file(utils_mock_file, json)
 		# initialize all functions to be mocked

@@ -43,7 +43,7 @@ class DockerManager():
 	_observers = []
 	# This is a list of commands that should be supported by our docker implementation
 	# For each command, there must be a dockerfile of the format 'dockerfile_command' in the docker/dockerfiles folder
-	_allowed_commands = ['training', 'exampleprinter', 'monitoring']
+	_allowed_commands = ['training', 'exampleprinter', 'agent_monitoring']
 	# dictionary of container_id:host-port pairs
 	_port_mapping = {}
 
@@ -77,7 +77,7 @@ class DockerManager():
 			print(f'Command with ID {command_id} not allowed')
 			return DockerInfo(id=None, status=f'Command not allowed: {command_id}')
 
-		self._confirm_image_exists(command_id)
+		self._confirm_image_exists()
 
 		# start a container for the image of the requested command
 		container_info: DockerInfo = self._create_container(command_id, hyperparameter_config, use_gpu=False)
@@ -264,20 +264,16 @@ class DockerManager():
 			return DockerInfo(id=container_id, status=f'APIError encountered while removing container.\n{error}')
 
 	# PRIVATE METHODS
-	def _confirm_image_exists(self, command_id: str, update: bool = False) -> str:
+	def _confirm_image_exists(self, update: bool = False) -> str:
 		"""
-		Find out if the specified image exists.	If not, the image will be built. If the command is invalid, None is returned.
+		Find out if the recommerce image exists. If not, the image will be built.
 
 		Args:
-			command_id (str): The command for which an image should exist.
 			update (bool): Whether or not to always build/update an image for this id. Defaults to False.
 
 		Returns:
 			str: The id of the image.
 		"""
-		if command_id not in self._allowed_commands:
-			print(f'Invalid command: {command_id}. No image will be built.')
-			return
 
 		# Get the image tag of all images on the system.
 		all_images = self._client.images.list()
@@ -290,65 +286,49 @@ class DockerManager():
 					print(image.id)
 
 		if update:
-			print(f'Image for command {command_id} will be created/updated.')
-			return self._build_image(command_id=command_id)
+			print('Recommerce image will be created/updated.')
+			return self._build_image()
 
-		if command_id not in tagged_images:
-			print(f'Image does not exist and will be created: {command_id}')
-			return self._build_image(command_id=command_id)
-		print(f'Image already exists: {command_id}')
-		return self._client.images.get(command_id).id[7:]
+		if 'recommerce' not in tagged_images:
+			print('Recommerce image does not exist and will be created')
+			return self._build_image()
+		print('recommerce image already exists')
+		return self._client.images.get('recommerce').id[7:]
 
-	def _build_image(self, command_id: str) -> str:
+	def _build_image(self) -> str:
 		"""
-		Build an image from the dockerfile of the command and name it accordingly.
-
-		Args:
-			command_id (str): The command for which to build the image for.
+		Build an image for the recommerce application, and name it 'recommerce'.
 
 		Returns:
 			str: The id of the image.
 		"""
 		# https://docker-py.readthedocs.io/en/stable/images.html
-		# build image from dockerfile and name it accordingly
-		print(f'Building image for command: {command_id}')
-
-		# Copy over the correct dockerfile for the command
-		with open(os.path.join(os.path.dirname(__file__), os.pardir, 'dockerfile'), 'r') as dockerfile_template:
-			template = dockerfile_template.read()
-		with open(os.path.join(os.path.dirname(__file__), 'dockerfiles', f'dockerfile_{command_id}'), 'r') as new_dockerfile:
-			docker_file = new_dockerfile.read()
-		with open(os.path.join(os.path.dirname(__file__), os.pardir, 'dockerfile'), 'w') as dockerfile:
-			dockerfile.write(docker_file)
+		print('Building recommerce image')
 
 		# Find out if an image with the name already exists to remove it afterwards
 		try:
-			old_img = self._client.images.get(command_id)
+			old_img = self._client.images.get('recommerce')
 		except docker.errors.ImageNotFound:
 			old_img = None
 		try:
 			img, _ = self._client.images.build(path=os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)),
-				tag=command_id, forcerm=True, network_mode='host')
+				tag='recommerce', forcerm=True, network_mode='host')
 		except docker.errors.BuildError or docker.errors.APIError as error:
-			print(f'An error occurred while building the image for command: {command_id}\n{error}')
+			print(f'An error occurred while building the recommerce image\n{error}')
 			exit(1)
-		# No matter what happens during the build, we reset our default dockerfile
-		finally:
-			with open(os.path.join(os.path.dirname(__file__), os.pardir, 'dockerfile'), 'w') as dockerfile:
-				dockerfile.write(template)
 
 		if old_img is not None and old_img.id != img.id:
-			print(f'An image with this name already exists, it will be overwritten: {command_id}')
+			print('A recommerce image already exists, it will be overwritten')
 			self._client.images.remove(old_img.id[7:])
 		# return id without the 'sha256:'-prefix
 		return img.id[7:]
 
-	def _create_container(self, image_id: str, hyperparameter_config: dict, use_gpu: bool = True) -> DockerInfo:
+	def _create_container(self, command_id: str, hyperparameter_config: dict, use_gpu: bool = True) -> DockerInfo:
 		"""
 		Create a container for the given image.
 
 		Args:
-			image_id (str): The id of the image to create the container for.
+			command_id (str): The id of the image to create the container for.
 			hyperparameter_config (str): A json containing parameters for the simulation.
 			use_gpu (bool) Whether or not to request access to GPU's. Defaults to True.
 
@@ -356,7 +336,7 @@ class DockerManager():
 			DockerInfo: A DockerInfo object with id and status set.
 		"""
 		# https://docker-py.readthedocs.io/en/stable/containers.html
-		print(f'Creating container for image: {image_id}')
+		print(f'Creating container for command: {command_id}')
 
 		# find the next available port to map to 6006 in the container
 		used_port = next(filterfalse(set(self._port_mapping.values()).__contains__, count(6006)))
@@ -364,17 +344,21 @@ class DockerManager():
 		if use_gpu:
 			device_request_gpu = docker.types.DeviceRequest(driver='nvidia', count=-1, capabilities=[['compute']])
 			try:
-				container: Container = self._client.containers.create(image_id,
+				container: Container = self._client.containers.create('recommerce',
 					detach=True,
 					ports={'6006/tcp': used_port},
+					entrypoint=f'recommerce -c {command_id}',
 					device_requests=[device_request_gpu])
 			except docker.errors.ImageNotFound as error:
-				return DockerInfo(id=image_id, status=f'Image not found.\n{error}')
+				return DockerInfo(id=command_id, status=f'Image not found.\n{error}')
 		else:
 			try:
-				container: Container = self._client.containers.create(image_id, detach=True, ports={'6006/tcp': used_port})
+				container: Container = self._client.containers.create('recommerce',
+					detach=True,
+					ports={'6006/tcp': used_port},
+					entrypoint=f'recommerce -c {command_id}')
 			except docker.errors.ImageNotFound as error:
-				return DockerInfo(id=image_id, status=f'Image not found.\n{error}')
+				return DockerInfo(id=command_id, status=f'Image not found.\n{error}')
 
 		# Add the container.id and used_port to the occupied_ports.txt and the self._port_mapping
 		with open(os.path.join(os.path.dirname(__file__), 'occupied_ports.txt'), 'a') as port_file:
@@ -554,5 +538,4 @@ mapped_containers: {mapped_containers}'''
 
 if __name__ == '__main__':  # pragma: no cover
 	manager = DockerManager()
-	for command in manager._allowed_commands:
-		print(manager._confirm_image_exists(command, update=True), '\n')
+	print(manager._confirm_image_exists(update=True), '\n')
