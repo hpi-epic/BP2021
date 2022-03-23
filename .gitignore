@@ -1,7 +1,13 @@
 # from https://github.com/github/gitignore
 
-# all files and subfolders of the results folder should be ignored
+# all files and subfolders that get created by executing `recommerce` should get ignored
 results
+data
+environment_config_*.json
+hyperparameter_config.json
+
+# results from the tests
+tests/test_results
 
 # all webserver related directories
 webserver/configurations
@@ -12,15 +18,14 @@ webserver/node_modules
 # docker related directories
 docker/occupied_ports.txt
 
+# file where the users data path is saved
+recommerce/configuration/user_path.txt
+
 # file for Johanns test runner
 tests.sh
 # Johanns VM debug skripts
 docker_debug_skript.sh
 docker_container_remove.sh
-
-
-# docker
-docker/docker_archives
 
 # vscode settings
 .vscode/

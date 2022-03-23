@@ -14,19 +14,22 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.8
-      - name: Install AlphaBusiness package
+      - name: Install Recommerce package
         shell: bash -l {0}
         run: |
-          pip install -e ./src
+          pip install -e ./
+      - name: Setup Recommerce
+        shell: bash -l {0}
+        run: |
+          recommerce --datapath . --get-defaults-unpack
       - name: Pytest
         shell: bash -l {0}
         run: |
           coverage run --source=. -m pytest
-      - name: webserver tests
+      - name: Test Webserver
         shell: bash -l {0}
         run: |
           (cd ./webserver && python ./manage.py test -v 2)
-
       - name: Report Coverage
         shell: bash -l {0}
         run: |

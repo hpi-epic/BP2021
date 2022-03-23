@@ -10,6 +10,7 @@ from django.shortcuts import redirect, render
 from .configuration_parser import ConfigurationParser
 from .constants import CONFIGURATION_DIR
 from .models.config import *
+from .models.container import Container
 from .validation import check_dict_keys
 
 
@@ -84,7 +85,7 @@ def handle_uploaded_file(request, uploaded_config) -> None:
 	return redirect('/start_container', {'success': 'You successfully uploaded a config file'})
 
 
-def download_file(response, wants_zip: bool) -> HttpResponse:
+def download_file(response, wants_zip: bool) -> HttpResponse:  # wanted_container: Container=None
 	"""
 	Makes the dat from the API available for the user and adds the config file before.
 	This can either be a zip or a tarfile.
@@ -92,6 +93,7 @@ def download_file(response, wants_zip: bool) -> HttpResponse:
 	Args:
 		response (Response): Response from the API which is a tar archive.
 		wants_zip (bool): Indicates whether the user wants to download the data as a zipped file.
+		wanted_container (Container): The container the data belongs to is necessary because we need the config file from it
 
 	Returns:
 		HttpResponse: response for the user containing the file.
@@ -103,7 +105,7 @@ def download_file(response, wants_zip: bool) -> HttpResponse:
 
 	if wants_zip:
 		zip_file = _convert_tar_file_to_zip(file_like_tar_archive)
-		zip_file = _add_files_to_zip(zip_file, CONFIGURATION_DIR, ['hyperparameter_config.json'])
+		zip_file = _add_files_to_zip(zip_file)  # wanted_container
 		fake_file = zip_file
 		application_type = 'zip'
 	else:
@@ -137,16 +139,10 @@ def _add_files_to_tar(fake_tar_archive: BytesIO, path_to_add_files: str, files: 
 	return fake_tar_archive
 
 
-def _add_files_to_zip(file_like_zip: BytesIO, path_to_add_files: str, files: list) -> BytesIO:
-	"""
-	This function adds the given files at the path to the given tar archive.
+def _add_files_to_zip(file_like_zip: BytesIO, files, path_to_add_files, wanted_container: Container = None) -> BytesIO:
+	# config_dict = wanted_container.config_file.as_dict()
+	# print(config_dict)
 
-	Args:
-		file_like_zip (BytesIO): the zip archive the files should be added.
-		path_to_add_files (str): path to the files that need to be added.
-		files (list): names of the files at the path that need to be added.
-	"""
-	# TODO: assert all path + file exist
 	print(f'adding {files} to zip archive')
 	zip_archive = zipfile.ZipFile(file=file_like_zip, mode='a', compression=zipfile.ZIP_DEFLATED)
 	for file in files:

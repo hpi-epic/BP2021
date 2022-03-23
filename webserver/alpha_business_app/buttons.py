@@ -148,7 +148,8 @@ class ButtonHandler():
 			response = send_get_request_with_streaming('data', self.wanted_container.id)
 			if response.ok():
 				# save data from api and make it available for the user
-				return download_file(response.content, self.request.POST['file_type'] == 'zip')
+				return download_file(response.content, self.request.POST['file_type'] == 'zip')  # self.wanted_container)
+				# return download_file(response.content, self.request.POST['file_type'] == 'zip')
 			else:
 				self.message = response.status()
 				return self._decide_rendering()
@@ -208,7 +209,6 @@ class ButtonHandler():
 
 		post_request = dict(self.request.POST.lists())
 		# print(dict(raw_post_request.lists()))
-
 		# TODO: error, when multiple agents have the same name!
 		parser = ConfigurationParser()
 		config_dict = parser.flat_dict_to_hierarchical_config_dict(post_request)

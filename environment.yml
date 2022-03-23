@@ -4,14 +4,13 @@ channels:
   - conda-forge
   - pytorch
 dependencies:
-  - coverage=5.5
-  - coverage-badge=1.1.0
   - flake8=3.9.2
   - pre-commit=2.15.0
-  - pytest=6.2.4
   - python=3.8.12
   - snakeviz=2.1.1
   - pip=21.2.4
   - django=4.0.1
   - uvicorn==0.17.0.post1
   - fastapi==0.73.0
+  - coverage>=5.5
+  - coverage-badge>=1.1.0
