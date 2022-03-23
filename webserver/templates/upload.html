@@ -1,15 +1,18 @@
-{% include "header.html" %}
-		<h1>Upload your config file here</h1>
+{% extends "base.html" %}
+{% block title %}Upload{% endblock title %}
+{% block content %}
+	<h1>Upload your config file here</h1>
+	<br>
+		<div class="content">
+		<form method="post" enctype="multipart/form-data">
+			{% csrf_token %}
+			<input type="file" name="upload_config" class="form-control-file" accept="application/json"/>
+			<input type="text" name="config_name" class="form-control" placeholder="config name">
+			<button>Submit</button>
+		</form>
 		<br>
-			<div class="content">
-			<form method="post" enctype="multipart/form-data">
-				{% csrf_token %}
-				<input type="file" name="upload_config" accept="application/json"/>
-				<button>Submit</button>
-			</form>
-			<br>
-			{% include "notice_field.html" %}
-			<br>
-			<a href="/">Home</a>
-		</div>
-{% include "footer.html" %}
+		{% include "notice_field.html" %}
+		<br>
+		<a href="/">Home</a>
+	</div>
+{% endblock content %}

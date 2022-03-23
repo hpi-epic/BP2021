@@ -1,0 +1,70 @@
+.bc-outline-download{
+	color: rgb(4, 152, 211) !important;
+	border-color: rgb(4, 152, 211)  !important;
+}
+.bc-outline-download:hover {
+	color: #fff !important;
+	background-color: rgb(4, 152, 211);
+	border-color: rgb(4, 152, 211);
+}
+
+.bc-outline-pause {
+	color: rgb(248, 83, 7) !important;
+	border-color: rgb(248, 83, 7)  !important;
+}
+.bc-outline-pause:hover {
+	color: #fff !important;
+	background-color: rgb(248, 83, 7);
+	border-color: rgb(248, 83, 7);
+}
+
+.bc-outline-unpause {
+	color: rgb(0, 50, 187) !important;
+	border-color: rgb(0, 50, 187)  !important;
+}
+.bc-outline-unpause:hover {
+	color: #fff !important;
+	background-color: rgb(0, 50, 187);
+	border-color: rgb(0, 50, 187);
+}
+ 
+.bc-outline-stop {
+	color: rgb(219, 1, 56) !important;
+	border-color: rgb(219, 1, 56)  !important;
+}
+.bc-outline-stop:hover {
+	color: #fff !important;
+	background-color: rgb(219, 1, 56);
+	border-color: rgb(219, 1, 56);
+}
+
+.bc-outline-logs {
+	color: rgb(78, 77, 77) !important;
+	border-color: rgb(78, 77, 77)  !important;
+	white-space: nowrap;
+}
+.bc-outline-logs:hover {
+	color: #fff !important;
+	background-color: rgb(78, 77, 77);
+	border-color: rgb(78, 77, 77);
+}
+
+.bc-outline-tensorboard{
+	color: rgb(135, 4, 211) !important;
+	border-color: rgb(135, 4, 211)  !important;
+}
+.bc-outline-tensorboard:hover {
+	color: #fff !important;
+	background-color: rgb(135, 4, 211);
+	border-color: rgb(135, 4, 211);
+}
+
+.bc-outline-lightgreen{
+	color: rgb(69, 211, 4) !important;
+	border-color: rgb(69, 211, 4)  !important;
+}
+.bc-outline-lightgreen:hover {
+	color: #fff !important;
+	background-color: rgb(69, 211, 4);
+	border-color: rgb(69, 211, 4);
+}

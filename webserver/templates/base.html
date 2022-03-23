@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8"/>
+		<title>{% block title %}{% endblock title %}</title>
+		{% load static %}
+		<link rel="stylesheet" type="text/css" href="{% static 'buttons.css' %}">
+		<link rel="stylesheet" type="text/css" href="{% static 'bootstrap.min.css' %}">
+		<link rel="shortcut icon" type="image/png" href="{% static 'favicon.png' %}"/>
+
+		<script src="{% static 'bootstrap.bundle.min.js' %}"></script>
+		<script src="{% static 'jquery-3.6.0.min.js' %}"></script>
+		<script src="{% static 'custom.js' %}"></script>
+	</head>
+	<body>	
+		<div class="container">
+			{% block content %}
+			{% endblock content %}
+		</div>	
+	</body>
+</html>
+	

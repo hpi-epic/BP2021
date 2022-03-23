@@ -81,8 +81,8 @@ def handle_uploaded_file(request, uploaded_config) -> None:
 	if contains_environment is True:
 		environment_config = parser.parse_config_dict_to_datastructure('environment', environment_configs)
 
-	Config.objects.create(environment=environment_config, hyperparameter=hyperparameter_config)
-	return redirect('/start_container', {'success': 'You successfully uploaded a config file'})
+	Config.objects.create(environment=environment_config, hyperparameter=hyperparameter_config, name=request.POST['config_name'])
+	return redirect('/configurator', {'success': 'You successfully uploaded a config file'})
 
 
 def download_file(response, wants_zip: bool) -> HttpResponse:  # wanted_container: Container=None

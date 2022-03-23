@@ -1,9 +1,9 @@
 import os
 from unittest.mock import patch
 
-# from django.contrib.sessions.middleware import SessionMiddleware
-# from django.test.client import RequestFactory
+from django.contrib.sessions.middleware import SessionMiddleware
 from django.test import TestCase
+from django.test.client import RequestFactory
 
 from ..configuration_parser import ConfigurationParser
 from ..handle_files import download_file, handle_uploaded_file
@@ -51,7 +51,7 @@ class FileHandling(TestCase):
 	def test_uploaded_file_is_not_json(self):
 		test_uploaded_file = MockedUploadedFile('test_file.jpg', b'this is a jpg')
 		with patch('alpha_business_app.handle_files.render') as render_mock:
-			handle_uploaded_file('request', test_uploaded_file)
+			handle_uploaded_file(self._setup_request(), test_uploaded_file)
 
 			actual_arguments = render_mock.call_args.args
 
@@ -62,7 +62,7 @@ class FileHandling(TestCase):
 	def test_uploaded_file_invalid_json(self):
 		test_uploaded_file = MockedUploadedFile('test_file.json', b'{ "rl": "1234"')
 		with patch('alpha_business_app.handle_files.render') as render_mock:
-			handle_uploaded_file('request', test_uploaded_file)
+			handle_uploaded_file(self._setup_request(), test_uploaded_file)
 
 			actual_arguments = render_mock.call_args.args
 
@@ -73,7 +73,7 @@ class FileHandling(TestCase):
 	def test_uploaded_file_with_unknown_key(self):
 		test_uploaded_file = MockedUploadedFile('test_file.json', b'{ "test": "1234" }')
 		with patch('alpha_business_app.handle_files.render') as render_mock:
-			handle_uploaded_file('request', test_uploaded_file)
+			handle_uploaded_file(self._setup_request(), test_uploaded_file)
 
 			actual_arguments = render_mock.call_args.args
 
@@ -114,7 +114,7 @@ class FileHandling(TestCase):
 		test_uploaded_file = MockedUploadedFile('config.json', content.encode())
 		# test method
 		with patch('alpha_business_app.handle_files.redirect') as redirect_mock:
-			handle_uploaded_file('this is not important', test_uploaded_file)
+			handle_uploaded_file(self._setup_request(), test_uploaded_file)
 			redirect_mock.assert_called_once()
 		# assert the datastructure, that should be present afterwards
 		final_config: Config = Config.objects.all().first()
@@ -155,7 +155,7 @@ class FileHandling(TestCase):
 		test_uploaded_file = MockedUploadedFile('config.json', content.encode())
 		# test method
 		with patch('alpha_business_app.handle_files.redirect') as redirect_mock:
-			handle_uploaded_file('this is not important', test_uploaded_file)
+			handle_uploaded_file(self._setup_request(), test_uploaded_file)
 			redirect_mock.assert_called_once()
 		# assert the datastructure, that should be present afterwards
 		final_config: Config = Config.objects.all().first()
@@ -190,7 +190,7 @@ class FileHandling(TestCase):
 		test_uploaded_file = MockedUploadedFile('config.json', content.encode())
 		# test method
 		with patch('alpha_business_app.handle_files.redirect') as redirect_mock:
-			handle_uploaded_file('this is not important', test_uploaded_file)
+			handle_uploaded_file(self._setup_request(), test_uploaded_file)
 			redirect_mock.assert_called_once()
 		# assert the datastructure, that should be present afterwards
 		final_config: Config = Config.objects.all().first()
@@ -216,7 +216,7 @@ class FileHandling(TestCase):
 	def test_parsing_invalid_rl_parameters(self):
 		test_uploaded_file = MockedUploadedFile('config.json', b'{"rl": {"test":"bla"}}')
 		with patch('alpha_business_app.handle_files.render') as render_mock:
-			handle_uploaded_file('this is not important', test_uploaded_file)
+			handle_uploaded_file(self._setup_request(), test_uploaded_file)
 
 			actual_arguments = render_mock.call_args.args
 
@@ -227,10 +227,17 @@ class FileHandling(TestCase):
 	def test_parsing_duplicate_keys(self):
 		test_uploaded_file = MockedUploadedFile('config.json', b'{"rl": {"test":"bla"}, "rl": {"test":"bla"}}')
 		with patch('alpha_business_app.handle_files.render') as render_mock:
-			handle_uploaded_file('this is not important', test_uploaded_file)
+			handle_uploaded_file(self._setup_request(), test_uploaded_file)
 
 			actual_arguments = render_mock.call_args.args
 
 			render_mock.assert_called_once()
 			assert 'upload.html' == actual_arguments[1]
 			assert {'error': 'Your config contains duplicate keys: \'rl\''} == actual_arguments[2]
+
+	def _setup_request(self) -> RequestFactory:
+		request = RequestFactory().post('upload.html', {'action': 'start', 'config_name': 'test'})
+		middleware = SessionMiddleware(request)
+		middleware.process_request(request)
+		request.session.save()
+		return request
