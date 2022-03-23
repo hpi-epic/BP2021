@@ -1,8 +1,8 @@
 {
 	"task": "agent_monitoring",
 	"enable_live_draw": false,
-	"episodes": 500,
-	"plot_interval": 100,
+	"episodes": 50,
+	"plot_interval": 25,
 	"marketplace": "recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario",
 	"agents": {
 		"Rule_Based Agent": {

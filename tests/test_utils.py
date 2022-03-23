@@ -18,6 +18,7 @@ def teardown_module(module):
 def import_config() -> hyperparameter_config.HyperparameterConfig:
 	"""
 	Reload the hyperparameter_config file to update the config variable with the mocked values.
+
 	Returns:
 		HyperparameterConfig: The config object.
 	"""
