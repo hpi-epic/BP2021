@@ -3,6 +3,7 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 
+import recommerce.configuration.utils as ut
 from recommerce.configuration.path_manager import PathManager
 from recommerce.rl.actorcritic.actorcritic_agent import ContinuosActorCriticAgent
 
@@ -11,6 +12,7 @@ class PolicyAnalyzer():
 	def __init__(self, agent_to_analyze):
 		self.agent_to_analyze = agent_to_analyze
 		self.folder_path = os.path.abspath(os.path.join(PathManager.results_path, 'policyanalyzer'))
+		ut.ensure_results_folders_exist()
 
 	def _agents_policy(self, observation) -> tuple:
 		"""
@@ -58,7 +60,7 @@ class PolicyAnalyzer():
 		"""
 		assert isinstance(base_input, np.ndarray), 'base_input must be a numpy ndarray'
 		assert isinstance(analyzed_features, list), 'analyzed_features must be a list containing triples'
-		assert 1 <= len(analyzed_features) and len(analyzed_features) <= 2, 'you can analyze either one or two features at once'
+		assert 1 <= len(analyzed_features) <= 2, 'you can analyze either one or two features at once'
 		assert isinstance(title, str), 'title must be a string'
 		assert policyaccess is None or isinstance(policyaccess, int), 'if policyaccess is not None, policyaccess must be an integer'
 		self._assert_analyzed_feature_valid(analyzed_features[0])
