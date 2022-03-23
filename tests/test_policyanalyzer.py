@@ -28,7 +28,7 @@ def test_rule_based_linear_competitor2():
 		[(0, 'own quality', range(5, 20)), (1, 'competitor price', range(1, 11))],
 		"agent's policy"
 	)
-	expected_path = os.path.join(write_to_path, 'agent\'s_policy.png')
+	expected_path = os.path.join(write_to_path, "agent's_policy.png")
 	assert expected_path in given_path
 	assert os.path.exists(expected_path)
 
