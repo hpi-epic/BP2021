@@ -10,15 +10,22 @@ ENV PYTHONUNBUFFERED 1
 RUN python3 -m ensurepip --upgrade
 RUN pip install --upgrade pip
 
+# This directory is needed for pip installation
+RUN mkdir -p ./recommerce/configuration
 # Copy files needed for pip package
+COPY README.md README.md
 COPY LICENSE LICENSE
 COPY pyproject.toml pyproject.toml
-COPY setup.cfg setup.cfg
 COPY setup.py setup.py
-COPY README.md README.md
-COPY ./recommerce ./recommerce
+COPY setup.cfg setup.cfg
 # Install the recommerce package
-RUN pip install .
+# How can we do this before actually having the code?
+# Because we install using -e a symbolic link is created, so any file we copy over later into the ./recommerce
+# path are automatically recognised as part of the package
+RUN pip install -e .
+
+# ...so now we can copy over the often-changed files *after* installing the dependencies, saving lots of time due to caching!
+COPY ./recommerce ./recommerce
 # set the datapath and unpack the default data
 # we only want the modelfiles and remove the config files to make sure we can only use the ones provided by the user
 # (i.e. if the upload fails, the program can't start and won't just use the default one from the recommerce package)
