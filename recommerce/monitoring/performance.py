@@ -5,7 +5,7 @@ import signal
 import sys
 import time
 
-# include the file you want to run the performance check on here!
+# include the file you want to run the performance check on the line below!
 import recommerce.monitoring.agent_monitoring.am_monitoring
 from recommerce.configuration.path_manager import PathManager
 

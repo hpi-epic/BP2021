@@ -1,6 +1,6 @@
 # from https://github.com/github/gitignore
 
-# all files and subfolders that get created by executing `recommerce --get-defaults-unpack` should get ignored
+# all files and subfolders that get created by executing `recommerce` should get ignored
 results
 data
 environment_config_*.json

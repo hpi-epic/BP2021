@@ -29,4 +29,4 @@ RUN rm environment_config_exampleprinter.json
 RUN rm environment_config_agent_monitoring.json
 
 # Perform the specified action when starting the container
-ENTRYPOINT ["echo", "ENTRYPOINT not overwritten!"]
+ENTRYPOINT ["echo", "ENTRYPOINT not overwritten! The container does nothing and will be stopped now. Make sure to start the container using the API, not through directly through Docker"]
