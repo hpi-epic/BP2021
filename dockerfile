@@ -11,12 +11,12 @@ RUN python3 -m ensurepip --upgrade
 RUN pip install --upgrade pip
 
 # Copy files needed for pip package
-COPY ./recommerce ./recommerce
+COPY LICENSE LICENSE
 COPY pyproject.toml pyproject.toml
 COPY setup.cfg setup.cfg
 COPY setup.py setup.py
-COPY LICENSE LICENSE
 COPY README.md README.md
+COPY ./recommerce ./recommerce
 # Install the recommerce package
 RUN pip install .
 # set the datapath and unpack the default data
