@@ -20,12 +20,13 @@ COPY setup.py setup.py
 COPY setup.cfg setup.cfg
 # Install the recommerce package
 # How can we do this before actually having the code?
-# Because we install using -e a symbolic link is created, so any file we copy over later into the ./recommerce
-# path are automatically recognised as part of the package
+# Because we install using -e a symbolic link is created, so any files we copy over into the ./recommerce
+# path later are automatically recognised as part of the package
 RUN pip install -e .
 
 # ...so now we can copy over the often-changed files *after* installing the dependencies, saving lots of time due to caching!
 COPY ./recommerce ./recommerce
+
 # set the datapath and unpack the default data
 # we only want the modelfiles and remove the config files to make sure we can only use the ones provided by the user
 # (i.e. if the upload fails, the program can't start and won't just use the default one from the recommerce package)
