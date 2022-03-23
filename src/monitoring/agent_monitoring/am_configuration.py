@@ -149,7 +149,7 @@ class Configurator():
 			enable_live_draw (bool, optional): Whether or not diagrams should be displayed on screen when drawn. Defaults to None.
 			episodes (int, optional): The number of episodes to run. Defaults to None.
 			plot_interval (int, optional): After how many episodes a new data point/plot should be generated. Defaults to None.
-			marketplace (sim_market class, optional): What marketplace to run the monitoring on. Defaults to None.
+			marketplace (sim_market object, optional): What marketplace to run the monitoring on. Defaults to None.
 			agents (list of tuples of agent classes and lists): What agents to monitor. Each entry must be a tuple of a valid agent class and a list
 				of optional arguments, where a .dat modelfile and/or a name for the agent can be specified.
 				Modelfile defaults to \'marketplaceClass_AgentClass.dat\', Name defaults to \'q_learning\'
@@ -174,8 +174,8 @@ class Configurator():
 			self.plot_interval = plot_interval
 
 		if(marketplace is not None):
-			assert issubclass(marketplace, sim_market.SimMarket), 'the marketplace must be a subclass of SimMarket'
-			self.marketplace = marketplace()
+			assert isinstance(marketplace, sim_market.SimMarket), 'the marketplace must be a subclass of SimMarket'
+			self.marketplace = marketplace
 			# If the agents have not been changed, we reuse the old agents
 			if(agents is None):
 				print('Warning: Your agents are being overwritten by new instances of themselves!')

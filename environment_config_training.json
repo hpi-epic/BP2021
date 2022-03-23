@@ -3,7 +3,8 @@
 	"marketplace": "market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario",
 	"agents": {
 		"CE Rebuy Agent (QLearning)": {
-			"class": "rl.q_learning.q_learning_agent.QLearningCERebuyAgent"
+			"agent_class": "rl.q_learning.q_learning_agent.QLearningCERebuyAgent",
+			"argument": ""
 		}
 	}
 }

@@ -3,8 +3,8 @@
 	"marketplace": "market.circular.circular_sim_market.CircularEconomyRebuyPriceOneCompetitor",
 	"agents": {
 		"CE Rebuy Agent (QLearning)": {
-			"class": "rl.q_learning.q_learning_agent.QLearningCERebuyAgent",
-			"modelfile": "CircularEconomyRebuyPriceOneCompetitor_QLearningCERebuyAgent.dat"
+			"agent_class": "rl.q_learning.q_learning_agent.QLearningCERebuyAgent",
+			"argument": "CircularEconomyRebuyPriceOneCompetitor_QLearningCERebuyAgent.dat"
 		}
 	}
 }
