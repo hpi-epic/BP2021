@@ -74,8 +74,8 @@ non_negative_storage_cost = (ut_t.create_hyperparameter_mock_json_sim_market('10
 	'storage_cost_per_product should be non-negative')
 
 # These tests are missing a line in the config file, the import should throw a specific error message
-missing_episode_size = (ut_t.remove_line(0, ut_t.create_hyperparameter_mock_json_sim_market()), 'your config is missing max_storage')
-missing_episode_size = (ut_t.remove_line(1, ut_t.create_hyperparameter_mock_json_sim_market()), 'your config is missing episode_size')
+missing_max_storage = (ut_t.remove_line(0, ut_t.create_hyperparameter_mock_json_sim_market()), 'your config is missing max_storage')
+missing_episode_length = (ut_t.remove_line(1, ut_t.create_hyperparameter_mock_json_sim_market()), 'your config is missing episode_length')
 missing_max_price = (ut_t.remove_line(2, ut_t.create_hyperparameter_mock_json_sim_market()), 'your config is missing max_price')
 missing_max_quality = (ut_t.remove_line(3, ut_t.create_hyperparameter_mock_json_sim_market()), 'your config is missing max_quality')
 missing_number_of_customers = (ut_t.remove_line(4, ut_t.create_hyperparameter_mock_json_sim_market()),
@@ -93,7 +93,8 @@ invalid_values_testcases = [
 	negative_production_price,
 	negative_max_quality,
 	non_negative_storage_cost,
-	missing_episode_size,
+	missing_max_storage,
+	missing_episode_length,
 	missing_max_price,
 	missing_max_quality,
 	missing_number_of_customers,

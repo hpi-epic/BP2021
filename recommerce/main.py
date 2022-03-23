@@ -21,7 +21,7 @@ def handle_datapath(datapath: str) -> None:
 	reload(path_manager)
 
 
-def handle_unpack():
+def handle_unpack():  # pragma: no cover only library calls
 	"""
 	Copy over the default files to the `user_path`, then unpack it in a way that everything is in the correct location.
 	"""
@@ -34,7 +34,7 @@ def handle_unpack():
 	print('The default data has been unpacked')
 
 
-def handle_get_defaults() -> None:
+def handle_get_defaults() -> None:  # pragma: no cover only library calls
 	"""
 	Copy the contents of the `default_data` folder to the user_path.
 	"""
@@ -43,7 +43,7 @@ def handle_get_defaults() -> None:
 	print(f'The default data was copied to your datapath at "{path_manager.PathManager.user_path}"')
 
 
-def handle_tests() -> None:
+def handle_tests() -> None:  # pragma: no cover
 	"""
 	Run the test suite located in the datapath.
 	"""
@@ -60,7 +60,7 @@ def handle_command(command: str) -> None:
 		command (str | None): The command to perform.
 	"""
 	if command is None:
-		return
+		print('No --command provided, exiting...')
 	elif command == 'training':
 		from recommerce.rl import training_scenario
 		training_scenario.main()
@@ -72,7 +72,7 @@ def handle_command(command: str) -> None:
 		am_monitoring.main()
 
 
-def main():
+def main():  # pragma: no cover
 	"""
 	The entrypoint for the `recommerce` application.
 

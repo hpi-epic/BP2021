@@ -1,6 +1,5 @@
 import numpy as np
 import pytest
-import utils_tests as ut_t
 
 import recommerce.market.circular.circular_sim_market as circular_market
 import recommerce.market.customer as customer
@@ -12,7 +11,7 @@ from recommerce.market.linear.linear_customers import CustomerLinear
 # Test the Customer parent class, i.e. make sure it cannot be used
 def test_customer_parent_class():
 	with pytest.raises(NotImplementedError) as assertion_message:
-		customer.Customer.generate_purchase_probabilities_from_offer(CustomerLinear, *ut_t.random_offer(linear_market.ClassicScenario))
+		customer.Customer.generate_purchase_probabilities_from_offer(CustomerLinear, *random_offer(linear_market.ClassicScenario))
 	assert 'This method is abstract. Use a subclass' in str(assertion_message.value)
 
 
@@ -53,7 +52,7 @@ customer_action_range_testcases = [
 # Test the different Customers in the different Market Scenarios
 @pytest.mark.parametrize('customer, market', customer_action_range_testcases)
 def test_customer_action_range(customer, market):
-	offers = ut_t.random_offer(market)
+	offers = random_offer(market)
 	probability_distribution = customer.generate_purchase_probabilities_from_offer(customer, *offers)
 	assert len(probability_distribution) == market()._get_number_of_vendors() * \
 		(1 if issubclass(market, linear_market.LinearEconomy) else 2) + 1
@@ -101,3 +100,18 @@ def test_circular_higher_price_lower_purchase_probability():
 		CustomerCircular, common_state, vendor_specific_state, vendor_actions)
 	assert probability_distribution[1] > probability_distribution[3]
 	assert probability_distribution[2] < probability_distribution[4]
+
+
+def random_offer(marketplace):
+	"""
+	Helper function that creates a random offer (state that includes the agent's price) to test customer behaviour.
+
+	This is dependent on the sim_market working!
+
+	Args:
+		marketplace (SimMarket): The marketplace for which offers should be generated.
+	"""
+	marketplace = marketplace()
+	marketplace.reset()
+	marketplace.vendor_actions[0] = marketplace._action_space.sample()
+	return marketplace._get_common_state_array(), marketplace.vendor_specific_state, marketplace.vendor_actions

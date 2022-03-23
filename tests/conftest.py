@@ -22,7 +22,7 @@ def pytest_sessionstart(session):
 	"""
 	PathManager.user_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'test_data'))
 	PathManager.data_path = PathManager.user_path
-	PathManager.results_path = os.path.join(PathManager.user_path, os.pardir, 'test_results')
+	PathManager.results_path = os.path.abspath(os.path.join(PathManager.user_path, os.pardir, 'test_results'))
 
 
 def pytest_sessionfinish(session, exitstatus):
