@@ -207,11 +207,13 @@ class DockerManager():
 		if not container:
 			return DockerInfo(container_id, status='Container not found')
 
-		logs = container.logs(stream=stream, timestamps=timestamps, tail=tail)
+		container_status = container.status
+
+		logs = container.logs(stream=stream, timestamps=timestamps, tail=tail, stderr=container_status == 'exited')
 		if stream:
-			return DockerInfo(container_id, status=container.status, stream=logs)
+			return DockerInfo(container_id, status=container_status, stream=logs)
 		else:
-			return DockerInfo(container_id, status=container.status, data=logs.decode('utf-8'))
+			return DockerInfo(container_id, status=container_status, data=logs.decode('utf-8'))
 
 	def get_container_data(self, container_id: str, container_path: str) -> DockerInfo:
 		"""
@@ -460,6 +462,7 @@ class DockerManager():
 		if not container:
 			return DockerInfo(id=container_id, status='Container not found.')
 
+		print('Copying config files into container...')
 		# create a directory to store the files safely
 		os.makedirs('config_tmp', exist_ok=True)
 		os.chdir('config_tmp')
@@ -494,6 +497,7 @@ class DockerManager():
 		if hyper_ok and env_ok:
 			os.chdir('..')
 			shutil.rmtree('config_tmp')
+		print('Copying config files complete')
 		return DockerInfo(id=container_id, status=container.status, data=hyper_ok and env_ok)
 
 	def _initialize_port_mapping(cls):
