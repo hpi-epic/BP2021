@@ -3,7 +3,7 @@
 {% block content %}
 	<h1>Upload your config file here</h1>
 	<br>
-		<div class="content">
+	<div>
 		<form method="post" enctype="multipart/form-data">
 			{% csrf_token %}
 			<input type="file" name="upload_config" class="form-control-file" accept="application/json"/>

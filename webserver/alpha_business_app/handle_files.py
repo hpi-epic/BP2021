@@ -76,10 +76,14 @@ def handle_uploaded_file(request, uploaded_config) -> None:
 	parser = ConfigurationParser()
 	hyperparameter_config = None
 	environment_config = None
-	if contains_hyperparameter is True:
-		hyperparameter_config = parser.parse_config_dict_to_datastructure('hyperparameter', hyperparameter_configs)
-	if contains_environment is True:
-		environment_config = parser.parse_config_dict_to_datastructure('environment', environment_configs)
+	# TODO: insert actual checking of config here. This is very hacky
+	try:
+		if contains_hyperparameter is True:
+			hyperparameter_config = parser.parse_config_dict_to_datastructure('hyperparameter', hyperparameter_configs)
+		if contains_environment is True:
+			environment_config = parser.parse_config_dict_to_datastructure('environment', environment_configs)
+	except ValueError:
+		return render(request, 'upload.html', {'error': 'Your config is wrong'})
 
 	Config.objects.create(environment=environment_config, hyperparameter=hyperparameter_config, name=request.POST['config_name'])
 	return redirect('/configurator', {'success': 'You successfully uploaded a config file'})

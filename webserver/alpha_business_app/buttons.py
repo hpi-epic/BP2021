@@ -117,7 +117,7 @@ class ButtonHandler():
 		return render(self.request, self.view_to_render, self._default_params_for_view())
 
 	def _render_files(self):
-		return render(self.request, self.view_to_render, {'all_configurations': Config.objects.all()})
+		return render(self.request, self.view_to_render, {'all_configurations': Config.objects.all(), **self._default_params_for_view()})
 
 	def _delete_container(self) -> HttpResponse:
 		"""
@@ -198,7 +198,7 @@ class ButtonHandler():
 			return self._decide_rendering()
 		merger = ConfigMerger()
 		final_dict, error_dict = merger.merge_config_objects(post_request['config_id'])
-		return render(self.request, self.view_to_render, {'prefill': final_dict, 'error': error_dict})
+		return render(self.request, self.view_to_render, {'prefill': final_dict, 'error_dict': error_dict})
 
 	def _remove(self) -> HttpResponse:
 		"""
@@ -219,14 +219,11 @@ class ButtonHandler():
 		"""
 		# convert post request to normal dict
 		post_request = dict(self.request.POST.lists())
-		# print(post_request)
+
 		# TODO: error, when multiple agents have the same name!
 		parser = ConfigurationParser()
 		config_dict = parser.flat_dict_to_hierarchical_config_dict(post_request)
-		# config_object = parser.parse_config(config_dict)
 		# TODO: assert config dict is valid
-		# tmp = config_object.as_dict()
-		# print(config_dict)
 		response = send_post_request('start', config_dict)
 		if response.ok():
 			# put container into database
@@ -248,6 +245,7 @@ class ButtonHandler():
 			config_object.save()
 			return redirect('/observe', {'success': 'You successfully launched an experiment'})
 		else:
+			print(response.status())
 			self.message = response.status()
 			return self._decide_rendering()
 
