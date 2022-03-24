@@ -92,5 +92,5 @@ def test_port_mapping_initialization():
 
 
 def test_allowed_commands_is_up_to_date():
-	assert set(manager._allowed_commands) == set(['training', 'exampleprinter', 'monitoring']), \
+	assert set(manager._allowed_commands) == set(['training', 'exampleprinter', 'agent_monitoring']), \
 		'The set of allowed commands has changed, please update this and all the other tests!'

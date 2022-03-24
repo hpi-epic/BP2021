@@ -56,7 +56,7 @@ def train_continuos_a2c_circular_economy_rebuy():
 
 def train_from_config():
 	"""
-	Use the `environment_config.json` file to decide on the training parameters.
+	Use the `environment_config_training.json` file to decide on the training parameters.
 	"""
 	config: TrainingEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_training')
 	# Since we store a tuple (class, None) in config.agent, we just want the first component
