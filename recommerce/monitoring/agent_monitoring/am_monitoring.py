@@ -72,11 +72,10 @@ class Monitor():
 				print(f'Running {episode}th episode...')
 
 			if (episode % self.configurator.plot_interval) == 0:
-				self.evaluator.create_histogram(rewards, f'episode_{episode}')
+				self.evaluator.create_histogram(rewards, False, f'episode_{episode}')
 
-		# if the plot_interval does not create a plot after the last episode automatically, we will do it manually
-		if (self.configurator.episodes % self.configurator.plot_interval) != 0:
-			self.evaluator.create_histogram(rewards, f'episode_{self.configurator.episodes}')
+		# only one histogram after the whole monitoring process
+		self.evaluator.create_histogram(rewards, True, 'Cumulative_rewards_per_episode')
 
 		return rewards
 

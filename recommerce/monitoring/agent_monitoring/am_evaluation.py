@@ -33,12 +33,13 @@ class Evaluator():
 		print(f'All plots were saved to {os.path.abspath(self.configurator.folder_path)}')
 
 	# visualize metrics
-	def create_histogram(self, rewards: list, filename: str = 'default') -> None:
+	def create_histogram(self, rewards: list, is_last_histogram: bool, filename: str = 'default') -> None:
 		"""
 		Create a histogram sorting rewards into bins of 1000.
 
 		Args:
 			rewards (array of arrays of int): An array containing an array of ints for each monitored agent.
+			is_last_histogram (bool): States that only the last histogram should be plotted.
 			filename (str): The name of the output file, format will be .svg. Defaults to 'default'.
 		"""
 		assert all(len(curr_reward) == len(rewards[0]) for curr_reward in rewards), 'all rewards-arrays must be of the same size'
@@ -63,7 +64,8 @@ class Evaluator():
 		if self.configurator.enable_live_draw:
 			plt.draw()
 			plt.pause(0.001)
-		plt.savefig(fname=os.path.join(self.configurator.get_folder(), 'histograms', filename))
+		if is_last_histogram:
+			plt.savefig(fname=os.path.join(self.configurator.get_folder(), filename))
 
 	def _create_statistics_plots(self, rewards: list) -> None:
 		"""

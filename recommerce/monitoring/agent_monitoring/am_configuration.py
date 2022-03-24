@@ -37,7 +37,7 @@ class Configurator():
 			str: The folder name
 		"""
 		# create folder with current timestamp to save diagrams at
-		os.makedirs(os.path.join(self.folder_path, 'histograms'), exist_ok=True)
+		os.makedirs(os.path.join(self.folder_path), exist_ok=True)
 		return self.folder_path
 
 	def _get_modelfile_path(self, model_name: str) -> str:
