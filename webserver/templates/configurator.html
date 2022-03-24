@@ -19,15 +19,13 @@
 					{% csrf_token %}
 					<input type="hidden" name="action" value="start">
 					<div class="accordion" id="config_form">
-						{% include "configuration_items/environment.html" %}
-						{% include "configuration_items/hyperparameter.html" %}
+						{% include "configuration_items/environment.html" with prefill=prefill.environment %}
+						{% include "configuration_items/hyperparameter.html" with prefill=prefill.hyperparameter %}
 					</div>
 					<input class="form-control" type="text" placeholder="experiment name" name="experiment_name">
 					<button class="btn btn-secondary btn-rounded m-3">launch</button>
 				</form>
 			</div>
 		</div>
-		{{prefill}}
-		{{prefill.hyperparameter.rl.gamma}}
 		{% include "notice_field.html" %}
 {% endblock content %}

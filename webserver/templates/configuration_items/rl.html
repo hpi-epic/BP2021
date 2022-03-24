@@ -11,7 +11,7 @@
 				gamma
 			</div>
 			<div class="col-6">
-				<input type="number" class="form-control" min="0" max="1" step="any" value="prefill.hyperparameter.rl.gamma" name="hyperparameter-rl-gamma">
+				<input type="number" class="form-control" min="0" max="1" step="any" value="{{prefill.gamma}}" name="hyperparameter-rl-gamma">
 			</div>
 		</div>
 		<div class="row">
@@ -19,7 +19,7 @@
 				batch size
 			</div>
 			<div class="col-6">
-				<input type="number" class="form-control" min="0" step="any"  name="hyperparameter-rl-batch_size">
+				<input type="number" class="form-control" min="0" step="any" value="{{prefill.batch_size}}" name="hyperparameter-rl-batch_size">
 			</div>
 		</div>
 		<div class="row">
@@ -27,7 +27,7 @@
 				replay size
 			</div>
 			<div class="col-6">
-				<input type="number" class="form-control" min="0" step="any"  name="hyperparameter-rl-replay_size">
+				<input type="number" class="form-control" min="0" step="any" value="{{prefill.replay_size}}" name="hyperparameter-rl-replay_size">
 			</div>
 		</div>
 		<div class="row">
@@ -35,7 +35,7 @@
 				learning rate
 			</div>
 			<div class="col-6">
-				<input type="number"class="form-control" min="0" max="1" step="any"  name="hyperparameter-rl-learning_rate">
+				<input type="number"class="form-control" min="0" max="1" step="any" value="{{prefill.learning_rate}}" name="hyperparameter-rl-learning_rate">
 			</div>
 		</div>
 		<div class="row">
@@ -43,7 +43,7 @@
 				sync target frames
 			</div>
 			<div class="col-6">
-				<input type="number" class="form-control" min="0" step="any" name="hyperparameter-rl-sync_target_frames">
+				<input type="number" class="form-control" min="0" step="any" value="{{prefill.sync_target_frames}}" name="hyperparameter-rl-sync_target_frames">
 			</div>
 		</div>
 		<div class="row">
@@ -51,7 +51,7 @@
 				replay start size
 			</div>
 			<div class="col-6">
-				<input type="number" class="form-control" min="0" step="any" name="hyperparameter-rl-replay_start_size">
+				<input type="number" class="form-control" min="0" step="any" value="{{prefill.replay_start_size}}" name="hyperparameter-rl-replay_start_size">
 			</div>
 		</div>
 		<div class="row">
@@ -59,7 +59,7 @@
 				epsilon decay last frame
 			</div>
 			<div class="col-6">
-				<input type="number" class="form-control" min="0" step="any" name="hyperparameter-rl-epsilon_decay_last_frame">
+				<input type="number" class="form-control" min="0" step="any" value="{{prefill.epsilon_decay_last_frame}}" name="hyperparameter-rl-epsilon_decay_last_frame">
 			</div>
 		</div>
 		<div class="row">
@@ -67,7 +67,7 @@
 				epsilon start
 			</div>
 			<div class="col-6">
-				<input type="number" class="form-control" min="0" step="any" name="hyperparameter-rl-epsilon_start">
+				<input type="number" class="form-control" min="0" step="any"  value="{{prefill.epsilon_start}}" name="hyperparameter-rl-epsilon_start">
 			</div>
 		</div>
 		<div class="row">
@@ -75,7 +75,7 @@
 				epsilon final
 			</div>
 			<div class="col-6">
-				<input type="number" class="form-control" min="0" step="any" name="hyperparameter-rl-epsilon_final">
+				<input type="number" class="form-control" min="0" step="any"  value="{{prefill.epsilon_final}}" name="hyperparameter-rl-epsilon_final">
 			</div>
 		</div>
 	</div>

@@ -5,7 +5,7 @@
 		</button>
 	</h2>
 <div id="collapseHyperparameter" class="accordion-collapse collapse">
-	{% include "configuration_items/rl.html" %}
-	{% include "configuration_items/sim_market.html" %}
+	{% include "configuration_items/rl.html" with prefill=prefill.rl %}
+	{% include "configuration_items/sim_market.html" with prefill=prefill.sim_market %}
 </div>
 </div>

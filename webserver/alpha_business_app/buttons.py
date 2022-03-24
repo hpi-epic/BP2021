@@ -194,11 +194,11 @@ class ButtonHandler():
 	def _pre_fill(self) -> HttpResponse:
 		post_request = dict(self.request.POST.lists())
 		if 'config_id' not in post_request:
-			print('nothing to prefill')
 			return self._decide_rendering()
 		merger = ConfigMerger()
 		final_dict, error_dict = merger.merge_config_objects(post_request['config_id'])
-		return render(self.request, self.view_to_render, {'prefill': final_dict, 'error_dict': error_dict})
+		return render(self.request, self.view_to_render,
+			{'prefill': final_dict, 'error_dict': error_dict, 'all_configurations': Config.objects.all()})
 
 	def _remove(self) -> HttpResponse:
 		"""
