@@ -23,6 +23,23 @@ manager = DockerManager()
 app = FastAPI()
 
 
+def is_invalid_status(status: str) -> bool:
+	"""
+	Utitlity function that checks a given string against a set of valid container statuses.
+
+	If the string does not match any of them, the status is deemed invalid and the API should return a 404.
+
+	Args:
+		status (str): The status to check against the set.
+
+	Returns:
+		bool: Whether or not the status indicates a successful operation.
+	"""
+	valid_container_statuses = {'running', 'paused', 'exited', 'restarting', 'created'}
+	# extra check for 'exited (' since we return some exited statuses including the exit code
+	return status not in valid_container_statuses and 'exited (' not in status
+
+
 @app.post('/start')
 async def start_container(config: Request) -> JSONResponse:
 	"""
@@ -35,10 +52,7 @@ async def start_container(config: Request) -> JSONResponse:
 		JSONResponse: The response of the Docker start request. Contains the port used on the host in the data-field.
 	"""
 	container_info = manager.start(config=await config.json())
-	if (container_info.status.__contains__('Command not allowed')
-		or container_info.status.__contains__('Image not found')
-		or container_info.status.__contains__('The config is missing')  # missing hyperparameter or environment field
-		or container_info.data is False):
+	if (is_invalid_status(container_info.status) or container_info.data is False):
 		return JSONResponse(status_code=404, content=vars(container_info))
 	else:
 		return JSONResponse(vars(container_info))
@@ -58,7 +72,7 @@ async def is_container_alive(id: str) -> JSONResponse:
 		JSONResponse: The response of the status request.
 	"""
 	container_info = manager.health(id)
-	if container_info.status.__contains__('Container not found'):
+	if is_invalid_status(container_info.status):
 		return JSONResponse(status_code=404, content=vars(container_info))
 	else:
 		return JSONResponse(vars(container_info))
@@ -80,7 +94,7 @@ async def get_container_logs(id: str, timestamps: bool = False, stream: bool = F
 		StreamingResponse: If stream=True. The response of the log request.
 	"""
 	container_info = manager.get_container_logs(id, timestamps, stream, tail)
-	if container_info.status.__contains__('Container not found'):
+	if is_invalid_status(container_info.status):
 		return JSONResponse(status_code=404, content=vars(container_info))
 	elif stream:
 		return StreamingResponse(
@@ -106,8 +120,7 @@ async def get_container_data(id: str, path: str = '/app/results') -> StreamingRe
 		StreamingResponse: A stream generator that will download the requested path as a .tar archive.
 	"""
 	container_info = manager.get_container_data(id, path)
-	if (container_info.status.__contains__('Container not found')
-		or container_info.status.__contains__('The requested path does not exist on the container')):
+	if is_invalid_status(container_info.status):
 		return JSONResponse(status_code=404, content=vars(container_info))
 	else:
 		return StreamingResponse(
@@ -132,7 +145,7 @@ async def get_tensorboard_link(id: str) -> JSONResponse:
 		JSONResponse: The response of the tensorboard request encapsuled in a DockerInfo JSON. A link is in the data field.
 	"""
 	container_info = manager.start_tensorboard(id)
-	if container_info.status.__contains__('Container not found') or container_info.status.__contains__('Container is not running'):
+	if is_invalid_status(container_info.status):
 		return JSONResponse(status_code=404, content=vars(container_info))
 	else:
 		return JSONResponse(vars(container_info))
@@ -150,7 +163,7 @@ async def pause_container(id: str) -> JSONResponse:
 		JSONResponse: The response of the pause request encapsuled in a DockerInfo JSON.
 	"""
 	container_info = manager.pause(id)
-	if container_info.status.__contains__('Container not found') or container_info.status.__contains__('Container not paused successfully'):
+	if is_invalid_status(container_info.status):
 		return JSONResponse(status_code=404, content=vars(container_info))
 	else:
 		return JSONResponse(vars(container_info))
@@ -168,7 +181,7 @@ async def unpause_container(id: str) -> JSONResponse:
 		JSONResponse: The response of the unpause request encapsuled in a DockerInfo JSON.
 	"""
 	container_info = manager.unpause(id)
-	if container_info.status.__contains__('Container not found') or container_info.status.__contains__('Container not unpaused successfully'):
+	if is_invalid_status(container_info.status):
 		return JSONResponse(status_code=404, content=vars(container_info))
 	else:
 		return JSONResponse(vars(container_info))
@@ -186,7 +199,7 @@ async def remove_container(id: str) -> JSONResponse:
 		JSONResponse: The response of the remove request encapsuled in a DockerInfo JSON. Status will be 'removed' if successful.
 	"""
 	container_info = manager.remove_container(id)
-	if container_info.status.__contains__('Container not found') or container_info.status.__contains__('Container not stopped successfully'):
+	if is_invalid_status(container_info.status):
 		return JSONResponse(status_code=404, content=vars(container_info))
 	else:
 		return JSONResponse(vars(container_info))
