@@ -1,1 +1,10 @@
-badges
+# Ignore everything
+**
+
+# Allow only files and folders needed
+!/recommerce
+!pyproject.toml
+!setup.cfg
+!setup.py
+!README.md
+!LICENSE
