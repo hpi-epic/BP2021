@@ -30,7 +30,8 @@ class RLTrainer(ABC):
 		else:
 			outputs = marketplace_class().get_n_actions()
 
-		self.best_mean_reward = None
+		self.best_mean_interim_reward = None
+		self.best_mean_overall_reward = None
 		self.marketplace_class = marketplace_class
 		if issubclass(agent_class, actorcritic_agent.ActorCriticAgent):
 			self.RL_agent = agent_class(marketplace_class().observation_space.shape[0], outputs)
@@ -101,24 +102,29 @@ class RLTrainer(ABC):
 			print(f"{frame_idx + 1}: {episode_number} episodes trained, mean return {averaged_info['profits/all']['vendor_0']:.3f}, " + (
 				f'eps {epsilon:.2f}, ' if epsilon is not None else '') + f'speed {speed:.2f} f/s')
 
-	def consider_update_best_model(self, averaged_info: dict, frame_idx: int) -> None:
+	def consider_save_model(self, episodes_idx: int, force=False) -> None:
+		if (episodes_idx % 500 == 0 and episodes_idx > 0) or force:
+			self.RL_agent.save(model_path=self.model_path, model_name=f'{self.signature}_{episodes_idx:05d}')
+			print(f'I write the interim model after {episodes_idx} episodes to the disk.')
+			print(f'You can find the parameters in this directory: {self.model_path}.')
+			print(f'This model achieved a mean reward of {self.best_mean_interim_reward}.')
+
+	def consider_update_best_model(self, averaged_info: dict) -> None:
 		"""
 		Evaluates if the current model is the best one until now.
-		If it is, it updates the high score and saves the model.
+		If it is, it updates the high score and syncs the model to a different variable until it is written to the disk.
 		Args:
 			averaged_info (dict): A dictionary containing averaged_info['profits/all']['vendor_0'] to evaluate the performance.
 			frame_idx (int): The current frame.
 		"""
 		mean_reward = averaged_info['profits/all']['vendor_0']
-		if self.best_mean_reward is None:
-			self.best_mean_reward = mean_reward - 1
-
-		# save the model only if the epsilon-decay has completed and we reached a new best reward
-		if frame_idx > config.epsilon_decay_last_frame and mean_reward > self.best_mean_reward:
-			self.RL_agent.save(model_path=self.model_path, model_name=f'{self.signature}_{mean_reward:.3f}')
-			if self.best_mean_reward != 0:
-				print(f'Best reward updated {self.best_mean_reward:.3f} -> {mean_reward:.3f}')
-			self.best_mean_reward = mean_reward
+		if self.best_mean_interim_reward is None or mean_reward > self.best_mean_interim_reward:
+			self.RL_agent.sync_to_best_interim()
+			self.best_mean_interim_reward = mean_reward
+			if self.best_mean_overall_reward is None or self.best_mean_interim_reward > self.best_mean_overall_reward:
+				if self.best_mean_overall_reward is not None:
+					print(f'Best overall reward updated {self.best_mean_overall_reward:.3f} -> {self.best_mean_interim_reward:.3f}')
+				self.best_mean_overall_reward = self.best_mean_interim_reward
 
 	def consider_sync_tgt_net(self, frame_idx) -> None:
 		if (frame_idx + 1) % config.sync_target_frames == 0:
@@ -130,13 +136,13 @@ class RLTrainer(ABC):
 
 	def _end_of_training(self) -> None:
 		"""
-		Inform the user of the best_mean_reward the agent achieved during training.
+		Inform the user of the best_mean_overall_reward the agent achieved during training.
 		"""
-		if self.best_mean_reward is None:
-			print('The `best_mean_reward` has never been set. Is this expected?')
-		elif self.best_mean_reward == 0:
+		if self.best_mean_overall_reward is None:
+			print('The `best_mean_overall_reward` has never been set. Is this expected?')
+		elif self.best_mean_overall_reward == 0:
 			print('The mean reward of the agent was never higher than 0, so no models were saved!')
 		else:
-			print(f'The best mean reward reached by the agent was {self.best_mean_reward:.3f}')
+			print(f'The best mean reward reached by the agent was {self.best_mean_overall_reward:.3f}')
 			print('The models were saved to:')
 			print(os.path.abspath(self.model_path))

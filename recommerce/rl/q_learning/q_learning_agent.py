@@ -35,6 +35,7 @@ class QLearningAgent(ReinforcementLearningAgent, ABC):
 		self.name = name
 		print(f'I initiate a QLearningAgent using {self.device} device')
 		self.net = model.simple_network(n_observations, n_actions).to(self.device)
+		self.best_interim_net = model.simple_network(n_observations, n_actions)
 		if load_path:
 			self.net.load_state_dict(torch.load(load_path, map_location=self.device))
 		if optim:
@@ -106,40 +107,20 @@ class QLearningAgent(ReinforcementLearningAgent, ABC):
 		expected_state_action_values = next_state_values * config.gamma + rewards_v
 		return torch.nn.MSELoss()(state_action_values, expected_state_action_values), state_action_values.mean()
 
+	def sync_to_best_interim(self):
+		self.best_interim_net.load_state_dict(self.net)
+
 	def save(self, model_path, model_name) -> None:
 		"""
 		Save a trained model to the specified folder within 'trainedModels'.
-
-		Also caps the amount of models in the folder to a maximum of 10.
 
 		Args:
 			model_path (str): The path to the folder within 'trainedModels' where the model should be saved.
 			model_name (str): The name of the .dat file of this specific model.
 		"""
 		model_name += '.dat'
-		if not os.path.isdir(os.path.abspath(os.path.join('results', 'trainedModels'))):
-			os.mkdir(os.path.abspath(os.path.join('results', 'trainedModels')))
 
-		if not os.path.isdir(os.path.abspath(model_path)):
-			os.mkdir(os.path.abspath(model_path))
-
-		torch.save(self.net.state_dict(), os.path.join(model_path, model_name))
-
-		full_directory = os.walk(model_path)
-		for _, _, filenames in full_directory:
-			if len(filenames) > 10:
-				# split the filenames to isolate the reward-part
-				split_filenames = [file.rsplit('_', 1) for file in filenames]
-				# preserve the signature for later
-				signature = split_filenames[0][0]
-				# isolate the reward and convert it to float
-				rewards = [file[1] for file in split_filenames]
-				rewards = [float(reward.rsplit('.', 1)[0]) for reward in rewards]
-				# sort the rewards to keep only the best ones
-				rewards = sorted(rewards)
-
-				for reward in range(len(rewards) - 10):
-					os.remove(os.path.join(model_path, f'{signature}_{rewards[reward]:.3f}.dat'))
+		torch.save(self.best_interim_net.state_dict(), os.path.join(model_path, model_name))
 
 
 class QLearningLEAgent(QLearningAgent, LinearAgent):

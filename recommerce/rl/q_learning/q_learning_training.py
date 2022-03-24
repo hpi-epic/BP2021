@@ -45,8 +45,10 @@ class QLearningTrainer(RLTrainer):
 					averaged_info['Loss/selected_q_vals'] = np.mean(selected_q_vals[-1000:])
 					averaged_info['epsilon'] = epsilon
 					ut.write_dict_to_tensorboard(self.writer, averaged_info, frame_idx / config.episode_length, is_cumulative=True)
-					self.consider_print_info(frame_idx, len(all_dicts), averaged_info, epsilon)
+					finished_episodes = len(all_dicts)
+					self.consider_print_info(frame_idx, finished_episodes, averaged_info, epsilon)
 					self.consider_update_best_model(averaged_info, frame_idx)
+					self.consider_save_model(finished_episodes)
 
 				vendors_cumulated_info = None
 				self.marketplace.reset()
@@ -61,4 +63,5 @@ class QLearningTrainer(RLTrainer):
 
 			self.consider_sync_tgt_net(frame_idx)
 
+		self.consider_save_model(finished_episodes, force=True)
 		self._end_of_training()
