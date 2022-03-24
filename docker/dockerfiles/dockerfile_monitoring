@@ -12,7 +12,13 @@ RUN pip install --upgrade pip
 
 COPY ./recommerce ./recommerce
 # Install the recommerce package
-RUN pip install ./recommerce
+COPY README.md README.md
+COPY LICENSE LICENSE
+COPY pyproject.toml pyproject.toml
+COPY setup.py setup.py
+COPY setup.cfg setup.cfg
+
+RUN pip install .
 # set the datapath and unpack the default data
 RUN recommerce --datapath . --get-defaults-unpack
 
