@@ -106,7 +106,8 @@ async def get_container_data(id: str, path: str = '/app/results') -> StreamingRe
 		StreamingResponse: A stream generator that will download the requested path as a .tar archive.
 	"""
 	container_info = manager.get_container_data(id, path)
-	if container_info.status.__contains__('Container not found'):
+	if (container_info.status.__contains__('Container not found')
+		or container_info.status.__contains__('The requested path does not exist on the container')):
 		return JSONResponse(status_code=404, content=vars(container_info))
 	else:
 		return StreamingResponse(
