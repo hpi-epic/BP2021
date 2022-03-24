@@ -1,5 +1,6 @@
 import json
 import os
+import shutil
 import tarfile
 import time
 from itertools import count, filterfalse
@@ -42,8 +43,7 @@ class DockerManager():
 	_client = None
 	_observers = []
 	# This is a list of commands that should be supported by our docker implementation
-	# For each command, there must be a dockerfile of the format 'dockerfile_command' in the docker/dockerfiles folder
-	_allowed_commands = ['training', 'exampleprinter', 'monitoring']
+	_allowed_commands = ['training', 'exampleprinter', 'agent_monitoring']
 	# dictionary of container_id:host-port pairs
 	_port_mapping = {}
 
@@ -62,25 +62,31 @@ class DockerManager():
 		cls._initialize_port_mapping(cls)
 		return cls._instance
 
-	def start(self, command_id: str, hyperparameter_config: dict) -> DockerInfo:
+	def start(self, config: dict) -> DockerInfo:
 		"""
 		To be called by the REST API. Create and start a new docker container from the image of the specified command.
 
 		Args:
-			command_id (str): The command for which to start a container.
-			hyperparameter_config (dict): The hyperparameter_config.json to replace the default one with.
+			config (dict): The combined hyperparameter_config and environment_config_command dictionaries that should be sent to the container.
 
 		Returns:
 			DockerInfo: A JSON serializable object containing the id and the status of the new container.
 		"""
+		if 'hyperparameter' not in config:
+			return DockerInfo(id='No container was started', status='The config is missing the "hyperparameter"-field')
+		if 'environment' not in config:
+			return DockerInfo(id='No container was started', status='The config is missing the "environment"-field')
+
+		command_id = config['environment']['task']
+
 		if command_id not in self._allowed_commands:
 			print(f'Command with ID {command_id} not allowed')
-			return DockerInfo(id=None, status=f'Command not allowed: {command_id}')
+			return DockerInfo(id='No container was started', status=f'Command not allowed: {command_id}')
 
-		self._confirm_image_exists(command_id)
+		self._confirm_image_exists()
 
 		# start a container for the image of the requested command
-		container_info: DockerInfo = self._create_container(command_id, hyperparameter_config, use_gpu=False)
+		container_info: DockerInfo = self._create_container(command_id, config, use_gpu=False)
 		if container_info.status.__contains__('Image not found') or container_info.data is False:
 			self.remove_container(container_info.id)
 			return container_info
@@ -201,11 +207,13 @@ class DockerManager():
 		if not container:
 			return DockerInfo(container_id, status='Container not found')
 
-		logs = container.logs(stream=stream, timestamps=timestamps, tail=tail)
+		container_status = container.status
+
+		logs = container.logs(stream=stream, timestamps=timestamps, tail=tail, stderr=container_status == 'exited')
 		if stream:
-			return DockerInfo(container_id, status=container.status, stream=logs)
+			return DockerInfo(container_id, status=container_status, stream=logs)
 		else:
-			return DockerInfo(container_id, status=container.status, data=logs.decode('utf-8'))
+			return DockerInfo(container_id, status=container_status, data=logs.decode('utf-8'))
 
 	def get_container_data(self, container_id: str, container_path: str) -> DockerInfo:
 		"""
@@ -264,20 +272,16 @@ class DockerManager():
 			return DockerInfo(id=container_id, status=f'APIError encountered while removing container.\n{error}')
 
 	# PRIVATE METHODS
-	def _confirm_image_exists(self, command_id: str, update: bool = False) -> str:
+	def _confirm_image_exists(self, update: bool = False) -> str:
 		"""
-		Find out if the specified image exists.	If not, the image will be built. If the command is invalid, None is returned.
+		Find out if the recommerce image exists. If not, the image will be built.
 
 		Args:
-			command_id (str): The command for which an image should exist.
 			update (bool): Whether or not to always build/update an image for this id. Defaults to False.
 
 		Returns:
 			str: The id of the image.
 		"""
-		if command_id not in self._allowed_commands:
-			print(f'Invalid command: {command_id}. No image will be built.')
-			return
 
 		# Get the image tag of all images on the system.
 		all_images = self._client.images.list()
@@ -290,73 +294,57 @@ class DockerManager():
 					print(image.id)
 
 		if update:
-			print(f'Image for command {command_id} will be created/updated.')
-			return self._build_image(command_id=command_id)
+			print('Recommerce image will be created/updated.')
+			return self._build_image()
 
-		if command_id not in tagged_images:
-			print(f'Image does not exist and will be created: {command_id}')
-			return self._build_image(command_id=command_id)
-		print(f'Image already exists: {command_id}')
-		return self._client.images.get(command_id).id[7:]
+		if 'recommerce' not in tagged_images:
+			print('Recommerce image does not exist and will be created')
+			return self._build_image()
+		print('Recommerce image already exists')
+		return self._client.images.get('recommerce').id[7:]
 
-	def _build_image(self, command_id: str) -> str:
+	def _build_image(self) -> str:
 		"""
-		Build an image from the dockerfile of the command and name it accordingly.
-
-		Args:
-			command_id (str): The command for which to build the image for.
+		Build an image for the recommerce application, and name it 'recommerce'.
 
 		Returns:
 			str: The id of the image.
 		"""
 		# https://docker-py.readthedocs.io/en/stable/images.html
-		# build image from dockerfile and name it accordingly
-		print(f'Building image for command: {command_id}')
-
-		# Copy over the correct dockerfile for the command
-		with open(os.path.join(os.path.dirname(__file__), os.pardir, 'dockerfile'), 'r') as dockerfile_template:
-			template = dockerfile_template.read()
-		with open(os.path.join(os.path.dirname(__file__), 'dockerfiles', f'dockerfile_{command_id}'), 'r') as new_dockerfile:
-			docker_file = new_dockerfile.read()
-		with open(os.path.join(os.path.dirname(__file__), os.pardir, 'dockerfile'), 'w') as dockerfile:
-			dockerfile.write(docker_file)
+		print('Building recommerce image')
 
 		# Find out if an image with the name already exists to remove it afterwards
 		try:
-			old_img = self._client.images.get(command_id)
+			old_img = self._client.images.get('recommerce')
 		except docker.errors.ImageNotFound:
 			old_img = None
 		try:
 			img, _ = self._client.images.build(path=os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)),
-				tag=command_id, forcerm=True, network_mode='host')
+				tag='recommerce', forcerm=True, network_mode='host')
 		except docker.errors.BuildError or docker.errors.APIError as error:
-			print(f'An error occurred while building the image for command: {command_id}\n{error}')
+			print(f'An error occurred while building the recommerce image\n{error}')
 			exit(1)
-		# No matter what happens during the build, we reset our default dockerfile
-		finally:
-			with open(os.path.join(os.path.dirname(__file__), os.pardir, 'dockerfile'), 'w') as dockerfile:
-				dockerfile.write(template)
 
 		if old_img is not None and old_img.id != img.id:
-			print(f'An image with this name already exists, it will be overwritten: {command_id}')
+			print('A recommerce image already exists, it will be overwritten')
 			self._client.images.remove(old_img.id[7:])
 		# return id without the 'sha256:'-prefix
 		return img.id[7:]
 
-	def _create_container(self, image_id: str, hyperparameter_config: dict, use_gpu: bool = True) -> DockerInfo:
+	def _create_container(self, command_id: str, config: dict, use_gpu: bool = True) -> DockerInfo:
 		"""
 		Create a container for the given image.
 
 		Args:
-			image_id (str): The id of the image to create the container for.
-			hyperparameter_config (str): A json containing parameters for the simulation.
+			command_id (str): The command to run in the container.
+			config (dict): A dict containing parameters for the simulation.
 			use_gpu (bool) Whether or not to request access to GPU's. Defaults to True.
 
 		Returns:
 			DockerInfo: A DockerInfo object with id and status set.
 		"""
 		# https://docker-py.readthedocs.io/en/stable/containers.html
-		print(f'Creating container for image: {image_id}')
+		print(f'Creating container for command: {command_id}')
 
 		# find the next available port to map to 6006 in the container
 		used_port = next(filterfalse(set(self._port_mapping.values()).__contains__, count(6006)))
@@ -364,24 +352,28 @@ class DockerManager():
 		if use_gpu:
 			device_request_gpu = docker.types.DeviceRequest(driver='nvidia', count=-1, capabilities=[['compute']])
 			try:
-				container: Container = self._client.containers.create(image_id,
+				container: Container = self._client.containers.create('recommerce',
 					detach=True,
 					ports={'6006/tcp': used_port},
+					entrypoint=f'recommerce -c {command_id}',
 					device_requests=[device_request_gpu])
 			except docker.errors.ImageNotFound as error:
-				return DockerInfo(id=image_id, status=f'Image not found.\n{error}')
+				return DockerInfo(id=command_id, status=f'Image not found.\n{error}')
 		else:
 			try:
-				container: Container = self._client.containers.create(image_id, detach=True, ports={'6006/tcp': used_port})
+				container: Container = self._client.containers.create('recommerce',
+					detach=True,
+					ports={'6006/tcp': used_port},
+					entrypoint=f'recommerce -c {command_id}')
 			except docker.errors.ImageNotFound as error:
-				return DockerInfo(id=image_id, status=f'Image not found.\n{error}')
+				return DockerInfo(id=command_id, status=f'Image not found.\n{error}')
 
 		# Add the container.id and used_port to the occupied_ports.txt and the self._port_mapping
 		with open(os.path.join(os.path.dirname(__file__), 'occupied_ports.txt'), 'a') as port_file:
 			port_file.write(f'{container.id}\n{used_port}\n')
 		self._port_mapping.update({container.id: used_port})
 
-		upload_info = self._upload_config(container.id, hyperparameter_config)
+		upload_info = self._upload_config(container.id, command_id, config)
 		if not upload_info.data:
 			print('Failed to upload configuration file!')
 		return upload_info
@@ -454,13 +446,14 @@ class DockerManager():
 		except docker.errors.APIError as error:
 			return DockerInfo(container_id, status=f'APIError encountered while stopping container.\n{error}')
 
-	def _upload_config(self, container_id: str, hyperparameter_config_dict: dict) -> DockerInfo:
+	def _upload_config(self, container_id: str, command_id: str, config_dict: dict) -> DockerInfo:
 		"""
-		Upload a file to the specified container.
+		Upload the config-files to the specified container.
 
 		Args:
 			container_id (str): The id of the container.
-			hyperparameter_config_dict (dict): The config dictionary to upload.
+			command_id (str): The command to run in the container.
+			config_dict (dict): The config dictionary to upload.
 
 		Returns:
 			DockerInfo: A DockerInfo object with the id of the container and the status of the upload in the data field.
@@ -469,14 +462,16 @@ class DockerManager():
 		if not container:
 			return DockerInfo(id=container_id, status='Container not found.')
 
+		print('Copying config files into container...')
 		# create a directory to store the files safely
-		if not os.path.exists('hyperparameter_config_tmp'):
-			os.mkdir('hyperparameter_config_tmp')
-		os.chdir('hyperparameter_config_tmp')
+		os.makedirs('config_tmp', exist_ok=True)
+		os.chdir('config_tmp')
 
 		# write dict to json
 		with open('hyperparameter_config.json', 'w') as config_json:
-			config_json.write(json.dumps(hyperparameter_config_dict))
+			config_json.write(json.dumps(config_dict['hyperparameter']))
+		with open(f'environment_config_{command_id}.json', 'w') as config_json:
+			config_json.write(json.dumps(config_dict['environment']))
 
 		# put config.json in tar archive
 		with tarfile.open('hyperparameter_config.tar', 'w') as tar:
@@ -484,19 +479,26 @@ class DockerManager():
 				tar.add('hyperparameter_config.json')
 			finally:
 				tar.close()
+		with tarfile.open(f'environment_config_{command_id}.tar', 'w') as tar:
+			try:
+				tar.add(f'environment_config_{command_id}.json')
+			finally:
+				tar.close()
 
 		# uploading the tar to the container
-		ok = False
-		with open('hyperparameter_config.tar', 'rb') as fd:
-			ok = container.put_archive(path='/app', data=fd)
+		hyper_ok = False
+		env_ok = False
+		with open('hyperparameter_config.tar', 'rb') as tar_archive:
+			hyper_ok = container.put_archive(path='/app', data=tar_archive)
+		with open(f'environment_config_{command_id}.tar', 'rb') as tar_archive:
+			env_ok = container.put_archive(path='/app', data=tar_archive)
 
 		# remove obsolete files
-		if ok:
-			os.remove('hyperparameter_config.json')
-			os.remove('hyperparameter_config.tar')
+		if hyper_ok and env_ok:
 			os.chdir('..')
-			os.rmdir('hyperparameter_config_tmp')
-		return DockerInfo(id=container_id, status=container.status, data=ok)
+			shutil.rmtree('config_tmp')
+		print('Copying config files complete')
+		return DockerInfo(id=container_id, status=container.status, data=hyper_ok and env_ok)
 
 	def _initialize_port_mapping(cls):
 		"""
@@ -554,5 +556,4 @@ mapped_containers: {mapped_containers}'''
 
 if __name__ == '__main__':  # pragma: no cover
 	manager = DockerManager()
-	for command in manager._allowed_commands:
-		print(manager._confirm_image_exists(command, update=True), '\n')
+	print(manager._confirm_image_exists(update=True), '\n')
