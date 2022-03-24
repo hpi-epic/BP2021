@@ -4,6 +4,7 @@ from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
 
+from .config_merger import ConfigMerger
 from .configuration_parser import ConfigurationParser
 from .handle_files import download_file
 from .handle_requests import send_get_request, send_get_request_with_streaming, send_post_request, stop_container
@@ -61,6 +62,8 @@ class ButtonHandler():
 			return self._remove()
 		if self.wanted_key == 'start':
 			return self._start()
+		if self.wanted_key == 'pre-fill':
+			return self._pre_fill()
 		if self.wanted_key == 'logs':
 			return self._logs()
 		# no button was clicked?
@@ -188,6 +191,15 @@ class ButtonHandler():
 			self.data = '\n'.join(self.data)
 		return self._decide_rendering()
 
+	def _pre_fill(self) -> HttpResponse:
+		post_request = dict(self.request.POST.lists())
+		if 'config_id' not in post_request:
+			print('nothing to prefill')
+			return self._decide_rendering()
+		merger = ConfigMerger()
+		final_dict, error_dict = merger.merge_config_objects(post_request['config_id'])
+		return render(self.request, self.view_to_render, {'prefill': final_dict, 'error': error_dict})
+
 	def _remove(self) -> HttpResponse:
 		"""
 		This will send an API request to stop and remove the selected container.
@@ -206,13 +218,15 @@ class ButtonHandler():
 			HttpResponse: An appropriate rendering, or a redirect to the `observe` view.
 		"""
 		# convert post request to normal dict
-
 		post_request = dict(self.request.POST.lists())
-		# print(dict(raw_post_request.lists()))
+		# print(post_request)
 		# TODO: error, when multiple agents have the same name!
 		parser = ConfigurationParser()
 		config_dict = parser.flat_dict_to_hierarchical_config_dict(post_request)
+		# config_object = parser.parse_config(config_dict)
 		# TODO: assert config dict is valid
+		# tmp = config_object.as_dict()
+		# print(config_dict)
 		response = send_post_request('start', config_dict)
 		if response.ok():
 			# put container into database
@@ -230,6 +244,8 @@ class ButtonHandler():
 			config_object = parser.parse_config(copy.deepcopy(config_dict))
 			command = config_object.environment.task
 			Container.objects.create(id=response['id'], config_file=config_object, name=container_name, command=command)
+			config_object.name = f'used for {container_name}'
+			config_object.save()
 			return redirect('/observe', {'success': 'You successfully launched an experiment'})
 		else:
 			self.message = response.status()

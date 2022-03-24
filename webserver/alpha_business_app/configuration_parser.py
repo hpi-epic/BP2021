@@ -6,6 +6,12 @@ class ConfigurationParser():
 		self.config = _config
 
 	def flat_dict_to_hierarchical_config_dict(self, flat_dict: dict) -> dict:
+		# prepare flat_dict, convert all numbers to int orr foat
+		for key, value_list in flat_dict.items():
+			converted_values = []
+			for value in value_list:
+				converted_values += [self._converted_to_int_or_float_if_possible(value)]
+			flat_dict[key] = converted_values
 		# get all environment parameter
 		environment_parameter = self._get_items_key_starts_with(flat_dict, 'environment-')
 		# get all hyperparameters
@@ -101,3 +107,16 @@ class ConfigurationParser():
 
 	def _first_list_element_without_empty(self, dict1: dict) -> dict:
 		return {k: v[0] for k, v in dict1.items() if v[0] != ''}
+
+	def _converted_to_int_or_float_if_possible(self, value: str):
+		try:
+			float(value)
+		except ValueError:
+			# it is a string, we can't change it
+			return value
+		try:
+			int(value)
+		except ValueError:
+			# it is a float
+			return float(value)
+		return int(value)

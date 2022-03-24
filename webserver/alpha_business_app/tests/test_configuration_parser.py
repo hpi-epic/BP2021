@@ -9,24 +9,24 @@ class ConfigurationParserTest(TestCase):
 	expected_dict = {
 		'hyperparameter': {
 			'rl': {
-				'gamma': '0.99',
-				'batch_size': '32',
-				'replay_size': '100000',
-				'learning_rate': '1e-06',
-				'sync_target_frames': '1000',
-				'replay_start_size': '10000',
-				'epsilon_decay_last_frame': '75000',
-				'epsilon_start': '1.0',
-				'epsilon_final': '0.1'
+				'gamma': 0.99,
+				'batch_size': 32,
+				'replay_size': 100000,
+				'learning_rate': 1e-06,
+				'sync_target_frames': 1000,
+				'replay_start_size': 10000,
+				'epsilon_decay_last_frame': 75000,
+				'epsilon_start': 1.0,
+				'epsilon_final': 0.1
 			},
 			'sim_market': {
-				'max_storage': '100',
-				'episode_length': '50',
-				'max_price': '10',
-				'max_quality': '50',
-				'number_of_customers': '20',
-				'production_price': '3',
-				'storage_cost_per_product': '0.1'
+				'max_storage': 100,
+				'episode_length': 50,
+				'max_price': 10,
+				'max_quality': 50,
+				'number_of_customers': 20,
+				'production_price': 3,
+				'storage_cost_per_product': 0.1
 			}
 		},
 		'environment': {
@@ -72,6 +72,7 @@ class ConfigurationParserTest(TestCase):
 			'hyperparameter-sim_market-production_price': ['3'],
 			'hyperparameter-sim_market-storage_cost_per_product': ['0.1']
 		}
+
 		assert self.expected_dict == self.parser.flat_dict_to_hierarchical_config_dict(test_dict)
 
 	def test_remove_keyword_parts(self):
@@ -90,16 +91,16 @@ class ConfigurationParserTest(TestCase):
 
 	def test_substract_dicts(self):
 		test_dict1 = {
-			'a': '123',
-			'b': '456',
-			'test': '789'
+			'a': 123,
+			'b': 456,
+			'test': 789
 		}
 		test_dict2 = {
-			'a': '123',
-			'b': '456'
+			'a': 123,
+			'b': 456
 		}
 		expected_dict = {
-			'test': '789'
+			'test': 789
 		}
 		assert expected_dict == self.parser._substract_dicts(test_dict1, test_dict2)
 
@@ -128,22 +129,22 @@ class ConfigurationParserTest(TestCase):
 
 	def test_flat_hyperparameters(self):
 		test_dict = {
-			'rl-gamma': ['0.99'],
-			'rl-batch_size': ['32'],
-			'rl-replay_size': ['100000'],
-			'rl-learning_rate': ['1e-06'],
-			'rl-sync_target_frames': ['1000'],
-			'rl-replay_start_size': ['10000'],
-			'rl-epsilon_decay_last_frame': ['75000'],
-			'rl-epsilon_start': ['1.0'],
-			'rl-epsilon_final': ['0.1'],
-			'sim_market-max_storage': ['100'],
-			'sim_market-episode_length': ['50'],
-			'sim_market-max_price': ['10'],
-			'sim_market-max_quality': ['50'],
-			'sim_market-number_of_customers': ['20'],
-			'sim_market-production_price': ['3'],
-			'sim_market-storage_cost_per_product': ['0.1']
+			'rl-gamma': [0.99],
+			'rl-batch_size': [32],
+			'rl-replay_size': [100000],
+			'rl-learning_rate': [1e-06],
+			'rl-sync_target_frames': [1000],
+			'rl-replay_start_size': [10000],
+			'rl-epsilon_decay_last_frame': [75000],
+			'rl-epsilon_start': [1.0],
+			'rl-epsilon_final': [0.1],
+			'sim_market-max_storage': [100],
+			'sim_market-episode_length': [50],
+			'sim_market-max_price': [10],
+			'sim_market-max_quality': [50],
+			'sim_market-number_of_customers': [20],
+			'sim_market-production_price': [3],
+			'sim_market-storage_cost_per_product': [0.1]
 		}
 		assert EXAMPLE_HIERARCHIE_DICT['hyperparameter'] == self.parser._flat_hyperparameter_to_hierarchical(test_dict)
 
@@ -163,23 +164,23 @@ class ConfigurationParserTest(TestCase):
 		assert hyperparameter_rl_config is not None
 		assert final_config.hyperparameter.sim_market is not None
 
-		assert '0.99' == hyperparameter_rl_config.gamma
-		assert '32' == hyperparameter_rl_config.batch_size
-		assert '100000' == hyperparameter_rl_config.replay_size
-		assert '1e-06' == hyperparameter_rl_config.learning_rate
-		assert '1000' == hyperparameter_rl_config.sync_target_frames
-		assert '10000' == hyperparameter_rl_config.replay_start_size
-		assert '75000' == hyperparameter_rl_config.epsilon_decay_last_frame
-		assert '1.0' == hyperparameter_rl_config.epsilon_start
-		assert '0.1' == hyperparameter_rl_config.epsilon_final
+		assert 0.99 == hyperparameter_rl_config.gamma
+		assert 32 == hyperparameter_rl_config.batch_size
+		assert 100000 == hyperparameter_rl_config.replay_size
+		assert 1e-06 == hyperparameter_rl_config.learning_rate
+		assert 1000 == hyperparameter_rl_config.sync_target_frames
+		assert 10000 == hyperparameter_rl_config.replay_start_size
+		assert 75000 == hyperparameter_rl_config.epsilon_decay_last_frame
+		assert 1.0 == hyperparameter_rl_config.epsilon_start
+		assert 0.1 == hyperparameter_rl_config.epsilon_final
 
-		assert '100' == hyperparameter_sim_market_config.max_storage
-		assert '50' == hyperparameter_sim_market_config.episode_length
-		assert '10' == hyperparameter_sim_market_config.max_price
-		assert '50' == hyperparameter_sim_market_config.max_quality
-		assert '20' == hyperparameter_sim_market_config.number_of_customers
-		assert '3' == hyperparameter_sim_market_config.production_price
-		assert '0.1' == hyperparameter_sim_market_config.storage_cost_per_product
+		assert 100 == hyperparameter_sim_market_config.max_storage
+		assert 50 == hyperparameter_sim_market_config.episode_length
+		assert 10 == hyperparameter_sim_market_config.max_price
+		assert 50 == hyperparameter_sim_market_config.max_quality
+		assert 20 == hyperparameter_sim_market_config.number_of_customers
+		assert 3 == hyperparameter_sim_market_config.production_price
+		assert 0.1 == hyperparameter_sim_market_config.storage_cost_per_product
 
 		# assert all environment
 		assert final_config.environment is not None
@@ -218,3 +219,9 @@ class ConfigurationParserTest(TestCase):
 		assert 'test_agent2' == all_agents[1].name
 		assert 'test_class' == all_agents[1].agent_class
 		assert '1234' == all_agents[1].argument
+
+	def test_converting_to_int_or_float(self):
+		assert 1 == self.parser._converted_to_int_or_float_if_possible('1')
+		assert 0.1 == self.parser._converted_to_int_or_float_if_possible('0.1')
+		assert 1e-6 == self.parser._converted_to_int_or_float_if_possible('1e-6')
+		assert 'string' == self.parser._converted_to_int_or_float_if_possible('string')

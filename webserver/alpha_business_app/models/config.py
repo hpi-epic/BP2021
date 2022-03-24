@@ -7,9 +7,16 @@ class Config(models.Model):
 	name = models.CharField(max_length=100, editable=False, default='')
 
 	def as_dict(self) -> dict:
-		environment_dict = self.environment.as_dict() if self.environment is not None else {'environment': None}
-		hyperparameter_dict = self.hyperparameter.as_dict() if self.hyperparameter is not None else {'hyperparameter': None}
+		environment_dict = self.environment.as_dict() if self.environment is not None else None
+		hyperparameter_dict = self.hyperparameter.as_dict() if self.hyperparameter is not None else None
 		return remove_none_values_from_dict({'environment': environment_dict, 'hyperparameter': hyperparameter_dict})
+
+	@staticmethod
+	def get_empty_structure_dict():
+		return {
+			'environment': EnvironmentConfig.get_empty_structure_dict(),
+			'hyperparameter': HyperparameterConfig.get_empty_structure_dict()
+			}
 
 
 class EnvironmentConfig(models.Model):
@@ -31,6 +38,17 @@ class EnvironmentConfig(models.Model):
 			'agents': agents_dict
 		})
 
+	@staticmethod
+	def get_empty_structure_dict():
+		return {
+			'enable_live_draw': None,
+			'episodes': None,
+			'plot_interval': None,
+			'marketplace': None,
+			'task': None,
+			'agents': AgentsConfig.get_empty_structure_dict()
+			}
+
 
 class AgentsConfig(models.Model):
 	def as_dict(self) -> dict:
@@ -39,6 +57,10 @@ class AgentsConfig(models.Model):
 		for agent in referencing_agents:
 			final_dict = {**final_dict, **agent.as_dict()}
 		return final_dict
+
+	@staticmethod
+	def get_empty_structure_dict():
+		return {}
 
 
 class AgentConfig(models.Model):
@@ -68,6 +90,13 @@ class HyperparameterConfig(models.Model):
 			'sim_market': sim_market_dict
 		})
 
+	@staticmethod
+	def get_empty_structure_dict():
+		return {
+			'rl': RlConfig.get_empty_structure_dict(),
+			'sim_market': SimMarketConfig.get_empty_structure_dict()
+		}
+
 
 class RlConfig(models.Model):
 	gamma = models.FloatField(null=True)
@@ -93,6 +122,20 @@ class RlConfig(models.Model):
 			'epsilon_final': self.epsilon_final
 		})
 
+	@staticmethod
+	def get_empty_structure_dict():
+		return {
+			'gamma': None,
+			'batch_size': None,
+			'replay_size': None,
+			'learning_rate': None,
+			'sync_target_frames': None,
+			'replay_start_size': None,
+			'epsilon_decay_last_frame': None,
+			'epsilon_start': None,
+			'epsilon_final': None
+		}
+
 
 class SimMarketConfig(models.Model):
 	max_storage = models.IntegerField(null=True)
@@ -113,6 +156,18 @@ class SimMarketConfig(models.Model):
 			'production_price': self.production_price,
 			'storage_cost_per_product': self.storage_cost_per_product
 		})
+
+	@staticmethod
+	def get_empty_structure_dict():
+		return {
+			'max_storage': None,
+			'episode_length': None,
+			'max_price': None,
+			'max_quality': None,
+			'number_of_customers': None,
+			'production_price': None,
+			'storage_cost_per_product': None
+		}
 
 
 def get_config_field_names(model):

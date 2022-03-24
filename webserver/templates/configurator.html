@@ -4,11 +4,15 @@
 	<h1>You can configurate your experiments here</h1>
 		<div class="row">
 			<div class="col-3">
-				<ul>
+				<form method="post" enctype="multipart/form-data">
+					{% csrf_token %}
+					<input type="hidden" name="action" value="pre-fill">
 					{% for config in all_configurations %}
-						<li>{{ config.name }}</li>
+						<input class="form-check-input" type="checkbox" value="{{ config.id }}" name="config_id"> 
+						{{config.name}}<br>
 					{% endfor %}
-				</ul>
+					<button class="btn btn-secondary btn-rounded m-3">pre-fill</button>
+				</form>
 			</div>
 			<div class="col-9">
 				<form method="post" enctype="multipart/form-data">
@@ -23,4 +27,6 @@
 				</form>
 			</div>
 		</div>
+		{{prefill}}
+		{{prefill.hyperparameter.rl.gamma}}
 {% endblock content %}

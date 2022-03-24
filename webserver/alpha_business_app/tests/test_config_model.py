@@ -2,6 +2,7 @@ from django.test import TestCase
 
 from ..models.config import *
 from ..models.config import get_config_field_names, remove_none_values_from_dict
+from .constant_tests import EMPTY_STRUCTURE_CONFIG
 
 
 class ConfigTest(TestCase):
@@ -158,6 +159,14 @@ class ConfigTest(TestCase):
 				}
 			}
 		assert expected_dict == test_agents.as_dict()
+
+	def test_dict_representation_of_empty_config(self):
+		test_config = Config.objects.create()
+		assert {} == test_config.as_dict()
+
+	def test_get_empty_structure_dict(self):
+		actual_dict = Config.get_empty_structure_dict()
+		assert EMPTY_STRUCTURE_CONFIG == actual_dict
 
 	def test_remove_none_values_from_dict(self):
 		test_dict = {'test': 'test', 'test2': None}
