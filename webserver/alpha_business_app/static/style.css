@@ -35,6 +35,12 @@ table {
 .observe_button {
 	background-color: #f1e681
 }
+.pause_button {
+	background-color: #f87ddd;
+}
+.unpause_button {
+	background-color: #6a5af8;
+}
 .stop_button {
 	background-color: #e39a8d;
 }

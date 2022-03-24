@@ -1,0 +1,11 @@
+[build-system]
+requires = ["setuptools>=42.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.interrogate]
+exclude = ["tests", "webserver/webserver", "webserver/alpha_business_app/migrations", 
+"webserver/alpha_business_app/tests", "docker/test_docker_manager.py"]
+verbose = 1
+ignore-init-method = true
+ignore-module = true
+fail-under = 50
