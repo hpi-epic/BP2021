@@ -37,21 +37,21 @@ def train_q_learning_classic_scenario():
 	"""
 	Train a Linear QLearningAgent on a Linear Market with one competitor.
 	"""
-	run_training_session(linear_market.ClassicScenario, q_learning_agent.QLearningLEAgent)
+	run_training_session(linear_market.ClassicScenario(), q_learning_agent.QLearningLEAgent)
 
 
 def train_q_learning_circular_economy_rebuy():
 	"""
 	Train a Circular Economy QLearningAgent on a Circular Economy Market with Rebuy Prices and one competitor.
 	"""
-	run_training_session(circular_market.CircularEconomyRebuyPriceOneCompetitor, q_learning_agent.QLearningCERebuyAgent)
+	run_training_session(circular_market.CircularEconomyRebuyPriceOneCompetitor(), q_learning_agent.QLearningCERebuyAgent)
 
 
 def train_continuos_a2c_circular_economy_rebuy():
 	"""
 	Train an ActorCriticAgent on a Circular Economy Market with Rebuy Prices and one competitor.
 	"""
-	run_training_session(circular_market.CircularEconomyRebuyPriceOneCompetitor, actorcritic_agent.ContinuosActorCriticAgentFixedOneStd)
+	run_training_session(circular_market.CircularEconomyRebuyPriceOneCompetitor(), actorcritic_agent.ContinuosActorCriticAgentFixedOneStd)
 
 
 def train_from_config():

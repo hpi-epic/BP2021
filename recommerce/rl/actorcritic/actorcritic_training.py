@@ -49,7 +49,7 @@ class ActorCriticTrainer(RLTrainer):
 		all_policy_losses = []
 
 		finished_episodes = 0
-		environments = [self.marketplace_class() for _ in range(total_envs)]
+		environments = [type(self.marketplace)() for _ in range(total_envs)]
 		info_accumulators = [None for _ in range(total_envs)]
 		for step_number in range(number_of_training_steps):
 			chosen_envs = self.choose_random_envs(total_envs)

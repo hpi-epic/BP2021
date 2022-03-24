@@ -28,16 +28,16 @@ def import_config() -> hyperparameter_config.HyperparameterConfig:
 
 
 test_scenarios = [
-	(linear_market.ClassicScenario, QLearningLEAgent),
-	(linear_market.MultiCompetitorScenario, QLearningLEAgent),
-	(circular_market.CircularEconomyMonopolyScenario, QLearningCEAgent),
-	(circular_market.CircularEconomyRebuyPriceMonopolyScenario, QLearningCERebuyAgent),
-	(circular_market.CircularEconomyRebuyPriceOneCompetitor, QLearningCERebuyAgent)
+	(linear_market.ClassicScenario(), QLearningLEAgent),
+	(linear_market.MultiCompetitorScenario(), QLearningLEAgent),
+	(circular_market.CircularEconomyMonopolyScenario(), QLearningCEAgent),
+	(circular_market.CircularEconomyRebuyPriceMonopolyScenario(), QLearningCERebuyAgent),
+	(circular_market.CircularEconomyRebuyPriceOneCompetitor(), QLearningCERebuyAgent)
 ]
 
 
-@pytest.mark.parametrize('market_class, agent_class', test_scenarios)
-def test_market_scenario(market_class, agent_class):
+@pytest.mark.parametrize('marketplace, agent_class', test_scenarios)
+def test_market_scenario(marketplace, agent_class):
 	json = ut_t.create_hyperparameter_mock_json(rl=ut_t.create_hyperparameter_mock_json_rl(replay_start_size='500', sync_target_frames='100'))
 	with patch('builtins.open', mock_open(read_data=json)) as mock_file, \
 		patch('recommerce.rl.training.SummaryWriter'), \
@@ -45,7 +45,7 @@ def test_market_scenario(market_class, agent_class):
 		ut_t.check_mock_file(mock_file, json)
 
 		config = import_config()
-		q_learning_training.QLearningTrainer(market_class, agent_class, log_dir_prepend='test_').train_agent(int(config.replay_start_size * 1.2))
+		q_learning_training.QLearningTrainer(marketplace, agent_class, log_dir_prepend='test_').train_agent(int(config.replay_start_size * 1.2))
 
 
 def test_training_with_tensorboard():
@@ -56,6 +56,6 @@ def test_training_with_tensorboard():
 		ut_t.check_mock_file(mock_file, json)
 
 		config = import_config()
-		market_class = linear_market.ClassicScenario
+		marketplace = linear_market.ClassicScenario()
 		agent_class = QLearningLEAgent
-		q_learning_training.QLearningTrainer(market_class, agent_class, log_dir_prepend='test_').train_agent(int(config.replay_start_size * 1.2))
+		q_learning_training.QLearningTrainer(marketplace, agent_class, log_dir_prepend='test_').train_agent(int(config.replay_start_size * 1.2))
