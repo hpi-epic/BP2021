@@ -170,7 +170,7 @@ class ButtonHandler():
 			response = send_get_request_with_streaming('data', self.wanted_container.id)
 			if response.ok():
 				# save data from api and make it available for the user
-				return download_file(response.content, self.request.POST['file_type'] == 'zip')  # self.wanted_container)
+				return download_file(response.content, self.request.POST['file_type'] == 'zip', self.wanted_container)
 			else:
 				self.message = response.status()
 				return self._decide_rendering()

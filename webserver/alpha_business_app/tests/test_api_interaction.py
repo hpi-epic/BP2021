@@ -213,7 +213,7 @@ class ButtonTests(TestCase):
 			get_request_mock.return_value = APIResponse('success', content='test_content')
 			test_button_handler.do_button_click()
 
-			download_file_mock.assert_called_once_with('test_content', True)
+			download_file_mock.assert_called_once_with('test_content', True, self.test_container)
 
 	def test_download_tar_data(self):
 		# mock a request that is sent when user presses a button
@@ -226,7 +226,7 @@ class ButtonTests(TestCase):
 			get_request_mock.return_value = APIResponse('success', content='test_content')
 			test_button_handler.do_button_click()
 
-			download_file_mock.assert_called_once_with('test_content', False)
+			download_file_mock.assert_called_once_with('test_content', False, self.test_container)
 
 	def test_start_button(self):
 		# mock a request that is sent when user presses a button
