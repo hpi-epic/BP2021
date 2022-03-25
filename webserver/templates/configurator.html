@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Configurator{% endblock title %}
 {% block content %}
+{% load static %}
 	<h1>You can configurate your experiments here</h1>
 		<div class="row">
 			<div class="col-3">
@@ -8,6 +9,7 @@
 					{% csrf_token %}
 					<input type="hidden" name="action" value="pre-fill">
 					{% for config in all_configurations %}
+						<a href="/delete_config/{{config.id}}" ><img src="{% static 'trash.svg' %}" width="20px"></img></a>
 						<input class="form-check-input" type="checkbox" value="{{ config.id }}" name="config_id"> 
 						{{config.name}}<br>
 					{% endfor %}
@@ -18,14 +20,12 @@
 				<form method="post" enctype="multipart/form-data">
 					{% csrf_token %}
 					<input type="hidden" name="action" value="start">
-					<div class="accordion" id="config_form">
-						{% include "configuration_items/environment.html" with prefill=prefill.environment %}
-						{% include "configuration_items/hyperparameter.html" with prefill=prefill.hyperparameter %}
-					</div>
+					{% include "configuration_items/config.html" with prefill=prefill should_show=True %}
 					<input class="form-control" type="text" placeholder="experiment name" name="experiment_name">
 					<button class="btn btn-secondary btn-rounded m-3">launch</button>
 				</form>
 			</div>
 		</div>
+		<a href="/">Home</a>
 		{% include "notice_field.html" %}
 {% endblock content %}

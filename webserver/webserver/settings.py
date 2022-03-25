@@ -26,6 +26,7 @@ SECRET_KEY = '*&qf$4_z-z(0+f@ngx++bjx7i-v-^6lj9wd^q8q9zmbhj6na7s'
 DEBUG = True
 
 ALLOWED_HOSTS = []
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 
 # Application definition
@@ -37,8 +38,7 @@ INSTALLED_APPS = [
 	'django.contrib.contenttypes',
 	'django.contrib.sessions',
 	'django.contrib.messages',
-	'django.contrib.staticfiles',
-	'fontawesomefree'
+	'django.contrib.staticfiles'
 ]
 
 MIDDLEWARE = [

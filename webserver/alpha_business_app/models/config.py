@@ -2,8 +2,8 @@ from django.db import models
 
 
 class Config(models.Model):
-	environment = models.ForeignKey('EnvironmentConfig', on_delete=models.DO_NOTHING, null=True)
-	hyperparameter = models.ForeignKey('HyperparameterConfig', on_delete=models.DO_NOTHING, null=True)
+	environment = models.ForeignKey('EnvironmentConfig', on_delete=models.SET_NULL, null=True)
+	hyperparameter = models.ForeignKey('HyperparameterConfig', on_delete=models.SET_NULL, null=True)
 	name = models.CharField(max_length=100, editable=False, default='')
 
 	def as_dict(self) -> dict:
@@ -20,7 +20,7 @@ class Config(models.Model):
 
 
 class EnvironmentConfig(models.Model):
-	agents = models.ForeignKey('AgentsConfig', on_delete=models.DO_NOTHING, null=True)
+	agents = models.ForeignKey('AgentsConfig', on_delete=models.SET_NULL, null=True)
 	enable_live_draw = models.BooleanField(null=True)
 	episodes = models.IntegerField(null=True)
 	plot_interval = models.IntegerField(null=True)
@@ -64,7 +64,7 @@ class AgentsConfig(models.Model):
 
 
 class AgentConfig(models.Model):
-	agents_config = models.ForeignKey('AgentsConfig', on_delete=models.DO_NOTHING, null=True)
+	agents_config = models.ForeignKey('AgentsConfig', on_delete=models.SET_NULL, null=True)
 	name = models.CharField(max_length=100, default='')
 	agent_class = models.CharField(max_length=100, null=True)
 	argument = models.CharField(max_length=200, null=True)
@@ -79,8 +79,8 @@ class AgentConfig(models.Model):
 
 
 class HyperparameterConfig(models.Model):
-	rl = models.ForeignKey('RLConfig', on_delete=models.DO_NOTHING, null=True)
-	sim_market = models.ForeignKey('SimMarketConfig', on_delete=models.DO_NOTHING, null=True)
+	rl = models.ForeignKey('RLConfig', on_delete=models.SET_NULL, null=True)
+	sim_market = models.ForeignKey('SimMarketConfig', on_delete=models.SET_NULL, null=True)
 
 	def as_dict(self) -> dict:
 		sim_market_dict = self.sim_market.as_dict() if self.sim_market is not None else {'sim_market': None}

@@ -8,5 +8,6 @@ urlpatterns = [
 	path('observe', views.observe, name='observe'),
 	path('upload', views.upload, name='upload'),
 	path('details/<str:container_id>', views.detail, name='detail'),
-	path('configurator', views.configurator, name='configurator')
+	path('configurator', views.configurator, name='configurator'),
+	path('delete_config/<int:config_id>', views.delete_config, name='delete_config'),
 ]

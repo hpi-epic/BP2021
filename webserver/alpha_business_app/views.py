@@ -4,6 +4,7 @@ from django.shortcuts import render
 from .buttons import ButtonHandler
 from .forms import UploadFileForm
 from .handle_files import handle_uploaded_file
+from .models.config import Config
 from .models.container import Container
 
 
@@ -45,5 +46,14 @@ def upload(request) -> HttpResponse:
 
 
 def configurator(request):
-	button_handler = ButtonHandler(request, view='configurator.html', rendering_method='config_files')
+	button_handler = ButtonHandler(request, view='configurator.html', rendering_method='config')
+	return button_handler.do_button_click()
+
+
+def delete_config(request, config_id) -> HttpResponse:
+	try:
+		wanted_config = Config.objects.get(id=config_id)
+	except Config.DoesNotExist as error:
+		raise Http404('Config does not exist') from error
+	button_handler = ButtonHandler(request, view='delete_config.html', config=wanted_config, rendering_method='config')
 	return button_handler.do_button_click()

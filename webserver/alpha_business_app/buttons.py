@@ -1,4 +1,5 @@
 import copy
+from sqlite3 import IntegrityError
 
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
@@ -13,7 +14,13 @@ from .models.container import Container, update_container
 
 
 class ButtonHandler():
-	def __init__(self, request, view: str, container: Container = None, rendering_method: str = 'default', data: str = None) -> None:
+	def __init__(self,
+		request,
+		view: str,
+		container: Container = None,
+		config: Config = None,
+		rendering_method: str = 'default',
+		data: str = None) -> None:
 		"""
 		This handler can be used to implement different behaviour when a button is pressed.
 		You can add more keywords in `do_button_click()` or implement your own renderings and add them to `_decide_rendering()`.
@@ -24,6 +31,7 @@ class ButtonHandler():
 			container (Container, optional): a container that could be used i.e. for the rendering. Defaults to None.
 			rendering_method (str, optional): keyword for the rendering methode, see `_decide_rendering()`. Defaults to 'default'.
 			data (str, optional): other data that can be used for rendering, i.e. logs. Defaults to None.
+			wanted_config (Config, optional): a config that can be used for any action
 		"""
 		self.request = request
 		self.view_to_render = view
@@ -33,6 +41,7 @@ class ButtonHandler():
 		self.message = [None, None]
 		self.wanted_key = None
 		self.all_containers = Container.objects.all()
+		self.wanted_config = config
 
 		if request.method == 'POST':
 			self.wanted_key = request.POST['action']
@@ -66,6 +75,8 @@ class ButtonHandler():
 			return self._pre_fill()
 		if self.wanted_key == 'logs':
 			return self._logs()
+		if self.wanted_key == 'manage_config':
+			return self._manage_config()
 		# no button was clicked?
 		return self._decide_rendering()
 
@@ -80,8 +91,8 @@ class ButtonHandler():
 		"""
 		if self.rendering_method == 'default':
 			return self._render_default()
-		elif self.rendering_method == 'config_files':
-			return self._render_files()
+		elif self.rendering_method == 'config':
+			return self._render_configuration()
 		return self._render_without_archived()
 
 	def _default_params_for_view(self) -> dict:
@@ -94,7 +105,15 @@ class ButtonHandler():
 		return {'all_saved_containers': self.all_containers,
 				'container': self.wanted_container,
 				'data': self.data,
-				self.message[0]: self.message[1]}
+				**self._message_for_view()}
+
+	def _message_for_view(self) -> dict:
+		return {self.message[0]: self.message[1]}
+
+	def _params_for_config(self) -> dict:
+		return {'all_configurations': Config.objects.all(),
+			'config': self.wanted_config,
+			'config_dict': self.wanted_config.as_dict() if self.wanted_config else None}
 
 	def _render_default(self) -> HttpResponse:
 		"""
@@ -116,8 +135,8 @@ class ButtonHandler():
 		self.all_containers = Container.objects.all().exclude(health_status='archived')
 		return render(self.request, self.view_to_render, self._default_params_for_view())
 
-	def _render_files(self):
-		return render(self.request, self.view_to_render, {'all_configurations': Config.objects.all(), **self._default_params_for_view()})
+	def _render_configuration(self):
+		return render(self.request, self.view_to_render, {**self._params_for_config(), **self._message_for_view()})
 
 	def _delete_container(self) -> HttpResponse:
 		"""
@@ -152,7 +171,6 @@ class ButtonHandler():
 			if response.ok():
 				# save data from api and make it available for the user
 				return download_file(response.content, self.request.POST['file_type'] == 'zip')  # self.wanted_container)
-				# return download_file(response.content, self.request.POST['file_type'] == 'zip')
 			else:
 				self.message = response.status()
 				return self._decide_rendering()
@@ -190,6 +208,16 @@ class ButtonHandler():
 			self.data.reverse()
 			self.data = '\n'.join(self.data)
 		return self._decide_rendering()
+
+	def _manage_config(self):
+		if 'delete' in self.request.POST:
+			try:
+				# TODO: figure out why some configs fail with foreign key constraint.
+				self.wanted_config.delete()
+			except IntegrityError:
+				self.message = ['error', 'Sorry, we could not delete this config']
+				return self._decide_rendering()
+		return redirect('/configurator')
 
 	def _pre_fill(self) -> HttpResponse:
 		post_request = dict(self.request.POST.lists())

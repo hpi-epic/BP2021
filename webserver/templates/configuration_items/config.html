@@ -1,0 +1,4 @@
+<div class="accordion" id="config_form">
+	{% include "configuration_items/environment.html" with prefill=prefill.environment should_show=should_show %}
+	{% include "configuration_items/hyperparameter.html" with prefill=prefill.hyperparameter %}
+</div>

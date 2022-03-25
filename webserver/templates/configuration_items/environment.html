@@ -1,11 +1,11 @@
 <div class="accordion-item">
 	<h2 class="accordion-header">
-		<button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEnvironment" aria-expanded="true" aria-controls="collapseEnvironment">
-		Environment
+		<button class="accordion-button {% if not should_show %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEnvironment" 
+			aria-expanded="{% if should_show %}true{% else %}false{% endif %}" aria-controls="collapseEnvironment">
+			Environment
 		</button>
 	</h2>
-	{{prefill}} PREFILL
-<div id="collapseEnvironment" class="accordion-collapse collapse show">
+<div id="collapseEnvironment" class="accordion-collapse collapse {% if should_show %}show{% endif %}">
 	<div class="accordion-body">
 		<div class="row">
 			<div class="col-6">
