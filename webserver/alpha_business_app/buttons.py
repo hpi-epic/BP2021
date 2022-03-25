@@ -108,9 +108,21 @@ class ButtonHandler():
 				**self._message_for_view()}
 
 	def _message_for_view(self) -> dict:
+		"""
+		Will return the message and their value in dict for the template
+
+		Returns:
+			dict: contains the state of the message (i.e. success or error) and the message itself.
+		"""
 		return {self.message[0]: self.message[1]}
 
 	def _params_for_config(self) -> dict:
+		"""
+		Will return all parameters necessary for the configurator.
+
+		Returns:
+			dict:contains all current configuration objects, the current config and this config as dict if it exists.
+		"""
 		return {'all_configurations': Config.objects.all(),
 			'config': self.wanted_config,
 			'config_dict': self.wanted_config.as_dict() if self.wanted_config else None}
@@ -120,7 +132,7 @@ class ButtonHandler():
 		This will return a rendering for `self.view` with the default parameters.
 
 		Returns:
-			HttpResponse: A default rendering with default values, some might be set by the different functions.
+			HttpResponse: a default rendering with default values, some might be set by the different functions.
 		"""
 		self.all_containers = Container.objects.all()
 		return render(self.request, self.view_to_render, self._default_params_for_view())
@@ -130,12 +142,18 @@ class ButtonHandler():
 		This will return a rendering for `self.view` without all 'archived' containers.
 
 		Returns:
-			HttpResponse: A default rendering with default values, some might be set by the different functions.
+			HttpResponse: a default rendering without all archived containers.
 		"""
 		self.all_containers = Container.objects.all().exclude(health_status='archived')
 		return render(self.request, self.view_to_render, self._default_params_for_view())
 
-	def _render_configuration(self):
+	def _render_configuration(self) -> HttpResponse:
+		"""
+		This will return a rendering for `self.view` with params for config and the given message
+
+		Returns:
+			HttpResponse: a rendering for the configurator with all configuration parameters.
+		"""
 		return render(self.request, self.view_to_render, {**self._params_for_config(), **self._message_for_view()})
 
 	def _delete_container(self) -> HttpResponse:
@@ -143,7 +161,7 @@ class ButtonHandler():
 		This will delete the selected container and all data belonging to this container.
 
 		Returns:
-			HttpResponse: a defined rendering
+			HttpResponse: a defined rendering.
 		"""
 		raw_data = {'container_id': self.wanted_container.id}
 		if not self.wanted_container.is_archived():
@@ -209,7 +227,15 @@ class ButtonHandler():
 			self.data = '\n'.join(self.data)
 		return self._decide_rendering()
 
-	def _manage_config(self):
+	def _manage_config(self) -> HttpResponse:
+		"""
+		This should be called whenever a configuration should be managed from UI.
+		If there is a 'delete' in the post, self.wanted_config will be deleted.
+		If it can't, an error message will be set.
+
+		Returns:
+			HttpResponse: if the action on the config was successfull, it wil redirect you to 'configurator'
+		"""
 		if 'delete' in self.request.POST:
 			try:
 				# TODO: figure out why some configs fail with foreign key constraint.
@@ -220,6 +246,14 @@ class ButtonHandler():
 		return redirect('/configurator')
 
 	def _pre_fill(self) -> HttpResponse:
+		"""
+		This function will be called when the config form should be prefilled with values from the config.
+		It converts a list of given config objects to dicts and merges these dicts.
+		The merged result and the errors which came up when merging will be passed to the view.
+
+		Returns:
+			HttpResponse: a rendering for the view with the prefill dict and an error dict.
+		"""
 		post_request = dict(self.request.POST.lists())
 		if 'config_id' not in post_request:
 			return self._decide_rendering()

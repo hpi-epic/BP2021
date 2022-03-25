@@ -7,12 +7,16 @@
 	</h2>
 <div id="collapseEnvironment" class="accordion-collapse collapse {% if should_show %}show{% endif %}">
 	<div class="accordion-body">
+		{% load static %}
 		<div class="row">
 			<div class="col-6">
+				{% if error_dict.task %} 
+					<img src="{% static 'icons/warning.svg' %}" width="18px" title="{{error_dict.task}}"></img> 
+				{% endif %}
 				task
 			</div>
 			<div class="col-6">
-				<select class="form-select" name="environment-task">
+				<select class="form-select {% if error_dict.task %} bc-error-field {% endif %}" name="environment-task">
 					<option selected value="training">training</option>
 					<option value="monitoring">monitoring</option>
 					<option value="exampleprinter">exampleprinter</option>
@@ -21,37 +25,54 @@
 		</div>
 		<div class="row">
 			<div class="col-6">
+				{% if error_dict.enable_live_draw %} 
+					<img src="{% static 'icons/warning.svg' %}" width="18px" title="{{error_dict.enable_live_draw}}"></img> 
+				{% endif %}
 				enable live draw
 			</div>
 			<div class="col-6">
-				<input class="form-check-input" type="checkbox" {% if prefill.enable_live_draw %}checked{% endif %} name="environment-enable_live_draw">
+				<input type="checkbox" {% if prefill.enable_live_draw %}checked{% endif %}
+					class="form-check-input {% if error_dict.enable_live_draw %} bc-error-field {% endif %}" 
+					name="environment-enable_live_draw">
 			</div>
 		</div>
 		<div class="row">
 			<div class="col-6">
+				{% if error_dict.episodes %} 
+					<img src="{% static 'icons/warning.svg' %}" width="18px" title="{{error_dict.episodes}}"></img> 
+				{% endif %}
 				episodes
 			</div>
 			<div class="col-6">
-				<input class="form-control" type="number" value="{{prefill.episodes}}" name="environment-episodes">
+				<input type="number" class="form-control {% if error_dict.episodes %} bc-error-field {% endif %}"
+					value="{{prefill.episodes}}" name="environment-episodes">
 			</div>
 		</div>
 		<div class="row">
 			<div class="col-6">
+				{% if error_dict.plot_interval %} 
+					<img src="{% static 'icons/warning.svg' %}" width="18px" title="{{error_dict.plot_interval}}"></img> 
+				{% endif %}
 				plot interval
 			</div>
 			<div class="col-6">
-				<input class="form-control" type="number" value="{{prefill.plot_interval}}" name="environment-plot_interval">
+				<input type="number" class="form-control {% if error_dict.plot_interval %} bc-error-field {% endif %}"
+					value="{{prefill.plot_interval}}" name="environment-plot_interval">
 			</div>
 		</div>
 		<div class="row">
 			<div class="col-6">
+				{% if error_dict.marketplace %} 
+					<img src="{% static 'icons/warning.svg' %}" width="18px" title="{{error_dict.marketplace}}"></img> 
+				{% endif %}
 				marketplace
 			</div>
 			<div class="col-6">
-				<input class="form-control" type="text" value="{{prefill.marketplace}}" name="environment-marketplace">
+				<input type="text" class="form-control {% if error_dict.marketplace %} bc-error-field {% endif %}"
+					value="{{prefill.marketplace}}" name="environment-marketplace">
 			</div>
 		</div>
-		{% include "configuration_items/agents.html" with prefill=prefill.agents%}
+		{% include "configuration_items/agents.html" with prefill=prefill.agents error_dict=error_dict.agents%}
 	</div>
 </div>
 </div>

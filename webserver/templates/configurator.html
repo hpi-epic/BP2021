@@ -9,7 +9,7 @@
 					{% csrf_token %}
 					<input type="hidden" name="action" value="pre-fill">
 					{% for config in all_configurations %}
-						<a href="/delete_config/{{config.id}}" ><img src="{% static 'trash.svg' %}" width="20px"></img></a>
+						<a href="/delete_config/{{config.id}}" ><img src="{% static 'icons/trash.svg' %}" width="18px"></img></a>
 						<input class="form-check-input" type="checkbox" value="{{ config.id }}" name="config_id"> 
 						{{config.name}}<br>
 					{% endfor %}
@@ -20,7 +20,7 @@
 				<form method="post" enctype="multipart/form-data">
 					{% csrf_token %}
 					<input type="hidden" name="action" value="start">
-					{% include "configuration_items/config.html" with prefill=prefill should_show=True %}
+					{% include "configuration_items/config.html" with prefill=prefill should_show=True error_dict=error_dict %}
 					<input class="form-control" type="text" placeholder="experiment name" name="experiment_name">
 					<button class="btn btn-secondary btn-rounded m-3">launch</button>
 				</form>

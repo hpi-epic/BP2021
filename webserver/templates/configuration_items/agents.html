@@ -1,7 +1,9 @@
 <div class="accordion-item">
 	<h2 class="accordion-header">
+		{% load static %}
 		<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAgentContainer" aria-expanded="false" aria-controls="collapseAgentContainer">
-		Agents
+			{% if error_dict %} <img src="{% static 'icons/warning.svg' %}" width="18px" title="{{error_dict}}" title="{{error_dict}}"></img> {% endif %}
+			Agents
 		</button>
 	</h2>
 <div id="collapseAgentContainer" class="accordion-collapse collapse">

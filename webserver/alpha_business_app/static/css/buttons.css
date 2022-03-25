@@ -49,7 +49,7 @@
 	border-color: rgb(78, 77, 77);
 }
 
-.bc-outline-tensorboard{
+.bc-outline-tensorboard {
 	color: rgb(135, 4, 211) !important;
 	border-color: rgb(135, 4, 211)  !important;
 }
@@ -59,7 +59,7 @@
 	border-color: rgb(135, 4, 211);
 }
 
-.bc-outline-lightgreen{
+.bc-outline-lightgreen {
 	color: rgb(69, 211, 4) !important;
 	border-color: rgb(69, 211, 4)  !important;
 }
@@ -67,4 +67,8 @@
 	color: #fff !important;
 	background-color: rgb(69, 211, 4);
 	border-color: rgb(69, 211, 4);
+}
+
+.bc-error-field {
+	border-color: rgb(219, 1, 56) !important;
 }
