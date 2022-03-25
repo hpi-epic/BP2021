@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 from torch.utils.tensorboard import SummaryWriter
+from tqdm import tqdm
 
 import recommerce.configuration.utils as ut
 import recommerce.rl.actorcritic.actorcritic_agent as actorcritic_agent
@@ -94,25 +95,17 @@ class RLTrainer(ABC):
 		averaged_info = ut.divide_content_of_dict(averaged_info, len(sliced_dicts))
 		return averaged_info
 
-	def calculate_frames_per_second(self, frame_idx) -> float:
-		speed = (frame_idx - self.frame_number_last_speed_update) / (
-			(time.time() - self.time_last_speed_update) if (time.time() - self.time_last_speed_update) > 0 else 1)
-		self.frame_number_last_speed_update = frame_idx
-		self.time_last_speed_update = time.time()
-		return speed
-
 	def consider_print_info(self, frame_idx, episode_number, averaged_info, epsilon=None) -> None:
 		if (episode_number) % 10 == 0:
-			speed = self.calculate_frames_per_second(frame_idx)
-			print(f"{frame_idx + 1}: {episode_number} episodes trained, mean return {averaged_info['profits/all']['vendor_0']:.3f}, " + (
-				f'eps {epsilon:.2f}, ' if epsilon is not None else '') + f'speed {speed:.2f} f/s')
+			tqdm.write(f"{frame_idx + 1}: {episode_number} episodes trained, mean return {averaged_info['profits/all']['vendor_0']:.3f}, " + (
+				f'eps {epsilon:.2f}' if epsilon is not None else ''))
 
 	def consider_save_model(self, episodes_idx: int, force=False) -> None:
 		if (episodes_idx % 500 == 0 and episodes_idx > 0) or force:
 			path_to_parameters = self.RL_agent.save(model_path=self.model_path, model_name=f'{self.signature}_{episodes_idx:05d}')
-			print(f'I write the interim model after {episodes_idx} episodes to the disk.')
-			print(f'You can find the parameters here: {path_to_parameters}.')
-			print(f'This model achieved a mean reward of {self.best_mean_interim_reward}.')
+			tqdm.write(f'I write the interim model after {episodes_idx} episodes to the disk.')
+			tqdm.write(f'You can find the parameters here: {path_to_parameters}.')
+			tqdm.write(f'This model achieved a mean reward of {self.best_mean_interim_reward}.')
 			self.saved_parameter_paths.append(path_to_parameters)
 			self.best_mean_interim_reward = None
 
@@ -130,7 +123,7 @@ class RLTrainer(ABC):
 			self.best_mean_interim_reward = mean_reward
 			if self.best_mean_overall_reward is None or self.best_mean_interim_reward > self.best_mean_overall_reward:
 				if self.best_mean_overall_reward is not None:
-					print(f'Best overall reward updated {self.best_mean_overall_reward:.3f} -> {self.best_mean_interim_reward:.3f}')
+					tqdm.write(f'Best overall reward updated {self.best_mean_overall_reward:.3f} -> {self.best_mean_interim_reward:.3f}')
 				self.best_mean_overall_reward = self.best_mean_interim_reward
 
 	def consider_sync_tgt_net(self, frame_idx) -> None:

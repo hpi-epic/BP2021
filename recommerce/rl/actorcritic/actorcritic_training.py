@@ -2,6 +2,7 @@ import random
 
 import numpy as np
 import torch
+from tqdm.auto import trange
 
 import recommerce.configuration.utils as ut
 import recommerce.rl.actorcritic.actorcritic_agent as actorcritic_agent
@@ -51,7 +52,8 @@ class ActorCriticTrainer(RLTrainer):
 		finished_episodes = 0
 		environments = [self.marketplace_class() for _ in range(total_envs)]
 		info_accumulators = [None for _ in range(total_envs)]
-		for step_number in range(number_of_training_steps):
+
+		for step_number in trange(number_of_training_steps, unit=' frames', leave=False):
 			chosen_envs = self.choose_random_envs(total_envs)
 
 			states = []

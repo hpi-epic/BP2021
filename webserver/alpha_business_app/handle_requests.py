@@ -54,7 +54,7 @@ def send_post_request(route: str, body: dict, command: str) -> APIResponse:
 	Args:
 		route (str): A post route from the API.
 		body (dict): The body that should be send to the API.
-		command (str): A command parameter for the API, currently these are `training, monitoring, exampleprinter`
+		command (str): A command parameter for the API, currently these are `training, agent_monitoring, exampleprinter`
 
 	Returns:
 		APIResponse: Response from the API converted into our special format.
