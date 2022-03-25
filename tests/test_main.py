@@ -51,6 +51,5 @@ handle_command_testcases = [
 
 @pytest.mark.parametrize('command', handle_command_testcases)
 def test_handle_command(command):
-	with patch('recommerce.rl.training.SummaryWriter'), \
-		patch('recommerce.rl.q_learning.q_learning_agent.QLearningAgent.save'):
+	with patch('recommerce.rl.training.SummaryWriter'):
 		main.handle_command(command)

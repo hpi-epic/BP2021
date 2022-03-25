@@ -47,7 +47,7 @@ class QLearningTrainer(RLTrainer):
 					ut.write_dict_to_tensorboard(self.writer, averaged_info, frame_idx / config.episode_length, is_cumulative=True)
 					finished_episodes = len(all_dicts)
 					self.consider_print_info(frame_idx, finished_episodes, averaged_info, epsilon)
-					self.consider_update_best_model(averaged_info, frame_idx)
+					self.consider_update_best_model(averaged_info)
 					self.consider_save_model(finished_episodes)
 
 				vendors_cumulated_info = None
@@ -64,4 +64,5 @@ class QLearningTrainer(RLTrainer):
 			self.consider_sync_tgt_net(frame_idx)
 
 		self.consider_save_model(finished_episodes, force=True)
+		self.analyze_trained_agents()
 		self._end_of_training()

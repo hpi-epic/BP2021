@@ -111,4 +111,5 @@ class ActorCriticTrainer(RLTrainer):
 			self.consider_sync_tgt_net(step_number)
 
 		self.consider_save_model(finished_episodes, force=True)
+		self.analyze_trained_agents()
 		self._end_of_training()

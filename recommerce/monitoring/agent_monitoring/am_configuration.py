@@ -76,8 +76,8 @@ class Configurator():
 		assert all(isinstance(agent_tuple[1], list) for agent_tuple in agents), 'the second entry in each agent-tuple must be a list'
 		assert all(issubclass(agent[0], CircularAgent) == issubclass(agents[0][0], CircularAgent) for agent in agents), \
 			'the agents must all be of the same type (Linear/Circular)'
-		assert issubclass(agents[0][0], CircularAgent) == isinstance(self.marketplace, circular_market.CircularEconomy), \
-			'the agent and marketplace must be of the same economy type (Linear/Circular)'
+		# assert issubclass(agents[0][0], CircularAgent) == isinstance(self.marketplace, circular_market.CircularEconomy), \
+		# 	'the agent and marketplace must be of the same economy type (Linear/Circular)'
 
 		self.agents = []
 

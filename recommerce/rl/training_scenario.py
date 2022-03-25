@@ -64,4 +64,4 @@ def main():
 
 
 if __name__ == '__main__':
-	train_continuos_a2c_circular_economy_rebuy()
+	main()

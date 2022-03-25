@@ -66,8 +66,10 @@ class ActorCriticAgent(ReinforcementLearningAgent, ABC):
 		"""
 		model_name += '.dat'
 
-		torch.save(self.best_interim_actor_net.state_dict(), os.path.join(model_path, 'actor_parameters' + model_name))
+		actor_path = os.path.join(model_path, 'actor_parameters' + model_name)
+		torch.save(self.best_interim_actor_net.state_dict(), actor_path)
 		torch.save(self.best_interim_critic_net.state_dict(), os.path.join(model_path, 'critic_parameters' + model_name))
+		return actor_path
 
 	def train_batch(self, states, actions, rewards, next_states, regularization=False):
 		"""

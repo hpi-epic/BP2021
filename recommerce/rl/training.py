@@ -4,6 +4,8 @@ import sys
 import time
 from abc import ABC, abstractmethod
 
+import matplotlib.pyplot as plt
+import numpy as np
 import torch
 from torch.utils.tensorboard import SummaryWriter
 
@@ -11,6 +13,7 @@ import recommerce.configuration.utils as ut
 import recommerce.rl.actorcritic.actorcritic_agent as actorcritic_agent
 from recommerce.configuration.hyperparameter_config import config
 from recommerce.configuration.path_manager import PathManager
+from recommerce.monitoring.agent_monitoring.am_monitoring import Monitor
 from recommerce.rl.reinforcement_learning_agent import ReinforcementLearningAgent
 
 
@@ -33,6 +36,8 @@ class RLTrainer(ABC):
 		self.best_mean_interim_reward = None
 		self.best_mean_overall_reward = None
 		self.marketplace_class = marketplace_class
+		self.agent_class = agent_class
+		self.saved_parameter_paths = []
 		if issubclass(agent_class, actorcritic_agent.ActorCriticAgent):
 			self.RL_agent = agent_class(marketplace_class().observation_space.shape[0], outputs)
 		else:
@@ -104,10 +109,12 @@ class RLTrainer(ABC):
 
 	def consider_save_model(self, episodes_idx: int, force=False) -> None:
 		if (episodes_idx % 500 == 0 and episodes_idx > 0) or force:
-			self.RL_agent.save(model_path=self.model_path, model_name=f'{self.signature}_{episodes_idx:05d}')
+			path_to_parameters = self.RL_agent.save(model_path=self.model_path, model_name=f'{self.signature}_{episodes_idx:05d}')
 			print(f'I write the interim model after {episodes_idx} episodes to the disk.')
-			print(f'You can find the parameters in this directory: {self.model_path}.')
+			print(f'You can find the parameters here: {path_to_parameters}.')
 			print(f'This model achieved a mean reward of {self.best_mean_interim_reward}.')
+			self.saved_parameter_paths.append(path_to_parameters)
+			self.best_mean_interim_reward = None
 
 	def consider_update_best_model(self, averaged_info: dict) -> None:
 		"""
@@ -133,6 +140,26 @@ class RLTrainer(ABC):
 	@abstractmethod
 	def train_agent(self, maxsteps=2 * config.epsilon_decay_last_frame) -> None:
 		raise NotImplementedError('This method is abstract. Use a subclass')
+
+	def analyze_trained_agents(self):
+		all_rewards = []
+		for parameter_path in self.saved_parameter_paths:
+			print(f'The analysis of model {parameter_path}:')
+			monitor = Monitor()
+			monitor.configurator.setup_monitoring(False, 250, 250, self.marketplace_class, [(self.agent_class, [parameter_path])])
+			rewards = monitor.run_marketplace()
+			all_rewards.append(rewards[0])
+			print(f"It's mean was {np.mean(rewards[0])}")
+
+		# Create the violinplot
+		episode_numbers = [int(parameter_path[-9:][0:5]) for parameter_path in self.saved_parameter_paths]
+		plt.clf()
+		plt.violinplot(all_rewards, episode_numbers, showmeans=True, widths=450)
+		plt.title('Learning Progress Of The Agent')
+		plt.xlabel('Learned Episodes')
+		plt.ylabel('Reward Density')
+		savepath = os.path.join(self.model_path, 'agent_learning_process_violinplot.svg')
+		plt.savefig(fname=savepath)
 
 	def _end_of_training(self) -> None:
 		"""
