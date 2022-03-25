@@ -12,7 +12,8 @@ fail-under = 50
 
 [tool.pytest.ini_options]
 markers = [
-    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "slow: slow tests (deselect with '-m \"not slow\"')",
+	"training: for tests that run the training",
 ]
 filterwarnings = [
 	"ignore::DeprecationWarning"

@@ -26,6 +26,7 @@ test_scenarios = [
 ]
 
 
+@pytest.mark.training
 @pytest.mark.slow
 @pytest.mark.parametrize('marketplace, agent, verbose', test_scenarios)
 def test_training_configurations(marketplace, agent, verbose):
