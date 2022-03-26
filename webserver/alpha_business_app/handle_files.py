@@ -113,7 +113,7 @@ def download_file(response, wants_zip: bool, wanted_container: Container) -> Htt
 	archive_name = response.headers['content-disposition'][9:-4]
 
 	# get the config file from the container in order to add it to the archive
-	config_object = wanted_container.config_file
+	config_object = wanted_container.config
 	config_as_string = json.dumps(config_object.as_dict(), indent=4, sort_keys=True)
 
 	# convert tar file to file like object to be able to work with it in memory

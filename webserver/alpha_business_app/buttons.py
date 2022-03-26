@@ -303,7 +303,7 @@ class ButtonHandler():
 			parser = ConfigModelParser()
 			config_object = parser.parse_config(copy.deepcopy(config_dict))
 			command = config_object.environment.task
-			Container.objects.create(id=response['id'], config_file=config_object, name=container_name, command=command)
+			Container.objects.create(id=response['id'], config=config_object, name=container_name, command=command)
 			config_object.name = f'used for {container_name}'
 			config_object.save()
 			return redirect('/observe', {'success': 'You successfully launched an experiment'})

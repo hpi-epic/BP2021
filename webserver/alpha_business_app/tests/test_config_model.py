@@ -2,6 +2,7 @@ from django.test import TestCase
 
 from ..models.config import *
 from ..models.config import get_config_field_names, remove_none_values_from_dict
+from ..models.container import Container
 from .constant_tests import EMPTY_STRUCTURE_CONFIG
 
 
@@ -70,6 +71,15 @@ class ConfigTest(TestCase):
 
 	def test_capitalize_one_letter_strings(self):
 		assert 'A' == capitalize('a')
+
+	def test_is_referenced(self):
+		test_config_not_referenced = Config.objects.create()
+		test_config_referenced = Config.objects.create()
+
+		Container.objects.create(config=test_config_referenced)
+
+		assert test_config_not_referenced.is_referenced() is False
+		assert test_config_referenced.is_referenced() is True
 
 	def test_config_to_dict(self):
 		# create a small valid config for this test

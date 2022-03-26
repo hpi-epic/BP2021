@@ -14,14 +14,14 @@ from .constant_tests import EXAMPLE_HIERARCHIE_DICT, EXAMPLE_POST_REQUEST_ARGUME
 class ButtonTests(TestCase):
 	def setUp(self):
 		# get a container for testing
-		config = Config.objects.create()
+		config_object = Config.objects.create()
 		self.test_container = Container.objects.create(
 								command='training',
 								id='1234',
 								created_at='01.01.1970',
 								last_check_at='now',
 								name='test_container',
-								config_file=config
+								config=config_object
 								)
 
 	def test_health_button(self):

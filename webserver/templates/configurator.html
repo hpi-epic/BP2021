@@ -9,11 +9,25 @@
 					{% csrf_token %}
 					<input type="hidden" name="action" value="pre-fill">
 					{% for config in all_configurations %}
-						<a href="/delete_config/{{config.id}}" ><img src="{% static 'icons/trash.svg' %}" width="18px"></img></a>
-						<input class="form-check-input" type="checkbox" value="{{ config.id }}" name="config_id"> 
-						{{config.name}}<br>
+						<div class="row">
+							<div class="col-1">
+								{% if not config.is_referenced %}
+									<a href="/delete_config/{{config.id}}" >
+										<img src="{% static 'icons/trash.svg' %}" width="18px" title="delete this config"></img>
+									</a>
+								{% endif %}
+							</div>
+							<div class="col-1">
+								<input class="form-check-input" type="checkbox" value="{{ config.id }}" name="config_id">
+							</div>
+							<div class="col-10">
+								{{config.name}}
+							</div>
+						</div>
 					{% endfor %}
-					<button class="btn btn-secondary btn-rounded m-3">pre-fill</button>
+					{% if all_configurations %}
+						<button class="btn btn-outline-secondary btn-rounded m-3">pre-fill</button>
+					{% endif %}
 				</form>
 			</div>
 			<div class="col-9">
@@ -22,7 +36,7 @@
 					<input type="hidden" name="action" value="start">
 					{% include "configuration_items/config.html" with prefill=prefill should_show=True error_dict=error_dict %}
 					<input class="form-control" type="text" placeholder="experiment name" name="experiment_name">
-					<button class="btn btn-secondary btn-rounded m-3">launch</button>
+					<button class="btn btn-outline-secondary btn-rounded m-3">launch</button>
 				</form>
 			</div>
 		</div>

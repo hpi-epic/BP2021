@@ -2,14 +2,20 @@ from django.db import models
 
 
 class Config(models.Model):
-	environment = models.ForeignKey('EnvironmentConfig', on_delete=models.SET_NULL, null=True)
-	hyperparameter = models.ForeignKey('HyperparameterConfig', on_delete=models.SET_NULL, null=True)
+	environment = models.ForeignKey('EnvironmentConfig', on_delete=models.CASCADE, null=True)
+	hyperparameter = models.ForeignKey('HyperparameterConfig', on_delete=models.CASCADE, null=True)
 	name = models.CharField(max_length=100, editable=False, default='')
 
 	def as_dict(self) -> dict:
 		environment_dict = self.environment.as_dict() if self.environment is not None else None
 		hyperparameter_dict = self.hyperparameter.as_dict() if self.hyperparameter is not None else None
 		return remove_none_values_from_dict({'environment': environment_dict, 'hyperparameter': hyperparameter_dict})
+
+	def is_referenced(self):
+		if not self.container_set.all():
+			# Query set is empty so we are not referenced by any container
+			return False
+		return True
 
 	@staticmethod
 	def get_empty_structure_dict():
@@ -20,7 +26,7 @@ class Config(models.Model):
 
 
 class EnvironmentConfig(models.Model):
-	agents = models.ForeignKey('AgentsConfig', on_delete=models.SET_NULL, null=True)
+	agents = models.ForeignKey('AgentsConfig', on_delete=models.CASCADE, null=True)
 	enable_live_draw = models.BooleanField(null=True)
 	episodes = models.IntegerField(null=True)
 	plot_interval = models.IntegerField(null=True)
@@ -64,7 +70,7 @@ class AgentsConfig(models.Model):
 
 
 class AgentConfig(models.Model):
-	agents_config = models.ForeignKey('AgentsConfig', on_delete=models.SET_NULL, null=True)
+	agents_config = models.ForeignKey('AgentsConfig', on_delete=models.CASCADE, null=True)
 	name = models.CharField(max_length=100, default='')
 	agent_class = models.CharField(max_length=100, null=True)
 	argument = models.CharField(max_length=200, null=True)
@@ -79,8 +85,8 @@ class AgentConfig(models.Model):
 
 
 class HyperparameterConfig(models.Model):
-	rl = models.ForeignKey('RLConfig', on_delete=models.SET_NULL, null=True)
-	sim_market = models.ForeignKey('SimMarketConfig', on_delete=models.SET_NULL, null=True)
+	rl = models.ForeignKey('RLConfig', on_delete=models.CASCADE, null=True)
+	sim_market = models.ForeignKey('SimMarketConfig', on_delete=models.CASCADE, null=True)
 
 	def as_dict(self) -> dict:
 		sim_market_dict = self.sim_market.as_dict() if self.sim_market is not None else {'sim_market': None}

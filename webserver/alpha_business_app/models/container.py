@@ -7,7 +7,7 @@ class Container(models.Model):
 	"""
 	id = models.CharField(max_length=50, primary_key=True)
 	command = models.CharField(max_length=20, editable=False)
-	config_file = models.ForeignKey('Config', on_delete=models.DO_NOTHING)
+	config = models.ForeignKey('Config', on_delete=models.DO_NOTHING)
 	created_at = models.DateTimeField(auto_now_add=True, editable=False)
 	health_status = models.CharField(max_length=20, default='unknown')
 	last_check_at = models.DateTimeField(auto_now_add=True)

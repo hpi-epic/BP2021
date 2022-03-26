@@ -8,14 +8,14 @@ from ..models.container import Container, update_container
 class ContainerTest(TestCase):
 	def setUp(self):
 		# get a container for testing
-		config = Config.objects.create()
+		config_object = Config.objects.create()
 		Container.objects.create(
 								command='training',
 								id='123',
 								created_at='01.01.1970',
 								last_check_at='now',
 								name='test_container',
-								config_file=config
+								config=config_object
 								)
 
 	def test_container_is_archived(self):
