@@ -1,5 +1,4 @@
 import copy
-from sqlite3 import IntegrityError
 
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
