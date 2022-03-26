@@ -231,18 +231,12 @@ class ButtonHandler():
 		"""
 		This should be called whenever a configuration should be managed from UI.
 		If there is a 'delete' in the post, self.wanted_config will be deleted.
-		If it can't, an error message will be set.
 
 		Returns:
 			HttpResponse: if the action on the config was successfull, it wil redirect you to 'configurator'
 		"""
 		if 'delete' in self.request.POST:
-			try:
-				# TODO: figure out why some configs fail with foreign key constraint.
-				self.wanted_config.delete()
-			except IntegrityError:
-				self.message = ['error', 'Sorry, we could not delete this config']
-				return self._decide_rendering()
+			self.wanted_config.delete()
 		return redirect('/configurator')
 
 	def _pre_fill(self) -> HttpResponse:
