@@ -8,23 +8,25 @@
 				<form method="post" enctype="multipart/form-data">
 					{% csrf_token %}
 					<input type="hidden" name="action" value="pre-fill">
-					{% for config in all_configurations %}
-						<div class="row">
-							<div class="col-1">
-								{% if not config.is_referenced %}
-									<a href="/delete_config/{{config.id}}" >
-										<img src="{% static 'icons/trash.svg' %}" width="18px" title="delete this config"></img>
-									</a>
-								{% endif %}
-							</div>
-							<div class="col-1">
-								<input class="form-check-input" type="checkbox" value="{{ config.id }}" name="config_id">
-							</div>
-							<div class="col-10">
-								{{config.name}}
-							</div>
-						</div>
-					{% endfor %}
+					<table>
+						{% for config in all_configurations %}
+							<tr>
+								<td>
+									{% if not config.is_referenced %}
+										<a href="/delete_config/{{config.id}}" >
+											<img src="{% static 'icons/trash.svg' %}" width="18px" title="delete this config"></img>
+										</a>
+									{% endif %}
+									</td>
+								<td>
+									<input class="form-check-input" type="checkbox" value="{{ config.id }}" name="config_id">
+								</td>
+								<td>
+									{{config.name}}
+								</td>
+							</tr>
+						{% endfor %}
+					</table>
 					{% if all_configurations %}
 						<button class="btn btn-outline-secondary btn-rounded m-3">pre-fill</button>
 					{% endif %}
@@ -40,6 +42,4 @@
 				</form>
 			</div>
 		</div>
-		<a href="/">Home</a>
-		{% include "notice_field.html" %}
 {% endblock content %}

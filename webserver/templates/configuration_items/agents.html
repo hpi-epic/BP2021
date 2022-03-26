@@ -14,13 +14,7 @@
 				Agent
 				</button>
 			</h2>
-			{% if not prefill %}
 				{% include "configuration_items/agent.html" %}
-			{% else %}
-				{% for agent_name, agent_parameter in prefill.items %}
-					{% include "configuration_items/agent.html" with name=agent_name parameters=agent_parameter %}
-				{% endfor %}
-			{% endif %}
 		</div>
 		<button class="btn btn-success add-more mt-2" type="button">+</button>
 	</div>

@@ -7,7 +7,7 @@
 <div id="collapseSimMarket" class="accordion-collapse collapse">
 	<div class="accordion-body">
 		{% load static %}
-		<div class="row">
+		<div class="row p-2">
 			<div class="col-6">
 				{% if error_dict.max_storage %} 
 					<img src="{% static 'icons/warning.svg' %}" width="18px" title="{{error_dict.max_storage}}"></img> 
@@ -19,7 +19,7 @@
 					min="0" step="any" value="{{prefill.max_storage}}" name="hyperparameter-sim_market-max_storage">
 			</div>
 		</div>
-		<div class="row">
+		<div class="row p-2">
 			<div class="col-6">
 				{% if error_dict.episode_length %} 
 					<img src="{% static 'icons/warning.svg' %}" width="18px" title="{{error_dict.episode_length}}"></img> 
@@ -31,7 +31,7 @@
 					min="0" step="any" value="{{prefill.episode_length}}" name="hyperparameter-sim_market-episode_length">
 			</div>
 		</div>
-		<div class="row">
+		<div class="row p-2">
 			<div class="col-6">
 				{% if error_dict.max_price %} 
 					<img src="{% static 'icons/warning.svg' %}" width="18px" title="{{error_dict.max_price}}"></img> 
@@ -43,7 +43,7 @@
 					min="0" step="any" value="{{prefill.max_price}}" name="hyperparameter-sim_market-max_price">
 			</div>
 		</div>
-		<div class="row">
+		<div class="row p-2">
 			<div class="col-6">
 				{% if error_dict.max_quality %} 
 					<img src="{% static 'icons/warning.svg' %}" width="18px" title="{{error_dict.max_quality}}"></img> 
@@ -55,7 +55,7 @@
 					min="0" step="any" value="{{prefill.max_quality}}" name="hyperparameter-sim_market-max_quality">
 			</div>
 		</div>
-		<div class="row">
+		<div class="row p-2">
 			<div class="col-6">
 				{% if error_dict.number_of_customers %} 
 					<img src="{% static 'icons/warning.svg' %}" width="18px" title="{{error_dict.number_of_customers}}"></img> 
@@ -67,7 +67,7 @@
 					min="0" step="any" value="{{prefill.number_of_customers}}" name="hyperparameter-sim_market-number_of_customers">
 			</div>
 		</div>
-		<div class="row">
+		<div class="row p-2">
 			<div class="col-6">
 				{% if error_dict.production_price %} 
 					<img src="{% static 'icons/warning.svg' %}" width="18px" title="{{error_dict.production_price}}"></img> 
@@ -79,7 +79,7 @@
 					min="0" step="any" value="{{prefill.production_price}}" name="hyperparameter-sim_market-production_price">
 			</div>
 		</div>
-		<div class="row">
+		<div class="row p-2">
 			<div class="col-6">
 				{% if error_dict.storage_cost_per_product %} 
 					<img src="{% static 'icons/warning.svg' %}" width="18px" title="{{error_dict.storage_cost_per_product}}"></img> 

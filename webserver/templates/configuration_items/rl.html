@@ -7,7 +7,7 @@
 <div id="collapseRL" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
 	<div class="accordion-body">
 		{% load static %}
-		<div class="row">
+		<div class="row p-2">
 			<div class="col-6">
 				{% if error_dict.gamma %} 
 					<img src="{% static 'icons/warning.svg' %}" width="18px" title="{{error_dict.gamma}}"></img> 
@@ -19,7 +19,7 @@
 					min="0" max="1" step="any" value="{{prefill.gamma}}" name="hyperparameter-rl-gamma">
 			</div>
 		</div>
-		<div class="row">
+		<div class="row p-2">
 			<div class="col-6">
 				{% if error_dict.batch_size %} 
 					<img src="{% static 'icons/warning.svg' %}" width="18px" title="{{error_dict.batch_size}}"></img> 
@@ -31,7 +31,7 @@
 					min="0" step="any" value="{{prefill.batch_size}}" name="hyperparameter-rl-batch_size">
 			</div>
 		</div>
-		<div class="row">
+		<div class="row p-2">
 			<div class="col-6">
 				{% if error_dict.replay_size %} 
 					<img src="{% static 'icons/warning.svg' %}" width="18px" title="{{error_dict.replay_size}}"></img> 
@@ -43,7 +43,7 @@
 					min="0" step="any" value="{{prefill.replay_size}}" name="hyperparameter-rl-replay_size">
 			</div>
 		</div>
-		<div class="row">
+		<div class="row p-2">
 			<div class="col-6">
 				{% if error_dict.learning_rate %} 
 					<img src="{% static 'icons/warning.svg' %}" width="18px" title="{{error_dict.learning_rate}}"></img> 
@@ -55,7 +55,7 @@
 					min="0" max="1" step="any" value="{{prefill.learning_rate}}" name="hyperparameter-rl-learning_rate">
 			</div>
 		</div>
-		<div class="row">
+		<div class="row p-2">
 			<div class="col-6">
 				{% if error_dict.sync_target_frames %} 
 					<img src="{% static 'icons/warning.svg' %}" width="18px" title="{{error_dict.sync_target_frames}}"></img> 
@@ -67,7 +67,7 @@
 					min="0" step="any" value="{{prefill.sync_target_frames}}" name="hyperparameter-rl-sync_target_frames">
 			</div>
 		</div>
-		<div class="row">
+		<div class="row p-2">
 			<div class="col-6">
 				{% if error_dict.start_size %} 
 					<img src="{% static 'icons/warning.svg' %}" width="18px" title="{{error_dict.start_size}}"></img> 
@@ -79,7 +79,7 @@
 					min="0" step="any" value="{{prefill.replay_start_size}}" name="hyperparameter-rl-replay_start_size">
 			</div>
 		</div>
-		<div class="row">
+		<div class="row p-2">
 			<div class="col-6">
 				{% if error_dict.epsilon_decay_last_frame %} 
 					<img src="{% static 'icons/warning.svg' %}" width="18px" title="{{error_dict.epsilon_decay_last_frame}}"></img> 
@@ -91,7 +91,7 @@
 					min="0" step="any" value="{{prefill.epsilon_decay_last_frame}}" name="hyperparameter-rl-epsilon_decay_last_frame">
 			</div>
 		</div>
-		<div class="row">
+		<div class="row p-2">
 			<div class="col-6">
 				{% if error_dict.epsilon_start %} 
 					<img src="{% static 'icons/warning.svg' %}" width="18px" title="{{error_dict.epsilon_start}}"></img> 
@@ -103,7 +103,7 @@
 					min="0" step="any"  value="{{prefill.epsilon_start}}" name="hyperparameter-rl-epsilon_start">
 			</div>
 		</div>
-		<div class="row">
+		<div class="row p-2">
 			<div class="col-6">
 				{% if error_dict.epsilon_final %} 
 					<img src="{% static 'icons/warning.svg' %}" width="18px" title="{{error_dict.epsilon_final}}"></img> 

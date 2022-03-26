@@ -297,6 +297,7 @@ class ButtonHandler():
 				print('the new container has the same id, as another container')
 				self.message = ['error', 'please try again']
 				return self._remove()
+			print('after post request')
 			# get all necessary parameters for container object
 			container_name = self.request.POST['experiment_name']
 			container_name = container_name if container_name != '' else response['id'][:10]
@@ -308,7 +309,6 @@ class ButtonHandler():
 			config_object.save()
 			return redirect('/observe', {'success': 'You successfully launched an experiment'})
 		else:
-			print(response.status())
 			self.message = response.status()
 			return self._decide_rendering()
 
