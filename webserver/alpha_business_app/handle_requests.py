@@ -1,8 +1,9 @@
 import requests
 
 from .api_response import APIResponse
-from .constants import DOCKER_API
 from .models.container import update_container
+
+DOCKER_API = 'http://127.0.0.1:8000'  # remember to include the port and the protocol, i.e. http://
 
 
 def send_get_request(wanted_action: str, raw_data: dict) -> APIResponse:

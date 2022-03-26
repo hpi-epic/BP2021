@@ -3,18 +3,38 @@ from .models.config import Config
 
 class ConfigMerger():
 	def __init__(self) -> None:
-		self.epsilon = 0.001
 		self.error_dict = Config.get_empty_structure_dict()
 
-	def merge_config_objects(self, config_object_ids: list):
+	def merge_config_objects(self, config_object_ids: list) -> tuple:
+		"""
+		merge a list of config objects given by their id.
+
+		Args:
+			config_object_ids (list): config objects that should be merged
+
+		Returns:
+			tuple (dict, dict): the final merged dict and the error dict whith the latest error
+		"""
 		configuration_objects = [Config.objects.get(id=config_id) for config_id in config_object_ids]
 		configuration_dicts = [config.as_dict() for config in configuration_objects]
+		# get initial empty dict to merge into
 		final_config = Config.get_empty_structure_dict()
 		for config in configuration_dicts:
 			final_config = self._merge_config_into_base_config(final_config, config)
 		return final_config, self.error_dict
 
 	def _merge_config_into_base_config(self, base_config: dict, merging_config: dict, current_config_path: str = '') -> dict:
+		"""
+		merges one config dict recursivly into a base_config dict.
+
+		Args:
+			base_config (dict): the config that will be merged into
+			merging_config (dict): the config that should be merged
+			current_config_path (str, optional): keep track of the current config level for the error dict. Defaults to ''.
+
+		Returns:
+			dict: a final merged config
+		"""
 		# get contained dicts for recursion
 		contained_dicts_merge = [(k, v) for k, v in merging_config.items() if type(v) == dict]
 		# get contained values for updating
@@ -22,7 +42,7 @@ class ConfigMerger():
 
 		for key, sub_dict in contained_dicts_merge:
 			if key == 'agents':
-				base_config[key] = self.merge_agents(base_config[key], sub_dict)
+				base_config[key] = self._merge_agents_into_base_agents(base_config[key], sub_dict)
 				continue
 			new_config_path = f'{current_config_path}-{key}' if current_config_path else key
 			base_config[key] = self._merge_config_into_base_config(base_config[key], sub_dict,  new_config_path)
@@ -37,13 +57,30 @@ class ConfigMerger():
 
 		return base_config
 
-	def merge_agents(self, base_agent_config: dict, merge_agent_config: dict) -> dict:
+	def _merge_agents_into_base_agents(self, base_agent_config: dict, merge_agent_config: dict) -> dict:
+		"""
+		merges an agents config part intp a base agents config part. It will be checked if two of the merged agents have the same name
+
+		Args:
+			base_agent_config (dict): the config that will be merged into
+			merge_agent_config (dict): the config that should be merged
+
+		Returns:
+			dict: a final merged agents config
+		"""
 		for agent_name, _ in merge_agent_config.items():
 			if agent_name in base_agent_config:
 				self._update_error_dict(['environment', 'agents'], f'multiple {agent_name}')
 		return {**base_agent_config, **merge_agent_config}
 
 	def _update_error_dict(self, key_words: list, update_message: str) -> None:
+		"""
+		helper function, that updates a value in the error dict given by the list of key words
+
+		Args:
+			key_words (list): 'path' to the keyword that should be updated
+			update_message (str): message that should be written to the keyword
+		"""
 		if len(key_words) == 1:
 			# our config is always at least two keywords deep
 			assert False

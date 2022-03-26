@@ -6,7 +6,7 @@ from django.test.client import RequestFactory
 
 # from ..buttons import ButtonHandler
 from ..config_merger import ConfigMerger
-from ..configuration_parser import ConfigurationParser
+from ..config_parser import ConfigModelParser
 from ..models.config import Config, EnvironmentConfig, HyperparameterConfig, RlConfig
 from .constant_tests import EMPTY_STRUCTURE_CONFIG, EXAMPLE_HIERARCHIE_DICT, EXAMPLE_HIERARCHIE_DICT2
 
@@ -26,7 +26,7 @@ class ConfigMergerTest(TestCase):
 
 	def test_merge_one_config(self):
 		test_dict = copy.deepcopy(EXAMPLE_HIERARCHIE_DICT)
-		config_object = ConfigurationParser().parse_config(test_dict)
+		config_object = ConfigModelParser().parse_config(test_dict)
 		config_dict = config_object.as_dict()
 		expected_dict = copy.deepcopy(config_dict)
 		expected_dict['environment']['episodes'] = None
@@ -78,7 +78,7 @@ class ConfigMergerTest(TestCase):
 		test_config1 = copy.deepcopy(EXAMPLE_HIERARCHIE_DICT)
 		test_config2 = copy.deepcopy(EXAMPLE_HIERARCHIE_DICT2)
 
-		parser = ConfigurationParser()
+		parser = ConfigModelParser()
 		config_object1 = parser.parse_config(test_config1)
 		config_object2 = parser.parse_config(test_config2)
 
@@ -165,7 +165,7 @@ class ConfigMergerTest(TestCase):
 				}
 			}
 		merger = ConfigMerger()
-		actual = merger.merge_agents({}, test_agent_dict)
+		actual = merger._merge_agents_into_base_agents({}, test_agent_dict)
 		assert test_agent_dict == actual
 
 	def test_merge_two_same_agents(self):
@@ -180,7 +180,7 @@ class ConfigMergerTest(TestCase):
 				}
 			}
 		merger = ConfigMerger()
-		actual = merger.merge_agents(test_agent_dict1, test_agent_dict2)
+		actual = merger._merge_agents_into_base_agents(test_agent_dict1, test_agent_dict2)
 
 		expected_dict = {
 				'Rule_Based Agent': {
@@ -203,7 +203,7 @@ class ConfigMergerTest(TestCase):
 				}
 			}
 		merger = ConfigMerger()
-		actual = merger.merge_agents({}, test_agent_dict)
+		actual = merger._merge_agents_into_base_agents({}, test_agent_dict)
 		expected_dict = {
 				'test agent': {
 					'agent_class': 'agents.vendors.RuleBasedCERebuyAgent'

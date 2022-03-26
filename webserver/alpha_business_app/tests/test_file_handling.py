@@ -5,7 +5,7 @@ from django.contrib.sessions.middleware import SessionMiddleware
 from django.test import TestCase
 from django.test.client import RequestFactory
 
-from ..configuration_parser import ConfigurationParser
+from ..config_parser import ConfigModelParser
 from ..handle_files import handle_uploaded_file
 from ..models.config import *
 
@@ -64,7 +64,7 @@ class FileHandling(TestCase):
 
 	def test_objects_from_parse_dict(self):
 		test_dict = {'rl': {'batch_size': 32}, 'sim_market': {'episode_length': 50}}
-		parser = ConfigurationParser()
+		parser = ConfigModelParser()
 		resulting_config = parser.parse_config_dict_to_datastructure('hyperparameter', test_dict)
 
 		assert resulting_config.sim_market is not None

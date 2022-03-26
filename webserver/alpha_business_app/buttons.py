@@ -6,7 +6,7 @@ from django.shortcuts import redirect, render
 from django.utils import timezone
 
 from .config_merger import ConfigMerger
-from .configuration_parser import ConfigurationParser
+from .config_parser import ConfigFlatDictParser, ConfigModelParser
 from .handle_files import download_file
 from .handle_requests import send_get_request, send_get_request_with_streaming, send_post_request, stop_container
 from .models.config import Config
@@ -283,8 +283,8 @@ class ButtonHandler():
 		post_request = dict(self.request.POST.lists())
 
 		# TODO: error, when multiple agents have the same name!
-		parser = ConfigurationParser()
-		config_dict = parser.flat_dict_to_hierarchical_config_dict(post_request)
+		flat_parser = ConfigFlatDictParser()
+		config_dict = flat_parser.flat_dict_to_hierarchical_config_dict(post_request)
 		# TODO: assert config dict is valid
 		response = send_post_request('start', config_dict)
 		if response.ok():
@@ -300,6 +300,7 @@ class ButtonHandler():
 			# get all necessary parameters for container object
 			container_name = self.request.POST['experiment_name']
 			container_name = container_name if container_name != '' else response['id'][:10]
+			parser = ConfigModelParser()
 			config_object = parser.parse_config(copy.deepcopy(config_dict))
 			command = config_object.environment.task
 			Container.objects.create(id=response['id'], config_file=config_object, name=container_name, command=command)

@@ -1,11 +1,11 @@
 from django.test import TestCase
 
-from ..configuration_parser import ConfigurationParser
+from ..config_parser import ConfigFlatDictParser, ConfigModelParser
 from ..models.config import AgentsConfig, Config, EnvironmentConfig, RlConfig, SimMarketConfig
 from .constant_tests import EXAMPLE_HIERARCHIE_DICT
 
 
-class ConfigurationParserTest(TestCase):
+class ConfigParserTest(TestCase):
 	expected_dict = {
 		'hyperparameter': {
 			'rl': {
@@ -42,7 +42,8 @@ class ConfigurationParserTest(TestCase):
 	}
 
 	def setUp(self) -> None:
-		self.parser = ConfigurationParser()
+		self.flat_parser = ConfigFlatDictParser()
+		self.parser = ConfigModelParser()
 
 	def test_parsing_flat_dict(self):
 		test_dict = {
@@ -73,7 +74,7 @@ class ConfigurationParserTest(TestCase):
 			'hyperparameter-sim_market-storage_cost_per_product': ['0.1']
 		}
 
-		assert self.expected_dict == self.parser.flat_dict_to_hierarchical_config_dict(test_dict)
+		assert self.expected_dict == self.flat_parser.flat_dict_to_hierarchical_config_dict(test_dict)
 
 	def test_remove_keyword_parts(self):
 		test_dict = {
@@ -87,7 +88,7 @@ class ConfigurationParserTest(TestCase):
 			'plot_interval': ['']
 		}
 
-		assert expected_dict == self.parser._get_items_key_starts_with(test_dict, 'environment-')
+		assert expected_dict == self.flat_parser._get_items_key_starts_with(test_dict, 'environment-')
 
 	def test_substract_dicts(self):
 		test_dict1 = {
@@ -102,7 +103,7 @@ class ConfigurationParserTest(TestCase):
 		expected_dict = {
 			'test': 789
 		}
-		assert expected_dict == self.parser._substract_dicts(test_dict1, test_dict2)
+		assert expected_dict == self.flat_parser._substract_dicts(test_dict1, test_dict2)
 
 	def test_flat_environment(self):
 		test_dict = {
@@ -117,7 +118,7 @@ class ConfigurationParserTest(TestCase):
 		}
 		expected_environment_dict = EXAMPLE_HIERARCHIE_DICT['environment'].copy()
 		expected_environment_dict['enable_live_draw'] = True
-		assert expected_environment_dict == self.parser._flat_environment_to_hierarchical(test_dict)
+		assert expected_environment_dict == self.flat_parser._flat_environment_to_hierarchical(test_dict)
 
 	def test_flat_agents(self):
 		test_dict = {
@@ -125,7 +126,7 @@ class ConfigurationParserTest(TestCase):
 			'agent_class': ['agents.vendors.RuleBasedCERebuyAgent'],
 			'argument': [''],
 		}
-		assert EXAMPLE_HIERARCHIE_DICT['environment']['agents'] == self.parser._flat_agents_to_hierarchical(test_dict)
+		assert EXAMPLE_HIERARCHIE_DICT['environment']['agents'] == self.flat_parser._flat_agents_to_hierarchical(test_dict)
 
 	def test_flat_hyperparameters(self):
 		test_dict = {
@@ -146,13 +147,19 @@ class ConfigurationParserTest(TestCase):
 			'sim_market-production_price': [3],
 			'sim_market-storage_cost_per_product': [0.1]
 		}
-		assert EXAMPLE_HIERARCHIE_DICT['hyperparameter'] == self.parser._flat_hyperparameter_to_hierarchical(test_dict)
+		assert EXAMPLE_HIERARCHIE_DICT['hyperparameter'] == self.flat_parser._flat_hyperparameter_to_hierarchical(test_dict)
 
+	def test_converting_to_int_or_float(self):
+		assert 1 == self.flat_parser._converted_to_int_or_float_if_possible('1')
+		assert 0.1 == self.flat_parser._converted_to_int_or_float_if_possible('0.1')
+		assert 1e-6 == self.flat_parser._converted_to_int_or_float_if_possible('1e-6')
+		assert 'string' == self.flat_parser._converted_to_int_or_float_if_possible('string')
+
+	# parsing hierarchical
 	def test_parsing_config_dict(self):
 		test_dict = EXAMPLE_HIERARCHIE_DICT.copy()
-		parser = ConfigurationParser()
 
-		final_config = parser.parse_config(test_dict)
+		final_config = self.parser.parse_config(test_dict)
 
 		assert Config == type(final_config)
 		assert final_config.hyperparameter is not None
@@ -219,9 +226,3 @@ class ConfigurationParserTest(TestCase):
 		assert 'test_agent2' == all_agents[1].name
 		assert 'test_class' == all_agents[1].agent_class
 		assert '1234' == all_agents[1].argument
-
-	def test_converting_to_int_or_float(self):
-		assert 1 == self.parser._converted_to_int_or_float_if_possible('1')
-		assert 0.1 == self.parser._converted_to_int_or_float_if_possible('0.1')
-		assert 1e-6 == self.parser._converted_to_int_or_float_if_possible('1e-6')
-		assert 'string' == self.parser._converted_to_int_or_float_if_possible('string')

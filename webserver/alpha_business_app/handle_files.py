@@ -6,7 +6,7 @@ from io import BytesIO
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 
-from .configuration_parser import ConfigurationParser
+from .config_parser import ConfigModelParser
 from .models.config import *
 from .models.container import Container
 from .validation import check_dict_keys
@@ -24,7 +24,17 @@ def _dict_raise_on_duplicates(ordered_pairs):
 	return d
 
 
-def handle_uploaded_file(request, uploaded_config) -> None:
+def handle_uploaded_file(request, uploaded_config) -> HttpResponse:
+	"""
+	Checks if an uploaded config file is valid and parses it to the datastructure.
+
+	Args:
+		request (Request):
+		uploaded_config (InMemoryUploadedFile): by user uploaded config file
+
+	Returns:
+		HttpResponse: either a redirect to the configurator or a render for the upload with an error message
+	"""
 	# we only accept json files
 	if uploaded_config.name[-5:] != '.json':
 		return render(request, 'upload.html', {'error': 'You can only upload files in JSON format.'})
@@ -71,7 +81,7 @@ def handle_uploaded_file(request, uploaded_config) -> None:
 	if not status:
 		return render(request, 'upload.html', {'error': error_msg})
 
-	parser = ConfigurationParser()
+	parser = ConfigModelParser()
 	hyperparameter_config = None
 	environment_config = None
 	# TODO: insert actual checking of config here. This is very hacky
@@ -115,7 +125,7 @@ def download_file(response, wants_zip: bool, wanted_container: Container) -> Htt
 		fake_file = zip_file
 		application_type = 'zip'
 	else:
-		fake_file = tar_file
+		fake_file = file_like_tar_archive
 		application_type = 'tar'
 
 	# put together an http response for the browser
@@ -126,6 +136,16 @@ def download_file(response, wants_zip: bool, wanted_container: Container) -> Htt
 
 
 def _add_files_to_zip(file_like_zip: BytesIO, string_to_add: str) -> BytesIO:
+	"""
+	Adds a string as `config.json` to the given zip archive.
+
+	Args:
+		file_like_zip (BytesIO): in memory file
+		string_to_add (str): the string which should be added in `config.json`
+
+	Returns:
+		BytesIO: zip archive bytes with included `config.json`
+	"""
 
 	zip_archive = zipfile.ZipFile(file=file_like_zip, mode='a', compression=zipfile.ZIP_DEFLATED)
 	zip_archive.writestr('/config.json', string_to_add)
