@@ -5,8 +5,8 @@ import numpy as np
 
 import recommerce.configuration.utils as ut
 from recommerce.configuration.path_manager import PathManager
-from recommerce.rl.actorcritic.actorcritic_agent import ContinuosActorCriticAgent
 from recommerce.market.circular.circular_vendors import RuleBasedCERebuyAgentCompetitive
+from recommerce.rl.actorcritic.actorcritic_agent import ContinuosActorCriticAgent
 
 
 class PolicyAnalyzer():
@@ -59,22 +59,22 @@ class PolicyAnalyzer():
 		plt.grid(True)
 
 	def _plot_two_depending_variables(self, base_input, analyzed_features, title, policyaccess):
-			policyval = [[0 for _ in analyzed_features[0][2]] for _ in analyzed_features[1][2]]
-			x1base = list(analyzed_features[0][2])[0]
-			x2base = list(analyzed_features[1][2])[0]
-			for x1 in analyzed_features[0][2]:
-				for x2 in analyzed_features[1][2]:
-					base_input[analyzed_features[0][0]] = x1
-					base_input[analyzed_features[1][0]] = x2
-					y = self._agents_policy(base_input)
-					y = self._access_and_adjust_policy(y, policyaccess)
-					policyval[x2 - x2base][x1 - x1base] = y
+		policyval = [[0 for _ in analyzed_features[0][2]] for _ in analyzed_features[1][2]]
+		x1base = list(analyzed_features[0][2])[0]
+		x2base = list(analyzed_features[1][2])[0]
+		for x1 in analyzed_features[0][2]:
+			for x2 in analyzed_features[1][2]:
+				base_input[analyzed_features[0][0]] = x1
+				base_input[analyzed_features[1][0]] = x2
+				y = self._agents_policy(base_input)
+				y = self._access_and_adjust_policy(y, policyaccess)
+				policyval[x2 - x2base][x1 - x1base] = y
 
-			shown_section = [min(analyzed_features[0][2]), max(analyzed_features[0][2]),
-						min(analyzed_features[1][2]), max(analyzed_features[1][2])]
-			p = plt.imshow(policyval, aspect='auto', origin='lower', extent=shown_section)
-			plt.colorbar(p)
-			plt.ylabel(analyzed_features[1][1])
+		shown_section = [min(analyzed_features[0][2]), max(analyzed_features[0][2]),
+					min(analyzed_features[1][2]), max(analyzed_features[1][2])]
+		p = plt.imshow(policyval, aspect='auto', origin='lower', extent=shown_section)
+		plt.colorbar(p)
+		plt.ylabel(analyzed_features[1][1])
 
 	def analyze_policy(self, base_input, analyzed_features, title='add a title here', policyaccess=None) -> str:
 		"""
@@ -113,6 +113,7 @@ class PolicyAnalyzer():
 		savepath = os.path.join(self.folder_path, f'{underscore_title}.png')
 		plt.savefig(fname=savepath)
 		return savepath
+
 
 if __name__ == '__main__':
 	pa = PolicyAnalyzer(RuleBasedCERebuyAgentCompetitive())
