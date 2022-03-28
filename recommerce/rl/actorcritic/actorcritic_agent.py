@@ -242,13 +242,16 @@ class ContinuosActorCriticAgent(ActorCriticAgent, LinearAgent, CircularAgent):
 		"""
 		raise NotImplementedError('This method is abstract. Use a subclass')
 
-	def policy(self, observation, verbose=False, raw_action=False):
+	def policy(self, observation, verbose=False, raw_action=False, mean_only=False):
 		observation = torch.Tensor(np.array(observation)).to(self.device)
 		with torch.no_grad():
 			network_result = self.actor_net(observation)
 			mean, std = self.transform_network_output(1, network_result)
 			if verbose:
 				v_estimate = self.critic_net(observation).view(-1)
+
+		if mean_only:
+			return mean.cpu().numpy().reshape(-1).tolist()
 
 		action = torch.round(torch.normal(mean, std).to(self.device))
 		action = torch.max(action, torch.zeros(action.shape).to(self.device))
