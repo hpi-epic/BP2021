@@ -34,7 +34,7 @@ class CompetitorLinearRatio1(LinearAgent, RuleBasedAgent):
 	def policy(self, state, epsilon=0):
 		# this stratgy calculates the value per money for each competing vendor and tries to adapt to it
 		ratios = []
-		# ratios[0] is the ratio of the competitor itself. it is compared to the other ratios
+		# we skip the first ratio, the ratio of the competitor itself
 		max_competing_ratio = 0
 		for i in range(math.floor(len(state) / 2)):
 			quality_opponent = state[2 * i + 2]
@@ -44,7 +44,6 @@ class CompetitorLinearRatio1(LinearAgent, RuleBasedAgent):
 			if ratio > max_competing_ratio:
 				max_competing_ratio = ratio
 
-		ratio = max_competing_ratio / ratios[0]
 		intended = math.floor(1 / max_competing_ratio * state[0]) - 1
 		return min(max(config.production_price + 1, intended), config.max_price - 1)  # actual price
 
