@@ -134,12 +134,12 @@ one_competitor_test_cases = [
 
 @pytest.mark.parametrize('title, policyaccess, expected_filename', one_competitor_test_cases)
 def test_circular_duopol_rule_based_agent(title, policyaccess, expected_filename):
-	pa = PolicyAnalyzer(RuleBasedCERebuyAgentCompetitive())
+	pa = PolicyAnalyzer(RuleBasedCERebuyAgentCompetitive(), 'rule_based_competitive_policy')
 	given_path = pa.analyze_policy(
 		np.array([75, 10, -1, -1, 2, 12]),
 		[(2, "competitor's refurbished price", range(10)), (3, "competitor's new price", range(10))],
 		title, policyaccess
 	)
-	expected_path = os.path.join(write_to_path, expected_filename)
+	expected_path = os.path.join(write_to_path, 'rule_based_competitive_policy', expected_filename)
 	assert expected_path in given_path
 	assert os.path.exists(expected_path)

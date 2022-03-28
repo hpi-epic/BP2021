@@ -12,7 +12,8 @@ from recommerce.rl.actorcritic.actorcritic_agent import ContinuosActorCriticAgen
 class PolicyAnalyzer():
 	def __init__(self, agent_to_analyze, subfolder_name=''):
 		self.agent_to_analyze = agent_to_analyze
-		self.folder_path = os.path.abspath(os.path.join(PathManager.results_path, subfolder_name, 'policyanalyzer'))
+		self.folder_path = os.path.abspath(os.path.join(PathManager.results_path, 'policyanalyzer', subfolder_name))
+		os.makedirs(self.folder_path, exist_ok=True)
 		ut.ensure_results_folders_exist()
 
 	def _agents_policy(self, observation) -> tuple:
@@ -116,7 +117,7 @@ class PolicyAnalyzer():
 
 
 if __name__ == '__main__':
-	pa = PolicyAnalyzer(RuleBasedCERebuyAgentCompetitive())
+	pa = PolicyAnalyzer(RuleBasedCERebuyAgentCompetitive(), 'default_configuration')
 	one_competitor_examples = [
 		('rule based own refurbished price', 0),
 		('rule based own new price', 1),
