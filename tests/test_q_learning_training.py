@@ -36,6 +36,8 @@ test_scenarios = [
 ]
 
 
+@pytest.mark.training
+@pytest.mark.slow
 @pytest.mark.parametrize('market_class, agent_class', test_scenarios)
 def test_market_scenario(market_class, agent_class):
 	json = ut_t.create_hyperparameter_mock_json(rl=ut_t.create_hyperparameter_mock_json_rl(replay_start_size='500', sync_target_frames='100'))
@@ -47,6 +49,8 @@ def test_market_scenario(market_class, agent_class):
 		q_learning_training.QLearningTrainer(market_class, agent_class, log_dir_prepend='test_').train_agent(int(config.replay_start_size * 1.2))
 
 
+@pytest.mark.training
+@pytest.mark.slow
 def test_training_with_tensorboard():
 	json = ut_t.create_hyperparameter_mock_json(rl=ut_t.create_hyperparameter_mock_json_rl(replay_start_size='500', sync_target_frames='100'))
 	with patch('builtins.open', mock_open(read_data=json)) as mock_file:

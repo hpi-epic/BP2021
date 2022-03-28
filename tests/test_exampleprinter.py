@@ -59,6 +59,7 @@ def test_full_episode(marketplace, agent):
 		assert printer.run_example(log_dir_prepend='test_') >= -5000
 
 
+@pytest.mark.slow
 def test_exampleprinter_with_tensorboard():
 	with patch('recommerce.monitoring.exampleprinter.SVGManipulator'):
 		assert ExamplePrinter().run_example(log_dir_prepend='test_') >= -5000
