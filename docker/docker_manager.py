@@ -207,6 +207,8 @@ class DockerManager():
 		if not container:
 			return DockerInfo(container_id, status='Container not found')
 
+		print(f'Getting logs for {container_id}')
+
 		container_status = container.status
 
 		logs = container.logs(stream=stream, timestamps=timestamps, tail=tail, stderr=container_status == 'exited')
@@ -230,10 +232,14 @@ class DockerManager():
 		container: Container = self._get_container(container_id)
 		if not container:
 			return DockerInfo(container_id, status='Container not found')
-
-		bits, _ = container.get_archive(path=container_path)
-		return DockerInfo(container_id, status=container.status,
-			data=f'archive_{container_path.rpartition("/")[2]}_{time.strftime("%b%d_%H-%M-%S")}', stream=bits)
+		# a list of all changes in the containers file system since it was created
+		path_list = [file_dict['Path'] for file_dict in container.diff()]
+		# if the requested path exists, we return it as a tar archive, else we return an error to the API
+		if any('app/results' in path for path in path_list):
+			bits, _ = container.get_archive(path=container_path)
+			return DockerInfo(container_id, status=container.status,
+				data=f'archive_{container_path.rpartition("/")[2]}_{time.strftime("%b%d_%H-%M-%S")}', stream=bits)
+		return DockerInfo(container_id, status=f'The requested path does not exist on the container: {container_path}')
 
 	def remove_container(self, container_id: str) -> DockerInfo:
 		"""
