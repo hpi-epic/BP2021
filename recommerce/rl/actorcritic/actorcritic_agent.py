@@ -66,7 +66,7 @@ class ActorCriticAgent(ReinforcementLearningAgent, ABC):
 		"""
 		model_name += '.dat'
 
-		actor_path = os.path.join(model_path, 'actor_parameters' + model_name)
+		actor_path = os.path.join(model_path, f'actor_parameters{model_name}')
 		torch.save(self.best_interim_actor_net.state_dict(), actor_path)
 		torch.save(self.best_interim_critic_net.state_dict(), os.path.join(model_path, 'critic_parameters' + model_name))
 		return actor_path
@@ -155,11 +155,11 @@ class DiscreteActorCriticAgent(ActorCriticAgent):
 	def initialize_models_and_optimizer(self, n_observations, n_actions):
 		self.actor_net = model.simple_network(n_observations, n_actions).to(self.device)
 		self.actor_optimizer = torch.optim.Adam(self.actor_net.parameters(), lr=0.0000025)
-		self.best_interim_actor_net = model.simple_network(n_observations, n_actions)
+		self.best_interim_actor_net = model.simple_network(n_observations, n_actions).to(self.device)
 		self.critic_net = model.simple_network(n_observations, 1).to(self.device)
 		self.critic_optimizer = torch.optim.Adam(self.critic_net.parameters(), lr=0.00025)
 		self.critic_tgt_net = model.simple_network(n_observations, 1).to(self.device)
-		self.best_interim_critic_net = self.critic_tgt_net = model.simple_network(n_observations, 1)
+		self.best_interim_critic_net = self.critic_tgt_net = model.simple_network(n_observations, 1).to(self.device)
 
 	def policy(self, observation, verbose=False, raw_action=False):
 		observation = torch.Tensor(np.array(observation)).to(self.device)
@@ -214,11 +214,11 @@ class ContinuosActorCriticAgent(ActorCriticAgent, LinearAgent, CircularAgent):
 		self.n_actions = n_actions
 		self.actor_net = model.simple_network(n_observations, self.n_actions).to(self.device)
 		self.actor_optimizer = torch.optim.Adam(self.actor_net.parameters(), lr=0.0002)
-		self.best_interim_actor_net = model.simple_network(n_observations, self.n_actions)
+		self.best_interim_actor_net = model.simple_network(n_observations, self.n_actions).to(self.device)
 		self.critic_net = model.simple_network(n_observations, 1).to(self.device)
 		self.critic_optimizer = torch.optim.Adam(self.critic_net.parameters(), lr=0.002)
 		self.critic_tgt_net = model.simple_network(n_observations, 1).to(self.device)
-		self.best_interim_critic_net = model.simple_network(n_observations, 1)
+		self.best_interim_critic_net = model.simple_network(n_observations, 1).to(self.device)
 
 	@abstractmethod
 	def transform_network_output(self, number_outputs, network_result):

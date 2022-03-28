@@ -144,8 +144,9 @@ class RLTrainer(ABC):
 			all_rewards.append(rewards[0])
 			print(f"It's mean was {np.mean(rewards[0])}")
 
+		assert len(all_rewards) > 0, f'all_rewards should not be an empty list: {all_rewards}'
 		# Create the violinplot
-		episode_numbers = [int(parameter_path[-9:][0:5]) for parameter_path in self.saved_parameter_paths]
+		episode_numbers = [int(parameter_path[-9:][:5]) for parameter_path in self.saved_parameter_paths]
 		plt.clf()
 		plt.violinplot(all_rewards, episode_numbers, showmeans=True, widths=450)
 		plt.title('Learning Progress Of The Agent')
