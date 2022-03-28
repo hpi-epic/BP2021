@@ -2,7 +2,6 @@
 import importlib
 import json
 import os
-import re
 from abc import ABC, abstractmethod
 
 from recommerce.configuration.path_manager import PathManager
@@ -32,8 +31,7 @@ class EnvironmentConfig(ABC):
 		Returns:
 			str: The instance variables as a dictionary.
 		"""
-		current_print = f'{self.__class__.__name__}: {self.__dict__}'
-		return re.sub(r'\b object at 0x([0-9]|[A-F]|[a-f])*', '', current_print)
+		return f'{self.__class__.__name__}: {self.__dict__}'
 
 	def _validate_config(self, config: dict, single_agent: bool, needs_modelfile: bool) -> None:
 		"""
@@ -57,9 +55,9 @@ class EnvironmentConfig(ABC):
 		assert isinstance(config['marketplace'], str), \
 			f'The "marketplace" field must be a str: {config["marketplace"]} ({type(config["marketplace"])})'
 
-		self.marketplace = self._get_class(config['marketplace'])()
-		assert issubclass(type(self.marketplace), SimMarket), \
-			f'The type of the passed marketplace must be a subclass of SimMarket: {type(self.marketplace)}'
+		self.marketplace = [self._get_class(config['marketplace'])]
+		assert issubclass(self.marketplace[0], SimMarket), \
+			f'The type of the passed marketplace must be a subclass of SimMarket: {self.marketplace[0]}'
 
 		# CHECK: Agents
 		assert isinstance(config['agents'], dict), \
@@ -115,8 +113,8 @@ class EnvironmentConfig(ABC):
 		# Create a list of tuples (agent_class, argument)
 		self.agent = list(zip(agent_classes, argument_list))
 
-		assert all(issubclass(agent[0], CircularAgent) == issubclass(type(self.marketplace), CircularEconomy) for agent in self.agent), \
-			f'The agents and marketplace must be of the same economy type (Linear/Circular): {self.agent} and {self.marketplace}'
+		assert all(issubclass(agent[0], CircularAgent) == issubclass(self.marketplace[0], CircularEconomy) for agent in self.agent), \
+			f'The agents and marketplace must be of the same economy type (Linear/Circular): {self.agent} and {self.marketplace[0]}'
 
 		# If only one agent is needed, we just use the first agent from the list we created before
 		if single_agent:
