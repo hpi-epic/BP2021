@@ -251,7 +251,7 @@ class ContinuosActorCriticAgent(ActorCriticAgent, LinearAgent, CircularAgent):
 				v_estimate = self.critic_net(observation).view(-1)
 
 		if mean_only:
-			return mean.cpu().numpy().reshape(-1)
+			return mean.cpu().numpy().reshape(-1).tolist()
 
 		action = torch.round(torch.normal(mean, std).to(self.device))
 		action = torch.max(action, torch.zeros(action.shape).to(self.device))
