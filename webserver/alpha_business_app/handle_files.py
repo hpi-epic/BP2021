@@ -14,7 +14,9 @@ from .validation import check_dict_keys
 
 # https://stackoverflow.com/questions/14902299/json-loads-allows-duplicate-keys-in-a-dictionary-overwriting-the-first-value
 def _dict_raise_on_duplicates(ordered_pairs):
-	"""Reject duplicate keys."""
+	"""
+	Reject duplicate keys.
+	"""
 	d = {}
 	for k, v in ordered_pairs:
 		if k in d:

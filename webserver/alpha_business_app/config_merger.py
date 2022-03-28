@@ -10,7 +10,7 @@ class ConfigMerger():
 		merge a list of config objects given by their id.
 
 		Args:
-			config_object_ids (list): config objects that should be merged
+			config_object_ids (list): The id's of the config objects that should be merged.
 
 		Returns:
 			tuple (dict, dict): the final merged dict and the error dict whith the latest error
@@ -59,7 +59,7 @@ class ConfigMerger():
 
 	def _merge_agents_into_base_agents(self, base_agent_config: dict, merge_agent_config: dict) -> dict:
 		"""
-		merges an agents config part intp a base agents config part. It will be checked if two of the merged agents have the same name
+		Merges an agents config part into a base agents config part. It will be checked if two of the merged agents have the same name.
 
 		Args:
 			base_agent_config (dict): the config that will be merged into

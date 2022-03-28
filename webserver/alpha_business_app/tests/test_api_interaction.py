@@ -8,7 +8,7 @@ from ..api_response import APIResponse
 from ..buttons import ButtonHandler
 from ..models.config import Config
 from ..models.container import Container, update_container
-from .constant_tests import EXAMPLE_HIERARCHIE_DICT, EXAMPLE_POST_REQUEST_ARGUMENTS
+from .constant_tests import EXAMPLE_HIERARCHY_DICT, EXAMPLE_POST_REQUEST_ARGUMENTS
 
 
 class ButtonTests(TestCase):
@@ -238,7 +238,7 @@ class ButtonTests(TestCase):
 			post_request_mock.return_value = APIResponse('success', content={'id': '12345'})
 
 			test_button_handler.do_button_click()
-			post_request_mock.assert_called_once_with('start', EXAMPLE_HIERARCHIE_DICT)
+			post_request_mock.assert_called_once_with('start', EXAMPLE_HIERARCHY_DICT)
 			redirect_mock.assert_called_once_with('/observe', {'success': 'You successfully launched an experiment'})
 
 			config_object = Config.objects.all()[1]

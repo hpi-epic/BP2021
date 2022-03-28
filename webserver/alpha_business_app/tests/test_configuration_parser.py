@@ -2,7 +2,7 @@ from django.test import TestCase
 
 from ..config_parser import ConfigFlatDictParser, ConfigModelParser
 from ..models.config import AgentsConfig, Config, EnvironmentConfig, RlConfig, SimMarketConfig
-from .constant_tests import EXAMPLE_HIERARCHIE_DICT
+from .constant_tests import EXAMPLE_HIERARCHY_DICT
 
 
 class ConfigParserTest(TestCase):
@@ -116,7 +116,7 @@ class ConfigParserTest(TestCase):
 			'agents-agent_class': ['agents.vendors.RuleBasedCERebuyAgent'],
 			'agents-argument': [''],
 		}
-		expected_environment_dict = EXAMPLE_HIERARCHIE_DICT['environment'].copy()
+		expected_environment_dict = EXAMPLE_HIERARCHY_DICT['environment'].copy()
 		expected_environment_dict['enable_live_draw'] = True
 		assert expected_environment_dict == self.flat_parser._flat_environment_to_hierarchical(test_dict)
 
@@ -126,7 +126,7 @@ class ConfigParserTest(TestCase):
 			'agent_class': ['agents.vendors.RuleBasedCERebuyAgent'],
 			'argument': [''],
 		}
-		assert EXAMPLE_HIERARCHIE_DICT['environment']['agents'] == self.flat_parser._flat_agents_to_hierarchical(test_dict)
+		assert EXAMPLE_HIERARCHY_DICT['environment']['agents'] == self.flat_parser._flat_agents_to_hierarchical(test_dict)
 
 	def test_flat_hyperparameters(self):
 		test_dict = {
@@ -147,7 +147,7 @@ class ConfigParserTest(TestCase):
 			'sim_market-production_price': [3],
 			'sim_market-storage_cost_per_product': [0.1]
 		}
-		assert EXAMPLE_HIERARCHIE_DICT['hyperparameter'] == self.flat_parser._flat_hyperparameter_to_hierarchical(test_dict)
+		assert EXAMPLE_HIERARCHY_DICT['hyperparameter'] == self.flat_parser._flat_hyperparameter_to_hierarchical(test_dict)
 
 	def test_converting_to_int_or_float(self):
 		assert 1 == self.flat_parser._converted_to_int_or_float_if_possible('1')
@@ -157,7 +157,7 @@ class ConfigParserTest(TestCase):
 
 	# parsing hierarchical
 	def test_parsing_config_dict(self):
-		test_dict = EXAMPLE_HIERARCHIE_DICT.copy()
+		test_dict = EXAMPLE_HIERARCHY_DICT.copy()
 
 		final_config = self.parser.parse_config(test_dict)
 

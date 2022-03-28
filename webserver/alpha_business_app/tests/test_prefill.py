@@ -8,7 +8,7 @@ from django.test.client import RequestFactory
 from ..config_merger import ConfigMerger
 from ..config_parser import ConfigModelParser
 from ..models.config import Config, EnvironmentConfig, HyperparameterConfig, RlConfig
-from .constant_tests import EMPTY_STRUCTURE_CONFIG, EXAMPLE_HIERARCHIE_DICT, EXAMPLE_HIERARCHIE_DICT2
+from .constant_tests import EMPTY_STRUCTURE_CONFIG, EXAMPLE_HIERARCHY_DICT, EXAMPLE_HIERARCHY_DICT2
 
 
 class ConfigMergerTest(TestCase):
@@ -25,7 +25,7 @@ class ConfigMergerTest(TestCase):
 	# 	print('TESTEND')
 
 	def test_merge_one_config(self):
-		test_dict = copy.deepcopy(EXAMPLE_HIERARCHIE_DICT)
+		test_dict = copy.deepcopy(EXAMPLE_HIERARCHY_DICT)
 		config_object = ConfigModelParser().parse_config(test_dict)
 		config_dict = config_object.as_dict()
 		expected_dict = copy.deepcopy(config_dict)
@@ -75,8 +75,8 @@ class ConfigMergerTest(TestCase):
 		assert expected_error == error_dict
 
 	def test_merge_two_configs_with_conflicts(self):
-		test_config1 = copy.deepcopy(EXAMPLE_HIERARCHIE_DICT)
-		test_config2 = copy.deepcopy(EXAMPLE_HIERARCHIE_DICT2)
+		test_config1 = copy.deepcopy(EXAMPLE_HIERARCHY_DICT)
+		test_config2 = copy.deepcopy(EXAMPLE_HIERARCHY_DICT2)
 
 		parser = ConfigModelParser()
 		config_object1 = parser.parse_config(test_config1)

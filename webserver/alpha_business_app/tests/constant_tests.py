@@ -27,7 +27,7 @@ EXAMPLE_POST_REQUEST_ARGUMENTS = {
 		'hyperparameter-sim_market-storage_cost_per_product': ['0.1']
 	}
 
-EXAMPLE_HIERARCHIE_DICT = {
+EXAMPLE_HIERARCHY_DICT = {
 		'environment': {
 			'task': 'training',
 			'marketplace': 'market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
@@ -62,7 +62,7 @@ EXAMPLE_HIERARCHIE_DICT = {
 		}
 	}
 
-EXAMPLE_HIERARCHIE_DICT2 = {
+EXAMPLE_HIERARCHY_DICT2 = {
 		'environment': {
 			'task': 'monitoring',
 			'enable_live_draw': True,

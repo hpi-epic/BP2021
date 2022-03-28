@@ -120,7 +120,7 @@ class ButtonHandler():
 		Will return all parameters necessary for the configurator.
 
 		Returns:
-			dict:contains all current configuration objects, the current config and this config as dict if it exists.
+			dict: contains all current configuration objects, the current config and this config as dict if it exists.
 		"""
 		return {'all_configurations': Config.objects.all(),
 			'config': self.wanted_config,
@@ -232,7 +232,7 @@ class ButtonHandler():
 		If there is a 'delete' in the post, self.wanted_config will be deleted.
 
 		Returns:
-			HttpResponse: if the action on the config was successfull, it wil redirect you to 'configurator'
+			HttpResponse: if the action on the config was successful, it will redirect you to 'configurator'
 		"""
 		if 'delete' in self.request.POST:
 			self.wanted_config.delete()

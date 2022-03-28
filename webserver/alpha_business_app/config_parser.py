@@ -2,29 +2,30 @@ from .models.config import *
 
 
 class ConfigFlatDictParser():
-	"""This class can parse a flat config dict to a hierarchical config dict.
+	"""
+	This class can parse a flat config dict to a hierarchical config dict.
 	"""
 
 	def flat_dict_to_hierarchical_config_dict(self, flat_dict: dict) -> dict:
 		"""
 		Parses a flat config dictionary to hierarchical dictionary.
-		The flat dictionary should have the hierarchical path in the keys, seperated by '-'-
+		The flat dictionary should have the hierarchical path in the keys, separated by '-'
 
 		Args:
 			flat_dict (dict): a dictionary containing key value pairs from a config.
-				Keys must have a keypath for hierarchical config seperated by '-'
+				Keys must have a keypath for hierarchical config separated by '-'
 
 		Returns:
 			dict: hierarchical config dict
 		"""
-		# prepare flat_dict, convert all numbers to int orr foat
+		# prepare flat_dict, convert all numbers to int or float
 		for key, value_list in flat_dict.items():
 			converted_values = []
 			for value in value_list:
 				converted_values += [self._converted_to_int_or_float_if_possible(value)]
 			flat_dict[key] = converted_values
 
-		# get all environment parameter
+		# get all environment parameters
 		environment_parameter = self._get_items_key_starts_with(flat_dict, 'environment-')
 		# get all hyperparameters
 		hyperparameter = self._get_items_key_starts_with(flat_dict, 'hyperparameter-')
@@ -44,7 +45,7 @@ class ConfigFlatDictParser():
 		Returns:
 			dict: hierarchical dict of the environment config.
 		"""
-		# get all agents components form dict
+		# get all agents components from dict
 		raw_agents_dict = self._get_items_key_starts_with(flat_dict, 'agents-')
 		# remove the agents component from final dict
 		environment_dict = self._substract_dicts(flat_dict, raw_agents_dict, 'agents-')
