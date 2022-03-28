@@ -9,3 +9,16 @@ verbose = 1
 ignore-init-method = true
 ignore-module = true
 fail-under = 50
+
+[tool.pytest.ini_options]
+markers = [
+    "slow: slow tests (deselect with '-m \"not slow\"')",
+	"training: for tests that run the training",
+]
+filterwarnings = [
+	"ignore::DeprecationWarning"
+]
+# ignore the webserver, it is tested elsewhere
+norecursedirs = [
+	"webserver/*"
+]
