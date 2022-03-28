@@ -103,7 +103,7 @@ def main():  # pragma: no cover
 		enable_live_draw=config.enable_live_draw,
 		episodes=config.episodes,
 		plot_interval=config.plot_interval,
-		marketplace=config.marketplace,
+		marketplace=config.marketplace[0],
 		agents=config.agent
 	)
 	run_monitoring_session(monitor)

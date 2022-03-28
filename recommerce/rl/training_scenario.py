@@ -9,22 +9,20 @@ from recommerce.rl.actorcritic.actorcritic_training import ActorCriticTrainer
 from recommerce.rl.q_learning.q_learning_training import QLearningTrainer
 
 
-def run_training_session(
-	marketplace=circular_market.CircularEconomyRebuyPriceOneCompetitor(),
-	agent=q_learning_agent.QLearningCERebuyAgent):
+def run_training_session(marketplace=circular_market.CircularEconomyRebuyPriceOneCompetitor, agent=q_learning_agent.QLearningCERebuyAgent):
 	"""
 	Run a training session with the passed marketplace and QLearningAgent.
 	Args:
-		marketplace (SimMarket instance, optional): What marketplace to run the training session on.
+		marketplace (SimMarket subclass, optional): What marketplace to run the training session on.
 		Defaults to circular_market.CircularEconomyRebuyPriceOneCompetitor.
 		agent (QLearningAgent subclass, optional): What kind of QLearningAgent to train. Defaults to q_learning_agent.QLearningCERebuyAgent.
 	"""
-	assert issubclass(type(marketplace), sim_market.SimMarket), \
-		f'the type of the passed marketplace must be a subclass of SimMarket: {type(marketplace)}'
+	assert issubclass(marketplace, sim_market.SimMarket), \
+		f'the type of the passed marketplace must be a subclass of SimMarket: {marketplace}'
 	assert issubclass(agent, (q_learning_agent.QLearningAgent, actorcritic_agent.ActorCriticAgent)), \
 		f'the RL_agent_class passed must be a subclass of either QLearningAgent or ActorCriticAgent: {agent}'
-	assert issubclass(agent, CircularAgent) == issubclass(type(marketplace), circular_market.CircularEconomy), \
-		f'the agent and type of the marketplace must be of the same economy type (Linear/Circular): {agent} and {type(marketplace)}'
+	assert issubclass(agent, CircularAgent) == issubclass(marketplace, circular_market.CircularEconomy), \
+		f'the agent and marketplace must be of the same economy type (Linear/Circular): {agent} and {marketplace}'
 
 	if issubclass(agent, q_learning_agent.QLearningAgent):
 		QLearningTrainer(marketplace, agent).train_agent()
@@ -37,21 +35,21 @@ def train_q_learning_classic_scenario():
 	"""
 	Train a Linear QLearningAgent on a Linear Market with one competitor.
 	"""
-	run_training_session(linear_market.ClassicScenario(), q_learning_agent.QLearningLEAgent)
+	run_training_session(linear_market.ClassicScenario, q_learning_agent.QLearningLEAgent)
 
 
 def train_q_learning_circular_economy_rebuy():
 	"""
 	Train a Circular Economy QLearningAgent on a Circular Economy Market with Rebuy Prices and one competitor.
 	"""
-	run_training_session(circular_market.CircularEconomyRebuyPriceOneCompetitor(), q_learning_agent.QLearningCERebuyAgent)
+	run_training_session(circular_market.CircularEconomyRebuyPriceOneCompetitor, q_learning_agent.QLearningCERebuyAgent)
 
 
 def train_continuos_a2c_circular_economy_rebuy():
 	"""
 	Train an ActorCriticAgent on a Circular Economy Market with Rebuy Prices and one competitor.
 	"""
-	run_training_session(circular_market.CircularEconomyRebuyPriceOneCompetitor(), actorcritic_agent.ContinuosActorCriticAgentFixedOneStd)
+	run_training_session(circular_market.CircularEconomyRebuyPriceOneCompetitor, actorcritic_agent.ContinuosActorCriticAgentFixedOneStd)
 
 
 def train_from_config():
@@ -60,7 +58,8 @@ def train_from_config():
 	"""
 	config: TrainingEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_training')
 	# Since we store a tuple (class, None) in config.agent, we just want the first component
-	run_training_session(config.marketplace, config.agent[0])
+	# Since we store an one-element list [class] in config.marketplace, we just want the stored element
+	run_training_session(config.marketplace[0], config.agent[0])
 
 
 def main():

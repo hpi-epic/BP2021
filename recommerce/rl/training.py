@@ -16,27 +16,27 @@ from recommerce.rl.reinforcement_learning_agent import ReinforcementLearningAgen
 
 
 class RLTrainer(ABC):
-	def __init__(self, marketplace, agent_class, log_dir_prepend=''):
+	def __init__(self, marketplace_class, agent_class, log_dir_prepend=''):
 		"""
 		Initialize an RLTrainer to train one specific configuration.
 		Args:
-			marketplace (SimMarket object): The market scenario you want to train.
+			marketplace_class (subclass of SimMarket): The market scenario you want to train.
 			agent_class (subclass of RLAgent): The agent you want to train.
 			log_dir_prepend (str, optional): A prefix that is written before the saved data. Defaults to ''.
 		"""
 		# TODO: assert Agent and marketplace fit together
 		assert issubclass(agent_class, ReinforcementLearningAgent)
 		if issubclass(agent_class, actorcritic_agent.ContinuosActorCriticAgent):
-			outputs = marketplace.get_actions_dimension()
+			outputs = marketplace_class().get_actions_dimension()
 		else:
-			outputs = marketplace.get_n_actions()
+			outputs = marketplace_class().get_n_actions()
 
 		self.best_mean_reward = None
-		self.marketplace = marketplace
+		self.marketplace_class = marketplace_class
 		if issubclass(agent_class, actorcritic_agent.ActorCriticAgent):
-			self.RL_agent = agent_class(marketplace.observation_space.shape[0], outputs)
+			self.RL_agent = agent_class(marketplace_class().observation_space.shape[0], outputs)
 		else:
-			self.RL_agent = agent_class(marketplace.observation_space.shape[0], outputs, torch.optim.Adam)
+			self.RL_agent = agent_class(marketplace_class().observation_space.shape[0], outputs, torch.optim.Adam)
 		assert self.trainer_agent_fit()
 
 		# Signal handler for e.g. KeyboardInterrupt
