@@ -1,5 +1,4 @@
 import os
-import re
 import shutil
 from unittest.mock import patch
 
@@ -29,12 +28,6 @@ def setup_function(function):
 		marketplace=circular_market.CircularEconomyMonopolyScenario,
 		agents=[(FixedPriceCERebuyAgent, [])],
 		subfolder_name=f'test_plots_{function.__name__}')
-
-
-def teardown_module(module):
-	for file_name in os.listdir(os.path.join(PathManager.results_path, 'monitoring')):
-		if re.match('test_*', file_name):
-			assert False, 'Test files were not mocked correctly'
 
 
 def test_get_folder():

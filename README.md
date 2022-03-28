@@ -12,6 +12,7 @@
 - [3. Installing the `Recommerce` package](#3-installing-the-recommerce-package)
 - [4. Testing](#4-testing)
 	- [4.1. Pytest](#41-pytest)
+		- [4.1.2. Pytest Plugins](#412-pytest-plugins)
 	- [4.2. Webserver Tests](#42-webserver-tests)
 	- [4.3. Coverage](#43-coverage)
 - [5. Pre-commit](#5-pre-commit)
@@ -153,14 +154,12 @@ Package installation was adapted from [this repository](https://github.com/mCodi
 
 If you want to run tests locally you can do so in a few ways:
 
-- Simply running all tests:
-
+Simply running all tests:
 ```terminal
 pytest
 ```
 
-- Running all tests with increased verbosity:
-
+Running all tests with increased verbosity:
 ```terminal
 pytest -v
 ```
@@ -170,6 +169,25 @@ Additionally, if you have installed the `recommerce` package and the `tests`-fol
 ```terminal
 recommerce --test
 ```
+
+#### 4.1.2. Pytest Plugins
+
+__Markers__
+
+We have also added markers to some tests, such as `slow` or `training`. You can filter tests using the `-m` flag, if for example
+you want to exclude slow tests from the run, use:
+```terminal
+pytest -m "not slow"
+```
+
+__Pytest-randomly__
+
+To make sure that our tests do not have hidden dependencies between each other, their order is shuffled every time the suite is run.
+For this, we use [pytest-randomly](https://pypi.org/project/pytest-randomly/). Before collection, a `--randomly-seed` is set and printed, which you can afterwards use to repeat the same order of tests, which is useful for debugging purposes. 
+
+__Pytest-xdist__
+
+[pytest-xdist](https://pypi.org/project/pytest-xdist/) is a plugin which can be used to distribute tests across multiple CPUs to speed up test execution. See their documentation for usage info.
 
 ### 4.2. Webserver Tests
 
