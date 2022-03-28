@@ -185,6 +185,10 @@ __Pytest-randomly__
 To make sure that our tests do not have hidden dependencies between each other, their order is shuffled every time the suite is run.
 For this, we use [pytest-randomly](https://pypi.org/project/pytest-randomly/). Before collection, a `--randomly-seed` is set and printed, which you can afterwards use to repeat the same order of tests, which is useful for debugging purposes. 
 
+__Pytest-xdist__
+
+[pytest-xdist](https://pypi.org/project/pytest-xdist/) is a plugin which can be used to distribute tests across multiple CPUs to speed up test execution. See their documentation for usage info.
+
 ### 4.2. Webserver Tests
 
 To run tests you have written for the Django webserver go into the *webserver* folder and run
