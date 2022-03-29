@@ -140,6 +140,33 @@ class Evaluator():
 		plt.grid(True)
 		plt.savefig(fname=os.path.join(self.configurator.get_folder(), filename))
 
+	def create_violin_plot(self, all_rewards, episode_numbers):
+		"""
+		This method generates a violinplot to visualize the training progress of the agent.
+		Provide the empirical distributions and it will not just show the mean, min and max,
+		but also the distribution at the provided episode numbers.
+
+		Args:
+			all_rewards (list of lists): each entry contains samples for the empirical probability distribution
+			episode_numbers (list of int): the training stages the empirical distributions belong to
+		"""
+		assert isinstance(all_rewards, list), f'all_rewards must be of type list, but is {type(all_rewards)}'
+		assert isinstance(episode_numbers, list), f'episode_numbers must be of type list, but is {type(all_rewards)}'
+		assert len(all_rewards) > 0, f'all_rewards should not be an empty list: {all_rewards}'
+		assert len(all_rewards) == len(episode_numbers)
+		assert all(isinstance(rewards_on_training_stage, list) for rewards_on_training_stage in all_rewards), \
+			'all_rewards must contain lists only'
+		assert all(isinstance(episode_number, int) for episode_number in episode_numbers), \
+			'all_rewards must contain ints only'
+		
+		plt.clf()
+		plt.violinplot(all_rewards, episode_numbers, showmeans=True, widths=450)
+		plt.title('Learning Progress Of The Agent')
+		plt.xlabel('Learned Episodes')
+		plt.ylabel('Reward Density')
+		savepath = os.path.join(self.configurator.get_folder(), 'agent_learning_process_violinplot.svg')
+		plt.savefig(fname=savepath)
+
 
 if __name__ == '__main__':  # pragma: no cover
 	raise RuntimeError('agent_monitoring can only be run from `am_monitoring.py`')

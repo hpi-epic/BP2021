@@ -16,6 +16,7 @@ from recommerce.configuration.hyperparameter_config import config
 from recommerce.configuration.path_manager import PathManager
 from recommerce.monitoring.agent_monitoring.am_monitoring import Monitor
 from recommerce.rl.reinforcement_learning_agent import ReinforcementLearningAgent
+from recommerce.monitoring.agent_monitoring.am_evaluation import Evaluator
 
 
 class RLTrainer(ABC):
@@ -101,7 +102,7 @@ class RLTrainer(ABC):
 				f'eps {epsilon:.2f}' if epsilon is not None else ''))
 
 	def consider_save_model(self, episodes_idx: int, force=False) -> None:
-		if (episodes_idx % 500 == 0 and episodes_idx > 0) or force:
+		if ((episodes_idx % 500 == 0 and episodes_idx > 0) or force) and self.best_mean_interim_reward is not None:
 			path_to_parameters = self.RL_agent.save(model_path=self.model_path, model_name=f'{self.signature}_{episodes_idx:05d}')
 			tqdm.write(f'I write the interim model after {episodes_idx} episodes to the disk.')
 			tqdm.write(f'You can find the parameters here: {path_to_parameters}.')
@@ -144,16 +145,11 @@ class RLTrainer(ABC):
 			all_rewards.append(rewards[0])
 			print(f"It's mean was {np.mean(rewards[0])}")
 
-		assert len(all_rewards) > 0, f'all_rewards should not be an empty list: {all_rewards}'
-		# Create the violinplot
 		episode_numbers = [int(parameter_path[-9:][:5]) for parameter_path in self.saved_parameter_paths]
-		plt.clf()
-		plt.violinplot(all_rewards, episode_numbers, showmeans=True, widths=450)
-		plt.title('Learning Progress Of The Agent')
-		plt.xlabel('Learned Episodes')
-		plt.ylabel('Reward Density')
-		savepath = os.path.join(self.model_path, 'agent_learning_process_violinplot.svg')
-		plt.savefig(fname=savepath)
+		monitor = Monitor()
+		monitor.configurator.setup_monitoring(False, 250, 250, self.marketplace_class, [])
+		Evaluator(monitor).create_violin_plot(all_rewards, episode_numbers)
+		# To make this more beautiful, it could be all moved to agent monitoring.
 
 	def _end_of_training(self) -> None:
 		"""
