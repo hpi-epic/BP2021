@@ -25,7 +25,7 @@ class ConfigMerger():
 
 	def _merge_config_into_base_config(self, base_config: dict, merging_config: dict, current_config_path: str = '') -> dict:
 		"""
-		merges one config dict recursivly into a base_config dict.
+		merges one config dict recursively into a base_config dict.
 
 		Args:
 			base_config (dict): the config that will be merged into
