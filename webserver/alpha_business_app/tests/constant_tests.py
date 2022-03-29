@@ -5,7 +5,7 @@ EXAMPLE_POST_REQUEST_ARGUMENTS = {
 		'environment-task': ['training'],
 		'environment-episodes': [''],
 		'environment-plot_interval': [''],
-		'environment-marketplace': ['recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario'],
+		'environment-marketplace': ['market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario'],
 		'environment-agents-name': ['Rule_Based Agent'],
 		'environment-agents-agent_class': ['recommerce.market.circular.circular_vendors.RuleBasedCERebuyAgent'],
 		'environment-agents-argument': [''],
@@ -30,7 +30,7 @@ EXAMPLE_POST_REQUEST_ARGUMENTS = {
 EXAMPLE_HIERARCHY_DICT = {
 		'environment': {
 			'task': 'training',
-			'marketplace': 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
+			'marketplace': 'market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
 			'enable_live_draw': False,
 			'agents': {
 				'Rule_Based Agent': {

@@ -12,10 +12,8 @@ class Config(models.Model):
 		return remove_none_values_from_dict({'environment': environment_dict, 'hyperparameter': hyperparameter_dict})
 
 	def is_referenced(self):
-		if not self.container_set.all():
-			# Query set is empty so we are not referenced by any container
-			return False
-		return True
+		# Query set is empty so we are not referenced by any container
+		return bool(self.container_set.all())
 
 	@staticmethod
 	def get_empty_structure_dict():
@@ -177,9 +175,7 @@ class SimMarketConfig(models.Model):
 
 
 def get_config_field_names(model):
-	ret = []
-	for f in model._meta.fields:
-		ret += [f.name]
+	ret = [f.name for f in model._meta.fields]
 	# the id is auto generated and we do not use it for our config.
 	if 'id' in ret:
 		ret.remove('id')

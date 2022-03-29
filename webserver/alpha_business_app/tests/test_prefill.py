@@ -94,7 +94,8 @@ class ConfigMergerTest(TestCase):
 				'task': 'monitoring',
 				'agents': {
 					'Rule_Based Agent': {
-						'agent_class': 'recommerce.market.circular.circular_vendors.RuleBasedCERebuyAgent'
+						'agent_class': 'recommerce.market.circular.circular_vendors.RuleBasedCERebuyAgent',
+						'argument': ''
 					},
 					'CE Rebuy Agent (QLearning)': {
 						'agent_class': 'recommerce.rl.q_learning.q_learning_agent.QLearningCERebuyAgent',
@@ -156,12 +157,13 @@ class ConfigMergerTest(TestCase):
 			}
 		}
 		assert expected_final_config == final_config
-		assert expected_error_dict == error_dict
+		assert expected_error_dict == error_dict, f'{expected_error_dict}\n\n{error_dict}'
 
 	def test_merge_one_agent(self):
 		test_agent_dict = {
 				'Rule_Based Agent': {
-					'agent_class': 'agents.vendors.RuleBasedCERebuyAgent'
+					'agent_class': 'recommerce.market.circular.circular_vendors.RuleBasedCERebuyAgent',
+					'argument': ''
 				}
 			}
 		merger = ConfigMerger()
@@ -171,12 +173,14 @@ class ConfigMergerTest(TestCase):
 	def test_merge_two_same_agents(self):
 		test_agent_dict1 = {
 				'Rule_Based Agent': {
-					'agent_class': 'agents.vendors.RuleBasedCERebuyAgent'
+					'agent_class': 'recommerce.market.circular.circular_vendors.RuleBasedCERebuyAgent',
+					'argument': ''
 				}
 			}
 		test_agent_dict2 = {
 				'Rule_Based Agent': {
-					'agent_class': 'agents.vendors.RuleBasedCERebuyAgent'
+					'agent_class': 'recommerce.market.circular.circular_vendors.RuleBasedCERebuyAgent',
+					'argument': ''
 				}
 			}
 		merger = ConfigMerger()
@@ -184,7 +188,8 @@ class ConfigMergerTest(TestCase):
 
 		expected_dict = {
 				'Rule_Based Agent': {
-					'agent_class': 'agents.vendors.RuleBasedCERebuyAgent'
+					'agent_class': 'recommerce.market.circular.circular_vendors.RuleBasedCERebuyAgent',
+					'argument': ''
 				}
 			}
 		expected_error = copy.deepcopy(EMPTY_STRUCTURE_CONFIG)
@@ -196,20 +201,24 @@ class ConfigMergerTest(TestCase):
 	def test_merge_two_agents(self):
 		test_agent_dict = {
 				'test agent': {
-					'agent_class': 'agents.vendors.RuleBasedCERebuyAgent'
+					'agent_class': 'recommerce.market.circular.circular_vendors.RuleBasedCERebuyAgent',
+					'argument': ''
 				},
 				'Rule_Based Agent': {
-					'agent_class': 'agents.vendors.RuleBasedCERebuyAgent'
+					'agent_class': 'recommerce.market.circular.circular_vendors.RuleBasedCERebuyAgent',
+					'argument': ''
 				}
 			}
 		merger = ConfigMerger()
 		actual = merger._merge_agents_into_base_agents({}, test_agent_dict)
 		expected_dict = {
 				'test agent': {
-					'agent_class': 'agents.vendors.RuleBasedCERebuyAgent'
+					'agent_class': 'recommerce.market.circular.circular_vendors.RuleBasedCERebuyAgent',
+					'argument': ''
 				},
 				'Rule_Based Agent': {
-					'agent_class': 'agents.vendors.RuleBasedCERebuyAgent'
+					'agent_class': 'recommerce.market.circular.circular_vendors.RuleBasedCERebuyAgent',
+					'argument': ''
 				}
 			}
 		assert expected_dict == actual

@@ -150,16 +150,16 @@ class FileHandling(TestCase):
 		assert environment_config.enable_live_draw is False
 		assert 50 == environment_config.episodes
 		assert 25 == environment_config.plot_interval
-		assert 'market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario' == environment_config.marketplace
+		assert 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario' == environment_config.marketplace
 		assert environment_config.agents is not None
 
 		environment_agents: AgentsConfig = environment_config.agents
 
 		all_agents = environment_agents.agentconfig_set.all()
 		assert 2 == len(all_agents)
-		assert 'agents.vendors.RuleBasedCERebuyAgent' == all_agents[0].agent_class
-		assert all_agents[0].argument is None
-		assert 'agents.vendors.QLearningCERebuyAgent' == all_agents[1].agent_class
+		assert 'recommerce.market.circular.circular_vendors.RuleBasedCERebuyAgent' == all_agents[0].agent_class
+		assert '' == all_agents[0].argument
+		assert 'recommerce.rl.q_learning.q_learning_agent.QLearningCERebuyAgent' == all_agents[1].agent_class
 		assert 'CircularEconomyRebuyPriceMonopolyScenario_QLearningCERebuyAgent.dat' == all_agents[1].argument
 
 	def test_parsing_mixed_config(self):

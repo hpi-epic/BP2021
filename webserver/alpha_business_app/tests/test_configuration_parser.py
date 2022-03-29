@@ -32,10 +32,11 @@ class ConfigParserTest(TestCase):
 		'environment': {
 			'task': 'training',
 			'enable_live_draw': False,
-			'marketplace': 'market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
+			'marketplace': 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
 			'agents': {
 				'Rule_Based Agent': {
-					'agent_class': 'agents.vendors.RuleBasedCERebuyAgent'
+					'agent_class': 'recommerce.market.circular.circular_vendors.RuleBasedCERebuyAgent',
+					'argument': ''
 				}
 			}
 		}
@@ -52,9 +53,9 @@ class ConfigParserTest(TestCase):
 			'environment-task': ['training'],
 			'environment-episodes': [''],
 			'environment-plot_interval': [''],
-			'environment-marketplace': ['market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario'],
+			'environment-marketplace': ['recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario'],
 			'environment-agents-name': ['Rule_Based Agent'],
-			'environment-agents-agent_class': ['agents.vendors.RuleBasedCERebuyAgent'],
+			'environment-agents-agent_class': ['recommerce.market.circular.circular_vendors.RuleBasedCERebuyAgent'],
 			'environment-agents-argument': [''],
 			'hyperparameter-rl-gamma': ['0.99'],
 			'hyperparameter-rl-batch_size': ['32'],
@@ -113,7 +114,7 @@ class ConfigParserTest(TestCase):
 			'enable_live_draw': [''],
 			'marketplace': ['market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario'],
 			'agents-name': ['Rule_Based Agent'],
-			'agents-agent_class': ['agents.vendors.RuleBasedCERebuyAgent'],
+			'agents-agent_class': ['recommerce.market.circular.circular_vendors.RuleBasedCERebuyAgent'],
 			'agents-argument': [''],
 		}
 		expected_environment_dict = EXAMPLE_HIERARCHY_DICT['environment'].copy()
@@ -123,7 +124,7 @@ class ConfigParserTest(TestCase):
 	def test_flat_agents(self):
 		test_dict = {
 			'name': ['Rule_Based Agent'],
-			'agent_class': ['agents.vendors.RuleBasedCERebuyAgent'],
+			'agent_class': ['recommerce.market.circular.circular_vendors.RuleBasedCERebuyAgent'],
 			'argument': [''],
 		}
 		assert EXAMPLE_HIERARCHY_DICT['environment']['agents'] == self.flat_parser._flat_agents_to_hierarchical(test_dict)
@@ -203,9 +204,9 @@ class ConfigParserTest(TestCase):
 
 		all_agents = environment_agents.agentconfig_set.all()
 		assert 1 == len(all_agents)
-		assert 'agents.vendors.RuleBasedCERebuyAgent' == all_agents[0].agent_class
+		assert 'recommerce.market.circular.circular_vendors.RuleBasedCERebuyAgent' == all_agents[0].agent_class
 		assert 'Rule_Based Agent' == all_agents[0].name
-		assert all_agents[0].argument is None
+		assert '' == all_agents[0].argument
 
 	def test_parsing_agents(self):
 		test_dict = {

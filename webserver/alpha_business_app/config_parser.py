@@ -20,9 +20,7 @@ class ConfigFlatDictParser():
 		"""
 		# prepare flat_dict, convert all numbers to int or float
 		for key, value_list in flat_dict.items():
-			converted_values = []
-			for value in value_list:
-				converted_values += [self._converted_to_int_or_float_if_possible(value)]
+			converted_values = [self._converted_to_int_or_float_if_possible(value) for value in value_list]
 			flat_dict[key] = converted_values
 
 		# get all environment parameters
@@ -69,7 +67,7 @@ class ConfigFlatDictParser():
 		"""
 		final_dict = {}
 		for agent_index in range(len(flat_dict['name'])):
-			argument = flat_dict['argument'][agent_index] if flat_dict['argument'][agent_index] != '' else None
+			argument = flat_dict['argument'][agent_index]
 			agent_dict = {
 				'agent_class': flat_dict['agent_class'][agent_index],
 				'argument': argument
