@@ -76,7 +76,7 @@ class EnvironmentConfig(ABC):
 			f'All agents in the "agents" field must be dictionaries: {[config["agents"][agent] for agent in config["agents"]]}'
 
 		# CHECK: Agents::agent_class
-		assert all('agent_class' in agent for agent in agent_dictionaries), f'Each agent must have a "agent_class" field: {agent_dictionaries}'
+		assert all('agent_class' in agent for agent in agent_dictionaries), f'Each agent must have an "agent_class" field: {agent_dictionaries}'
 		assert all(isinstance(agent['agent_class'], str) for agent in agent_dictionaries), \
 			f'The "agent_class" fields must be strings: {agent_dictionaries} ({[type(agent["agent_class"]) for agent in agent_dictionaries]})'
 
@@ -85,13 +85,15 @@ class EnvironmentConfig(ABC):
 		# If a modelfile is needed, the self.agents will be a list of tuples (as required by agent_monitoring), else just a list of classes
 		argument_list = []
 		for current_agent in range(len(agent_classes)):
-			assert 'argument' in agent_dictionaries[current_agent], f'This agent must have an "argument" field: {agent_classes[current_agent]}'
+			assert 'argument' in agent_dictionaries[current_agent], f'Every agent must have an "argument" field: {agent_classes[current_agent]}'
 			current_config_argument = agent_dictionaries[current_agent]['argument']
 
+			# This if-else contains the parsing logic for the different types of arguments agents can have, e.g. modelfiles or fixed-price-lists
 			if needs_modelfile and issubclass(agent_classes[current_agent], (QLearningAgent, ActorCriticAgent)):
 				assert isinstance(current_config_argument, str), \
 					f'The "argument" field of this agent must be a str: {agent_classes[current_agent]} ({type(current_config_argument)})'
-				assert current_config_argument.endswith('.dat'), f'The "argument" field must end with .dat: {current_config_argument}'
+				assert current_config_argument.endswith('.dat'), \
+					f'The "argument" field must be a modelfile and therefore end with .dat: {current_config_argument}'
 				# Check that the modelfile exists. Taken from am_configuration::_get_modelfile_path()
 				full_path = os.path.abspath(os.path.join(PathManager.data_path, current_config_argument))
 				assert os.path.exists(full_path), f'the specified modelfile does not exist: {full_path}'

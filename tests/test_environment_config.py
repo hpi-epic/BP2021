@@ -167,7 +167,7 @@ def test_valid_ConfigLoader_load_training(task, marketplace, agents):
 
 
 configLoader_is_valid_testcases = [
-	(invalid_agent_dict, False, 'The "argument" field must end with .dat:'),
+	(invalid_agent_dict, False, 'The "argument" field must be a modelfile and therefore end with .dat:'),
 	(invalid_task_dict, False, 'The specified task is unknown: not_existing_test_task'),
 	(valid_exampleprinter_dict, True, 'Your config is valid.')
 ]

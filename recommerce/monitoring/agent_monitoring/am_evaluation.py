@@ -42,6 +42,8 @@ class Evaluator():
 			is_last_histogram (bool): States that only the last histogram should be plotted.
 			filename (str): The name of the output file, format will be .svg. Defaults to 'default'.
 		"""
+		if (self.configurator.enable_live_draw or is_last_histogram) is False:
+			return
 		assert all(len(curr_reward) == len(rewards[0]) for curr_reward in rewards), 'all rewards-arrays must be of the same size'
 
 		filename += '.svg'
