@@ -17,7 +17,7 @@ class FileHandling(TestCase):
 		status, error_msg = check_agents({'Rule_Based Agent': {'test': 'recommerce.market.circular.circular_vendors.RuleBasedCERebuyAgent'}})
 
 		assert status is False
-		assert 'The keyword(s) [\'test\'] are not allowed in Rule_Based Agent' == error_msg
+		assert "The keyword(s) ['test'] are not allowed in Rule_Based Agent" == error_msg
 
 	# def test_invalid_values(self):
 	# 	test_uploaded_file = MockedUploadedFile('config.json', b'{"rl": {"gamma": "bla"}')

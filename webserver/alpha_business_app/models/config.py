@@ -28,7 +28,7 @@ class EnvironmentConfig(models.Model):
 	enable_live_draw = models.BooleanField(null=True)
 	episodes = models.IntegerField(null=True)
 	plot_interval = models.IntegerField(null=True)
-	marketplace = models.CharField(max_length=100, null=True)
+	marketplace = models.CharField(max_length=150, null=True)
 	task = models.CharField(max_length=14, choices=((1, 'training'), (2, 'monitoring'), (3, 'exampleprinter')), null=True)
 
 	def as_dict(self) -> dict:
