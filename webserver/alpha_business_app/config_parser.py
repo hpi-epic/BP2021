@@ -107,7 +107,7 @@ class ConfigFlatDictParser():
 		Returns:
 			dict: All key value pairs that started with the specified keyword.
 		"""
-		return {k[len(keyword_part):]: v for k, v in dict_with_complete_keyword.items() if k.startswith(keyword_part)}
+		return {key[len(keyword_part):]: value for key, value in dict_with_complete_keyword.items() if key.startswith(keyword_part)}
 
 	def _substract_dicts(self, dict1: dict, dict2: dict, keyword_extension: str = '') -> dict:
 		"""
@@ -121,8 +121,8 @@ class ConfigFlatDictParser():
 		Returns:
 			dict: containing all keys and values from `dict1` that are not in `dict2`
 		"""
-		dict2_with_extension = {keyword_extension + k: v for k, v in dict2.items()}
-		return {k: v for k, v in dict1.items() if k not in dict2_with_extension}
+		dict2_with_extension = {keyword_extension + key: value for key, value in dict2.items()}
+		return {key: value for key, value in dict1.items() if key not in dict2_with_extension}
 
 	def _first_list_element_without_empty(self, dict1: dict) -> dict:
 		"""
@@ -134,7 +134,7 @@ class ConfigFlatDictParser():
 		Returns:
 			dict: dictionary with the keys and the first list element as values
 		"""
-		return {k: v[0] for k, v in dict1.items() if v[0] != ''}
+		return {key: value[0] for key, value in dict1.items() if value[0] != ''}
 
 	def _converted_to_int_or_float_if_possible(self, value: str):
 		"""

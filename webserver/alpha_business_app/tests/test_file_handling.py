@@ -214,7 +214,7 @@ class FileHandling(TestCase):
 
 			render_mock.assert_called_once()
 			assert 'upload.html' == actual_arguments[1]
-			assert {'error': 'Your config contains duplicate keys: \'rl\''} == actual_arguments[2]
+			assert {'error': "Your config contains duplicate keys: 'rl'"} == actual_arguments[2], actual_arguments[2]
 
 	def _setup_request(self) -> RequestFactory:
 		request = RequestFactory().post('upload.html', {'action': 'start', 'config_name': 'test'})

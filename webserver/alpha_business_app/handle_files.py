@@ -17,13 +17,13 @@ def _dict_raise_on_duplicates(ordered_pairs):
 	"""
 	Reject duplicate keys.
 	"""
-	d = {}
-	for k, v in ordered_pairs:
-		if k in d:
-			raise ValueError('Your config contains duplicate keys: %r' % (k,))
+	no_cuplicates_dict = {}
+	for key, value in ordered_pairs:
+		if key in no_cuplicates_dict:
+			raise ValueError(f"Your config contains duplicate keys: '{key}'")
 		else:
-			d[k] = v
-	return d
+			no_cuplicates_dict[key] = value
+	return no_cuplicates_dict
 
 
 def handle_uploaded_file(request, uploaded_config) -> HttpResponse:

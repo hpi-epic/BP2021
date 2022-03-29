@@ -30,15 +30,15 @@ class ConfigMerger():
 		Args:
 			base_config (dict): the config that will be merged into
 			merging_config (dict): the config that should be merged
-			current_config_path (str, optional): keep track of the current config level for the error dict. Defaults to ''.
+			current_config_path (str, optional): keep track of the current config path for the error dict. Defaults to ''.
 
 		Returns:
 			dict: a final merged config
 		"""
 		# get contained dicts for recursion
-		contained_dicts_merge = [(k, v) for k, v in merging_config.items() if type(v) == dict]
+		contained_dicts_merge = [(key, value) for key, value in merging_config.items() if type(value) == dict]
 		# get contained values for updating
-		contained_values_merge = [(k, v) for k, v in merging_config.items() if type(v) != dict and v is not None]
+		contained_values_merge = [(key, value) for key, value in merging_config.items() if type(value) != dict and value is not None]
 
 		for key, sub_dict in contained_dicts_merge:
 			if key == 'agents':
@@ -81,12 +81,10 @@ class ConfigMerger():
 			key_words (list): 'path' to the keyword that should be updated
 			update_message (str): message that should be written to the keyword
 		"""
-		if len(key_words) == 1:
-			# our config is always at least two keywords deep
-			assert False
-		elif len(key_words) == 2:
+		if len(key_words) == 2:
 			self.error_dict[key_words[0]][key_words[1]] = update_message
 		elif len(key_words) == 3:
 			self.error_dict[key_words[0]][key_words[1]][key_words[2]] = update_message
 		else:
+			# our config is (should) always be at least two keywords deep
 			assert False
