@@ -109,6 +109,8 @@ class EnvironmentConfig(ABC):
 			# if we were to only append items for agents with modelfiles or *fixed_price-lists*, the lists would have different lengths and the
 			# process of matching the correct ones would get a lot more difficult
 			else:
+				if current_config_argument != ('' or None):
+					print(f'Your passed argument {current_config_argument} in the "argument" field will be discarded!')
 				argument_list.append(None)
 		# Create a list of tuples (agent_class, argument)
 		self.agent = list(zip(agent_classes, argument_list))
