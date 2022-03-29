@@ -3,13 +3,14 @@
 	"enable_live_draw": false,
 	"episodes": 50,
 	"plot_interval": 25,
-	"marketplace": "market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario",
+	"marketplace": "recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario",
 	"agents": {
 		"Rule_Based Agent": {
-			"agent_class": "agents.vendors.RuleBasedCERebuyAgent"
+			"agent_class": "recommerce.market.circular.circular_vendors.RuleBasedCERebuyAgent",
+			"argument": ""
 		},
 		"CE Rebuy Agent (QLearning)": {
-			"agent_class": "agents.vendors.QLearningCERebuyAgent",
+			"agent_class": "recommerce.rl.q_learning.q_learning_agent.QLearningCERebuyAgent",
 			"argument": "CircularEconomyRebuyPriceMonopolyScenario_QLearningCERebuyAgent.dat"
 		}
 	}

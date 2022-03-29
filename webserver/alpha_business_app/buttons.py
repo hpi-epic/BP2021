@@ -17,7 +17,7 @@ class ButtonHandler():
 		request,
 		view: str,
 		container: Container = None,
-		config: Config = None,
+		wanted_config: Config = None,
 		rendering_method: str = 'default',
 		data: str = None) -> None:
 		"""
@@ -25,12 +25,12 @@ class ButtonHandler():
 		You can add more keywords in `do_button_click()` or implement your own renderings and add them to `_decide_rendering()`.
 
 		Args:
-			request (WSGIRequest): post request send to the server when a button is pressed. The keyword 'action' defines what happens.
+			request (WSGIRequest): Post request send to the server when a button is pressed. The keyword 'action' defines what happens.
 			view (str): The view that should be rendered when the button action is done.
-			container (Container, optional): a container that could be used i.e. for the rendering. Defaults to None.
-			rendering_method (str, optional): keyword for the rendering methode, see `_decide_rendering()`. Defaults to 'default'.
-			data (str, optional): other data that can be used for rendering, i.e. logs. Defaults to None.
-			wanted_config (Config, optional): a config that can be used for any action
+			container (Container, optional): A container that could be used i.e. for the rendering. Defaults to None.
+			wanted_config (Config, optional): A config that can be used for any action. Defautls to None.
+			rendering_method (str, optional): Keyword for the rendering methode, see `_decide_rendering()`. Defaults to 'default'.
+			data (str, optional): Other data that can be used for rendering, i.e. logs. Defaults to None.
 		"""
 		self.request = request
 		self.view_to_render = view
@@ -40,7 +40,7 @@ class ButtonHandler():
 		self.message = [None, None]
 		self.wanted_key = None
 		self.all_containers = Container.objects.all()
-		self.wanted_config = config
+		self.wanted_config = wanted_config
 
 		if request.method == 'POST':
 			self.wanted_key = request.POST['action']
@@ -182,15 +182,13 @@ class ButtonHandler():
 		"""
 		if self.wanted_container.is_archived():
 			self.message = ['error', 'You cannot download data from archived containers']
-			return self._decide_rendering()
 		else:
 			response = send_get_request_with_streaming('data', self.wanted_container.id)
 			if response.ok():
 				# save data from api and make it available for the user
 				return download_file(response.content, self.request.POST['file_type'] == 'zip', self.wanted_container)
-			else:
-				self.message = response.status()
-				return self._decide_rendering()
+			self.message = response.status()
+		return self._decide_rendering()
 
 	def _health(self) -> HttpResponse:
 		"""

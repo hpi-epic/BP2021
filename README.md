@@ -194,7 +194,7 @@ __Pytest-xdist__
 To run tests you have written for the Django webserver go into the *webserver* folder and run
 
 ```terminal
-python3 ./manage.py test
+python3 ./manage.py test -v 2
 ```
 
 ### 4.3. Coverage
@@ -346,7 +346,7 @@ python3 ./manage.py migrate
 To run tests you have written for the Django webserver go into the *webserver* folder and run
 
 ```terminal
-python3 ./manage.py test
+python3 ./manage.py test -v 2
 ```
 
 We use bootstrap for layout stuff. When developing, you need to run `npm install` in the webserver directory.
