@@ -63,7 +63,7 @@ def test_rewards_array_size():
 
 	with patch('recommerce.monitoring.agent_monitoring.am_evaluation.plt'):
 		with pytest.raises(AssertionError) as assertion_message:
-			monitor.evaluator.create_histogram(rewards_wrong, False)
+			monitor.evaluator.create_histogram(rewards_wrong, True)
 		assert 'all rewards-arrays must be of the same size' in str(assertion_message.value)
 
 
