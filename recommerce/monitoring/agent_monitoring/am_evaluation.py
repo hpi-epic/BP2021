@@ -19,8 +19,13 @@ class Evaluator():
 
 		Args:
 			rewards (list): The rewards that should be evaluated. Contains a list per agent.
-			episode_numbers (list of int): the training stages the empirical distributions belong to
+			episode_numbers (list of int): The training stages the empirical distributions belong to.
+			If it is None, a prior functionality is used.
 		"""
+		# This logic seems to be a bit doubled. It is done to support all of the requests on this method.
+		# You should be able to evaluate sessions as before without giving episode_numbers and
+		# to analyze agents belonging to different training stages.
+		# This code should be improved on further issues related to monitoring!
 		if episode_numbers is not None:
 			assert len(rewards) == len(episode_numbers), 'the len of the rewards and the episode numbers must be the same'
 			for single_rewards, episode in zip(rewards, episode_numbers):
