@@ -147,7 +147,7 @@ class RLTrainer(ABC):
 		episode_numbers = [int(parameter_path[-9:][:5]) for parameter_path in self.saved_parameter_paths]
 		monitor = Monitor()
 		monitor.configurator.setup_monitoring(False, 250, 250, self.marketplace_class, [])
-		Evaluator(monitor).create_violin_plot(all_rewards, episode_numbers)
+		Evaluator(monitor.configurator).create_violin_plot(all_rewards, episode_numbers)
 		# To make this more beautiful, it could be all moved to agent monitoring.
 
 	def _end_of_training(self) -> None:
