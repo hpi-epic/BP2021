@@ -175,7 +175,7 @@ class Evaluator():
 		assert all(isinstance(rewards_on_training_stage, list) for rewards_on_training_stage in all_rewards), \
 			'all_rewards must contain lists only'
 		assert all(isinstance(episode_number, int) for episode_number in episode_numbers), \
-			'all_rewards must contain ints only'
+			'episode_numbers must contain ints only'
 
 		plt.clf()
 		plt.violinplot(all_rewards, episode_numbers, showmeans=True, widths=450)
