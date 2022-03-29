@@ -4,7 +4,6 @@ import sys
 import time
 from abc import ABC, abstractmethod
 
-import matplotlib.pyplot as plt
 import numpy as np
 import torch
 from torch.utils.tensorboard import SummaryWriter
@@ -14,9 +13,9 @@ import recommerce.configuration.utils as ut
 import recommerce.rl.actorcritic.actorcritic_agent as actorcritic_agent
 from recommerce.configuration.hyperparameter_config import config
 from recommerce.configuration.path_manager import PathManager
+from recommerce.monitoring.agent_monitoring.am_evaluation import Evaluator
 from recommerce.monitoring.agent_monitoring.am_monitoring import Monitor
 from recommerce.rl.reinforcement_learning_agent import ReinforcementLearningAgent
-from recommerce.monitoring.agent_monitoring.am_evaluation import Evaluator
 
 
 class RLTrainer(ABC):

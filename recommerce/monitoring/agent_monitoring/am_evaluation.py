@@ -158,7 +158,7 @@ class Evaluator():
 			'all_rewards must contain lists only'
 		assert all(isinstance(episode_number, int) for episode_number in episode_numbers), \
 			'all_rewards must contain ints only'
-		
+
 		plt.clf()
 		plt.violinplot(all_rewards, episode_numbers, showmeans=True, widths=450)
 		plt.title('Learning Progress Of The Agent')
