@@ -274,9 +274,11 @@ class ButtonHandler():
 		# convert post request to normal dict
 		post_request = dict(self.request.POST.lists())
 
-		# TODO: error, when multiple agents have the same name!
-		flat_parser = ConfigFlatDictParser()
-		config_dict = flat_parser.flat_dict_to_hierarchical_config_dict(post_request)
+		try:
+			config_dict = ConfigFlatDictParser().flat_dict_to_hierarchical_config_dict(post_request)
+		except AssertionError:
+			self.message = ['error', 'Could not create config: Please eliminate identical Agent names']
+			return self._decide_rendering()
 		# TODO: assert config dict is valid
 		response = send_post_request('start', config_dict)
 		if response.ok():
@@ -293,8 +295,7 @@ class ButtonHandler():
 			# get all necessary parameters for container object
 			container_name = self.request.POST['experiment_name']
 			container_name = container_name if container_name != '' else response['id'][:10]
-			parser = ConfigModelParser()
-			config_object = parser.parse_config(copy.deepcopy(config_dict))
+			config_object = ConfigModelParser().parse_config(copy.deepcopy(config_dict))
 			command = config_object.environment.task
 			Container.objects.create(id=response['id'], config=config_object, name=container_name, command=command)
 			config_object.name = f'used for {container_name}'

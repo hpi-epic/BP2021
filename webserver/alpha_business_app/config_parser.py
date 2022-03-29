@@ -21,6 +21,9 @@ class ConfigFlatDictParser():
 		# prepare flat_dict, convert all numbers to int or float
 		for key, value_list in flat_dict.items():
 			converted_values = [self._converted_to_int_or_float_if_possible(value) for value in value_list]
+			# This happens if the user provides the same agent name twice, since they are keys in the environment_config.json
+			if flat_dict[key]:
+				assert False, 'At least two agents have the same name/key'
 			flat_dict[key] = converted_values
 
 		# get all environment parameters

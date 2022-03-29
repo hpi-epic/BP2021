@@ -55,5 +55,5 @@ def delete_config(request, config_id) -> HttpResponse:
 		wanted_config = Config.objects.get(id=config_id)
 	except Config.DoesNotExist as error:
 		raise Http404('Config does not exist') from error
-	button_handler = ButtonHandler(request, view='delete_config.html', config=wanted_config, rendering_method='config')
+	button_handler = ButtonHandler(request, view='delete_config.html', wanted_config=wanted_config, rendering_method='config')
 	return button_handler.do_button_click()
