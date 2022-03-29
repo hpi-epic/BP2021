@@ -17,7 +17,8 @@ def run_training_session(marketplace=circular_market.CircularEconomyRebuyPriceOn
 		Defaults to circular_market.CircularEconomyRebuyPriceOneCompetitor.
 		agent (QLearningAgent subclass, optional): What kind of QLearningAgent to train. Defaults to q_learning_agent.QLearningCERebuyAgent.
 	"""
-	assert issubclass(marketplace, sim_market.SimMarket), f'the marketplace passed must be a subclass of SimMarket: {marketplace}'
+	assert issubclass(marketplace, sim_market.SimMarket), \
+		f'the type of the passed marketplace must be a subclass of SimMarket: {marketplace}'
 	assert issubclass(agent, (q_learning_agent.QLearningAgent, actorcritic_agent.ActorCriticAgent)), \
 		f'the RL_agent_class passed must be a subclass of either QLearningAgent or ActorCriticAgent: {agent}'
 	assert issubclass(agent, CircularAgent) == issubclass(marketplace, circular_market.CircularEconomy), \
@@ -56,7 +57,9 @@ def train_from_config():
 	Use the `environment_config_training.json` file to decide on the training parameters.
 	"""
 	config: TrainingEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_training')
-	run_training_session(config.marketplace, config.agent)
+	# Since we store a tuple (class, None) in config.agent, we just want the first component
+	# Since we store an one-element list [class] in config.marketplace, we just want the stored element
+	run_training_session(config.marketplace[0], config.agent[0])
 
 
 def main():
