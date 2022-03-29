@@ -13,23 +13,27 @@ class Evaluator():
 	def __init__(self, configuration: am_configuration.Configurator):
 		self.configurator = configuration
 
-	def evaluate_session(self, rewards: list):
+	def evaluate_session(self, rewards: list, episode_numbers: list):
 		"""
 		Print statistics for monitored agents and create statistics-plots.
 
 		Args:
 			rewards (list): The rewards that should be evaluated. Contains a list per agent.
+			episode_numbers (list of int): the training stages the empirical distributions belong to
 		"""
-		for i in range(len(rewards)):
+		assert len(rewards) == len(episode_numbers), 'the len of the rewards and the episode numbers must be the same'
+		for single_rewards, episode in zip(rewards, episode_numbers):
 			print()
-			print(f'Statistics for agent: {self.configurator.agents[i].name}')
-			print(f'The average reward over {self.configurator.episodes} episodes is: {np.mean(rewards[i])}')
-			print(f'The median reward over {self.configurator.episodes} episodes is: {np.median(rewards[i])}')
-			print(f'The maximum reward over {self.configurator.episodes} episodes is: {np.max(rewards[i])}')
-			print(f'The minimum reward over {self.configurator.episodes} episodes is: {np.min(rewards[i])}')
+			print(f'Statistics for episode {episode}')
+			print(f'The average reward over {episode} episodes is: {np.mean(single_rewards)}')
+			print(f'The median reward over {episode} episodes is: {np.median(single_rewards)}')
+			print(f'The maximum reward over {episode} episodes is: {np.max(single_rewards)}')
+			print(f'The minimum reward over {episode} episodes is: {np.min(single_rewards)}')
 
 		print()
 		self._create_statistics_plots(rewards)
+		if episode_numbers is not None:
+			self._create_violin_plot(rewards, episode_numbers)
 		print(f'All plots were saved to {os.path.abspath(self.configurator.folder_path)}')
 
 	# visualize metrics
@@ -140,7 +144,7 @@ class Evaluator():
 		plt.grid(True)
 		plt.savefig(fname=os.path.join(self.configurator.get_folder(), filename))
 
-	def create_violin_plot(self, all_rewards, episode_numbers):
+	def _create_violin_plot(self, all_rewards, episode_numbers):
 		"""
 		This method generates a violinplot to visualize the training progress of the agent.
 		Provide the empirical distributions and it will not just show the mean, min and max,
@@ -153,7 +157,7 @@ class Evaluator():
 		assert isinstance(all_rewards, list), f'all_rewards must be of type list, but is {type(all_rewards)}'
 		assert isinstance(episode_numbers, list), f'episode_numbers must be of type list, but is {type(all_rewards)}'
 		assert len(all_rewards) > 0, f'all_rewards should not be an empty list: {all_rewards}'
-		assert len(all_rewards) == len(episode_numbers)
+		assert len(all_rewards) == len(episode_numbers), 'the len of the rewards and the episode numbers must be the same'
 		assert all(isinstance(rewards_on_training_stage, list) for rewards_on_training_stage in all_rewards), \
 			'all_rewards must contain lists only'
 		assert all(isinstance(episode_number, int) for episode_number in episode_numbers), \

@@ -4,7 +4,6 @@ import sys
 import time
 from abc import ABC, abstractmethod
 
-import numpy as np
 import torch
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
@@ -135,20 +134,12 @@ class RLTrainer(ABC):
 		raise NotImplementedError('This method is abstract. Use a subclass')
 
 	def analyze_trained_agents(self):
-		all_rewards = []
-		for parameter_path in self.saved_parameter_paths:
-			print(f'The analysis of model {parameter_path}:')
-			monitor = Monitor()
-			monitor.configurator.setup_monitoring(False, 250, 250, self.marketplace_class, [(self.agent_class, [parameter_path])])
-			rewards = monitor.run_marketplace()
-			all_rewards.append(rewards[0])
-			print(f"It's mean was {np.mean(rewards[0])}")
-
-		episode_numbers = [int(parameter_path[-9:][:5]) for parameter_path in self.saved_parameter_paths]
 		monitor = Monitor()
-		monitor.configurator.setup_monitoring(False, 250, 250, self.marketplace_class, [])
-		Evaluator(monitor.configurator).create_violin_plot(all_rewards, episode_numbers)
-		# To make this more beautiful, it could be all moved to agent monitoring.
+		agent_list = [(self.agent_class, [parameter_path]) for parameter_path in self.saved_parameter_paths]
+		monitor.configurator.setup_monitoring(False, 250, 250, self.marketplace_class, agent_list)
+		rewards = monitor.run_marketplace()
+		episode_numbers = [int(parameter_path[-9:][:5]) for parameter_path in self.saved_parameter_paths]
+		Evaluator(monitor.configurator).evaluate_session(rewards, episode_numbers)
 
 	def _end_of_training(self) -> None:
 		"""
