@@ -6,6 +6,7 @@ import pytest
 
 import recommerce.market.circular.circular_sim_market as circular_market
 import recommerce.monitoring.agent_monitoring.am_monitoring as monitoring
+from recommerce.configuration.path_manager import PathManager
 from recommerce.market.circular.circular_vendors import FixedPriceCEAgent, RuleBasedCEAgent
 from recommerce.rl.q_learning.q_learning_agent import QLearningCEAgent
 
@@ -22,8 +23,7 @@ def setup_function(function):
 		episodes=50,
 		plot_interval=10,
 		marketplace=circular_market.CircularEconomyMonopolyScenario,
-		agents=[(QLearningCEAgent, [os.path.join(os.path.dirname(__file__), os.pardir, 'test_data',
-			'CircularEconomyMonopolyScenario_QLearningCEAgent.dat')])],
+		agents=[(QLearningCEAgent, [os.path.join(PathManager.data_path, 'CircularEconomyMonopolyScenario_QLearningCEAgent.dat')])],
 		subfolder_name=f'test_plots_{function.__name__}')
 
 
@@ -56,7 +56,7 @@ def test_rewards_array_size():
 
 	with patch('recommerce.monitoring.agent_monitoring.am_evaluation.plt'):
 		with pytest.raises(AssertionError) as assertion_message:
-			monitor.evaluator.create_histogram(rewards_wrong)
+			monitor.evaluator.create_histogram(rewards_wrong, True)
 		assert 'all rewards-arrays must be of the same size' in str(assertion_message.value)
 
 
@@ -88,11 +88,29 @@ def test_create_histogram(agents, rewards, plot_bins, agent_color, lower_upper_r
 		patch('recommerce.monitoring.agent_monitoring.am_configuration.os.path.exists') as exists_mock:
 		exists_mock.return_value = True
 
-		monitor.evaluator.create_histogram(rewards)
+		monitor.evaluator.create_histogram(rewards, True)
 		hist_mock.assert_called_once_with(rewards, bins=plot_bins, color=agent_color, rwidth=0.9, range=lower_upper_range, edgecolor='black')
 		legend_mock.assert_called_once_with(name_list)
 		draw_mock.assert_called_once()
-		save_mock.assert_called_once_with(fname=os.path.join(monitor.configurator.folder_path, 'histograms', 'default.svg'))
+		save_mock.assert_called_once_with(fname=os.path.join(monitor.configurator.folder_path, 'default.svg'))
+
+
+def test_create_histogram_without_saving_to_directory():
+	monitor.configurator.setup_monitoring(enable_live_draw=False, agents=[(RuleBasedCEAgent, [])])
+	with patch('recommerce.monitoring.agent_monitoring.am_evaluation.plt.clf'), \
+		patch('recommerce.monitoring.agent_monitoring.am_evaluation.plt.xlabel'), \
+		patch('recommerce.monitoring.agent_monitoring.am_evaluation.plt.title'), \
+		patch('recommerce.monitoring.agent_monitoring.am_evaluation.plt.hist'), \
+		patch('recommerce.monitoring.agent_monitoring.am_evaluation.plt.legend'), \
+		patch('recommerce.monitoring.agent_monitoring.am_evaluation.plt.pause'), \
+		patch('recommerce.monitoring.agent_monitoring.am_evaluation.plt.draw'), \
+		patch('recommerce.monitoring.agent_monitoring.am_evaluation.plt.savefig') as save_mock, \
+		patch('recommerce.monitoring.agent_monitoring.am_configuration.os.makedirs'), \
+		patch('recommerce.monitoring.agent_monitoring.am_configuration.os.path.exists') as exists_mock:
+		exists_mock.return_value = True
+
+		monitor.evaluator.create_histogram([[100, 0]], False)
+		save_mock.assert_not_called()
 
 
 @pytest.mark.parametrize('agents, rewards, plot_bins, agent_color, lower_upper_range', create_histogram_statistics_plots_testcases)

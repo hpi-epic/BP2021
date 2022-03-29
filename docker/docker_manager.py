@@ -220,7 +220,7 @@ class DockerManager():
 	def get_container_data(self, container_id: str, container_path: str) -> DockerInfo:
 		"""
 		To be called by the REST API.
-		Return a data stream object that matches a .tar archive as well as a filename derived from the curent time and the provided file-path.
+		Return a data stream object that matches a .tar archive as well as a filename derived from the current time and the provided file-path.
 
 		Args:
 			container_id (str): The id of the container.

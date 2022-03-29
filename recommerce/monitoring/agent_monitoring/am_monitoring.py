@@ -1,6 +1,7 @@
 import os
 import signal
 import sys
+from copy import deepcopy
 
 from tqdm import trange
 
@@ -44,16 +45,16 @@ class Monitor():
 		rewards = [[] for _ in range(len(self.configurator.agents))]
 
 		for episode in trange(1, self.configurator.episodes + 1, unit=' episodes', leave=False):
-			# reset the state once to be used by all agents
-			default_state = self.configurator.marketplace.reset()
+			# reset the state & marketplace once to be used by all agents
+			source_state = self.configurator.marketplace.reset()
+			source_marketplace = self.configurator.marketplace
 
 			for current_agent_index in range(len(self.configurator.agents)):
-				# reset marketplace, bit hacky, if you find a better solution feel free
-				self.configurator.marketplace.reset()
-				self.configurator.marketplace.state = default_state
+				# for every agent, set an equivalent "start-market"
+				self.configurator.marketplace = deepcopy(source_marketplace)
 
 				# reset values for all agents
-				state = default_state
+				state = source_state
 				episode_reward = 0
 				is_done = False
 
@@ -69,11 +70,10 @@ class Monitor():
 				rewards[current_agent_index] += [episode_reward]
 
 			if (episode % self.configurator.plot_interval) == 0:
-				self.evaluator.create_histogram(rewards, f'episode_{episode}')
+				self.evaluator.create_histogram(rewards, False, f'episode_{episode}')
 
-		# if the plot_interval does not create a plot after the last episode automatically, we will do it manually
-		if (self.configurator.episodes % self.configurator.plot_interval) != 0:
-			self.evaluator.create_histogram(rewards, f'episode_{self.configurator.episodes}')
+		# only one histogram after the whole monitoring process
+		self.evaluator.create_histogram(rewards, True, 'Cumulative_rewards_per_episode')
 
 		return rewards
 
@@ -103,7 +103,7 @@ def main():  # pragma: no cover
 		enable_live_draw=config.enable_live_draw,
 		episodes=config.episodes,
 		plot_interval=config.plot_interval,
-		marketplace=config.marketplace,
+		marketplace=config.marketplace[0],
 		agents=config.agent
 	)
 	run_monitoring_session(monitor)
