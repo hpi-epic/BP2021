@@ -94,12 +94,12 @@ class RLTrainer(ABC):
 		averaged_info = ut.divide_content_of_dict(averaged_info, len(sliced_dicts))
 		return averaged_info
 
-	def consider_print_info(self, frame_idx, episode_number, averaged_info, epsilon=None) -> None:
+	def consider_print_info(self, frame_idx: int, episode_number: int, averaged_info: dict, epsilon=None) -> None:
 		if (episode_number) % 10 == 0:
 			tqdm.write(f"{frame_idx + 1}: {episode_number} episodes trained, mean return {averaged_info['profits/all']['vendor_0']:.3f}, " + (
 				f'eps {epsilon:.2f}' if epsilon is not None else ''))
 
-	def consider_save_model(self, episodes_idx: int, force=False) -> None:
+	def consider_save_model(self, episodes_idx: int, force: bool = False) -> None:
 		if ((episodes_idx % 500 == 0 and episodes_idx > 0) or force) and self.best_mean_interim_reward is not None:
 			path_to_parameters = self.RL_agent.save(model_path=self.model_path, model_name=f'{self.signature}_{episodes_idx:05d}')
 			tqdm.write(f'I write the interim model after {episodes_idx} episodes to the disk.')
