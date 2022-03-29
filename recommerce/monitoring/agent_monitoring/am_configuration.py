@@ -23,7 +23,7 @@ class Configurator():
 		self.enable_live_draw = False
 		self.episodes = 500
 		self.plot_interval = 50
-		self.marketplace = circular_market.CircularEconomyMonopolyScenario()
+		self.marketplace = circular_market.CircularEconomyMonopolyScenario
 		default_agent = FixedPriceCEAgent
 		self.agents = [default_agent()]
 		self.agent_colors = [(0.0, 0.0, 1.0, 1.0)]
@@ -37,7 +37,7 @@ class Configurator():
 			str: The folder name
 		"""
 		# create folder with current timestamp to save diagrams at
-		os.makedirs(os.path.join(self.folder_path, 'histograms'), exist_ok=True)
+		os.makedirs(os.path.join(self.folder_path), exist_ok=True)
 		return self.folder_path
 
 	def _get_modelfile_path(self, model_name: str) -> str:
@@ -185,23 +185,6 @@ class Configurator():
 		if(subfolder_name is not None):
 			assert isinstance(subfolder_name, str), f'subfolder_name must be of type str: {type(subfolder_name)}, {subfolder_name}'
 			self.folder_path = os.path.join(PathManager.results_path, 'monitoring', subfolder_name)
-
-	def get_configuration(self) -> dict:
-		"""
-		Return the configuration of the current monitor as a dictionary.
-
-		Returns:
-			dict: A dict containing the configuration (=class variables)
-		"""
-		return {
-			'enable_live_draw': self.enable_live_draw,
-			'episodes': self.episodes,
-			'plot_interval': self.plot_interval,
-			'marketplace': self.marketplace,
-			'agents': self.agents,
-			'agent_colors': self.agent_colors,
-			'folder_path': self.folder_path,
-		}
 
 	def print_configuration(self):
 		"""

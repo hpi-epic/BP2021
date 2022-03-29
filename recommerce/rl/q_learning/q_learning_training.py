@@ -19,8 +19,8 @@ class QLearningTrainer(RLTrainer):
 			number_of_training_steps (int, optional): The maximum number of steps the training will run for.
 			Defaults to 2*config.epsilon_decay_last_frame.
 		"""
-		self.marketplace = self.marketplace_class()
-		state = self.marketplace.reset()
+		marketplace = self.marketplace_class()
+		state = marketplace.reset()
 
 		vendors_cumulated_info = None
 		all_dicts = []
@@ -32,7 +32,7 @@ class QLearningTrainer(RLTrainer):
 			epsilon = max(config.epsilon_final, config.epsilon_start - frame_idx / config.epsilon_decay_last_frame)
 
 			action = self.RL_agent.policy(state, epsilon)
-			state, reward, is_done, info = self.marketplace.step(action)
+			state, reward, is_done, info = marketplace.step(action)
 			self.RL_agent.set_feedback(reward, is_done, state)
 			vendors_cumulated_info = info if vendors_cumulated_info is None else ut.add_content_of_two_dicts(vendors_cumulated_info, info)
 
@@ -52,7 +52,7 @@ class QLearningTrainer(RLTrainer):
 					self.consider_save_model(finished_episodes)
 
 				vendors_cumulated_info = None
-				self.marketplace.reset()
+				marketplace.reset()
 
 			if len(self.RL_agent.buffer) < config.replay_start_size:
 				continue

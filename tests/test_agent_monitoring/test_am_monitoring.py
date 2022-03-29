@@ -39,14 +39,11 @@ def test_run_marketplace():
 
 def test_run_monitoring_session():
 	monitor.configurator.setup_monitoring(episodes=10, plot_interval=10)
-	current_configuration = monitor.configurator.get_configuration()
 	with patch('recommerce.monitoring.agent_monitoring.am_evaluation.plt'), \
 		patch('recommerce.monitoring.agent_monitoring.am_configuration.os.makedirs'), \
 		patch('recommerce.monitoring.agent_monitoring.am_configuration.os.path.exists') as exists_mock:
 		exists_mock.return_value = True
 		monitoring.run_monitoring_session(monitor)
-		assert current_configuration == monitor.configurator.get_configuration(), \
-			'the monitor configuration should not be changed within run_monitoring()'
 		assert os.path.exists(monitor.configurator.folder_path)
 
 
