@@ -5,6 +5,7 @@ from django.test import TestCase
 from django.test.client import RequestFactory
 
 # from ..buttons import ButtonHandler
+# from unittest.mock import patch
 from ..config_merger import ConfigMerger
 from ..config_parser import ConfigModelParser
 from ..models.config import Config, EnvironmentConfig, HyperparameterConfig, RlConfig
@@ -14,15 +15,13 @@ from .constant_tests import EMPTY_STRUCTURE_CONFIG, EXAMPLE_HIERARCHY_DICT, EXAM
 class ConfigMergerTest(TestCase):
 
 	# def test_no_configs_selected(self):
-	# 	print('TESTSTART')
 	# 	request = self._setup_request({})
-	# 	button_handler = ButtonHandler(request, view='configurator.html', rendering_method='config_files')
+	# 	with patch('alpha_business_app.buttons.ButtonHandler._pre_fill') as render_mock:
+	# 		button_handler = ButtonHandler(request, view='configurator.html', rendering_method='config_files')
 
-	# 	button_handler.do_button_click()
-	# 	with patch('alpha_business_app.buttons.ButtonHandler._render_files') as render_mock:
+	# 		button_handler.do_button_click()
 	# 		render_mock.assert_called_once()
 	# 		render_mock.assert_called_once_with(request, 'configurator.html', {'all_configurations': Config.objects.all()})
-	# 	print('TESTEND')
 
 	def test_merge_one_config(self):
 		test_dict = copy.deepcopy(EXAMPLE_HIERARCHY_DICT)
