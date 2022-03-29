@@ -1,5 +1,4 @@
 import os
-import re
 from unittest.mock import patch
 
 import numpy as np
@@ -7,7 +6,6 @@ import pytest
 
 import recommerce.market.circular.circular_sim_market as circular_market
 import recommerce.monitoring.agent_monitoring.am_monitoring as monitoring
-from recommerce.configuration.path_manager import PathManager
 from recommerce.market.circular.circular_vendors import FixedPriceCEAgent, RuleBasedCEAgent
 from recommerce.rl.q_learning.q_learning_agent import QLearningCEAgent
 
@@ -26,12 +24,6 @@ def setup_function(function):
 		marketplace=circular_market.CircularEconomyMonopolyScenario,
 		agents=[(QLearningCEAgent, [os.path.join(PathManager.data_path, 'CircularEconomyMonopolyScenario_QLearningCEAgent.dat')])],
 		subfolder_name=f'test_plots_{function.__name__}')
-
-
-def teardown_module(module):
-	for file_name in os.listdir(os.path.join(PathManager.results_path, 'monitoring')):
-		if re.match('test_*', file_name):
-			assert False, 'Test files were not mocked correctly'
 
 
 evaluate_session_testcases = [
