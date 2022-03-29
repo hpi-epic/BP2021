@@ -15,7 +15,7 @@ valid_training_dict = {
 	'agents': {
 		'CE Rebuy Agent (QLearning)': {
 			'agent_class': 'recommerce.rl.q_learning.q_learning_agent.QLearningCERebuyAgent',
-			'argument': None
+			'argument': ''
 		}
 	}
 }
@@ -29,7 +29,7 @@ valid_agent_monitoring_dict = {
 	'agents': {
 		'Rule_Based Agent': {
 			'agent_class': 'recommerce.market.circular.circular_vendors.RuleBasedCERebuyAgent',
-			'argument': None
+			'argument': ''
 		},
 		'CE Rebuy Agent (QLearning)': {
 			'agent_class': 'recommerce.rl.q_learning.q_learning_agent.QLearningCERebuyAgent',
@@ -55,7 +55,7 @@ invalid_agent_dict = {
 	'agents': {
 		'Agent_name': {
 			'agent_class': 'recommerce.rl.q_learning.q_learning_agent.QLearningCERebuyAgent',
-			'argument': None
+			'argument': ''
 		}
 	}
 }
@@ -81,7 +81,7 @@ def test_abstract_parent_class():
 def test_str_representation():
 	config = env_config.TrainingEnvironmentConfig(valid_training_dict)
 	assert str(config) == ("TrainingEnvironmentConfig: {'task': 'training', "
-		"'marketplace': <recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario>, "
+		"'marketplace': [<class 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario'>], "
 		"'agent': (<class 'recommerce.rl.q_learning.q_learning_agent.QLearningCERebuyAgent'>, None)}")
 
 
@@ -167,7 +167,7 @@ def test_valid_ConfigLoader_load_training(task, marketplace, agents):
 
 
 configLoader_is_valid_testcases = [
-	(invalid_agent_dict, False, 'The "argument" field of this agent must be a str'),
+	(invalid_agent_dict, False, 'The "argument" field must end with .dat:'),
 	(invalid_task_dict, False, 'The specified task is unknown: not_existing_test_task'),
 	(valid_exampleprinter_dict, True, 'Your config is valid.')
 ]

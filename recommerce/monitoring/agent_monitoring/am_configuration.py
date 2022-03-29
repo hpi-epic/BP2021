@@ -23,7 +23,7 @@ class Configurator():
 		self.enable_live_draw = False
 		self.episodes = 500
 		self.plot_interval = 50
-		self.marketplace = circular_market.CircularEconomyMonopolyScenario()
+		self.marketplace = circular_market.CircularEconomyMonopolyScenario
 		default_agent = FixedPriceCEAgent
 		self.agents = [default_agent()]
 		self.agent_colors = [(0.0, 0.0, 1.0, 1.0)]
