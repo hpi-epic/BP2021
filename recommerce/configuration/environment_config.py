@@ -55,6 +55,8 @@ class EnvironmentConfig(ABC):
 		assert isinstance(config['marketplace'], str), \
 			f'The "marketplace" field must be a str: {config["marketplace"]} ({type(config["marketplace"])})'
 
+		# we need to encapsulate this in a list because otherwise the self.marketplace will be made a class-variable
+		# this is apparently due to the way that `getattr` works, at least we think so
 		self.marketplace = [self._get_class(config['marketplace'])]
 		assert issubclass(self.marketplace[0], SimMarket), \
 			f'The type of the passed marketplace must be a subclass of SimMarket: {self.marketplace[0]}'

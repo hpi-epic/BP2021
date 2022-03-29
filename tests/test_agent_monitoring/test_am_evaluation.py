@@ -6,6 +6,7 @@ import pytest
 
 import recommerce.market.circular.circular_sim_market as circular_market
 import recommerce.monitoring.agent_monitoring.am_monitoring as monitoring
+from recommerce.configuration.path_manager import PathManager
 from recommerce.market.circular.circular_vendors import FixedPriceCEAgent, RuleBasedCEAgent
 from recommerce.rl.q_learning.q_learning_agent import QLearningCEAgent
 
