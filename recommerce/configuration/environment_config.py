@@ -33,7 +33,7 @@ class EnvironmentConfig(ABC):
 		"""
 		return f'{self.__class__.__name__}: {self.__dict__}'
 
-	def _check_top_level(self, config: dict) -> None:
+	def _check_top_level_structure(self, config: dict) -> None:
 		"""
 		Utility function that checks if all required top-level fields exist and have the right types.
 
@@ -51,6 +51,90 @@ class EnvironmentConfig(ABC):
 		assert isinstance(config['agents'], dict), \
 			f'The "agents" field must be a dict: {config["agents"]} ({type(config["agents"])})'
 
+	def _check_and_adjust_agents_structure(self, agents_config: dict, single_agent: bool) -> tuple:
+		"""
+		Utility function that checks if the agents field has the correct structure and shortens it if necessary.
+
+		Args:
+			agents_config (dict): The dict to be checked.
+			single_agent (bool): Whether or not only one agent should be used.
+				Note that if single_agent is True and the agent dictionary is too long, it will be shortened globally.
+
+		Returns:
+			dict: The agents_config, shortened if single_agent is True.
+			list: The list of agent_dictionaries extracted from agents_config.
+		"""
+		assert all(isinstance(agents_config[agent], dict) for agent in agents_config), \
+			f'All agents in the "agents" field must be dictionaries: {[agents_config[agent] for agent in agents_config]}, \
+{[type(agents_config[agent]) for agent in agents_config]}'
+
+		# Shorten the agent dictionary if only one is necessary
+		if single_agent and len(agents_config) > 1:
+			used_agent = list(agents_config.items())[0]
+			agents_config = {used_agent[0]: used_agent[1]}
+			print(f'Multiple agents were provided but only the first one will be used:\n{agents_config}\n')
+
+		# Save the agents in agents_config in a list for easier access
+		agent_dictionaries = [agents_config[agent] for agent in agents_config]
+
+		# CHECK: Agents::agent_class
+		assert all('agent_class' in agent for agent in agent_dictionaries), f'Each agent must have an "agent_class" field: {agent_dictionaries}'
+		assert all(isinstance(agent['agent_class'], str) for agent in agent_dictionaries), \
+			f'The "agent_class" fields must be strings: {agent_dictionaries} ({[type(agent["agent_class"]) for agent in agent_dictionaries]})'
+
+		# CHECK: Agents::argument
+		assert all('argument' in agent for agent in agent_dictionaries), f'Each agent must have an "argument" field: {agent_dictionaries}'
+
+		return agents_config, agent_dictionaries
+
+	def _parse_agent_arguments(self, agent_dictionaries: dict, needs_modelfile: bool) -> tuple:
+		"""
+		Utility function that parses the provided agent arguments, making sure they are the correct type for the agent.
+
+		Args:
+			agent_dictionaries (dict): The agents for which to parse the arguments.
+			needs_modelfile (bool): Whether or not RL-agents need modelfiles in this config.
+
+		Returns:
+			list: A list of agent classes.
+			list: A list of parsed arguments.
+		"""
+		agent_classes = [self._get_class(agent['agent_class']) for agent in agent_dictionaries]
+
+		# If a modelfile is needed, the self.agents will be a list of tuples (as required by agent_monitoring), else just a list of classes
+		arguments_list = []
+		for current_agent in range(len(agent_classes)):
+			current_config_argument = agent_dictionaries[current_agent]['argument']
+
+			# This if-else contains the parsing logic for the different types of arguments agents can have, e.g. modelfiles or fixed-price-lists
+			if needs_modelfile and issubclass(agent_classes[current_agent], (QLearningAgent, ActorCriticAgent)):
+				assert isinstance(current_config_argument, str), \
+					f'The "argument" field of this agent must be a string: {agent_classes[current_agent]} ({type(current_config_argument)})'
+				assert current_config_argument.endswith('.dat'), \
+					f'The "argument" field must be a modelfile and therefore end in ".dat": {current_config_argument}'
+				# Check that the modelfile exists. Taken from am_configuration::_get_modelfile_path()
+				full_path = os.path.abspath(os.path.join(PathManager.data_path, current_config_argument))
+				assert os.path.exists(full_path), f'the specified modelfile does not exist: {full_path}'
+
+				arguments_list.append(current_config_argument)
+
+			elif issubclass(agent_classes[current_agent], FixedPriceAgent):
+				assert isinstance(current_config_argument, list), \
+					f'The "argument" field of this agent must be a list: {agent_classes[current_agent]} ({type(current_config_argument)})'
+				# Subclasses of FixedPriceAgent solely accept tuples
+				arguments_list.append(tuple(current_config_argument))
+
+			# if this agent doesn't have modelfiles or *fixed_price-lists*, append None
+			# we need to append *something* since the subsequent call creates a list of tuples using the `arguments_list`
+			# if we were to only append items for agents with modelfiles or *fixed_price-lists*, the lists would have different lengths and the
+			# process of matching the correct ones would get a lot more difficult
+			else:
+				if current_config_argument != '' and current_config_argument is not None:
+					print(f'Your passed argument {current_config_argument} in the "argument" field will be discarded!')
+				arguments_list.append(None)
+
+		return agent_classes, arguments_list
+
 	def _set_marketplace(self, marketplace_string: str) -> None:
 		"""
 		Utility function that validates the type of marketplace passed and sets the instance variable.
@@ -61,6 +145,26 @@ class EnvironmentConfig(ABC):
 		self.marketplace = self._get_class(marketplace_string)
 		assert issubclass(self.marketplace, SimMarket), \
 			f'The type of the passed marketplace must be a subclass of SimMarket: {self.marketplace}'
+
+	def _set_agents(self, agent_classes: list, arguments_list: list) -> None:
+		"""
+		Utility function that creates a list of tuples from the agent classes and their arguments
+		and sets the resulting list as an instance variable.
+
+		Args:
+			agent_classes (list): A list of the different agent classes.
+			arguments_list (list): A list of arguments for the different agents.
+		"""
+		# Create a list of tuples (agent_class, argument)
+		self.agent = list(zip(agent_classes, arguments_list))
+
+	def _assert_agent_marketplace_fit(self) -> None:
+		"""
+		Utility function that makes sure the agent(s) and marketplace are of the same type.
+		"""
+
+		assert all(issubclass(agent[0], CircularAgent) == issubclass(self.marketplace, CircularEconomy) for agent in self.agent), \
+			f'The agents and marketplace must be of the same economy type (Linear/Circular): {self.agent} and {self.marketplace}'
 
 	def _validate_config(self, config: dict, single_agent: bool, needs_modelfile: bool) -> None:
 		"""
@@ -76,70 +180,17 @@ class EnvironmentConfig(ABC):
 			AssertionError: In case the provided configuration is invalid.
 		"""
 
-		self._check_top_level(config)
+		self._check_top_level_structure(config)
+
+		config['agents'], agent_dictionaries = self._check_and_adjust_agents_structure(config['agents'], single_agent)
+
+		agent_classes, arguments_list = self._parse_agent_arguments(agent_dictionaries, needs_modelfile)
+
+		self._set_agents(agent_classes, arguments_list)
 
 		self._set_marketplace(config['marketplace'])
 
-		# Shorten the agent dictionary if only one is necessary
-		if single_agent and len(config['agents']) > 1:
-			used_agent = list(config['agents'].items())[0]
-			config['agents'] = {used_agent[0]: used_agent[1]}
-			print(f'Multiple agents were provided but only the first one will be used:\n{config["agents"]}\n')
-
-		# Save the agents in config['agents'] in a list for easier access
-		agent_dictionaries = [config['agents'][agent] for agent in config['agents']]
-
-		assert all(isinstance(agent, dict) for agent in agent_dictionaries), \
-			f'All agents in the "agents" field must be dictionaries: {[config["agents"][agent] for agent in config["agents"]]}'
-
-		# CHECK: Agents::agent_class
-		assert all('agent_class' in agent for agent in agent_dictionaries), f'Each agent must have an "agent_class" field: {agent_dictionaries}'
-		assert all(isinstance(agent['agent_class'], str) for agent in agent_dictionaries), \
-			f'The "agent_class" fields must be strings: {agent_dictionaries} ({[type(agent["agent_class"]) for agent in agent_dictionaries]})'
-
-		# CHECK: Agents::argument
-		agent_classes = [self._get_class(agent['agent_class']) for agent in agent_dictionaries]
-		# If a modelfile is needed, the self.agents will be a list of tuples (as required by agent_monitoring), else just a list of classes
-		argument_list = []
-		for current_agent in range(len(agent_classes)):
-			assert 'argument' in agent_dictionaries[current_agent], f'Every agent must have an "argument" field: {agent_classes[current_agent]}'
-			current_config_argument = agent_dictionaries[current_agent]['argument']
-
-			# This if-else contains the parsing logic for the different types of arguments agents can have, e.g. modelfiles or fixed-price-lists
-			if needs_modelfile and issubclass(agent_classes[current_agent], (QLearningAgent, ActorCriticAgent)):
-				assert isinstance(current_config_argument, str), \
-					f'The "argument" field of this agent must be a str: {agent_classes[current_agent]} ({type(current_config_argument)})'
-				assert current_config_argument.endswith('.dat'), \
-					f'The "argument" field must be a modelfile and therefore end with .dat: {current_config_argument}'
-				# Check that the modelfile exists. Taken from am_configuration::_get_modelfile_path()
-				full_path = os.path.abspath(os.path.join(PathManager.data_path, current_config_argument))
-				assert os.path.exists(full_path), f'the specified modelfile does not exist: {full_path}'
-
-				argument_list.append(current_config_argument)
-
-			elif issubclass(agent_classes[current_agent], FixedPriceAgent):
-				assert isinstance(current_config_argument, list), \
-					f'The "argument" field of this agent must be a list: {agent_classes[current_agent]} ({type(current_config_argument)})'
-				# Subclasses of FixedPriceAgent solely accept tuples
-				argument_list.append(tuple(current_config_argument))
-
-			# if this agent doesn't have modelfiles or *fixed_price-lists*, append None
-			# we need to append *something* since the subsequent call creates a list of tuples using the `argument_list`
-			# if we were to only append items for agents with modelfiles or *fixed_price-lists*, the lists would have different lengths and the
-			# process of matching the correct ones would get a lot more difficult
-			else:
-				if current_config_argument != ('' or None):
-					print(f'Your passed argument {current_config_argument} in the "argument" field will be discarded!')
-				argument_list.append(None)
-		# Create a list of tuples (agent_class, argument)
-		self.agent = list(zip(agent_classes, argument_list))
-
-		assert all(issubclass(agent[0], CircularAgent) == issubclass(self.marketplace, CircularEconomy) for agent in self.agent), \
-			f'The agents and marketplace must be of the same economy type (Linear/Circular): {self.agent} and {self.marketplace}'
-
-		# If only one agent is needed, we just use the first agent from the list we created before
-		if single_agent:
-			self.agent = self.agent[0]
+		self._assert_agent_marketplace_fit()
 
 	def _get_class(self, import_string: str) -> object:
 		"""
@@ -183,14 +234,10 @@ class TrainingEnvironmentConfig(EnvironmentConfig):
 	def _validate_config(self, config: dict) -> None:
 		super(TrainingEnvironmentConfig, self)._validate_config(config, single_agent=True, needs_modelfile=False)
 
-		# Since we don't want self.agent as a class variable, we leave it as a tuple consisting of (class, None) and just
-		# access the class in the training_scenario
-		assert isinstance(self.agent, tuple), \
-			f'The agent instance variable must be a tuple: {self.agent}'
-		assert issubclass(self.agent[0], (QLearningAgent, ActorCriticAgent)), \
-			f'The first component must be a subclass of either QLearningAgent or ActorCriticAgent: {self.agent[0]}'
-		assert self.agent[1] is None, \
-			f'The second component must be None: {self.agent[1]}'
+		# Since we only have one agent without any arguments, we extract it from the provided list
+		self.agent = self.agent[0][0]
+		assert issubclass(self.agent, (QLearningAgent, ActorCriticAgent)), \
+			f'The first component must be a subclass of either QLearningAgent or ActorCriticAgent: {self.agent}'
 
 	def _get_task(self) -> str:
 		return 'training'
@@ -211,8 +258,8 @@ class AgentMonitoringEnvironmentConfig(EnvironmentConfig):
 			If the agent needs a modelfile, this will be the first entry in the list, the other entry is always an informal name for the agent.
 	"""
 
-	def _check_top_level(self, config: dict) -> None:
-		super(AgentMonitoringEnvironmentConfig, self)._check_top_level(config)
+	def _check_top_level_structure(self, config: dict) -> None:
+		super(AgentMonitoringEnvironmentConfig, self)._check_top_level_structure(config)
 		assert 'enable_live_draw' in config, f'The config must have an "enable_live_draw" field: {config}'
 		assert 'episodes' in config, f'The config must have an "episodes" field: {config}'
 		assert 'plot_interval' in config, f'The config must have a "plot_interval" field: {config}'
@@ -259,6 +306,8 @@ class ExampleprinterEnvironmentConfig(EnvironmentConfig):
 
 	def _validate_config(self, config: dict) -> None:
 		super(ExampleprinterEnvironmentConfig, self)._validate_config(config, single_agent=True, needs_modelfile=True)
+		# Since we only have one agent, we extract it from the provided list
+		self.agent = self.agent[0]
 
 	def _get_task(self) -> str:
 		return 'exampleprinter'

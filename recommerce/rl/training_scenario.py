@@ -59,7 +59,7 @@ def train_from_config():
 	config: TrainingEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_training')
 	# Since we store a tuple (class, None) in config.agent, we just want the first component
 	# Since we store an one-element list [class] in config.marketplace, we just want the stored element
-	run_training_session(config.marketplace, config.agent[0])
+	run_training_session(config.marketplace, config.agent)
 
 
 def main():
