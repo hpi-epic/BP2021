@@ -134,6 +134,9 @@ class RLTrainer(ABC):
 		raise NotImplementedError('This method is abstract. Use a subclass')
 
 	def analyze_trained_agents(self):
+		if len(self.saved_parameter_paths) == 0:
+			print('No agents saved! Nothing to monitor.')
+			return
 		monitor = Monitor()
 		agent_list = [(self.agent_class, [parameter_path]) for parameter_path in self.saved_parameter_paths]
 		monitor.configurator.setup_monitoring(False, 250, 250, self.marketplace_class, agent_list)
