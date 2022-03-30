@@ -35,25 +35,29 @@ class EnvironmentConfig(ABC):
 
 	def _check_top_level(self, config: dict) -> None:
 		"""
-		Utility function that checks if all required top-level fields exist.
+		Utility function that checks if all required top-level fields exist and have the right types.
 
 		Args:
 			config (dict): The config to be checked.
 		"""
 		assert 'task' in config, f'The config must have a "task" field: {config}'
-		assert 'agents' in config, f'The config must have an "agents" field: {config}'
 		assert 'marketplace' in config, f'The config must have a "marketplace" field: {config}'
+		assert 'agents' in config, f'The config must have an "agents" field: {config}'
 
-	def _check_marketplace(self, marketplace_string: str) -> None:
+		assert isinstance(config['task'], str), \
+			f'The "task" field must be a str: {config["task"]} ({type(config["task"])})'
+		assert isinstance(config['marketplace'], str), \
+			f'The "marketplace" field must be a str: {config["marketplace"]} ({type(config["marketplace"])})'
+		assert isinstance(config['agents'], dict), \
+			f'The "agents" field must be a dict: {config["agents"]} ({type(config["agents"])})'
+
+	def _set_marketplace(self, marketplace_string: str) -> None:
 		"""
-		Utility function that validates the type of marketplace passed.
+		Utility function that validates the type of marketplace passed and sets the instance variable.
 
 		Args:
 			marketplace (str): The string of the class within the config dictionary.
 		"""
-		assert isinstance(marketplace_string, str), \
-			f'The "marketplace" field must be a str: {marketplace_string} ({type(marketplace_string)})'
-
 		self.marketplace = self._get_class(marketplace_string)
 		assert issubclass(self.marketplace, SimMarket), \
 			f'The type of the passed marketplace must be a subclass of SimMarket: {self.marketplace}'
@@ -74,11 +78,7 @@ class EnvironmentConfig(ABC):
 
 		self._check_top_level(config)
 
-		self._check_marketplace(config['marketplace'])
-
-		# CHECK: Agents
-		assert isinstance(config['agents'], dict), \
-			f'The "agents" field must be a dict: {config["agents"]} ({type(config["agents"])})'
+		self._set_marketplace(config['marketplace'])
 
 		# Shorten the agent dictionary if only one is necessary
 		if single_agent and len(config['agents']) > 1:
@@ -212,25 +212,11 @@ class AgentMonitoringEnvironmentConfig(EnvironmentConfig):
 	"""
 
 	def _check_top_level(self, config: dict) -> None:
-		"""
-		Utility function that checks if all required top-level fields exist.
-
-		Args:
-			config (dict): The config to be checked.
-		"""
 		super(AgentMonitoringEnvironmentConfig, self)._check_top_level(config)
 		assert 'enable_live_draw' in config, f'The config must have an "enable_live_draw" field: {config}'
 		assert 'episodes' in config, f'The config must have an "episodes" field: {config}'
 		assert 'plot_interval' in config, f'The config must have a "plot_interval" field: {config}'
 
-	def _validate_config(self, config: dict) -> None:
-		# TODO: subfolder_name variable
-		# CHECK: All required top-level fields exist
-		assert 'enable_live_draw' in config, f'The config must have an "enable_live_draw" field: {config}'
-		assert 'episodes' in config, f'The config must have an "episodes" field: {config}'
-		assert 'plot_interval' in config, f'The config must have an "plot_interval" field: {config}'
-
-		# CHECK: Agent_monitoring fields have the correct types
 		assert isinstance(config['enable_live_draw'], bool), \
 			f'The "enable_live_draw" field must be a bool: {config["enable_live_draw"]} ({type(config["enable_live_draw"])})'
 		assert isinstance(config['episodes'], int), \
@@ -238,12 +224,14 @@ class AgentMonitoringEnvironmentConfig(EnvironmentConfig):
 		assert isinstance(config['plot_interval'], int), \
 			f'The "plot_interval" field must be a int: {config["plot_interval"]} ({type(config["plot_interval"])})'
 
+	def _validate_config(self, config: dict) -> None:
+		# TODO: subfolder_name variable
+
+		super(AgentMonitoringEnvironmentConfig, self)._validate_config(config, single_agent=False, needs_modelfile=True)
+
 		self.enable_live_draw = config['enable_live_draw']
 		self.episodes = config['episodes']
 		self.plot_interval = config['plot_interval']
-
-		# We do the super call last because getting the classes takes longer than the other operations, so we save time in case of an error.
-		super(AgentMonitoringEnvironmentConfig, self)._validate_config(config, single_agent=False, needs_modelfile=True)
 
 		# Since RuleBasedAgents do not have modelfiles, we need to adjust the passed lists to remove the "None" entry
 		passed_agents = self.agent
