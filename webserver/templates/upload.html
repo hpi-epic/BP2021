@@ -1,20 +1,14 @@
-<!doctype html>
-<html lang="en">
-	<head>
-		<meta charset="utf-8"/>
-		<title>Upload Config files</title>
-		{% load static %}
-		<link rel="stylesheet" type="text/css" href="{% static 'style.css' %}">
-		<link rel="shortcut icon" type="image/png" href="{% static 'favicon.png' %}"/>
-	</head>
-	<body>
-		<h1>Upload your config file here</h1>
+{% extends "base.html" %}
+{% block title %}Upload{% endblock title %}
+{% block content %}
+	<h1>Upload your config file here</h1>
+	<br>
+	<div>
 		<form method="post" enctype="multipart/form-data">
 			{% csrf_token %}
-			<input type="file" name="upload_config" accept="application/json"/>
+			<input type="file" name="upload_config" class="form-control-file" accept="application/json"/>
+			<input type="text" name="config_name" class="form-control" placeholder="config name">
 			<button>Submit</button>
 		</form>
-		<br>
-		<a href="/">Home</a>
-	</body>
-</html>
+	</div>
+{% endblock content %}
