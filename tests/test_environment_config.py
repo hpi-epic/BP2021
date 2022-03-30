@@ -81,7 +81,7 @@ def test_abstract_parent_class():
 def test_str_representation():
 	config = env_config.TrainingEnvironmentConfig(valid_training_dict)
 	assert str(config) == ("TrainingEnvironmentConfig: {'task': 'training', "
-		"'marketplace': [<class 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario'>], "
+		"'marketplace': <class 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario'>, "
 		"'agent': (<class 'recommerce.rl.q_learning.q_learning_agent.QLearningCERebuyAgent'>, None)}")
 
 

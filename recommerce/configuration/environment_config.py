@@ -44,6 +44,20 @@ class EnvironmentConfig(ABC):
 		assert 'agents' in config, f'The config must have an "agents" field: {config}'
 		assert 'marketplace' in config, f'The config must have a "marketplace" field: {config}'
 
+	def _check_marketplace(self, marketplace_string: str) -> None:
+		"""
+		Utility function that validates the type of marketplace passed.
+
+		Args:
+			marketplace (str): The string of the class within the config dictionary.
+		"""
+		assert isinstance(marketplace_string, str), \
+			f'The "marketplace" field must be a str: {marketplace_string} ({type(marketplace_string)})'
+
+		self.marketplace = self._get_class(marketplace_string)
+		assert issubclass(self.marketplace, SimMarket), \
+			f'The type of the passed marketplace must be a subclass of SimMarket: {self.marketplace}'
+
 	def _validate_config(self, config: dict, single_agent: bool, needs_modelfile: bool) -> None:
 		"""
 		Validate the given configuration dictionary and set the instance variables accordingly.
@@ -60,15 +74,7 @@ class EnvironmentConfig(ABC):
 
 		self._check_top_level(config)
 
-		# CHECK: Marketplace
-		assert isinstance(config['marketplace'], str), \
-			f'The "marketplace" field must be a str: {config["marketplace"]} ({type(config["marketplace"])})'
-
-		# we need to encapsulate this in a list because otherwise the self.marketplace will be made a class-variable
-		# this is apparently due to the way that `getattr` works, at least we think so
-		self.marketplace = [self._get_class(config['marketplace'])]
-		assert issubclass(self.marketplace[0], SimMarket), \
-			f'The type of the passed marketplace must be a subclass of SimMarket: {self.marketplace[0]}'
+		self._check_marketplace(config['marketplace'])
 
 		# CHECK: Agents
 		assert isinstance(config['agents'], dict), \
@@ -128,8 +134,8 @@ class EnvironmentConfig(ABC):
 		# Create a list of tuples (agent_class, argument)
 		self.agent = list(zip(agent_classes, argument_list))
 
-		assert all(issubclass(agent[0], CircularAgent) == issubclass(self.marketplace[0], CircularEconomy) for agent in self.agent), \
-			f'The agents and marketplace must be of the same economy type (Linear/Circular): {self.agent} and {self.marketplace[0]}'
+		assert all(issubclass(agent[0], CircularAgent) == issubclass(self.marketplace, CircularEconomy) for agent in self.agent), \
+			f'The agents and marketplace must be of the same economy type (Linear/Circular): {self.agent} and {self.marketplace}'
 
 		# If only one agent is needed, we just use the first agent from the list we created before
 		if single_agent:
