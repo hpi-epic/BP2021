@@ -33,6 +33,17 @@ class EnvironmentConfig(ABC):
 		"""
 		return f'{self.__class__.__name__}: {self.__dict__}'
 
+	def _check_top_level(self, config: dict) -> None:
+		"""
+		Utility function that checks if all required top-level fields exist.
+
+		Args:
+			config (dict): The config to be checked.
+		"""
+		assert 'task' in config, f'The config must have a "task" field: {config}'
+		assert 'agents' in config, f'The config must have an "agents" field: {config}'
+		assert 'marketplace' in config, f'The config must have a "marketplace" field: {config}'
+
 	def _validate_config(self, config: dict, single_agent: bool, needs_modelfile: bool) -> None:
 		"""
 		Validate the given configuration dictionary and set the instance variables accordingly.
@@ -47,9 +58,7 @@ class EnvironmentConfig(ABC):
 			AssertionError: In case the provided configuration is invalid.
 		"""
 
-		# CHECK: All required top-level fields exist
-		assert 'agents' in config, f'The config must have an "agents" field: {config}'
-		assert 'marketplace' in config, f'The config must have a "marketplace" field: {config}'
+		self._check_top_level(config)
 
 		# CHECK: Marketplace
 		assert isinstance(config['marketplace'], str), \
@@ -196,6 +205,18 @@ class AgentMonitoringEnvironmentConfig(EnvironmentConfig):
 			If the agent needs a modelfile, this will be the first entry in the list, the other entry is always an informal name for the agent.
 	"""
 
+	def _check_top_level(self, config: dict) -> None:
+		"""
+		Utility function that checks if all required top-level fields exist.
+
+		Args:
+			config (dict): The config to be checked.
+		"""
+		super(AgentMonitoringEnvironmentConfig, self)._check_top_level(config)
+		assert 'enable_live_draw' in config, f'The config must have an "enable_live_draw" field: {config}'
+		assert 'episodes' in config, f'The config must have an "episodes" field: {config}'
+		assert 'plot_interval' in config, f'The config must have a "plot_interval" field: {config}'
+
 	def _validate_config(self, config: dict) -> None:
 		# TODO: subfolder_name variable
 		# CHECK: All required top-level fields exist
@@ -286,6 +307,7 @@ class EnvironmentConfigLoader():
 		Returns:
 			EnvironmentConfig: A subclass instance of EnvironmentConfig.
 		"""
+		assert 'task' in config, f'The config must have a "task" field: {config}'
 		if config['task'] == 'training':
 			return TrainingEnvironmentConfig(config)
 		elif config['task'] == 'agent_monitoring':
