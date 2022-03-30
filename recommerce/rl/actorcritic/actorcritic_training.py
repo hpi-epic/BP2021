@@ -98,7 +98,8 @@ class ActorCriticTrainer(RLTrainer):
 					info_accumulators[env] = None
 
 					self.consider_print_info(step_number, finished_episodes, averaged_info)
-					self.consider_update_best_model(averaged_info, finished_episodes * config.episode_length)
+					self.consider_update_best_model(averaged_info)
+					self.consider_save_model(finished_episodes)
 
 			policy_loss, valueloss = self.RL_agent.train_batch(
 				torch.Tensor(np.array(states)),
@@ -111,4 +112,6 @@ class ActorCriticTrainer(RLTrainer):
 
 			self.consider_sync_tgt_net(step_number)
 
+		self.consider_save_model(finished_episodes, force=True)
+		self.analyze_trained_agents()
 		self._end_of_training()
