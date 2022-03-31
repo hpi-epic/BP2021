@@ -102,7 +102,7 @@ def main():  # pragma: no cover
 
 	config: ExampleprinterEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_exampleprinter')
 	marketplace = config.marketplace()
-	print(config.agent[0])
+
 	# QLearningAgents need more initialization
 	if issubclass(config.agent[0], QLearningAgent):
 		printer.setup_exampleprinter(marketplace=marketplace,
