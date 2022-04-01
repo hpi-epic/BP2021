@@ -121,6 +121,7 @@ def main():
     # optimal_parameters, cov = optimize.curve_fit(function, prices_agent, prices_comp_reaction)
     # print("cov", cov, "optimal_parameters", optimal_parameters)
     x_matrix = x_as_bool_matrix(prices_agent)
+    print(x_matrix)
     result = sm.OLS(prices_comp_reaction, x_matrix).fit()
     # result.model
     print(result.get_prediction(x_as_bool_matrix(np.array([1, 2]))))
