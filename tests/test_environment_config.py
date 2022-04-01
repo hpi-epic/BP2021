@@ -152,9 +152,9 @@ def test_valid_ConfigLoader_validate(config):
 valid_ConfigLoader_load_training_testcases = [
 	# TODO: Currently no testcases for ActorCriticAgents
 	('training', 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
-		{'CE Rebuy Agent (QLearning)': {'agent_class': 'recommerce.rl.q_learning.q_learning_agent.QLearningCERebuyAgent', 'argument': None}}),
+		{'CE Rebuy Agent (QLearning)': {'agent_class': 'recommerce.rl.q_learning.q_learning_agent.QLearningCERebuyAgent', 'argument': ''}}),
 	('training', 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceOneCompetitor',
-		{'CE Rebuy Agent (QLearning)': {'agent_class': 'recommerce.rl.q_learning.q_learning_agent.QLearningCEAgent', 'argument': None}})
+		{'CE Rebuy Agent (QLearning)': {'agent_class': 'recommerce.rl.q_learning.q_learning_agent.QLearningCEAgent', 'argument': ''}})
 ]
 
 
