@@ -16,12 +16,18 @@ class ActorCriticAgent(ReinforcementLearningAgent, ABC):
 	"""
 	This is an implementation of an (one step) actor critic agent as proposed in Richard Suttons textbook on page 332.
 	"""
-	def __init__(self, n_observations, n_actions, load_path=None, critic_path=None, name='actor_critic', network=model.simple_network):
+	def __init__(
+			self,
+			n_observations,
+			n_actions,
+			load_path=None,
+			critic_path=None,
+			name='actor_critic',
+			network_architecture=model.simple_network):
 		self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
 		print(f'I initiate an ActorCriticAgent using {self.device} device')
 		self.name = name
-		self.network = network
-		self.initialize_models_and_optimizer(n_observations, n_actions)
+		self.initialize_models_and_optimizer(n_observations, n_actions, network_architecture)
 		if load_path is not None:
 			self.actor_net.load_state_dict(torch.load(load_path, map_location=self.device))
 		if critic_path is not None:
@@ -153,14 +159,14 @@ class DiscreteActorCriticAgent(ActorCriticAgent):
 	It generates preferences and uses softmax to gain the probabilities.
 	For our three markets we have three kinds of specific agents you must use.
 	"""
-	def initialize_models_and_optimizer(self, n_observations, n_actions):
-		self.actor_net = self.network(n_observations, n_actions).to(self.device)
+	def initialize_models_and_optimizer(self, n_observations, n_actions, network_architecture):
+		self.actor_net = network_architecture(n_observations, n_actions).to(self.device)
 		self.actor_optimizer = torch.optim.Adam(self.actor_net.parameters(), lr=0.0000025)
-		self.best_interim_actor_net = self.network(n_observations, n_actions).to(self.device)
-		self.critic_net = self.network(n_observations, 1).to(self.device)
+		self.best_interim_actor_net = network_architecture(n_observations, n_actions).to(self.device)
+		self.critic_net = network_architecture(n_observations, 1).to(self.device)
 		self.critic_optimizer = torch.optim.Adam(self.critic_net.parameters(), lr=0.00025)
-		self.critic_tgt_net = self.network(n_observations, 1).to(self.device)
-		self.best_interim_critic_net = self.critic_tgt_net = self.network(n_observations, 1).to(self.device)
+		self.critic_tgt_net = network_architecture(n_observations, 1).to(self.device)
+		self.best_interim_critic_net = self.critic_tgt_net = network_architecture(n_observations, 1).to(self.device)
 
 	def policy(self, observation, verbose=False, raw_action=False):
 		observation = torch.Tensor(np.array(observation)).to(self.device)
@@ -211,15 +217,15 @@ class ContinuosActorCriticAgent(ActorCriticAgent, LinearAgent, CircularAgent):
 	softplus = torch.nn.Softplus()
 	name = 'ContinuosActorCriticAgent'
 
-	def initialize_models_and_optimizer(self, n_observations, n_actions):
+	def initialize_models_and_optimizer(self, n_observations, n_actions, network_architecture):
 		self.n_actions = n_actions
-		self.actor_net = self.network(n_observations, self.n_actions).to(self.device)
+		self.actor_net = network_architecture(n_observations, self.n_actions).to(self.device)
 		self.actor_optimizer = torch.optim.Adam(self.actor_net.parameters(), lr=0.0002)
-		self.best_interim_actor_net = self.network(n_observations, self.n_actions).to(self.device)
-		self.critic_net = self.network(n_observations, 1).to(self.device)
+		self.best_interim_actor_net = network_architecture(n_observations, self.n_actions).to(self.device)
+		self.critic_net = network_architecture(n_observations, 1).to(self.device)
 		self.critic_optimizer = torch.optim.Adam(self.critic_net.parameters(), lr=0.002)
-		self.critic_tgt_net = self.network(n_observations, 1).to(self.device)
-		self.best_interim_critic_net = self.network(n_observations, 1).to(self.device)
+		self.critic_tgt_net = network_architecture(n_observations, 1).to(self.device)
+		self.best_interim_critic_net = network_architecture(n_observations, 1).to(self.device)
 
 	@abstractmethod
 	def transform_network_output(self, number_outputs, network_result):
@@ -302,8 +308,8 @@ class ContinuosActorCriticAgentFixedOneStd(ContinuosActorCriticAgent):
 
 
 class ContinuosActorCriticAgentEstimatingStd(ContinuosActorCriticAgent):
-	def initialize_models_and_optimizer(self, n_observations, n_actions):
-		super().initialize_models_and_optimizer(n_observations, 2 * n_actions)
+	def initialize_models_and_optimizer(self, n_observations, n_actions, network_architecture):
+		super().initialize_models_and_optimizer(n_observations, 2 * n_actions, network_architecture)
 
 	def transform_network_output(self, number_outputs, network_result):
 		"""
