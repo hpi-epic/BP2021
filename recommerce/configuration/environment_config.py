@@ -22,6 +22,75 @@ class EnvironmentConfig(ABC):
 		self.task = self._get_task()
 		self._validate_config(config)
 
+	def get_required_fields(cls, level) -> dict:
+		"""
+		Utility function that returns all of the keys required for a environment_config.json at the given level.
+		The value of any given key indicates whether or not it is the key of a dictionary within the config (i.e. they are a level themselves).
+
+		Args:
+			level (str): The level at which the required fields are needed. One of 'top-level', 'agents'.
+
+		Returns:
+			dict: The required keys for the config at the given level, together with a boolean indicating of they are the key
+				of another level.
+
+		Raises:
+			AssertionError: If the given level is invalid.
+		"""
+		if level == 'top-level':
+			return {
+				'task': False,
+				'enable_live_draw': False,
+				'episodes': False,
+				'plot_interval': False,
+				'marketplace': False,
+				'agents': True
+			}
+		elif level == 'agents':
+			return {
+				'agent_class': False,
+				'argument': False
+			}
+		else:
+			raise AssertionError(f'The given level does not exist in an environment-config: {level}')
+
+	# Currently only used for webserver validation
+	def check_types(cls, config: dict, must_contain: bool = True) -> None:
+		"""
+		Check if all given variables have the correct types.
+		If must_contain is True, all keys must exist, else non-existing keys will be skipped.
+
+		Args:
+			config (dict): The config to check.
+			must_contain (bool, optional): Whether or not all variables must be present in the config. Defaults to True.
+		"""
+		types_dict = {
+			'task': str,
+			'enable_live_draw': bool,
+			'episodes': int,
+			'plot_interval': int,
+			'marketplace': str,
+			'agents': dict
+		}
+
+		types_dict_agents = {
+			'agent_class': str,
+			# str for modelfiles, list for FixedPrice-Agent price-list
+			'argument': (str, list)
+		}
+
+		for key, value in types_dict.items():
+			try:
+				assert isinstance(config[key], value), f'{key} must be a {value} but was {type(config[key])}'
+				if key == 'agents':
+					for agent in config['agents']:
+						for agent_key, agent_value in types_dict_agents.items():
+							assert isinstance(config['agents'][agent][agent_key], agent_value), \
+								f'{agent_key} must be a {agent_value} but was {type(config["agents"][agent][agent_key])}'
+			except KeyError as error:
+				if must_contain:
+					raise KeyError(key) from error
+
 	def __str__(self) -> str:
 		"""
 		This overwrites the internal function that get called when you call `print(class_instance)`.
@@ -326,7 +395,7 @@ class EnvironmentConfigLoader():
 
 		Args:
 			filename (str): The name of the json file containing the configuration values.
-				Must be located in the BP2021/ folder.
+				Must be located in the user's datapath folder.
 
 		Returns:
 			EnvironmentConfig: A subclass instance of EnvironmentConfig.

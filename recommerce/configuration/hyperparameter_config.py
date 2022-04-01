@@ -26,6 +26,48 @@ class HyperparameterConfig():
 
 		return cls._instance
 
+	def get_required_fields(cls, level) -> dict:
+		"""
+		Utility function that returns all of the keys required for a hyperparameter_config.json at the given level.
+		The value of any given key indicates whether or not it is the key of a dictionary within the config (i.e. they are a level themselves).
+
+		Args:
+			level (str): The level at which the required fields are needed. One of 'top-level', 'rl', 'sim_market'.
+
+		Returns:
+			dict: The required keys for the config at the given level, together with a boolean indicating of they are the key
+				of another level.
+
+		Raises:
+			AssertionError: If the given level is invalid.
+		"""
+		if level == 'top-level':
+			return {'rl': True, 'sim_market': True}
+		elif level == 'rl':
+			return {
+				'gamma': False,
+				'batch_size': False,
+				'replay_size': False,
+				'learning_rate': False,
+				'sync_target_frames': False,
+				'replay_start_size': False,
+				'epsilon_decay_last_frame': False,
+				'epsilon_start': False,
+				'epsilon_final': False
+			}
+		elif level == 'sim_market':
+			return {
+				'max_storage': False,
+				'episode_length': False,
+				'max_price': False,
+				'max_quality': False,
+				'number_of_customers': False,
+				'production_price': False,
+				'storage_cost_per_product': False
+			}
+		else:
+			raise AssertionError(f'The given level does not exist in a hyperparameter-config: {level}')
+
 	def __str__(self) -> str:
 		"""
 		This overwrites the internal function that get called when you call `print(class_instance)`.
@@ -49,10 +91,12 @@ class HyperparameterConfig():
 
 		self._check_config_rl_completeness(config['rl'])
 		self._check_config_sim_market_completeness(config['sim_market'])
+		self.check_rl_types(config['rl'])
+		self.check_sim_market_types(config['sim_market'])
 		self._set_rl_variables(config['rl'])
 		self._set_sim_market_variables(config['sim_market'])
 
-	def _check_config_rl_completeness(self, config: dict) -> None:
+	def _check_config_rl_completeness(cls, config: dict) -> None:
 		"""
 		Check if the passed config dictionary contains all rl values.
 
@@ -69,7 +113,7 @@ class HyperparameterConfig():
 		assert 'epsilon_start' in config, 'your config_rl is missing epsilon_start'
 		assert 'epsilon_final' in config, 'your config_rl is missing epsilon_final'
 
-	def _check_config_sim_market_completeness(self, config: dict) -> None:
+	def _check_config_sim_market_completeness(cls, config: dict) -> None:
 		"""
 		Check if the passed config dictionary contains all sim_market values.
 
@@ -83,6 +127,58 @@ class HyperparameterConfig():
 		assert 'number_of_customers' in config, 'your config is missing number_of_customers'
 		assert 'production_price' in config, 'your config is missing production_price'
 		assert 'storage_cost_per_product' in config, 'your config is missing storage_cost_per_product'
+
+	def check_rl_types(cls, config: dict, must_contain: bool = True) -> None:
+		"""
+		Check if all given variables have the correct types.
+		If must_contain is True, all keys must exist, else non-existing keys will be skipped.
+
+		Args:
+			config (dict): The config to check.
+			must_contain (bool, optional): Whether or not all variables must be present in the config. Defaults to True.
+		"""
+		types_dict = {
+			'gamma': float,
+			'batch_size': int,
+			'replay_size': int,
+			'learning_rate': (int, float),
+			'sync_target_frames': int,
+			'replay_start_size': int,
+			'epsilon_decay_last_frame': int,
+			'epsilon_start': float,
+			'epsilon_final': float
+		}
+		for key, value in types_dict.items():
+			try:
+				assert isinstance(config[key], value), f'{key} must be a {value} but was {type(config[key])}'
+			except KeyError as error:
+				if must_contain:
+					raise KeyError(key) from error
+
+	def check_sim_market_types(cls, config: dict, must_contain: bool = True) -> None:
+		"""
+		Check if all given variables have the correct types.
+		If must_contain is True, all keys must exist, else non-existing keys will be skipped.
+
+		Args:
+			config (dict): The config to check.
+			must_contain (bool, optional): Whether or not all variables must be present in the config. Defaults to True.
+		"""
+		types_dict = {
+			'max_storage': int,
+			'episode_length': int,
+			'max_price': int,
+			'max_quality': int,
+			'number_of_customers': int,
+			'production_price': int,
+			'storage_cost_per_product': float
+		}
+		for key, value in types_dict.items():
+			try:
+				assert isinstance(config[key], value), f'{key} must be a {value} but was {type(config[key])}'
+			except KeyError as error:
+				if must_contain:
+					raise KeyError(key) from error
 
 	def _set_rl_variables(self, config: dict) -> None:
 		"""
@@ -147,7 +243,7 @@ class HyperparameterConfigLoader():
 
 		Args:
 			filename (str): The name of the json file containing the configuration values.
-			Must be located in the BP2021/ folder.
+			Must be located in the user's datapath folder.
 
 		Returns:
 			HyperparameterConfig: An instance of `HyperparameterConfig`.

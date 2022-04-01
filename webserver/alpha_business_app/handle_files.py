@@ -3,13 +3,13 @@ import tarfile
 import zipfile
 from io import BytesIO
 
+import configuration.config_validation as config_validation
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 
 from .config_parser import ConfigModelParser
 from .models.config import *
 from .models.container import Container
-from .validation import check_dict_keys
 
 
 # https://stackoverflow.com/questions/14902299/json-loads-allows-duplicate-keys-in-a-dictionary-overwriting-the-first-value
@@ -54,48 +54,28 @@ def handle_uploaded_file(request, uploaded_config) -> HttpResponse:
 	except ValueError as value:
 		return render(request, 'upload.html', {'error': str(value)})
 
-	# figure out which parts of the config file belong to hyperparameter or environment config
-	hyperparameter_fields = get_config_field_names(HyperparameterConfig)
-	environment_fields = get_config_field_names(EnvironmentConfig)
-
-	# figure out which keywords belong to hyperparameter and which keywords belong to environment
-	# TODO: should be outsourced to check
-	hyperparameter_configs = {}
-	environment_configs = {}
-	contains_hyperparameter = False
-	contains_environment = False
-	for key in content_as_dict.keys():
-		if key in hyperparameter_fields:
-			hyperparameter_configs[key] = content_as_dict[key]
-			contains_hyperparameter = True
-		elif key in environment_fields:
-			environment_configs[key] = content_as_dict[key]
-			contains_environment = True
-		else:
-			return render(request, 'upload.html', {'error': f'The key {key} is unknown'})
-	# TODO: outsource the checking to the pip package?
-	# check if datatypes are correct.
-	# check if all keys in the dictionaries are valid
-	status, error_msg = check_dict_keys('environment', environment_configs)
-	if not status:
-		return render(request, 'upload.html', {'error': error_msg})
-	status, error_msg = check_dict_keys('hyperparameter', hyperparameter_configs)
-	if not status:
-		return render(request, 'upload.html', {'error': error_msg})
+	# validate the config using `recommerce` validation logic
+	try:
+		# first try to split the config. If any keys are unknown, an AssertionError will be thrown
+		hyperparameter_config, environment_config = config_validation.split_combined_config(content_as_dict)
+	except AssertionError as error:
+		return render(request, 'upload.html', {'error': str(error)})
+	try:
+		# then validate that all given values have the correct types
+		config_validation.check_config_types(hyperparameter_config, environment_config)
+	except AssertionError as error:
+		return render(request, 'upload.html', {'error': str(error)})
 
 	parser = ConfigModelParser()
-	hyperparameter_config = None
-	environment_config = None
-	# TODO: insert actual checking of config here. This is very hacky
+	web_hyperparameter_config = None
+	web_environment_config = None
 	try:
-		if contains_hyperparameter is True:
-			hyperparameter_config = parser.parse_config_dict_to_datastructure('hyperparameter', hyperparameter_configs)
-		if contains_environment is True:
-			environment_config = parser.parse_config_dict_to_datastructure('environment', environment_configs)
+		web_hyperparameter_config = parser.parse_config_dict_to_datastructure('hyperparameter', hyperparameter_config)
+		web_environment_config = parser.parse_config_dict_to_datastructure('environment', environment_config)
 	except ValueError:
 		return render(request, 'upload.html', {'error': 'Your config is wrong'})
 
-	Config.objects.create(environment=environment_config, hyperparameter=hyperparameter_config, name=request.POST['config_name'])
+	Config.objects.create(environment=web_environment_config, hyperparameter=web_hyperparameter_config, name=request.POST['config_name'])
 	return redirect('/configurator', {'success': 'You successfully uploaded a config file'})
 
 
