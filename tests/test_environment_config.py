@@ -81,8 +81,8 @@ def test_abstract_parent_class():
 def test_str_representation():
 	config = env_config.TrainingEnvironmentConfig(valid_training_dict)
 	assert str(config) == ("TrainingEnvironmentConfig: {'task': 'training', "
-		"'marketplace': [<class 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario'>], "
-		"'agent': (<class 'recommerce.rl.q_learning.q_learning_agent.QLearningCERebuyAgent'>, None)}")
+		"'agent': <class 'recommerce.rl.q_learning.q_learning_agent.QLearningCERebuyAgent'>, "
+		"'marketplace': <class 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario'>}")
 
 
 get_class_testcases = [
@@ -167,7 +167,7 @@ def test_valid_ConfigLoader_load_training(task, marketplace, agents):
 
 
 configLoader_is_valid_testcases = [
-	(invalid_agent_dict, False, 'The "argument" field must be a modelfile and therefore end with .dat:'),
+	(invalid_agent_dict, False, 'The "argument" field must be a modelfile and therefore end in ".dat":'),
 	(invalid_task_dict, False, 'The specified task is unknown: not_existing_test_task'),
 	(valid_exampleprinter_dict, True, 'Your config is valid.')
 ]
