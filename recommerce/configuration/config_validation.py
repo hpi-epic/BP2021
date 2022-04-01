@@ -2,7 +2,7 @@ from recommerce.configuration.environment_config import EnvironmentConfig
 from recommerce.configuration.hyperparameter_config import HyperparameterConfig
 
 
-def validate_sub_keys(config_class, config: dict, top_level_keys: dict):
+def validate_sub_keys(config_class: HyperparameterConfig or EnvironmentConfig, config: dict, top_level_keys: dict):
 	"""
 	Utility function that validates if a given config contains only allowed keys.
 	Can be used recursively for dictionaries within dictionaries.
@@ -11,7 +11,7 @@ def validate_sub_keys(config_class, config: dict, top_level_keys: dict):
 	Args:
 		config_class (HyperparameterConfig or EnvironmentConfig): The config class from which to get the required fields.
 		config (dict): The config given by the user.
-		top_level_keys (dict): The keys of the current top-level. Their values indicate if there is another dictionary expected for that key.
+		top_level_keys (dict): The keys of the current level. Their values indicate if there is another dictionary expected for that key.
 
 	Raises:
 		AssertionError: If the given config contains a key that is invalid.
