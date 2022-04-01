@@ -3,9 +3,10 @@ import tarfile
 import zipfile
 from io import BytesIO
 
-import configuration.config_validation as config_validation
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
+
+import recommerce.configuration.config_validation as config_validation
 
 from .config_parser import ConfigModelParser
 from .models.config import *
