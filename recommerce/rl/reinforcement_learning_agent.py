@@ -5,7 +5,15 @@ from recommerce.market.vendors import Agent
 
 class ReinforcementLearningAgent(Agent, ABC):
 	@abstractmethod
-	def __init__(self, n_observations, n_actions, load_path=''):
+	def __init__(
+			self,
+			n_observations=None,
+			n_actions=None,
+			marketplace=None,
+			optim=None,
+			device='cpu',
+			load_path=None,
+			name='enter a name here'):
 		"""
 		Every ReinforcementLearningAgent must offer initialization by these parameters
 

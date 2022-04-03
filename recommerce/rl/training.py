@@ -9,7 +9,6 @@ from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
 import recommerce.configuration.utils as ut
-import recommerce.rl.actorcritic.actorcritic_agent as actorcritic_agent
 from recommerce.configuration.hyperparameter_config import config
 from recommerce.configuration.path_manager import PathManager
 from recommerce.monitoring.agent_monitoring.am_evaluation import Evaluator
@@ -28,20 +27,13 @@ class RLTrainer(ABC):
 		"""
 		# TODO: assert Agent and marketplace fit together
 		assert issubclass(agent_class, ReinforcementLearningAgent)
-		if issubclass(agent_class, actorcritic_agent.ContinuosActorCriticAgent):
-			outputs = marketplace_class().get_actions_dimension()
-		else:
-			outputs = marketplace_class().get_n_actions()
 
 		self.best_mean_interim_reward = None
 		self.best_mean_overall_reward = None
 		self.marketplace_class = marketplace_class
 		self.agent_class = agent_class
 		self.saved_parameter_paths = []
-		if issubclass(agent_class, actorcritic_agent.ActorCriticAgent):
-			self.RL_agent = agent_class(marketplace_class().observation_space.shape[0], outputs)
-		else:
-			self.RL_agent = agent_class(marketplace_class().observation_space.shape[0], outputs, torch.optim.Adam)
+		self.RL_agent = agent_class(marketplace=marketplace_class(), optim=torch.optim.Adam)
 		assert self.trainer_agent_fit()
 
 		# Signal handler for e.g. KeyboardInterrupt
