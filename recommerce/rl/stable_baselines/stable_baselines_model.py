@@ -7,7 +7,7 @@ import stable_baselines3.common.monitor
 from recommerce.market.circular.circular_vendors import CircularAgent
 from recommerce.market.linear.linear_vendors import LinearAgent
 from recommerce.rl.reinforcement_learning_agent import ReinforcementLearningAgent
-from recommerce.rl.stable_baselines_training import PerStepCheck
+from recommerce.rl.stable_baselines.stable_baselines_training import PerStepCheck
 import recommerce.market.circular.circular_sim_market as circular_market
 
 

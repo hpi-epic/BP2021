@@ -1,7 +1,7 @@
 import pytest
 
 import recommerce.market.circular.circular_sim_market as circular_market
-import recommerce.rl.stable_baselines_model as sb_model
+import recommerce.rl.stable_baselines.stable_baselines_model as sb_model
 
 
 @pytest.mark.training
