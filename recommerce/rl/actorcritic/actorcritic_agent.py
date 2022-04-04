@@ -26,7 +26,7 @@ class ActorCriticAgent(ReinforcementLearningAgent, ABC):
 			device='cuda' if torch.cuda.is_available() else 'cpu',
 			load_path=None,
 			critic_path=None,
-			name='actor_critic'
+			name='actor_critic',
 			network_architecture=model.simple_network):
 		assert marketplace is None or isinstance(marketplace, SimMarket), \
 			f'if marketplace is provided, marketplace must be a SimMarket, but is {type(marketplace)}'
