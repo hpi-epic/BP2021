@@ -1,4 +1,36 @@
+import recommerce.configuration.config_validation as config_validation
+
 from .models.config import *
+
+
+def validate_config(config: dict, config_is_final: bool) -> tuple:
+	"""
+	Validates a given config dictionary either uploaded by the user or entered into the form before starting a container.
+
+	Args:
+		config (dict): The config to validate.
+		config_is_final (bool): Whether or not the config should contain all required keys.
+
+	Returns:
+		tuple: The split hyperparameter_config and environment_config dictionaries.
+	"""
+	# validate the config using `recommerce` validation logic
+	# first check if the environment and hyperparameter parts are already split up
+	print(config_is_final)
+	if 'environment' in config and 'hyperparameter' in config:
+		if len(config) > 2:
+			raise AssertionError('Your config should not contain keys other than "environment" and "hyperparameter"')
+		hyperparameter_config = config['hyperparameter']
+		environment_config = config['environment']
+	elif 'environment' in config or 'hyperparameter' in config:
+		raise AssertionError('If your config contains one of "environment" or "hyperparameter" it must also contian the other')
+	else:
+		# try to split the config. If any keys are unknown, an AssertionError will be thrown
+		hyperparameter_config, environment_config = config_validation.split_combined_config(config)
+	# then validate that all given values have the correct types
+	config_validation.check_config_types(hyperparameter_config, environment_config, config_is_final)
+
+	return hyperparameter_config, environment_config
 
 
 class ConfigFlatDictParser():

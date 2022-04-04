@@ -6,9 +6,7 @@ from io import BytesIO
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 
-import recommerce.configuration.config_validation as config_validation
-
-from .config_parser import ConfigModelParser
+from .config_parser import ConfigModelParser, validate_config
 from .models.config import *
 from .models.container import Container
 
@@ -55,15 +53,8 @@ def handle_uploaded_file(request, uploaded_config) -> HttpResponse:
 	except ValueError as value:
 		return render(request, 'upload.html', {'error': str(value)})
 
-	# validate the config using `recommerce` validation logic
 	try:
-		# first try to split the config. If any keys are unknown, an AssertionError will be thrown
-		hyperparameter_config, environment_config = config_validation.split_combined_config(content_as_dict)
-	except AssertionError as error:
-		return render(request, 'upload.html', {'error': str(error)})
-	try:
-		# then validate that all given values have the correct types
-		config_validation.check_config_types(hyperparameter_config, environment_config)
+		hyperparameter_config, environment_config = validate_config(content_as_dict, False)
 	except AssertionError as error:
 		return render(request, 'upload.html', {'error': str(error)})
 

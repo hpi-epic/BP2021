@@ -171,7 +171,7 @@ class HyperparameterConfig():
 				'storage_cost_per_product': float
 			}
 		else:
-			raise AssertionError(f'This key is unkown: {key}')
+			raise AssertionError(f'This key is unknown: {key}')
 
 		for key, value in types_dict.items():
 			try:

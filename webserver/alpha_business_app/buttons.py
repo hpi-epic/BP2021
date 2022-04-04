@@ -5,7 +5,7 @@ from django.shortcuts import redirect, render
 from django.utils import timezone
 
 from .config_merger import ConfigMerger
-from .config_parser import ConfigFlatDictParser, ConfigModelParser
+from .config_parser import ConfigFlatDictParser, ConfigModelParser, validate_config
 from .handle_files import download_file
 from .handle_requests import send_get_request, send_get_request_with_streaming, send_post_request, stop_container
 from .models.config import Config
@@ -278,7 +278,16 @@ class ButtonHandler():
 		except AssertionError:
 			self.message = ['error', 'Could not create config: Please eliminate identical Agent names']
 			return self._decide_rendering()
-		# TODO: assert config dict is valid
+
+		try:
+			validate_config(config_dict, True)
+		except AssertionError as error:
+			self.message = ['error', str(error)]
+			return self._decide_rendering()
+		except KeyError as missing_key:
+			self.message = ['error', str(missing_key)]
+			return self._decide_rendering()
+
 		response = send_post_request('start', config_dict)
 		if response.ok():
 			# put container into database

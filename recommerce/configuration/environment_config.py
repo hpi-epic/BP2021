@@ -37,7 +37,7 @@ class EnvironmentConfig(ABC):
 		Raises:
 			AssertionError: If the given level is invalid.
 		"""
-		if dict_key == 'top-level':
+		if dict_key == 'top-dict':
 			return {
 				'task': False,
 				'enable_live_draw': False,
@@ -56,45 +56,74 @@ class EnvironmentConfig(ABC):
 
 	# This function should always contain ALL keys that are possible, so the webserver-config is independent of the given "task"
 	# since the user does not need to specify a "task". The subclasses should overwrite this method.
-	def check_types(cls, config: dict, must_contain: bool = True) -> None:
+	def check_types(cls, config: dict, task: str = 'None', must_contain: bool = True) -> None:
 		"""
 		Check if all given variables have the correct types.
 		If must_contain is True, all keys must exist, else non-existing keys will be skipped.
 
 		Args:
 			config (dict): The config to check.
+			task (str): The task for which the variables should be checked.
 			must_contain (bool, optional): Whether or not all variables must be present in the config. Defaults to True.
 
 		Raises:
+			AssertionError: If an unknown key was passed.
 			KeyError: If the dictionary is missing a key but should contain all keys.
+			ValueError: If one of the passed strings (marketplace, agents) could not be parsed to a valid class.
 		"""
-		types_dict = {
-			'task': str,
-			'enable_live_draw': bool,
-			'episodes': int,
-			'plot_interval': int,
-			'marketplace': str,
-			'agents': dict
-		}
+		if task in {'None', 'agent_monitoring'}:
+			types_dict = {
+				'task': str,
+				'enable_live_draw': bool,
+				'episodes': int,
+				'plot_interval': int,
+				'marketplace': str,
+				'agents': dict
+			}
+			types_dict_agents = {
+				'agent_class': str,
+				# str for modelfiles, list for FixedPrice-Agent price-list
+				'argument': (str, list)
+			}
 
-		types_dict_agents = {
-			'agent_class': str,
-			# str for modelfiles, list for FixedPrice-Agent price-list
-			'argument': (str, list)
-		}
+		elif task in {'training', 'exampleprinter'}:
+			types_dict = {
+				'task': str,
+				'marketplace': str,
+				'agents': dict
+			}
+			types_dict_agents = {
+				'agent_class': str,
+				# str for modelfiles, list for FixedPrice-Agent price-list
+				'argument': (str, list)
+			}
+		else:
+			raise AssertionError(f'This task is unknown: {task}')
 
 		for key, value in types_dict.items():
 			try:
 				assert isinstance(config[key], value), f'{key} must be a {value} but was {type(config[key])}'
+				# make sure the class can be parsed/is valid
+				if key == 'marketplace':
+					try:
+						cls._get_class(cls, config['marketplace'])
+					except ValueError as error:
+						raise AssertionError(f'The marketplace could not be parsed to a valid class: "{config["marketplace"]}"') from error
 				# TODO: Refactor this when the agent structure was changed in the json files
 				if key == 'agents':
 					for agent in config['agents']:
 						for agent_key, agent_value in types_dict_agents.items():
+							if agent_key == 'agent_class':
+								try:
+									cls._get_class(cls, config['agents'][agent]['agent_class'])
+								except ValueError as error:
+									raise AssertionError(f'This agent could not be parsed to a valid class: \
+"{config["agents"][agent]["agent_class"]}"') from error
 							assert isinstance(config['agents'][agent][agent_key], agent_value), \
 								f'{agent_key} must be a {agent_value} but was {type(config["agents"][agent][agent_key])}'
 			except KeyError as error:
 				if must_contain:
-					raise KeyError(key) from error
+					raise KeyError(f'Your config is missing the following required key: {key}') from error
 
 	def __str__(self) -> str:
 		"""
@@ -118,7 +147,7 @@ class EnvironmentConfig(ABC):
 		assert 'marketplace' in config, f'The config must have a "marketplace" field: {config}'
 		assert 'agents' in config, f'The config must have an "agents" field: {config}'
 
-		self.check_types(config)
+		self.check_types(config, config['task'])
 
 	def _check_and_adjust_agents_structure(self, agents_config: dict, single_agent: bool) -> tuple:
 		"""
@@ -261,7 +290,7 @@ class EnvironmentConfig(ABC):
 
 		self._assert_agent_marketplace_fit()
 
-	def _get_class(self, import_string: str) -> object:
+	def _get_class(cls, import_string: str) -> object:
 		"""
 		Get the class from the given string.
 
@@ -299,32 +328,6 @@ class TrainingEnvironmentConfig(EnvironmentConfig):
 		marketplace (SimMarket subclass): A subclass of SimMarket, what marketplace the training should be run on.
 		agent (QlearningAgent or ActorCriticAgent subclass): A subclass of QlearningAgent or ActorCritic, the agent to be trained.
 	"""
-	def check_types(cls, config: dict, must_contain: bool = True) -> None:
-		types_dict = {
-			'task': str,
-			'marketplace': str,
-			'agents': dict
-		}
-
-		types_dict_agents = {
-			'agent_class': str,
-			# str for modelfiles, list for FixedPrice-Agent price-list
-			'argument': (str, list)
-		}
-
-		for key, value in types_dict.items():
-			try:
-				assert isinstance(config[key], value), f'{key} must be a {value} but was {type(config[key])}'
-				# TODO: Refactor this when the agent structure was changed in the json files
-				if key == 'agents':
-					for agent in config['agents']:
-						for agent_key, agent_value in types_dict_agents.items():
-							assert isinstance(config['agents'][agent][agent_key], agent_value), \
-								f'{agent_key} must be a {agent_value} but was {type(config["agents"][agent][agent_key])}'
-			except KeyError as error:
-				if must_contain:
-					raise KeyError(key) from error
-
 	def _validate_config(self, config: dict) -> None:
 		super(TrainingEnvironmentConfig, self)._validate_config(config, single_agent=True, needs_modelfile=False)
 
@@ -351,35 +354,6 @@ class AgentMonitoringEnvironmentConfig(EnvironmentConfig):
 			Each entry in the list is a tuple with the first item being the agent class, the second being a list.
 			If the agent needs a modelfile, this will be the first entry in the list, the other entry is always an informal name for the agent.
 	"""
-	def check_types(cls, config: dict, must_contain: bool = True) -> None:
-		types_dict = {
-			'task': str,
-			'enable_live_draw': bool,
-			'episodes': int,
-			'plot_interval': int,
-			'marketplace': str,
-			'agents': dict
-		}
-
-		types_dict_agents = {
-			'agent_class': str,
-			# str for modelfiles, list for FixedPrice-Agent price-list
-			'argument': (str, list)
-		}
-
-		for key, value in types_dict.items():
-			try:
-				assert isinstance(config[key], value), f'{key} must be a {value} but was {type(config[key])}'
-				# TODO: Refactor this when the agent structure was changed in the json files
-				if key == 'agents':
-					for agent in config['agents']:
-						for agent_key, agent_value in types_dict_agents.items():
-							assert isinstance(config['agents'][agent][agent_key], agent_value), \
-								f'{agent_key} must be a {agent_value} but was {type(config["agents"][agent][agent_key])}'
-			except KeyError as error:
-				if must_contain:
-					raise KeyError(key) from error
-
 	def _check_top_level_structure(self, config: dict) -> None:
 		super(AgentMonitoringEnvironmentConfig, self)._check_top_level_structure(config)
 		assert 'enable_live_draw' in config, f'The config must have an "enable_live_draw" field: {config}'
@@ -425,32 +399,6 @@ class ExampleprinterEnvironmentConfig(EnvironmentConfig):
 		marketplace (SimMarket subclass): A subclass of SimMarket, what marketplace the exampleprinter should be run on.
 		agent (Agent subclass): A subclass of Agent, the agent for which the exampleprinter should be run.
 	"""
-	def check_types(cls, config: dict, must_contain: bool = True) -> None:
-		types_dict = {
-			'task': str,
-			'marketplace': str,
-			'agents': dict
-		}
-
-		types_dict_agents = {
-			'agent_class': str,
-			# str for modelfiles, list for FixedPrice-Agent price-list
-			'argument': (str, list)
-		}
-
-		for key, value in types_dict.items():
-			try:
-				assert isinstance(config[key], value), f'{key} must be a {value} but was {type(config[key])}'
-				# TODO: Refactor this when the agent structure was changed in the json files
-				if key == 'agents':
-					for agent in config['agents']:
-						for agent_key, agent_value in types_dict_agents.items():
-							assert isinstance(config['agents'][agent][agent_key], agent_value), \
-								f'{agent_key} must be a {agent_value} but was {type(config["agents"][agent][agent_key])}'
-			except KeyError as error:
-				if must_contain:
-					raise KeyError(key) from error
-
 	def _validate_config(self, config: dict) -> None:
 		super(ExampleprinterEnvironmentConfig, self)._validate_config(config, single_agent=True, needs_modelfile=True)
 		# Since we only have one agent, we extract it from the provided list

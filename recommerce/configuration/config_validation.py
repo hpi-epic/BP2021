@@ -70,26 +70,28 @@ def split_combined_config(config: dict) -> tuple:
 	return hyperparameter_config, environment_config
 
 
-def check_config_types(hyperparameter_config: dict, environment_config: dict) -> None:
+def check_config_types(hyperparameter_config: dict, environment_config: dict, must_contain: bool = False) -> None:
 	"""
 	Utility function that checks (incomplete) config dictionaries for their correct types.
 
 	Args:
 		hyperparameter_config (dict): The config containing hyperparameter_config-keys.
 		environment_config (dict): The config containing environment_config-keys.
+		must_contain (bool): Whether or not the configuration should contain all required keys.
 
 	Raises:
 		AssertionError: If one of the values has the wring type.
 	"""
 	# check types for hyperparameter_config
-	HyperparameterConfig.check_types(hyperparameter_config, 'top-dict', False)
+	HyperparameterConfig.check_types(HyperparameterConfig, hyperparameter_config, 'top-dict', must_contain)
 	if 'rl' in hyperparameter_config:
-		HyperparameterConfig.check_types(hyperparameter_config['rl'], 'rl', False)
+		HyperparameterConfig.check_types(HyperparameterConfig, hyperparameter_config['rl'], 'rl', must_contain)
 	if 'sim_market' in hyperparameter_config:
-		HyperparameterConfig.check_types(hyperparameter_config['sim_market'], 'sim_market', False)
+		HyperparameterConfig.check_types(HyperparameterConfig, hyperparameter_config['sim_market'], 'sim_market', must_contain)
 
 	# check types for environment_config
-	EnvironmentConfig.check_types(EnvironmentConfig, environment_config, False)
+	task = environment_config['task'] if must_contain else 'None'
+	EnvironmentConfig.check_types(EnvironmentConfig, environment_config, task, must_contain)
 
 
 if __name__ == '__main__':  # pragma: no cover
