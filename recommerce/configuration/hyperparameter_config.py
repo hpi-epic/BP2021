@@ -33,6 +33,7 @@ class HyperparameterConfig():
 
 		Args:
 			dict_key (str): The key for which the required fields are needed. 'top-dict' for getting the keys of the first level.
+				'top-dict', 'rl' or 'sim_market'.
 
 		Returns:
 			dict: The required keys for the config at the given level, together with a boolean indicating of they are the key
@@ -91,8 +92,9 @@ class HyperparameterConfig():
 
 		self._check_config_rl_completeness(config['rl'])
 		self._check_config_sim_market_completeness(config['sim_market'])
-		self.check_rl_types(config['rl'])
-		self.check_sim_market_types(config['sim_market'])
+		self.check_types(config, 'top-dict')
+		self.check_types(config['rl'], 'rl')
+		self.check_types(config['sim_market'], 'sim_market')
 		self._set_rl_variables(config['rl'])
 		self._set_sim_market_variables(config['sim_market'])
 
@@ -128,57 +130,49 @@ class HyperparameterConfig():
 		assert 'production_price' in config, 'your config is missing production_price'
 		assert 'storage_cost_per_product' in config, 'your config is missing storage_cost_per_product'
 
-	def check_rl_types(cls, config: dict, must_contain: bool = True) -> None:
+	def check_types(cls, config: dict, key: str, must_contain: bool = True) -> None:
 		"""
 		Check if all given variables have the correct types.
 		If must_contain is True, all keys must exist, else non-existing keys will be skipped.
 
 		Args:
 			config (dict): The config to check.
+			key (str): The key for which to check the values. 'top-dict', 'rl' or 'sim_market'.
 			must_contain (bool, optional): Whether or not all variables must be present in the config. Defaults to True.
 
 		Raises:
 			KeyError: If the dictionary is missing a key but should contain all keys.
 		"""
-		types_dict = {
-			'gamma': float,
-			'batch_size': int,
-			'replay_size': int,
-			'learning_rate': (int, float),
-			'sync_target_frames': int,
-			'replay_start_size': int,
-			'epsilon_decay_last_frame': int,
-			'epsilon_start': float,
-			'epsilon_final': float
-		}
-		for key, value in types_dict.items():
-			try:
-				assert isinstance(config[key], value), f'{key} must be a {value} but was {type(config[key])}'
-			except KeyError as error:
-				if must_contain:
-					raise KeyError(key) from error
+		if key == 'top-dict':
+			types_dict = {
+				'rl': dict,
+				'sim_market': dict
+			}
+		elif key == 'rl':
+			types_dict = {
+				'gamma': float,
+				'batch_size': int,
+				'replay_size': int,
+				'learning_rate': (int, float),
+				'sync_target_frames': int,
+				'replay_start_size': int,
+				'epsilon_decay_last_frame': int,
+				'epsilon_start': float,
+				'epsilon_final': float
+			}
+		elif key == 'sim_market':
+			types_dict = {
+				'max_storage': int,
+				'episode_length': int,
+				'max_price': int,
+				'max_quality': int,
+				'number_of_customers': int,
+				'production_price': int,
+				'storage_cost_per_product': float
+			}
+		else:
+			raise AssertionError(f'This key is unkown: {key}')
 
-	def check_sim_market_types(cls, config: dict, must_contain: bool = True) -> None:
-		"""
-		Check if all given variables have the correct types.
-		If must_contain is True, all keys must exist, else non-existing keys will be skipped.
-
-		Args:
-			config (dict): The config to check.
-			must_contain (bool, optional): Whether or not all variables must be present in the config. Defaults to True.
-
-		Raises:
-			KeyError: If the dictionary is missing a key but should contain all keys.
-		"""
-		types_dict = {
-			'max_storage': int,
-			'episode_length': int,
-			'max_price': int,
-			'max_quality': int,
-			'number_of_customers': int,
-			'production_price': int,
-			'storage_cost_per_product': float
-		}
 		for key, value in types_dict.items():
 			try:
 				assert isinstance(config[key], value), f'{key} must be a {value} but was {type(config[key])}'

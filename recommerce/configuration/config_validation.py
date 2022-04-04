@@ -82,10 +82,11 @@ def check_config_types(hyperparameter_config: dict, environment_config: dict) ->
 		AssertionError: If one of the values has the wring type.
 	"""
 	# check types for hyperparameter_config
+	HyperparameterConfig.check_types(hyperparameter_config, 'top-dict', False)
 	if 'rl' in hyperparameter_config:
-		HyperparameterConfig.check_rl_types(HyperparameterConfig, hyperparameter_config['rl'], False)
+		HyperparameterConfig.check_types(hyperparameter_config['rl'], 'rl', False)
 	if 'sim_market' in hyperparameter_config:
-		HyperparameterConfig.check_sim_market_types(HyperparameterConfig, hyperparameter_config['sim_market'], False)
+		HyperparameterConfig.check_types(hyperparameter_config['sim_market'], 'sim_market', False)
 
 	# check types for environment_config
 	EnvironmentConfig.check_types(EnvironmentConfig, environment_config, False)
