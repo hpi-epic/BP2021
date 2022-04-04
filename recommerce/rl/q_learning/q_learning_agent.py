@@ -29,7 +29,7 @@ class QLearningAgent(ReinforcementLearningAgent, ABC):
 			optim=None,
 			device='cuda' if torch.cuda.is_available() else 'cpu',
 			load_path=None,
-			name='q_learning'
+			name='q_learning',
 			network_architecture=model.simple_network):
 		assert marketplace is None or isinstance(marketplace, SimMarket), \
 			f'if marketplace is provided, marketplace must be a SimMarket, but is {type(marketplace)}'
