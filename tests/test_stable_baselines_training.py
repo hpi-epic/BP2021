@@ -24,5 +24,11 @@ def test_a2c_training():
 
 @pytest.mark.training
 @pytest.mark.slow
+def test_ppo_training():
+	sb_model.StableBaselinesPPO(circular_market.CircularEconomyRebuyPriceOneCompetitor(True), 2).train_agent(120)
+
+
+@pytest.mark.training
+@pytest.mark.slow
 def test_sac_training():
 	sb_model.StableBaselinesSAC(circular_market.CircularEconomyRebuyPriceOneCompetitor(True), 2).train_agent(120)

@@ -1,6 +1,6 @@
 import gym
 import numpy as np
-from stable_baselines3 import DDPG, TD3, A2C, SAC
+from stable_baselines3 import DDPG, TD3, A2C, SAC, PPO
 from stable_baselines3.common.noise import NormalActionNoise
 import stable_baselines3.common.monitor
 
@@ -56,6 +56,12 @@ class StableBaselinesA2C(StableBaselinesAgent):
 		self.name = 'Stable_Baselines_A2C'
 
 
+class StableBaselinesPPO(StableBaselinesAgent):
+	def _initialize_model(self, marketplace):
+		self.model = PPO('MlpPolicy', marketplace, verbose=False)
+		self.name = 'Stable_Baselines_PPO'
+
+
 class StableBaselinesSAC(StableBaselinesAgent):
 	def _initialize_model(self, marketplace):
 		self.model = SAC('MlpPolicy', marketplace, verbose=False)
@@ -63,4 +69,4 @@ class StableBaselinesSAC(StableBaselinesAgent):
 
 
 if __name__ == '__main__':
-	StableBaselinesSAC(circular_market.CircularEconomyRebuyPriceOneCompetitor(True)).train_agent()
+	StableBaselinesPPO(circular_market.CircularEconomyRebuyPriceOneCompetitor(True)).train_agent()
