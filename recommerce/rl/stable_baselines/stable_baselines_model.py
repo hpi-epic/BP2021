@@ -1,14 +1,14 @@
 import gym
 import numpy as np
-from stable_baselines3 import DDPG, TD3, A2C, SAC, PPO
-from stable_baselines3.common.noise import NormalActionNoise
 import stable_baselines3.common.monitor
+from stable_baselines3 import A2C, DDPG, PPO, SAC, TD3
+from stable_baselines3.common.noise import NormalActionNoise
 
+import recommerce.market.circular.circular_sim_market as circular_market
 from recommerce.market.circular.circular_vendors import CircularAgent
 from recommerce.market.linear.linear_vendors import LinearAgent
 from recommerce.rl.reinforcement_learning_agent import ReinforcementLearningAgent
 from recommerce.rl.stable_baselines.stable_baselines_callback import PerStepCheck
-import recommerce.market.circular.circular_sim_market as circular_market
 
 
 class StableBaselinesAgent(ReinforcementLearningAgent, LinearAgent, CircularAgent):
