@@ -5,19 +5,16 @@ import time
 import warnings
 
 import numpy as np
-import stable_baselines3.common.monitor
 from stable_baselines3.common.callbacks import BaseCallback
 from stable_baselines3.common.results_plotter import load_results, ts2xy
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
 import recommerce.configuration.utils as ut
-import recommerce.market.circular.circular_sim_market as circular_market
 from recommerce.configuration.hyperparameter_config import config
 from recommerce.configuration.path_manager import PathManager
 from recommerce.monitoring.agent_monitoring.am_evaluation import Evaluator
 from recommerce.monitoring.agent_monitoring.am_monitoring import Monitor
-from recommerce.rl.stable_baselines_model import StableBaselinesDDPG
 
 warnings.filterwarnings('ignore')
 
@@ -32,7 +29,7 @@ class PerStepCheck(BaseCallback):
 		It must contains the file created by the ``Monitor`` wrapper.
 	:param verbose: Verbosity level.
 	"""
-	def __init__(self, marketplace_class, agent_class, log_dir_prepend='', iteration_length=500):
+	def __init__(self, agent_class, marketplace_class, log_dir_prepend='', iteration_length=500):
 		assert isinstance(log_dir_prepend, str), \
 			f'log_dir_prepend should be a string, but {log_dir_prepend} is {type(log_dir_prepend)}'
 		super(PerStepCheck, self).__init__(True)
@@ -80,8 +77,8 @@ class PerStepCheck(BaseCallback):
 			return True
 		finished_episodes = self.num_timesteps // config.episode_length
 		x, y = ts2xy(load_results(self.save_path), 'timesteps')
-		mean_reward = np.mean(y[-100:])
 		assert len(x) > 0
+		mean_reward = np.mean(y[-100:])
 
 		# consider print info
 		if (finished_episodes) % 10 == 0:
@@ -126,17 +123,3 @@ class PerStepCheck(BaseCallback):
 		tqdm.write(f'You can find the parameters here: {path_to_parameters}.')
 		tqdm.write(f'This model achieved a mean reward of {self.best_mean_interim_reward}.')
 		self.best_mean_interim_reward = None
-
-
-def train_ddpg_agent(marketplace_class, training_steps=100000, iteration_length=500):
-	marketplace = marketplace_class(True)
-	callback = PerStepCheck(marketplace_class, StableBaselinesDDPG, iteration_length=iteration_length)
-	marketplace = stable_baselines3.common.monitor.Monitor(marketplace, callback.save_path)
-	agent = StableBaselinesDDPG(marketplace)
-	print('Now I start the training')
-	agent.model.learn(training_steps, callback=callback)
-	# agent.save(os.path.join(callback.save_path, "final_model"))
-
-
-if __name__ == '__main__':
-	train_ddpg_agent(circular_market.CircularEconomyRebuyPriceOneCompetitor)
