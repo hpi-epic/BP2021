@@ -9,6 +9,7 @@ import recommerce.rl.model as model
 from recommerce.configuration.hyperparameter_config import config
 from recommerce.market.circular.circular_vendors import CircularAgent
 from recommerce.market.linear.linear_vendors import LinearAgent
+from recommerce.market.sim_market import SimMarket
 from recommerce.rl.reinforcement_learning_agent import ReinforcementLearningAgent
 
 
@@ -18,16 +19,29 @@ class ActorCriticAgent(ReinforcementLearningAgent, ABC):
 	"""
 	def __init__(
 			self,
-			n_observations,
-			n_actions,
+			n_observations=None,
+			n_actions=None,
+			marketplace=None,
+			optim=None,
+			device='cuda' if torch.cuda.is_available() else 'cpu',
 			load_path=None,
 			critic_path=None,
-			name='actor_critic',
+			name='actor_critic'
 			network_architecture=model.simple_network):
-		self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
-		print(f'I initiate an ActorCriticAgent using {self.device} device')
+		assert marketplace is None or isinstance(marketplace, SimMarket), \
+			f'if marketplace is provided, marketplace must be a SimMarket, but is {type(marketplace)}'
+		assert (n_actions is None) == (n_observations is None), 'n_actions must be None exactly when n_observations is None'
+		assert (n_actions is None) != (marketplace is None), \
+			'You must specify the network size either by providing input and output size, or by a marketplace'
+
+		if marketplace is not None:
+			n_observations = marketplace.observation_space.shape[0]
+			n_actions = marketplace.get_actions_dimension() if isinstance(self, ContinuosActorCriticAgent) else marketplace.get_n_actions()
+
+		self.device = device
 		self.name = name
-		self.initialize_models_and_optimizer(n_observations, n_actions, network_architecture)
+		print(f'I initiate an ActorCriticAgent using {self.device} device')
+		self.initialize_models_and_optimizer(n_observations, n_actions)
 		if load_path is not None:
 			self.actor_net.load_state_dict(torch.load(load_path, map_location=self.device))
 		if critic_path is not None:
@@ -85,7 +99,7 @@ class ActorCriticAgent(ReinforcementLearningAgent, ABC):
 		Args:
 			states (torch.Tensor): Your current states
 			actions (torch.Tensor): The actions you have taken
-			rewards (torch.Tensor): The rewards you received from the environment
+			rewards (torch.Tensor): The rewards you received from the marketplace
 			next_states (torch.Tensor): The states you got into after your actions have been performed
 			regularization (bool, optional): Do you want to use the regularization method? Defaults to False.
 

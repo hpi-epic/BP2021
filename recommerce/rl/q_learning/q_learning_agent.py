@@ -10,6 +10,7 @@ import recommerce.rl.model as model
 from recommerce.configuration.hyperparameter_config import config
 from recommerce.market.circular.circular_vendors import CircularAgent
 from recommerce.market.linear.linear_vendors import LinearAgent
+from recommerce.market.sim_market import SimMarket
 from recommerce.rl.experience_buffer import ExperienceBuffer
 from recommerce.rl.reinforcement_learning_agent import ReinforcementLearningAgent
 
@@ -22,26 +23,37 @@ class QLearningAgent(ReinforcementLearningAgent, ABC):
 	# Give no optim if you don't want training.
 	def __init__(
 			self,
-			n_observations,
-			n_actions,
+			n_observations=None,
+			n_actions=None,
+			marketplace=None,
 			optim=None,
 			device='cuda' if torch.cuda.is_available() else 'cpu',
 			load_path=None,
-			name='q_learning',
+			name='q_learning'
 			network_architecture=model.simple_network):
-		self.device = device
+		assert marketplace is None or isinstance(marketplace, SimMarket), \
+			f'if marketplace is provided, marketplace must be a SimMarket, but is {type(marketplace)}'
+		assert (n_actions is None) == (n_observations is None), 'n_actions must be None exactly when n_observations is None'
+		assert (n_actions is None) != (marketplace is None), \
+			'You must specify the network size either by providing input and output size, or by a marketplace'
+
+		if marketplace is not None:
+			n_observations = marketplace.observation_space.shape[0]
+			n_actions = marketplace.get_n_actions()
+
 		self.n_actions = n_actions
+		self.device = device
 		self.buffer_for_feedback = None
 		self.optimizer = None
 		self.name = name
 		print(f'I initiate a QLearningAgent using {self.device} device')
 		self.net = network_architecture(n_observations, n_actions).to(self.device)
-		self.best_interim_net = network_architecture(n_observations, n_actions)
+		self.best_interim_net = network_architecture(n_observations, self.n_actions)
 		if load_path:
 			self.net.load_state_dict(torch.load(load_path, map_location=self.device))
 		if optim:
 			self.optimizer = optim(self.net.parameters(), lr=config.learning_rate)
-			self.tgt_net = network_architecture(n_observations, n_actions).to(self.device)
+			self.tgt_net = network_architecture(n_observations, self.n_actions).to(self.device)
 			if load_path:
 				self.tgt_net.load_state_dict(torch.load(load_path), map_location=self.device)
 			self.buffer = ExperienceBuffer(config.replay_size)
