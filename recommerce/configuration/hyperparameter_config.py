@@ -95,6 +95,8 @@ class HyperparameterConfig():
 		self.check_types(config, 'top-dict')
 		self.check_types(config['rl'], 'rl')
 		self.check_types(config['sim_market'], 'sim_market')
+		self.check_rl_ranges(config['rl'])
+		self.check_sim_market_ranges(config['sim_market'])
 		self._set_rl_variables(config['rl'])
 		self._set_sim_market_variables(config['sim_market'])
 
@@ -180,12 +182,12 @@ class HyperparameterConfig():
 				if must_contain:
 					raise KeyError(key) from error
 
-	def _set_rl_variables(self, config: dict) -> None:
+	def check_rl_ranges(cls, config: dict) -> None:
 		"""
-		Update the global variables with new values provided by the config.
+		Check if all rl variables are within their (pre-defined) ranges.
 
 		Args:
-			config (dict): The dictionary from which to read the new values.
+			config (dict): The config for which to check the variables.
 		"""
 		assert config['learning_rate'] > 0 and config['learning_rate'] < 1, 'learning_rate should be between 0 and 1 (excluded)'
 		assert config['gamma'] >= 0 and config['gamma'] < 1, 'gamma should be between 0 (included) and 1 (excluded)'
@@ -196,7 +198,31 @@ class HyperparameterConfig():
 		assert config['epsilon_decay_last_frame'] >= 0, 'epsilon_decay_last_frame should not be negative'
 		assert config['epsilon_start'] > 0 and config['epsilon_start'] <= 1, 'epsilon_start should be between 0 and 1 (excluded)'
 		assert config['epsilon_final'] > 0 and config['epsilon_final'] <= 1, 'epsilon_final should be between 0 and 1 (excluded)'
+		assert config['epsilon_start'] > config['epsilon_final'], 'epsilon_start should be greater than epsilon_final'
 
+	def check_sim_market_ranges(cls, config: dict) -> None:
+		"""
+		Check if all sim_market variables are within their (pre-defined) ranges.
+
+		Args:
+			config (dict): The config for which to check the variables.
+		"""
+		assert config['max_storage'] >= 0, 'max_storage must be positive'
+		assert config['number_of_customers'] > 0 and config['number_of_customers'] % 2 == 0, 'number_of_customers should be even and positive'
+		assert config['production_price'] <= config['max_price'] and config['production_price'] >= 0, \
+			'production_price needs to be smaller than max_price and >=0'
+		assert config['max_quality'] > 0, 'max_quality should be positive'
+		assert config['max_price'] > 0, 'max_price should be positive'
+		assert config['episode_length'] > 0, 'episode_length should be positive'
+		assert config['storage_cost_per_product'] >= 0, 'storage_cost_per_product should be non-negative'
+
+	def _set_rl_variables(self, config: dict) -> None:
+		"""
+		Update the global variables with new values provided by the config.
+
+		Args:
+			config (dict): The dictionary from which to read the new values.
+		"""
 		self.gamma = config['gamma']
 		self.learning_rate = config['learning_rate']
 		self.batch_size = config['batch_size']
@@ -215,14 +241,6 @@ class HyperparameterConfig():
 		Args:
 			config (dict): The dictionary from which to read the new values.
 		"""
-		assert config['max_storage'] >= 0, 'max_storage must be positive'
-		assert config['number_of_customers'] > 0 and config['number_of_customers'] % 2 == 0, 'number_of_customers should be even and positive'
-		assert config['production_price'] <= config['max_price'] and config['production_price'] >= 0, \
-			'production_price needs to be smaller than max_price and >=0'
-		assert config['max_quality'] > 0, 'max_quality should be positive'
-		assert config['max_price'] > 0, 'max_price should be positive'
-		assert config['episode_length'] > 0, 'episode_length should be positive'
-		assert config['storage_cost_per_product'] >= 0, 'storage_cost_per_product should be non-negative'
 
 		self.max_storage = config['max_storage']
 		self.episode_length = config['episode_length']
