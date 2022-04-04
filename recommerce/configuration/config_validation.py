@@ -28,8 +28,10 @@ def validate_config(config: dict, config_is_final: bool) -> tuple:
 	# then validate that all given values have the correct types
 	check_config_types(hyperparameter_config, environment_config, config_is_final)
 
-	HyperparameterConfig.check_rl_ranges(HyperparameterConfig, hyperparameter_config['rl'])
-	HyperparameterConfig.check_sim_market_ranges(HyperparameterConfig, hyperparameter_config['sim_market'])
+	if 'rl' in hyperparameter_config:
+		HyperparameterConfig.check_rl_ranges(HyperparameterConfig, hyperparameter_config['rl'], config_is_final)
+	if 'sim_market' in hyperparameter_config:
+		HyperparameterConfig.check_sim_market_ranges(HyperparameterConfig, hyperparameter_config['sim_market'], config_is_final)
 
 	return hyperparameter_config, environment_config
 
