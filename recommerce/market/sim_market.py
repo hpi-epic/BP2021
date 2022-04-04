@@ -109,7 +109,8 @@ class SimMarket(gym.Env, ABC):
 			the reward he made between these actions,
 			a flag indicating if the market closes and information about the market for logging purposes.
 		"""
-		action = np.array(action, dtype=np.float32)
+		if isinstance(action, np.ndarray):
+			action = np.array(action, dtype=np.float32)
 		assert self.action_space.contains(action), f'{action} ({type(action)}) invalid'
 
 		self.vendor_actions[0] = action
