@@ -2,6 +2,35 @@ from recommerce.configuration.environment_config import EnvironmentConfig
 from recommerce.configuration.hyperparameter_config import HyperparameterConfig
 
 
+def validate_config(config: dict, config_is_final: bool) -> tuple:
+	"""
+	Validates a given config dictionary either uploaded by the user or entered into the form before starting a container.
+
+	Args:
+		config (dict): The config to validate.
+		config_is_final (bool): Whether or not the config should contain all required keys.
+
+	Returns:
+		tuple: The split hyperparameter_config and environment_config dictionaries.
+	"""
+	# validate the config using `recommerce` validation logic
+	# first check if the environment and hyperparameter parts are already split up
+	if 'environment' in config and 'hyperparameter' in config:
+		if len(config) > 2:
+			raise AssertionError('Your config should not contain keys other than "environment" and "hyperparameter"')
+		hyperparameter_config = config['hyperparameter']
+		environment_config = config['environment']
+	elif 'environment' in config or 'hyperparameter' in config:
+		raise AssertionError('If your config contains one of "environment" or "hyperparameter" it must also contain the other')
+	else:
+		# try to split the config. If any keys are unknown, an AssertionError will be thrown
+		hyperparameter_config, environment_config = split_combined_config(config)
+	# then validate that all given values have the correct types
+	check_config_types(hyperparameter_config, environment_config, config_is_final)
+
+	return hyperparameter_config, environment_config
+
+
 def validate_sub_keys(config_class: HyperparameterConfig or EnvironmentConfig, config: dict, top_level_keys: dict):
 	"""
 	Utility function that validates if a given config contains only allowed keys.

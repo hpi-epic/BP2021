@@ -6,7 +6,9 @@ from io import BytesIO
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 
-from .config_parser import ConfigModelParser, validate_config
+from recommerce.configuration.config_validation import validate_config
+
+from .config_parser import ConfigModelParser
 from .models.config import *
 from .models.container import Container
 

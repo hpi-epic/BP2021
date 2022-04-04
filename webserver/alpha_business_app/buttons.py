@@ -4,8 +4,10 @@ from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
 
+from recommerce.configuration.config_validation import validate_config
+
 from .config_merger import ConfigMerger
-from .config_parser import ConfigFlatDictParser, ConfigModelParser, validate_config
+from .config_parser import ConfigFlatDictParser, ConfigModelParser
 from .handle_files import download_file
 from .handle_requests import send_get_request, send_get_request_with_streaming, send_post_request, stop_container
 from .models.config import Config
