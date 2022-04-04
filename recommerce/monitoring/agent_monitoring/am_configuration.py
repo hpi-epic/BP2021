@@ -7,12 +7,12 @@ import recommerce.configuration.utils as ut
 import recommerce.market.circular.circular_sim_market as circular_market
 import recommerce.market.linear.linear_sim_market as linear_market
 import recommerce.market.sim_market as sim_market
-import recommerce.rl.actorcritic.actorcritic_agent as actorcritic_agent
 from recommerce.configuration.path_manager import PathManager
 from recommerce.market.circular.circular_vendors import CircularAgent, FixedPriceCEAgent
 from recommerce.market.linear.linear_vendors import LinearAgent
 from recommerce.market.vendors import Agent, HumanPlayer, RuleBasedAgent
 from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
+from recommerce.rl.reinforcement_learning_agent import ReinforcementLearningAgent
 
 
 class Configurator():
@@ -52,7 +52,8 @@ class Configurator():
 		Returns:
 			str: The full path to the modelfile.
 		"""
-		model_name += '.dat'
+		if '.dat' not in model_name and '.zip' not in model_name:
+			model_name += '.dat'
 		full_path = os.path.join(PathManager.data_path, model_name)
 		assert os.path.exists(full_path), f'the specified modelfile does not exist: {full_path}'
 		return full_path
@@ -91,7 +92,7 @@ class Configurator():
 				# The custom_init takes two parameters: The class of the agent to be initialized and a list of arguments,
 				# e.g. for the fixed prices or names
 				self.agents.append(Agent.custom_init(current_agent[0], current_agent[1]))
-			elif issubclass(current_agent[0], (QLearningAgent, actorcritic_agent.ActorCriticAgent)):
+			elif issubclass(current_agent[0], ReinforcementLearningAgent):
 				try:
 					assert (0 <= len(current_agent[1]) <= 2), 'the argument list for a RL-agent must have length between 0 and 2'
 					assert all(isinstance(argument, str) for argument in current_agent[1]), 'the arguments for a RL-agent must be of type str'
@@ -101,13 +102,14 @@ class Configurator():
 					# no arguments
 					if len(current_agent[1]) == 0:
 						pass
+					# only modelfile argument
+					elif len(current_agent[1]) == 1 and \
+						(str.endswith(current_agent[1][0], '.dat') or str.endswith(current_agent[1][0], '.zip')):
+						agent_modelfile = current_agent[1][0]
 					# only name argument
-					elif len(current_agent[1]) == 1 and not str.endswith(current_agent[1][0], '.dat'):
+					elif len(current_agent[1]) == 1:
 						# get implicit modelfile name
 						agent_name = current_agent[1][0]
-					# only modelfile argument
-					elif len(current_agent[1]) == 1 and str.endswith(current_agent[1][0], '.dat'):
-						agent_modelfile = current_agent[1][0][:-4]
 					# both arguments, first must be the modelfile, second the name
 					elif len(current_agent[1]) == 2:
 						assert str.endswith(current_agent[1][0], '.dat'), \
@@ -137,7 +139,8 @@ class Configurator():
 		plot_interval: int = None,
 		marketplace: sim_market.SimMarket = None,
 		agents: list = None,
-		subfolder_name: str = None) -> None:
+		subfolder_name: str = None,
+		support_continuouos_action_space: bool = False) -> None:
 		"""
 		Configure the current monitoring session.
 
@@ -171,7 +174,7 @@ class Configurator():
 
 		if(marketplace is not None):
 			assert issubclass(marketplace, sim_market.SimMarket), 'the marketplace must be a subclass of SimMarket'
-			self.marketplace = marketplace()
+			self.marketplace = marketplace(support_continuouos_action_space)
 			# If the agents have not been changed, we reuse the old agents
 			if(agents is None):
 				print('Warning: Your agents are being overwritten by new instances of themselves!')

@@ -15,6 +15,8 @@ import recommerce.configuration.utils as ut
 import recommerce.market.circular.circular_sim_market as circular_market
 from recommerce.configuration.hyperparameter_config import config
 from recommerce.configuration.path_manager import PathManager
+from recommerce.monitoring.agent_monitoring.am_evaluation import Evaluator
+from recommerce.monitoring.agent_monitoring.am_monitoring import Monitor
 from recommerce.rl.stable_baselines_model import StableBaselinesDDPG
 
 warnings.filterwarnings('ignore')
@@ -66,8 +68,8 @@ class PerStepCheck(BaseCallback):
 		self.writer = SummaryWriter(log_dir=os.path.join(PathManager.results_path, 'runs', f'{log_dir_prepend}training_{self.curr_time}'))
 		path_name = f'{self.signature}_{self.curr_time}'
 		self.save_path = os.path.join(PathManager.results_path, 'trainedModels', log_dir_prepend + path_name)
-		self.tmp_path = os.path.join(self.save_path, 'tmp_model')
 		os.makedirs(os.path.abspath(self.save_path), exist_ok=True)
+		self.tmp_path = os.path.join(self.save_path, 'tmp_model.zip')
 
 	def reset_time_tracker(self) -> None:
 		self.frame_number_last_speed_update = 0
@@ -105,9 +107,20 @@ class PerStepCheck(BaseCallback):
 			finished_episodes = self.num_timesteps // config.episode_length
 			self.save_parameters(finished_episodes)
 
+		# analyze trained agents
+		if len(self.saved_parameter_paths) == 0:
+			print('No agents saved! Nothing to monitor.')
+			return
+		monitor = Monitor()
+		agent_list = [(self.agent_class, [parameter_path]) for parameter_path in self.saved_parameter_paths]
+		monitor.configurator.setup_monitoring(False, 250, 250, self.marketplace_class, agent_list, support_continuouos_action_space=True)
+		rewards = monitor.run_marketplace()
+		episode_numbers = [int(parameter_path[-9:][:5]) for parameter_path in self.saved_parameter_paths]
+		Evaluator(monitor.configurator).evaluate_session(rewards, episode_numbers)
+
 	def save_parameters(self, finished_episodes):
-		path_to_parameters = os.path.join(self.save_path, f'{self.signature}_{finished_episodes:05d}')
-		os.rename(self.tmp_path + '.zip', path_to_parameters + '.zip')
+		path_to_parameters = os.path.join(self.save_path, f'{self.signature}_{finished_episodes:05d}.zip')
+		os.rename(self.tmp_path, path_to_parameters)
 		self.saved_parameter_paths.append(path_to_parameters)
 		tqdm.write(f'I write the interim model after {finished_episodes} episodes to the disk.')
 		tqdm.write(f'You can find the parameters here: {path_to_parameters}.')
