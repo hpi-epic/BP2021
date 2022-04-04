@@ -28,12 +28,8 @@ def validate_config(config: dict, config_is_final: bool) -> tuple:
 	# then validate that all given values have the correct types
 	check_config_types(hyperparameter_config, environment_config, config_is_final)
 
-	# if the config should be complete, check that all values are in the correct ranges
-	# we do not do this if the config can be incomplete, because that would require a try/except block
-	# around each assert within the check_xx_ranges functions (to catch KeyErrors)
-	if config_is_final:
-		HyperparameterConfig.check_rl_ranges(HyperparameterConfig, hyperparameter_config['rl'])
-		HyperparameterConfig.check_sim_market_ranges(HyperparameterConfig, hyperparameter_config['sim_market'])
+	HyperparameterConfig.check_rl_ranges(HyperparameterConfig, hyperparameter_config['rl'])
+	HyperparameterConfig.check_sim_market_ranges(HyperparameterConfig, hyperparameter_config['sim_market'])
 
 	return hyperparameter_config, environment_config
 

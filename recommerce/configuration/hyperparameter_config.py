@@ -152,15 +152,15 @@ class HyperparameterConfig():
 			}
 		elif key == 'rl':
 			types_dict = {
-				'gamma': float,
+				'gamma': (int, float),
 				'batch_size': int,
 				'replay_size': int,
 				'learning_rate': (int, float),
 				'sync_target_frames': int,
 				'replay_start_size': int,
 				'epsilon_decay_last_frame': int,
-				'epsilon_start': float,
-				'epsilon_final': float
+				'epsilon_start': (int, float),
+				'epsilon_final': (int, float)
 			}
 		elif key == 'sim_market':
 			types_dict = {
@@ -182,39 +182,58 @@ class HyperparameterConfig():
 				if must_contain:
 					raise KeyError(key) from error
 
-	def check_rl_ranges(cls, config: dict) -> None:
+	def check_rl_ranges(cls, config: dict, must_contain: bool = True) -> None:
 		"""
 		Check if all rl variables are within their (pre-defined) ranges.
 
 		Args:
 			config (dict): The config for which to check the variables.
+			must_contain (bool, optional): Whether or not all variables must be present in the config. Defaults to True.
 		"""
-		assert config['learning_rate'] > 0 and config['learning_rate'] < 1, 'learning_rate should be between 0 and 1 (excluded)'
-		assert config['gamma'] >= 0 and config['gamma'] < 1, 'gamma should be between 0 (included) and 1 (excluded)'
-		assert config['batch_size'] > 0, 'batch_size should be greater than 0'
-		assert config['replay_size'] > 0, 'replay_size should be greater than 0'
-		assert config['sync_target_frames'] > 0, 'sync_target_frames should be greater than 0'
-		assert config['replay_start_size'] > 0, 'replay_start_size should be greater than 0'
-		assert config['epsilon_decay_last_frame'] >= 0, 'epsilon_decay_last_frame should not be negative'
-		assert config['epsilon_start'] > 0 and config['epsilon_start'] <= 1, 'epsilon_start should be between 0 and 1 (excluded)'
-		assert config['epsilon_final'] > 0 and config['epsilon_final'] <= 1, 'epsilon_final should be between 0 and 1 (excluded)'
-		assert config['epsilon_start'] > config['epsilon_final'], 'epsilon_start should be greater than epsilon_final'
+		if must_contain or 'gamma' in config:
+			assert config['gamma'] >= 0 and config['gamma'] < 1, 'gamma should be between 0 (included) and 1 (excluded)'
+		if must_contain or 'batch_size' in config:
+			assert config['batch_size'] > 0, 'batch_size should be greater than 0'
+		if must_contain or 'replay_size' in config:
+			assert config['replay_size'] > 0, 'replay_size should be greater than 0'
+		if must_contain or 'learning_rate' in config:
+			assert config['learning_rate'] > 0 and config['learning_rate'] < 1, 'learning_rate should be between 0 and 1 (excluded)'
+		if must_contain or 'sync_target_frames' in config:
+			assert config['sync_target_frames'] > 0, 'sync_target_frames should be greater than 0'
+		if must_contain or 'replay_start_size' in config:
+			assert config['replay_start_size'] > 0, 'replay_start_size should be greater than 0'
+		if must_contain or 'epsilon_decay_last_frame' in config:
+			assert config['epsilon_decay_last_frame'] >= 0, 'epsilon_decay_last_frame should not be negative'
+		if must_contain or 'epsilon_start' in config:
+			assert config['epsilon_start'] > 0 and config['epsilon_start'] <= 1, 'epsilon_start should be between 0 and 1 (excluded)'
+		if must_contain or 'epsilon_final' in config:
+			assert config['epsilon_final'] > 0 and config['epsilon_final'] <= 1, 'epsilon_final should be between 0 and 1 (excluded)'
+		if must_contain or ('epsilon_start' in config and 'epsilon_final' in config):
+			assert config['epsilon_start'] > config['epsilon_final'], 'epsilon_start should be greater than epsilon_final'
 
-	def check_sim_market_ranges(cls, config: dict) -> None:
+	def check_sim_market_ranges(cls, config: dict, must_contain: bool = True) -> None:
 		"""
 		Check if all sim_market variables are within their (pre-defined) ranges.
 
 		Args:
 			config (dict): The config for which to check the variables.
+			must_contain (bool, optional): Whether or not all variables must be present in the config. Defaults to True.
 		"""
-		assert config['max_storage'] >= 0, 'max_storage must be positive'
-		assert config['number_of_customers'] > 0 and config['number_of_customers'] % 2 == 0, 'number_of_customers should be even and positive'
-		assert config['production_price'] <= config['max_price'] and config['production_price'] >= 0, \
-			'production_price needs to be smaller than max_price and >=0'
-		assert config['max_quality'] > 0, 'max_quality should be positive'
-		assert config['max_price'] > 0, 'max_price should be positive'
-		assert config['episode_length'] > 0, 'episode_length should be positive'
-		assert config['storage_cost_per_product'] >= 0, 'storage_cost_per_product should be non-negative'
+		if must_contain or 'max_storage' in config:
+			assert config['max_storage'] >= 0, 'max_storage must be positive'
+		if must_contain or 'number_of_customers' in config:
+			assert config['number_of_customers'] > 0 and config['number_of_customers'] % 2 == 0, 'number_of_customers should be even and positive'
+		if must_contain or 'production_price' in config:
+			assert config['production_price'] <= config['max_price'] and config['production_price'] >= 0, \
+				'production_price needs to be smaller than max_price and >=0'
+		if must_contain or 'max_quality' in config:
+			assert config['max_quality'] > 0, 'max_quality should be positive'
+		if must_contain or 'max_price' in config:
+			assert config['max_price'] > 0, 'max_price should be positive'
+		if must_contain or 'episode_length' in config:
+			assert config['episode_length'] > 0, 'episode_length should be positive'
+		if must_contain or 'storage_cost_per_product' in config:
+			assert config['storage_cost_per_product'] >= 0, 'storage_cost_per_product should be non-negative'
 
 	def _set_rl_variables(self, config: dict) -> None:
 		"""
