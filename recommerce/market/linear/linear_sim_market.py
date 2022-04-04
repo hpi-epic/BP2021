@@ -13,7 +13,7 @@ from recommerce.market.sim_market import SimMarket
 
 class LinearEconomy(SimMarket, ABC):
 
-	def _setup_action_observation_space(self) -> None:
+	def _setup_action_observation_space(self, support_continuouos_action_space) -> None:
 		"""
 		The observation array has the following format:
 		cell 0: quality of that vendor from whose perspective the observation is generated.
@@ -24,9 +24,12 @@ class LinearEconomy(SimMarket, ABC):
 		self.observation_space = gym.spaces.Box(
 			np.array([0.0] * (len(self.competitors) * 2 + 1)),
 			np.array([config.max_quality] + [config.max_price, config.max_quality] * len(self.competitors)),
-			dtype=np.float64)
+			dtype=np.float32)
 
-		self._action_space = gym.spaces.Discrete(config.max_price)
+		if support_continuouos_action_space:
+			self.action_space = gym.spaces.Box(np.array([0]), np.array([config.max_price]), dtype=np.float32)
+		else:
+			self.action_space = gym.spaces.Discrete(config.max_price)
 
 	def _reset_vendor_specific_state(self) -> list:
 		"""
@@ -59,7 +62,7 @@ class LinearEconomy(SimMarket, ABC):
 		self._ensure_output_dict_has('customer/purchases', [0] * self._number_of_vendors)
 
 	def get_n_actions(self):
-		return self._action_space.n
+		return self.action_space.n
 
 	def _is_probability_distribution_fitting_exactly(self, probability_distribution) -> bool:
 		"""

@@ -21,19 +21,19 @@ class SimMarket(gym.Env, ABC):
 	Inherits from `gym.env`.
 	"""
 
-	def __init__(self) -> None:
+	def __init__(self, support_continuouos_action_space=False) -> None:
 		"""
 		Initialize a SimMarket instance.
 		Set up needed values such as competitors and action/observation-space and reset the environment.
 		"""
 		self.competitors = self._get_competitor_list()
 		# The agent's price does not belong to the observation_space any more because an agent should not depend on it
-		self._setup_action_observation_space()
+		self._setup_action_observation_space(support_continuouos_action_space)
 		self._owner = None
 		self._customer = None
 		self._number_of_vendors = self._get_number_of_vendors()
 		# TODO: Better testing for the observation and action space
-		assert (self.observation_space and self._action_space), 'Your observation or action space is not defined'
+		assert (self.observation_space and self.action_space), 'Your observation or action space is not defined'
 		# Make sure that variables such as state, customer are known
 		self.reset()
 
@@ -58,7 +58,6 @@ class SimMarket(gym.Env, ABC):
 
 		self.vendor_specific_state = [self._reset_vendor_specific_state() for _ in range(self._number_of_vendors)]
 		self.vendor_actions = [self._reset_vendor_actions() for _ in range(self._number_of_vendors)]
-		self.offer_length_per_vendor = self._get_offer_length_per_vendor()
 
 		self._customer = self._choose_customer()
 		self._owner = self._choose_owner()
@@ -96,7 +95,7 @@ class SimMarket(gym.Env, ABC):
 				continue
 			self._complete_purchase(profits, seller - 1, frequency)
 
-	def step(self, action) -> Tuple[np.array, np.float64, bool, dict]:
+	def step(self, action) -> Tuple[np.array, np.float32, bool, dict]:
 		"""
 		Simulate the market between actions by the agent.
 		It is part of the gym library for reinforcement learning.
@@ -105,12 +104,13 @@ class SimMarket(gym.Env, ABC):
 			action (int | Tuple): The action of the agent. In discrete case: the action must be between 0 and number of actions -1.
 			Note that you must add one to this price to get the real price!
 		Returns:
-			Tuple[np.array, np.float64, bool, dict]: A Tuple,
+			Tuple[np.array, np.float32, bool, dict]: A Tuple,
 			containing the observation the agents makes right before his next action,
 			the reward he made between these actions,
 			a flag indicating if the market closes and information about the market for logging purposes.
 		"""
-		assert self._action_space.contains(action), f'{action} ({type(action)}) invalid'
+		action = np.array(action, dtype=np.float32)
+		assert self.action_space.contains(action), f'{action} ({type(action)}) invalid'
 
 		self.vendor_actions[0] = action
 
@@ -130,7 +130,7 @@ class SimMarket(gym.Env, ABC):
 			# the competitor, which turn it is, will update its pricing
 			if i < len(self.competitors):
 				action_competitor_i = self.competitors[i].policy(self._observation(i + 1))
-				assert self._action_space.contains(action_competitor_i), 'This vendor does not deliver a suitable action'
+				assert self.action_space.contains(action_competitor_i), 'This vendor does not deliver a suitable action'
 				self.vendor_actions[i + 1] = action_competitor_i
 
 		self._consider_storage_costs(profits)
@@ -157,18 +157,18 @@ class SimMarket(gym.Env, ABC):
 
 		# first the state of the of the vendor whose view we create will be added
 		if self.vendor_specific_state[vendor_view] is not None:
-			observations.append(np.array(self.vendor_specific_state[vendor_view], ndmin=1, dtype=np.float64))
+			observations.append(np.array(self.vendor_specific_state[vendor_view], ndmin=1, dtype=np.float32))
 
 		# the rest of the vendors actions and states will be added
 		for vendor_index in range(self._number_of_vendors):
 			if vendor_index == vendor_view:
 				continue
-			observations.append(np.array(self.vendor_actions[vendor_index], ndmin=1, dtype=np.float64))
+			observations.append(np.array(self.vendor_actions[vendor_index], ndmin=1, dtype=np.float32))
 			if self.vendor_specific_state[vendor_index] is not None:
-				observations.append(np.array(self.vendor_specific_state[vendor_index], ndmin=1, dtype=np.float64))
+				observations.append(np.array(self.vendor_specific_state[vendor_index], ndmin=1, dtype=np.float32))
 
 		# The observation has to be part of the observation_space defined by the market
-		concatenated_observations = np.concatenate(observations, dtype=np.float64)
+		concatenated_observations = np.concatenate(observations, dtype=np.float32)
 		assert self.observation_space.contains(concatenated_observations), \
 			f'{concatenated_observations} ({type(concatenated_observations)}) invalid observation'
 		return concatenated_observations
@@ -206,7 +206,7 @@ class SimMarket(gym.Env, ABC):
 		raise NotImplementedError
 
 	@abstractmethod
-	def _setup_action_observation_space(self) -> None:  # pragma: no cover
+	def _setup_action_observation_space(self, support_continuouos_action_space) -> None:  # pragma: no cover
 		raise NotImplementedError('This method is abstract. Use a subclass')
 
 	@abstractmethod
@@ -226,10 +226,10 @@ class SimMarket(gym.Env, ABC):
 		Returns:
 			int: The dimension of the action space.
 		"""
-		if self._action_space.shape is not None:
+		if self.action_space.shape is not None:
 			return 1
 		else:
-			return len(self._action_space)
+			return len(self.action_space)
 
 	@abstractmethod
 	def _get_competitor_list(self) -> list:  # pragma: no cover
@@ -278,20 +278,6 @@ class SimMarket(gym.Env, ABC):
 		Initialize the entries in the output dict for an economy.
 		"""
 		raise NotImplementedError
-
-	def _get_offer_length_per_vendor(self) -> int:
-		"""
-		Generate the number of fields each vendor takes in the offers array.
-		The offer length is the sum of the number of fields required to encode the action and the length of the encoding of vendor specific state.
-		Returns:
-			int: The offer length.
-		"""
-		action_encoding_length = 1 if isinstance(self._action_space, gym.spaces.Discrete) else len(self._action_space)
-		if self.vendor_specific_state[0] is None:
-			vendor_specific_state_encoding_length = 0
-		else:
-			vendor_specific_state_encoding_length = len(self.vendor_specific_state[0])
-		return action_encoding_length + vendor_specific_state_encoding_length
 
 	def _ensure_output_dict_has(self, name, init_for_all_vendors=None) -> None:
 		"""

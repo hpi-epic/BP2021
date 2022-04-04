@@ -14,15 +14,19 @@ from recommerce.market.sim_market import SimMarket
 
 class CircularEconomy(SimMarket, ABC):
 
-	def _setup_action_observation_space(self) -> None:
+	def _setup_action_observation_space(self, support_continuouos_action_space) -> None:
 		# cell 0: number of products in the used storage, cell 1: number of products in circulation
 		self.max_storage = 1e2
 		self.max_circulation = 10 * self.max_storage
 		self.observation_space = gym.spaces.Box(
 			np.array([0, 0] + [0, 0, 0] * len(self.competitors)),
 			np.array([self.max_circulation, self.max_storage] + [config.max_price, config.max_price, self.max_storage] * len(self.competitors)),
-			dtype=np.float64)
-		self._action_space = gym.spaces.Tuple((gym.spaces.Discrete(config.max_price), gym.spaces.Discrete(config.max_price)))
+			dtype=np.float32)
+
+		if support_continuouos_action_space:
+			self.action_space = gym.spaces.Box(np.array([0] * 2), np.array([config.max_price] * 2), dtype=np.float32)
+		else:
+			self.action_space = gym.spaces.Tuple((gym.spaces.Discrete(config.max_price), gym.spaces.Discrete(config.max_price)))
 
 	def _reset_vendor_specific_state(self) -> list:
 		"""
@@ -188,8 +192,8 @@ class CircularEconomy(SimMarket, ABC):
 
 	def get_n_actions(self):
 		n_actions = 1
-		for id in range(len(self._action_space)):
-			n_actions *= self._action_space[id].n
+		for id in range(len(self.action_space)):
+			n_actions *= self.action_space[id].n
 		return n_actions
 
 	def _is_probability_distribution_fitting_exactly(self, probability_distribution) -> bool:
@@ -212,15 +216,19 @@ class CircularEconomyMonopolyScenario(CircularEconomy):
 
 class CircularEconomyRebuyPrice(CircularEconomy, ABC):
 
-	def _setup_action_observation_space(self) -> None:
-		super()._setup_action_observation_space()
+	def _setup_action_observation_space(self, support_continuouos_action_space) -> None:
+		super()._setup_action_observation_space(support_continuouos_action_space)
 		self.observation_space = gym.spaces.Box(
 			np.array([0, 0] + [0, 0, 0, 0] * len(self.competitors)),
 			np.array([self.max_circulation, self.max_storage] + [config.max_price, config.max_price,
 				config.max_price, self.max_storage] * len(self.competitors)),
-			dtype=np.float64)
-		self._action_space = gym.spaces.Tuple(
-			(gym.spaces.Discrete(config.max_price), gym.spaces.Discrete(config.max_price), gym.spaces.Discrete(config.max_price)))
+			dtype=np.float32)
+
+		if support_continuouos_action_space:
+			self.action_space = gym.spaces.Box(np.array([0] * 3), np.array([config.max_price] * 3), dtype=np.float32)
+		else:
+			self.action_space = gym.spaces.Tuple(
+				(gym.spaces.Discrete(config.max_price), gym.spaces.Discrete(config.max_price), gym.spaces.Discrete(config.max_price)))
 
 	def _reset_vendor_actions(self) -> tuple:
 		"""
