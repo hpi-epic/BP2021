@@ -18,10 +18,12 @@ class StableBaselinesAgent(ReinforcementLearningAgent, LinearAgent, CircularAgen
 			f'if marketplace is provided, marketplace must be a SimMarket, but is {type(marketplace)}'
 		self.callback = PerStepCheck(type(self), type(marketplace), iteration_length=iteration_length)
 		marketplace = stable_baselines3.common.monitor.Monitor(marketplace, self.callback.save_path)
-		self._initialize_model(marketplace)
+		if load_path is None:
+			self._initialize_model(marketplace)
+			print(f'I initiate {self.name}-agent using {self.model.device} device')
 		if load_path is not None:
-			self.model.load(load_path)
-		print(f'I initiate {self.name}-agent using {self.model.device} device')
+			self._load(load_path)
+			print(f'I load {self.name}-agent using {self.model.device} device from {load_path}')
 
 	def policy(self, observation):
 		return self.model.predict(observation)[0]
@@ -35,37 +37,57 @@ class StableBaselinesAgent(ReinforcementLearningAgent, LinearAgent, CircularAgen
 
 
 class StableBaselinesDDPG(StableBaselinesAgent):
+	name = 'Stable_Baselines_DDPG'
+
 	def _initialize_model(self, marketplace):
 		n_actions = marketplace.get_actions_dimension()
 		action_noise = NormalActionNoise(mean=np.zeros(n_actions), sigma=1 * np.ones(n_actions))
 		self.model = DDPG('MlpPolicy', marketplace, action_noise=action_noise, verbose=False)
-		self.name = 'Stable_Baselines_DDPG'
+
+	def _load(self, load_path):
+		self.model = DDPG.load(load_path)
 
 
 class StableBaselinesTD3(StableBaselinesAgent):
+	name = 'Stable_Baselines_TD3'
+
 	def _initialize_model(self, marketplace):
 		n_actions = marketplace.get_actions_dimension()
 		action_noise = NormalActionNoise(mean=np.zeros(n_actions), sigma=1 * np.ones(n_actions))
 		self.model = TD3('MlpPolicy', marketplace, action_noise=action_noise, verbose=False)
-		self.name = 'Stable_Baselines_TD3'
+
+	def _load(self, load_path):
+		self.model = TD3.load(load_path)
 
 
 class StableBaselinesA2C(StableBaselinesAgent):
+	name = 'Stable_Baselines_A2C'
+
 	def _initialize_model(self, marketplace):
 		self.model = A2C('MlpPolicy', marketplace, verbose=False)
-		self.name = 'Stable_Baselines_A2C'
+
+	def _load(self, load_path):
+		self.model = A2C.load(load_path)
 
 
 class StableBaselinesPPO(StableBaselinesAgent):
+	name = 'Stable_Baselines_PPO'
+
 	def _initialize_model(self, marketplace):
 		self.model = PPO('MlpPolicy', marketplace, verbose=False)
-		self.name = 'Stable_Baselines_PPO'
+
+	def _load(self, load_path):
+		self.model = PPO.load(load_path)
 
 
 class StableBaselinesSAC(StableBaselinesAgent):
+	name = 'Stable_Baselines_SAC'
+
 	def _initialize_model(self, marketplace):
 		self.model = SAC('MlpPolicy', marketplace, verbose=False)
-		self.name = 'Stable_Baselines_SAC'
+
+	def _load(self, load_path):
+		self.model = SAC.load(load_path)
 
 
 if __name__ == '__main__':
