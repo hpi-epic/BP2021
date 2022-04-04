@@ -26,13 +26,13 @@ class HyperparameterConfig():
 
 		return cls._instance
 
-	def get_required_fields(cls, level) -> dict:
+	def get_required_fields(cls, dict_key) -> dict:
 		"""
 		Utility function that returns all of the keys required for a hyperparameter_config.json at the given level.
 		The value of any given key indicates whether or not it is the key of a dictionary within the config (i.e. they are a level themselves).
 
 		Args:
-			level (str): The level at which the required fields are needed. One of 'top-level', 'rl', 'sim_market'.
+			dict_key (str): The key for which the required fields are needed. 'top-dict' for getting the keys of the first level.
 
 		Returns:
 			dict: The required keys for the config at the given level, together with a boolean indicating of they are the key
@@ -41,9 +41,9 @@ class HyperparameterConfig():
 		Raises:
 			AssertionError: If the given level is invalid.
 		"""
-		if level == 'top-level':
+		if dict_key == 'top-dict':
 			return {'rl': True, 'sim_market': True}
-		elif level == 'rl':
+		elif dict_key == 'rl':
 			return {
 				'gamma': False,
 				'batch_size': False,
@@ -55,7 +55,7 @@ class HyperparameterConfig():
 				'epsilon_start': False,
 				'epsilon_final': False
 			}
-		elif level == 'sim_market':
+		elif dict_key == 'sim_market':
 			return {
 				'max_storage': False,
 				'episode_length': False,
@@ -66,7 +66,7 @@ class HyperparameterConfig():
 				'storage_cost_per_product': False
 			}
 		else:
-			raise AssertionError(f'The given level does not exist in a hyperparameter-config: {level}')
+			raise AssertionError(f'The given level does not exist in a hyperparameter-config: {dict_key}')
 
 	def __str__(self) -> str:
 		"""
@@ -136,6 +136,9 @@ class HyperparameterConfig():
 		Args:
 			config (dict): The config to check.
 			must_contain (bool, optional): Whether or not all variables must be present in the config. Defaults to True.
+
+		Raises:
+			KeyError: If the dictionary is missing a key but should contain all keys.
 		"""
 		types_dict = {
 			'gamma': float,
@@ -163,6 +166,9 @@ class HyperparameterConfig():
 		Args:
 			config (dict): The config to check.
 			must_contain (bool, optional): Whether or not all variables must be present in the config. Defaults to True.
+
+		Raises:
+			KeyError: If the dictionary is missing a key but should contain all keys.
 		"""
 		types_dict = {
 			'max_storage': int,

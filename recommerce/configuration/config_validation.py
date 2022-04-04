@@ -50,8 +50,8 @@ def split_combined_config(config: dict) -> tuple:
 	Raises:
 		AssertionError: If the user provides a key that should not exist.
 	"""
-	top_level_hyperparameter = HyperparameterConfig.get_required_fields(HyperparameterConfig, 'top-level')
-	top_level_environment = EnvironmentConfig.get_required_fields(EnvironmentConfig, 'top-level')
+	top_level_hyperparameter = HyperparameterConfig.get_required_fields(HyperparameterConfig, 'top-dict')
+	top_level_environment = EnvironmentConfig.get_required_fields(EnvironmentConfig, 'top-dict')
 
 	hyperparameter_config = {}
 	environment_config = {}

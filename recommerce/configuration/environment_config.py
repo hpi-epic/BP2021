@@ -22,13 +22,13 @@ class EnvironmentConfig(ABC):
 		self.task = self._get_task()
 		self._validate_config(config)
 
-	def get_required_fields(cls, level) -> dict:
+	def get_required_fields(cls, dict_key) -> dict:
 		"""
 		Utility function that returns all of the keys required for a environment_config.json at the given level.
 		The value of any given key indicates whether or not it is the key of a dictionary within the config (i.e. they are a level themselves).
 
 		Args:
-			level (str): The level at which the required fields are needed. One of 'top-level', 'agents'.
+			dict_key (str): The key for which the required fields are needed. 'top-dict' for getting the keys of the first level.
 
 		Returns:
 			dict: The required keys for the config at the given level, together with a boolean indicating of they are the key
@@ -37,7 +37,7 @@ class EnvironmentConfig(ABC):
 		Raises:
 			AssertionError: If the given level is invalid.
 		"""
-		if level == 'top-level':
+		if dict_key == 'top-level':
 			return {
 				'task': False,
 				'enable_live_draw': False,
@@ -46,13 +46,13 @@ class EnvironmentConfig(ABC):
 				'marketplace': False,
 				'agents': True
 			}
-		elif level == 'agents':
+		elif dict_key == 'agents':
 			return {
 				'agent_class': False,
 				'argument': False
 			}
 		else:
-			raise AssertionError(f'The given level does not exist in an environment-config: {level}')
+			raise AssertionError(f'The given level does not exist in an environment-config: {dict_key}')
 
 	# This function should always contain ALL keys that are possible, so the webserver-config is independent of the given "task"
 	# since the user does not need to specify a "task". The subclasses should overwrite this method.
@@ -64,6 +64,9 @@ class EnvironmentConfig(ABC):
 		Args:
 			config (dict): The config to check.
 			must_contain (bool, optional): Whether or not all variables must be present in the config. Defaults to True.
+
+		Raises:
+			KeyError: If the dictionary is missing a key but should contain all keys.
 		"""
 		types_dict = {
 			'task': str,
