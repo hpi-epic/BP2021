@@ -95,12 +95,12 @@ get_class_testcases = [
 
 @pytest.mark.parametrize('expected_class, class_string', get_class_testcases)
 def test_get_class(expected_class, class_string):
-	assert expected_class == env_config.EnvironmentConfig._get_class(env_config.EnvironmentConfig, class_string)
+	assert expected_class == env_config.get_class(class_string)
 
 
 def test_get_class_invalid_class():
 	with pytest.raises(AttributeError) as error_message:
-		env_config.EnvironmentConfig._get_class(env_config.EnvironmentConfig, 'recommerce.market.circular.circular_vendors.NotAValidClass')
+		env_config.get_class('recommerce.market.circular.circular_vendors.NotAValidClass')
 	assert 'The string you passed could not be resolved to a class' in str(error_message.value)
 
 
@@ -115,13 +115,13 @@ instantiate_invalid_get_class_return_testcases = [
 @pytest.mark.parametrize('complete_class_string, splitted_class_string', instantiate_invalid_get_class_return_testcases)
 def test_instantiate_invalid_get_class_return(complete_class_string, splitted_class_string):
 	with pytest.raises(TypeError) as error_message:
-		env_config.EnvironmentConfig._get_class(env_config.EnvironmentConfig, complete_class_string)()
+		env_config.get_class(complete_class_string)()
 	assert str(error_message.value).startswith(f'Can\'t instantiate abstract class {splitted_class_string} with abstract methods')
 
 
 def test_get_class_invalid_module():
 	with pytest.raises(ModuleNotFoundError) as error_message:
-		env_config.EnvironmentConfig._get_class(env_config.EnvironmentConfig, 'notAModule.ValidClass')
+		env_config.get_class('notAModule.ValidClass')
 	assert 'The string you passed could not be resolved to a module' in str(error_message.value)
 
 

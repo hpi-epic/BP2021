@@ -13,6 +13,25 @@ from recommerce.rl.actorcritic.actorcritic_agent import ActorCriticAgent
 from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
 
 
+def get_class(import_string: str) -> object:
+	"""
+	Get the class from the given string.
+
+	Args:
+		import_string (str): A string containing the import path in the format 'module.submodule.class'.
+
+	Returns:
+		A class object: The imported class.
+	"""
+	module_name, class_name = import_string.rsplit('.', 1)
+	try:
+		return getattr(importlib.import_module(module_name), class_name)
+	except AttributeError as error:
+		raise AttributeError(f'The string you passed could not be resolved to a class: {import_string}') from error
+	except ModuleNotFoundError as error:
+		raise ModuleNotFoundError(f'The string you passed could not be resolved to a module: {import_string}') from error
+
+
 class EnvironmentConfig(ABC):
 	"""
 	An abstract environment configuration class.
@@ -106,7 +125,7 @@ class EnvironmentConfig(ABC):
 				# make sure the class can be parsed/is valid
 				if key == 'marketplace':
 					try:
-						cls._get_class(cls, config['marketplace'])
+						get_class(config['marketplace'])
 					except ValueError as error:
 						raise AssertionError(f'The marketplace could not be parsed to a valid class: "{config["marketplace"]}"') from error
 				# TODO: Refactor this when the agent structure was changed in the json files
@@ -115,7 +134,7 @@ class EnvironmentConfig(ABC):
 						for agent_key, agent_value in types_dict_agents.items():
 							if agent_key == 'agent_class':
 								try:
-									cls._get_class(cls, config['agents'][agent]['agent_class'])
+									get_class(config['agents'][agent]['agent_class'])
 								except ValueError as error:
 									raise AssertionError(f'This agent could not be parsed to a valid class: \
 "{config["agents"][agent]["agent_class"]}"') from error
@@ -197,7 +216,7 @@ class EnvironmentConfig(ABC):
 			list: A list of agent classes.
 			list: A list of parsed arguments.
 		"""
-		agent_classes = [self._get_class(agent['agent_class']) for agent in agent_dictionaries]
+		agent_classes = [get_class(agent['agent_class']) for agent in agent_dictionaries]
 
 		# If a modelfile is needed, the self.agents will be a list of tuples (as required by agent_monitoring), else just a list of classes
 		arguments_list = []
@@ -240,7 +259,7 @@ class EnvironmentConfig(ABC):
 		Args:
 			marketplace (str): The string of the class within the config dictionary.
 		"""
-		self.marketplace = self._get_class(marketplace_string)
+		self.marketplace = get_class(marketplace_string)
 		assert issubclass(self.marketplace, SimMarket), \
 			f'The type of the passed marketplace must be a subclass of SimMarket: {self.marketplace}'
 
@@ -289,24 +308,6 @@ class EnvironmentConfig(ABC):
 		self._set_marketplace(config['marketplace'])
 
 		self._assert_agent_marketplace_fit()
-
-	def _get_class(cls, import_string: str) -> object:
-		"""
-		Get the class from the given string.
-
-		Args:
-			import_string (str): A string containing the import path in the format 'module.submodule.class'.
-
-		Returns:
-			A class object: The imported class.
-		"""
-		module_name, class_name = import_string.rsplit('.', 1)
-		try:
-			return getattr(importlib.import_module(module_name), class_name)
-		except AttributeError as error:
-			raise AttributeError(f'The string you passed could not be resolved to a class: {import_string}') from error
-		except ModuleNotFoundError as error:
-			raise ModuleNotFoundError(f'The string you passed could not be resolved to a module: {import_string}') from error
 
 	@abstractmethod
 	def _get_task(self) -> str:
