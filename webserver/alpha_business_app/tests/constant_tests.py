@@ -113,7 +113,7 @@ EMPTY_STRUCTURE_CONFIG = {
 				'plot_interval': None,
 				'marketplace': None,
 				'task': None,
-				'agents': {}
+				'agents': []
 			},
 			'hyperparameter': {
 				'rl': {
