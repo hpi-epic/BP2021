@@ -5,7 +5,7 @@ N = 200  # Trainingszeilen (historical data)
 c_new = 4
 
 # x{k in 0..24, i in 0..N} default if k=0 then 1 else round(np.random.uniform(0, 20)) # historical/training data
-x = np.array([[(1 if k == 0 else round(np.random.uniform(0, 20))) for k in range(N)] for _ in range(25)])  # historical/training data
+x = np.array([[(1 if k == 0 else np.round_(np.random.uniform(0, 20))) for k in range(N)] for _ in range(25)])  # historical/training data
 
 
 # own period: 1st half: own x[7, i]vs x[2, i]| 2nd half: own x[7, i] vs x[2, i+1]
@@ -14,26 +14,29 @@ x = np.array([[(1 if k == 0 else round(np.random.uniform(0, 20))) for k in range
 for i in range(1, N):
 	x[1, i] = x[1, i-1]-x[12, i-1]+x[13, i-1]  # inventory own
 
-	x[2, i] = x[7, i-1]-1 + round(x[5, i-1]/200) if 9 < x[7, i-1] <= 20 else 20  # comp price new
-	x[3, i] = x[8, i-1]-1 + round(x[5, i-1]/200) if 5 < x[8, i-1] <= 15 else 15  # comp price used
-	x[4, i] = x[9, i-1]-0.5-round(x[5, i-1]/200)if 1 < x[9, i-1] <= 5 else 5  # comp price rebuy
+	x[2, i] = x[7, i-1]-1 + np.round_(x[5, i-1]/200) if 9 < x[7, i-1] <= 20 else 20  # comp price new
+	x[3, i] = x[8, i-1]-1 + np.round_(x[5, i-1]/200) if 5 < x[8, i-1] <= 15 else 15  # comp price used
+	x[4, i] = x[9, i-1]-0.5-np.round_(x[5, i-1]/200)if 1 < x[9, i-1] <= 5 else 5  # comp price rebuy
 	x[5, i] = x[5, i-1]-x[16, i-1] + x[17, i - 1]  # comp inventory
-	x[6, i] = max(0, round(0.8*x[6, i-1])+x[11, i-1]+x[12, i-1]-x[13, i-1] + x[15, i-1] + x[16, i-1]-x[17, i-1])  # resource in use
+	x[6, i] = max(0, np.round_(0.8*x[6, i-1])+x[11, i-1]+x[12, i-1]-x[13, i-1] + x[15, i-1] + x[16, i-1]-x[17, i-1])  # resource in use
 
-	x[7, i] = round(np.random.uniform(5, 20)) if i < 20 else x[2, i] - 1 + round(x[1, i]/200)if 9 < x[2, i] <= 18 else 18  # own price new
-	x[8, i] = round(np.random.uniform(0, 20)) if i < 20 else x[3, i] - 1 + round(x[1, i]/200)if 5 < x[3, i] <= 12 else 12  # own price used
-	x[9, i] = round(np.random.uniform(0, 10)) if i < 20 else x[4, i]-0.5-round(x[1, i]/200)if 1 < x[4, i] <= 5 else 5  # own price rebuy
+	x[7, i] = np.round_(np.random.uniform(5, 20)) if i < 20 else x[2, i] - 1 + \
+		np.round_(x[1, i]/200)if 9 < x[2, i] <= 18 else 18  # own price new
+	x[8, i] = np.round_(np.random.uniform(0, 20)) if i < 20 else x[3, i] - 1 + \
+		np.round_(x[1, i]/200) if 5 < x[3, i] <= 12 else 12  # own price used
+	x[9, i] = np.round_(np.random.uniform(0, 10)) if i < 20 else x[4, i] - 0.5 \
+		- np.round_(x[1, i]/200) if 1 < x[4, i] <= 5 else 5  # own price rebuy
 	x[10, i] = x[1, i]*0.05  # own holding cost
-	x[22, i] = x[7, i]-1+round(x[5, i]/200) if 9 < x[7, i] <= 20 else 20  # comp new reaction
-	x[23, i] = x[8, i]-1+round(x[5, i]/200) if 5 < x[8, i] <= 15 else 15  # comp used reaction
-	x[24, i] = x[9, i]-0.5 - round(x[5, i]/200) if 1 < x[9, i] <= 5 else 5  # comp rebuy reaction
-	x[11, i] = round(max(0, np.random.uniform(5, 15)-x[7, i] + x[2, i]/4 + x[22, i]/4))  # own sales new
-	x[12, i] = round(min(x[1, i],  max(0, np.random.uniform(5, 15)-x[8, i] + x[3, i]/4 + x[23, i]/4)))  # own sales used
-	x[13, i] = round(min(x[6, i]/2, max(0, np.random.uniform(5, 15)+x[9, i] - x[4, i]/4 - x[24, i]/4)))  # own repurchases
+	x[22, i] = x[7, i]-1+np.round_(x[5, i]/200) if 9 < x[7, i] <= 20 else 20  # comp new reaction
+	x[23, i] = x[8, i]-1+np.round_(x[5, i]/200) if 5 < x[8, i] <= 15 else 15  # comp used reaction
+	x[24, i] = x[9, i]-0.5 - np.round_(x[5, i]/200) if 1 < x[9, i] <= 5 else 5  # comp rebuy reaction
+	x[11, i] = np.round_(max(0, np.random.uniform(5, 15)-x[7, i] + x[2, i]/4 + x[22, i]/4))  # own sales new
+	x[12, i] = np.round_(min(x[1, i],  max(0, np.random.uniform(5, 15)-x[8, i] + x[3, i]/4 + x[23, i]/4)))  # own sales used
+	x[13, i] = np.round_(min(x[6, i]/2, max(0, np.random.uniform(5, 15)+x[9, i] - x[4, i]/4 - x[24, i]/4)))  # own repurchases
 	x[14, i] = x[5, i]*0.05  # comp holding cost
-	x[15, i] = round(max(0, np.random.uniform(5, 15)-x[2, i] + x[7, i]/4 + x[7, i-1]/4))  # comp sales new
-	x[16, i] = round(min(x[5, i],  max(0, np.random.uniform(5, 15)-x[3, i] + x[8, i]/4 + x[8, i-1]/4)))  # comp sales used
-	x[17, i] = round(min(x[6, i]/2, max(0, np.random.uniform(5, 15)+x[4, i] - x[9, i]/4 - x[9, i-1]/4)))  # comp repurchases
+	x[15, i] = np.round_(max(0, np.random.uniform(5, 15)-x[2, i] + x[7, i]/4 + x[7, i-1]/4))  # comp sales new
+	x[16, i] = np.round_(min(x[5, i],  max(0, np.random.uniform(5, 15)-x[3, i] + x[8, i]/4 + x[8, i-1]/4)))  # comp sales used
+	x[17, i] = np.round_(min(x[6, i]/2, max(0, np.random.uniform(5, 15)+x[4, i] - x[9, i]/4 - x[9, i-1]/4)))  # comp repurchases
 
 	x[18, i] = -x[10, i] + x[11, i]*(x[7, i]-c_new) + x[12, i]*x[8, i] - x[13, i]*x[9, i]  # own total rewards
 	x[19, i] = -x[14, i] + x[15, i]*(x[2, i]-c_new) + x[16, i]*x[3, i] - x[17, i]*x[4, i]  # comp total rewards
