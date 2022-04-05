@@ -18,8 +18,6 @@ class ConfigFlatDictParser():
 		Returns:
 			dict: hierarchical config dict
 		"""
-		# first check for duplicated agent names
-		assert len(flat_dict['environment-agents-name']) == len(set(flat_dict['environment-agents-name']))
 		# prepare flat_dict, convert all numbers to int or float
 		for key, value_list in flat_dict.items():
 			converted_values = [self._converted_to_int_or_float_if_possible(value) for value in value_list]

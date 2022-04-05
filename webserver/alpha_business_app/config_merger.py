@@ -13,7 +13,7 @@ class ConfigMerger():
 			config_object_ids (list): The id's of the config objects that should be merged.
 
 		Returns:
-			tuple (dict, dict): the final merged dict and the error dict whith the latest error
+			tuple (dict, dict): the final merged dict and the error dict with the latest error
 		"""
 		configuration_objects = [Config.objects.get(id=config_id) for config_id in config_object_ids]
 		configuration_dicts = [config.as_dict() for config in configuration_objects]
@@ -41,11 +41,11 @@ class ConfigMerger():
 		contained_values_merge = [(key, value) for key, value in merging_config.items() if type(value) != dict and value is not None]
 
 		for key, sub_dict in contained_dicts_merge:
-			if key == 'agents':
-				base_config[key] = self._merge_agents_into_base_agents(base_config[key], sub_dict)
-				continue
+			# if key == 'agents':
+			# 	base_config[key] = self._merge_agents_into_base_agents(base_config[key], sub_dict)
+			# 	continue
 			new_config_path = f'{current_config_path}-{key}' if current_config_path else key
-			base_config[key] = self._merge_config_into_base_config(base_config[key], sub_dict,  new_config_path)
+			base_config[key] = self._merge_config_into_base_config(base_config[key], sub_dict, new_config_path)
 
 		# update values
 		for key, value in contained_values_merge:
@@ -57,6 +57,7 @@ class ConfigMerger():
 
 		return base_config
 
+	# Currently commented out the call to this!
 	def _merge_agents_into_base_agents(self, base_agent_config: dict, merge_agent_config: dict) -> dict:
 		"""
 		Merges an agents config part into a base agents config part. It will be checked if two of the merged agents have the same name.

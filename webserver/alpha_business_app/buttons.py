@@ -275,13 +275,9 @@ class ButtonHandler():
 		# convert post request to normal dict
 		post_request = dict(self.request.POST.lists())
 
-		try:
-			config_dict = ConfigFlatDictParser().flat_dict_to_hierarchical_config_dict(post_request)
-		except AssertionError:
-			self.message = ['error', 'Could not create config: Please eliminate identical Agent names']
-			return self._decide_rendering()
+		config_dict = ConfigFlatDictParser().flat_dict_to_hierarchical_config_dict(post_request)
 
-		validate_status, validate_data = validate_config(config_dict, True)
+		validate_status, validate_data = validate_config(config=config_dict, config_is_final=True)
 		if not validate_status:
 			self.message = ['error', validate_data]
 			return self._decide_rendering()
@@ -294,17 +290,15 @@ class ButtonHandler():
 			if Container.objects.filter(id=response['id']).exists():
 				# we will kindly ask the user to try it again and stop the container
 				# TODO insert better handling here
-				print('the new container has the same id, as another container')
-				self.message = ['error', 'please try again']
+				self.message = ['error', 'The new container has the same id as an already existing container, please try again.']
 				return self._remove()
-			print('after post request')
 			# get all necessary parameters for container object
 			container_name = self.request.POST['experiment_name']
 			container_name = container_name if container_name != '' else response['id'][:10]
 			config_object = ConfigModelParser().parse_config(copy.deepcopy(config_dict))
 			command = config_object.environment.task
 			Container.objects.create(id=response['id'], config=config_object, name=container_name, command=command)
-			config_object.name = f'used for {container_name}'
+			config_object.name = f'Config for {container_name}'
 			config_object.save()
 			return redirect('/observe', {'success': 'You successfully launched an experiment'})
 		else:
