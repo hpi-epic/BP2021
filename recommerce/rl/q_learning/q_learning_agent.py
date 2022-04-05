@@ -27,20 +27,21 @@ class QLearningAgent(ReinforcementLearningAgent, ABC):
 			optim=None,
 			device='cuda' if torch.cuda.is_available() else 'cpu',
 			load_path=None,
-			name='q_learning'):
+			name='q_learning',
+			network_architecture=model.simple_network):
 		self.device = device
 		self.n_actions = n_actions
 		self.buffer_for_feedback = None
 		self.optimizer = None
 		self.name = name
 		print(f'I initiate a QLearningAgent using {self.device} device')
-		self.net = model.simple_network(n_observations, n_actions).to(self.device)
-		self.best_interim_net = model.simple_network(n_observations, n_actions)
+		self.net = network_architecture(n_observations, n_actions).to(self.device)
+		self.best_interim_net = network_architecture(n_observations, n_actions)
 		if load_path:
 			self.net.load_state_dict(torch.load(load_path, map_location=self.device))
 		if optim:
 			self.optimizer = optim(self.net.parameters(), lr=config.learning_rate)
-			self.tgt_net = model.simple_network(n_observations, n_actions).to(self.device)
+			self.tgt_net = network_architecture(n_observations, n_actions).to(self.device)
 			if load_path:
 				self.tgt_net.load_state_dict(torch.load(load_path), map_location=self.device)
 			self.buffer = ExperienceBuffer(config.replay_size)
