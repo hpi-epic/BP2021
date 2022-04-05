@@ -9,74 +9,6 @@ from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyP
 from recommerce.market.circular.circular_vendors import RuleBasedCERebuyAgent
 from recommerce.rl.q_learning.q_learning_agent import QLearningCERebuyAgent
 
-valid_training_dict = {
-	'task': 'training',
-	'marketplace': 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
-	'agents': [
-		{
-			'name': 'CE Rebuy Agent (QLearning)',
-			'agent_class': 'recommerce.rl.q_learning.q_learning_agent.QLearningCERebuyAgent',
-			'argument': ''
-		}
-	]
-}
-
-valid_agent_monitoring_dict = {
-	'task': 'agent_monitoring',
-	'enable_live_draw': False,
-	'episodes': 10,
-	'plot_interval': 5,
-	'marketplace': 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
-	'agents': [
-		{
-			'name': 'Rule_Based Agent',
-			'agent_class': 'recommerce.market.circular.circular_vendors.RuleBasedCERebuyAgent',
-			'argument': ''
-		},
-		{
-			'name': 'CE Rebuy Agent (QLearning)',
-			'agent_class': 'recommerce.rl.q_learning.q_learning_agent.QLearningCERebuyAgent',
-			'argument': 'CircularEconomyRebuyPriceMonopolyScenario_QLearningCERebuyAgent.dat'
-		}
-	]
-}
-
-valid_exampleprinter_dict = {
-	'task': 'exampleprinter',
-	'marketplace': 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
-	'agents': [
-		{
-			'name': 'CE Rebuy Agent (QLearning)',
-			'agent_class': 'recommerce.rl.q_learning.q_learning_agent.QLearningCERebuyAgent',
-			'argument': 'CircularEconomyRebuyPriceMonopolyScenario_QLearningCERebuyAgent.dat'
-		}
-	]
-}
-
-invalid_agent_dict = {
-	'task': 'exampleprinter',
-	'marketplace': 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
-	'agents': [
-		{
-			'name': 'Agent_name',
-			'agent_class': 'recommerce.rl.q_learning.q_learning_agent.QLearningCERebuyAgent',
-			'argument': ''
-		}
-	]
-}
-
-invalid_task_dict = {
-	'task': 'not_existing_test_task',
-	'marketplace': 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
-	'agents': [
-		{
-			'name': 'Agent_name',
-			'agent_class': 'recommerce.rl.q_learning.q_learning_agent.QLearningCERebuyAgent',
-			'argument': 'CircularEconomyRebuyPriceMonopolyScenario_QLearningCERebuyAgent.dat'
-		}
-	]
-}
-
 
 def test_abstract_parent_class():
 	with pytest.raises(TypeError) as error_message:
@@ -85,10 +17,22 @@ def test_abstract_parent_class():
 
 
 def test_str_representation():
-	config = env_config.TrainingEnvironmentConfig(valid_training_dict)
+	test_dict = {
+		'task': 'training',
+		'marketplace': 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
+		'agents': [
+			{
+				'name': 'CE Rebuy Agent (QLearning)',
+				'agent_class': 'recommerce.rl.q_learning.q_learning_agent.QLearningCERebuyAgent',
+				'argument': ''
+			}
+		]
+	}
+	config = env_config.TrainingEnvironmentConfig(test_dict)
 	assert str(config) == ("TrainingEnvironmentConfig: {'task': 'training', "
-		"'agent': <class 'recommerce.rl.q_learning.q_learning_agent.QLearningCERebuyAgent'>, "
-		"'marketplace': <class 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario'>}")
+		"'marketplace': <class 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario'>, "
+		"'agent': {'name': 'CE Rebuy Agent (QLearning)', "
+		"'agent_class': <class 'recommerce.rl.q_learning.q_learning_agent.QLearningCERebuyAgent'>, 'argument': ''}}")
 
 
 get_class_testcases = [
@@ -144,9 +88,47 @@ def test_get_task(tested_class: env_config.EnvironmentConfig, expected_task):
 
 
 valid_ConfigLoader_validate_testcases = [
-	valid_training_dict,
-	valid_agent_monitoring_dict,
-	valid_exampleprinter_dict
+	{
+		'task': 'training',
+		'marketplace': 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
+		'agents': [
+			{
+				'name': 'CE Rebuy Agent (QLearning)',
+				'agent_class': 'recommerce.rl.q_learning.q_learning_agent.QLearningCERebuyAgent',
+				'argument': ''
+			}
+		]
+	},
+	{
+		'task': 'agent_monitoring',
+		'enable_live_draw': False,
+		'episodes': 10,
+		'plot_interval': 5,
+		'marketplace': 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
+		'agents': [
+			{
+				'name': 'Rule_Based Agent',
+				'agent_class': 'recommerce.market.circular.circular_vendors.RuleBasedCERebuyAgent',
+				'argument': ''
+			},
+			{
+				'name': 'CE Rebuy Agent (QLearning)',
+				'agent_class': 'recommerce.rl.q_learning.q_learning_agent.QLearningCERebuyAgent',
+				'argument': 'CircularEconomyRebuyPriceMonopolyScenario_QLearningCERebuyAgent.dat'
+			}
+		]
+	},
+	{
+		'task': 'exampleprinter',
+		'marketplace': 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
+		'agents': [
+			{
+				'name': 'CE Rebuy Agent (QLearning)',
+				'agent_class': 'recommerce.rl.q_learning.q_learning_agent.QLearningCERebuyAgent',
+				'argument': 'CircularEconomyRebuyPriceMonopolyScenario_QLearningCERebuyAgent.dat'
+			}
+		]
+	}
 ]
 
 
@@ -158,9 +140,10 @@ def test_valid_ConfigLoader_validate(config):
 valid_ConfigLoader_load_training_testcases = [
 	# TODO: Currently no testcases for ActorCriticAgents
 	('training', 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
-		{'CE Rebuy Agent (QLearning)': {'agent_class': 'recommerce.rl.q_learning.q_learning_agent.QLearningCERebuyAgent', 'argument': ''}}),
+		[{'name': 'CE Rebuy Agent (QLearning)', 'agent_class': 'recommerce.rl.q_learning.q_learning_agent.QLearningCERebuyAgent',
+			'argument': ''}]),
 	('training', 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceOneCompetitor',
-		{'CE Rebuy Agent (QLearning)': {'agent_class': 'recommerce.rl.q_learning.q_learning_agent.QLearningCEAgent', 'argument': ''}})
+		[{'name': 'CE Rebuy Agent (QLearning)', 'agent_class': 'recommerce.rl.q_learning.q_learning_agent.QLearningCEAgent', 'argument': ''}])
 ]
 
 
