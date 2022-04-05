@@ -164,17 +164,3 @@ def test_valid_ConfigLoader_load_training(task, marketplace, agents):
 	with patch('builtins.open', mock_open(read_data=mock_json)) as mock_file:
 		ut_t.check_mock_file(mock_file, mock_json)
 		env_config.EnvironmentConfigLoader.load('environment_config_training.json')
-
-
-configLoader_is_valid_testcases = [
-	(invalid_agent_dict, False, 'The "argument" field must be a modelfile and therefore end in ".dat":'),
-	(invalid_task_dict, False, 'The specified task is unknown: not_existing_test_task'),
-	(valid_exampleprinter_dict, True, 'Your config is valid.')
-]
-
-
-@pytest.mark.parametrize('config, expected_status, expected_error', configLoader_is_valid_testcases)
-def test_is_valid(config, expected_status, expected_error):
-	status, error = env_config.EnvironmentConfigLoader.is_valid(config)
-	assert expected_status == status
-	assert error.startswith(expected_error)

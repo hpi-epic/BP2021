@@ -460,25 +460,6 @@ class EnvironmentConfigLoader():
 		else:
 			raise AssertionError(f'The specified task is unknown: {config["task"]}\nConfig: {config}')
 
-	@classmethod
-	def is_valid(cls, config: dict):
-		"""
-		To be used when the actual config object is not necessary but only validity needs to be checked.
-		Validates a given config and catches any possible exceptions.
-		Returns if a config is valid and if not, also an appropriate error message.
-
-		Args:
-			config (dict): The configuration to validate.
-
-		Returns:
-			Tuple (bool, str): boolean indicating if your config is valid, str the appropriate error if applicable.
-		"""
-		try:
-			EnvironmentConfigLoader.validate(config)
-		except (AssertionError, Exception) as error:
-			return False, str(error)
-		return True, 'Your config is valid.'
-
 
 if __name__ == '__main__':  # pragma: no cover
 	config: ExampleprinterEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_exampleprinter')
