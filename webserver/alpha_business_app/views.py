@@ -1,3 +1,5 @@
+from uuid import uuid4
+
 from django.http import Http404, HttpResponse
 from django.shortcuts import render
 
@@ -57,3 +59,8 @@ def delete_config(request, config_id) -> HttpResponse:
 		raise Http404('Config does not exist') from error
 	button_handler = ButtonHandler(request, view='delete_config.html', wanted_config=wanted_config, rendering_method='config')
 	return button_handler.do_button_click()
+
+
+# AJAX relevant views
+def agent(request):
+	return render(request, 'configuration_items/agent.html', {'id': str(uuid4())})
