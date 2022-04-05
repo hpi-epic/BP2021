@@ -25,6 +25,8 @@ class SimMarket(gym.Env, ABC):
 		"""
 		Initialize a SimMarket instance.
 		Set up needed values such as competitors and action/observation-space and reset the environment.
+		By default, the marketplace supports discrete actions.
+		You can activate continuous actions using setting support_continuouos_action_space.
 		"""
 		self.competitors = self._get_competitor_list()
 		# The agent's price does not belong to the observation_space any more because an agent should not depend on it
