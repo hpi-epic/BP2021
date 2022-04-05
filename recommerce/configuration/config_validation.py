@@ -8,7 +8,7 @@ def validate_config(config: dict, config_is_final: bool) -> tuple:
 
 	Args:
 		config (dict): The config to validate.
-		config_is_final (bool): Whether or not the config should contain all required keys.
+		config_is_final (bool): Whether or not the config must contain all required keys.
 
 	Returns:
 		tuple: The split hyperparameter_config and environment_config dictionaries.
@@ -16,8 +16,7 @@ def validate_config(config: dict, config_is_final: bool) -> tuple:
 	# validate the config using `recommerce` validation logic
 	# first check if the environment and hyperparameter parts are already split up
 	if 'environment' in config and 'hyperparameter' in config:
-		if len(config) > 2:
-			raise AssertionError('Your config should not contain keys other than "environment" and "hyperparameter"')
+		assert len(config) == 2, 'Your config should not contain keys other than "environment" and "hyperparameter"'
 		hyperparameter_config = config['hyperparameter']
 		environment_config = config['environment']
 	elif 'environment' in config or 'hyperparameter' in config:
@@ -36,7 +35,7 @@ def validate_config(config: dict, config_is_final: bool) -> tuple:
 	return hyperparameter_config, environment_config
 
 
-def validate_sub_keys(config_class: HyperparameterConfig or EnvironmentConfig, config: dict, top_level_keys: dict):
+def validate_sub_keys(config_class: HyperparameterConfig or EnvironmentConfig, config: dict, top_level_keys: dict) -> None:
 	"""
 	Utility function that validates if a given config contains only allowed keys.
 	Can be used recursively for dictionaries within dictionaries.
@@ -63,8 +62,8 @@ def validate_sub_keys(config_class: HyperparameterConfig or EnvironmentConfig, c
 			key_fields = config_class.get_required_fields(config_class, key)
 			# check that only valid keys were given by the user
 			for sub_key, _ in config[key].items():
-				if sub_key not in key_fields.keys():
-					raise AssertionError(f'The key "{sub_key}" should not exist within a {config_class.__name__} config (was checked at sub-key "{key}")')
+				assert sub_key in key_fields.keys(), \
+					f'The key "{sub_key}" should not exist within a {config_class.__name__} config (was checked at sub-key "{key}")'
 			# if there is an additional layer of dictionaries, check it recursively
 			validate_sub_keys(config_class, config[key], key_fields)
 
