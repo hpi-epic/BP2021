@@ -16,12 +16,13 @@
 				task
 			</div>
 			<div class="col-6 p-2">
-				<select class="form-select {% if error_dict.task %} bc-error-field {% endif %}" name="environment-task">
+				<select class="form-select task-selection {% if error_dict.task %} bc-error-field {% endif %}" 
+					name="environment-task">
 					{% include "configuration_items/selection_list.html" with prefill_value=prefill.task selections=selections.tasks %}
 				</select>
 			</div>
 		</div>
-		<div class="row p-2">
+		<div class="row p-2 hide-not-monitoring">
 			<div class="col-6">
 				{% if error_dict.enable_live_draw %} 
 					<img src="{% static 'icons/warning.svg' %}" width="18px" title="{{error_dict.enable_live_draw}}"></img> 
@@ -34,7 +35,7 @@
 					name="environment-enable_live_draw">
 			</div>
 		</div>
-		<div class="row p-2">
+		<div class="row p-2 hide-not-monitoring">
 			<div class="col-6">
 				{% if error_dict.episodes %} 
 					<img src="{% static 'icons/warning.svg' %}" width="18px" title="{{error_dict.episodes}}"></img> 
@@ -46,7 +47,7 @@
 					value="{{prefill.episodes}}" name="environment-episodes">
 			</div>
 		</div>
-		<div class="row p-2">
+		<div class="row p-2 hide-not-monitoring">
 			<div class="col-6">
 				{% if error_dict.plot_interval %} 
 					<img src="{% static 'icons/warning.svg' %}" width="18px" title="{{error_dict.plot_interval}}"></img> 
