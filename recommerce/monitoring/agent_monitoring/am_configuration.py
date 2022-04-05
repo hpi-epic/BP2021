@@ -119,12 +119,8 @@ class Configurator():
 						raise RuntimeError('invalid arguments provided')
 
 					# create the agent
-					if issubclass(current_agent[0], actorcritic_agent.ContinuosActorCriticAgent):
-						outputs = self.marketplace.get_actions_dimension()
-					else:
-						outputs = self.marketplace.get_n_actions()
-					self.agents.append(current_agent[0](n_observations=self.marketplace.observation_space.shape[0],
-						n_actions=outputs, load_path=self._get_modelfile_path(agent_modelfile), name=agent_name))
+					new_agent = current_agent[0](marketplace=self.marketplace, load_path=self._get_modelfile_path(agent_modelfile), name=agent_name)
+					self.agents.append(new_agent)
 				except RuntimeError:  # pragma: no cover
 					raise RuntimeError('the modelfile is not compatible with the agent you tried to instantiate')
 			else:  # pragma: no cover

@@ -60,7 +60,7 @@ class FileHandling(TestCase):
 
 			render_mock.assert_called_once()
 			assert 'upload.html' == actual_arguments[1]
-			assert {'error': 'The key test is unknown'} == actual_arguments[2]
+			assert {'error': 'Your config contains an invalid key: test'} == actual_arguments[2], f'{actual_arguments[2]}'
 
 	def test_objects_from_parse_dict(self):
 		test_dict = {'rl': {'batch_size': 32}, 'sim_market': {'episode_length': 50}}
@@ -203,7 +203,8 @@ class FileHandling(TestCase):
 
 			render_mock.assert_called_once()
 			assert 'upload.html' == actual_arguments[1]
-			assert {'error': 'The keyword(s) [\'test\'] are not allowed in rl'} == actual_arguments[2]
+			assert {'error': 'The key "test" should not exist within a HyperparameterConfig config (was checked at sub-key "rl")'} \
+				== actual_arguments[2], f'{actual_arguments[2]}'
 
 	def test_parsing_duplicate_keys(self):
 		test_uploaded_file = MockedUploadedFile('config.json', b'{"rl": {"test":"bla"}, "rl": {"test":"bla"}}')
