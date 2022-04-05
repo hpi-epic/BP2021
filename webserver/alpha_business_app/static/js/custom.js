@@ -9,6 +9,16 @@ $(document).ready(function() {
 		});
 	});
 
+	$("button.replace-me").click("click", function () {
+		var self = $(this)
+		$.ajax({url: self.data("url"),
+		success: function (data) {
+			self.replaceWith(data)
+			console.log(data)
+		}
+		});
+	});
+
 	$("select.task-selection").change(function () {
 		// displays the monitoring options when 'monitoring' is selected
 		if(this.value == "monitoring") {
@@ -21,4 +31,6 @@ $(document).ready(function() {
 			});
 		}
 	}).trigger('change');
+
+
 });

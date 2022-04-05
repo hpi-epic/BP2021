@@ -204,5 +204,11 @@ async def remove_container(id: str) -> JSONResponse:
 	else:
 		return JSONResponse(vars(container_info))
 
+
+@app.get('/api_health')
+async def check_if_api_is_available():
+	return JSONResponse({'status': 'I am alive'})
+
+
 if __name__ == '__main__':
 	uvicorn.run('app:app', host='0.0.0.0', port=8000)

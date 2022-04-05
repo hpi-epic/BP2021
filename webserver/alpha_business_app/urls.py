@@ -11,5 +11,6 @@ urlpatterns = [
 	path('configurator', views.configurator, name='configurator'),
 	path('delete_config/<int:config_id>', views.delete_config, name='delete_config'),
 	# AJAX relevant url's
-	path('agent', views.agent, name='agent')
+	path('agent', views.agent, name='agent'),
+	path('api_availability', views.api_availability, name='api_availability')
 ]

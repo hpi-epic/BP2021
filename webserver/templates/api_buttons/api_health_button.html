@@ -1,0 +1,11 @@
+<button class="btn btn-sm replace-me bc-xs mt-1 ml-2 {% if success %}bc-outline-lightgreen{% elif error %}bc-outline-stop{% else %}bc-outline-lightgray{% endif %}" 
+	type="button"
+	data-url="/api_availability">
+		{% if success %}
+			{{success}}
+		{% elif error %}
+			{{error}}
+		{% else %}
+			unknown
+		{% endif %}
+</button>

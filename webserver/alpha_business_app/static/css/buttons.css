@@ -72,3 +72,17 @@
 .bc-error-field {
 	border-color: rgb(219, 1, 56) !important;
 }
+
+.bc-outline-lightgray {
+	color: rgb(125, 125, 125) !important;
+	border-color: rgb(125, 125, 125) !important;
+}
+.bc-outline-lightgray:hover {
+	color: #fff !important;
+	background-color: rgb(125, 125, 125);
+	border-color: rgb(125, 125, 125);
+}
+
+.bc-xs {
+	height: min-content !important;
+}

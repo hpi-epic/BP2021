@@ -1,11 +1,13 @@
 from uuid import uuid4
 
+import requests
 from django.http import Http404, HttpResponse
 from django.shortcuts import render
 
 from .buttons import ButtonHandler
 from .forms import UploadFileForm
 from .handle_files import handle_uploaded_file
+from .handle_requests import DOCKER_API
 from .models.config import Config
 from .models.container import Container
 
@@ -64,3 +66,11 @@ def delete_config(request, config_id) -> HttpResponse:
 # AJAX relevant views
 def agent(request):
 	return render(request, 'configuration_items/agent.html', {'id': str(uuid4())})
+
+
+def api_availability(request):
+	try:
+		requests.get(f'{DOCKER_API}/api_health', timeout=2)
+	except requests.exceptions.RequestException:
+		return render(request, 'api_buttons/api_health_button.html', {'error': 'not available'})
+	return render(request, 'api_buttons/api_health_button.html', {'succes': 'available'})
