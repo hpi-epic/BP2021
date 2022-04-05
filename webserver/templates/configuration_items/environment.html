@@ -17,15 +17,7 @@
 			</div>
 			<div class="col-6 p-2">
 				<select class="form-select {% if error_dict.task %} bc-error-field {% endif %}" name="environment-task">
-					{% if prefill.task %}
-						<option selected value="training">training</option>
-						<option value="monitoring">monitoring</option>
-						<option value="exampleprinter">exampleprinter</option>
-					{% else %}
-						<option selected value="training">training</option>
-						<option value="monitoring">monitoring</option>
-						<option value="exampleprinter">exampleprinter</option>
-					{% endif %}
+					{% include "configuration_items/selection_list.html" with prefill_value=prefill.task selections=selections.tasks %}
 				</select>
 			</div>
 		</div>
@@ -74,8 +66,9 @@
 				marketplace
 			</div>
 			<div class="col-6">
-				<input type="text" class="form-control {% if error_dict.marketplace %} bc-error-field {% endif %}"
-					value="{{prefill.marketplace}}" name="environment-marketplace">
+				<select class="form-select {% if error_dict.task %} bc-error-field {% endif %}" name="environment-task">
+					{% include "configuration_items/selection_list.html" with prefill_value=prefill.marketplace selections=selections.marketplaces %}
+				</select>
 			</div>
 		</div>
 		{% include "configuration_items/agents.html" with prefill=prefill.agents error_dict=error_dict.agents%}
