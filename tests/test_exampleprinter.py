@@ -22,36 +22,45 @@ def test_setup_exampleprinter():
 	assert isinstance(printer.agent, FixedPriceLEAgent)
 
 
-full_episode_testcases = [
+full_episode_testcases_rule_based = [
 	(linear_market.ClassicScenario(), FixedPriceLEAgent()),
-	(linear_market.ClassicScenario(), QLearningLEAgent(3, 10,
-		load_path=os.path.join(parameters_path, 'ClassicScenario_QLearningLEAgent.dat'))),
 	(linear_market.MultiCompetitorScenario(), FixedPriceLEAgent()),
 	(circular_market.CircularEconomyMonopolyScenario(), circular_vendors.FixedPriceCEAgent()),
 	(circular_market.CircularEconomyMonopolyScenario(), circular_vendors.RuleBasedCEAgent()),
-	(circular_market.CircularEconomyMonopolyScenario(), QLearningCEAgent(2, 100,
-		load_path=os.path.join(parameters_path, 'CircularEconomyMonopolyScenario_QLearningCEAgent.dat'))),
 	(circular_market.CircularEconomyRebuyPriceMonopolyScenario(), circular_vendors.FixedPriceCERebuyAgent()),
 	(circular_market.CircularEconomyRebuyPriceMonopolyScenario(), circular_vendors.RuleBasedCERebuyAgent()),
-	(circular_market.CircularEconomyRebuyPriceMonopolyScenario(), QLearningCERebuyAgent(2, 1000,
-		load_path=os.path.join(parameters_path, 'CircularEconomyRebuyPriceMonopolyScenario_QLearningCERebuyAgent.dat'))),
-	# (circular_market.CircularEconomyRebuyPriceMonopolyScenario(), actorcritic_agent.ContinuosActorCriticAgentEstimatingStd(2, 3,
-	# 	load_path=os.path.join(parameters_path,
-	# 		'actor_parametersCircularEconomyRebuyPriceMonopolyScenario_ContinuosActorCriticAgentEstimatingStd.dat'))),
 	(circular_market.CircularEconomyRebuyPriceOneCompetitor(), circular_vendors.FixedPriceCERebuyAgent()),
-	(circular_market.CircularEconomyRebuyPriceOneCompetitor(), circular_vendors.RuleBasedCERebuyAgent()),
-	(circular_market.CircularEconomyRebuyPriceOneCompetitor(), QLearningCERebuyAgent(6, 1000,
-		load_path=os.path.join(parameters_path, 'CircularEconomyRebuyPriceOneCompetitor_QLearningCERebuyAgent.dat'))),
-	(circular_market.CircularEconomyRebuyPriceOneCompetitor(), ContinuosActorCriticAgentFixedOneStd(6, 3,
-		load_path=os.path.join(parameters_path,
-			'actor_parametersCircularEconomyRebuyPriceOneCompetitor_ContinuosActorCriticAgentFixedOneStd.dat'))),
-	(circular_market.CircularEconomyRebuyPriceOneCompetitor(), DiscreteACACircularEconomyRebuy(6, 1000,
-		load_path=os.path.join(parameters_path, 'actor_parametersCircularEconomyRebuyPriceOneCompetitor_DiscreteACACircularEconomyRebuy.dat')))
+	(circular_market.CircularEconomyRebuyPriceOneCompetitor(), circular_vendors.RuleBasedCERebuyAgent())
 ]
 
 
-@pytest.mark.parametrize('marketplace, agent', full_episode_testcases)
-def test_full_episode(marketplace, agent):
+@pytest.mark.parametrize('marketplace, agent', full_episode_testcases_rule_based)
+def test_full_episode_rule_based(marketplace, agent):
+	with patch('recommerce.monitoring.exampleprinter.SVGManipulator'),\
+		patch('recommerce.monitoring.exampleprinter.SummaryWriter'):
+		printer = ExamplePrinter()
+		printer.setup_exampleprinter(marketplace, agent)
+		assert printer.run_example(log_dir_prepend='test_') >= -5000
+
+
+full_episode_testcases_rl_agent = [
+	(linear_market.ClassicScenario(), QLearningLEAgent, 'ClassicScenario_QLearningLEAgent.dat'),
+	(circular_market.CircularEconomyMonopolyScenario(), QLearningCEAgent,
+		'CircularEconomyMonopolyScenario_QLearningCEAgent.dat'),
+	(circular_market.CircularEconomyRebuyPriceMonopolyScenario(), QLearningCERebuyAgent,
+		'CircularEconomyRebuyPriceMonopolyScenario_QLearningCERebuyAgent.dat'),
+	(circular_market.CircularEconomyRebuyPriceOneCompetitor(), QLearningCERebuyAgent,
+		'CircularEconomyRebuyPriceOneCompetitor_QLearningCERebuyAgent.dat'),
+	(circular_market.CircularEconomyRebuyPriceOneCompetitor(), ContinuosActorCriticAgentFixedOneStd,
+		'actor_parametersCircularEconomyRebuyPriceOneCompetitor_ContinuosActorCriticAgentFixedOneStd.dat'),
+	(circular_market.CircularEconomyRebuyPriceOneCompetitor(), DiscreteACACircularEconomyRebuy,
+		'actor_parametersCircularEconomyRebuyPriceOneCompetitor_DiscreteACACircularEconomyRebuy.dat')
+]
+
+
+@pytest.mark.parametrize('marketplace, agent_class, parameters_file', full_episode_testcases_rl_agent)
+def test_full_episode_rl_agents(marketplace, agent_class, parameters_file):
+	agent = agent_class(marketplace=marketplace, load_path=os.path.join(parameters_path, parameters_file))
 	with patch('recommerce.monitoring.exampleprinter.SVGManipulator'),\
 		patch('recommerce.monitoring.exampleprinter.SummaryWriter'):
 		printer = ExamplePrinter()
