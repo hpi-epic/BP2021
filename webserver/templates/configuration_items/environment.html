@@ -19,11 +19,11 @@
 				<select class="form-select {% if error_dict.task %} bc-error-field {% endif %}" name="environment-task">
 					{% if prefill.task %}
 						<option selected value="training">training</option>
-						<option value="monitoring">monitoring</option>
+						<option value="agent_monitoring">agent_monitoring</option>
 						<option value="exampleprinter">exampleprinter</option>
 					{% else %}
 						<option selected value="training">training</option>
-						<option value="monitoring">monitoring</option>
+						<option value="agent_monitoring">agent_monitoring</option>
 						<option value="exampleprinter">exampleprinter</option>
 					{% endif %}
 				</select>

@@ -29,7 +29,7 @@ class EnvironmentConfig(models.Model):
 	episodes = models.IntegerField(null=True)
 	plot_interval = models.IntegerField(null=True)
 	marketplace = models.CharField(max_length=150, null=True)
-	task = models.CharField(max_length=14, choices=((1, 'training'), (2, 'monitoring'), (3, 'exampleprinter')), null=True)
+	task = models.CharField(max_length=14, choices=((1, 'training'), (2, 'agent_monitoring'), (3, 'exampleprinter')), null=True)
 
 	def as_dict(self) -> dict:
 		agents_list = self.agents.as_list() if self.agents is not None else None

@@ -51,7 +51,7 @@ class ConfigFlatDictParser():
 		environment_dict = self._first_list_element_without_empty(environment_dict)
 		# add parsed agents
 		environment_dict['agents'] = self._flat_agents_to_hierarchical(raw_agents_dict)
-		# add enable_live_draw if exists#
+		# add enable_live_draw if exists
 		environment_dict['enable_live_draw'] = 'enable_live_draw' in flat_dict
 		return environment_dict
 
@@ -65,15 +65,15 @@ class ConfigFlatDictParser():
 		Returns:
 			dict: a hierarchical agents dictionary.
 		"""
-		final_dict = {}
+		final_list = []
 		for agent_index in range(len(flat_dict['name'])):
-			argument = flat_dict['argument'][agent_index]
 			agent_dict = {
+				'name': flat_dict['name'][agent_index],
 				'agent_class': flat_dict['agent_class'][agent_index],
-				'argument': argument
+				'argument': flat_dict['argument'][agent_index]
 			}
-			final_dict[flat_dict['name'][agent_index]] = remove_none_values_from_dict(agent_dict)
-		return final_dict
+			final_list.append(remove_none_values_from_dict(agent_dict))
+		return final_list
 
 	def _flat_hyperparameter_to_hierarchical(self, flat_dict: dict) -> dict:
 		"""
@@ -181,23 +181,19 @@ class ConfigModelParser():
 			config_dict (dict): part of the config dict belonging to the keyword name.
 
 		Returns:
-			an model instance of the config dict.
+			A model instance of the config dict.
 		"""
-		if config_dict == {}:
+		if not config_dict:
 			return
 
 		if name == 'agents':
-			# since django does only support many-to-one relationships (not one-to-many),
-			# we need to parse the agents slightly different, to be able to reference many agents with the agents keyword
+			# since django does not support a list-datatype we need to parse the agents slightly different
 			return self._parse_agents_to_datastructure(config_dict)
 		# get all key value pairs, that contain another dict
-		containing_dict = [(name, value) for name, value in config_dict.items() if type(value) == dict]
+		containing_dict = [(name, value) for name, value in config_dict.items() if type(value) in [dict, list]]
 		# loop through of these pairs, in order to parse these dictionaries and add
 		# the parsed sub-element to the current element
-		sub_elements = []
-		for keyword, config in containing_dict:
-			sub_elements += [(keyword, self.parse_config_dict_to_datastructure(keyword, config))]
-
+		sub_elements = [(keyword, self.parse_config_dict_to_datastructure(keyword, config)) for keyword, config in containing_dict]
 		# get all elements that do not contain another dictionary
 		not_containing_dict = dict([(name, value) for name, value in config_dict.items() if type(value) != dict])
 
@@ -209,21 +205,20 @@ class ConfigModelParser():
 		config_class = to_config_class_name(name)
 		return self._create_object_from(config_class, not_containing_dict)
 
-	def _parse_agents_to_datastructure(self, agent_dict: dict) -> AgentsConfig:
+	def _parse_agents_to_datastructure(self, agent_list: list) -> AgentsConfig:
 		"""
-		Parses the part of the config for the keywort `agents`.
+		Parses the part of the config for the keyword `agents`.
 
 		Args:
-			agent_dict (dict): the dictionary of agents.
+			agent_list (list): the list of agents.
 
 		Returns:
-			AgentsConfig: an instance of AgentsConfig multiple agents are referring to.
+			AgentsConfig: an instance of AgentsConfig.
 		"""
 		agents = AgentsConfig.objects.create()
-		for agent_name, agent_parameters in agent_dict.items():
-			agent_parameters['agents_config'] = agents
-			agent_parameters['name'] = agent_name
-			AgentConfig.objects.create(**agent_parameters)
+		for agent in agent_list:
+			agent['agents_config'] = agents
+			AgentConfig.objects.create(**agent)
 		return agents
 
 	def _create_object_from(self, class_name: str, parameters: dict):

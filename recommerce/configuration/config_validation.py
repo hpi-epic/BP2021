@@ -127,7 +127,8 @@ def check_config_types(hyperparameter_config: dict, environment_config: dict, mu
 
 	# check types for environment_config
 	task = environment_config['task'] if must_contain else 'None'
-	EnvironmentConfig.check_types(environment_config, task, must_contain)
+	single_agent = task in ['training', 'exampleprinter']
+	EnvironmentConfig.check_types(environment_config, task, single_agent, must_contain)
 
 
 if __name__ == '__main__':  # pragma: no cover

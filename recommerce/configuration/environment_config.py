@@ -75,7 +75,7 @@ class EnvironmentConfig(ABC):
 			raise AssertionError(f'The given level does not exist in an environment-config: {dict_key}')
 
 	@classmethod
-	def check_types(cls, config: dict, task: str = 'None', must_contain: bool = True) -> None:
+	def check_types(cls, config: dict, task: str = 'None', single_agent: bool = False, must_contain: bool = True) -> None:
 		"""
 		Check if all given variables have the correct types.
 		If must_contain is True, all keys must exist, else non-existing keys will be skipped.
@@ -83,6 +83,7 @@ class EnvironmentConfig(ABC):
 		Args:
 			config (dict): The config to check.
 			task (str): The task for which the variables should be checked.
+			single_agent (bool): Whether or not only one agent is permitted.
 			must_contain (bool, optional): Whether or not all variables must be present in the config. Defaults to True.
 
 		Raises:
@@ -114,6 +115,11 @@ class EnvironmentConfig(ABC):
 			# str for modelfiles, list for FixedPrice-Agent price-lists
 			'argument': (str, list)
 		}
+
+		if single_agent:
+			# we check the agents-type prematurely to make sure we can take 'len()' of it
+			assert isinstance(config['agents'], list), f'The "agents" field must be of type list but was {type(config["agents"])}'
+			assert len(config['agents']) == 1, f'Only one agent is permitted for this task, but {len(config["agents"])} were given.'
 
 		for key, value in types_dict.items():
 			try:
@@ -160,12 +166,7 @@ class EnvironmentConfig(ABC):
 		"""
 		assert 'task' in config, f'The config must have a "task" field: {config}'
 
-		if single_agent:
-			# we check the agents-type prematurely to make sure we can take 'len()' of it
-			assert isinstance(config['agents'], list), f'The "agents" field must be of type list but was {type(config["agents"])}'
-			assert len(config['agents']) == 1, f'Only one agent is permitted for this task, but {len(config["agents"])} were given.'
-
-		self.check_types(config, config['task'])
+		self.check_types(config, config['task'], single_agent)
 
 	def _parse_and_set_agents(self, agent_list: list, needs_modelfile: bool) -> None:
 		"""
