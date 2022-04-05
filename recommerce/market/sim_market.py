@@ -21,14 +21,19 @@ class SimMarket(gym.Env, ABC):
 	Inherits from `gym.env`.
 	"""
 
-	def __init__(self, support_continuouos_action_space=False) -> None:
+	def __init__(self, support_continuous_action_space: bool = False) -> None:
 		"""
 		Initialize a SimMarket instance.
 		Set up needed values such as competitors and action/observation-space and reset the environment.
+		By default, the marketplace supports discrete actions.
+		You can activate continuous actions using setting support_continuous_action_space.
+
+		Args:
+			support_continuous_action_space (bool): If True, the action space will be continuous.
 		"""
 		self.competitors = self._get_competitor_list()
 		# The agent's price does not belong to the observation_space any more because an agent should not depend on it
-		self._setup_action_observation_space(support_continuouos_action_space)
+		self._setup_action_observation_space(support_continuous_action_space)
 		self._owner = None
 		self._customer = None
 		self._number_of_vendors = self._get_number_of_vendors()
@@ -201,13 +206,14 @@ class SimMarket(gym.Env, ABC):
 	def _reset_vendor_actions(self):
 		"""
 		Reset the price(s) in an economy.
+
 		Returns:
 			int or tuple: Price(s) of the new product.
 		"""
 		raise NotImplementedError
 
 	@abstractmethod
-	def _setup_action_observation_space(self, support_continuouos_action_space) -> None:  # pragma: no cover
+	def _setup_action_observation_space(self, support_continuous_action_space) -> None:  # pragma: no cover
 		raise NotImplementedError('This method is abstract. Use a subclass')
 
 	@abstractmethod
@@ -215,6 +221,7 @@ class SimMarket(gym.Env, ABC):
 		"""
 		Return the number of actions agents should return in this marketplace.
 		Depends on the `self.action_space`.
+
 		Returns:
 			int: The number of actions the agents should take in this marketplace.
 		"""
@@ -224,19 +231,18 @@ class SimMarket(gym.Env, ABC):
 		"""
 		Get the dimension of the action space.
 		This can be used to set the number of outputs for vendors with continuos action space.
+
 		Returns:
 			int: The dimension of the action space.
 		"""
-		if self.action_space.shape is not None:
-			return 1
-		else:
-			return len(self.action_space)
+		return 1 if self.action_space.shape is not None else len(self.action_space)
 
 	@abstractmethod
 	def _get_competitor_list(self) -> list:  # pragma: no cover
 		"""
 		Get a list of all competitors in the current market scenario.
 		TODO: This should get reworked since there no longer is a formal definition of 'competitor', since we see all vendors as agents.
+
 		Returns:
 			list: List containing instances of the competitors.
 		"""
@@ -249,6 +255,7 @@ class SimMarket(gym.Env, ABC):
 	def _choose_customer(self) -> None:
 		"""
 		Return the customer for this market scenario.
+
 		Returns:
 			Customer: An instance of a customer class from `<market.customer>`
 		"""
@@ -257,6 +264,7 @@ class SimMarket(gym.Env, ABC):
 	def _choose_owner(self) -> None:
 		"""
 		Return the owner for this market scenario.
+
 		Returns:
 			Owner: An instance of an owner class from `<market.owner>`
 			or
@@ -267,6 +275,7 @@ class SimMarket(gym.Env, ABC):
 	@abstractmethod
 	def _complete_purchase(self):
 		"""The method handles the customer's decision by raising the profit by the price paid minus the produtcion price.
+
 		Args:
 			profits (np.array(int)): An array containing the profits of all vendors.
 			chosen_vendor (int): Indicates the customer's decision.
@@ -284,6 +293,7 @@ class SimMarket(gym.Env, ABC):
 		"""
 		Ensure that the _output_dict has an entry with the given name and create an entry otherwise.
 		If a parameter for init_for_all_vendors is passed, it will be interpreted as creating a dict with the passed array as content.
+
 		Args:
 			name (string): name of the dict entry which should be checked.
 			init_for_all_vendors (list, optional): initialization values for all vendors in this entry. Defaults to None.

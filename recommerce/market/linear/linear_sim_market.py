@@ -13,21 +13,23 @@ from recommerce.market.sim_market import SimMarket
 
 class LinearEconomy(SimMarket, ABC):
 
-	def _setup_action_observation_space(self, support_continuouos_action_space) -> None:
+	def _setup_action_observation_space(self, support_continuous_action_space: bool) -> None:
 		"""
 		The observation array has the following format:
 		cell 0: quality of that vendor from whose perspective the observation is generated.
 		following odd cells: price of an other vendor
 		following even cells: quality of an other competitor
 		The action space is discrete with as many actions as prices.
+
+				Args:
+			support_continuous_action_space (bool): If True, the action space will be continuous.
 		"""
 		self.observation_space = gym.spaces.Box(
-			np.array([0.0] * (len(self.competitors) * 2 + 1)),
-			np.array([config.max_quality] + [config.max_price, config.max_quality] * len(self.competitors)),
-			dtype=np.float32)
+			np.array([0.0] * (len(self.competitors) * 2 + 1), dtype=np.float32),
+			np.array([config.max_quality] + [config.max_price, config.max_quality] * len(self.competitors), dtype=np.float32))
 
-		if support_continuouos_action_space:
-			self.action_space = gym.spaces.Box(np.array([0]), np.array([config.max_price]), dtype=np.float32)
+		if support_continuous_action_space:
+			self.action_space = gym.spaces.Box(np.float32(0), np.float32(config.max_price))
 		else:
 			self.action_space = gym.spaces.Discrete(config.max_price)
 

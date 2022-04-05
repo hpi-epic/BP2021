@@ -1,4 +1,5 @@
 import os
+import time
 
 import numpy as np
 import pytest
@@ -18,6 +19,7 @@ def test_rule_based_linear_competitor1():
 	given_path = pa.analyze_policy(np.array([15, -1, 10]), [(1, 'competitor price', range(1, 11))])
 	expected_path = os.path.join(write_to_path, 'add_a_title_here.png')
 	assert expected_path in given_path
+	time.sleep(0.001)
 	assert os.path.exists(expected_path)
 
 
@@ -30,6 +32,7 @@ def test_rule_based_linear_competitor2():
 	)
 	expected_path = os.path.join(write_to_path, "agent's_policy.png")
 	assert expected_path in given_path
+	time.sleep(0.001)
 	assert os.path.exists(expected_path)
 
 
@@ -38,6 +41,7 @@ def test_rule_based_circular_competitor1():
 	given_path = pa.analyze_policy(np.array([50, -1]), [(1, 'self storage stock', range(30))], 'refurbished price only on storage', 0)
 	expected_path = os.path.join(write_to_path, 'refurbished_price_only_on_storage.png')
 	assert expected_path in given_path
+	time.sleep(0.001)
 	assert os.path.exists(expected_path)
 
 
@@ -50,6 +54,7 @@ def test_rule_based_circular_competitor2():
 	)
 	expected_path = os.path.join(write_to_path, 'refurbished_price.png')
 	assert expected_path in given_path
+	time.sleep(0.001)
 	assert os.path.exists(expected_path)
 
 
@@ -74,6 +79,7 @@ def test_circular_monopoly_q_learning(title, policyaccess, expected_filename):
 	)
 	expected_path = os.path.join(write_to_path, expected_filename)
 	assert expected_path in given_path
+	time.sleep(0.001)
 	assert os.path.exists(expected_path)
 
 
@@ -98,6 +104,7 @@ def test_circular_duopol_q_learning(title, policyaccess, expected_filename):
 	)
 	expected_path = os.path.join(write_to_path, expected_filename)
 	assert expected_path in given_path
+	time.sleep(0.001)
 	assert os.path.exists(expected_path)
 
 
@@ -122,6 +129,7 @@ def test_circular_duopol_continuos_actorcritic(title, policyaccess, expected_fil
 	)
 	expected_path = os.path.join(write_to_path, expected_filename)
 	assert expected_path in given_path
+	time.sleep(0.001)
 	assert os.path.exists(expected_path)
 
 
@@ -142,4 +150,5 @@ def test_circular_duopol_rule_based_agent(title, policyaccess, expected_filename
 	)
 	expected_path = os.path.join(write_to_path, 'rule_based_competitive_policy', expected_filename)
 	assert expected_path in given_path
+	time.sleep(0.001)
 	assert os.path.exists(expected_path)
