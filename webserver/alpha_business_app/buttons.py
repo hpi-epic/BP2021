@@ -281,13 +281,9 @@ class ButtonHandler():
 			self.message = ['error', 'Could not create config: Please eliminate identical Agent names']
 			return self._decide_rendering()
 
-		try:
-			validate_config(config_dict, True)
-		except AssertionError as error:
-			self.message = ['error', str(error)]
-			return self._decide_rendering()
-		except KeyError as missing_key:
-			self.message = ['error', str(missing_key)]
+		validate_status, validate_data = validate_config(config_dict, True)
+		if not validate_status:
+			self.message = ['error', validate_data]
 			return self._decide_rendering()
 
 		response = send_post_request('start', config_dict)

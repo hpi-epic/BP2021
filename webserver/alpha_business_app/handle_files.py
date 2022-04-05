@@ -55,10 +55,10 @@ def handle_uploaded_file(request, uploaded_config) -> HttpResponse:
 	except ValueError as value:
 		return render(request, 'upload.html', {'error': str(value)})
 
-	try:
-		hyperparameter_config, environment_config = validate_config(content_as_dict, False)
-	except AssertionError as error:
-		return render(request, 'upload.html', {'error': str(error)})
+	validate_status, validate_data = validate_config(content_as_dict, False)
+	if not validate_status:
+		return render(request, 'upload.html', {'error': validate_data})
+	hyperparameter_config, environment_config = validate_data
 
 	parser = ConfigModelParser()
 	web_hyperparameter_config = None

@@ -11,28 +11,32 @@ def validate_config(config: dict, config_is_final: bool) -> tuple:
 		config_is_final (bool): Whether or not the config must contain all required keys.
 
 	Returns:
-		tuple: The split hyperparameter_config and environment_config dictionaries.
+		triple: success: A status (True) and the split hyperparameter_config and environment_config dictionaries as a tuple.
+				failure: A status (False) and the errormessage as a string.
 	"""
-	# validate the config using `recommerce` validation logic
-	# first check if the environment and hyperparameter parts are already split up
-	if 'environment' in config and 'hyperparameter' in config:
-		assert len(config) == 2, 'Your config should not contain keys other than "environment" and "hyperparameter"'
-		hyperparameter_config = config['hyperparameter']
-		environment_config = config['environment']
-	elif 'environment' in config or 'hyperparameter' in config:
-		raise AssertionError('If your config contains one of "environment" or "hyperparameter" it must also contain the other')
-	else:
-		# try to split the config. If any keys are unknown, an AssertionError will be thrown
-		hyperparameter_config, environment_config = split_combined_config(config)
-	# then validate that all given values have the correct types
-	check_config_types(hyperparameter_config, environment_config, config_is_final)
+	try:
+		# validate the config using `recommerce` validation logic
+		# first check if the environment and hyperparameter parts are already split up
+		if 'environment' in config and 'hyperparameter' in config:
+			assert len(config) == 2, 'Your config should not contain keys other than "environment" and "hyperparameter"'
+			hyperparameter_config = config['hyperparameter']
+			environment_config = config['environment']
+		elif 'environment' in config or 'hyperparameter' in config:
+			raise AssertionError('If your config contains one of "environment" or "hyperparameter" it must also contain the other')
+		else:
+			# try to split the config. If any keys are unknown, an AssertionError will be thrown
+			hyperparameter_config, environment_config = split_combined_config(config)
+		# then validate that all given values have the correct types
+		check_config_types(hyperparameter_config, environment_config, config_is_final)
 
-	if 'rl' in hyperparameter_config:
-		HyperparameterConfig.check_rl_ranges(hyperparameter_config['rl'], config_is_final)
-	if 'sim_market' in hyperparameter_config:
-		HyperparameterConfig.check_sim_market_ranges(hyperparameter_config['sim_market'], config_is_final)
+		if 'rl' in hyperparameter_config:
+			HyperparameterConfig.check_rl_ranges(hyperparameter_config['rl'], config_is_final)
+		if 'sim_market' in hyperparameter_config:
+			HyperparameterConfig.check_sim_market_ranges(hyperparameter_config['sim_market'], config_is_final)
 
-	return hyperparameter_config, environment_config
+		return True, (hyperparameter_config, environment_config)
+	except Exception as error:
+		return False, str(error)
 
 
 def validate_sub_keys(config_class: HyperparameterConfig or EnvironmentConfig, config: dict, top_level_keys: dict) -> None:
