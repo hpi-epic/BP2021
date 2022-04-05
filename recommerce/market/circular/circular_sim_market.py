@@ -12,7 +12,13 @@ from recommerce.market.owner import Owner
 from recommerce.market.sim_market import SimMarket
 
 
-class CircularEconomy(SimMarket, ABC):
+class CircularEconomy(SimMarket):
+
+	def __init__(self,  competitors: list = []) -> None:
+		"""
+		Initialize a CircularEconomy instance. Default scenario is a monopoly here.
+		"""
+		self.competitors = competitors
 
 	def _setup_action_observation_space(self, support_continuous_action_space: bool) -> None:
 		# cell 0: number of products in the used storage, cell 1: number of products in circulation
@@ -208,13 +214,20 @@ class CircularEconomy(SimMarket, ABC):
 		return len(probability_distribution) == 1 + (2 * self._number_of_vendors)
 
 
-class CircularEconomyMonopolyScenario(CircularEconomy):
+# class CircularEconomyMonopolyScenario(CircularEconomy):
 
-	def _get_competitor_list(self) -> list:
-		return []
+# 	def _get_competitor_list(self) -> list:
+# 		return []
 
 
-class CircularEconomyRebuyPrice(CircularEconomy, ABC):
+class CircularEconomyRebuyPrice(CircularEconomy):
+
+	def __init__(self,  competitors: list = [RuleBasedCERebuyAgentCompetitive()]) -> None:
+		"""
+		Initialize a CircularEconomyRebuyPrice instance.
+		Default scenario is a duopoly with a rule based competitor here.
+		"""
+		self.competitors = competitors
 
 	def _setup_action_observation_space(self, support_continuous_action_space: bool) -> None:
 		super()._setup_action_observation_space(support_continuous_action_space)
@@ -255,13 +268,13 @@ class CircularEconomyRebuyPrice(CircularEconomy, ABC):
 		return self.vendor_actions[vendor_idx][2]
 
 
-class CircularEconomyRebuyPriceMonopolyScenario(CircularEconomyRebuyPrice):
+# class CircularEconomyRebuyPriceMonopolyScenario(CircularEconomyRebuyPrice):
 
-	def _get_competitor_list(self) -> list:
-		return []
+# 	def _get_competitor_list(self) -> list:
+# 		return []
 
 
-class CircularEconomyRebuyPriceOneCompetitor(CircularEconomyRebuyPrice):
+# class CircularEconomyRebuyPriceOneCompetitor(CircularEconomyRebuyPrice):
 
-	def _get_competitor_list(self) -> list:
-		return [RuleBasedCERebuyAgentCompetitive()]
+# 	def _get_competitor_list(self) -> list:
+# 		return [RuleBasedCERebuyAgentCompetitive()]
