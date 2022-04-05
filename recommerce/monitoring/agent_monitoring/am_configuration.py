@@ -5,10 +5,12 @@ import matplotlib.pyplot as plt
 
 import recommerce.configuration.utils as ut
 import recommerce.market.circular.circular_sim_market as circular_market
+import recommerce.market.linear.linear_sim_market as linear_market
 import recommerce.market.sim_market as sim_market
 import recommerce.rl.actorcritic.actorcritic_agent as actorcritic_agent
 from recommerce.configuration.path_manager import PathManager
 from recommerce.market.circular.circular_vendors import CircularAgent, FixedPriceCEAgent
+from recommerce.market.linear.linear_vendors import LinearAgent
 from recommerce.market.vendors import Agent, HumanPlayer, RuleBasedAgent
 from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
 
@@ -76,8 +78,10 @@ class Configurator():
 		assert all(isinstance(agent_tuple[1], list) for agent_tuple in agents), 'the second entry in each agent-tuple must be a list'
 		assert all(issubclass(agent[0], CircularAgent) == issubclass(agents[0][0], CircularAgent) for agent in agents), \
 			'the agents must all be of the same type (Linear/Circular)'
-		assert issubclass(agents[0][0], CircularAgent) == isinstance(self.marketplace, circular_market.CircularEconomy), \
-			'the agent and marketplace must be of the same economy type (Linear/Circular)'
+		assert issubclass(agents[0][0], CircularAgent) or not isinstance(self.marketplace, circular_market.CircularEconomy), \
+			'If the market is circular, the agent must be circular too!'
+		assert issubclass(agents[0][0], LinearAgent) or not isinstance(self.marketplace, linear_market.LinearEconomy), \
+			'If the market is linear, the agent must be linear too!'
 
 		self.agents = []
 
@@ -115,12 +119,8 @@ class Configurator():
 						raise RuntimeError('invalid arguments provided')
 
 					# create the agent
-					if issubclass(current_agent[0], actorcritic_agent.ContinuosActorCriticAgent):
-						outputs = self.marketplace.get_actions_dimension()
-					else:
-						outputs = self.marketplace.get_n_actions()
-					self.agents.append(current_agent[0](n_observations=self.marketplace.observation_space.shape[0],
-						n_actions=outputs, load_path=self._get_modelfile_path(agent_modelfile), name=agent_name))
+					new_agent = current_agent[0](marketplace=self.marketplace, load_path=self._get_modelfile_path(agent_modelfile), name=agent_name)
+					self.agents.append(new_agent)
 				except RuntimeError:  # pragma: no cover
 					raise RuntimeError('the modelfile is not compatible with the agent you tried to instantiate')
 			else:  # pragma: no cover

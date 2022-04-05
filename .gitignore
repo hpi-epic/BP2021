@@ -12,6 +12,8 @@ tests/test_results
 # all webserver related directories
 webserver/configurations
 webserver/data
+webserver/package-lock.json
+webserver/node_modules
 
 # docker related directories
 docker/occupied_ports.txt
@@ -31,6 +33,7 @@ docker_container_remove.sh
 # to exclude notes and tests
 notes.txt
 test.py
+test.json
 # interrogate result (docstring lint rule)
 mit-covered-files
 

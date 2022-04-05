@@ -1,4 +1,4 @@
-from unittest.mock import mock_open, patch
+from unittest.mock import patch
 
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.test import TestCase
@@ -6,18 +6,22 @@ from django.test.client import RequestFactory
 
 from ..api_response import APIResponse
 from ..buttons import ButtonHandler
-from ..models import Container, update_container
+from ..models.config import Config
+from ..models.container import Container, update_container
+from .constant_tests import EXAMPLE_HIERARCHY_DICT, EXAMPLE_POST_REQUEST_ARGUMENTS
 
 
 class ButtonTests(TestCase):
 	def setUp(self):
 		# get a container for testing
+		config_object = Config.objects.create()
 		self.test_container = Container.objects.create(
 								command='training',
 								id='1234',
 								created_at='01.01.1970',
 								last_check_at='now',
-								name='test_container'
+								name='test_container',
+								config=config_object
 								)
 
 	def test_health_button(self):
@@ -209,7 +213,7 @@ class ButtonTests(TestCase):
 			get_request_mock.return_value = APIResponse('success', content='test_content')
 			test_button_handler.do_button_click()
 
-			download_file_mock.assert_called_once_with('test_content', True)
+			download_file_mock.assert_called_once_with('test_content', True, self.test_container)
 
 	def test_download_tar_data(self):
 		# mock a request that is sent when user presses a button
@@ -222,23 +226,23 @@ class ButtonTests(TestCase):
 			get_request_mock.return_value = APIResponse('success', content='test_content')
 			test_button_handler.do_button_click()
 
-			download_file_mock.assert_called_once_with('test_content', False)
+			download_file_mock.assert_called_once_with('test_content', False, self.test_container)
 
 	def test_start_button(self):
 		# mock a request that is sent when user presses a button
-		request = self._setup_request_with_parameters('/start_container', 'start',
-			{'filename': 'config.json', 'experiment_name': 'test', 'command_selection': 'training'})
-
+		request = self._setup_request_with_parameters('/start_container', 'start', EXAMPLE_POST_REQUEST_ARGUMENTS)
 		# setup a button handler for this request
 		test_button_handler = self._setup_button_handler('download.html', request)
 		with patch('alpha_business_app.buttons.send_post_request') as post_request_mock, \
-			patch('alpha_business_app.buttons.redirect') as redirect_mock, \
-			patch('builtins.open', mock_open(read_data='{"test":1}')):
+			patch('alpha_business_app.buttons.redirect')as redirect_mock:
 			post_request_mock.return_value = APIResponse('success', content={'id': '12345'})
 
 			test_button_handler.do_button_click()
-			post_request_mock.assert_called_once_with('start', {'test': 1}, 'training')
+			post_request_mock.assert_called_once_with('start', EXAMPLE_HIERARCHY_DICT)
 			redirect_mock.assert_called_once_with('/observe', {'success': 'You successfully launched an experiment'})
+
+			config_object = Config.objects.all()[1]
+			assert 'used for test_experiment' == config_object.name
 
 	def _setup_button_handler(self, view: str, request: RequestFactory) -> ButtonHandler:
 		return ButtonHandler(request, view=view,

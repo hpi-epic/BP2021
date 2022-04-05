@@ -1,13 +1,6 @@
-<!doctype html>
-<html lang="en">
-	<head>
-		<meta charset="utf-8"/>
-		<title>Details</title>
-		{% load static %}
-		<link rel="stylesheet" type="text/css" href="{% static 'style.css' %}">
-		<link rel="shortcut icon" type="image/png" href="{% static 'favicon.png' %}"/>
-	</head>
-	<body>
+{% extends "base.html" %}
+{% block title %}Details{% endblock title %}
+{% block content %}
 		<h1>You are viewing container {{ container.name }}</h1>
 		<div class="content">
 			<table class="table">
@@ -48,17 +41,13 @@
 					</td>
 				</tr>
 			</table>
-			<a href="/">Home</a>
-			<a href="/observe">Observe</a>
-			{% include "notice_field.html" %}
 			<div>
 				{% if data %}
 					<p > 
-						<pre class="notice terminal">{{ data }}</pre> 
+						<pre class="alert alert-dark">{{ data }}</pre> 
 					</p>
 				{% endif %}
 			</div>
 		</div>
 		<br>
-	</body>
-</html>
+{% endblock content %}

@@ -10,6 +10,7 @@ import recommerce.rl.model as model
 from recommerce.configuration.hyperparameter_config import config
 from recommerce.market.circular.circular_vendors import CircularAgent
 from recommerce.market.linear.linear_vendors import LinearAgent
+from recommerce.market.sim_market import SimMarket
 from recommerce.rl.experience_buffer import ExperienceBuffer
 from recommerce.rl.reinforcement_learning_agent import ReinforcementLearningAgent
 
@@ -22,24 +23,37 @@ class QLearningAgent(ReinforcementLearningAgent, ABC):
 	# Give no optim if you don't want training.
 	def __init__(
 			self,
-			n_observations,
-			n_actions,
+			n_observations=None,
+			n_actions=None,
+			marketplace=None,
 			optim=None,
 			device='cuda' if torch.cuda.is_available() else 'cpu',
 			load_path=None,
-			name='q_learning'):
-		self.device = device
+			name='q_learning',
+			network_architecture=model.simple_network):
+		assert marketplace is None or isinstance(marketplace, SimMarket), \
+			f'if marketplace is provided, marketplace must be a SimMarket, but is {type(marketplace)}'
+		assert (n_actions is None) == (n_observations is None), 'n_actions must be None exactly when n_observations is None'
+		assert (n_actions is None) != (marketplace is None), \
+			'You must specify the network size either by providing input and output size, or by a marketplace'
+
+		if marketplace is not None:
+			n_observations = marketplace.observation_space.shape[0]
+			n_actions = marketplace.get_n_actions()
+
 		self.n_actions = n_actions
+		self.device = device
 		self.buffer_for_feedback = None
 		self.optimizer = None
 		self.name = name
 		print(f'I initiate a QLearningAgent using {self.device} device')
-		self.net = model.simple_network(n_observations, n_actions).to(self.device)
+		self.net = network_architecture(n_observations, n_actions).to(self.device)
+		self.best_interim_net = network_architecture(n_observations, n_actions)
 		if load_path:
 			self.net.load_state_dict(torch.load(load_path, map_location=self.device))
 		if optim:
 			self.optimizer = optim(self.net.parameters(), lr=config.learning_rate)
-			self.tgt_net = model.simple_network(n_observations, n_actions).to(self.device)
+			self.tgt_net = network_architecture(n_observations, n_actions).to(self.device)
 			if load_path:
 				self.tgt_net.load_state_dict(torch.load(load_path), map_location=self.device)
 			self.buffer = ExperienceBuffer(config.replay_size)
@@ -106,40 +120,22 @@ class QLearningAgent(ReinforcementLearningAgent, ABC):
 		expected_state_action_values = next_state_values * config.gamma + rewards_v
 		return torch.nn.MSELoss()(state_action_values, expected_state_action_values), state_action_values.mean()
 
+	def sync_to_best_interim(self):
+		self.best_interim_net.load_state_dict(self.net.state_dict())
+
 	def save(self, model_path, model_name) -> None:
 		"""
 		Save a trained model to the specified folder within 'trainedModels'.
-
-		Also caps the amount of models in the folder to a maximum of 10.
 
 		Args:
 			model_path (str): The path to the folder within 'trainedModels' where the model should be saved.
 			model_name (str): The name of the .dat file of this specific model.
 		"""
 		model_name += '.dat'
-		if not os.path.isdir(os.path.abspath(os.path.join('results', 'trainedModels'))):
-			os.mkdir(os.path.abspath(os.path.join('results', 'trainedModels')))
 
-		if not os.path.isdir(os.path.abspath(model_path)):
-			os.mkdir(os.path.abspath(model_path))
-
-		torch.save(self.net.state_dict(), os.path.join(model_path, model_name))
-
-		full_directory = os.walk(model_path)
-		for _, _, filenames in full_directory:
-			if len(filenames) > 10:
-				# split the filenames to isolate the reward-part
-				split_filenames = [file.rsplit('_', 1) for file in filenames]
-				# preserve the signature for later
-				signature = split_filenames[0][0]
-				# isolate the reward and convert it to float
-				rewards = [file[1] for file in split_filenames]
-				rewards = [float(reward.rsplit('.', 1)[0]) for reward in rewards]
-				# sort the rewards to keep only the best ones
-				rewards = sorted(rewards)
-
-				for reward in range(len(rewards) - 10):
-					os.remove(os.path.join(model_path, f'{signature}_{rewards[reward]:.3f}.dat'))
+		parameters_path = os.path.join(model_path, model_name)
+		torch.save(self.best_interim_net.state_dict(), parameters_path)
+		return parameters_path
 
 
 class QLearningLEAgent(QLearningAgent, LinearAgent):

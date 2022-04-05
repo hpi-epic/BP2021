@@ -9,6 +9,7 @@ import recommerce.rl.model as model
 from recommerce.configuration.hyperparameter_config import config
 from recommerce.market.circular.circular_vendors import CircularAgent
 from recommerce.market.linear.linear_vendors import LinearAgent
+from recommerce.market.sim_market import SimMarket
 from recommerce.rl.reinforcement_learning_agent import ReinforcementLearningAgent
 
 
@@ -16,11 +17,31 @@ class ActorCriticAgent(ReinforcementLearningAgent, ABC):
 	"""
 	This is an implementation of an (one step) actor critic agent as proposed in Richard Suttons textbook on page 332.
 	"""
-	def __init__(self, n_observations, n_actions, load_path=None, critic_path=None, name='actor_critic'):
-		self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
-		print(f'I initiate an ActorCriticAgent using {self.device} device')
+	def __init__(
+			self,
+			n_observations=None,
+			n_actions=None,
+			marketplace=None,
+			optim=None,
+			device='cuda' if torch.cuda.is_available() else 'cpu',
+			load_path=None,
+			critic_path=None,
+			name='actor_critic',
+			network_architecture=model.simple_network):
+		assert marketplace is None or isinstance(marketplace, SimMarket), \
+			f'if marketplace is provided, marketplace must be a SimMarket, but is {type(marketplace)}'
+		assert (n_actions is None) == (n_observations is None), 'n_actions must be None exactly when n_observations is None'
+		assert (n_actions is None) != (marketplace is None), \
+			'You must specify the network size either by providing input and output size, or by a marketplace'
+
+		if marketplace is not None:
+			n_observations = marketplace.observation_space.shape[0]
+			n_actions = marketplace.get_actions_dimension() if isinstance(self, ContinuosActorCriticAgent) else marketplace.get_n_actions()
+
+		self.device = device
 		self.name = name
-		self.initialize_models_and_optimizer(n_observations, n_actions)
+		print(f'I initiate an ActorCriticAgent using {self.device} device')
+		self.initialize_models_and_optimizer(n_observations, n_actions, network_architecture)
 		if load_path is not None:
 			self.actor_net.load_state_dict(torch.load(load_path, map_location=self.device))
 		if critic_path is not None:
@@ -50,11 +71,14 @@ class ActorCriticAgent(ReinforcementLearningAgent, ABC):
 		"""
 		raise NotImplementedError('This method is abstract. Use a subclass')
 
+	def sync_to_best_interim(self):
+		self.best_interim_actor_net.load_state_dict(self.actor_net.state_dict())
+		self.best_interim_critic_net.load_state_dict(self.critic_net.state_dict())
+
 	def save(self, model_path, model_name) -> None:
 		"""
 		Save a trained model to the specified folder within 'trainedModels'.
 		For each model an actor and a critic net will be saved.
-		Also caps the amount of models in the folder to a maximum of 10.
 		This method is copied from our Q-Learning Agent
 
 		Args:
@@ -63,25 +87,10 @@ class ActorCriticAgent(ReinforcementLearningAgent, ABC):
 		"""
 		model_name += '.dat'
 
-		torch.save(self.actor_net.state_dict(), os.path.join(model_path, 'actor_parameters' + model_name))
-		torch.save(self.critic_net.state_dict(), os.path.join(model_path, 'critic_parameters' + model_name))
-
-		full_directory = os.walk(model_path)
-		for _, _, filenames in full_directory:
-			if len(filenames) > 10:
-				# split the filenames to isolate the reward-part
-				split_filenames = [file.rsplit('_') for file in filenames]
-				# preserve the signature for later
-				signature = split_filenames[0][1]
-				# isolate the reward and convert it to float
-				rewards = {file[2] for file in split_filenames}
-				rewards = [float(reward.rsplit('.', 1)[0]) for reward in rewards]
-				# sort the rewards to keep only the best ones
-				rewards = sorted(rewards)
-
-				for reward in range(len(rewards) - 10):
-					os.remove(os.path.join(model_path, f'actor_{signature}_{rewards[reward]:.3f}.dat'))
-					os.remove(os.path.join(model_path, f'critic_{signature}_{rewards[reward]:.3f}.dat'))
+		actor_path = os.path.join(model_path, f'actor_parameters{model_name}')
+		torch.save(self.best_interim_actor_net.state_dict(), actor_path)
+		torch.save(self.best_interim_critic_net.state_dict(), os.path.join(model_path, 'critic_parameters' + model_name))
+		return actor_path
 
 	def train_batch(self, states, actions, rewards, next_states, regularization=False):
 		"""
@@ -90,7 +99,7 @@ class ActorCriticAgent(ReinforcementLearningAgent, ABC):
 		Args:
 			states (torch.Tensor): Your current states
 			actions (torch.Tensor): The actions you have taken
-			rewards (torch.Tensor): The rewards you received from the environment
+			rewards (torch.Tensor): The rewards you received from the marketplace
 			next_states (torch.Tensor): The states you got into after your actions have been performed
 			regularization (bool, optional): Do you want to use the regularization method? Defaults to False.
 
@@ -164,12 +173,14 @@ class DiscreteActorCriticAgent(ActorCriticAgent):
 	It generates preferences and uses softmax to gain the probabilities.
 	For our three markets we have three kinds of specific agents you must use.
 	"""
-	def initialize_models_and_optimizer(self, n_observations, n_actions):
-		self.actor_net = model.simple_network(n_observations, n_actions).to(self.device)
+	def initialize_models_and_optimizer(self, n_observations, n_actions, network_architecture):
+		self.actor_net = network_architecture(n_observations, n_actions).to(self.device)
 		self.actor_optimizer = torch.optim.Adam(self.actor_net.parameters(), lr=0.0000025)
-		self.critic_net = model.simple_network(n_observations, 1).to(self.device)
+		self.best_interim_actor_net = network_architecture(n_observations, n_actions).to(self.device)
+		self.critic_net = network_architecture(n_observations, 1).to(self.device)
 		self.critic_optimizer = torch.optim.Adam(self.critic_net.parameters(), lr=0.00025)
-		self.critic_tgt_net = model.simple_network(n_observations, 1).to(self.device)
+		self.critic_tgt_net = network_architecture(n_observations, 1).to(self.device)
+		self.best_interim_critic_net = self.critic_tgt_net = network_architecture(n_observations, 1).to(self.device)
 
 	def policy(self, observation, verbose=False, raw_action=False):
 		observation = torch.Tensor(np.array(observation)).to(self.device)
@@ -220,13 +231,15 @@ class ContinuosActorCriticAgent(ActorCriticAgent, LinearAgent, CircularAgent):
 	softplus = torch.nn.Softplus()
 	name = 'ContinuosActorCriticAgent'
 
-	def initialize_models_and_optimizer(self, n_observations, n_actions):
+	def initialize_models_and_optimizer(self, n_observations, n_actions, network_architecture):
 		self.n_actions = n_actions
-		self.actor_net = model.simple_network(n_observations, self.n_actions).to(self.device)
+		self.actor_net = network_architecture(n_observations, self.n_actions).to(self.device)
 		self.actor_optimizer = torch.optim.Adam(self.actor_net.parameters(), lr=0.0002)
-		self.critic_net = model.simple_network(n_observations, 1).to(self.device)
+		self.best_interim_actor_net = network_architecture(n_observations, self.n_actions).to(self.device)
+		self.critic_net = network_architecture(n_observations, 1).to(self.device)
 		self.critic_optimizer = torch.optim.Adam(self.critic_net.parameters(), lr=0.002)
-		self.critic_tgt_net = model.simple_network(n_observations, 1).to(self.device)
+		self.critic_tgt_net = network_architecture(n_observations, 1).to(self.device)
+		self.best_interim_critic_net = network_architecture(n_observations, 1).to(self.device)
 
 	@abstractmethod
 	def transform_network_output(self, number_outputs, network_result):
@@ -309,8 +322,8 @@ class ContinuosActorCriticAgentFixedOneStd(ContinuosActorCriticAgent):
 
 
 class ContinuosActorCriticAgentEstimatingStd(ContinuosActorCriticAgent):
-	def initialize_models_and_optimizer(self, n_observations, n_actions):
-		super().initialize_models_and_optimizer(n_observations, 2 * n_actions)
+	def initialize_models_and_optimizer(self, n_observations, n_actions, network_architecture):
+		super().initialize_models_and_optimizer(n_observations, 2 * n_actions, network_architecture)
 
 	def transform_network_output(self, number_outputs, network_result):
 		"""
