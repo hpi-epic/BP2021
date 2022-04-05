@@ -10,7 +10,6 @@ from recommerce.configuration.path_manager import PathManager
 class HyperparameterConfig():
 	_instance = None
 
-	@classmethod
 	def __new__(cls, config: dict = None):
 		"""
 		This function makes sure that the `HyperparameterConfig` is a singleton.
@@ -281,7 +280,8 @@ class HyperparameterConfig():
 
 class HyperparameterConfigLoader():
 
-	def load(filename: str) -> HyperparameterConfig:
+	@classmethod
+	def load(cls, filename: str) -> HyperparameterConfig:
 		"""
 		Load the configuration json file from the specified path and instantiate a `HyperparameterConfig` object.
 

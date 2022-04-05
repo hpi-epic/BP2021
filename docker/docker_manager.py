@@ -47,7 +47,6 @@ class DockerManager():
 	# dictionary of container_id:host-port pairs
 	_port_mapping = {}
 
-	@classmethod
 	def __new__(cls):
 		"""
 		This function makes sure that the `DockerManager` is a singleton.
@@ -60,7 +59,7 @@ class DockerManager():
 			cls._instance = super(DockerManager, cls).__new__(cls)
 			cls._client = docker.from_env()
 
-		cls._initialize_port_mapping(cls)
+		cls._initialize_port_mapping()
 		return cls._instance
 
 	def start(self, config: dict) -> DockerInfo:

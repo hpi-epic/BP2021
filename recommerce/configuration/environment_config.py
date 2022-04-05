@@ -418,7 +418,8 @@ class EnvironmentConfigLoader():
 	It can also be used to simply validate an existing dictionary containing a configuration.
 	"""
 
-	def load(filename: str) -> EnvironmentConfig:
+	@classmethod
+	def load(cls, filename: str) -> EnvironmentConfig:
 		"""
 		Load the configuration json file from the specified path and instantiate the correct configuration class.
 
@@ -435,7 +436,8 @@ class EnvironmentConfigLoader():
 			config = json.load(config_file)
 		return EnvironmentConfigLoader.validate(config)
 
-	def validate(config: dict) -> EnvironmentConfig:
+	@classmethod
+	def validate(cls, config: dict) -> EnvironmentConfig:
 		"""
 		Validate the given config dictionary and return the correct configuration class.
 
@@ -458,7 +460,8 @@ class EnvironmentConfigLoader():
 		else:
 			raise AssertionError(f'The specified task is unknown: {config["task"]}\nConfig: {config}')
 
-	def is_valid(config: dict):
+	@classmethod
+	def is_valid(cls, config: dict):
 		"""
 		To be used when the actual config object is not necessary but only validity needs to be checked.
 		Validates a given config and catches any possible exceptions.

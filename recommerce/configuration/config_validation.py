@@ -28,9 +28,9 @@ def validate_config(config: dict, config_is_final: bool) -> tuple:
 	check_config_types(hyperparameter_config, environment_config, config_is_final)
 
 	if 'rl' in hyperparameter_config:
-		HyperparameterConfig.check_rl_ranges(HyperparameterConfig, hyperparameter_config['rl'], config_is_final)
+		HyperparameterConfig.check_rl_ranges(hyperparameter_config['rl'], config_is_final)
 	if 'sim_market' in hyperparameter_config:
-		HyperparameterConfig.check_sim_market_ranges(HyperparameterConfig, hyperparameter_config['sim_market'], config_is_final)
+		HyperparameterConfig.check_sim_market_ranges(hyperparameter_config['sim_market'], config_is_final)
 
 	return hyperparameter_config, environment_config
 
@@ -59,7 +59,7 @@ def validate_sub_keys(config_class: HyperparameterConfig or EnvironmentConfig, c
 		elif top_level_keys[key]:
 			assert isinstance(config[key], dict), f'The value of this key must be of type dict: {key}, but was {type(config[key])}'
 			# these are the valid keys that sub-key can have as keys in the dictionary
-			key_fields = config_class.get_required_fields(config_class, key)
+			key_fields = config_class.get_required_fields(key)
 			# check that only valid keys were given by the user
 			for sub_key, _ in config[key].items():
 				assert sub_key in key_fields.keys(), \
@@ -83,8 +83,8 @@ def split_combined_config(config: dict) -> tuple:
 	Raises:
 		AssertionError: If the user provides a key that should not exist.
 	"""
-	top_level_hyperparameter = HyperparameterConfig.get_required_fields(HyperparameterConfig, 'top-dict')
-	top_level_environment = EnvironmentConfig.get_required_fields(EnvironmentConfig, 'top-dict')
+	top_level_hyperparameter = HyperparameterConfig.get_required_fields('top-dict')
+	top_level_environment = EnvironmentConfig.get_required_fields('top-dict')
 
 	hyperparameter_config = {}
 	environment_config = {}
@@ -116,15 +116,15 @@ def check_config_types(hyperparameter_config: dict, environment_config: dict, mu
 		AssertionError: If one of the values has the wring type.
 	"""
 	# check types for hyperparameter_config
-	HyperparameterConfig.check_types(HyperparameterConfig, hyperparameter_config, 'top-dict', must_contain)
+	HyperparameterConfig.check_types(hyperparameter_config, 'top-dict', must_contain)
 	if 'rl' in hyperparameter_config:
-		HyperparameterConfig.check_types(HyperparameterConfig, hyperparameter_config['rl'], 'rl', must_contain)
+		HyperparameterConfig.check_types(hyperparameter_config['rl'], 'rl', must_contain)
 	if 'sim_market' in hyperparameter_config:
-		HyperparameterConfig.check_types(HyperparameterConfig, hyperparameter_config['sim_market'], 'sim_market', must_contain)
+		HyperparameterConfig.check_types(hyperparameter_config['sim_market'], 'sim_market', must_contain)
 
 	# check types for environment_config
 	task = environment_config['task'] if must_contain else 'None'
-	EnvironmentConfig.check_types(EnvironmentConfig, environment_config, task, must_contain)
+	EnvironmentConfig.check_types(environment_config, task, must_contain)
 
 
 if __name__ == '__main__':  # pragma: no cover

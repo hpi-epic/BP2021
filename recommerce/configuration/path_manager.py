@@ -72,7 +72,7 @@ class PathManager():
 
 		# Valid path provided
 		else:
-			cls._update_path_file(cls, new_path)
+			cls._update_path_file(new_path)
 
 	@classmethod
 	def _update_path_file(cls, new_path: str) -> None:
