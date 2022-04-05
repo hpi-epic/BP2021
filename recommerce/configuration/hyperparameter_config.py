@@ -26,6 +26,50 @@ class HyperparameterConfig():
 
 		return cls._instance
 
+	@classmethod
+	def get_required_fields(cls, dict_key) -> dict:
+		"""
+		Utility function that returns all of the keys required for a hyperparameter_config.json at the given level.
+		The value of any given key indicates whether or not it is the key of a dictionary within the config (i.e. they are a level themselves).
+
+		Args:
+			dict_key (str): The key for which the required fields are needed. 'top-dict' for getting the keys of the first level.
+				'top-dict', 'rl' or 'sim_market'.
+
+		Returns:
+			dict: The required keys for the config at the given level, together with a boolean indicating of they are the key
+				of another level.
+
+		Raises:
+			AssertionError: If the given level is invalid.
+		"""
+		if dict_key == 'top-dict':
+			return {'rl': True, 'sim_market': True}
+		elif dict_key == 'rl':
+			return {
+				'gamma': False,
+				'batch_size': False,
+				'replay_size': False,
+				'learning_rate': False,
+				'sync_target_frames': False,
+				'replay_start_size': False,
+				'epsilon_decay_last_frame': False,
+				'epsilon_start': False,
+				'epsilon_final': False
+			}
+		elif dict_key == 'sim_market':
+			return {
+				'max_storage': False,
+				'episode_length': False,
+				'max_price': False,
+				'max_quality': False,
+				'number_of_customers': False,
+				'production_price': False,
+				'storage_cost_per_product': False
+			}
+		else:
+			raise AssertionError(f'The given level does not exist in a hyperparameter-config: {dict_key}')
+
 	def __str__(self) -> str:
 		"""
 		This overwrites the internal function that get called when you call `print(class_instance)`.
@@ -49,10 +93,16 @@ class HyperparameterConfig():
 
 		self._check_config_rl_completeness(config['rl'])
 		self._check_config_sim_market_completeness(config['sim_market'])
+		self.check_types(config, 'top-dict')
+		self.check_types(config['rl'], 'rl')
+		self.check_types(config['sim_market'], 'sim_market')
+		self.check_rl_ranges(config['rl'])
+		self.check_sim_market_ranges(config['sim_market'])
 		self._set_rl_variables(config['rl'])
 		self._set_sim_market_variables(config['sim_market'])
 
-	def _check_config_rl_completeness(self, config: dict) -> None:
+	@classmethod
+	def _check_config_rl_completeness(cls, config: dict) -> None:
 		"""
 		Check if the passed config dictionary contains all rl values.
 
@@ -69,7 +119,8 @@ class HyperparameterConfig():
 		assert 'epsilon_start' in config, 'your config_rl is missing epsilon_start'
 		assert 'epsilon_final' in config, 'your config_rl is missing epsilon_final'
 
-	def _check_config_sim_market_completeness(self, config: dict) -> None:
+	@classmethod
+	def _check_config_sim_market_completeness(cls, config: dict) -> None:
 		"""
 		Check if the passed config dictionary contains all sim_market values.
 
@@ -84,6 +135,112 @@ class HyperparameterConfig():
 		assert 'production_price' in config, 'your config is missing production_price'
 		assert 'storage_cost_per_product' in config, 'your config is missing storage_cost_per_product'
 
+	@classmethod
+	def check_types(cls, config: dict, key: str, must_contain: bool = True) -> None:
+		"""
+		Check if all given variables have the correct types.
+		If must_contain is True, all keys must exist, else non-existing keys will be skipped.
+
+		Args:
+			config (dict): The config to check.
+			key (str): The key for which to check the values. 'top-dict', 'rl' or 'sim_market'.
+			must_contain (bool, optional): Whether or not all variables must be present in the config. Defaults to True.
+
+		Raises:
+			KeyError: If the dictionary is missing a key but should contain all keys.
+		"""
+		if key == 'top-dict':
+			types_dict = {
+				'rl': dict,
+				'sim_market': dict
+			}
+		elif key == 'rl':
+			types_dict = {
+				'gamma': (int, float),
+				'batch_size': int,
+				'replay_size': int,
+				'learning_rate': (int, float),
+				'sync_target_frames': int,
+				'replay_start_size': int,
+				'epsilon_decay_last_frame': int,
+				'epsilon_start': (int, float),
+				'epsilon_final': (int, float)
+			}
+		elif key == 'sim_market':
+			types_dict = {
+				'max_storage': int,
+				'episode_length': int,
+				'max_price': int,
+				'max_quality': int,
+				'number_of_customers': int,
+				'production_price': int,
+				'storage_cost_per_product': float
+			}
+		else:
+			raise AssertionError(f'Your config contains an invalid key: {key}')
+
+		for key, value in types_dict.items():
+			try:
+				assert isinstance(config[key], value), f'{key} must be a {value} but was {type(config[key])}'
+			except KeyError as error:
+				if must_contain:
+					raise KeyError(f'Your config is missing the following required key: {key}') from error
+
+	@classmethod
+	def check_rl_ranges(cls, config: dict, must_contain: bool = True) -> None:
+		"""
+		Check if all rl variables are within their (pre-defined) ranges.
+
+		Args:
+			config (dict): The config for which to check the variables.
+			must_contain (bool, optional): Whether or not all variables must be present in the config. Defaults to True.
+		"""
+		if must_contain or 'gamma' in config:
+			assert config['gamma'] >= 0 and config['gamma'] < 1, 'gamma should be between 0 (included) and 1 (excluded)'
+		if must_contain or 'batch_size' in config:
+			assert config['batch_size'] > 0, 'batch_size should be greater than 0'
+		if must_contain or 'replay_size' in config:
+			assert config['replay_size'] > 0, 'replay_size should be greater than 0'
+		if must_contain or 'learning_rate' in config:
+			assert config['learning_rate'] > 0 and config['learning_rate'] < 1, 'learning_rate should be between 0 and 1 (excluded)'
+		if must_contain or 'sync_target_frames' in config:
+			assert config['sync_target_frames'] > 0, 'sync_target_frames should be greater than 0'
+		if must_contain or 'replay_start_size' in config:
+			assert config['replay_start_size'] > 0, 'replay_start_size should be greater than 0'
+		if must_contain or 'epsilon_decay_last_frame' in config:
+			assert config['epsilon_decay_last_frame'] >= 0, 'epsilon_decay_last_frame should not be negative'
+		if must_contain or 'epsilon_start' in config:
+			assert config['epsilon_start'] > 0 and config['epsilon_start'] <= 1, 'epsilon_start should be between 0 and 1 (excluded)'
+		if must_contain or 'epsilon_final' in config:
+			assert config['epsilon_final'] > 0 and config['epsilon_final'] <= 1, 'epsilon_final should be between 0 and 1 (excluded)'
+		if must_contain or ('epsilon_start' in config and 'epsilon_final' in config):
+			assert config['epsilon_start'] > config['epsilon_final'], 'epsilon_start should be greater than epsilon_final'
+
+	@classmethod
+	def check_sim_market_ranges(cls, config: dict, must_contain: bool = True) -> None:
+		"""
+		Check if all sim_market variables are within their (pre-defined) ranges.
+
+		Args:
+			config (dict): The config for which to check the variables.
+			must_contain (bool, optional): Whether or not all variables must be present in the config. Defaults to True.
+		"""
+		if must_contain or 'max_storage' in config:
+			assert config['max_storage'] >= 0, 'max_storage must be positive'
+		if must_contain or 'number_of_customers' in config:
+			assert config['number_of_customers'] > 0 and config['number_of_customers'] % 2 == 0, 'number_of_customers should be even and positive'
+		if must_contain or 'production_price' in config:
+			assert config['production_price'] <= config['max_price'] and config['production_price'] >= 0, \
+				'production_price needs to be smaller than max_price and >=0'
+		if must_contain or 'max_quality' in config:
+			assert config['max_quality'] > 0, 'max_quality should be positive'
+		if must_contain or 'max_price' in config:
+			assert config['max_price'] > 0, 'max_price should be positive'
+		if must_contain or 'episode_length' in config:
+			assert config['episode_length'] > 0, 'episode_length should be positive'
+		if must_contain or 'storage_cost_per_product' in config:
+			assert config['storage_cost_per_product'] >= 0, 'storage_cost_per_product should be non-negative'
+
 	def _set_rl_variables(self, config: dict) -> None:
 		"""
 		Update the global variables with new values provided by the config.
@@ -91,16 +248,6 @@ class HyperparameterConfig():
 		Args:
 			config (dict): The dictionary from which to read the new values.
 		"""
-		assert config['learning_rate'] > 0 and config['learning_rate'] < 1, 'learning_rate should be between 0 and 1 (excluded)'
-		assert config['gamma'] >= 0 and config['gamma'] < 1, 'gamma should be between 0 (included) and 1 (excluded)'
-		assert config['batch_size'] > 0, 'batch_size should be greater than 0'
-		assert config['replay_size'] > 0, 'replay_size should be greater than 0'
-		assert config['sync_target_frames'] > 0, 'sync_target_frames should be greater than 0'
-		assert config['replay_start_size'] > 0, 'replay_start_size should be greater than 0'
-		assert config['epsilon_decay_last_frame'] >= 0, 'epsilon_decay_last_frame should not be negative'
-		assert config['epsilon_start'] > 0 and config['epsilon_start'] <= 1, 'epsilon_start should be between 0 and 1 (excluded)'
-		assert config['epsilon_final'] > 0 and config['epsilon_final'] <= 1, 'epsilon_final should be between 0 and 1 (excluded)'
-
 		self.gamma = config['gamma']
 		self.learning_rate = config['learning_rate']
 		self.batch_size = config['batch_size']
@@ -119,14 +266,6 @@ class HyperparameterConfig():
 		Args:
 			config (dict): The dictionary from which to read the new values.
 		"""
-		assert config['max_storage'] >= 0, 'max_storage must be positive'
-		assert config['number_of_customers'] > 0 and config['number_of_customers'] % 2 == 0, 'number_of_customers should be even and positive'
-		assert config['production_price'] <= config['max_price'] and config['production_price'] >= 0, \
-			'production_price needs to be smaller than max_price and >=0'
-		assert config['max_quality'] > 0, 'max_quality should be positive'
-		assert config['max_price'] > 0, 'max_price should be positive'
-		assert config['episode_length'] > 0, 'episode_length should be positive'
-		assert config['storage_cost_per_product'] >= 0, 'storage_cost_per_product should be non-negative'
 
 		self.max_storage = config['max_storage']
 		self.episode_length = config['episode_length']
@@ -141,13 +280,14 @@ class HyperparameterConfig():
 
 class HyperparameterConfigLoader():
 
-	def load(filename: str) -> HyperparameterConfig:
+	@classmethod
+	def load(cls, filename: str) -> HyperparameterConfig:
 		"""
 		Load the configuration json file from the specified path and instantiate a `HyperparameterConfig` object.
 
 		Args:
 			filename (str): The name of the json file containing the configuration values.
-			Must be located in the BP2021/ folder.
+			Must be located in the user's datapath folder.
 
 		Returns:
 			HyperparameterConfig: An instance of `HyperparameterConfig`.

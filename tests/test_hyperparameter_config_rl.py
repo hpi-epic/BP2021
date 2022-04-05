@@ -58,8 +58,8 @@ def test_reading_file_values():
 learning_rate_larger_one = (ut_t.create_hyperparameter_mock_json_rl(learning_rate='1.5'),
 	'learning_rate should be between 0 and 1 (excluded)')
 negative_learning_rate = (ut_t.create_hyperparameter_mock_json_rl(learning_rate='0'), 'learning_rate should be between 0 and 1 (excluded)')
-large_gamma = (ut_t.create_hyperparameter_mock_json_rl(gamma='1'), 'gamma should be between 0 (included) and 1 (excluded)')
-negative_gamma = ((ut_t.create_hyperparameter_mock_json_rl(gamma='-1'), 'gamma should be between 0 (included) and 1 (excluded)'))
+large_gamma = (ut_t.create_hyperparameter_mock_json_rl(gamma='1.0'), 'gamma should be between 0 (included) and 1 (excluded)')
+negative_gamma = ((ut_t.create_hyperparameter_mock_json_rl(gamma='-1.0'), 'gamma should be between 0 (included) and 1 (excluded)'))
 negative_batch_size = (ut_t.create_hyperparameter_mock_json_rl(batch_size='-5'), 'batch_size should be greater than 0')
 negative_replay_size = (ut_t.create_hyperparameter_mock_json_rl(replay_size='-5'),
 	'replay_size should be greater than 0')

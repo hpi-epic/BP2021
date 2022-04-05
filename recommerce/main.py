@@ -16,7 +16,7 @@ def handle_datapath(datapath: str) -> None:
 	Args:
 		datapath (str): The new path.
 	"""
-	path_manager.PathManager.manage_user_path(path_manager.PathManager, datapath)
+	path_manager.PathManager.manage_user_path(datapath)
 	# reload to use the updated path
 	reload(path_manager)
 

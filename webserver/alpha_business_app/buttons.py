@@ -4,6 +4,8 @@ from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
 
+from recommerce.configuration.config_validation import validate_config
+
 from .config_merger import ConfigMerger
 from .config_parser import ConfigFlatDictParser, ConfigModelParser
 from .handle_files import download_file
@@ -278,7 +280,12 @@ class ButtonHandler():
 		except AssertionError:
 			self.message = ['error', 'Could not create config: Please eliminate identical Agent names']
 			return self._decide_rendering()
-		# TODO: assert config dict is valid
+
+		validate_status, validate_data = validate_config(config_dict, True)
+		if not validate_status:
+			self.message = ['error', validate_data]
+			return self._decide_rendering()
+
 		response = send_post_request('start', config_dict)
 		if response.ok():
 			# put container into database
