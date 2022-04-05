@@ -22,12 +22,11 @@ class LinearEconomy(SimMarket, ABC):
 		The action space is discrete with as many actions as prices.
 		"""
 		self.observation_space = gym.spaces.Box(
-			np.array([0.0] * (len(self.competitors) * 2 + 1)),
-			np.array([config.max_quality] + [config.max_price, config.max_quality] * len(self.competitors)),
-			dtype=np.float32)
+			np.array([0.0] * (len(self.competitors) * 2 + 1), dtype=np.float32),
+			np.array([config.max_quality] + [config.max_price, config.max_quality] * len(self.competitors), dtype=np.float32))
 
 		if support_continuouos_action_space:
-			self.action_space = gym.spaces.Box(np.array([0]), np.array([config.max_price]), dtype=np.float32)
+			self.action_space = gym.spaces.Box(np.float32(0), np.float32(config.max_price))
 		else:
 			self.action_space = gym.spaces.Discrete(config.max_price)
 

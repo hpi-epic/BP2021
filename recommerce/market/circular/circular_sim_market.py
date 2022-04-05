@@ -19,12 +19,12 @@ class CircularEconomy(SimMarket, ABC):
 		self.max_storage = 1e2
 		self.max_circulation = 10 * self.max_storage
 		self.observation_space = gym.spaces.Box(
-			np.array([0, 0] + [0, 0, 0] * len(self.competitors)),
-			np.array([self.max_circulation, self.max_storage] + [config.max_price, config.max_price, self.max_storage] * len(self.competitors)),
-			dtype=np.float32)
+			np.array([0, 0] + [0, 0, 0] * len(self.competitors), dtype=np.float32),
+			np.array([self.max_circulation, self.max_storage] +
+				[config.max_price, config.max_price, self.max_storage] * len(self.competitors), dtype=np.float32))
 
 		if support_continuouos_action_space:
-			self.action_space = gym.spaces.Box(np.array([0] * 2), np.array([config.max_price] * 2), dtype=np.float32)
+			self.action_space = gym.spaces.Box(np.array([0] * 2, dtype=np.float32), np.array([config.max_price] * 2, dtype=np.float32))
 		else:
 			self.action_space = gym.spaces.Tuple((gym.spaces.Discrete(config.max_price), gym.spaces.Discrete(config.max_price)))
 
@@ -219,13 +219,12 @@ class CircularEconomyRebuyPrice(CircularEconomy, ABC):
 	def _setup_action_observation_space(self, support_continuouos_action_space) -> None:
 		super()._setup_action_observation_space(support_continuouos_action_space)
 		self.observation_space = gym.spaces.Box(
-			np.array([0, 0] + [0, 0, 0, 0] * len(self.competitors)),
+			np.array([0, 0] + [0, 0, 0, 0] * len(self.competitors), dtype=np.float32),
 			np.array([self.max_circulation, self.max_storage] + [config.max_price, config.max_price,
-				config.max_price, self.max_storage] * len(self.competitors)),
-			dtype=np.float32)
+				config.max_price, self.max_storage] * len(self.competitors), dtype=np.float32))
 
 		if support_continuouos_action_space:
-			self.action_space = gym.spaces.Box(np.array([0] * 3), np.array([config.max_price] * 3), dtype=np.float32)
+			self.action_space = gym.spaces.Box(np.array([0] * 3, dtype=np.float32), np.array([config.max_price] * 3, dtype=np.float32))
 		else:
 			self.action_space = gym.spaces.Tuple(
 				(gym.spaces.Discrete(config.max_price), gym.spaces.Discrete(config.max_price), gym.spaces.Discrete(config.max_price)))
