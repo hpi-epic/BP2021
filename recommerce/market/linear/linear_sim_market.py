@@ -11,7 +11,14 @@ from recommerce.market.linear.linear_vendors import CompetitorJust2Players, Comp
 from recommerce.market.sim_market import SimMarket
 
 
-class LinearEconomy(SimMarket, ABC):
+class LinearEconomy(SimMarket):
+
+	def __init__(self,  competitors: list = [CompetitorLinearRatio1()]) -> None:
+		"""
+		Initialize a CircularEconomyRebuyPrice instance.
+		Default scenario is a duopoly with a rule based competitor here.
+		"""
+		self.competitors = competitors
 
 	def _setup_action_observation_space(self, support_continuous_action_space: bool) -> None:
 		"""
@@ -80,17 +87,17 @@ class LinearEconomy(SimMarket, ABC):
 		return np.array([])
 
 
-class ClassicScenario(LinearEconomy):
+# class ClassicScenario(LinearEconomy):
 
-	def _get_competitor_list(self) -> list:
-		return [CompetitorLinearRatio1()]
+# 	def _get_competitor_list(self) -> list:
+# 		return [CompetitorLinearRatio1()]
 
 
-class MultiCompetitorScenario(LinearEconomy):
+# class MultiCompetitorScenario(LinearEconomy):
 
-	def _get_competitor_list(self) -> list:
-		return [
-			CompetitorLinearRatio1(),
-			CompetitorRandom(),
-			CompetitorJust2Players(),
-		]
+# 	def _get_competitor_list(self) -> list:
+# 		return [
+# 			CompetitorLinearRatio1(),
+# 			CompetitorRandom(),
+# 			CompetitorJust2Players(),
+# 		]

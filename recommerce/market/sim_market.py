@@ -21,7 +21,7 @@ class SimMarket(gym.Env, ABC):
 	Inherits from `gym.env`.
 	"""
 
-	def __init__(self, support_continuous_action_space: bool = False) -> None:
+	def __init__(self,  competitors: list, support_continuous_action_space: bool = False) -> None:
 		"""
 		Initialize a SimMarket instance.
 		Set up needed values such as competitors and action/observation-space and reset the environment.
@@ -29,9 +29,10 @@ class SimMarket(gym.Env, ABC):
 		You can activate continuous actions using setting support_continuous_action_space.
 
 		Args:
+			competitors (list): list with demanded competitors for the scenario
 			support_continuous_action_space (bool): If True, the action space will be continuous.
 		"""
-		self.competitors = self._get_competitor_list()
+		self.competitors = competitors
 		# The agent's price does not belong to the observation_space any more because an agent should not depend on it
 		self._setup_action_observation_space(support_continuous_action_space)
 		self._owner = None
@@ -236,17 +237,6 @@ class SimMarket(gym.Env, ABC):
 			int: The dimension of the action space.
 		"""
 		return 1 if self.action_space.shape is not None else len(self.action_space)
-
-	@abstractmethod
-	def _get_competitor_list(self) -> list:  # pragma: no cover
-		"""
-		Get a list of all competitors in the current market scenario.
-		TODO: This should get reworked since there no longer is a formal definition of 'competitor', since we see all vendors as agents.
-
-		Returns:
-			list: List containing instances of the competitors.
-		"""
-		raise NotImplementedError('This method is abstract. Use a subclass')
 
 	def _consider_storage_costs(self, profits) -> None:
 		return None
