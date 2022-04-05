@@ -34,11 +34,9 @@ class StableBaselinesAgent(ReinforcementLearningAgent, LinearAgent, CircularAgen
 	def train_agent(self, training_steps=100000, iteration_length=500):
 		print(f'Now I start the training with {training_steps} steps')
 		callback = PerStepCheck(type(self), type(self.marketplace), training_steps=training_steps, iteration_length=iteration_length)
-		print(type(self.marketplace))
-		self.marketplace = stable_baselines3.common.monitor.Monitor(self.marketplace, callback.save_path)
-		print(type(self.marketplace))
+		tmpmarketplace = stable_baselines3.common.monitor.Monitor(self.marketplace, callback.save_path)
+		self.model.set_env(tmpmarketplace)
 		self.model.learn(training_steps, callback=callback)
-		self.marketplace = self.marketplace.env
 
 
 class StableBaselinesDDPG(StableBaselinesAgent):

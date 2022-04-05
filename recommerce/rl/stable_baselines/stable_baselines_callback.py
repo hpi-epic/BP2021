@@ -9,6 +9,7 @@ from stable_baselines3.common.callbacks import BaseCallback
 from stable_baselines3.common.results_plotter import load_results, ts2xy
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
+from tqdm.auto import trange
 
 import recommerce.configuration.utils as ut
 from recommerce.configuration.hyperparameter_config import config
@@ -38,7 +39,7 @@ class PerStepCheck(BaseCallback):
 		self.marketplace_class = marketplace_class
 		self.agent_class = agent_class
 		self.iteration_length = iteration_length
-		self.tqdm_instance = tqdm(training_steps)
+		self.tqdm_instance = trange(training_steps)
 		self.saved_parameter_paths = []
 		signal.signal(signal.SIGINT, self._signal_handler)
 
@@ -74,9 +75,10 @@ class PerStepCheck(BaseCallback):
 		self.time_last_speed_update = time.time()
 
 	def _on_step(self) -> bool:
-		self.tqdm_instance.update(self.num_timesteps)
+		self.tqdm_instance.update()
 		if (self.num_timesteps - 1) % config.episode_length != 0 or self.num_timesteps <= config.episode_length:
 			return True
+		self.tqdm_instance.refresh()
 		finished_episodes = self.num_timesteps // config.episode_length
 		x, y = ts2xy(load_results(self.save_path), 'timesteps')
 		assert len(x) > 0
@@ -102,6 +104,7 @@ class PerStepCheck(BaseCallback):
 		return True
 
 	def _on_training_end(self) -> None:
+		self.tqdm_instance.close()
 		if self.best_mean_interim_reward is not None:
 			finished_episodes = self.num_timesteps // config.episode_length
 			self.save_parameters(finished_episodes)
