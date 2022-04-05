@@ -128,7 +128,7 @@ class ConfigMergerTest(TestCase):
 				'enable_live_draw': 'changed environment enable_live_draw from False to True',
 				'episodes': None,
 				'plot_interval': None,
-				'marketplace': 'changed environment marketplace from market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario to recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
+				'marketplace': None,
 				'task': 'changed environment task from training to monitoring',
 				'agents': 'multiple Rule_Based Agent'
 			},

@@ -33,6 +33,7 @@ docker_container_remove.sh
 # to exclude notes and tests
 notes.txt
 test.py
+test.json
 # interrogate result (docstring lint rule)
 mit-covered-files
 

@@ -59,7 +59,7 @@ class DockerManager():
 			cls._instance = super(DockerManager, cls).__new__(cls)
 			cls._client = docker.from_env()
 
-		cls._initialize_port_mapping(cls)
+		cls._initialize_port_mapping()
 		return cls._instance
 
 	def start(self, config: dict) -> DockerInfo:
@@ -506,6 +506,7 @@ class DockerManager():
 		print('Copying config files complete')
 		return DockerInfo(id=container_id, status=container.status, data=hyper_ok and env_ok)
 
+	@classmethod
 	def _initialize_port_mapping(cls):
 		"""
 		Initialize the cls._port_mapping dictionary.

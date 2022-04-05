@@ -27,6 +27,7 @@ class QLearningTrainer(RLTrainer):
 		losses = []
 		rmse_losses = []
 		selected_q_vals = []
+		finished_episodes = 0
 
 		for frame_idx in trange(number_of_training_steps, unit=' frames', leave=False):
 			epsilon = max(config.epsilon_final, config.epsilon_start - frame_idx / config.epsilon_decay_last_frame)

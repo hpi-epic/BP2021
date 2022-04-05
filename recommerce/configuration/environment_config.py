@@ -13,6 +13,25 @@ from recommerce.rl.actorcritic.actorcritic_agent import ActorCriticAgent
 from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
 
 
+def get_class(import_string: str) -> object:
+	"""
+	Get the class from the given string.
+
+	Args:
+		import_string (str): A string containing the import path in the format 'module.submodule.class'.
+
+	Returns:
+		A class object: The imported class.
+	"""
+	module_name, class_name = import_string.rsplit('.', 1)
+	try:
+		return getattr(importlib.import_module(module_name), class_name)
+	except AttributeError as error:
+		raise AttributeError(f'The string you passed could not be resolved to a class: {import_string}') from error
+	except ModuleNotFoundError as error:
+		raise ModuleNotFoundError(f'The string you passed could not be resolved to a module: {import_string}') from error
+
+
 class EnvironmentConfig(ABC):
 	"""
 	An abstract environment configuration class.
@@ -21,6 +40,111 @@ class EnvironmentConfig(ABC):
 	def __init__(self, config: dict):
 		self.task = self._get_task()
 		self._validate_config(config)
+
+	@classmethod
+	def get_required_fields(cls, dict_key) -> dict:
+		"""
+		Utility function that returns all of the keys required for a environment_config.json at the given level.
+		The value of any given key indicates whether or not it is the key of a dictionary within the config (i.e. they are a level themselves).
+
+		Args:
+			dict_key (str): The key for which the required fields are needed. 'top-dict' for getting the keys of the first level.
+
+		Returns:
+			dict: The required keys for the config at the given level, together with a boolean indicating of they are the key
+				of another level.
+
+		Raises:
+			AssertionError: If the given level is invalid.
+		"""
+		if dict_key == 'top-dict':
+			return {
+				'task': False,
+				'enable_live_draw': False,
+				'episodes': False,
+				'plot_interval': False,
+				'marketplace': False,
+				'agents': True
+			}
+		elif dict_key == 'agents':
+			return {
+				'agent_class': False,
+				'argument': False
+			}
+		else:
+			raise AssertionError(f'The given level does not exist in an environment-config: {dict_key}')
+
+	# This function should always contain ALL keys that are possible, so the webserver-config is independent of the given "task"
+	# since the user does not need to specify a "task". The subclasses should overwrite this method.
+	@classmethod
+	def check_types(cls, config: dict, task: str = 'None', must_contain: bool = True) -> None:
+		"""
+		Check if all given variables have the correct types.
+		If must_contain is True, all keys must exist, else non-existing keys will be skipped.
+
+		Args:
+			config (dict): The config to check.
+			task (str): The task for which the variables should be checked.
+			must_contain (bool, optional): Whether or not all variables must be present in the config. Defaults to True.
+
+		Raises:
+			AssertionError: If an unknown key was passed.
+			KeyError: If the dictionary is missing a key but should contain all keys.
+			ValueError: If one of the passed strings (marketplace, agents) could not be parsed to a valid class.
+		"""
+		if task in {'None', 'agent_monitoring'}:
+			types_dict = {
+				'task': str,
+				'enable_live_draw': bool,
+				'episodes': int,
+				'plot_interval': int,
+				'marketplace': str,
+				'agents': dict
+			}
+			types_dict_agents = {
+				'agent_class': str,
+				# str for modelfiles, list for FixedPrice-Agent price-list
+				'argument': (str, list)
+			}
+
+		elif task in {'training', 'exampleprinter'}:
+			types_dict = {
+				'task': str,
+				'marketplace': str,
+				'agents': dict
+			}
+			types_dict_agents = {
+				'agent_class': str,
+				# str for modelfiles, list for FixedPrice-Agent price-list
+				'argument': (str, list)
+			}
+		else:
+			raise AssertionError(f'This task is unknown: {task}')
+
+		for key, value in types_dict.items():
+			try:
+				assert isinstance(config[key], value), f'{key} must be a {value} but was {type(config[key])}'
+				# make sure the class can be parsed/is valid
+				if key == 'marketplace':
+					try:
+						get_class(config['marketplace'])
+					except ValueError as error:
+						raise AssertionError(f'The marketplace could not be parsed to a valid class: "{config["marketplace"]}"') from error
+				# TODO: Refactor this when the agent structure was changed in the json files
+				if key == 'agents':
+					for agent in config['agents']:
+						for agent_key, agent_value in types_dict_agents.items():
+							if agent_key == 'agent_class':
+								try:
+									get_class(config['agents'][agent]['agent_class'])
+								except ValueError as error:
+									raise AssertionError(f'This agent could not be parsed to a valid class: \
+"{config["agents"][agent]["agent_class"]}"') from error
+							assert isinstance(config['agents'][agent][agent_key], agent_value), \
+								f'{agent_key} must be a {agent_value} but was {type(config["agents"][agent][agent_key])}'
+			except KeyError as error:
+				if must_contain:
+					raise KeyError(f'Your config is missing the following required key: {key}') from error
 
 	def __str__(self) -> str:
 		"""
@@ -44,12 +168,7 @@ class EnvironmentConfig(ABC):
 		assert 'marketplace' in config, f'The config must have a "marketplace" field: {config}'
 		assert 'agents' in config, f'The config must have an "agents" field: {config}'
 
-		assert isinstance(config['task'], str), \
-			f'The "task" field must be a str: {config["task"]} ({type(config["task"])})'
-		assert isinstance(config['marketplace'], str), \
-			f'The "marketplace" field must be a str: {config["marketplace"]} ({type(config["marketplace"])})'
-		assert isinstance(config['agents'], dict), \
-			f'The "agents" field must be a dict: {config["agents"]} ({type(config["agents"])})'
+		self.check_types(config, config['task'])
 
 	def _check_and_adjust_agents_structure(self, agents_config: dict, single_agent: bool) -> tuple:
 		"""
@@ -99,7 +218,7 @@ class EnvironmentConfig(ABC):
 			list: A list of agent classes.
 			list: A list of parsed arguments.
 		"""
-		agent_classes = [self._get_class(agent['agent_class']) for agent in agent_dictionaries]
+		agent_classes = [get_class(agent['agent_class']) for agent in agent_dictionaries]
 
 		# If a modelfile is needed, the self.agents will be a list of tuples (as required by agent_monitoring), else just a list of classes
 		arguments_list = []
@@ -142,7 +261,7 @@ class EnvironmentConfig(ABC):
 		Args:
 			marketplace (str): The string of the class within the config dictionary.
 		"""
-		self.marketplace = self._get_class(marketplace_string)
+		self.marketplace = get_class(marketplace_string)
 		assert issubclass(self.marketplace, SimMarket), \
 			f'The type of the passed marketplace must be a subclass of SimMarket: {self.marketplace}'
 
@@ -192,24 +311,6 @@ class EnvironmentConfig(ABC):
 
 		self._assert_agent_marketplace_fit()
 
-	def _get_class(self, import_string: str) -> object:
-		"""
-		Get the class from the given string.
-
-		Args:
-			import_string (str): A string containing the import path in the format 'module.submodule.class'.
-
-		Returns:
-			A class object: The imported class.
-		"""
-		module_name, class_name = import_string.rsplit('.', 1)
-		try:
-			return getattr(importlib.import_module(module_name), class_name)
-		except AttributeError as error:
-			raise AttributeError(f'The string you passed could not be resolved to a class: {import_string}') from error
-		except ModuleNotFoundError as error:
-			raise ModuleNotFoundError(f'The string you passed could not be resolved to a module: {import_string}') from error
-
 	@abstractmethod
 	def _get_task(self) -> str:
 		"""
@@ -230,7 +331,6 @@ class TrainingEnvironmentConfig(EnvironmentConfig):
 		marketplace (SimMarket subclass): A subclass of SimMarket, what marketplace the training should be run on.
 		agent (QlearningAgent or ActorCriticAgent subclass): A subclass of QlearningAgent or ActorCritic, the agent to be trained.
 	"""
-
 	def _validate_config(self, config: dict) -> None:
 		super(TrainingEnvironmentConfig, self)._validate_config(config, single_agent=True, needs_modelfile=False)
 
@@ -257,7 +357,6 @@ class AgentMonitoringEnvironmentConfig(EnvironmentConfig):
 			Each entry in the list is a tuple with the first item being the agent class, the second being a list.
 			If the agent needs a modelfile, this will be the first entry in the list, the other entry is always an informal name for the agent.
 	"""
-
 	def _check_top_level_structure(self, config: dict) -> None:
 		super(AgentMonitoringEnvironmentConfig, self)._check_top_level_structure(config)
 		assert 'enable_live_draw' in config, f'The config must have an "enable_live_draw" field: {config}'
@@ -303,7 +402,6 @@ class ExampleprinterEnvironmentConfig(EnvironmentConfig):
 		marketplace (SimMarket subclass): A subclass of SimMarket, what marketplace the exampleprinter should be run on.
 		agent (Agent subclass): A subclass of Agent, the agent for which the exampleprinter should be run.
 	"""
-
 	def _validate_config(self, config: dict) -> None:
 		super(ExampleprinterEnvironmentConfig, self)._validate_config(config, single_agent=True, needs_modelfile=True)
 		# Since we only have one agent, we extract it from the provided list
@@ -320,13 +418,14 @@ class EnvironmentConfigLoader():
 	It can also be used to simply validate an existing dictionary containing a configuration.
 	"""
 
-	def load(filename: str) -> EnvironmentConfig:
+	@classmethod
+	def load(cls, filename: str) -> EnvironmentConfig:
 		"""
 		Load the configuration json file from the specified path and instantiate the correct configuration class.
 
 		Args:
 			filename (str): The name of the json file containing the configuration values.
-				Must be located in the BP2021/ folder.
+				Must be located in the user's datapath folder.
 
 		Returns:
 			EnvironmentConfig: A subclass instance of EnvironmentConfig.
@@ -337,7 +436,8 @@ class EnvironmentConfigLoader():
 			config = json.load(config_file)
 		return EnvironmentConfigLoader.validate(config)
 
-	def validate(config: dict) -> EnvironmentConfig:
+	@classmethod
+	def validate(cls, config: dict) -> EnvironmentConfig:
 		"""
 		Validate the given config dictionary and return the correct configuration class.
 
@@ -359,24 +459,6 @@ class EnvironmentConfigLoader():
 			return ExampleprinterEnvironmentConfig(config)
 		else:
 			raise AssertionError(f'The specified task is unknown: {config["task"]}\nConfig: {config}')
-
-	def is_valid(config: dict):
-		"""
-		To be used when the actual config object is not necessary but only validity needs to be checked.
-		Validates a given config and catches any possible exceptions.
-		Returns if a config is valid and if not, also an appropriate error message.
-
-		Args:
-			config (dict): The configuration to validate.
-
-		Returns:
-			Tuple (bool, str): boolean indicating if your config is valid, str the appropriate error if applicable.
-		"""
-		try:
-			EnvironmentConfigLoader.validate(config)
-		except (AssertionError, Exception) as error:
-			return False, str(error)
-		return True, 'Your config is valid.'
 
 
 if __name__ == '__main__':  # pragma: no cover
