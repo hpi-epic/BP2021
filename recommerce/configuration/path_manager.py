@@ -37,6 +37,7 @@ class PathManager():
 	results_path = os.path.join(user_path, 'results')
 	data_path = os.path.join(user_path, 'data')
 
+	@classmethod
 	def manage_user_path(cls, new_path: str) -> None:
 		"""
 		Manage the data path.
@@ -73,6 +74,7 @@ class PathManager():
 		else:
 			cls._update_path_file(cls, new_path)
 
+	@classmethod
 	def _update_path_file(cls, new_path: str) -> None:
 		"""
 		Update the path file with the new path.

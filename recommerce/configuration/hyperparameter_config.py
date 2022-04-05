@@ -10,6 +10,7 @@ from recommerce.configuration.path_manager import PathManager
 class HyperparameterConfig():
 	_instance = None
 
+	@classmethod
 	def __new__(cls, config: dict = None):
 		"""
 		This function makes sure that the `HyperparameterConfig` is a singleton.
@@ -26,6 +27,7 @@ class HyperparameterConfig():
 
 		return cls._instance
 
+	@classmethod
 	def get_required_fields(cls, dict_key) -> dict:
 		"""
 		Utility function that returns all of the keys required for a hyperparameter_config.json at the given level.
@@ -100,6 +102,7 @@ class HyperparameterConfig():
 		self._set_rl_variables(config['rl'])
 		self._set_sim_market_variables(config['sim_market'])
 
+	@classmethod
 	def _check_config_rl_completeness(cls, config: dict) -> None:
 		"""
 		Check if the passed config dictionary contains all rl values.
@@ -117,6 +120,7 @@ class HyperparameterConfig():
 		assert 'epsilon_start' in config, 'your config_rl is missing epsilon_start'
 		assert 'epsilon_final' in config, 'your config_rl is missing epsilon_final'
 
+	@classmethod
 	def _check_config_sim_market_completeness(cls, config: dict) -> None:
 		"""
 		Check if the passed config dictionary contains all sim_market values.
@@ -132,6 +136,7 @@ class HyperparameterConfig():
 		assert 'production_price' in config, 'your config is missing production_price'
 		assert 'storage_cost_per_product' in config, 'your config is missing storage_cost_per_product'
 
+	@classmethod
 	def check_types(cls, config: dict, key: str, must_contain: bool = True) -> None:
 		"""
 		Check if all given variables have the correct types.
@@ -180,8 +185,9 @@ class HyperparameterConfig():
 				assert isinstance(config[key], value), f'{key} must be a {value} but was {type(config[key])}'
 			except KeyError as error:
 				if must_contain:
-					raise KeyError(key) from error
+					raise KeyError(f'Your config is missing the following required key: {key}') from error
 
+	@classmethod
 	def check_rl_ranges(cls, config: dict, must_contain: bool = True) -> None:
 		"""
 		Check if all rl variables are within their (pre-defined) ranges.
@@ -211,6 +217,7 @@ class HyperparameterConfig():
 		if must_contain or ('epsilon_start' in config and 'epsilon_final' in config):
 			assert config['epsilon_start'] > config['epsilon_final'], 'epsilon_start should be greater than epsilon_final'
 
+	@classmethod
 	def check_sim_market_ranges(cls, config: dict, must_contain: bool = True) -> None:
 		"""
 		Check if all sim_market variables are within their (pre-defined) ranges.

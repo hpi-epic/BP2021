@@ -41,6 +41,7 @@ class EnvironmentConfig(ABC):
 		self.task = self._get_task()
 		self._validate_config(config)
 
+	@classmethod
 	def get_required_fields(cls, dict_key) -> dict:
 		"""
 		Utility function that returns all of the keys required for a environment_config.json at the given level.
@@ -75,6 +76,7 @@ class EnvironmentConfig(ABC):
 
 	# This function should always contain ALL keys that are possible, so the webserver-config is independent of the given "task"
 	# since the user does not need to specify a "task". The subclasses should overwrite this method.
+	@classmethod
 	def check_types(cls, config: dict, task: str = 'None', must_contain: bool = True) -> None:
 		"""
 		Check if all given variables have the correct types.
