@@ -113,5 +113,5 @@ def random_offer(marketplace):
 	"""
 	marketplace = marketplace()
 	marketplace.reset()
-	marketplace.vendor_actions[0] = marketplace._action_space.sample()
+	marketplace.vendor_actions[0] = marketplace.action_space.sample()
 	return marketplace._get_common_state_array(), marketplace.vendor_specific_state, marketplace.vendor_actions
