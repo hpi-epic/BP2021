@@ -15,7 +15,6 @@ def validate_config(config: dict, config_is_final: bool) -> tuple:
 				failure: A status (False) and the errormessage as a string.
 	"""
 	try:
-		# validate the config using `recommerce` validation logic
 		# first check if the environment and hyperparameter parts are already split up
 		if 'environment' in config and 'hyperparameter' in config:
 			assert len(config) == 2, 'Your config should not contain keys other than "environment" and "hyperparameter"'
@@ -54,11 +53,11 @@ def validate_sub_keys(config_class: HyperparameterConfig or EnvironmentConfig, c
 		AssertionError: If the given config contains a key that is invalid.
 	"""
 	for key, _ in config.items():
-		# TODO: Remove this workaround with the agent-rework in the config files
+		# we still need to separately check agents, since it is a list of dictionaries
 		if key == 'agents':
-			for agent_key in config['agents'].keys():
-				assert all(this_key in {'agent_class', 'argument'} for this_key in config['agents'][agent_key]), \
-					f'an invalid key for agents was provided: {config["agents"][agent_key].keys()}'
+			for agent in config['agents']:
+				assert all(agent_key in {'name', 'agent_class', 'argument'} for agent_key in agent.keys()), \
+					f'an invalid key for agents was provided: {agent.keys()}'
 		# the key is key of a dictionary in the config
 		elif top_level_keys[key]:
 			assert isinstance(config[key], dict), f'The value of this key must be of type dict: {key}, but was {type(config[key])}'
@@ -152,16 +151,18 @@ if __name__ == '__main__':  # pragma: no cover
 			'storage_cost_per_product': 0.1
 		},
 		'episodes': 5,
-		'agents': {
-			'CE Rebuy Agent (QLearning)': {
+		'agents': [
+			{
+				'name': 'CE Rebuy Agent (QLearning)',
 				'agent_class': 'recommerce.rl.q_learning.q_learning_agent.QLearningCERebuyAgent',
 				'argument': ''
 			},
-			'CE Rebuy Agent (QLearaning)': {
+			{
+				'name': 'CE Rebuy Agent (QLearaning)',
 				'agent_class': 'recommerce.rl.q_learning.q_learning_agent.QLearningCERebuyAgent',
 				'argument': ''
 			}
-		}
+		]
 	}
 	hyper, env = split_combined_config(test_config)
 	check_config_types(hyper, env)

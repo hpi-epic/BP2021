@@ -64,7 +64,7 @@ class EnvironmentConfig(ABC):
 				'episodes': False,
 				'plot_interval': False,
 				'marketplace': False,
-				'agents': True
+				'agents': False
 			}
 		elif dict_key == 'agents':
 			return {
