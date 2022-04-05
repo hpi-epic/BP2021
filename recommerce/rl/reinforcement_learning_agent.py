@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 
+import torch
+
 from recommerce.market.vendors import Agent
 
 
