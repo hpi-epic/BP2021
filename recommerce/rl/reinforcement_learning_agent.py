@@ -11,7 +11,7 @@ class ReinforcementLearningAgent(Agent, ABC):
 			n_actions=None,
 			marketplace=None,
 			optim=None,
-			device='cpu',
+			device='cuda' if torch.cuda.is_available() else 'cpu',
 			load_path=None,
 			name='enter a name here'):
 		"""
