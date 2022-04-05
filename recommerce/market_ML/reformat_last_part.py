@@ -25,8 +25,8 @@ b5x = [1, 2, 4, 8, 16]
 b6 = [1, 2, 3, 4, 5, 6]
 b6x = [1, 2, 4, 8, 16, 32]
 c_new = None
-# param xb{k in 0..24,i in 0..NB} default if k=0 then 1 else if i=0 then 5 else -1      # simulated data
 
+# param xb{k in 0..24,i in 0..NB} default if k=0 then 1 else if i=0 then 5 else -1      # simulated data
 xb = np.array([[(1 if k == 0 else 5 if i == 0 else -1) for k in range(0, 24)] for i in range(0, NB)])
 
 for i in range(1, NB):
