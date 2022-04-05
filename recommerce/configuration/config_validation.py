@@ -95,7 +95,7 @@ def split_combined_config(config: dict) -> tuple:
 		elif key in top_level_environment.keys():
 			environment_config[key] = value
 		else:
-			raise AssertionError(f'This key is unknown: {key}')
+			raise AssertionError(f'Your config contains an invalid key: {key}')
 
 	validate_sub_keys(HyperparameterConfig, hyperparameter_config, top_level_hyperparameter)
 	validate_sub_keys(EnvironmentConfig, environment_config, top_level_environment)

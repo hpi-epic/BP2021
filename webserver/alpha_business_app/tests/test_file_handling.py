@@ -60,7 +60,7 @@ class FileHandling(TestCase):
 
 			render_mock.assert_called_once()
 			assert 'upload.html' == actual_arguments[1]
-			assert {'error': 'This key is unknown: test'} == actual_arguments[2], f'{actual_arguments[2]}'
+			assert {'error': 'Your config contains an invalid key: test'} == actual_arguments[2], f'{actual_arguments[2]}'
 
 	def test_objects_from_parse_dict(self):
 		test_dict = {'rl': {'batch_size': 32}, 'sim_market': {'episode_length': 50}}
