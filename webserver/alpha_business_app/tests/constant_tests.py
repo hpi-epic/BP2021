@@ -32,12 +32,13 @@ EXAMPLE_HIERARCHY_DICT = {
 			'task': 'training',
 			'marketplace': 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
 			'enable_live_draw': False,
-			'agents': {
-				'Rule_Based Agent': {
+			'agents': [
+				{
+					'name': 'Rule_Based Agent',
 					'agent_class': 'recommerce.market.circular.circular_vendors.RuleBasedCERebuyAgent',
 					'argument': ''
 				}
-			}
+			]
 		},
 		'hyperparameter': {
 			'rl': {
@@ -68,16 +69,18 @@ EXAMPLE_HIERARCHY_DICT2 = {
 			'task': 'monitoring',
 			'enable_live_draw': True,
 			'marketplace': 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
-			'agents': {
-				'Rule_Based Agent': {
+			'agents': [
+				{
+					'name': 'Rule_Based Agent',
 					'agent_class': 'recommerce.market.circular.circular_vendors.RuleBasedCERebuyAgent',
 					'argument': ''
 				},
-				'CE Rebuy Agent (QLearning)': {
+				{
+					'name': 'CE Rebuy Agent (QLearning)',
 					'agent_class': 'recommerce.rl.q_learning.q_learning_agent.QLearningCERebuyAgent',
 					'argument': 'CircularEconomyRebuyPriceMonopolyScenario_QLearningCERebuyAgent.dat'
 				}
-			}
+			]
 		},
 		'hyperparameter': {
 			'rl': {
