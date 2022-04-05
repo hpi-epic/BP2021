@@ -12,12 +12,12 @@ from recommerce.rl.stable_baselines.stable_baselines_callback import PerStepChec
 
 
 class StableBaselinesAgent(ReinforcementLearningAgent, LinearAgent, CircularAgent):
-	def __init__(self, marketplace=None, optim=None, load_path=None, iteration_length=500, name='enter a name here'):
+	def __init__(self, marketplace=None, optim=None, load_path=None, name='enter a name here'):
 		assert marketplace is not None
 		assert isinstance(marketplace, gym.Env), \
 			f'if marketplace is provided, marketplace must be a SimMarket, but is {type(marketplace)}'
-		self.callback = PerStepCheck(type(self), type(marketplace), iteration_length=iteration_length)
-		marketplace = stable_baselines3.common.monitor.Monitor(marketplace, self.callback.save_path)
+
+		self.marketplace = marketplace
 		if load_path is None:
 			self._initialize_model(marketplace)
 			print(f'I initiate {self.name}-agent using {self.model.device} device')
@@ -31,9 +31,14 @@ class StableBaselinesAgent(ReinforcementLearningAgent, LinearAgent, CircularAgen
 	def synchronize_tgt_net(self):  # pragma: no cover
 		assert False, 'This method may never be used in a StableBaselinesAgent!'
 
-	def train_agent(self, training_steps=100000):
+	def train_agent(self, training_steps=100000, iteration_length=500):
 		print(f'Now I start the training with {training_steps} steps')
-		self.model.learn(training_steps, callback=self.callback)
+		callback = PerStepCheck(type(self), type(self.marketplace), training_steps=training_steps, iteration_length=iteration_length)
+		print(type(self.marketplace))
+		self.marketplace = stable_baselines3.common.monitor.Monitor(self.marketplace, callback.save_path)
+		print(type(self.marketplace))
+		self.model.learn(training_steps, callback=callback)
+		self.marketplace = self.marketplace.env
 
 
 class StableBaselinesDDPG(StableBaselinesAgent):

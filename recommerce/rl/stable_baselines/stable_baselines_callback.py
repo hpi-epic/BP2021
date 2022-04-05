@@ -29,7 +29,7 @@ class PerStepCheck(BaseCallback):
 		It must contains the file created by the ``Monitor`` wrapper.
 	:param verbose: Verbosity level.
 	"""
-	def __init__(self, agent_class, marketplace_class, log_dir_prepend='', iteration_length=500):
+	def __init__(self, agent_class, marketplace_class, log_dir_prepend='', training_steps=10000, iteration_length=500):
 		assert isinstance(log_dir_prepend, str), \
 			f'log_dir_prepend should be a string, but {log_dir_prepend} is {type(log_dir_prepend)}'
 		super(PerStepCheck, self).__init__(True)
@@ -38,6 +38,7 @@ class PerStepCheck(BaseCallback):
 		self.marketplace_class = marketplace_class
 		self.agent_class = agent_class
 		self.iteration_length = iteration_length
+		self.tqdm_instance = tqdm(training_steps)
 		self.saved_parameter_paths = []
 		signal.signal(signal.SIGINT, self._signal_handler)
 
@@ -73,6 +74,7 @@ class PerStepCheck(BaseCallback):
 		self.time_last_speed_update = time.time()
 
 	def _on_step(self) -> bool:
+		self.tqdm_instance.update(self.num_timesteps)
 		if (self.num_timesteps - 1) % config.episode_length != 0 or self.num_timesteps <= config.episode_length:
 			return True
 		finished_episodes = self.num_timesteps // config.episode_length
