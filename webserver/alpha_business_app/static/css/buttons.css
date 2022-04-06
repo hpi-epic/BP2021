@@ -98,6 +98,11 @@
 	border-color: rgb(219, 1, 56) !important;
 }
 
+.bc-orange {
+	background-color: rgb(255, 123, 0) !important;
+	border-color: rgb(255, 123, 0) !important;
+}
+
 .bc-xs {
 	height: min-content !important;
 }

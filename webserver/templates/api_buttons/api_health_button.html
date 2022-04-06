@@ -1,4 +1,4 @@
-<button class="btn btn-sm bc-xs mt-3 replace-me {% if api_success %}bc-lightgreen {% elif api_error %}bc-red{% else %}bc-lightgray{% endif %}" 
+<button class="btn btn-sm bc-xs mt-3 replace-me {% if api_success %}bc-lightgreen {% elif api_docker_timeout %}bc-orange {% elif api_timeout %}bc-red {% else %}bc-lightgray{% endif %}" 
 	type="button"
 	data-url="/api_availability">
 </button>
