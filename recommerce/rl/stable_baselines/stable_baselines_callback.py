@@ -115,7 +115,7 @@ class PerStepCheck(BaseCallback):
 			return
 		monitor = Monitor()
 		agent_list = [(self.agent_class, [parameter_path]) for parameter_path in self.saved_parameter_paths]
-		monitor.configurator.setup_monitoring(False, 50, 50, self.marketplace_class, agent_list, support_continuouos_action_space=True)
+		monitor.configurator.setup_monitoring(False, 250, 250, self.marketplace_class, agent_list, support_continuouos_action_space=True)
 		rewards = monitor.run_marketplace()
 		episode_numbers = [int(parameter_path[-9:][:5]) for parameter_path in self.saved_parameter_paths]
 		Evaluator(monitor.configurator).evaluate_session(rewards, episode_numbers)
