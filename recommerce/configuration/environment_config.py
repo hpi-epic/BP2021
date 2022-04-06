@@ -116,16 +116,13 @@ class EnvironmentConfig(ABC):
 			'argument': (str, list)
 		}
 
-		if single_agent:
-			# we check the agents-type prematurely to make sure we can take 'len()' of it
-			assert isinstance(config['agents'], list), f'The "agents" field must be of type list but was {type(config["agents"])}'
-			assert len(config['agents']) == 1, f'Only one agent is permitted for this task, but {len(config["agents"])} were given.'
-
 		for key, value in types_dict.items():
 			try:
 				assert isinstance(config[key], value), f'{key} must be a {value} but was {type(config[key])}'
 				# make sure the agent-classes can be parsed and that each entry in the dictionary has the correct type
 				if key == 'agents':
+					if single_agent:
+						assert len(config['agents']) == 1, f'Only one agent is permitted for this task, but {len(config["agents"])} were given.'
 					for agent in config['agents']:
 						# check types of the entries in the current agent dictionary
 						for checked_key, checked_value in types_dict_agents.items():
