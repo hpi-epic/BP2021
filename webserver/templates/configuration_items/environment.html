@@ -67,7 +67,7 @@
 				marketplace
 			</div>
 			<div class="col-6">
-				<select class="form-select {% if error_dict.task %} bc-error-field {% endif %}" name="environment-task">
+				<select class="form-select {% if error_dict.task %} bc-error-field {% endif %}" name="environment-marketplace">
 					{% include "configuration_items/selection_list.html" with prefill_value=prefill.marketplace selections=selections.marketplaces %}
 				</select>
 			</div>
