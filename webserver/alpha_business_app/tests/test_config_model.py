@@ -135,35 +135,40 @@ class ConfigTest(TestCase):
 				'environment': {
 					'task': 'training',
 					'marketplace': 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
-					'agents': {
-						'Rule_Based Agent': {
+					'agents': [
+						{
+							'name': 'Rule_Based Agent',
 							'agent_class': 'recommerce.market.circular.circular_vendors.RuleBasedCERebuyAgent',
 							'argument': ''
 						}
-					}
+					]
 				}
 			}
 		assert expected_dict == final_config.as_dict()
 
 	def test_dict_representation_of_agent(self):
 		test_agent = AgentConfig.objects.create(name='test_agent', agent_class='test_class', argument='1234')
-		expected_dict = {'test_agent': {'agent_class': 'test_class', 'argument': '1234'}}
-		assert expected_dict == test_agent.as_dict()
+		expected_dict = {'name': 'test_agent', 'agent_class': 'test_class', 'argument': '1234'}
+		assert expected_dict == test_agent.as_dict(), (expected_dict, test_agent.as_dict())
 
-	def test_dict_representation_of_agents(self):
+	def test_list_representation_of_agents(self):
 		test_agents = AgentsConfig.objects.create()
 		AgentConfig.objects.create(name='test_agent1', agent_class='test_class', agents_config=test_agents)
 		AgentConfig.objects.create(name='test_agent2', agent_class='test_class', agents_config=test_agents)
 
-		expected_dict = {
-				'test_agent1': {
-					'agent_class': 'test_class'
+		expected_list = [
+				{
+					'name': 'test_agent1',
+					'agent_class': 'test_class',
+					'argument': ''
 				},
-				'test_agent2': {
-					'agent_class': 'test_class'
+				{
+					'name': 'test_agent2',
+					'agent_class': 'test_class',
+					'argument': ''
 				}
-			}
-		assert expected_dict == test_agents.as_dict()
+			]
+		assert expected_list == test_agents.as_list()
 
 	def test_dict_representation_of_empty_config(self):
 		test_config = Config.objects.create()

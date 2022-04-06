@@ -242,7 +242,7 @@ class ButtonTests(TestCase):
 			redirect_mock.assert_called_once_with('/observe', {'success': 'You successfully launched an experiment'})
 
 			config_object = Config.objects.all()[1]
-			assert 'used for test_experiment' == config_object.name
+			assert 'Config for test_experiment' == config_object.name
 
 	def _setup_button_handler(self, view: str, request: RequestFactory) -> ButtonHandler:
 		return ButtonHandler(request, view=view,
