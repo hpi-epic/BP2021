@@ -142,7 +142,7 @@ class ButtonHandler():
 		circular_market_places = [('recommerce.market.circular.circular_sim_market.' + market, market) for market in circular_market_places]
 		return {
 			'selections': {
-				'tasks': [('training', 'training'), ('agent_monitoring', 'monitoring'), ('exampleprinter', 'exampleprinter')],
+				'tasks': [('training', 'training'), ('agent_monitoring', 'agent_monitoring'), ('exampleprinter', 'exampleprinter')],
 				'marketplaces': circular_market_places}}
 
 	def _render_default(self) -> HttpResponse:

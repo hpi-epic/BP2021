@@ -9,6 +9,7 @@ $(document).ready(function() {
 		});
 	});
 	
+	
 	function updateAPIHealth() {
 		// replaces the element by the element returned by ajax (html)
 		var statusButton = $("button.replace-me")
@@ -20,10 +21,11 @@ $(document).ready(function() {
 	};
 
 	// check for API status all 5 seconds
-	window.setInterval(function() {updateAPIHealth()}, 5000)
+	updateAPIHealth();
+	window.setInterval(function() {updateAPIHealth()}, 5000);
 
 	$("select.task-selection").change(function () {
-		// displays the monitoring options when 'monitoring' is selected
+		// displays the monitoring options when 'agent_monitoring' is selected
 		var self = this
 		if(self.value == "agent_monitoring") {
 			$(".hide-not-monitoring").each(function () {

@@ -206,7 +206,12 @@ async def remove_container(id: str) -> JSONResponse:
 
 
 @app.get('/api_health')
-async def check_if_api_is_available():
+async def check_if_api_is_available() -> JSONResponse:
+	"""
+	This is a route you can call to see if the API is available.
+	Returns:
+		JSONResponse: A json containing only a `status` field.
+	"""
 	return JSONResponse({'status': 'I am alive'})
 
 
