@@ -89,7 +89,7 @@ class PerStepCheck(BaseCallback):
 			tqdm.write(f'{self.num_timesteps}: {finished_episodes} episodes trained, mean return {mean_reward:.3f}')
 
 		# consider update best model
-		if self.best_mean_interim_reward is None or mean_reward > self.best_mean_interim_reward:
+		if self.best_mean_interim_reward is None or mean_reward > self.best_mean_interim_reward + 15:
 			self.model.save(self.tmp_path)
 			self.best_mean_interim_reward = mean_reward
 			if self.best_mean_overall_reward is None or self.best_mean_interim_reward > self.best_mean_overall_reward:
