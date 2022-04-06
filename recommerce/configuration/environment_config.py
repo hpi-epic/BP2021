@@ -87,9 +87,8 @@ class EnvironmentConfig(ABC):
 			must_contain (bool, optional): Whether or not all variables must be present in the config. Defaults to True.
 
 		Raises:
-			AssertionError: If an unknown key was passed.
+			AssertionError: If a key's value has an incorrect type or the marketplace or an agent could not be parsed to a valid class.
 			KeyError: If the dictionary is missing a key but should contain all keys.
-			ValueError: If one of the passed strings (marketplace, agents) could not be parsed to a valid class.
 		"""
 		if task in {'None', 'agent_monitoring'}:
 			types_dict = {
@@ -130,7 +129,7 @@ class EnvironmentConfig(ABC):
 								f'{checked_key} must be a {checked_value} but was {type(agent[checked_key])}'
 						try:
 							get_class(agent['agent_class'])
-						except ValueError as error:
+						except Exception as error:
 							raise AssertionError(f'This agent could not be parsed to a valid class: "{config["agents"][agent]["agent_class"]}"') from error
 				# make sure the marketplace class can be parsed/is valid
 				elif key == 'marketplace':
