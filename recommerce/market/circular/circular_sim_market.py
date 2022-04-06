@@ -11,8 +11,6 @@ from recommerce.market.customer import Customer
 from recommerce.market.owner import Owner
 from recommerce.market.sim_market import SimMarket
 
-# Please make sure, when implementing a new circular economy that it is named as CircularEconomy...
-
 
 class CircularEconomy(SimMarket, ABC):
 

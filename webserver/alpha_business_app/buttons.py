@@ -132,8 +132,13 @@ class ButtonHandler():
 			}
 
 	def _params_for_selection(self) -> dict:
-		import recommerce.market.circular.circular_sim_market as circular_market
-		circular_market_places = list(set(filter(lambda class_name: class_name.startswith('CircularEconomy'), dir(circular_market))))
+		# TODO: implement the selection parameters here
+		# import recommerce.market.circular.circular_sim_market as circular_market
+		# circular_market_places = list(set(filter(lambda class_name: class_name.startswith('CircularEconomy'), dir(circular_market))))
+		circular_market_places = ['CircularEconomyMonopolyScenario',
+			'CircularEconomyRebuyPrice',
+			'CircularEconomyRebuyPriceMonopolyScenario',
+			'CircularEconomyRebuyPriceOneCompetitor']
 		circular_market_places = [('recommerce.market.circular.circular_sim_market.' + market, market) for market in circular_market_places]
 		return {
 			'selections': {
