@@ -71,7 +71,7 @@ def agent(request):
 
 def api_availability(request):
 	try:
-		requests.get(f'{DOCKER_API}/api_health', timeout=2)
+		requests.get(f'{DOCKER_API}/api_health', timeout=1)
 	except requests.exceptions.RequestException:
 		current_time = datetime.datetime.now().strftime('%H:%M:%S')
 		return render(request, 'api_buttons/api_health_button.html', {'api_error': f'unavailable {current_time}'})
