@@ -72,3 +72,32 @@
 .bc-error-field {
 	border-color: rgb(219, 1, 56) !important;
 }
+
+.bc-outline-lightgray {
+	color: rgb(125, 125, 125) !important;
+	border-color: rgb(125, 125, 125) !important;
+}
+.bc-outline-lightgray:hover {
+	color: #fff !important;
+	background-color: rgb(125, 125, 125);
+	border-color: rgb(125, 125, 125);
+}
+
+.bc-lightgray {
+	background-color: rgb(125, 125, 125) !important;
+	border-color: rgb(125, 125, 125) !important;
+}
+
+.bc-lightgreen {
+	background-color: rgb(69, 211, 4) !important;
+	border-color: rgb(69, 211, 4) !important;
+}
+
+.bc-red {
+	background-color: rgb(219, 1, 56) !important;
+	border-color: rgb(219, 1, 56) !important;
+}
+
+.bc-xs {
+	height: min-content !important;
+}

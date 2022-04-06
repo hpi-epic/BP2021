@@ -1,18 +1,40 @@
-function uuidv4() {
-	// https://stackoverflow.com/questions/105034/how-to-create-a-guid-uuid
-	return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
-		(c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
-	);
-}
-  
-
 $(document).ready(function() {
-	$(".add-more").click(function(){
-		var html = $("<div/>").html($(".copy").html());
-		var target_replaces =  html.find('.target-replace');
-		var uuid = uuidv4();
-		$(target_replaces[0]).attr("data-bs-target", "#collapseAgent" + uuid);
-		$(target_replaces[1]).attr("id", "collapseAgent" + uuid);
-		$(".after-add-more").after(html);
+	$("button.add-more").click(function () {
+		// adds the return value of the ajax call (html) before the element.
+		var self = $(this)
+		$.ajax({url: self.data("url"),
+		success: function (data) {
+			self.before(data)
+		}
+		});
 	});
+	
+	
+	function updateAPIHealth() {
+		// replaces the element by the element returned by ajax (html)
+		var statusButton = $("button.replace-me")
+		$.ajax({url: statusButton.data("url"),
+		success: function (data) {
+			statusButton.replaceWith(data);
+		}
+		});
+	};
+
+	// check for API status all 5 seconds
+	updateAPIHealth();
+	window.setInterval(function() {updateAPIHealth()}, 5000);
+
+	$("select.task-selection").change(function () {
+		// displays the monitoring options when 'agent_monitoring' is selected
+		var self = this
+		if(self.value == "agent_monitoring") {
+			$(".hide-not-monitoring").each(function () {
+				$(this).removeClass("d-none")
+			});			
+		} else {
+			$(".hide-not-monitoring").each(function () {
+				$(this).addClass("d-none")
+			});
+		}
+	}).trigger('change');
 });
