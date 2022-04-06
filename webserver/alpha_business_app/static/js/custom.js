@@ -8,23 +8,24 @@ $(document).ready(function() {
 		}
 		});
 	});
-
-	function replace(element) {
-		// replaces the element by the element returned by ajax (html) and adds this click event to it
-		$.ajax({url: element.data("url"),
+	
+	function updateAPIHealth() {
+		// replaces the element by the element returned by ajax (html)
+		var statusButton = $("button.replace-me")
+		$.ajax({url: statusButton.data("url"),
 		success: function (data) {
-			element.replaceWith(data);
-			$("button.replace-me").click(function() {replace($(this))});
+			statusButton.replaceWith(data);
 		}
 		});
 	};
 
-	$("button.replace-me").click(function() {replace($(this))});
-
+	// check for API status all 5 seconds
+	window.setInterval(function() {updateAPIHealth()}, 5000)
 
 	$("select.task-selection").change(function () {
 		// displays the monitoring options when 'monitoring' is selected
-		if(this.value == "monitoring") {
+		var self = this
+		if(self.value == "agent_monitoring") {
 			$(".hide-not-monitoring").each(function () {
 				$(this).removeClass("d-none")
 			});			

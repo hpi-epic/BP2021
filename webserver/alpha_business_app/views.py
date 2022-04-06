@@ -74,7 +74,7 @@ def api_availability(request):
 		requests.get(f'{DOCKER_API}/api_health', timeout=2)
 	except requests.exceptions.RequestException:
 		current_time = datetime.datetime.now().strftime('%H:%M:%S')
-		return render(request, 'api_buttons/api_health_button.html', {'error': f'unavailable {current_time}'})
+		return render(request, 'api_buttons/api_health_button.html', {'api_error': f'unavailable {current_time}'})
 
 	current_time = datetime.datetime.now().strftime('%H:%M:%S')
-	return render(request, 'api_buttons/api_health_button.html', {'success': f'available {current_time}'})
+	return render(request, 'api_buttons/api_health_button.html', {'api_success': f'available {current_time}'})
