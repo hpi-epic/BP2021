@@ -55,7 +55,7 @@ def validate_sub_keys(config_class: HyperparameterConfig or EnvironmentConfig, c
 		AssertionError: If the given config contains a key that is invalid.
 	"""
 	for key, _ in config.items():
-		# we still need to separately check agents, since it is a list of dictionaries
+		# we need to separately check agents, since it is a list of dictionaries
 		if key == 'agents':
 			for agent in config['agents']:
 				assert all(agent_key in {'name', 'agent_class', 'argument'} for agent_key in agent.keys()), \
