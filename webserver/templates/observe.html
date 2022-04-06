@@ -1,13 +1,6 @@
-<!doctype html>
-<html lang="en">
-	<head>
-		<meta charset="utf-8"/>
-		<title>Observe Container</title>
-		{% load static %}
-		<link rel="stylesheet" type="text/css" href="{% static 'style.css' %}">
-		<link rel="shortcut icon" type="image/png" href="{% static 'favicon.png' %}"/>
-	</head>
-	<body>
+{% extends "base.html" %}
+{% block title %}Observe{% endblock title %}
+{% block content %}
 		<h1>You can observe all of your active containers here</h1>
 		<div class="content">
 			{% if all_saved_containers %}
@@ -49,12 +42,8 @@
 				<p>
 					Currently you have no containers running :( You can start one by uploading a config file 
 					<a href="/upload">here</a> or use existing config files 
-					<a href="/start_container">here</a>
+					<a href="/configurator">here</a>
 				</p>
 			{% endif %}
-			{% include "notice_field.html" %}
 		</div>
-		<br>
-		<a href="/">Home</a>
-	</body>
-</html>
+{% endblock content %}

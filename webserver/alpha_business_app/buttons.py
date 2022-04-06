@@ -1,27 +1,38 @@
-import json
-import os
+import copy
 
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
 
+from recommerce.configuration.config_validation import validate_config
+
+from .config_merger import ConfigMerger
+from .config_parser import ConfigFlatDictParser, ConfigModelParser
 from .handle_files import download_file
 from .handle_requests import send_get_request, send_get_request_with_streaming, send_post_request, stop_container
-from .models import Container, update_container
+from .models.config import Config
+from .models.container import Container, update_container
 
 
 class ButtonHandler():
-	def __init__(self, request, view: str, container: Container = None, rendering_method: str = 'default', data: str = None) -> None:
+	def __init__(self,
+		request,
+		view: str,
+		container: Container = None,
+		wanted_config: Config = None,
+		rendering_method: str = 'default',
+		data: str = None) -> None:
 		"""
 		This handler can be used to implement different behaviour when a button is pressed.
 		You can add more keywords in `do_button_click()` or implement your own renderings and add them to `_decide_rendering()`.
 
 		Args:
-			request (WSGIRequest): post request send to the server when a button is pressed. The keyword 'action' defines what happens.
+			request (WSGIRequest): Post request send to the server when a button is pressed. The keyword 'action' defines what happens.
 			view (str): The view that should be rendered when the button action is done.
-			container (Container, optional): a container that could be used i.e. for the rendering. Defaults to None.
-			rendering_method (str, optional): keyword for the rendering methode, see `_decide_rendering()`. Defaults to 'default'.
-			data (str, optional): other data that can be used for rendering, i.e. logs. Defaults to None.
+			container (Container, optional): A container that could be used i.e. for the rendering. Defaults to None.
+			wanted_config (Config, optional): A config that can be used for any action. Defautls to None.
+			rendering_method (str, optional): Keyword for the rendering methode, see `_decide_rendering()`. Defaults to 'default'.
+			data (str, optional): Other data that can be used for rendering, i.e. logs. Defaults to None.
 		"""
 		self.request = request
 		self.view_to_render = view
@@ -31,6 +42,7 @@ class ButtonHandler():
 		self.message = [None, None]
 		self.wanted_key = None
 		self.all_containers = Container.objects.all()
+		self.wanted_config = wanted_config
 
 		if request.method == 'POST':
 			self.wanted_key = request.POST['action']
@@ -60,8 +72,12 @@ class ButtonHandler():
 			return self._remove()
 		if self.wanted_key == 'start':
 			return self._start()
+		if self.wanted_key == 'pre-fill':
+			return self._pre_fill()
 		if self.wanted_key == 'logs':
 			return self._logs()
+		if self.wanted_key == 'manage_config':
+			return self._manage_config()
 		# no button was clicked?
 		return self._decide_rendering()
 
@@ -76,8 +92,8 @@ class ButtonHandler():
 		"""
 		if self.rendering_method == 'default':
 			return self._render_default()
-		elif self.rendering_method == 'files':
-			return self._render_files()
+		elif self.rendering_method == 'config':
+			return self._render_configuration()
 		return self._render_without_archived()
 
 	def _default_params_for_view(self) -> dict:
@@ -90,14 +106,34 @@ class ButtonHandler():
 		return {'all_saved_containers': self.all_containers,
 				'container': self.wanted_container,
 				'data': self.data,
-				self.message[0]: self.message[1]}
+				**self._message_for_view()}
+
+	def _message_for_view(self) -> dict:
+		"""
+		Will return the message and their value in dict for the template
+
+		Returns:
+			dict: contains the state of the message (i.e. success or error) and the message itself.
+		"""
+		return {self.message[0]: self.message[1]}
+
+	def _params_for_config(self) -> dict:
+		"""
+		Will return all parameters necessary for the configurator.
+
+		Returns:
+			dict: contains all current configuration objects, the current config and this config as dict if it exists.
+		"""
+		return {'all_configurations': Config.objects.all(),
+			'config': self.wanted_config,
+			'config_dict': self.wanted_config.as_dict() if self.wanted_config else None}
 
 	def _render_default(self) -> HttpResponse:
 		"""
 		This will return a rendering for `self.view` with the default parameters.
 
 		Returns:
-			HttpResponse: A default rendering with default values, some might be set by the different functions.
+			HttpResponse: a default rendering with default values, some might be set by the different functions.
 		"""
 		self.all_containers = Container.objects.all()
 		return render(self.request, self.view_to_render, self._default_params_for_view())
@@ -107,29 +143,26 @@ class ButtonHandler():
 		This will return a rendering for `self.view` without all 'archived' containers.
 
 		Returns:
-			HttpResponse: A default rendering with default values, some might be set by the different functions.
+			HttpResponse: a default rendering without all archived containers.
 		"""
 		self.all_containers = Container.objects.all().exclude(health_status='archived')
 		return render(self.request, self.view_to_render, self._default_params_for_view())
 
-	def _render_files(self):
+	def _render_configuration(self) -> HttpResponse:
 		"""
-		This will return a rendering for `self.view` with all `file_names` from `configurations`.
+		This will return a rendering for `self.view` with params for config and the given message
 
 		Returns:
-			HttpResponse: A rendering with all file names and the error or success message.
+			HttpResponse: a rendering for the configurator with all configuration parameters.
 		"""
-		file_names = None
-		if os.path.exists('configurations'):
-			file_names = os.listdir('configurations')
-		return render(self.request, self.view_to_render, {'file_names': file_names, self.message[0]: self.message[1]})
+		return render(self.request, self.view_to_render, {**self._params_for_config(), **self._message_for_view()})
 
 	def _delete_container(self) -> HttpResponse:
 		"""
 		This will delete the selected container and all data belonging to this container.
 
 		Returns:
-			HttpResponse: a defined rendering
+			HttpResponse: a defined rendering.
 		"""
 		raw_data = {'container_id': self.wanted_container.id}
 		if not self.wanted_container.is_archived():
@@ -151,15 +184,13 @@ class ButtonHandler():
 		"""
 		if self.wanted_container.is_archived():
 			self.message = ['error', 'You cannot download data from archived containers']
-			return self._decide_rendering()
 		else:
 			response = send_get_request_with_streaming('data', self.wanted_container.id)
 			if response.ok():
 				# save data from api and make it available for the user
-				return download_file(response.content, self.request.POST['file_type'] == 'zip')
-			else:
-				self.message = response.status()
-				return self._decide_rendering()
+				return download_file(response.content, self.request.POST['file_type'] == 'zip', self.wanted_container)
+			self.message = response.status()
+		return self._decide_rendering()
 
 	def _health(self) -> HttpResponse:
 		"""
@@ -195,6 +226,35 @@ class ButtonHandler():
 			self.data = '\n'.join(self.data)
 		return self._decide_rendering()
 
+	def _manage_config(self) -> HttpResponse:
+		"""
+		This should be called whenever a configuration should be managed from UI.
+		If there is a 'delete' in the post, self.wanted_config will be deleted.
+
+		Returns:
+			HttpResponse: if the action on the config was successful, it will redirect you to 'configurator'
+		"""
+		if 'delete' in self.request.POST:
+			self.wanted_config.delete()
+		return redirect('/configurator')
+
+	def _pre_fill(self) -> HttpResponse:
+		"""
+		This function will be called when the config form should be prefilled with values from the config.
+		It converts a list of given config objects to dicts and merges these dicts.
+		The merged result and the errors which came up when merging will be passed to the view.
+
+		Returns:
+			HttpResponse: a rendering for the view with the prefill dict and an error dict.
+		"""
+		post_request = dict(self.request.POST.lists())
+		if 'config_id' not in post_request:
+			return self._decide_rendering()
+		merger = ConfigMerger()
+		final_dict, error_dict = merger.merge_config_objects(post_request['config_id'])
+		return render(self.request, self.view_to_render,
+			{'prefill': final_dict, 'error_dict': error_dict, 'all_configurations': Config.objects.all()})
+
 	def _remove(self) -> HttpResponse:
 		"""
 		This will send an API request to stop and remove the selected container.
@@ -212,16 +272,21 @@ class ButtonHandler():
 		Returns:
 			HttpResponse: An appropriate rendering, or a redirect to the `observe` view.
 		"""
-		post_request = self.request.POST
+		# convert post request to normal dict
+		post_request = dict(self.request.POST.lists())
 
-		requested_command = post_request['command_selection']
-		# the start button was pressed
-		config_file = post_request['filename']
-		# read the right config file
-		with open(os.path.join('configurations', config_file), 'r') as file:
-			config_dict = json.load(file)
-			response = send_post_request('start', config_dict, requested_command)
+		try:
+			config_dict = ConfigFlatDictParser().flat_dict_to_hierarchical_config_dict(post_request)
+		except AssertionError:
+			self.message = ['error', 'Could not create config: Please eliminate identical Agent names']
+			return self._decide_rendering()
 
+		validate_status, validate_data = validate_config(config_dict, True)
+		if not validate_status:
+			self.message = ['error', validate_data]
+			return self._decide_rendering()
+
+		response = send_post_request('start', config_dict)
 		if response.ok():
 			# put container into database
 			response = response.content
@@ -232,9 +297,15 @@ class ButtonHandler():
 				print('the new container has the same id, as another container')
 				self.message = ['error', 'please try again']
 				return self._remove()
+			print('after post request')
+			# get all necessary parameters for container object
 			container_name = self.request.POST['experiment_name']
 			container_name = container_name if container_name != '' else response['id'][:10]
-			Container.objects.create(id=response['id'], config_file=config_dict, name=container_name, command=requested_command)
+			config_object = ConfigModelParser().parse_config(copy.deepcopy(config_dict))
+			command = config_object.environment.task
+			Container.objects.create(id=response['id'], config=config_object, name=container_name, command=command)
+			config_object.name = f'used for {container_name}'
+			config_object.save()
 			return redirect('/observe', {'success': 'You successfully launched an experiment'})
 		else:
 			self.message = response.status()

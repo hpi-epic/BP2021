@@ -30,8 +30,7 @@ test_scenarios = [
 @pytest.mark.slow
 @pytest.mark.parametrize('market_class, agent_class, verbose', test_scenarios)
 def test_training_configurations(market_class, agent_class, verbose):
-	with patch('recommerce.rl.training.SummaryWriter'), \
-		patch('recommerce.rl.actorcritic.actorcritic_agent.ActorCriticAgent.save'):
+	with patch('recommerce.rl.training.SummaryWriter'):
 		ActorCriticTrainer(market_class, agent_class, log_dir_prepend='test_').train_agent(
 			verbose=verbose,
 			number_of_training_steps=120,
