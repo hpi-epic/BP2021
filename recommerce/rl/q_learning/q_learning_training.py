@@ -19,7 +19,7 @@ class QLearningTrainer(RLTrainer):
 			number_of_training_steps (int, optional): The maximum number of steps the training will run for.
 			Defaults to 2*config.epsilon_decay_last_frame.
 		"""
-		marketplace = self.marketplace_class()
+		marketplace = self.marketplace
 		state = marketplace.reset()
 
 		vendors_cumulated_info = None

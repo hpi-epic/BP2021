@@ -9,6 +9,7 @@ import recommerce.market.circular.circular_sim_market as circular_market
 import recommerce.market.linear.linear_sim_market as linear_market
 import recommerce.rl.q_learning.q_learning_training as q_learning_training
 from recommerce.rl.q_learning.q_learning_agent import QLearningCEAgent, QLearningCERebuyAgent, QLearningLEAgent
+from recommerce.market.linear.linear_vendors import CompetitorJust2Players, CompetitorLinearRatio1, CompetitorRandom
 
 
 def teardown_module(module):
@@ -28,25 +29,25 @@ def import_config() -> hyperparameter_config.HyperparameterConfig:
 
 
 test_scenarios = [
-	(linear_market.ClassicScenario, QLearningLEAgent),
-	(linear_market.MultiCompetitorScenario, QLearningLEAgent),
-	(circular_market.CircularEconomyMonopolyScenario, QLearningCEAgent),
-	(circular_market.CircularEconomyRebuyPriceMonopolyScenario, QLearningCERebuyAgent),
-	(circular_market.CircularEconomyRebuyPriceOneCompetitor, QLearningCERebuyAgent)
+	(linear_market.LinearEconomy(), QLearningLEAgent),
+	(linear_market.LinearEconomy(competitors=[CompetitorLinearRatio1(), CompetitorRandom(), CompetitorJust2Players()]), QLearningLEAgent),
+	(circular_market.CircularEconomy(), QLearningCEAgent),
+	(circular_market.CircularEconomyRebuyPrice(competitors=[]), QLearningCERebuyAgent),
+	(circular_market.CircularEconomyRebuyPrice(), QLearningCERebuyAgent)
 ]
 
 
 @pytest.mark.training
 @pytest.mark.slow
 @pytest.mark.parametrize('market_class, agent_class', test_scenarios)
-def test_market_scenario(market_class, agent_class):
+def test_market_scenario(market, agent_class):
 	json = ut_t.create_hyperparameter_mock_json(rl=ut_t.create_hyperparameter_mock_json_rl(replay_start_size='500', sync_target_frames='100'))
 	with patch('builtins.open', mock_open(read_data=json)) as mock_file:
 		ut_t.check_mock_file(mock_file, json)
 		config = import_config()
 
 	with patch('recommerce.rl.training.SummaryWriter'):
-		q_learning_training.QLearningTrainer(market_class, agent_class, log_dir_prepend='test_').train_agent(int(config.replay_start_size * 1.2))
+		q_learning_training.QLearningTrainer(market, agent_class, log_dir_prepend='test_').train_agent(int(config.replay_start_size * 1.2))
 
 
 @pytest.mark.training
@@ -56,8 +57,8 @@ def test_training_with_tensorboard():
 	with patch('builtins.open', mock_open(read_data=json)) as mock_file:
 		ut_t.check_mock_file(mock_file, json)
 		config = import_config()
-		market_class = linear_market.ClassicScenario
+		market = linear_market.LinearEconomy()
 		agent_class = QLearningLEAgent
 
 	with patch('recommerce.rl.training.SummaryWriter'):
-		q_learning_training.QLearningTrainer(market_class, agent_class, log_dir_prepend='test_').train_agent(int(config.replay_start_size * 1.2))
+		q_learning_training.QLearningTrainer(market, agent_class, log_dir_prepend='test_').train_agent(int(config.replay_start_size * 1.2))
