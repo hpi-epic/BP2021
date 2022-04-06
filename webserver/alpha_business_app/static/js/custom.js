@@ -20,9 +20,9 @@ $(document).ready(function() {
 		});
 	};
 
-	// check for API status all 5 seconds
+	// check for API status when loading the page and every 30 seconds afterwards
 	updateAPIHealth();
-	window.setInterval(function() {updateAPIHealth()}, 5000);
+	window.setInterval(function() {updateAPIHealth()}, 30000);
 
 	$("select.task-selection").change(function () {
 		// displays the monitoring options when 'agent_monitoring' is selected

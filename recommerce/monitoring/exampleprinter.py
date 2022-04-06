@@ -101,17 +101,18 @@ def main():  # pragma: no cover
 	printer = ExamplePrinter()
 
 	config: ExampleprinterEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_exampleprinter')
+	# TODO: Theoretically, the name of the agent is saved in config['name'], but we don't use it yet.
 	marketplace = config.marketplace()
 
 	# QLearningAgents need more initialization
-	if issubclass(config.agent[0], QLearningAgent):
+	if issubclass(config.agent['agent_class'], QLearningAgent):
 		printer.setup_exampleprinter(marketplace=marketplace,
-			agent=config.agent[0](
+			agent=config.agent['agent_class'](
 				n_observations=marketplace.observation_space.shape[0],
 				n_actions=marketplace.get_n_actions(),
-				load_path=os.path.abspath(os.path.join(PathManager.data_path, config.agent[1]))))
+				load_path=os.path.abspath(os.path.join(PathManager.data_path, config.agent['argument']))))
 	else:
-		printer.setup_exampleprinter(marketplace=marketplace, agent=config.agent[0]())
+		printer.setup_exampleprinter(marketplace=marketplace, agent=config.agent['agent_class']())
 
 	print(f'The final profit was: {printer.run_example()}')
 
