@@ -1,6 +1,6 @@
 import numpy as np
 import pytest
-
+from recommerce.market.linear.linear_vendors import CompetitorJust2Players, CompetitorLinearRatio1, CompetitorRandom
 import recommerce.market.circular.circular_sim_market as circular_market
 import recommerce.market.customer as customer
 import recommerce.market.linear.linear_sim_market as linear_market
@@ -11,9 +11,8 @@ from recommerce.market.linear.linear_customers import CustomerLinear
 # Test the Customer parent class, i.e. make sure it cannot be used
 def test_customer_parent_class():
 	with pytest.raises(NotImplementedError) as assertion_message:
-		customer.Customer.generate_purchase_probabilities_from_offer(CustomerLinear, *random_offer(linear_market.ClassicScenario))
+		customer.Customer.generate_purchase_probabilities_from_offer(CustomerLinear, *random_offer(linear_market.LinearEconomy()))
 	assert 'This method is abstract. Use a subclass' in str(assertion_message.value)
-
 
 # the following list contains invalid parameters for generate_purchase_probabilities_from_offer and the expected error messages
 generate_purchase_probabilities_from_offer_testcases = [
@@ -42,10 +41,10 @@ def test_generate_purchase_probabilities_from_offer(customer, common_state, vend
 
 
 customer_action_range_testcases = [
-	(CustomerLinear, linear_market.ClassicScenario),
-	(CustomerLinear, linear_market.MultiCompetitorScenario),
-	(CustomerCircular, circular_market.CircularEconomyMonopolyScenario),
-	(CustomerCircular, circular_market.CircularEconomyRebuyPriceMonopolyScenario)
+	(CustomerLinear, linear_market.LinearEconomy(competitors=[CompetitorLinearRatio1()])),
+	(CustomerLinear, linear_market.LinearEconomy(competitors=[CompetitorLinearRatio1(), CompetitorRandom(), CompetitorJust2Players()])),
+	(CustomerCircular, circular_market.CircularEconomy(competitors=[])),
+	(CustomerCircular, circular_market.CircularEconomyRebuyPrice(competitors=[]))
 ]
 
 
@@ -54,8 +53,8 @@ customer_action_range_testcases = [
 def test_customer_action_range(customer, market):
 	offers = random_offer(market)
 	probability_distribution = customer.generate_purchase_probabilities_from_offer(customer, *offers)
-	assert len(probability_distribution) == market()._get_number_of_vendors() * \
-		(1 if issubclass(market, linear_market.LinearEconomy) else 2) + 1
+	assert len(probability_distribution) == market._get_number_of_vendors() * \
+		(1 if isinstance(market, linear_market.LinearEconomy) else 2) + 1
 
 
 def test_linear_higher_price_lower_purchase_probability():
@@ -109,9 +108,8 @@ def random_offer(marketplace):
 	This is dependent on the sim_market working!
 
 	Args:
-		marketplace (SimMarket): The marketplace for which offers should be generated.
+		marketplace (SimMarket instance): The marketplace for which offers should be generated.
 	"""
-	marketplace = marketplace()
 	marketplace.reset()
 	marketplace.vendor_actions[0] = marketplace.action_space.sample()
 	return marketplace._get_common_state_array(), marketplace.vendor_specific_state, marketplace.vendor_actions

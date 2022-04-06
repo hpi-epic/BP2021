@@ -17,11 +17,11 @@ from recommerce.rl.reinforcement_learning_agent import ReinforcementLearningAgen
 
 
 class RLTrainer(ABC):
-	def __init__(self, marketplace_class, agent_class, log_dir_prepend=''):
+	def __init__(self, marketplace, agent_class, log_dir_prepend=''):
 		"""
 		Initialize an RLTrainer to train one specific configuration.
 		Args:
-			marketplace_class (subclass of SimMarket): The market scenario you want to train.
+			marketplace (instance of SimMarket): The market scenario you want to train.
 			agent_class (subclass of RLAgent): The agent you want to train.
 			log_dir_prepend (str, optional): A prefix that is written before the saved data. Defaults to ''.
 		"""
@@ -30,10 +30,10 @@ class RLTrainer(ABC):
 
 		self.best_mean_interim_reward = None
 		self.best_mean_overall_reward = None
-		self.marketplace_class = marketplace_class
+		self.marketplace = marketplace
 		self.agent_class = agent_class
 		self.saved_parameter_paths = []
-		self.RL_agent = agent_class(marketplace=marketplace_class(), optim=torch.optim.Adam)
+		self.RL_agent = agent_class(marketplace=marketplace, optim=torch.optim.Adam)
 		assert self.trainer_agent_fit()
 
 		# Signal handler for e.g. KeyboardInterrupt
@@ -131,7 +131,7 @@ class RLTrainer(ABC):
 			return
 		monitor = Monitor()
 		agent_list = [(self.agent_class, [parameter_path]) for parameter_path in self.saved_parameter_paths]
-		monitor.configurator.setup_monitoring(False, 250, 250, self.marketplace_class, agent_list)
+		monitor.configurator.setup_monitoring(False, 250, 250, self.marketplace, agent_list)
 		rewards = monitor.run_marketplace()
 		episode_numbers = [int(parameter_path[-9:][:5]) for parameter_path in self.saved_parameter_paths]
 		Evaluator(monitor.configurator).evaluate_session(rewards, episode_numbers)
