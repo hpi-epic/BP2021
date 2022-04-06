@@ -33,12 +33,13 @@ class ConfigParserTest(TestCase):
 			'task': 'training',
 			'enable_live_draw': False,
 			'marketplace': 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
-			'agents': {
-				'Rule_Based Agent': {
+			'agents': [
+				{
+					'name': 'Rule_Based Agent',
 					'agent_class': 'recommerce.market.circular.circular_vendors.RuleBasedCERebuyAgent',
 					'argument': ''
 				}
-			}
+			]
 		}
 	}
 
@@ -209,20 +210,24 @@ class ConfigParserTest(TestCase):
 		assert '' == all_agents[0].argument
 
 	def test_parsing_agents(self):
-		test_dict = {
-			'test_agent1': {
-				'agent_class': 'test_class'
+		test_dict = [
+			{
+				'name': 'test_agent1',
+				'agent_class': 'test_class',
+				'argument': ''
 			},
-			'test_agent2': {
+			{
+				'name': 'test_agent2',
 				'agent_class': 'test_class',
 				'argument': '1234'
 			}
-		}
+		]
 		agents = self.parser._parse_agents_to_datastructure(test_dict)
 		all_agents = agents.agentconfig_set.all()
 
 		assert 'test_agent1' == all_agents[0].name
 		assert 'test_class' == all_agents[0].agent_class
+		assert '' == all_agents[0].argument
 
 		assert 'test_agent2' == all_agents[1].name
 		assert 'test_class' == all_agents[1].agent_class
