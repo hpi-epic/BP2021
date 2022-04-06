@@ -124,9 +124,26 @@ class ButtonHandler():
 		Returns:
 			dict: contains all current configuration objects, the current config and this config as dict if it exists.
 		"""
-		return {'all_configurations': Config.objects.all(),
+		return {
+			'all_configurations': Config.objects.all(),
 			'config': self.wanted_config,
-			'config_dict': self.wanted_config.as_dict() if self.wanted_config else None}
+			'config_dict': self.wanted_config.as_dict() if self.wanted_config else None,
+			**self._params_for_selection()
+			}
+
+	def _params_for_selection(self) -> dict:
+		# TODO: implement the selection parameters here
+		# import recommerce.market.circular.circular_sim_market as circular_market
+		# circular_market_places = list(set(filter(lambda class_name: class_name.startswith('CircularEconomy'), dir(circular_market))))
+		circular_market_places = ['CircularEconomyMonopolyScenario',
+			'CircularEconomyRebuyPrice',
+			'CircularEconomyRebuyPriceMonopolyScenario',
+			'CircularEconomyRebuyPriceOneCompetitor']
+		circular_market_places = [('recommerce.market.circular.circular_sim_market.' + market, market) for market in circular_market_places]
+		return {
+			'selections': {
+				'tasks': [('training', 'training'), ('agent_monitoring', 'agent_monitoring'), ('exampleprinter', 'exampleprinter')],
+				'marketplaces': circular_market_places}}
 
 	def _render_default(self) -> HttpResponse:
 		"""
@@ -253,7 +270,7 @@ class ButtonHandler():
 		merger = ConfigMerger()
 		final_dict, error_dict = merger.merge_config_objects(post_request['config_id'])
 		return render(self.request, self.view_to_render,
-			{'prefill': final_dict, 'error_dict': error_dict, 'all_configurations': Config.objects.all()})
+			{'prefill': final_dict, 'error_dict': error_dict, 'all_configurations': Config.objects.all(), **self._params_for_selection()})
 
 	def _remove(self) -> HttpResponse:
 		"""

@@ -16,20 +16,13 @@
 				task
 			</div>
 			<div class="col-6 p-2">
-				<select class="form-select {% if error_dict.task %} bc-error-field {% endif %}" name="environment-task">
-					{% if prefill.task %}
-						<option selected value="training">training</option>
-						<option value="agent_monitoring">agent_monitoring</option>
-						<option value="exampleprinter">exampleprinter</option>
-					{% else %}
-						<option selected value="training">training</option>
-						<option value="agent_monitoring">agent_monitoring</option>
-						<option value="exampleprinter">exampleprinter</option>
-					{% endif %}
+				<select class="form-select task-selection {% if error_dict.task %} bc-error-field {% endif %}" 
+					name="environment-task">
+					{% include "configuration_items/selection_list.html" with prefill_value=prefill.task selections=selections.tasks %}
 				</select>
 			</div>
 		</div>
-		<div class="row p-2">
+		<div class="row p-2 hide-not-monitoring">
 			<div class="col-6">
 				{% if error_dict.enable_live_draw %} 
 					<img src="{% static 'icons/warning.svg' %}" width="18px" title="{{error_dict.enable_live_draw}}"></img> 
@@ -42,7 +35,7 @@
 					name="environment-enable_live_draw">
 			</div>
 		</div>
-		<div class="row p-2">
+		<div class="row p-2 hide-not-monitoring">
 			<div class="col-6">
 				{% if error_dict.episodes %} 
 					<img src="{% static 'icons/warning.svg' %}" width="18px" title="{{error_dict.episodes}}"></img> 
@@ -54,7 +47,7 @@
 					value="{{prefill.episodes}}" name="environment-episodes">
 			</div>
 		</div>
-		<div class="row p-2">
+		<div class="row p-2 hide-not-monitoring">
 			<div class="col-6">
 				{% if error_dict.plot_interval %} 
 					<img src="{% static 'icons/warning.svg' %}" width="18px" title="{{error_dict.plot_interval}}"></img> 
@@ -74,8 +67,9 @@
 				marketplace
 			</div>
 			<div class="col-6">
-				<input type="text" class="form-control {% if error_dict.marketplace %} bc-error-field {% endif %}"
-					value="{{prefill.marketplace}}" name="environment-marketplace">
+				<select class="form-select {% if error_dict.task %} bc-error-field {% endif %}" name="environment-marketplace">
+					{% include "configuration_items/selection_list.html" with prefill_value=prefill.marketplace selections=selections.marketplaces %}
+				</select>
 			</div>
 		</div>
 		{% include "configuration_items/agents.html" with prefill=prefill.agents error_dict=error_dict.agents%}

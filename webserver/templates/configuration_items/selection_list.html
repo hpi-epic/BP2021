@@ -1,0 +1,3 @@
+{% for value, item in selections %}
+	<option {% if prefill_value == value %} selected {% endif %} value="{{value}}">{{item}}</option>
+{% endfor %}

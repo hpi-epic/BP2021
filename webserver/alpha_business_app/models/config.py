@@ -183,11 +183,7 @@ def capitalize(word: str) -> str:
 
 
 def to_config_class_name(name: str) -> str:
-	# replace all brackets
-	class_name = name.replace('(', '').replace(')', '')
-	# remove all whitespaces:
-	class_name = ''.join([capitalize(x) for x in class_name.split(' ')])
-	return ''.join([capitalize(x) for x in class_name.split('_')]) + 'Config'
+	return ''.join([capitalize(x) for x in name.split('_')]) + 'Config'
 
 
 def remove_none_values_from_dict(dict_with_none_values: dict) -> dict:

@@ -48,12 +48,6 @@ class ConfigTest(TestCase):
 	def test_class_name_agents_config(self):
 		assert 'AgentsConfig' == to_config_class_name('agents')
 
-	def test_class_name_rule_based_config(self):
-		assert 'RuleBasedAgentConfig' == to_config_class_name('Rule_Based Agent')
-
-	def test_class_name_q_learing_config(self):
-		assert 'CERebuyAgentQLearningConfig' == to_config_class_name('CE Rebuy Agent (QLearning)')
-
 	def test_class_name_hyperparameter_config(self):
 		assert 'HyperparameterConfig' == to_config_class_name('hyperparameter')
 
