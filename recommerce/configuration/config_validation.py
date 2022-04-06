@@ -1,3 +1,5 @@
+# This file contains logic used by the webserver to validate configuration files
+
 from recommerce.configuration.environment_config import EnvironmentConfig
 from recommerce.configuration.hyperparameter_config import HyperparameterConfig
 
@@ -11,7 +13,7 @@ def validate_config(config: dict, config_is_final: bool) -> tuple:
 		config_is_final (bool): Whether or not the config must contain all required keys.
 
 	Returns:
-		triple: success: A status (True) and the split hyperparameter_config and environment_config dictionaries as a tuple.
+		tuple: success: A status (True) and the split hyperparameter_config and environment_config dictionaries as a tuple.
 				failure: A status (False) and the errormessage as a string.
 	"""
 	try:
