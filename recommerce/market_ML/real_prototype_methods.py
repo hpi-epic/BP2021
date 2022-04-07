@@ -8,10 +8,10 @@ c_new = 4
 
 def generate_training_data():
 	# x{k in 0..24, i in 0..N} default if k=0 then 1 else round(np.random.uniform(0, 20)) # historical/training data
-	x_np = np.array([[(1 if k == 0 else np.round(np.random.uniform(0, 20))) for k in range(24 + 1)] for _ in range(N + 1)])
+	x_np = torch.tensor([[(1 if k == 0 else np.round(np.random.uniform(0, 20))) for k in range(24 + 1)] for _ in range(N + 1)])
 	# historical/training data
 
-	x = torch.tensor(x_np).transpose(0, 1)
+	x = x_np.transpose(0, 1)
 	print(x.size())
 	# own period: 1st half: own x[7, i]vs x[2, i]| 2nd half: own x[7, i] vs x[2, i+1]
 	# comp period: 1st half: com x[2, i-1] vs x[7, i-1] | 2nd half: com x[2, i-1] vs x[7, i]
@@ -53,22 +53,21 @@ def generate_training_data():
 
 def first_regression(data, x_rows, y_index):
 	x = data
-	y3 = [x[y_index, i] for i in range(N + 1)]
-	x_y3 = x[x_rows, :]
+	y3 = torch.tensor([x[y_index, i] for i in range(N + 1)])
+	x_y3 = torch.tensor(x[x_rows, :])
 
 	# param y3 {i in 1..N} := x[13,i];
 	# set M3 := {0,1,2,3,4,7,8,9,22,23,24};
 	# param b3 {k in M3} default 0;
 	# var beta3 {k in M3};
 
-	transposed_tensor_x_y3 = torch.tensor(x_y3).transpose(0, 1)
-	tensor_y3 = torch.tensor(y3)
+	transposed_x_y3 = x_y3.transpose(0, 1)
 
 	print('x_y4:', torch.tensor(x_y3).size())
-	print('y3:', tensor_y3.size())
-	print('transposed_tensor_x_y3:', transposed_tensor_x_y3.size())
+	print('y3:', y3.size())
+	print('transposed_tensor_x_y3:', transposed_x_y3.size())
 
-	result_tuple_y3 = torch.linalg.lstsq(transposed_tensor_x_y3, tensor_y3)
+	result_tuple_y3 = torch.linalg.lstsq(transposed_x_y3, y3)
 	print('result:', result_tuple_y3)
 	b3 = result_tuple_y3[0]
 	# minimize OLSy3: sum{i in 1..N} ( sum{k in M3} beta3[k]*x[k,i] - y3[i] )^2;
@@ -78,23 +77,20 @@ def first_regression(data, x_rows, y_index):
 
 def fourth_regression(data, x_rows, xx_rows, y_index):
 	x = data
-	y6 = [x[y_index, i+1] for i in range(0, N + 1 - 1)]
+	y6 = torch.tensor([x[y_index, i+1] for i in range(0, N + 1 - 1)])
 
-	x_y6_x = [[1 if x[9, i] < k else 0 for k in xx_rows] for i in range(1, N + 1)]  # matrix for price own new (the 0 and 1 stuff)
+	x_y6_x = torch.tensor([[1 if x[9, i] < k else 0 for k in xx_rows] for i in range(1, N + 1)])  # matrix for price own new (the 0 and 1 stuff
 
-	x_y6 = x[x_rows, : N]
+	x_y6 = torch.tensor(x[x_rows, : N])
 
-	x_y6_tensor = torch.tensor(x_y6)
-	x_y6_x_tensor = torch.tensor(x_y6_x)
-	tensor_y6 = torch.tensor(y6)
-	x_y6_combined = torch.concat((x_y6_tensor, x_y6_x_tensor.transpose(0, 1)), 0)
+	x_y6_combined = torch.concat((x_y6.transpose(0, 1), x_y6_x), 0)
 
-	print('x_y6:', x_y6_tensor.size())
-	print('x_y6_x:', x_y6_x_tensor.size())
-	print('y6:', tensor_y6.size())
+	print('x_y6:', x_y6.size())
+	print('x_y6_x:', x_y6_x.size())
+	print('y6:', y6.size())
 	print('x_y6_combined:', x_y6_combined.size())
 
-	result_tuple_y6 = torch.linalg.lstsq(x_y6_combined.transpose(0, 1), tensor_y6)
+	result_tuple_y6 = torch.linalg.lstsq(x_y6_combined.transpose(0, 1), y6)
 	print('result:', result_tuple_y6)
 	b6_b6x = result_tuple_y6[0]
 
