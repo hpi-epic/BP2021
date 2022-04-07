@@ -84,7 +84,9 @@ class DockerManager():
 			print(f'Command with ID {command_id} not allowed')
 			return DockerInfo(id='No container was started', status=f'Command not allowed: {command_id}')
 
-		self._confirm_image_exists()
+		image_id = self._confirm_image_exists()
+		if image_id is None:
+			return DockerInfo(None, 'Image build failed')
 
 		# start a container for the image of the requested command
 		container_info: DockerInfo = self._create_container(command_id, config, use_gpu=False)
@@ -321,7 +323,7 @@ class DockerManager():
 			update (bool): Whether or not to always build/update an image for this id. Defaults to False.
 
 		Returns:
-			str: The id of the image.
+			str: The id of the image or None if the build failed.
 		"""
 
 		# Get the image tag of all images on the system.
@@ -349,7 +351,7 @@ class DockerManager():
 		Build an image for the recommerce application, and name it 'recommerce'.
 
 		Returns:
-			str: The id of the image.
+			str: The id of the image or None if the build failed.
 		"""
 		# https://docker-py.readthedocs.io/en/stable/images.html
 		print('Building recommerce image')
@@ -364,7 +366,7 @@ class DockerManager():
 				tag='recommerce', forcerm=True, network_mode='host')
 		except docker.errors.BuildError or docker.errors.APIError as error:
 			print(f'An error occurred while building the recommerce image\n{error}')
-			exit(1)
+			return None
 
 		if old_img is not None and old_img.id != img.id:
 			print('A recommerce image already exists, it will be overwritten')
@@ -570,30 +572,6 @@ mapped_containers: {mapped_containers}'''
 
 		# make the ports integers
 		cls._port_mapping.update((key, int(value)) for key, value in cls._port_mapping.items())
-
-	# OBSERVER
-	def attach(self, id: int, observer) -> None:
-		"""
-		Attach an observer to the container.
-		"""
-		observer.implements()
-		self._observers[id] = observer
-
-	def notify(self, message_id, message_text) -> None:
-		"""
-		Notify all observers about an event, events should be: the container is done, the container stopped working (any reason).
-		The observer will implement observer.update(message_id, message_text)
-
-		Args:
-			message_id (int): The id of the event, so the system knows how to hande it.
-			message_text (str): This is the message that will be displayed to the user.
-		"""
-		allowed_message_ids = [0, 1]
-		assert message_id in allowed_message_ids, f'The message id is not allowed: {message_id}'
-
-		for observer in self._observers:
-			observer.update(message_id, message_text)
-	# END OBSERVER
 
 
 if __name__ == '__main__':  # pragma: no cover
