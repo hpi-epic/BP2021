@@ -8,11 +8,11 @@
 	border-color: rgb(4, 152, 211);
 }
 
-.bc-outline-pause {
+.bc-outline-orange {
 	color: rgb(248, 83, 7) !important;
 	border-color: rgb(248, 83, 7)  !important;
 }
-.bc-outline-pause:hover {
+.bc-outline-orange:hover {
 	color: #fff !important;
 	background-color: rgb(248, 83, 7);
 	border-color: rgb(248, 83, 7);
@@ -28,11 +28,11 @@
 	border-color: rgb(0, 50, 187);
 }
  
-.bc-outline-stop {
+.bc-outline-red {
 	color: rgb(219, 1, 56) !important;
 	border-color: rgb(219, 1, 56)  !important;
 }
-.bc-outline-stop:hover {
+.bc-outline-red:hover {
 	color: #fff !important;
 	background-color: rgb(219, 1, 56);
 	border-color: rgb(219, 1, 56);
@@ -71,4 +71,18 @@
 
 .bc-error-field {
 	border-color: rgb(219, 1, 56) !important;
+}
+
+.bc-outline-lightgray {
+	color: rgb(125, 125, 125) !important;
+	border-color: rgb(125, 125, 125) !important;
+}
+.bc-outline-lightgray:hover {
+	color: #fff !important;
+	background-color: rgb(125, 125, 125);
+	border-color: rgb(125, 125, 125);
+}
+
+.bc-xs {
+	height: min-content !important;
 }

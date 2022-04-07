@@ -62,9 +62,8 @@ def train_from_config():
 	Use the `environment_config_training.json` file to decide on the training parameters.
 	"""
 	config: TrainingEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_training')
-	# Since we store a tuple (class, None) in config.agent, we just want the first component
-	# Since we store an one-element list [class] in config.marketplace, we just want the stored element
-	run_training_session(config.marketplace, config.agent)
+	# TODO: Theoretically, the name of the agent is saved in config['name'], but we don't use it yet.
+	run_training_session(config.marketplace, config.agent['agent_class'])
 
 
 def main():
