@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import torch
 
 N = 200  # Trainingszeilen (historical data)
@@ -7,12 +8,15 @@ c_new = 4
 
 def generate_training_data():
 	# x{k in 0..24, i in 0..N} default if k=0 then 1 else round(np.random.uniform(0, 20)) # historical/training data
-	x = np.array([[(1 if k == 0 else np.round(np.random.uniform(0, 20))) for k in range(N)] for _ in range(25)])  # historical/training data
+	x_np = np.array([[(1 if k == 0 else np.round(np.random.uniform(0, 20))) for k in range(24 + 1)] for _ in range(N + 1)])
+	# historical/training data
 
+	x = torch.tensor(x_np).transpose(0, 1)
+	print(x.size())
 	# own period: 1st half: own x[7, i]vs x[2, i]| 2nd half: own x[7, i] vs x[2, i+1]
 	# comp period: 1st half: com x[2, i-1] vs x[7, i-1] | 2nd half: com x[2, i-1] vs x[7, i]
 
-	for i in range(1, N):
+	for i in range(1, N + 1):
 		x[1, i] = x[1, i-1]-x[12, i-1]+x[13, i-1]  # inventory own
 
 		x[2, i] = x[7, i-1]-1 + np.round_(x[5, i-1]/200) if 9 < x[7, i-1] <= 20 else 20  # comp price new
@@ -43,12 +47,13 @@ def generate_training_data():
 		x[19, i] = -x[14, i] + x[15, i]*(x[2, i]-c_new) + x[16, i]*x[3, i] - x[17, i]*x[4, i]  # comp total rewards
 		x[20, i] = x[18, i] + x[20, i-1] if i > 0 else 0  # own total accumulated rewards
 		x[21, i] = x[19, i] + x[21, i-1] if i > 0 else 0  # comp total accumulated rewards
+	pd.DataFrame(x).to_csv('data/data_'+str(i)+'.csv', index=False)
 	return x
 
 
 def first_regression(data, x_rows, y_index):
 	x = data
-	y3 = [x[y_index, i] for i in range(N)]
+	y3 = [x[y_index, i] for i in range(N + 1)]
 	x_y3 = x[x_rows, :]
 
 	# param y3 {i in 1..N} := x[13,i];
@@ -73,11 +78,11 @@ def first_regression(data, x_rows, y_index):
 
 def fourth_regression(data, x_rows, xx_rows, y_index):
 	x = data
-	y6 = [x[y_index, i+1] for i in range(0, N-1)]
+	y6 = [x[y_index, i+1] for i in range(0, N + 1 - 1)]
 
-	x_y6_x = [[1 if x[9, i] < k else 0 for k in xx_rows] for i in range(1, N)]  # matrix for price own new (the 0 and 1 stuff)
+	x_y6_x = [[1 if x[9, i] < k else 0 for k in xx_rows] for i in range(1, N + 1)]  # matrix for price own new (the 0 and 1 stuff)
 
-	x_y6 = x[x_rows, :(len(x[0]) - 1)]
+	x_y6 = x[x_rows, : N]
 
 	x_y6_tensor = torch.tensor(x_y6)
 	x_y6_x_tensor = torch.tensor(x_y6_x)
@@ -101,7 +106,7 @@ def fourth_regression(data, x_rows, xx_rows, y_index):
 
 
 def simulation_model_b(data, b1, b2, b3, b4, b4x, b5, b5x, b6, b6x, M1, M2, M3):
-	NB = N
+	NB = N + 1
 	x = data
 	# param xb{k in 0..24,i in 0..NB} default if k=0 then 1 else if i=0 then 5 else -1      # simulated data
 	xb = np.array([[(1 if k-1 == 0 else 5 if i == 0 else -1) for k in range(0, 25)] for i in range(0, NB)]).transpose()
