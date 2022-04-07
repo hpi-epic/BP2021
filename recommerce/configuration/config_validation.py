@@ -1,3 +1,5 @@
+# This file contains logic used by the webserver to validate configuration files
+
 from recommerce.configuration.environment_config import EnvironmentConfig
 from recommerce.configuration.hyperparameter_config import HyperparameterConfig
 
@@ -11,11 +13,10 @@ def validate_config(config: dict, config_is_final: bool) -> tuple:
 		config_is_final (bool): Whether or not the config must contain all required keys.
 
 	Returns:
-		triple: success: A status (True) and the split hyperparameter_config and environment_config dictionaries as a tuple.
+		tuple: success: A status (True) and the split hyperparameter_config and environment_config dictionaries as a tuple.
 				failure: A status (False) and the errormessage as a string.
 	"""
 	try:
-		# validate the config using `recommerce` validation logic
 		# first check if the environment and hyperparameter parts are already split up
 		if 'environment' in config and 'hyperparameter' in config:
 			assert len(config) == 2, 'Your config should not contain keys other than "environment" and "hyperparameter"'
@@ -54,11 +55,11 @@ def validate_sub_keys(config_class: HyperparameterConfig or EnvironmentConfig, c
 		AssertionError: If the given config contains a key that is invalid.
 	"""
 	for key, _ in config.items():
-		# TODO: Remove this workaround with the agent-rework in the config files
+		# we need to separately check agents, since it is a list of dictionaries
 		if key == 'agents':
-			for agent_key in config['agents'].keys():
-				assert all(this_key in {'agent_class', 'argument'} for this_key in config['agents'][agent_key]), \
-					f'an invalid key for agents was provided: {config["agents"][agent_key].keys()}'
+			for agent in config['agents']:
+				assert all(agent_key in {'name', 'agent_class', 'argument'} for agent_key in agent.keys()), \
+					f'an invalid key for agents was provided: {agent.keys()}'
 		# the key is key of a dictionary in the config
 		elif top_level_keys[key]:
 			assert isinstance(config[key], dict), f'The value of this key must be of type dict: {key}, but was {type(config[key])}'
@@ -128,7 +129,8 @@ def check_config_types(hyperparameter_config: dict, environment_config: dict, mu
 
 	# check types for environment_config
 	task = environment_config['task'] if must_contain else 'None'
-	EnvironmentConfig.check_types(environment_config, task, must_contain)
+	single_agent = task in ['training', 'exampleprinter']
+	EnvironmentConfig.check_types(environment_config, task, single_agent, must_contain)
 
 
 if __name__ == '__main__':  # pragma: no cover
@@ -152,16 +154,18 @@ if __name__ == '__main__':  # pragma: no cover
 			'storage_cost_per_product': 0.1
 		},
 		'episodes': 5,
-		'agents': {
-			'CE Rebuy Agent (QLearning)': {
+		'agents': [
+			{
+				'name': 'CE Rebuy Agent (QLearning)',
 				'agent_class': 'recommerce.rl.q_learning.q_learning_agent.QLearningCERebuyAgent',
 				'argument': ''
 			},
-			'CE Rebuy Agent (QLearaning)': {
+			{
+				'name': 'CE Rebuy Agent (QLearaning)',
 				'agent_class': 'recommerce.rl.q_learning.q_learning_agent.QLearningCERebuyAgent',
 				'argument': ''
 			}
-		}
+		]
 	}
 	hyper, env = split_combined_config(test_config)
 	check_config_types(hyper, env)

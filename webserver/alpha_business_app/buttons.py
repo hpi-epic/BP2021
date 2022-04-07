@@ -124,9 +124,26 @@ class ButtonHandler():
 		Returns:
 			dict: contains all current configuration objects, the current config and this config as dict if it exists.
 		"""
-		return {'all_configurations': Config.objects.all(),
+		return {
+			'all_configurations': Config.objects.all(),
 			'config': self.wanted_config,
-			'config_dict': self.wanted_config.as_dict() if self.wanted_config else None}
+			'config_dict': self.wanted_config.as_dict() if self.wanted_config else None,
+			**self._params_for_selection()
+			}
+
+	def _params_for_selection(self) -> dict:
+		# TODO: implement the selection parameters here
+		# import recommerce.market.circular.circular_sim_market as circular_market
+		# circular_market_places = list(set(filter(lambda class_name: class_name.startswith('CircularEconomy'), dir(circular_market))))
+		circular_market_places = ['CircularEconomyMonopolyScenario',
+			'CircularEconomyRebuyPrice',
+			'CircularEconomyRebuyPriceMonopolyScenario',
+			'CircularEconomyRebuyPriceOneCompetitor']
+		circular_market_places = [('recommerce.market.circular.circular_sim_market.' + market, market) for market in circular_market_places]
+		return {
+			'selections': {
+				'tasks': [('training', 'training'), ('agent_monitoring', 'agent_monitoring'), ('exampleprinter', 'exampleprinter')],
+				'marketplaces': circular_market_places}}
 
 	def _render_default(self) -> HttpResponse:
 		"""
@@ -253,7 +270,7 @@ class ButtonHandler():
 		merger = ConfigMerger()
 		final_dict, error_dict = merger.merge_config_objects(post_request['config_id'])
 		return render(self.request, self.view_to_render,
-			{'prefill': final_dict, 'error_dict': error_dict, 'all_configurations': Config.objects.all()})
+			{'prefill': final_dict, 'error_dict': error_dict, 'all_configurations': Config.objects.all(), **self._params_for_selection()})
 
 	def _remove(self) -> HttpResponse:
 		"""
@@ -275,13 +292,9 @@ class ButtonHandler():
 		# convert post request to normal dict
 		post_request = dict(self.request.POST.lists())
 
-		try:
-			config_dict = ConfigFlatDictParser().flat_dict_to_hierarchical_config_dict(post_request)
-		except AssertionError:
-			self.message = ['error', 'Could not create config: Please eliminate identical Agent names']
-			return self._decide_rendering()
+		config_dict = ConfigFlatDictParser().flat_dict_to_hierarchical_config_dict(post_request)
 
-		validate_status, validate_data = validate_config(config_dict, True)
+		validate_status, validate_data = validate_config(config=config_dict, config_is_final=True)
 		if not validate_status:
 			self.message = ['error', validate_data]
 			return self._decide_rendering()
@@ -294,17 +307,15 @@ class ButtonHandler():
 			if Container.objects.filter(id=response['id']).exists():
 				# we will kindly ask the user to try it again and stop the container
 				# TODO insert better handling here
-				print('the new container has the same id, as another container')
-				self.message = ['error', 'please try again']
+				self.message = ['error', 'The new container has the same id as an already existing container, please try again.']
 				return self._remove()
-			print('after post request')
 			# get all necessary parameters for container object
 			container_name = self.request.POST['experiment_name']
 			container_name = container_name if container_name != '' else response['id'][:10]
 			config_object = ConfigModelParser().parse_config(copy.deepcopy(config_dict))
 			command = config_object.environment.task
 			Container.objects.create(id=response['id'], config=config_object, name=container_name, command=command)
-			config_object.name = f'used for {container_name}'
+			config_object.name = f'Config for {container_name}'
 			config_object.save()
 			return redirect('/observe', {'success': 'You successfully launched an experiment'})
 		else:

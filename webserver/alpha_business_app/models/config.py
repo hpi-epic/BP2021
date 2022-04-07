@@ -29,17 +29,17 @@ class EnvironmentConfig(models.Model):
 	episodes = models.IntegerField(null=True)
 	plot_interval = models.IntegerField(null=True)
 	marketplace = models.CharField(max_length=150, null=True)
-	task = models.CharField(max_length=14, choices=((1, 'training'), (2, 'monitoring'), (3, 'exampleprinter')), null=True)
+	task = models.CharField(max_length=14, choices=((1, 'training'), (2, 'agent_monitoring'), (3, 'exampleprinter')), null=True)
 
 	def as_dict(self) -> dict:
-		agents_dict = self.agents.as_dict() if self.agents is not None else None
+		agents_list = self.agents.as_list() if self.agents is not None else None
 		return remove_none_values_from_dict({
 			'enable_live_draw': self.enable_live_draw,
 			'episodes': self.episodes,
 			'plot_interval': self.plot_interval,
 			'marketplace': self.marketplace,
 			'task': self.task,
-			'agents': agents_dict
+			'agents': agents_list
 		})
 
 	@staticmethod
@@ -50,36 +50,32 @@ class EnvironmentConfig(models.Model):
 			'plot_interval': None,
 			'marketplace': None,
 			'task': None,
-			'agents': AgentsConfig.get_empty_structure_dict()
+			'agents': AgentsConfig.get_empty_structure_list()
 			}
 
 
 class AgentsConfig(models.Model):
-	def as_dict(self) -> dict:
+	def as_list(self) -> dict:
 		referencing_agents = self.agentconfig_set.all()
-		final_dict = {}
-		for agent in referencing_agents:
-			final_dict = {**final_dict, **agent.as_dict()}
-		return final_dict
+		return [agent.as_dict() for agent in referencing_agents]
 
 	@staticmethod
-	def get_empty_structure_dict():
-		return {}
+	def get_empty_structure_list():
+		return []
 
 
 class AgentConfig(models.Model):
 	agents_config = models.ForeignKey('AgentsConfig', on_delete=models.CASCADE, null=True)
 	name = models.CharField(max_length=100, default='')
 	agent_class = models.CharField(max_length=100, null=True)
-	argument = models.CharField(max_length=200, null=True)
+	argument = models.CharField(max_length=200, default='')
 
 	def as_dict(self) -> dict:
-		return {
-			self.name: remove_none_values_from_dict({
+		return remove_none_values_from_dict({
+				'name': self.name,
 				'agent_class': self.agent_class,
 				'argument': self.argument
 				})
-			}
 
 
 class HyperparameterConfig(models.Model):
@@ -187,12 +183,8 @@ def capitalize(word: str) -> str:
 
 
 def to_config_class_name(name: str) -> str:
-	# replace all brackets
-	class_name = name.replace('(', '').replace(')', '')
-	# remove all whitespaces:
-	class_name = ''.join([capitalize(x) for x in class_name.split(' ')])
-	return ''.join([capitalize(x) for x in class_name.split('_')]) + 'Config'
+	return ''.join([capitalize(x) for x in name.split('_')]) + 'Config'
 
 
 def remove_none_values_from_dict(dict_with_none_values: dict) -> dict:
-	return {k: v for k, v in dict_with_none_values.items() if v is not None}
+	return {key: value for key, value in dict_with_none_values.items() if value is not None}
