@@ -68,7 +68,7 @@ $(document).ready(function() {
 				formdata
 			},
 			success: function (data) {
-				self.before(data);
+				$("p.notice-field").replaceWith(data);
 			}
 		});
 	});

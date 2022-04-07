@@ -106,5 +106,5 @@ def config_validation(request):
 
 		validate_status, validate_data = validate_config(config=config_dict, config_is_final=True)
 		if not validate_status:
-			return render(request, 'notices/config_valid_field.html', {'config_is_valid': False, 'message': validate_data})
-	return render(request, 'notices/config_valid_field.html', {'config_is_valid': True, 'message': 'This config is valid'})
+			return render(request, 'notices/notice_field.html', {'error': validate_data})
+	return render(request, 'notices/notice_field.html', {'success': 'This config is valid'})
