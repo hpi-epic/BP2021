@@ -83,14 +83,14 @@ def fourth_regression(data, x_rows, xx_rows, y_index):
 
 	x_y6 = torch.tensor(x[x_rows, : N])
 
-	x_y6_combined = torch.concat((x_y6.transpose(0, 1), x_y6_x), 0)
+	x_y6_combined = torch.concat((x_y6.transpose(0, 1), x_y6_x), 1)
 
 	print('x_y6:', x_y6.size())
 	print('x_y6_x:', x_y6_x.size())
 	print('y6:', y6.size())
 	print('x_y6_combined:', x_y6_combined.size())
 
-	result_tuple_y6 = torch.linalg.lstsq(x_y6_combined.transpose(0, 1), y6)
+	result_tuple_y6 = torch.linalg.lstsq(x_y6_combined, y6)
 	print('result:', result_tuple_y6)
 	b6_b6x = result_tuple_y6[0]
 
@@ -101,11 +101,11 @@ def fourth_regression(data, x_rows, xx_rows, y_index):
 	return b6, b6x
 
 
-def simulation_model_b(data, b1, b2, b3, b4, b4x, b5, b5x, b6, b6x, M1, M2, M3):
+def simulation_model_b(data, b1, b2, b3, b4, b4x, b5, b5x, b6, b6x, M1, M2, M3, M4, M5, M6):
 	NB = N + 1
 	x = data
 	# param xb{k in 0..24,i in 0..NB} default if k=0 then 1 else if i=0 then 5 else -1      # simulated data
-	xb = np.array([[(1 if k-1 == 0 else 5 if i == 0 else -1) for k in range(0, 25)] for i in range(0, NB)]).transpose()
+	xb = torch.tensor([[(1 if k-1 == 0 else 5 if i == 0 else -1) for k in range(0, 25)] for i in range(0, NB)]).transpose(0, 1)
 	print(xb.shape[0])
 	for i in range(1, NB):
 		xb[1, i] = xb[1, i-1]-xb[12, i-1]+xb[13, i-1]
@@ -205,4 +205,4 @@ if __name__ == '__main__':
 	b4y, b4xy = fourth_regression(data, M4, M4x, y4_index)
 	b5y, b5xy = fourth_regression(data, M5, M5x, y5_index)
 	b6y, b6xy = fourth_regression(data, M6, M6x, y6_index)
-	data_simulated = simulation_model_b(data, by1, by2, by3, b4y, b4xy, b5y, b5xy, b6y, b6xy, M123, M123, M123)
+	data_simulated = simulation_model_b(data, by1, by2, by3, b4y, b4xy, b5y, b5xy, b6y, b6xy, M123, M123, M123, M4, M5, M6)
