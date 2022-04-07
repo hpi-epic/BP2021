@@ -153,37 +153,25 @@ def simulation_model_b(data, b1, b2, b3, b4, b4x, b5, b5x, b6, b6x, M1, M2, M3, 
 		xb[10, i] = xb[1, i] * 0.05  # own holding cost
 
 		# xb[22,i]= sum{k in M4}  b4[k] *xb[k,i] + sum{k in M4x} b4x[k]*(if xb[7,i]<k then 1 else 0)  # comp new reaction
-		# xb[22, i] = sum([b4[ki] * xb[ki, i] for ki, k in enumerate(M4)]) + \
-		# 	sum([b4x[ki] * (1 if xb[7, i] < k else 0) for ki, k in enumerate(M4x)])
-		xb[22, i] = comp_prices(M4, M4x, b4, b4x, 'new', xb, i)  # comp price new 		(updated)
-		# comp new reaction
-
 		# xb[23,i]= sum{k in M5}  b5[k] *xb[k,i] + sum{k in M5x} b5x[k]*(if xb[8,i]<k then 1 else 0)  # comp used reaction
-		# xb[23, i] = sum([b5[ki] * xb[k, i] for ki, k in enumerate(M5)]) + \
-		# 	sum([b5x[ki] * (1 if xb[8, i] < k else 0) for ki, k in enumerate(M5x)])
-		xb[23, i] = comp_prices(M5, M5x, b5, b5x, 'used', xb, i)  # comp price used 	(updated)
 		# xb[24,i]= sum{k in M6}  b6[k] *xb[k,i] + sum{k in M6x} b6x[k]*(if xb[9,i]<k then 1 else 0)  # comp rebuy reaction
-		# xb[24, i] = sum([b6[ki] * xb[k, i] for ki, k in enumerate(M6)]) + \
-		# 	sum([b6x[ki]*(1 if xb[9, i] < k else 0) for ki, k in enumerate(M6x)])
+
+		xb[22, i] = comp_prices(M4, M4x, b4, b4x, 'new', xb, i)  # comp price new 		(updated)
+		xb[23, i] = comp_prices(M5, M5x, b5, b5x, 'used', xb, i)  # comp price used 	(updated)
 		xb[24, i] = comp_prices(M6, M6x, b6, b6x, 'rebuy', xb, i)  # comp price rebuy 	(updated)
 
 		# xb[11,i]= np.round_(max(0, np.random.uniform(-5,5) + sum{k in M1} b1[k]*xb[k,i]))
-		xb[11, i] = np.round_(max(np.random.uniform(-5, 5) + sum([b1[ki] * xb[k, i] for ki, k in enumerate(M1)]), 0))
 
-		# xb[12,i]= np.round_(min(x[1,i],  max(0,np.random.uniform(-5,5) + sum{k in M2} b2[k]*xb[k,i])))
+		xb[11, i] = np.round_(max(np.random.uniform(-5, 5) + sum([b1[ki] * xb[k, i] for ki, k in enumerate(M1)]), 0))
 		xb[12, i] = np.round_(min(x[1, i], max(np.random.uniform(-5, 5) + sum([b2[ki] * xb[k, i] for ki, k in enumerate(M2)]), 0)))
-		# xb[13,i]= np.round_(min(x[6,i]/2,max(0,np.random.uniform(-5,5) + sum{k in M3} b3[k]*xb[k,i])))
 		xb[13, i] = np.round_(min(x[6, i] / 2, max(np.random.uniform(-5, 5) + sum([b3[ki] * xb[k, i] for ki, k in enumerate(M3)]), 0)))
+
 		xb[14, i] = xb[5, i]*0.05
-		# M1: 0-0;1-1;2-2;3-3;4-4;7-5;8-6;9-7;22-8;23-9;24-10
+
 		xb[15, i] = np.round_(max(0, np.random.uniform(-5, 5) + b1[0] * xb[0, i] + b1[1] * xb[5, i] + b1[2] * xb[7, i-1] +
 			b1[3] * xb[8, i-1] + b1[4] * xb[9, i-1] + b1[5] * xb[2, i] + b1[6] * xb[3, i] + b1[7] * xb[4, i] + b1[8] * xb[7, i] +
 			b1[9] * xb[8, i] + b1[10] * xb[9, i]))  # cf M1 # what the comp sells new
 
-		#   let xb[16,i]:= round(min(x[5,i],  max(0,Uniform(-5,5) + b2[0]*xb[0,i] + b2[1]*xb[5,i] + b2[2]*xb[7,i-1]
-		# 		+ b2[3]*xb[8,i-1] + b2[4]*xb[9,i-1]
-		# 		+ b2[7]*xb[2,i]   + b2[8]*xb[3,i]   + b2[9]*xb[4,i]
-		# 		+ b2[22]*xb[7,i]  + b2[23]*xb[8,i]  + b2[24]*xb[9,i] ))); # cf M2
 		xb[16, i] = np.round_(min(x[5, i],  max(0, np.random.uniform(-5, 5) + b2[0] * xb[0, i] + b2[1] * xb[5, i] + b2[2] * xb[7, i-1] +
 			b2[3] * xb[8, i-1] + b2[4] * xb[9, i-1] + b2[5] * xb[2, i] + b2[6] * xb[3, i] + b2[7] * xb[4, i] + b2[8] * xb[7, i] +
 			b2[9] * xb[8, i] + b2[10] * xb[9, i])))  # cf M2 # what the comp sells used
@@ -192,10 +180,14 @@ def simulation_model_b(data, b1, b2, b3, b4, b4x, b5, b5x, b6, b6x, M1, M2, M3, 
 			+ b3[3] * xb[8, i-1] + b3[4] * xb[9, i-1] + b3[5] * xb[2, i] + b3[6] * xb[3, i] + b3[7] * xb[4, i] + b3[8] * xb[7, i]
 			+ b3[9] * xb[8, i] + b3[10] * xb[9, i])))  # cf M3 # what the comp buys
 
-		xb[18, i] = -xb[10, i]+xb[11, i]*(xb[7, i] - c_new)+xb[12, i]*xb[8, i]-xb[13, i]*xb[9, i]      # own total rewards
-		xb[19, i] = -xb[14, i]+xb[15, i]*(xb[2, i] - c_new)+xb[16, i]*xb[3, i]-xb[17, i]*xb[4, i]      # comp total rewards
+		# rewards
+		xb[18, i] = -xb[10, i] + xb[11, i] * (xb[7, i] - c_new) + xb[12, i] * xb[8, i] - xb[13, i] * xb[9, i]      # own total rewards
+		xb[19, i] = -xb[14, i] + xb[15, i] * (xb[2, i] - c_new) + xb[16, i] * xb[3, i] - xb[17, i] * xb[4, i]      # comp total rewards
+
+		# rewards cumulated
 		xb[20, i] = xb[18, i] + (xb[20, i-1] if i > 0 else 0)  # own total accumulated rewards
 		xb[21, i] = xb[19, i] + (xb[21, i-1] if i > 0 else 0)  # comp total accumulated rewards
+
 	return xb
 
 
