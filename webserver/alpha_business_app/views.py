@@ -74,9 +74,9 @@ def api_availability(request):
 		api_is_available = requests.get(f'{DOCKER_API}/api_health', timeout=1)
 	except requests.exceptions.RequestException:
 		current_time = datetime.datetime.now().strftime('%H:%M:%S')
-		return render(request, 'api_buttons/api_health_button.html', {'api_timeout': f'{current_time}'})
+		return render(request, 'api_buttons/api_health_button.html', {'api_timeout': f'API unavailable - {current_time}'})
 
 	current_time = datetime.datetime.now().strftime('%H:%M:%S')
 	if api_is_available.status_code == 200:
-		return render(request, 'api_buttons/api_health_button.html', {'api_success': f'{current_time}'})
-	return render(request, 'api_buttons/api_health_button.html', {'api_docker_timeout': f'{current_time}'})
+		return render(request, 'api_buttons/api_health_button.html', {'api_success': f'API available - {current_time}'})
+	return render(request, 'api_buttons/api_health_button.html', {'api_docker_timeout': f'Docker  unavailable - {current_time}'})
