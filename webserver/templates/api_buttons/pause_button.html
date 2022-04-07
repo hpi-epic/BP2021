@@ -1,7 +1,7 @@
 <form method="post" enctype="multipart/form-data">
 	{% csrf_token %}
 <input type="hidden" name="action" , value="pause">
-<button class="btn btn-sm {% if container.is_paused %}bc-outline-unpause{% else %}bc-outline-pause{% endif %}" 
+<button class="btn btn-sm {% if container.is_paused %}bc-outline-unpause{% else %}bc-outline-orange{% endif %}" 
 	title="{% if container.is_paused %}un{% endif %}pauses execution of the script in the running container"
 	name="container_id" 
 	value="{{ container.id }}" 
