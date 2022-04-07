@@ -118,7 +118,7 @@ def check_config_types(hyperparameter_config: dict, environment_config: dict, mu
 		must_contain (bool): Whether or not the configuration should contain all required keys.
 
 	Raises:
-		AssertionError: If one of the values has the wring type.
+		AssertionError: If one of the values has the wrong type.
 	"""
 	# check types for hyperparameter_config
 	HyperparameterConfig.check_types(hyperparameter_config, 'top-dict', must_contain)

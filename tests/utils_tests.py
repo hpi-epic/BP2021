@@ -1,9 +1,7 @@
-import os
 from typing import Tuple, Union
 
 import recommerce.market.circular.circular_sim_market as circular_market
 import recommerce.market.linear.linear_sim_market as linear_market
-from recommerce.configuration.path_manager import PathManager
 
 
 def create_hyperparameter_mock_dict_rl(gamma: float = 0.99,
@@ -138,16 +136,18 @@ def create_environment_mock_dict(task: str = 'agent_monitoring',
 	}
 
 
-def check_mock_file(mock_file, json) -> None:
+def check_mock_file(mock_file, mocked_file_content) -> None:
 	"""
 	Confirm that a mock JSON is read correctly.
 
 	Args:
 		mock_file (unittest.mock.MagicMock): The mocked file.
-		json (str): The mock JSON string to be checked.
+		mocked_file_content (str): The mocked_file_content to be checked.
 	"""
-	path = os.path.join(PathManager.user_path, 'config.json')
-	assert open(path).read() == json, 'the mock did not work correctly, as the read file was not equal to the set mock-json'
+	path = 'some_path'
+	with open(path) as file:
+		assert file.read() == mocked_file_content, \
+			'the mock did not work correctly, as the read file was not equal to the set mocked_file_content'
 	mock_file.assert_called_with(path)
 
 

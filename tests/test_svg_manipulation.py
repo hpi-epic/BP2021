@@ -1,4 +1,6 @@
+import json
 import os
+import pathlib
 from unittest.mock import mock_open, patch
 
 import pytest
@@ -28,9 +30,9 @@ def test_correct_template():
 	assert correct_template == svg_manipulator.template_svg
 
 	# run one exampleprinter and to make sure the template does not get changed
-	json = ut_t.create_hyperparameter_mock_json_sim_market(episode_length='3')
-	with patch('builtins.open', mock_open(read_data=json)) as utils_mock_file:
-		ut_t.check_mock_file(utils_mock_file, json)
+	mock_json = json.dumps(ut_t.create_hyperparameter_mock_dict_sim_market(episode_length=3))
+	with patch('builtins.open', mock_open(read_data=mock_json)) as utils_mock_file:
+		ut_t.check_mock_file(utils_mock_file, mock_json)
 		# initialize all functions to be mocked
 		with patch('recommerce.monitoring.exampleprinter.ut.write_dict_to_tensorboard'), \
 			patch('recommerce.monitoring.svg_manipulation.os.path.isfile') as mock_isfile, \
@@ -74,8 +76,7 @@ def test_write_dict_to_svg():
 		test_dict[key] = 'test'
 	svg_manipulator.write_dict_to_svg(test_dict)
 	correct_svg = ''
-	with open(os.path.join(os.path.dirname(__file__), 'test_data', 'output_test_svg.svg')) as file:
-		correct_svg = file.read()
+	correct_svg = pathlib.Path(os.path.join(os.path.dirname(__file__), 'test_data', 'output_test_svg.svg')).read_text()
 	assert correct_svg == svg_manipulator.output_svg
 	assert test_dict == svg_manipulator.value_dictionary
 
@@ -193,9 +194,9 @@ def test_time_not_int():
 
 def test_one_exampleprinter_run():
 	# run only three episodes to be able to reuse the correct_html
-	json = ut_t.create_hyperparameter_mock_json_sim_market(episode_length='3')
-	with patch('builtins.open', mock_open(read_data=json)) as utils_mock_file:
-		ut_t.check_mock_file(utils_mock_file, json)
+	mock_json = json.dumps(ut_t.create_hyperparameter_mock_dict_sim_market(episode_length=3))
+	with patch('builtins.open', mock_open(read_data=mock_json)) as utils_mock_file:
+		ut_t.check_mock_file(utils_mock_file, mock_json)
 		# initialize all functions to be mocked
 		with patch('recommerce.monitoring.exampleprinter.ut.write_dict_to_tensorboard'), \
 			patch('recommerce.monitoring.svg_manipulation.os.path.isfile') as mock_isfile, \
