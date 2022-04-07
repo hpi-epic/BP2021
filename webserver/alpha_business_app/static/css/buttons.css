@@ -86,3 +86,7 @@
 .bc-xs {
 	height: min-content !important;
 }
+
+.bc-padding {
+	padding: 0.25rem 0.5rem !important;
+}

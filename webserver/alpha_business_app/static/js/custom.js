@@ -53,7 +53,7 @@ $(document).ready(function() {
 	}
 	
 	$("button.form-check").click(function () {
-		$("img.config-status-emoji").remove();
+		$("table.config-status-display").remove();
 		
 		var self = $(this);
 		var form = $("form.config-form");
@@ -69,6 +69,7 @@ $(document).ready(function() {
 			},
 			success: function (data) {
 				self.before(data);
+				console.log(data)
 			}
 		});
 	});

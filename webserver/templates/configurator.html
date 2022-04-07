@@ -28,7 +28,7 @@
 						{% endfor %}
 					</table>
 					{% if all_configurations %}
-						<button class="btn btn-sm btn-outline-secondary btn-rounded m-3">pre-fill</button>
+						<button class="btn btn-outline-secondary btn-rounded m-3">pre-fill</button>
 					{% endif %}
 				</form>
 			</div>
@@ -39,9 +39,9 @@
 					{% include "configuration_items/config.html" with prefill=prefill should_show=True error_dict=error_dict %}
 					<input class="form-control" type="text" placeholder="experiment name" name="experiment_name">
 					<div class="d-flex">
-						<button class="btn btn-sm btn-outline-secondary btn-rounded m-3">launch</button>
+						<button class="btn btn-outline-secondary btn-rounded m-3">launch</button>
 						<div class="ms-auto d-flex">
-							<button class="btn btn-sm btn-outline-secondary btn-rounded form-check m-3" type="button" data-url="/validate_config">check</button>
+							<button class="btn btn-outline-secondary btn-rounded form-check m-3" type="button" data-url="/validate_config">check</button>
 						</div>
 					</div>
 				</form>

@@ -1,6 +1,24 @@
 {% load static %}
 {% if config_is_valid %}
-	<img src="{% static 'icons/happy_emoji.svg' %}" width="18px" class="config-status-emoji ms-auto ml-2"></img> 
+	<table class="config-status-display">
+		<tr>
+			<td>
+				{% include "notices/notice_field.html" with success=message%}
+			</td>
+			<td>
+				<img src="{% static 'icons/happy_emoji.svg' %}" width="18px" class="ms-auto ml-2"></img>
+			</td>
+		</tr>
+	</table>
 {% else %}
-	<img src="{% static 'icons/sad_emoji.svg' %}" width="18px" class="config-status-emoji ms-auto ml-2"></img> 
+	<table class="config-status-display">
+		<tr>
+			<td>
+				{% include "notices/notice_field.html" with error=message %}
+			</td>
+			<td>
+				<img src="{% static 'icons/sad_emoji.svg' %}" width="18px" class="ms-auto ml-2"></img>
+			</td>
+		</tr>
+	</table>
 {% endif %}

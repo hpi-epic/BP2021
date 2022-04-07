@@ -88,7 +88,6 @@ def api_availability(request):
 def config_validation(request):
 	if request.method == 'POST':
 		post_request = request.POST
-		print(post_request)
 		# convert formdata doct to normal form dict
 		resulting_dict = {
 			'environment-agents-name': [],
