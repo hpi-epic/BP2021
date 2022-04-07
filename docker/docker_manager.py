@@ -305,7 +305,6 @@ class DockerManager():
 		Returns:
 			docker.DockerClient: The docker client, or None if docker is unavailable.
 		"""
-		print('Getting docker client...')
 		if cls._client is not None:
 			return cls._client
 		try:
