@@ -112,7 +112,7 @@ class DockerManager():
 			return DockerInfo(container_id, status='Container not found')
 
 		if container.status == 'exited':
-			return DockerInfo(container_id, status=f'exited ({container.wait()["StatusCode"]})')
+			return DockerInfo(container_id, status=f'exited ({container.wait(timeout=1)["StatusCode"]})')
 
 		return DockerInfo(container_id, status=container.status)
 
