@@ -52,7 +52,7 @@ class Configurator():
 		Returns:
 			str: The full path to the modelfile.
 		"""
-		if '.dat' not in model_name and '.zip' not in model_name:
+		if not model_name.endswith('.dat') and not model_name.endswith('.zip'):
 			model_name += '.dat'
 		full_path = os.path.join(PathManager.data_path, model_name)
 		assert os.path.exists(full_path), f'the specified modelfile does not exist: {full_path}'
@@ -140,7 +140,7 @@ class Configurator():
 		marketplace: sim_market.SimMarket = None,
 		agents: list = None,
 		subfolder_name: str = None,
-		support_continuouos_action_space: bool = False) -> None:
+		support_continuous_action_space: bool = False) -> None:
 		"""
 		Configure the current monitoring session.
 
@@ -174,7 +174,7 @@ class Configurator():
 
 		if(marketplace is not None):
 			assert issubclass(marketplace, sim_market.SimMarket), 'the marketplace must be a subclass of SimMarket'
-			self.marketplace = marketplace(support_continuouos_action_space)
+			self.marketplace = marketplace(support_continuous_action_space)
 			# If the agents have not been changed, we reuse the old agents
 			if(agents is None):
 				print('Warning: Your agents are being overwritten by new instances of themselves!')
