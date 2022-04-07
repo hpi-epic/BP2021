@@ -135,7 +135,7 @@ class Configurator():
 		enable_live_draw: bool = None,
 		episodes: int = None,
 		plot_interval: int = None,
-		marketplace: sim_market.SimMarket() = None,
+		marketplace: sim_market.SimMarket = None,
 		agents: list = None,
 		subfolder_name: str = None) -> None:
 		"""
