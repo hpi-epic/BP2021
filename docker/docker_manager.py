@@ -112,7 +112,7 @@ class DockerManager():
 			return DockerInfo(container_id, status='Container not found')
 
 		if container.status == 'exited':
-			return DockerInfo(container_id, status=f'exited ({container.wait(timeout=1)["StatusCode"]})')
+			return DockerInfo(container_id, status=f'exited ({docker.APIClient().inspect_container(container.id)["State"]["ExitCode"]})')
 
 		return DockerInfo(container_id, status=container.status)
 
@@ -213,7 +213,6 @@ class DockerManager():
 		print(f'Getting logs for {container_id}')
 
 		container_status = container.status
-
 		logs = container.logs(stream=stream, timestamps=timestamps, tail=tail, stderr=container_status == 'exited')
 		if stream:
 			return DockerInfo(container_id, status=container_status, stream=logs)
