@@ -3,7 +3,7 @@ import pandas as pd
 import torch
 
 N = 200  # Trainingszeilen (historical data)
-c_new = 4
+cost_new_product = 4
 
 
 def generate_training_data():
@@ -13,11 +13,12 @@ def generate_training_data():
 
 	x = x_np.transpose(0, 1)
 	# print(x.size())
-	# own period: 1st half: own x[7, i]vs x[2, i]| 2nd half: own x[7, i] vs x[2, i+1]
+	# agent period: 1st half: agent x[7, i]vs x[2, i]| 2nd half: agent x[7, i] vs x[2, i+1]
 	# comp period: 1st half: com x[2, i-1] vs x[7, i-1] | 2nd half: com x[2, i-1] vs x[7, i]
 
 	for i in range(1, N + 1):
-		x[1, i] = x[1, i-1]-x[12, i-1]+x[13, i-1]  # inventory own
+		x[0, i] = 0
+		x[1, i] = x[1, i-1]-x[12, i-1]+x[13, i-1]  # agent inventory
 
 		x[2, i] = x[7, i-1]-1 + np.round_(x[5, i-1]/200) if 9 < x[7, i-1] <= 20 else 20  # comp price new
 		x[3, i] = x[8, i-1]-1 + np.round_(x[5, i-1]/200) if 5 < x[8, i-1] <= 15 else 15  # comp price used
@@ -26,31 +27,31 @@ def generate_training_data():
 		x[6, i] = max(0, np.round_(0.8*x[6, i-1])+x[11, i-1]+x[12, i-1]-x[13, i-1] + x[15, i-1] + x[16, i-1]-x[17, i-1])  # resource in use
 
 		x[7, i] = np.round_(np.random.uniform(5, 20)) if i < 20 else x[2, i] - 1 + np.round_(x[1, i]/200)if 9 < x[2, i] <= 18 else 18
-		# own price new
+		# agent price new
 		x[8, i] = np.round_(np.random.uniform(0, 20)) if i < 20 else x[3, i] - 1 + np.round_(x[1, i]/200)if 5 < x[3, i] <= 12 else 12
-		# own price used
+		# agent price used
 		x[9, i] = np.round_(np.random.uniform(0, 10)) if i < 20 else x[4, i]-0.5-np.round_(x[1, i]/200)if 1 < x[4, i] <= 5 else 5
-		# own price rebuy
-		x[10, i] = x[1, i]*0.05  # own holding cost
-		x[22, i] = x[7, i]-1+np.round_(x[5, i]/200) if 9 < x[7, i] <= 20 else 20  # comp new reaction
-		x[23, i] = x[8, i]-1+np.round_(x[5, i]/200) if 5 < x[8, i] <= 15 else 15  # comp used reaction
-		x[24, i] = x[9, i]-0.5 - np.round_(x[5, i]/200) if 1 < x[9, i] <= 5 else 5  # comp rebuy reaction
-		x[11, i] = np.round_(max(0, np.random.uniform(5, 15)-x[7, i] + x[2, i]/4 + x[22, i]/4))  # own sales new
-		x[12, i] = np.round_(min(x[1, i],  max(0, np.random.uniform(5, 15)-x[8, i] + x[3, i]/4 + x[23, i]/4)))  # own sales used
-		x[13, i] = np.round_(min(x[6, i]/2, max(0, np.random.uniform(5, 15)+x[9, i] - x[4, i]/4 - x[24, i]/4)))  # own repurchases
-		x[14, i] = x[5, i]*0.05  # comp holding cost
+		# agent price rebuy
+		x[10, i] = x[1, i]*0.05  # agent storage cost
+		x[22, i] = x[7, i]-1+np.round_(x[5, i]/200) if 9 < x[7, i] <= 20 else 20  # comp price new reaction
+		x[23, i] = x[8, i]-1+np.round_(x[5, i]/200) if 5 < x[8, i] <= 15 else 15  # comp price used reaction
+		x[24, i] = x[9, i]-0.5 - np.round_(x[5, i]/200) if 1 < x[9, i] <= 5 else 5  # comp price rebuy reaction
+		x[11, i] = np.round_(max(0, np.random.uniform(5, 15)-x[7, i] + x[2, i]/4 + x[22, i]/4))  # agent sales new
+		x[12, i] = np.round_(min(x[1, i],  max(0, np.random.uniform(5, 15)-x[8, i] + x[3, i]/4 + x[23, i]/4)))  # agent sales used
+		x[13, i] = np.round_(min(x[6, i]/2, max(0, np.random.uniform(5, 15)+x[9, i] - x[4, i]/4 - x[24, i]/4)))  # agent repurchases
+		x[14, i] = x[5, i] * 0.05  # comp holding cost
 		x[15, i] = np.round_(max(0, np.random.uniform(5, 15)-x[2, i] + x[7, i]/4 + x[7, i-1]/4))  # comp sales new
 		x[16, i] = np.round_(min(x[5, i],  max(0, np.random.uniform(5, 15)-x[3, i] + x[8, i]/4 + x[8, i-1]/4)))  # comp sales used
-		x[17, i] = np.round_(min(x[6, i]/2, max(0, np.random.uniform(5, 15)+x[4, i] - x[9, i]/4 - x[9, i-1]/4)))  # comp repurchases
+		x[17, i] = np.round_(min(x[6, i]/2, max(0, np.random.uniform(5, 15)+x[4, i] - x[9, i]/4 - x[9, i-1]/4)))  # comp sales rebuy
 
-		x[18, i] = -x[10, i] + x[11, i]*(x[7, i]-c_new) + x[12, i]*x[8, i] - x[13, i]*x[9, i]  # own total rewards
-		x[19, i] = -x[14, i] + x[15, i]*(x[2, i]-c_new) + x[16, i]*x[3, i] - x[17, i]*x[4, i]  # comp total rewards
-		x[20, i] = x[18, i] + x[20, i-1] if i > 0 else 0  # own total accumulated rewards
-		x[21, i] = x[19, i] + x[21, i-1] if i > 0 else 0  # comp total accumulated rewards
+		x[18, i] = -x[10, i] + x[11, i]*(x[7, i]-cost_new_product) + x[12, i]*x[8, i] - x[13, i]*x[9, i]  # agent total reward
+		x[19, i] = -x[14, i] + x[15, i]*(x[2, i]-cost_new_product) + x[16, i]*x[3, i] - x[17, i]*x[4, i]  # comp total reward
+		x[20, i] = x[18, i] + x[20, i-1] if i > 0 else 0  # agent total accumulated reward
+		x[21, i] = x[19, i] + x[21, i-1] if i > 0 else 0  # comp total accumulated reward
 	return x
 
 
-def first_regression(data, x_rows, y_index):
+def first_regression(data, x_rows, y_index: int):
 	x = data
 
 	# param y3 {i in 1..N} := x[13,i];
@@ -69,19 +70,30 @@ def first_regression(data, x_rows, y_index):
 	return b3
 
 
-def fourth_regression(data, x_rows, xx_rows, y_index):
+def fourth_regression(data, x_rows, xx_rows, y_index: int, flag: str):
+	xb_first_index = -1
+	if flag == 'new':
+		xb_first_index = 7
+	elif flag == 'used':
+		xb_first_index = 8
+	elif flag == 'rebuy':
+		xb_first_index = 9
+	else:
+		assert False
 	x = data
-	y6 = torch.tensor([x[y_index, i+1] for i in range(0, N + 1 - 1)])
+	y = torch.tensor([x[y_index, i + 1] for i in range(0, N + 1 - 1)])
+	# flag determines which prices are set
+	x_y_x = torch.tensor([[1 if x[xb_first_index, i] < k else 0 for k in xx_rows] for i in range(1, N + 1)])
+	# matrix for price agent (the 0 and 1 stuff)
 
-	x_y6_x = torch.tensor([[1 if x[9, i] < k else 0 for k in xx_rows] for i in range(1, N + 1)])  # matrix for price own new (the 0 and 1 stuff
-	x_y6 = torch.tensor(x[x_rows, : N])
-	print('x_y6:', x_y6.size())
-	print('x_y6_x:', x_y6_x.size())
-	x_y6_combined = torch.concat((x_y6.transpose(0, 1), x_y6_x), 1)
+	x_y = torch.tensor(x[x_rows, : N])
+	print('x_y:', x_y.size())
+	print('x_y_x:', x_y_x.size())
+	x_y_combined = torch.concat((x_y.transpose(0, 1), x_y_x), 1)
 
-	result_tuple_y6 = torch.linalg.lstsq(x_y6_combined, y6)
+	result_tuple_y = torch.linalg.lstsq(x_y_combined, y)
 
-	b6_b6x = result_tuple_y6[0]
+	b6_b6x = result_tuple_y[0]
 	print(len(x_rows))
 	b6 = b6_b6x[0:len(x_rows)]
 	b6x = b6_b6x[len(x_rows):]
@@ -89,7 +101,7 @@ def fourth_regression(data, x_rows, xx_rows, y_index):
 	return b6, b6x
 
 
-def comp_prices(Mi, Mix, bi, bix, flag: str, xb, i):
+def comp_prices(Mi, Mix, bi, bix, flag: str, xb, round_index):
 	xb_first_index = -1
 	if flag == 'new':
 		xb_first_index = 7
@@ -102,11 +114,11 @@ def comp_prices(Mi, Mix, bi, bix, flag: str, xb, i):
 
 	# xb[4,i] = sum{k in M6}  b6[k] *xb[k,i-1] + sum{k in M6x} b6x[k]*(if xb[9,i-1]<k then 1 else 0)  # comp price rebuy (old)
 	# xb[24,i]= sum{k in M6}  b6[k] *xb[k,i] + sum{k in M6x} b6x[k]*(if xb[9,i]<k then 1 else 0)  # comp price rebuy (updated)
-	return sum([bi[ki] * xb[k, i-1] for ki, k in enumerate(Mi)]) + \
-		sum([bix[ki] * (1 if xb[xb_first_index, i] < k else 0) for ki, k in enumerate(Mix)])
+	return sum([bi[ki] * xb[k, round_index] for ki, k in enumerate(Mi)]) + \
+		sum([bix[ki] * (1 if xb[xb_first_index, round_index] < k else 0) for ki, k in enumerate(Mix)])
 
 
-def simulation_model_b(data, b1, b2, b3, b4, b4x, b5, b5x, b6, b6x, M1, M2, M3, M4, M5, M6, M4x, M5x, M6x):
+def simulation_model_b(data, b1, b2, b3, b4, b4x, b5, b5x, b6, b6x, M1, M2, M3, M4, M5, M6, M4x, M5x, M6x) -> torch.tensor:
 	NB = N + 1
 	x = data
 	# param xb{k in 0..24,i in 0..NB} default if k=0 then 1 else if i=0 then 5 else -1      # simulated data
@@ -124,11 +136,11 @@ def simulation_model_b(data, b1, b2, b3, b4, b4x, b5, b5x, b6, b6x, M1, M2, M3, 
 		xb[6, i] = max(0, np.round_(0.8*xb[6, i-1]) + xb[11, i-1] + xb[12, i-1] - xb[13, i-1] + xb[15, i-1] + xb[16, i-1] - xb[17, i-1])
 		# resources in use
 
-		xb[7, i] = xb[2, i] - 1 + np.round_(x[1, i]/200) if 9 < xb[2, i] <= 18 else 18  # own price new
-		xb[8, i] = xb[3, i] - 1 + np.round_(x[1, i]/200) if 5 < xb[3, i] <= 12 else 12  # own price used
-		xb[9, i] = xb[4, i] - 0.5 - np.round_(x[1, i]/200) if 1 < xb[4, i] <= 5 else 5    # own price rebuy
+		xb[7, i] = xb[2, i] - 1 + np.round_(x[1, i]/200) if 9 < xb[2, i] <= 18 else 18  # agent price new
+		xb[8, i] = xb[3, i] - 1 + np.round_(x[1, i]/200) if 5 < xb[3, i] <= 12 else 12  # agent price used
+		xb[9, i] = xb[4, i] - 0.5 - np.round_(x[1, i]/200) if 1 < xb[4, i] <= 5 else 5    # agent price rebuy
 
-		xb[10, i] = xb[1, i] * 0.05  # own holding cost
+		xb[10, i] = xb[1, i] * 0.05  # agent holding cost
 
 		xb[22, i] = comp_prices(M4, M4x, b4, b4x, 'new', xb, i)  # comp price new 		(updated)
 		xb[23, i] = comp_prices(M5, M5x, b5, b5x, 'used', xb, i)  # comp price used 	(updated)
@@ -144,25 +156,28 @@ def simulation_model_b(data, b1, b2, b3, b4, b4x, b5, b5x, b6, b6x, M1, M2, M3, 
 		# agent sales rebuy
 
 		xb[14, i] = xb[5, i]*0.05
-		# TODO: refactor these into loops or something more beautiful
+		# TODO: refactor these into loops or something more beautiful (likely there is none)
+		# assert xb[0, i] == 1, f"xb[0, {i}]: {xb[0, i]}, b1[0]: {b1[0]}, b2[0]: {b2[0]}, b3[0]: {b3[0]}"
 		xb[15, i] = np.round_(max(0, np.random.uniform(-5, 5) + b1[0] * xb[0, i] + b1[1] * xb[5, i] + b1[2] * xb[7, i-1] +
 			b1[3] * xb[8, i-1] + b1[4] * xb[9, i-1] + b1[5] * xb[2, i] + b1[6] * xb[3, i] + b1[7] * xb[4, i] + b1[8] * xb[7, i] +
 			b1[9] * xb[8, i] + b1[10] * xb[9, i]))  # cf M1 # competitor sales new
 
-		xb[16, i] = np.round_(min(x[5, i],  max(0, np.random.uniform(-5, 5) + b2[0] * xb[0, i] + b2[1] * xb[5, i] + b2[2] * xb[7, i-1] +
-			b2[3] * xb[8, i-1] + b2[4] * xb[9, i-1] + b2[5] * xb[2, i] + b2[6] * xb[3, i] + b2[7] * xb[4, i] + b2[8] * xb[7, i] +
-			b2[9] * xb[8, i] + b2[10] * xb[9, i])))  # cf M2 # competitor sales used
+		xb[16, i] = np.round_(min(x[5, i],  max(0, np.random.uniform(-5, 5)
+			+ b2[0] * xb[0, i] + b2[1] * xb[5, i] + b2[2] * xb[7, i-1]
+			+ b2[3] * xb[8, i-1] + b2[4] * xb[9, i-1] + b2[5] * xb[2, i] + b2[6] * xb[3, i] + b2[7] * xb[4, i] + b2[8] * xb[7, i]
+			+ b2[9] * xb[8, i] + b2[10] * xb[9, i])))  # cf M2 # competitor sales used
 
-		xb[17, i] = np.round_(min(x[6, i] / 2, max(0, np.random.uniform(-5, 5) + b3[0] * xb[0, i] + b3[1] * xb[5, i] + b3[2] * xb[7, i-1]
+		xb[17, i] = np.round_(min(x[6, i] / 2, max(0, np.random.uniform(-5, 5)
+			+ b3[0] * xb[0, i] + b3[1] * xb[5, i] + b3[2] * xb[7, i-1]
 			+ b3[3] * xb[8, i-1] + b3[4] * xb[9, i-1] + b3[5] * xb[2, i] + b3[6] * xb[3, i] + b3[7] * xb[4, i] + b3[8] * xb[7, i]
 			+ b3[9] * xb[8, i] + b3[10] * xb[9, i])))  # cf M3 # competitor sales rebuy
 
 		# rewards
-		xb[18, i] = -xb[10, i] + xb[11, i] * (xb[7, i] - c_new) + xb[12, i] * xb[8, i] - xb[13, i] * xb[9, i]      # own total rewards
-		xb[19, i] = -xb[14, i] + xb[15, i] * (xb[2, i] - c_new) + xb[16, i] * xb[3, i] - xb[17, i] * xb[4, i]      # comp total rewards
+		xb[18, i] = -xb[10, i] + xb[11, i] * (xb[7, i] - cost_new_product) + xb[12, i] * xb[8, i] - xb[13, i] * xb[9, i]  # agent  total rewards
+		xb[19, i] = -xb[14, i] + xb[15, i] * (xb[2, i] - cost_new_product) + xb[16, i] * xb[3, i] - xb[17, i] * xb[4, i]  # comp total rewards
 
 		# rewards cumulated
-		xb[20, i] = xb[18, i] + (xb[20, i-1] if i > 0 else 0)  # own total accumulated rewards
+		xb[20, i] = xb[18, i] + (xb[20, i-1] if i > 0 else 0)  # agent total accumulated rewards
 		xb[21, i] = xb[19, i] + (xb[21, i-1] if i > 0 else 0)  # comp total accumulated rewards
 
 	return xb
@@ -171,6 +186,17 @@ def simulation_model_b(data, b1, b2, b3, b4, b4x, b5, b5x, b6, b6x, M1, M2, M3, 
 if __name__ == '__main__':
 	data = generate_training_data()
 	M123 = (0, 1, 2, 3, 4, 7, 8, 9, 22, 23, 24)
+	# 0
+	# 1 agent inventory
+	# 2 comp price new (old)
+	# 3 comp price used (old)
+	# 4 comp price rebuy (old)
+	# 7 agent price new
+	# 8 agent price used
+	# 9 agent price rebuy
+	# 22 comp price new (updated)
+	# 23 comp price used (updated)
+	# 24 comp price rebuy (updated)
 	y1_index = 11
 	y2_index = 12
 	y3_index = 13
@@ -179,6 +205,13 @@ if __name__ == '__main__':
 	by3 = first_regression(data, M123, y3_index)
 
 	M4 = (0, 2, 3, 4, 7, 8, 9)
+	# 0
+	# 2 comp price new (old)
+	# 3 comp price used (old)
+	# 4 comp price rebuy (old)
+	# 7 agent price new
+	# 8 agent price used
+	# 9 agent price rebuy
 	M4x = (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20)
 	y4_index = 2
 	M5 = (0, 2, 3, 4, 7, 8, 9)
@@ -187,9 +220,9 @@ if __name__ == '__main__':
 	M6 = (0, 2, 3, 4, 7, 8, 9)
 	M6x = (1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10)
 	y6_index = 4
-	by4, bxy4 = fourth_regression(data, M4, M4x, y4_index)
-	by5, bxy5 = fourth_regression(data, M5, M5x, y5_index)
-	by6, bxy6 = fourth_regression(data, M6, M6x, y6_index)
+	by4, bxy4 = fourth_regression(data, M4, M4x, y4_index, 'new')
+	by5, bxy5 = fourth_regression(data, M5, M5x, y5_index, 'used')
+	by6, bxy6 = fourth_regression(data, M6, M6x, y6_index, 'rebuy')
 	print('by1:', by1)
 	print('by2:', by2)
 	print('by3:', by3)
@@ -200,4 +233,5 @@ if __name__ == '__main__':
 	print('by6:', by6)
 	print('bxy6:', bxy6)
 	data_simulated = simulation_model_b(data, by1, by2, by3, by4, bxy4, by5, bxy5, by6, bxy6, M123, M123, M123, M4, M5, M6, M4x, M5x, M6x)
+	print(data_simulated[:, 199])
 	pd.DataFrame(data_simulated.transpose(0, 1)).to_csv('data_simulated.csv', index=False)

@@ -169,6 +169,7 @@ class SimMarket(gym.Env, ABC):
 		for vendor_index in range(self._number_of_vendors):
 			if vendor_index == vendor_view:
 				continue
+			# why do we have to use ndmin here?
 			observations.append(np.array(self.vendor_actions[vendor_index], ndmin=1, dtype=np.float32))
 			if self.vendor_specific_state[vendor_index] is not None:
 				observations.append(np.array(self.vendor_specific_state[vendor_index], ndmin=1, dtype=np.float32))
