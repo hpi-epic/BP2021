@@ -210,14 +210,14 @@ class DockerManager():
 		if not container:
 			return DockerInfo(container_id, status='Container not found')
 
-		print(f'Getting logs for {container_id}')
+		print(f'Getting logs for {container_id}...')
 
-		container_status = container.status
-		logs = container.logs(stream=stream, timestamps=timestamps, tail=tail, stderr=container_status == 'exited')
+		logs = container.logs(stream=stream, timestamps=timestamps, tail=tail,
+			stderr=docker.APIClient().inspect_container(container.id)['State']['ExitCode'] != 0)
 		if stream:
-			return DockerInfo(container_id, status=container_status, stream=logs)
+			return DockerInfo(container_id, status=container.status, stream=logs)
 		else:
-			return DockerInfo(container_id, status=container_status, data=logs.decode('utf-8'))
+			return DockerInfo(container_id, status=container.status, data=logs.decode('utf-8'))
 
 	def get_container_data(self, container_id: str, container_path: str) -> DockerInfo:
 		"""
