@@ -555,7 +555,6 @@ class DockerManager():
 		occupied_ports = [int(container.ports['6006/tcp'][0]['HostPort']) for container in running_recommerce_containers]
 		# Create a dictionary of container_id: mapped port
 		cls._port_mapping = dict(zip([container.id for container in running_recommerce_containers], occupied_ports))
-		print(cls._port_mapping)
 
 
 if __name__ == '__main__':  # pragma: no cover
