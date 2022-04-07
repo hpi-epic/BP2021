@@ -112,7 +112,8 @@ class PerStepCheck(BaseCallback):
 		episode_numbers = [int(parameter_path[-9:][:5]) for parameter_path in self.saved_parameter_paths]
 		Evaluator(monitor.configurator).evaluate_session(rewards, episode_numbers)
 
-	def save_parameters(self, finished_episodes):
+	def save_parameters(self, finished_episodes: int):
+		assert isinstance(finished_episodes, int)
 		path_to_parameters = os.path.join(self.save_path, f'{self.signature}_{finished_episodes:05d}.zip')
 		os.rename(self.tmp_parameters, path_to_parameters)
 		self.saved_parameter_paths.append(path_to_parameters)

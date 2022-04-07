@@ -3,7 +3,6 @@ import stable_baselines3.common.monitor
 from stable_baselines3 import A2C, DDPG, PPO, SAC, TD3
 from stable_baselines3.common.noise import NormalActionNoise
 
-import recommerce.market.circular.circular_sim_market as circular_market
 from recommerce.market.circular.circular_vendors import CircularAgent
 from recommerce.market.linear.linear_vendors import LinearAgent
 from recommerce.market.sim_market import SimMarket
@@ -96,7 +95,3 @@ class StableBaselinesSAC(StableBaselinesAgent):
 
 	def _load(self, load_path):
 		self.model = SAC.load(load_path)
-
-
-if __name__ == '__main__':
-	StableBaselinesPPO(circular_market.CircularEconomyRebuyPriceOneCompetitor(True)).train_agent()
