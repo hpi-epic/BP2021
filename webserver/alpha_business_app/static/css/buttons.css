@@ -90,3 +90,17 @@
 .bc-padding {
 	padding: 0.25rem 0.5rem !important;
 }
+
+.footer {
+	position: relative;
+	bottom: 0;
+	width: 100%;
+	/* Set the fixed height of the footer here */
+	height: 60px;
+	line-height: 20px; /* Vertically center the text there */
+	background-color: #f8f9fa;
+}
+
+.bc-footer-item {
+	color: rgba(0, 0, 0, 0.5)
+}
