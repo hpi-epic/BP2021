@@ -28,17 +28,22 @@
 						{% endfor %}
 					</table>
 					{% if all_configurations %}
-						<button class="btn btn-outline-secondary btn-rounded m-3">pre-fill</button>
+						<button class="btn btn-sm btn-outline-secondary btn-rounded m-3">pre-fill</button>
 					{% endif %}
 				</form>
 			</div>
 			<div class="col-9">
-				<form method="post" enctype="multipart/form-data">
+				<form method="post" enctype="multipart/form-data" class="config-form">
 					{% csrf_token %}
 					<input type="hidden" name="action" value="start">
 					{% include "configuration_items/config.html" with prefill=prefill should_show=True error_dict=error_dict %}
 					<input class="form-control" type="text" placeholder="experiment name" name="experiment_name">
-					<button class="btn btn-outline-secondary btn-rounded m-3">launch</button>
+					<div class="d-flex">
+						<button class="btn btn-sm btn-outline-secondary btn-rounded m-3">launch</button>
+						<div class="ms-auto d-flex">
+							<button class="btn btn-sm btn-outline-secondary btn-rounded form-check m-3" type="button" data-url="/validate_config">check</button>
+						</div>
+					</div>
 				</form>
 			</div>
 		</div>

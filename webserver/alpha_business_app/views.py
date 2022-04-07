@@ -5,7 +5,10 @@ import requests
 from django.http import Http404, HttpResponse
 from django.shortcuts import render
 
+from recommerce.configuration.config_validation import validate_config
+
 from .buttons import ButtonHandler
+from .config_parser import ConfigFlatDictParser
 from .forms import UploadFileForm
 from .handle_files import handle_uploaded_file
 from .handle_requests import DOCKER_API
@@ -78,3 +81,30 @@ def api_availability(request):
 
 	current_time = datetime.datetime.now().strftime('%H:%M:%S')
 	return render(request, 'api_buttons/api_health_button.html', {'api_success': f'available {current_time}'})
+
+
+def config_validation(request):
+	if request.method == 'POST':
+		post_request = request.POST
+		print(post_request)
+		# convert formdata doct to normal form dict
+		resulting_dict = {
+			'environment-agents-name': [],
+			'environment-agents-agent_class': [],
+			'environment-agents-argument': []
+		}
+		for index in range(0, len(post_request) // 2):
+			current_name = post_request[f'formdata[{index}][name]']
+			current_value = post_request[f'formdata[{index}][value]']
+			print(current_name, current_value, sep='\t')
+			if 'agents' in current_name:
+				resulting_dict[current_name] += [current_value]
+			else:
+				resulting_dict[current_name] = [current_value]
+
+		config_dict = ConfigFlatDictParser().flat_dict_to_hierarchical_config_dict(resulting_dict)
+
+		validate_status, validate_data = validate_config(config=config_dict, config_is_final=True)
+		if not validate_status:
+			return render(request, 'notices/config_valid_field.html', {'config_is_valid': False, 'message': validate_data})
+	return render(request, 'notices/config_valid_field.html', {'config_is_valid': True, 'message': 'This config is valid'})

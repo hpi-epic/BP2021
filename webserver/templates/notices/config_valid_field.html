@@ -1,0 +1,6 @@
+{% load static %}
+{% if config_is_valid %}
+	<img src="{% static 'icons/happy_emoji.svg' %}" width="18px" class="config-status-emoji ms-auto ml-2"></img> 
+{% else %}
+	<img src="{% static 'icons/sad_emoji.svg' %}" width="18px" class="config-status-emoji ms-auto ml-2"></img> 
+{% endif %}
