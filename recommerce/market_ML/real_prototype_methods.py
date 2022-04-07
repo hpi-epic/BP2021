@@ -12,7 +12,7 @@ def generate_training_data():
 	# historical/training data
 
 	x = x_np.transpose(0, 1)
-	print(x.size())
+	# print(x.size())
 	# own period: 1st half: own x[7, i]vs x[2, i]| 2nd half: own x[7, i] vs x[2, i+1]
 	# comp period: 1st half: com x[2, i-1] vs x[7, i-1] | 2nd half: com x[2, i-1] vs x[7, i]
 
@@ -22,7 +22,7 @@ def generate_training_data():
 		x[2, i] = x[7, i-1]-1 + np.round_(x[5, i-1]/200) if 9 < x[7, i-1] <= 20 else 20  # comp price new
 		x[3, i] = x[8, i-1]-1 + np.round_(x[5, i-1]/200) if 5 < x[8, i-1] <= 15 else 15  # comp price used
 		x[4, i] = x[9, i-1]-0.5-np.round_(x[5, i-1]/200)if 1 < x[9, i-1] <= 5 else 5  # comp price rebuy
-		x[5, i] = x[5, i-1]-x[16, i-1] + x[17, i - 1]  # comp inventory
+		x[5, i] = x[5, i-1]-x[16, i-1] + x[17, i-1]  # comp inventory
 		x[6, i] = max(0, np.round_(0.8*x[6, i-1])+x[11, i-1]+x[12, i-1]-x[13, i-1] + x[15, i-1] + x[16, i-1]-x[17, i-1])  # resource in use
 
 		x[7, i] = np.round_(np.random.uniform(5, 20)) if i < 20 else x[2, i] - 1 + np.round_(x[1, i]/200)if 9 < x[2, i] <= 18 else 18
@@ -63,12 +63,12 @@ def first_regression(data, x_rows, y_index):
 
 	transposed_x_y3 = x_y3.transpose(0, 1)
 
-	print('x_y4:', torch.tensor(x_y3).size())
-	print('y3:', y3.size())
-	print('transposed_tensor_x_y3:', transposed_x_y3.size())
+	# print('x_y4:', torch.tensor(x_y3).size())
+	# print('y3:', y3.size())
+	# print('transposed_tensor_x_y3:', transposed_x_y3.size())
 
 	result_tuple_y3 = torch.linalg.lstsq(transposed_x_y3, y3)
-	print('result:', result_tuple_y3)
+	# print('result:', result_tuple_y3)
 	b3 = result_tuple_y3[0]
 	# minimize OLSy3: sum{i in 1..N} ( sum{k in M3} beta3[k]*x[k,i] - y3[i] )^2;
 	# objective OLSy3; solve; for{k in M3} let b3[k]:=beta3[k];;
@@ -80,52 +80,66 @@ def fourth_regression(data, x_rows, xx_rows, y_index):
 	y6 = torch.tensor([x[y_index, i+1] for i in range(0, N + 1 - 1)])
 
 	x_y6_x = torch.tensor([[1 if x[9, i] < k else 0 for k in xx_rows] for i in range(1, N + 1)])  # matrix for price own new (the 0 and 1 stuff
-
+	pd.DataFrame(x_y6_x).to_csv('x_y6_x.csv', index=False)
 	x_y6 = torch.tensor(x[x_rows, : N])
-
-	x_y6_combined = torch.concat((x_y6.transpose(0, 1), x_y6_x), 1)
-
 	print('x_y6:', x_y6.size())
 	print('x_y6_x:', x_y6_x.size())
-	print('y6:', y6.size())
-	print('x_y6_combined:', x_y6_combined.size())
+	x_y6_combined = torch.concat((x_y6.transpose(0, 1), x_y6_x), 1)
+
+	# print('x_y6:', x_y6.size())
+	# print('x_y6_x:', x_y6_x.size())
+	# print('y6:', y6.size())
+	# print('x_y6_combined:', x_y6_combined.size())
 
 	result_tuple_y6 = torch.linalg.lstsq(x_y6_combined, y6)
-	print('result:', result_tuple_y6)
+	# print('result:', result_tuple_y6)
 	b6_b6x = result_tuple_y6[0]
-
+	print(len(x_rows))
 	b6 = b6_b6x[0:len(x_rows)]
 	b6x = b6_b6x[len(x_rows):]
-	print('b6:', b6)
-	print('b6x:', b6x)
+	# print('b6:', b6)
+	# print('b6x:', b6x)
 	return b6, b6x
 
 
-def simulation_model_b(data, b1, b2, b3, b4, b4x, b5, b5x, b6, b6x, M1, M2, M3, M4, M5, M6):
+def comp_prices(Mi, Mix, bi, bix, flag: str, xb, i):
+	xb_first_index = -1
+	if flag == 'new':
+		xb_first_index = 7
+	elif flag == 'used':
+		xb_first_index = 8
+	elif flag == 'rebuy':
+		xb_first_index = 9
+	else:
+		assert False
+
+	return sum([bi[ki] * xb[k, i-1] for ki, k in enumerate(Mi)]) + \
+		sum([bix[ki] * (1 if xb[xb_first_index, i] < k else 0) for ki, k in enumerate(Mix)])
+
+
+def simulation_model_b(data, b1, b2, b3, b4, b4x, b5, b5x, b6, b6x, M1, M2, M3, M4, M5, M6, M4x, M5x, M6x):
 	NB = N + 1
 	x = data
 	# param xb{k in 0..24,i in 0..NB} default if k=0 then 1 else if i=0 then 5 else -1      # simulated data
-	xb = torch.tensor([[(1 if k-1 == 0 else 5 if i == 0 else -1) for k in range(0, 25)] for i in range(0, NB)]).transpose(0, 1)
+	xb = torch.tensor([[(1. if k-1 == 0 else 5. if i == 0 else -1.) for k in range(0, 25)] for i in range(0, NB)]).transpose(0, 1)
 	print(xb.shape[0])
 	for i in range(1, NB):
-		xb[1, i] = xb[1, i-1]-xb[12, i-1]+xb[13, i-1]
+		xb[1, i] = xb[1, i-1] - xb[12, i-1] + xb[13, i-1]
 
-		# xb[2,i] = sum{k in M4}  b4[k] *xb[k,i-1] + sum{k in M4x} (b4x[k]*(1 if xb[7,i-1]<k else 0)) for k in M4x
-		# xb[2,i] = [(b4[k] *xb[k,i-1] + (b4x[k2]*(1 if xb[7,i-1]<k2 else 0)) for k2 in M4x) for k in M4]  # comp price new
-		for ki, k in enumerate(M4):
-			xb[2, i] += b4[ki] * xb[ki, k-1]
-		for ki, k in enumerate(M4x):
-			xb[2, i] += (b4x[ki] * (1 if xb[7, i-1] < k else 0))  # comp price new
+		# xb[2,i] = sum{k in M4}  b4[k] *xb[k,i-1] + sum{k in M4x} (b4x[k]*(1 if xb[7,i-1]<k else 0)) for k in M4x # comp price new
+		# xb[2, i] = sum([b4[ki] * xb[k, i-1] for ki, k in enumerate(M4)]) + \
+		# 	sum([b4x[ki] * (1 if xb[7, i-1] < k else 0) for ki, k in enumerate(M4x)])
+		xb[2, i] = comp_prices(M4, M4x, b4, b4x, 'new', xb, i-1)  # comp price new 		(old)
 
 		# xb[3,i] = sum{k in M5}  b5[k] *xb[k,i-1] + sum{k in M5x} b5x[k]*(if xb[8,i-1]<k then 1 else 0)  # comp price used
-		for ki, k in enumerate(M5):
-			xb[3, i] += b5[ki] * xb[ki, k-1]
-		for ki, k in enumerate(M5x):
-			xb[3, i] += b5x[ki]*(1 if xb[8, i-1] < k else 0)  # comp price used
+		# xb[3, i] = sum([b5[ki] * xb[k, i-1] for ki, k in enumerate(M5)]) + \
+		# 	sum([b5x[ki] * (1 if xb[8, i-1] < k else 0) for ki, k in enumerate(M5x)])
+		xb[3, i] = comp_prices(M5, M5x, b5, b5x, 'used', xb, i-1)  # comp price used 	(old)
 
-		xb[4, i] = sum([b6[ki] * xb[ki, k-1] for ki, k in enumerate(M6)]) \
-			+ sum([b6x[ki]*(1 if xb[9, i-1] < k else 0) for ki, k in enumerate(M6x)])
 		# xb[4,i] = sum{k in M6}  b6[k] *xb[k,i-1] + sum{k in M6x} b6x[k]*(if xb[9,i-1]<k then 1 else 0)  # comp price rebuy
+		# xb[4, i] = sum([b6[ki] * xb[k, i-1] for ki, k in enumerate(M6)]) + \
+		# 	sum([b6x[ki] * (1 if xb[9, i-1] < k else 0) for ki, k in enumerate(M6x)])
+		xb[4, i] = comp_prices(M6, M6x, b6, b6x, 'rebuy', xb, i-1)  # comp price rebuy 	(old)
 
 		xb[5, i] = xb[5, i-1] - xb[16, i-1] + xb[17, i-1]  # comp inventory
 
@@ -134,25 +148,24 @@ def simulation_model_b(data, b1, b2, b3, b4, b4x, b5, b5x, b6, b6x, M1, M2, M3, 
 
 		xb[7, i] = xb[2, i] - 1 + np.round_(x[1, i]/200) if 9 < xb[2, i] <= 18 else 18  # own price new
 		xb[8, i] = xb[3, i] - 1 + np.round_(x[1, i]/200) if 5 < xb[3, i] <= 12 else 12  # own price used
-		xb[9, i] = xb[4, i] - 0.5 - np.round_(x[1, i]/200) if 1 < xb[4, i] <= 5 else 5  # own price rebuy
+		xb[9, i] = xb[4, i] - 0.5 - np.round_(x[1, i]/200) if 1 < xb[4, i] <= 5 else 5    # own price rebuy
+
 		xb[10, i] = xb[1, i] * 0.05  # own holding cost
 
 		# xb[22,i]= sum{k in M4}  b4[k] *xb[k,i] + sum{k in M4x} b4x[k]*(if xb[7,i]<k then 1 else 0)  # comp new reaction
-		for ki, k in enumerate(M4):
-			xb[22, i] += b4[ki] * xb[ki, i]
-		for ki, k in enumerate(M4x):
-			b4x[ki] * (1 if xb[7, i] < k else 0)
+		# xb[22, i] = sum([b4[ki] * xb[ki, i] for ki, k in enumerate(M4)]) + \
+		# 	sum([b4x[ki] * (1 if xb[7, i] < k else 0) for ki, k in enumerate(M4x)])
+		xb[22, i] = comp_prices(M4, M4x, b4, b4x, 'new', xb, i)  # comp price new 		(updated)
+		# comp new reaction
 
 		# xb[23,i]= sum{k in M5}  b5[k] *xb[k,i] + sum{k in M5x} b5x[k]*(if xb[8,i]<k then 1 else 0)  # comp used reaction
-		for ki, k in enumerate(M5):
-			xb[23, i] += b5[ki] * xb[k, i]
-		for ki, k in enumerate(M5x):
-			xb[23, i] += b5x[ki] * (1 if xb[8, i] < k else 0)
+		# xb[23, i] = sum([b5[ki] * xb[k, i] for ki, k in enumerate(M5)]) + \
+		# 	sum([b5x[ki] * (1 if xb[8, i] < k else 0) for ki, k in enumerate(M5x)])
+		xb[23, i] = comp_prices(M5, M5x, b5, b5x, 'used', xb, i)  # comp price used 	(updated)
 		# xb[24,i]= sum{k in M6}  b6[k] *xb[k,i] + sum{k in M6x} b6x[k]*(if xb[9,i]<k then 1 else 0)  # comp rebuy reaction
-		for ki, k in enumerate(M6):
-			xb[24, i] += b6[ki] * xb[k, i]
-		for ki, k in enumerate(M6x):
-			xb[24, i] += b6x[ki]*(1 if xb[9, i] < k else 0)
+		# xb[24, i] = sum([b6[ki] * xb[k, i] for ki, k in enumerate(M6)]) + \
+		# 	sum([b6x[ki]*(1 if xb[9, i] < k else 0) for ki, k in enumerate(M6x)])
+		xb[24, i] = comp_prices(M6, M6x, b6, b6x, 'rebuy', xb, i)  # comp price rebuy 	(updated)
 
 		# xb[11,i]= np.round_(max(0, np.random.uniform(-5,5) + sum{k in M1} b1[k]*xb[k,i]))
 		xb[11, i] = np.round_(max(np.random.uniform(-5, 5) + sum([b1[ki] * xb[k, i] for ki, k in enumerate(M1)]), 0))
@@ -163,18 +176,21 @@ def simulation_model_b(data, b1, b2, b3, b4, b4x, b5, b5x, b6, b6x, M1, M2, M3, 
 		xb[13, i] = np.round_(min(x[6, i] / 2, max(np.random.uniform(-5, 5) + sum([b3[ki] * xb[k, i] for ki, k in enumerate(M3)]), 0)))
 		xb[14, i] = xb[5, i]*0.05
 		# M1: 0-0;1-1;2-2;3-3;4-4;7-5;8-6;9-7;22-8;23-9;24-10
-		xb[15, i] = np.round_(max(0, np.random.uniform(-5, 5) + b1[0] * xb[0, i] + b1[1] * xb[5, i] + b1[2] * xb[7, i-1] + b1[3] * xb[8, i-1]
-			+ b1[4] * xb[9, i-1] + b1[5] * xb[2, i] + b1[6] * xb[3, i] + b1[7] * xb[4, i] + b1[8] * xb[7, i] + b1[9] * xb[8, i]
-			+ b1[10] * xb[9, i]))  # cf M1
+		xb[15, i] = np.round_(max(0, np.random.uniform(-5, 5) + b1[0] * xb[0, i] + b1[1] * xb[5, i] + b1[2] * xb[7, i-1] +
+			b1[3] * xb[8, i-1] + b1[4] * xb[9, i-1] + b1[5] * xb[2, i] + b1[6] * xb[3, i] + b1[7] * xb[4, i] + b1[8] * xb[7, i] +
+			b1[9] * xb[8, i] + b1[10] * xb[9, i]))  # cf M1 # what the comp sells new
 
-		xb[16, i] = np.round_(min(x[5, i],  max(0, np.random.uniform(-5, 5) + b2[0] * xb[0, i] + b2[1] * xb[5, i] + b2[2] * xb[7, i-1]
-			+ b2[3] * xb[8, i - 1]
-			+ b2[4] * xb[9, i-1] + b2[5] * xb[2, i] + b2[6] * xb[3, i] + b2[7] * xb[4, i] + b2[8] * xb[7, i] + b2[9] * xb[8, i]
-			+ b2[10] * xb[9, i])))  # cf M2
+		#   let xb[16,i]:= round(min(x[5,i],  max(0,Uniform(-5,5) + b2[0]*xb[0,i] + b2[1]*xb[5,i] + b2[2]*xb[7,i-1]
+		# 		+ b2[3]*xb[8,i-1] + b2[4]*xb[9,i-1]
+		# 		+ b2[7]*xb[2,i]   + b2[8]*xb[3,i]   + b2[9]*xb[4,i]
+		# 		+ b2[22]*xb[7,i]  + b2[23]*xb[8,i]  + b2[24]*xb[9,i] ))); # cf M2
+		xb[16, i] = np.round_(min(x[5, i],  max(0, np.random.uniform(-5, 5) + b2[0] * xb[0, i] + b2[1] * xb[5, i] + b2[2] * xb[7, i-1] +
+			b2[3] * xb[8, i-1] + b2[4] * xb[9, i-1] + b2[5] * xb[2, i] + b2[6] * xb[3, i] + b2[7] * xb[4, i] + b2[8] * xb[7, i] +
+			b2[9] * xb[8, i] + b2[10] * xb[9, i])))  # cf M2 # what the comp sells used
 
 		xb[17, i] = np.round_(min(x[6, i]/2, max(0, np.random.uniform(-5, 5) + b3[0] * xb[0, i] + b3[1] * xb[5, i] + b3[2] * xb[7, i-1]
 			+ b3[3] * xb[8, i-1] + b3[4] * xb[9, i-1] + b3[5] * xb[2, i] + b3[6] * xb[3, i] + b3[7] * xb[4, i] + b3[8] * xb[7, i]
-			+ b3[9] * xb[8, i] + b3[10] * xb[9, i])))  # cf M3
+			+ b3[9] * xb[8, i] + b3[10] * xb[9, i])))  # cf M3 # what the comp buys
 
 		xb[18, i] = -xb[10, i]+xb[11, i]*(xb[7, i] - c_new)+xb[12, i]*xb[8, i]-xb[13, i]*xb[9, i]      # own total rewards
 		xb[19, i] = -xb[14, i]+xb[15, i]*(xb[2, i] - c_new)+xb[16, i]*xb[3, i]-xb[17, i]*xb[4, i]      # comp total rewards
@@ -202,7 +218,17 @@ if __name__ == '__main__':
 	M6 = (0, 2, 3, 4, 7, 8, 9)
 	M6x = (1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10)
 	y6_index = 4
-	b4y, b4xy = fourth_regression(data, M4, M4x, y4_index)
-	b5y, b5xy = fourth_regression(data, M5, M5x, y5_index)
-	b6y, b6xy = fourth_regression(data, M6, M6x, y6_index)
-	data_simulated = simulation_model_b(data, by1, by2, by3, b4y, b4xy, b5y, b5xy, b6y, b6xy, M123, M123, M123, M4, M5, M6)
+	by4, bxy4 = fourth_regression(data, M4, M4x, y4_index)
+	by5, bxy5 = fourth_regression(data, M5, M5x, y5_index)
+	by6, bxy6 = fourth_regression(data, M6, M6x, y6_index)
+	print('by1:', by1)
+	print('by2:', by2)
+	print('by3:', by3)
+	print('by4:', by4)
+	print('bxy4:', bxy4)
+	print('by5:', by5)
+	print('bxy5:', bxy5)
+	print('by6:', by6)
+	print('bxy6:', bxy6)
+	data_simulated = simulation_model_b(data, by1, by2, by3, by4, bxy4, by5, bxy5, by6, bxy6, M123, M123, M123, M4, M5, M6, M4x, M5x, M6x)
+	pd.DataFrame(data_simulated.transpose(0, 1)).to_csv('data_simulated.csv', index=False)
