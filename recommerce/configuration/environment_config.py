@@ -229,8 +229,8 @@ class EnvironmentConfig(ABC):
 			if needs_modelfile and issubclass(agent_classes[current_agent], (QLearningAgent, ActorCriticAgent)):
 				assert isinstance(current_config_argument, str), \
 					f'The "argument" field of this agent must be a string: {agent_classes[current_agent]} ({type(current_config_argument)})'
-				assert current_config_argument.endswith('.dat'), \
-					f'The "argument" field must be a modelfile and therefore end in ".dat": {current_config_argument}'
+				assert current_config_argument.endswith('.dat') or current_config_argument.endswith('.zip'), \
+					f'The "argument" field must be a modelfile and therefore end in ".dat" or ".zip": {current_config_argument}'
 				# Check that the modelfile exists. Taken from am_configuration::_get_modelfile_path()
 				full_path = os.path.abspath(os.path.join(PathManager.data_path, current_config_argument))
 				assert os.path.exists(full_path), f'the specified modelfile does not exist: {full_path}'

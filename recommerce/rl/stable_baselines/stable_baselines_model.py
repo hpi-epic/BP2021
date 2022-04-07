@@ -15,8 +15,8 @@ class StableBaselinesAgent(ReinforcementLearningAgent, LinearAgent, CircularAgen
 		assert marketplace is not None
 		assert isinstance(marketplace, SimMarket), \
 			f'if marketplace is provided, marketplace must be a SimMarket, but is {type(marketplace)}'
-		assert optim is not None
-		assert isinstance(load_path, str)
+		assert optim is None
+		assert load_path is None or isinstance(load_path, str)
 		assert name is None or isinstance(name, str)
 
 		self.marketplace = marketplace
