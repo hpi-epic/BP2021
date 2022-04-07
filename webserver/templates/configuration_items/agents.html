@@ -8,7 +8,13 @@
 	</h2>
 <div id="collapseAgentContainer" class="accordion-collapse collapse">
 	<div class="accordion-body">
-		{% include "configuration_items/agent.html" with id=0 %}
+		{% if prefill %}
+			{% for agent in prefill %}
+				{% include "configuration_items/agent.html" with id=agent.id prefill=agent %}
+			{% endfor %}
+		{% else %}
+			{% include "configuration_items/agent.html" with id=0 %}
+		{% endif %}
 		<button class="btn bc-outline-lightgreen add-more mt-2" data-url="/agent" type="button">+</button>
 	</div>
 </div>
