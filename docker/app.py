@@ -209,10 +209,15 @@ async def remove_container(id: str) -> JSONResponse:
 async def check_if_api_is_available() -> JSONResponse:
 	"""
 	This is a route you can call to see if the API is available.
+	If the API is unavailable, this will of course not actually get called which the Webserver will catch.
+	But if it is available, we also check if docker is responsive, i.e. if `manager._client` is a valid docker.DockerClient.
+
 	Returns:
-		JSONResponse: A json containing only a `status` field.
+		JSONResponse: A json with a `status` field and status code indicating if docker is available.
 	"""
-	return JSONResponse({'status': 'I am alive'})
+	docker_status = manager.ping()
+	status_code = 200 if docker_status else 404
+	return JSONResponse({'status': docker_status}, status_code=status_code)
 
 
 if __name__ == '__main__':

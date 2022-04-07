@@ -11,18 +11,17 @@ $(document).ready(function() {
 	
 	
 	function updateAPIHealth() {
-		// replaces the element by the element returned by ajax (html)
+		// replaces the element by the element returned by ajax (html) and adds this click event to it
 		var statusButton = $("button.replace-me")
 		$.ajax({url: statusButton.data("url"),
 		success: function (data) {
 			statusButton.replaceWith(data);
+			$("button.replace-me").click(function() {updateAPIHealth()})
 		}
 		});
 	};
 
-	// check for API status when loading the page and every 30 seconds afterwards
 	updateAPIHealth();
-	window.setInterval(function() {updateAPIHealth()}, 30000);
 
 	$("select.task-selection").change(function () {
 		// displays the monitoring options when 'agent_monitoring' is selected
