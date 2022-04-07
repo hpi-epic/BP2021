@@ -64,7 +64,6 @@ class Evaluator():
 			return
 		assert all(len(curr_reward) == len(rewards[0]) for curr_reward in rewards), 'all rewards-arrays must be of the same size'
 
-		filename += '.svg'
 		plt.clf()
 		plt.xlabel('Reward', fontsize='18')
 		plt.ylabel('Episodes', fontsize='18')
