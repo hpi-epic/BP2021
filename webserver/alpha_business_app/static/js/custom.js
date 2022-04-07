@@ -69,7 +69,6 @@ $(document).ready(function() {
 			},
 			success: function (data) {
 				self.before(data);
-				console.log(data)
 			}
 		});
 	});

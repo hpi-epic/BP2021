@@ -97,7 +97,6 @@ def config_validation(request):
 		for index in range(0, len(post_request) // 2):
 			current_name = post_request[f'formdata[{index}][name]']
 			current_value = post_request[f'formdata[{index}][value]']
-			print(current_name, current_value, sep='\t')
 			if 'agents' in current_name:
 				resulting_dict[current_name] += [current_value]
 			else:
