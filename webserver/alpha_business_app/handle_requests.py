@@ -98,6 +98,5 @@ def _error_handling_API(response) -> APIResponse:
 	"""
 	if response.status_code < 500:
 		return APIResponse('error', content=response.json()['status'], http_status=response.status_code)
-	else:
-		print('Got status code %s from API' % response.status_code)
-		return APIResponse('error', content='something is wrong with the API. Please try again later', http_status=response.status_code)
+	print(f'Got status code {response.status_code} from API')
+	return APIResponse('error', content='Something is wrong with the API. Please try again later.', http_status=response.status_code)
