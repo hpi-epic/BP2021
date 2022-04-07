@@ -113,18 +113,20 @@ def create_environment_mock_dict(task: str = 'agent_monitoring',
 		plot_interval (int, optional): How often plots should be drawn. Defaults to 5.
 		marketplace (str, optional): What marketplace to run on.
 			Defaults to "recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario".
-		agents (dict, optional): What agents to use.
-			Defaults to {"Fixed CE Rebuy Agent": {"class": "market.vendors.FixedPriceCERebuyAgent"}}.
+		agents (dict, optional): What agents to use. Defaults to
+			[{'name': 'Fixed CE Rebuy Agent', 'agent_class': 'recommerce.market.circular.circular_vendors.RuleBasedCERebuyAgent', 'argument': ''}].
 
 	Returns:
 		dict: The mock dictionary.
 	"""
 	if agents is None:
-		agents = {
-			'Fixed CE Rebuy Agent': {
-				'class': 'market.vendors.FixedPriceCERebuyAgent'
+		agents = [
+			{
+				'name': 'Fixed CE Rebuy Agent',
+				'agent_class': 'recommerce.market.circular.circular_vendors.RuleBasedCERebuyAgent',
+				'argument': ''
 			}
-		}
+		]
 
 	return {
 		'task': task,
@@ -133,6 +135,35 @@ def create_environment_mock_dict(task: str = 'agent_monitoring',
 		'plot_interval': plot_interval,
 		'marketplace': marketplace,
 		'agents': agents
+	}
+
+
+def create_combined_mock_dict(hyperparameter: dict or None = create_hyperparameter_mock_dict(),
+	environment: dict or None = create_environment_mock_dict()) -> dict:
+	"""
+	Create a mock dictionary in the format of a configuration file with both a hyperparameter and environment part.
+	If any of the two parameters is `None`, leave that key out of the resulting dictionary.
+
+	Args:
+		hyperparameter (dict | None, optional): The hyperparameter part of the combined config. Defaults to create_hyperparameter_mock_dict().
+		environment (dict | None, optional): The environment part of the combined config. Defaults to create_environment_mock_dict().
+
+	Returns:
+		dict: The mock dictionary.
+	"""
+	if hyperparameter is None and environment is None:
+		return {}
+	elif hyperparameter is None:
+		return {
+			'environment': environment
+		}
+	elif environment is None:
+		return {
+			'hyperparameter': hyperparameter
+		}
+	return {
+		'hyperparameter': hyperparameter,
+		'environment': environment
 	}
 
 
