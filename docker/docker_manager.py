@@ -362,14 +362,19 @@ class DockerManager():
 		except docker.errors.ImageNotFound:
 			old_img = None
 		try:
-			img, _ = self._get_client().images.build(path=os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)),
-				tag='recommerce', forcerm=True, network_mode='host')
+			# Using the low-level API to be able to get live-logs
+			logs = docker.APIClient().build(path=os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)),
+				tag='recommerce', forcerm=True, network_mode='host', decode=True)
+			for output in logs:
+				if 'stream' in output:
+					output_str = output['stream'].strip('\r\n').strip('\n')
+					print(output_str)
+			img = self._get_client().images.get('recommerce')
 		except docker.errors.BuildError or docker.errors.APIError as error:
 			print(f'An error occurred while building the recommerce image\n{error}')
 			return None
-
 		if old_img is not None and old_img.id != img.id:
-			print('A recommerce image already exists, it will be overwritten')
+			print('\nA recommerce image already exists, it will be overwritten')
 			self._get_client().images.remove(old_img.id[7:])
 		# return id without the 'sha256:'-prefix
 		return img.id[7:]
