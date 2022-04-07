@@ -90,7 +90,7 @@ class EnvironmentConfig(ABC):
 			AssertionError: If a key's value has an incorrect type or the marketplace or an agent could not be parsed to a valid class.
 			KeyError: If the dictionary is missing a key but should contain all keys.
 		"""
-		if task in {'None', 'agent_monitoring'}:
+		if task in ['None', 'agent_monitoring']:
 			types_dict = {
 				'task': str,
 				'enable_live_draw': bool,
@@ -99,7 +99,7 @@ class EnvironmentConfig(ABC):
 				'marketplace': str,
 				'agents': list
 			}
-		elif task in {'training', 'exampleprinter'}:
+		elif task in ['training', 'exampleprinter']:
 			types_dict = {
 				'task': str,
 				'marketplace': str,
@@ -130,7 +130,7 @@ class EnvironmentConfig(ABC):
 						try:
 							get_class(agent['agent_class'])
 						except Exception as error:
-							raise AssertionError(f'This agent could not be parsed to a valid class: "{config["agents"][agent]["agent_class"]}"') from error
+							raise AssertionError(f'This agent could not be parsed to a valid class: "{agent["agent_class"]}"') from error
 				# make sure the marketplace class can be parsed/is valid
 				elif key == 'marketplace':
 					try:
