@@ -57,9 +57,10 @@ class DockerManager():
 		if cls._instance is None:
 			print('A new instance of DockerManager is being initialized')
 			cls._instance = super(DockerManager, cls).__new__(cls)
-			cls._client = docker.from_env()
+			cls._client = cls._get_client()
 
-		cls._initialize_port_mapping()
+		if cls._client is not None:
+			cls._initialize_port_mapping()
 		return cls._instance
 
 	def start(self, config: dict) -> DockerInfo:
@@ -277,7 +278,41 @@ class DockerManager():
 		except docker.errors.APIError as error:
 			return DockerInfo(id=container_id, status=f'APIError encountered while removing container.\n{error}')
 
+	def ping(self) -> bool:
+		"""
+		Wrapper around docker.ping() that pings the docker server to see if it is running.
+
+		Returns:
+			bool: If the server is running or not.
+		"""
+		print('Pinging docker server...')
+		try:
+			return self._get_client().ping()
+		except Exception:
+			print('Docker server is not responding!')
+			return False
+
 	# PRIVATE METHODS
+	@classmethod
+	def _get_client(cls) -> docker.DockerClient:
+		"""
+		"Wrapper" around `cls._client`. If the `cls._client` is already set, return it.
+		Otherwise, try and get a new client from docker and set it as the `cls._client`.
+		If docker is unavailable, `cls.client` will stay as `None`.
+
+		This function makes it possible for docker to become unavailable and available again without crashing the DockerManager.
+
+		Returns:
+			docker.DockerClient: The docker client, or None if docker is unavailable.
+		"""
+		if cls._client is not None:
+			return cls._client
+		try:
+			cls._client = docker.from_env()
+		except docker.errors.DockerException:
+			cls._client = None
+		return cls._client
+
 	def _confirm_image_exists(self, update: bool = False) -> str:
 		"""
 		Find out if the recommerce image exists. If not, the image will be built.
@@ -290,7 +325,7 @@ class DockerManager():
 		"""
 
 		# Get the image tag of all images on the system.
-		all_images = self._client.images.list()
+		all_images = self._get_client().images.list()
 		tagged_images = [image.tags[0].rsplit(':')[0] for image in all_images if len(image.tags)]
 
 		if len(all_images) != len(tagged_images):
@@ -307,7 +342,7 @@ class DockerManager():
 			print('Recommerce image does not exist and will be created')
 			return self._build_image()
 		print('Recommerce image already exists')
-		return self._client.images.get('recommerce').id[7:]
+		return self._get_client().images.get('recommerce').id[7:]
 
 	def _build_image(self) -> str:
 		"""
@@ -321,11 +356,11 @@ class DockerManager():
 
 		# Find out if an image with the name already exists to remove it afterwards
 		try:
-			old_img = self._client.images.get('recommerce')
+			old_img = self._get_client().images.get('recommerce')
 		except docker.errors.ImageNotFound:
 			old_img = None
 		try:
-			img, _ = self._client.images.build(path=os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)),
+			img, _ = self._get_client().images.build(path=os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)),
 				tag='recommerce', forcerm=True, network_mode='host')
 		except docker.errors.BuildError or docker.errors.APIError as error:
 			print(f'An error occurred while building the recommerce image\n{error}')
@@ -333,7 +368,7 @@ class DockerManager():
 
 		if old_img is not None and old_img.id != img.id:
 			print('A recommerce image already exists, it will be overwritten')
-			self._client.images.remove(old_img.id[7:])
+			self._get_client().images.remove(old_img.id[7:])
 		# return id without the 'sha256:'-prefix
 		return img.id[7:]
 
@@ -358,7 +393,7 @@ class DockerManager():
 		if use_gpu:
 			device_request_gpu = docker.types.DeviceRequest(driver='nvidia', count=-1, capabilities=[['compute']])
 			try:
-				container: Container = self._client.containers.create('recommerce',
+				container: Container = self._get_client().containers.create('recommerce',
 					detach=True,
 					ports={'6006/tcp': used_port},
 					entrypoint=f'recommerce -c {command_id}',
@@ -367,7 +402,7 @@ class DockerManager():
 				return DockerInfo(id=command_id, status=f'Image not found.\n{error}')
 		else:
 			try:
-				container: Container = self._client.containers.create('recommerce',
+				container: Container = self._get_client().containers.create('recommerce',
 					detach=True,
 					ports={'6006/tcp': used_port},
 					entrypoint=f'recommerce -c {command_id}')
@@ -423,7 +458,7 @@ class DockerManager():
 			docker.models.containers.Container: The container for the given id or None if the container does not exist.
 		"""
 		try:
-			return self._client.containers.get(container_id)
+			return self._get_client().containers.get(container_id)
 		except docker.errors.NotFound:
 			return None
 
@@ -526,7 +561,7 @@ class DockerManager():
 		cls._port_mapping = dict(zip(occupied_ports, occupied_ports))
 
 		# make sure all containers are mapped and registered to the manager
-		running_containers = [container.id for container in cls._client.containers.list(all=True)]
+		running_containers = [container.id for container in cls._get_client().containers.list(all=True)]
 		mapped_containers = list(cls._port_mapping.keys())
 		assert set(mapped_containers) == set(running_containers), \
 f'''Container-Port mapping is mismatched! Check the \'occupied_ports.txt\' and your running docker containers (`docker ps -a`)!
