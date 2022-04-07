@@ -47,7 +47,7 @@ class PerStepCheck(BaseCallback):
 		Handle any interruptions to the running process, such as a `KeyboardInterrupt`-event.
 		"""
 		print('\nAborting training...')
-		# self._end_of_training()
+		self._end_of_training()
 		sys.exit(0)
 
 	def initialize_io_related(self, log_dir_prepend) -> None:
@@ -121,3 +121,16 @@ class PerStepCheck(BaseCallback):
 		tqdm.write(f'You can find the parameters here: {path_to_parameters}.')
 		tqdm.write(f'This model achieved a mean reward of {self.best_mean_interim_reward}.')
 		self.best_mean_interim_reward = None
+
+	def _end_of_training(self) -> None:
+		"""
+		Inform the user of the best_mean_overall_reward the agent achieved during training.
+		"""
+		if self.best_mean_overall_reward is None:
+			print('The `best_mean_overall_reward` has never been set. Is this expected?')
+		elif self.best_mean_overall_reward == 0:
+			print('The mean reward of the agent was never higher than 0, so no models were saved!')
+		else:
+			print(f'The best mean reward reached by the agent was {self.best_mean_overall_reward:.3f}')
+			print('The models were saved to:')
+			print(os.path.abspath(self.save_path))
