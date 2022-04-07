@@ -60,7 +60,7 @@ class DockerManager():
 			cls._client = cls._get_client()
 
 		if cls._client is not None:
-			cls._initialize_port_mapping()
+			cls._update_port_mapping()
 		return cls._instance
 
 	def start(self, config: dict) -> DockerInfo:
@@ -265,13 +265,7 @@ class DockerManager():
 			exit_code = container.wait()['StatusCode']
 			container.remove()
 			# update the local port mapping
-			self._port_mapping.pop(container.id)
-			# remove the port mapping of the old container from the occupied_ports.txt
-			with open(os.path.join(os.path.dirname(__file__), 'occupied_ports.txt'), 'w') as port_file:
-				pass
-			with open(os.path.join(os.path.dirname(__file__), 'occupied_ports.txt'), 'a') as port_file:
-				for id, port in self._port_mapping.items():
-					port_file.write(f'{id}\n{port}\n')
+			self._update_port_mapping()
 
 			return DockerInfo(id=container_id, status=f'removed ({exit_code})')
 		except docker.errors.APIError as error:
@@ -391,6 +385,8 @@ class DockerManager():
 		# https://docker-py.readthedocs.io/en/stable/containers.html
 		print(f'Creating container for command: {command_id}')
 
+		# first update the port mapping in case containers were added/removed without our knowledge
+		self._update_port_mapping()
 		# find the next available port to map to 6006 in the container
 		used_port = next(filterfalse(set(self._port_mapping.values()).__contains__, count(6006)))
 		# create a device request to use all available GPU devices with compute capabilities
@@ -399,6 +395,7 @@ class DockerManager():
 			try:
 				container: Container = self._get_client().containers.create('recommerce',
 					detach=True,
+					labels=['recommerce'],
 					ports={'6006/tcp': used_port},
 					entrypoint=f'recommerce -c {command_id}',
 					device_requests=[device_request_gpu])
@@ -408,14 +405,13 @@ class DockerManager():
 			try:
 				container: Container = self._get_client().containers.create('recommerce',
 					detach=True,
+					labels=['recommerce'],
 					ports={'6006/tcp': used_port},
 					entrypoint=f'recommerce -c {command_id}')
 			except docker.errors.ImageNotFound as error:
 				return DockerInfo(id=command_id, status=f'Image not found.\n{error}')
 
-		# Add the container.id and used_port to the occupied_ports.txt and the self._port_mapping
-		with open(os.path.join(os.path.dirname(__file__), 'occupied_ports.txt'), 'a') as port_file:
-			port_file.write(f'{container.id}\n{used_port}\n')
+		# add the new container to the port mapping
 		self._port_mapping.update({container.id: used_port})
 
 		upload_info = self._upload_config(container.id, command_id, config)
@@ -546,34 +542,20 @@ class DockerManager():
 		return DockerInfo(id=container_id, status=container.status, data=hyper_ok and env_ok)
 
 	@classmethod
-	def _initialize_port_mapping(cls):
+	def _update_port_mapping(cls):
 		"""
-		Initialize the cls._port_mapping dictionary.
+		Update the cls._port_mapping dictionary.
 
-		Opens the 'occupied_ports.txt' and reads the containers registered there, creating a dictionary of container_id:port mappings.
-		Checks that the registered containers and the currently running containers are the same.
+		Gets all containers tagged with `recommerce` and find the port forwarded from 6006.
 		"""
-		# make sure the 'occupied_ports.txt' exists
-		with open(os.path.join(os.path.dirname(__file__), 'occupied_ports.txt'), 'a'):
-			pass
-		# initialize the list of occupied ports by reading from the file
-		with open(os.path.join(os.path.dirname(__file__), 'occupied_ports.txt'), 'r') as port_file:
-			occupied_ports = port_file.readlines()
-		# occupied_ports is a tuple with alternating container_id and port
-		occupied_ports = (item[:-1] for item in occupied_ports)
-		# the port mapping is a dictionary with the container_id being the key and its port the value
-		cls._port_mapping = dict(zip(occupied_ports, occupied_ports))
-
-		# make sure all containers are mapped and registered to the manager
-		running_containers = [container.id for container in cls._get_client().containers.list(all=True)]
-		mapped_containers = list(cls._port_mapping.keys())
-		assert set(mapped_containers) == set(running_containers), \
-f'''Container-Port mapping is mismatched! Check the \'occupied_ports.txt\' and your running docker containers (`docker ps -a`)!
-running_containers: {running_containers}
-mapped_containers: {mapped_containers}'''
-
-		# make the ports integers
-		cls._port_mapping.update((key, int(value)) for key, value in cls._port_mapping.items())
+		# Get all RUNNING containers with the recommerce label
+		# we don't care about already exited containers, since we can't see the tensorboard anyways
+		running_recommerce_containers = list(cls._get_client().containers.list(filters={'label': 'recommerce'}))
+		# Get the port mapped to '6006/tcp' within the container
+		occupied_ports = [int(container.ports['6006/tcp'][0]['HostPort']) for container in running_recommerce_containers]
+		# Create a dictionary of container_id: mapped port
+		cls._port_mapping = dict(zip([container.id for container in running_recommerce_containers], occupied_ports))
+		print(cls._port_mapping)
 
 
 if __name__ == '__main__':  # pragma: no cover
