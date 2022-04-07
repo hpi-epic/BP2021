@@ -14,25 +14,22 @@ from tqdm.auto import trange
 import recommerce.configuration.utils as ut
 from recommerce.configuration.hyperparameter_config import config
 from recommerce.configuration.path_manager import PathManager
+from recommerce.market.sim_market import SimMarket
 from recommerce.monitoring.agent_monitoring.am_evaluation import Evaluator
 from recommerce.monitoring.agent_monitoring.am_monitoring import Monitor
+from recommerce.rl.reinforcement_learning_agent import ReinforcementLearningAgent
 
 warnings.filterwarnings('ignore')
 
 
 class PerStepCheck(BaseCallback):
-	"""
-	Callback for saving a model (the check is done every ``check_freq`` steps)
-	based on the training reward (in practice, we recommend using ``EvalCallback``).
-
-	:param check_freq:
-	:param log_dir: Path to the folder where the model will be saved.
-		It must contains the file created by the ``Monitor`` wrapper.
-	:param verbose: Verbosity level.
-	"""
 	def __init__(self, agent_class, marketplace_class, log_dir_prepend='', training_steps=10000, iteration_length=500):
+		assert issubclass(agent_class, ReinforcementLearningAgent)
+		assert issubclass(marketplace_class, SimMarket)
 		assert isinstance(log_dir_prepend, str), \
 			f'log_dir_prepend should be a string, but {log_dir_prepend} is {type(log_dir_prepend)}'
+		assert isinstance(training_steps, int) and training_steps > 0
+		assert isinstance(iteration_length, int) and iteration_length > 0
 		super(PerStepCheck, self).__init__(True)
 		self.best_mean_interim_reward = None
 		self.best_mean_overall_reward = None
@@ -44,7 +41,6 @@ class PerStepCheck(BaseCallback):
 		signal.signal(signal.SIGINT, self._signal_handler)
 
 		self.initialize_io_related(log_dir_prepend)
-		self.reset_time_tracker()
 
 	def _signal_handler(self, signum, frame) -> None:  # pragma: no cover
 		"""
@@ -57,7 +53,7 @@ class PerStepCheck(BaseCallback):
 	def initialize_io_related(self, log_dir_prepend) -> None:
 		"""
 		Initializes the local variables self.curr_time, self.signature, self.writer, self.save_path
-		which are needed for saving the models and writing to tensorboard
+		and self.tmp_parameters which are needed for saving the models and writing to tensorboard
 		Args:
 			log_dir_prepend (str): A prefix that is written before the saved data
 		"""
@@ -68,11 +64,7 @@ class PerStepCheck(BaseCallback):
 		path_name = f'{self.signature}_{self.curr_time}'
 		self.save_path = os.path.join(PathManager.results_path, 'trainedModels', log_dir_prepend + path_name)
 		os.makedirs(os.path.abspath(self.save_path), exist_ok=True)
-		self.tmp_path = os.path.join(self.save_path, 'tmp_model.zip')
-
-	def reset_time_tracker(self) -> None:
-		self.frame_number_last_speed_update = 0
-		self.time_last_speed_update = time.time()
+		self.tmp_parameters = os.path.join(self.save_path, 'tmp_model.zip')
 
 	def _on_step(self) -> bool:
 		self.tqdm_instance.update()
@@ -81,7 +73,7 @@ class PerStepCheck(BaseCallback):
 		self.tqdm_instance.refresh()
 		finished_episodes = self.num_timesteps // config.episode_length
 		x, y = ts2xy(load_results(self.save_path), 'timesteps')
-		assert len(x) > 0
+		assert len(x) > 0 and len(x) == len(y)
 		mean_reward = np.mean(y[-100:])
 
 		# consider print info
@@ -90,7 +82,7 @@ class PerStepCheck(BaseCallback):
 
 		# consider update best model
 		if self.best_mean_interim_reward is None or mean_reward > self.best_mean_interim_reward + 15:
-			self.model.save(self.tmp_path)
+			self.model.save(self.tmp_parameters)
 			self.best_mean_interim_reward = mean_reward
 			if self.best_mean_overall_reward is None or self.best_mean_interim_reward > self.best_mean_overall_reward:
 				if self.best_mean_overall_reward is not None:
@@ -122,7 +114,7 @@ class PerStepCheck(BaseCallback):
 
 	def save_parameters(self, finished_episodes):
 		path_to_parameters = os.path.join(self.save_path, f'{self.signature}_{finished_episodes:05d}.zip')
-		os.rename(self.tmp_path, path_to_parameters)
+		os.rename(self.tmp_parameters, path_to_parameters)
 		self.saved_parameter_paths.append(path_to_parameters)
 		tqdm.write(f'I write the interim model after {finished_episodes} episodes to the disk.')
 		tqdm.write(f'You can find the parameters here: {path_to_parameters}.')
