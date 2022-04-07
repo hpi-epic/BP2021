@@ -52,8 +52,7 @@ class Configurator():
 		Returns:
 			str: The full path to the modelfile.
 		"""
-		if not model_name.endswith('.dat') and not model_name.endswith('.zip'):
-			model_name += '.dat'
+		assert model_name.endswith('.dat') and not model_name.endswith('.zip'), f'Modelfiles must end in .dat or .zip: {model_name}'
 		full_path = os.path.join(PathManager.data_path, model_name)
 		assert os.path.exists(full_path), f'the specified modelfile does not exist: {full_path}'
 		return full_path

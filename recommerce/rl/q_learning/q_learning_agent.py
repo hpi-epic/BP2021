@@ -131,8 +131,6 @@ class QLearningAgent(ReinforcementLearningAgent, ABC):
 			model_path (str): The path to the folder within 'trainedModels' where the model should be saved.
 			model_name (str): The name of the .dat file of this specific model.
 		"""
-		model_name += '.dat'
-
 		parameters_path = os.path.join(model_path, model_name)
 		torch.save(self.best_interim_net.state_dict(), parameters_path)
 		return parameters_path

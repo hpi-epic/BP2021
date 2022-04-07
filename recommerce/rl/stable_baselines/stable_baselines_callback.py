@@ -23,6 +23,10 @@ warnings.filterwarnings('ignore')
 
 
 class PerStepCheck(BaseCallback):
+	"""
+	Callback for saving a model (the check is done every `check_freq` steps)
+	based on the training reward (in practice, we recommend using `EvalCallback`).
+	"""
 	def __init__(self, agent_class, marketplace_class, log_dir_prepend='', training_steps=10000, iteration_length=500):
 		assert issubclass(agent_class, ReinforcementLearningAgent)
 		assert issubclass(marketplace_class, SimMarket)
