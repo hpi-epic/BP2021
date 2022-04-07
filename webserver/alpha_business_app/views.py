@@ -109,3 +109,4 @@ def config_validation(request):
 		if not validate_status:
 			return render(request, 'notices/config_valid_field.html', {'config_is_valid': False, 'message': validate_data})
 	return render(request, 'notices/config_valid_field.html', {'config_is_valid': True, 'message': 'This config is valid'})
+
