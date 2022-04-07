@@ -98,7 +98,7 @@ def create_environment_mock_dict(
 	enable_live_draw: bool = False,
 	episodes: int = 10,
 	plot_interval: int = 5,
-	marketplace: str = 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
+	marketplace: str = 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPrice(competitors=[])',
 	agents: dict = None) -> dict:
 	"""
 	Create a mock dictionary in the format of an environment_config.json.

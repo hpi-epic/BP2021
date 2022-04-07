@@ -83,7 +83,7 @@ class ConfigTest(TestCase):
 			argument='', agents_config=agents_config, name='Rule_Based Agent')
 
 		env_config = EnvironmentConfig.objects.create(agents=agents_config,
-			marketplace='recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
+			marketplace='recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPrice(competitors=[])',
 			task='training')
 
 		rl_config = RlConfig.objects.create(gamma=0.99,
@@ -134,7 +134,7 @@ class ConfigTest(TestCase):
 				},
 				'environment': {
 					'task': 'training',
-					'marketplace': 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
+					'marketplace': 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPrice(competitors=[])',
 					'agents': [
 						{
 							'name': 'Rule_Based Agent',

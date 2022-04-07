@@ -260,7 +260,7 @@ class TrainingEnvironmentConfig(EnvironmentConfig):
 		agent (QlearningAgent or ActorCriticAgent subclass): A subclass of QlearningAgent or ActorCritic, the agent to be trained.
 	"""
 	def _validate_config(self, config: dict) -> None:
-		super(TrainingEnvironmentConfig, self)._validate_config(config, single_agent=True, needs_modelfile=False)
+		super(TrainingEnvironmentConfig, self)._validate_config(config, single_agent=False, needs_modelfile=False)
 
 		# Since we only have one agent we extract it from the provided list
 		# TODO: In #370 we can have more than one agent, since the rest are competitors

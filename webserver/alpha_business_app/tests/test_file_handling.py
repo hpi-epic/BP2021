@@ -150,7 +150,7 @@ class FileHandling(TestCase):
 		assert environment_config.enable_live_draw is False
 		assert 50 == environment_config.episodes
 		assert 25 == environment_config.plot_interval
-		assert 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario' == environment_config.marketplace
+		assert 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPrice(competitors=[])' == environment_config.marketplace
 		assert environment_config.agents is not None
 
 		environment_agents: AgentsConfig = environment_config.agents
