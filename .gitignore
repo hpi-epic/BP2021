@@ -15,9 +15,6 @@ webserver/data
 webserver/package-lock.json
 webserver/node_modules
 
-# docker related directories
-docker/occupied_ports.txt
-
 # file where the users data path is saved
 recommerce/configuration/user_path.txt
 
