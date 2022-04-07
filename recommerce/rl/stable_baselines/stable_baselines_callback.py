@@ -71,7 +71,9 @@ class PerStepCheck(BaseCallback):
 		self.tmp_parameters = os.path.join(self.save_path, 'tmp_model.zip')
 
 	def _on_step(self) -> bool:
-	""" This method is called at every step by the stable baselines agents. """
+		"""
+		This method is called at every step by the stable baselines agents.
+		"""
 		self.tqdm_instance.update()
 		if (self.num_timesteps - 1) % config.episode_length != 0 or self.num_timesteps <= config.episode_length:
 			return True
