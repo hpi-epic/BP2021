@@ -12,10 +12,13 @@ from recommerce.rl.stable_baselines.stable_baselines_callback import PerStepChec
 
 
 class StableBaselinesAgent(ReinforcementLearningAgent, LinearAgent, CircularAgent):
-	def __init__(self, marketplace=None, optim=None, load_path=None, name='enter a name here'):
+	def __init__(self, marketplace=None, optim=None, load_path=None, name=None):
 		assert marketplace is not None
 		assert isinstance(marketplace, SimMarket), \
 			f'if marketplace is provided, marketplace must be a SimMarket, but is {type(marketplace)}'
+		assert optim is not None
+		assert isinstance(load_path, str)
+		assert name is None or isinstance(name, str)
 
 		self.marketplace = marketplace
 		if load_path is None:
@@ -25,7 +28,11 @@ class StableBaselinesAgent(ReinforcementLearningAgent, LinearAgent, CircularAgen
 			self._load(load_path)
 			print(f'I load {self.name}-agent using {self.model.device} device from {load_path}')
 
-	def policy(self, observation):
+		if name is not None:
+			self.name = name
+
+	def policy(self, observation: np.array) -> np.array:
+		assert isinstance(observation, np.ndarray), f'{observation}: this is a {type(observation)}, not a np ndarray'
 		return self.model.predict(observation)[0]
 
 	def synchronize_tgt_net(self):  # pragma: no cover
