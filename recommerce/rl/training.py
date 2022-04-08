@@ -93,7 +93,7 @@ class RLTrainer(ABC):
 
 	def consider_save_model(self, episodes_idx: int, force: bool = False) -> None:
 		if ((episodes_idx % 500 == 0 and episodes_idx > 0) or force) and self.best_mean_interim_reward is not None:
-			path_to_parameters = self.RL_agent.save(model_path=self.model_path, model_name=f'{self.signature}_{episodes_idx:05d}')
+			path_to_parameters = self.RL_agent.save(model_path=self.model_path, model_name=f'{self.signature}_{episodes_idx:05d}.dat')
 			tqdm.write(f'I write the interim model after {episodes_idx} episodes to the disk.')
 			tqdm.write(f'You can find the parameters here: {path_to_parameters}.')
 			tqdm.write(f'This model achieved a mean reward of {self.best_mean_interim_reward}.')

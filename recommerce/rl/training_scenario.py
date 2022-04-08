@@ -3,6 +3,7 @@ import recommerce.market.linear.linear_sim_market as linear_market
 import recommerce.market.sim_market as sim_market
 import recommerce.rl.actorcritic.actorcritic_agent as actorcritic_agent
 import recommerce.rl.q_learning.q_learning_agent as q_learning_agent
+import recommerce.rl.stable_baselines.stable_baselines_model as sbmodel
 from recommerce.configuration.environment_config import EnvironmentConfigLoader, TrainingEnvironmentConfig
 from recommerce.market.circular.circular_vendors import CircularAgent
 from recommerce.rl.actorcritic.actorcritic_training import ActorCriticTrainer
@@ -50,6 +51,10 @@ def train_continuos_a2c_circular_economy_rebuy():
 	Train an ActorCriticAgent on a Circular Economy Market with Rebuy Prices and one competitor.
 	"""
 	run_training_session(circular_market.CircularEconomyRebuyPriceOneCompetitor, actorcritic_agent.ContinuosActorCriticAgentFixedOneStd)
+
+
+def train_stable_baselines_ppo():
+	sbmodel.StableBaselinesPPO(circular_market.CircularEconomyRebuyPriceOneCompetitor(True)).train_agent()
 
 
 def train_from_config():
