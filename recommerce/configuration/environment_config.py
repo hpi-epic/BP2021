@@ -130,7 +130,7 @@ class EnvironmentConfig(ABC):
 						try:
 							get_class(agent['agent_class'])
 						except Exception as error:
-							raise AssertionError(f'This agent could not be parsed to a valid class: "{config["agents"][agent]["agent_class"]}"') from error
+							raise AssertionError(f'This agent could not be parsed to a valid class: "{agent["agent_class"]}"') from error
 				# make sure the marketplace class can be parsed/is valid
 				elif key == 'marketplace':
 					try:
