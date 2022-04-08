@@ -44,7 +44,7 @@ def test_get_modelfile_path():
 		mock_exists.return_value = False
 		with pytest.raises(AssertionError) as assertion_message:
 			monitor.configurator._get_modelfile_path('non_existing_modelfile')
-		assert 'the specified modelfile does not exist' in str(assertion_message.value)
+		assert 'Modelfiles must end in .dat or .zip: non_existing_modelfile' in str(assertion_message.value)
 
 
 incorrect_update_agents_RL_testcases = [

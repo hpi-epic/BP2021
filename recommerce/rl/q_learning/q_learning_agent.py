@@ -123,7 +123,7 @@ class QLearningAgent(ReinforcementLearningAgent, ABC):
 	def sync_to_best_interim(self):
 		self.best_interim_net.load_state_dict(self.net.state_dict())
 
-	def save(self, model_path, model_name) -> None:
+	def save(self, model_path: str, model_name: str) -> None:
 		"""
 		Save a trained model to the specified folder within 'trainedModels'.
 
@@ -131,6 +131,8 @@ class QLearningAgent(ReinforcementLearningAgent, ABC):
 			model_path (str): The path to the folder within 'trainedModels' where the model should be saved.
 			model_name (str): The name of the .dat file of this specific model.
 		"""
+		assert model_name.endswith('.dat'), f'the modelname must end in ".dat": {model_name}'
+		assert os.path.exists(model_path), f'the specified path does not exist: {model_path}'
 		parameters_path = os.path.join(model_path, model_name)
 		torch.save(self.best_interim_net.state_dict(), parameters_path)
 		return parameters_path

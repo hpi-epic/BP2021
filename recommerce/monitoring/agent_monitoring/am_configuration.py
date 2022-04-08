@@ -96,14 +96,15 @@ class Configurator():
 					assert (0 <= len(current_agent[1]) <= 2), 'the argument list for a RL-agent must have length between 0 and 2'
 					assert all(isinstance(argument, str) for argument in current_agent[1]), 'the arguments for a RL-agent must be of type str'
 
-					agent_modelfile = f'{type(self.marketplace).__name__}_{current_agent[0].__name__}'
+					# Stablebaselines ends in .zip - we don't
+					agent_modelfile = f'{type(self.marketplace).__name__}_{current_agent[0].__name__}.dat'
 					agent_name = 'q_learning' if issubclass(current_agent[0], QLearningAgent) else 'actor_critic'
 					# no arguments
 					if len(current_agent[1]) == 0:
 						pass
 					# only modelfile argument
 					elif len(current_agent[1]) == 1 and \
-						(str.endswith(current_agent[1][0], '.dat') or str.endswith(current_agent[1][0], '.zip')):
+						(current_agent[1][0].endswith('.dat') or current_agent[1][0].endswith('.zip')):
 						agent_modelfile = current_agent[1][0]
 					# only name argument
 					elif len(current_agent[1]) == 1:
@@ -111,9 +112,9 @@ class Configurator():
 						agent_name = current_agent[1][0]
 					# both arguments, first must be the modelfile, second the name
 					elif len(current_agent[1]) == 2:
-						assert str.endswith(current_agent[1][0], '.dat'), \
+						assert current_agent[1][0].endswith('.dat'), \
 							f'if two arguments are provided, the first one must be the modelfile. Arg1: {current_agent[1][0]}, Arg2: {current_agent[1][1]}'
-						agent_modelfile = current_agent[1][0][:-4]
+						agent_modelfile = current_agent[1][0]
 						agent_name = current_agent[1][1]
 					# this should never happen due to the asserts before, but you never know
 					else:  # pragma: no cover

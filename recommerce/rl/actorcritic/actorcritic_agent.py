@@ -85,6 +85,8 @@ class ActorCriticAgent(ReinforcementLearningAgent, ABC):
 			model_path (str): The path to the folder within 'trainedModels' where the model should be saved.
 			model_name (str): The name of the .dat file of this specific model.
 		"""
+		assert model_name.endswith('.dat'), f'the modelname must end in ".dat": {model_name}'
+		assert os.path.exists(model_path), f'the specified path does not exist: {model_path}'
 		actor_path = os.path.join(model_path, f'actor_parameters{model_name}')
 		torch.save(self.best_interim_actor_net.state_dict(), actor_path)
 		torch.save(self.best_interim_critic_net.state_dict(), os.path.join(model_path, 'critic_parameters' + model_name))
