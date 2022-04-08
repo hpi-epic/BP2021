@@ -9,7 +9,6 @@ $(document).ready(function() {
 		});
 	});
 	
-	
 	function updateAPIHealth() {
 		// replaces the element by the element returned by ajax (html) and adds this click event to it
 		var statusButton = $("button.replace-me")
@@ -36,4 +35,41 @@ $(document).ready(function() {
 			});
 		}
 	}).trigger('change');
+
+	function getCookie(name) {
+		let cookieValue = null;
+		if (document.cookie && document.cookie !== '') {
+			const cookies = document.cookie.split(';');
+			for (let i = 0; i < cookies.length; i++) {
+				const cookie = cookies[i].trim();
+				// Does this cookie string begin with the name we want?
+				if (cookie.substring(0, name.length + 1) === (name + '=')) {
+					cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+					break;
+				}
+			}
+		}
+		return cookieValue;
+	}
+	
+	$("button.form-check").click(function () {
+		$("table.config-status-display").remove();
+		
+		var self = $(this);
+		var form = $("form.config-form");
+		var formdata = form.serializeArray();
+
+		const csrftoken = getCookie('csrftoken');
+		$.ajax({
+			type: "POST",
+			url: self.data("url"),
+			data: {
+				csrfmiddlewaretoken: csrftoken,
+				formdata
+			},
+			success: function (data) {
+				$("p.notice-field").replaceWith(data);
+			}
+		});
+	});
 });
