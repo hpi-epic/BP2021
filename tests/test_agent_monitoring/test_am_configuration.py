@@ -67,9 +67,9 @@ def test_incorrect_update_agents_RL(agents, expected_message):
 correct_update_agents_RL_testcases = [
 	[(QLearningCEAgent, [])],
 	[(QLearningCEAgent, ['new_name'])],
-	[(QLearningCEAgent, ['CircularEconomyMonopolyScenario_QLearningCEAgent.dat'])],
-	[(QLearningCEAgent, ['CircularEconomyMonopolyScenario_QLearningCEAgent.dat', 'new_name'])],
-	[(QLearningCEAgent, [f'{circular_market.CircularEconomyMonopolyScenario.__name__}_{QLearningCEAgent.__name__}.dat'])]
+	[(QLearningCEAgent, ['CircularEconomy_QLearningCEAgent.dat'])],
+	[(QLearningCEAgent, ['CircularEconomy_QLearningCEAgent.dat', 'new_name'])],
+	[(QLearningCEAgent, [f'{circular_market.CircularEconomy.__name__}_{QLearningCEAgent.__name__}.dat'])]
 ]
 
 

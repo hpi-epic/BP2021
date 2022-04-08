@@ -39,7 +39,7 @@ test_scenarios = [
 
 @pytest.mark.training
 @pytest.mark.slow
-@pytest.mark.parametrize('market_class, agent_class', test_scenarios)
+@pytest.mark.parametrize('market, agent_class', test_scenarios)
 def test_market_scenario(market, agent_class):
 	json = ut_t.create_hyperparameter_mock_json(rl=ut_t.create_hyperparameter_mock_json_rl(replay_start_size='500', sync_target_frames='100'))
 	with patch('builtins.open', mock_open(read_data=json)) as mock_file:
