@@ -32,21 +32,6 @@ class DockerInfo():
 		self.data = data
 		self.stream = stream
 
-	def __add__(self, other_docker_info):
-		resulting_docker_info = DockerInfo(id='not relevant', status='not relavant')
-		resulting_docker_info.id = self._add_to_list(self.id, other_docker_info.id)
-		resulting_docker_info.status = self._add_to_list(self.status, other_docker_info.status)
-		resulting_docker_info.data = self._add_to_list(self.data, other_docker_info.data)
-		resulting_docker_info.stream = self._add_to_list(self.stream, other_docker_info.stream)
-		return resulting_docker_info
-
-	def _add_to_list(self, var1, var2) -> list:
-		# var1 could be list
-		if type(var1) == list:
-			return var1 + [var2]
-		else:
-			return [var1, var2]
-
 
 class DockerManager():
 	"""
@@ -78,15 +63,16 @@ class DockerManager():
 			cls._update_port_mapping()
 		return cls._instance
 
-	def start(self, config: dict) -> DockerInfo:
+	def start(self, config: dict, count: int) -> DockerInfo:
 		"""
 		To be called by the REST API. Create and start a new docker container from the image of the specified command.
 
 		Args:
 			config (dict): The combined hyperparameter_config and environment_config_command dictionaries that should be sent to the container.
+			count (int): number of containers that should be started
 
 		Returns:
-			DockerInfo: A JSON serializable object containing the id and the status of the new container.
+			DockerInfo: A JSON serializable object containing the id and the status of the new container(s).
 		"""
 		if 'hyperparameter' not in config:
 			return DockerInfo(id='No container was started', status='The config is missing the "hyperparameter"-field')

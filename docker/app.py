@@ -42,13 +42,16 @@ def is_invalid_status(status: str) -> bool:
 
 @app.post('/start')
 async def start_container(num_experiments: int, config: Request) -> JSONResponse:
-	container_info = manager.start(config=await config.json())
-	for _ in range(num_experiments):
-		container_info += manager.start(config=await config.json())
-	if (is_invalid_status(container_info.status) or container_info.data is False):
-		return JSONResponse(status_code=404, content=vars(container_info))
-	else:
-		return JSONResponse(vars(container_info))
+	final_infos = []
+	for number in range(num_experiments):
+		final_infos += [manager.start(config=await config.json())]
+		if (is_invalid_status(final_infos[number].status) or final_infos[number].data is False):
+			return JSONResponse(status_code=404, content=vars(final_infos[0]))
+	return_dict = {}
+	for index in range(num_experiments):
+		return_dict[index] = vars(final_infos[index])
+	print(f'successfully started {num_experiments} container')
+	return JSONResponse(return_dict)
 
 
 @app.get('/health/')
