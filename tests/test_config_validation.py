@@ -63,7 +63,7 @@ def test_validate_config_valid_combined_not_final(config):
 	assert validate_status, validate_data
 
 
-test_validate_config_one_top_key_missing_testcases = [
+validate_config_one_top_key_missing_testcases = [
 	(ut_t.create_combined_mock_dict(hyperparameter=None), True),
 	(ut_t.create_combined_mock_dict(environment=None), True),
 	(ut_t.create_combined_mock_dict(hyperparameter=None), False),
@@ -71,20 +71,20 @@ test_validate_config_one_top_key_missing_testcases = [
 ]
 
 
-@pytest.mark.parametrize('config, is_final', test_validate_config_one_top_key_missing_testcases)
+@pytest.mark.parametrize('config, is_final', validate_config_one_top_key_missing_testcases)
 def test_validate_config_one_top_key_missing(config, is_final):
 	validate_status, validate_data = config_validation.validate_config(config, is_final)
 	assert not validate_status, validate_data
 	assert 'If your config contains one of "environment" or "hyperparameter" it must also contain the other' == validate_data
 
 
-test_validate_config_too_many_keys_testcases = [
+validate_config_too_many_keys_testcases = [
 	True,
 	False
 ]
 
 
-@pytest.mark.parametrize('is_final', test_validate_config_too_many_keys_testcases)
+@pytest.mark.parametrize('is_final', validate_config_too_many_keys_testcases)
 def test_validate_config_too_many_keys(is_final):
 	test_config = ut_t.create_combined_mock_dict()
 	test_config['additional_key'] = "this should'nt be allowed"
@@ -100,7 +100,7 @@ def test_validate_config_too_many_keys(is_final):
 # Tests without the already split top-level (config keys are mixed and need to be matched)
 ##########
 # These are singular dicts that will get combined for the actual testcases
-test_validate_config_valid_not_final_dicts = [
+validate_config_valid_not_final_dicts = [
 	{
 		'rl': {
 			'gamma': 0.5,
@@ -145,25 +145,25 @@ test_validate_config_valid_not_final_dicts = [
 
 
 # get all combinations of the dicts defined above to mix and match as much as possible
-test_validate_config_valid_not_final_testcases = [
-	{**dict1, **dict2} for dict1 in test_validate_config_valid_not_final_dicts for dict2 in test_validate_config_valid_not_final_dicts
+validate_config_valid_not_final_testcases = [
+	{**dict1, **dict2} for dict1 in validate_config_valid_not_final_dicts for dict2 in validate_config_valid_not_final_dicts
 ]
 
 
-@pytest.mark.parametrize('config', test_validate_config_valid_not_final_testcases)
+@pytest.mark.parametrize('config', validate_config_valid_not_final_testcases)
 def test_validate_config_valid_not_final(config):
 	validate_status, validate_data = config_validation.validate_config(config, False)
 	assert validate_status, f'Test failed with error: {validate_data} on config: {config}'
 
 
-test_validate_config_valid_final_testcases = [
+validate_config_valid_final_testcases = [
 	{**ut_t.create_hyperparameter_mock_dict(), **ut_t.create_environment_mock_dict()},
 	{**ut_t.create_hyperparameter_mock_dict(rl=ut_t.create_hyperparameter_mock_dict_rl(gamma=0.2)), **ut_t.create_environment_mock_dict()},
 	{**ut_t.create_hyperparameter_mock_dict(), **ut_t.create_environment_mock_dict(episodes=20)}
 ]
 
 
-@pytest.mark.parametrize('config', test_validate_config_valid_final_testcases)
+@pytest.mark.parametrize('config', validate_config_valid_final_testcases)
 def test_validate_config_valid_final(config):
 	validate_status, validate_data = config_validation.validate_config(config, True)
 	assert validate_status, f'Test failed with error: {validate_data} on config: {config}'

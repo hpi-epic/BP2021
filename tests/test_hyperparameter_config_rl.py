@@ -24,6 +24,49 @@ def import_config() -> hyperparameter_config.HyperparameterConfig:
 	return hyperparameter_config.config
 
 
+######
+# General tests for the HyperParameter parent class
+#####
+get_required_fields_valid_testcases = [
+	('top-dict', {'rl': True, 'sim_market': True}),
+	('rl', {
+				'gamma': False,
+				'batch_size': False,
+				'replay_size': False,
+				'learning_rate': False,
+				'sync_target_frames': False,
+				'replay_start_size': False,
+				'epsilon_decay_last_frame': False,
+				'epsilon_start': False,
+				'epsilon_final': False
+			}),
+	('sim_market', {
+				'max_storage': False,
+				'episode_length': False,
+				'max_price': False,
+				'max_quality': False,
+				'number_of_customers': False,
+				'production_price': False,
+				'storage_cost_per_product': False
+			})
+]
+
+
+@pytest.mark.parametrize('level, expected_dict', get_required_fields_valid_testcases)
+def test_get_required_fields_valid(level, expected_dict):
+	fields = hyperparameter_config.HyperparameterConfig.get_required_fields(level)
+	assert fields == expected_dict
+
+
+def test_get_required_fields_invalid():
+	with pytest.raises(AssertionError) as error_message:
+		hyperparameter_config.HyperparameterConfig.get_required_fields('wrong_key')
+	assert 'The given level does not exist in a hyperparameter-config: wrong_key' in str(error_message.value)
+######
+# End general tests
+#####
+
+
 # mock format taken from:
 # https://stackoverflow.com/questions/1289894/how-do-i-mock-an-open-used-in-a-with-statement-using-the-mock-framework-in-pyth
 # Test that checks if the config.json is read correctly

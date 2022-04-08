@@ -66,11 +66,6 @@ class EnvironmentConfig(ABC):
 				'marketplace': False,
 				'agents': False
 			}
-		elif dict_key == 'agents':
-			return {
-				'agent_class': False,
-				'argument': False
-			}
 		else:
 			raise AssertionError(f'The given level does not exist in an environment-config: {dict_key}')
 
