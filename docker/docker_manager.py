@@ -32,6 +32,21 @@ class DockerInfo():
 		self.data = data
 		self.stream = stream
 
+	def __add__(self, other_docker_info):
+		resulting_docker_info = DockerInfo(id='not relevant', status='not relavant')
+		resulting_docker_info.id = self._add_to_list(self.id, other_docker_info.id)
+		resulting_docker_info.status = self._add_to_list(self.status, other_docker_info.status)
+		resulting_docker_info.data = self._add_to_list(self.data, other_docker_info.data)
+		resulting_docker_info.stream = self._add_to_list(self.stream, other_docker_info.stream)
+		return resulting_docker_info
+
+	def _add_to_list(self, var1, var2) -> list:
+		# var1 could be list
+		if type(var1) == list:
+			return var1 + [var2]
+		else:
+			return [var1, var2]
+
 
 class DockerManager():
 	"""

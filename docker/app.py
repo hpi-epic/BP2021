@@ -41,17 +41,10 @@ def is_invalid_status(status: str) -> bool:
 
 
 @app.post('/start')
-async def start_container(config: Request) -> JSONResponse:
-	"""
-	Start a container with the specified config.json and perform a command on it.
-
-	Args:
-		config (Request): The combined hyperparameter_config.json and environment_config_command.json files that should be sent to the container.
-
-	Returns:
-		JSONResponse: The response of the Docker start request. Contains the port used on the host in the data-field.
-	"""
+async def start_container(num_experiments: int, config: Request) -> JSONResponse:
 	container_info = manager.start(config=await config.json())
+	for _ in range(num_experiments):
+		container_info += manager.start(config=await config.json())
 	if (is_invalid_status(container_info.status) or container_info.data is False):
 		return JSONResponse(status_code=404, content=vars(container_info))
 	else:
