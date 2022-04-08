@@ -1,70 +1,69 @@
 <!doctype html>
 <html lang="en">
-	<head>
-		<meta charset="utf-8"/>
-		<title>{% block title %}{% endblock title %}</title>
-		{% load static %}
-		<link rel="stylesheet" type="text/css" href="{% static 'css/buttons.css' %}">
-		<link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.min.css' %}">
-		<link rel="shortcut icon" type="image/png" href="{% static 'icons/favicon.png' %}"/>
+    <head>
+        <meta charset="utf-8"/>
+        <title>{% block title %}{% endblock title %}</title>
+        {% load static %}
+        <link rel="stylesheet" type="text/css" href="{% static 'css/buttons.css' %}">
+        <link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.min.css' %}">
+        <link rel="shortcut icon" type="image/png" href="{% static 'icons/favicon.png' %}"/>
 
-		<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
-		<script src="{% static 'js/jquery-3.6.0.min.js' %}"></script>
-		<script src="{% static 'js/custom.js' %}"></script>
-	</head>
-	<body>
-		<div class="container">
-			<nav class="navbar navbar-expand-md navbar-light bg-light">
-				<div class="container-fluid">
-					<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-						<span class="navbar-toggler-icon"></span>
-					</button>
-					<div class="collapse navbar-collapse" id="navbarNav">
-						<ul class="navbar-nav w-100">
-							<li class="nav-item">
-								<a class="nav-item nav-link" href="/">Home</a>
-							</li>
-							<li class="nav-item">
-								<a class="nav-item nav-link" href="/upload">Upload</a>
-							</li>
-							<li class="nav-item">
-								<a class="nav-item nav-link" href="/configurator">Configurator</a>
-							</li>
-							<li class="nav-item">
-								<a class="nav-item nav-link" href="/observe">Observe</a>
-							</li>
-							<li class="nav-item">
-								<a class="nav-item nav-link" href="/download">Download</a>
-							</li>
-							<li class="nav-item d-flex ms-auto">
-								<a class="nav-item nav-link mr-1"></a>
-								{% include "api_buttons/api_health_button.html" %}	
-							</li>				  
-						</ul>
-				  	</div>
-				</div>
-			</nav>
-			{% block content %}
-			{% endblock content %}
-			<br>
-			{% include "notice_field.html" %}
-		
-			<footer class="footer footer-light mt-5">
-				<table class="table table-responsive align-middle">
-					<tr>
-						<td>
-							<a href="https://hpi.de/plattner/home.html"><img src="{% static 'icons/hpi.svg' %}" height="40"></img></a>
-						</td>
-						<td>
-							<a href="https://www.featherbysap.io/"><img src="{% static 'icons/feather.svg' %}" height="20"></img></a>
-						</td>
-						<td colspan="2" >
-							<p class="bc-footer-item mt-3">Research project at HPI EPIC in cooperation with SAP Feather</p>
-						</td>
-					</tr>
-				</table>
-			</footer>
-		</div>
-	</body>
+        <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+        <script src="{% static 'js/jquery-3.6.0.min.js' %}"></script>
+        <script src="{% static 'js/custom.js' %}"></script>
+    </head>
+    <body>
+        <div class="container">
+            <nav class="navbar navbar-expand-md navbar-light bg-light">
+                <div class="container-fluid">
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarNav">
+                        <ul class="navbar-nav w-100">
+                            <li class="nav-item">
+                                <a class="nav-item nav-link" href="/">Home</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-item nav-link" href="/upload">Upload</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-item nav-link" href="/configurator">Configurator</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-item nav-link" href="/observe">Observe</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-item nav-link" href="/download">Download</a>
+                            </li>
+                            <li class="nav-item d-flex ms-auto">
+                                <a class="nav-item nav-link mr-1"></a>
+                                {% include "api_buttons/api_health_button.html" %}
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+            {% block content %}
+            {% endblock content %}
+            <br>
+            {% include "notice_field.html" %}
+
+            <footer class="footer footer-light mt-5">
+                <table class="table table-responsive align-middle">
+                    <tr>
+                        <td>
+                            <a href="https://hpi.de/plattner/home.html"><img src="{% static 'icons/hpi.svg' %}" height="40"></img></a>
+                        </td>
+                        <td>
+                            <a href="https://www.featherbysap.io/"><img src="{% static 'icons/feather.svg' %}" height="20"></img></a>
+                        </td>
+                        <td colspan="2" >
+                            <p class="bc-footer-item mt-3">Research project at HPI EPIC in cooperation with SAP Feather</p>
+                        </td>
+                    </tr>
+                </table>
+            </footer>
+        </div>
+    </body>
 </html>
-	

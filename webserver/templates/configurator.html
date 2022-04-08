@@ -1,50 +1,50 @@
 {% extends "base.html" %}
 {% block title %}Configurator{% endblock title %}
 {% block content %}
-{% load static %}
-	<h1>You can configure your experiments here</h1>
-		<div class="row">
-			<div class="col-3">
-				<form method="post" enctype="multipart/form-data">
-					{% csrf_token %}
-					<input type="hidden" name="action" value="pre-fill">
-					<table>
-						{% for config in all_configurations %}
-							<tr>
-								<td>
-									{% if not config.is_referenced %}
-										<a href="/delete_config/{{config.id}}" >
-											<img src="{% static 'icons/trash.svg' %}" width="18px" title="delete this config"></img>
-										</a>
-									{% endif %}
-									</td>
-								<td>
-									<input class="form-check-input" type="checkbox" value="{{ config.id }}" name="config_id">
-								</td>
-								<td>
-									{{config.name}}
-								</td>
-							</tr>
-						{% endfor %}
-					</table>
-					{% if all_configurations %}
-						<button class="btn btn-outline-secondary btn-rounded m-3">pre-fill</button>
-					{% endif %}
-				</form>
-			</div>
-			<div class="col-9">
-				<form method="post" enctype="multipart/form-data" class="config-form">
-					{% csrf_token %}
-					<input type="hidden" name="action" value="start">
-					{% include "configuration_items/config.html" with prefill=prefill should_show=True error_dict=error_dict %}
-					<input class="form-control" type="text" placeholder="experiment name" name="experiment_name">
-					<div class="d-flex">
-						<button class="btn btn-outline-secondary btn-rounded m-3">launch</button>
-						<div class="ms-auto d-flex">
-							<button class="btn btn-outline-secondary btn-rounded form-check m-3" type="button" data-url="/validate_config">check</button>
-						</div>
-					</div>
-				</form>
-			</div>
-		</div>
+    {% load static %}
+    <h1>You can configure your experiments here</h1>
+    <div class="row">
+        <div class="col-3">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="pre-fill">
+                <table>
+                    {% for config in all_configurations %}
+                        <tr>
+                            <td>
+                                {% if not config.is_referenced %}
+                                    <a href="/delete_config/{{config.id}}" >
+                                        <img src="{% static 'icons/trash.svg' %}" width="18px" title="delete this config"></img>
+                                    </a>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <input class="form-check-input" type="checkbox" value="{{ config.id }}" name="config_id">
+                            </td>
+                            <td>
+                                {{config.name}}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </table>
+                {% if all_configurations %}
+                    <button class="btn btn-outline-secondary btn-rounded m-3">pre-fill</button>
+                {% endif %}
+            </form>
+        </div>
+        <div class="col-9">
+            <form method="post" enctype="multipart/form-data" class="config-form">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="start">
+                {% include "configuration_items/config.html" with prefill=prefill should_show=True error_dict=error_dict %}
+                <input class="form-control" type="text" placeholder="experiment name" name="experiment_name">
+                <div class="d-flex">
+                    <button class="btn btn-outline-secondary btn-rounded m-3">launch</button>
+                    <div class="ms-auto d-flex">
+                        <button class="btn btn-outline-secondary btn-rounded form-check m-3" type="button" data-url="/validate_config">check</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
 {% endblock content %}
