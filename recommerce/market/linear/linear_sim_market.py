@@ -7,7 +7,7 @@ import recommerce.configuration.utils as ut
 from recommerce.configuration.hyperparameter_config import config
 from recommerce.market.customer import Customer
 from recommerce.market.linear.linear_customers import CustomerLinear
-from recommerce.market.linear.linear_vendors import CompetitorJust2Players, CompetitorLinearRatio1, CompetitorRandom
+from recommerce.market.linear.linear_vendors import CompetitorLinearRatio1
 from recommerce.market.sim_market import SimMarket
 
 

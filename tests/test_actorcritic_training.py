@@ -12,9 +12,9 @@ from recommerce.market.circular.circular_vendors import RuleBasedCERebuyAgentCom
 multi_competitors = [CompetitorLinearRatio1(), CompetitorRandom(), CompetitorJust2Players()]
 
 test_scenarios = [
-	(linear_market.LinearEconomy(competitors=CompetitorLinearRatio1()), actorcritic_agent.DiscreteACALinear, True),
-	(linear_market.LinearEconomy(competitors=CompetitorLinearRatio1()), actorcritic_agent.ContinuosActorCriticAgentFixedOneStd, True),
-	(linear_market.LinearEconomy(competitors=CompetitorLinearRatio1()), actorcritic_agent.ContinuosActorCriticAgentEstimatingStd, False),
+	(linear_market.LinearEconomy(competitors=[CompetitorLinearRatio1()]), actorcritic_agent.DiscreteACALinear, True),
+	(linear_market.LinearEconomy(competitors=[CompetitorLinearRatio1()]), actorcritic_agent.ContinuosActorCriticAgentFixedOneStd, True),
+	(linear_market.LinearEconomy(competitors=[CompetitorLinearRatio1()]), actorcritic_agent.ContinuosActorCriticAgentEstimatingStd, False),
 	(linear_market.LinearEconomy(competitors=multi_competitors), actorcritic_agent.DiscreteACALinear, False),
 	(linear_market.LinearEconomy(competitors=multi_competitors), actorcritic_agent.ContinuosActorCriticAgentFixedOneStd, False),
 	(linear_market.LinearEconomy(competitors=multi_competitors), actorcritic_agent.ContinuosActorCriticAgentEstimatingStd, True),
@@ -24,9 +24,9 @@ test_scenarios = [
 	(circular_market.CircularEconomyRebuyPrice(competitors=[]), actorcritic_agent.DiscreteACACircularEconomyRebuy, True),
 	(circular_market.CircularEconomyRebuyPrice(competitors=[]), actorcritic_agent.ContinuosActorCriticAgentFixedOneStd, False),
 	(circular_market.CircularEconomyRebuyPrice(competitors=[]), actorcritic_agent.ContinuosActorCriticAgentEstimatingStd, True),
-	(circular_market.CircularEconomyRebuyPrice(competitors=RuleBasedCERebuyAgentCompetitive()), actorcritic_agent.DiscreteACACircularEconomyRebuy, False),
-	(circular_market.CircularEconomyRebuyPrice(competitors=RuleBasedCERebuyAgentCompetitive()), actorcritic_agent.ContinuosActorCriticAgentFixedOneStd, True),
-	(circular_market.CircularEconomyRebuyPrice(competitors=RuleBasedCERebuyAgentCompetitive()), actorcritic_agent.ContinuosActorCriticAgentEstimatingStd, False)
+	(circular_market.CircularEconomyRebuyPrice(competitors=[RuleBasedCERebuyAgentCompetitive()]), actorcritic_agent.DiscreteACACircularEconomyRebuy, False),
+	(circular_market.CircularEconomyRebuyPrice(competitors=[RuleBasedCERebuyAgentCompetitive()]), actorcritic_agent.ContinuosActorCriticAgentFixedOneStd, True),
+	(circular_market.CircularEconomyRebuyPrice(competitors=[RuleBasedCERebuyAgentCompetitive()]), actorcritic_agent.ContinuosActorCriticAgentEstimatingStd, False)
 ]
 
 
