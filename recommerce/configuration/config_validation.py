@@ -57,9 +57,11 @@ def validate_sub_keys(config_class: HyperparameterConfig or EnvironmentConfig, c
 	for key, _ in config.items():
 		# we need to separately check agents, since it is a list of dictionaries
 		if key == 'agents':
+			assert isinstance(config['agents'], list), f'The "agents" key must have a value of type list, but was {type(config["agents"])}'
 			for agent in config['agents']:
+				assert isinstance(agent, dict), f'All agents must be of type dict, but this one was {type(agent)}'
 				assert all(agent_key in {'name', 'agent_class', 'argument'} for agent_key in agent.keys()), \
-					f'an invalid key for agents was provided: {agent.keys()}'
+					f'An invalid key for agents was provided: {agent.keys()}'
 		# the key is key of a dictionary in the config
 		elif top_level_keys[key]:
 			assert isinstance(config[key], dict), f'The value of this key must be of type dict: {key}, but was {type(config[key])}'
