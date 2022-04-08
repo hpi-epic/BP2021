@@ -86,3 +86,17 @@
 .bc-xs {
 	height: min-content !important;
 }
+
+.footer {
+	position: relative;
+	bottom: 0;
+	width: 100%;
+	/* Set the fixed height of the footer here */
+	height: 60px;
+	line-height: 20px; /* Vertically center the text there */
+	background-color: #ffffff;
+}
+
+.bc-footer-item {
+	color: rgba(0, 0, 0, 0.5)
+}

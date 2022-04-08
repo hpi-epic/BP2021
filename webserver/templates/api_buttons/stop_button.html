@@ -1,7 +1,7 @@
 <form method="post" enctype="multipart/form-data">
-	{% csrf_token %}
-	<input type="hidden" name="action", value="remove">
-	<button class="btn btn-sm bc-outline-red" 
-		title="stops execution of the script in the running container"
-		name="container_id" value="{{ container.id }}" type="submit">stop and archive</button>
+    {% csrf_token %}
+    <input type="hidden" name="action", value="remove">
+    <button class="btn btn-sm bc-outline-red"
+        title="stops execution of the script in the running container"
+        name="container_id" value="{{ container.id }}" type="submit">stop and archive</button>
 </form>
