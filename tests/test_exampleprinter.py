@@ -48,7 +48,7 @@ def test_full_episode_rule_based(marketplace, agent):
 full_episode_testcases_rl_agent = [
 	(linear_market.LinearEconomy(), QLearningLEAgent, 'ClassicScenario_QLearningLEAgent.dat'),
 	(circular_market.CircularEconomy(), QLearningCEAgent,
-		'CircularEconomyMonopolyScenario_QLearningCEAgent.dat'),
+		'CircularEconomy_QLearningCEAgent.dat'),
 	(circular_market.CircularEconomyRebuyPrice(competitors=[]), QLearningCERebuyAgent,
 		'CircularEconomyRebuyPriceMonopolyScenario_QLearningCERebuyAgent.dat'),
 	(circular_market.CircularEconomyRebuyPrice(), QLearningCERebuyAgent,

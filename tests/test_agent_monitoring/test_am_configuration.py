@@ -85,7 +85,7 @@ def test_correct_setup_monitoring():
 		plot_interval=2,
 		marketplace=circular_market.CircularEconomy(),
 		agents=[(HumanPlayerCERebuy, ['reptiloid']),
-			(QLearningCERebuyAgent, ['CircularEconomyMonopolyScenario_QLearningCEAgent.dat', 'q_learner'])],
+			(QLearningCERebuyAgent, ['CircularEconomy_QLearningCEAgent.dat', 'q_learner'])],
 		subfolder_name='subfoldername')
 	assert monitor.configurator.enable_live_draw is False
 	assert 10 == monitor.configurator.episodes
