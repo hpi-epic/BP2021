@@ -31,11 +31,20 @@ validate_config_valid_combined_final_testcases = [
 def test_validate_config_valid_combined_final(config):
 	# If the config is valid, the first member of the tuple returned will be True
 	validate_status, validate_data = config_validation.validate_config(config, True)
-	assert validate_status, validate_data
+	assert validate_status
+	assert isinstance(validate_data, tuple)
+	assert 'rl' in validate_data[0]
+	assert 'sim_market' in validate_data[0]
+	assert 'gamma' in validate_data[0]['rl']
+	assert 'max_price' in validate_data[0]['sim_market']
+	assert 'task' in validate_data[1]
+	assert 'agents' in validate_data[1]
 
 
 # These testcases do not cover everything, nor should they, there are simply too many combinations
 validate_config_valid_combined_not_final_testcases = [
+	ut_t.create_combined_mock_dict(
+		hyperparameter=ut_t.remove_key('rl', ut_t.create_hyperparameter_mock_dict())),
 	ut_t.create_combined_mock_dict(
 		hyperparameter=ut_t.create_hyperparameter_mock_dict(
 			rl=ut_t.remove_key('learning_rate', ut_t.create_hyperparameter_mock_dict_rl(gamma=0.5)))),
@@ -67,6 +76,25 @@ def test_validate_config_one_top_key_missing(config, is_final):
 	validate_status, validate_data = config_validation.validate_config(config, is_final)
 	assert not validate_status
 	assert 'If your config contains one of "environment" or "hyperparameter" it must also contain the other' == validate_data
+
+
+test_validate_config_too_many_keys_testcases = [
+	True,
+	False
+]
+
+
+@pytest.mark.parametrize('is_final', test_validate_config_too_many_keys_testcases)
+def test_validate_config_too_many_keys(is_final):
+	test_config = ut_t.create_combined_mock_dict()
+	test_config['additional_key'] = "this should'nt be allowed"
+	validate_status, validate_data = config_validation.validate_config(test_config, is_final)
+	assert not validate_status
+	assert 'Your config should not contain keys other than "environment" and "hyperparameter"' == validate_data
 ##########
 # End of tests with already combined configs (== hyperparameter and/or environment key on the top-level)
 ##########
+
+
+def test_validate_config():
+	pass
