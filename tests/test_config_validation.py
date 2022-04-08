@@ -145,12 +145,12 @@ validate_config_valid_not_final_dicts = [
 
 
 # get all combinations of the dicts defined above to mix and match as much as possible
-validate_config_valid_not_final_testcases = [
+mixed_configs = [
 	{**dict1, **dict2} for dict1 in validate_config_valid_not_final_dicts for dict2 in validate_config_valid_not_final_dicts
 ]
 
 
-@pytest.mark.parametrize('config', validate_config_valid_not_final_testcases)
+@pytest.mark.parametrize('config', mixed_configs)
 def test_validate_config_valid_not_final(config):
 	validate_status, validate_data = config_validation.validate_config(config, False)
 	assert validate_status, f'Test failed with error: {validate_data} on config: {config}'
@@ -170,3 +170,38 @@ def test_validate_config_valid_final(config):
 	assert 'rl' in validate_data[0]
 	assert 'sim_market' in validate_data[0]
 	assert 'agents' in validate_data[1]
+
+
+@pytest.mark.parametrize('config', mixed_configs)
+def test_split_mixed_config_valid(config):
+	config_validation.split_mixed_config(config)
+
+
+split_mixed_config_invalid_testcases = [
+	{
+		'invalid_key': 2
+	},
+	{
+		'rl': {
+			'gamma': 0.5
+		},
+		'invalid_key': 2
+	},
+	{
+		'agents': [
+			{
+				'name': 'test',
+				'agent_class': 'recommerce.market.circular.circular_vendors.RuleBasedCERebuyAgent',
+				'argument': ''
+			}
+		],
+		'invalid_key': 2
+	}
+]
+
+
+@pytest.mark.parametrize('config', split_mixed_config_invalid_testcases)
+def test_split_mixed_config_invalid(config):
+	with pytest.raises(AssertionError) as error_message:
+		config_validation.split_mixed_config(config)
+	assert 'Your config contains an invalid key:' in str(error_message.value)

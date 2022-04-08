@@ -26,7 +26,7 @@ def validate_config(config: dict, config_is_final: bool) -> tuple:
 			raise AssertionError('If your config contains one of "environment" or "hyperparameter" it must also contain the other')
 		else:
 			# try to split the config. If any keys are unknown, an AssertionError will be thrown
-			hyperparameter_config, environment_config = split_combined_config(config)
+			hyperparameter_config, environment_config = split_mixed_config(config)
 		# then validate that all given values have the correct types
 		check_config_types(hyperparameter_config, environment_config, config_is_final)
 
@@ -73,13 +73,13 @@ def validate_sub_keys(config_class: HyperparameterConfig or EnvironmentConfig, c
 			validate_sub_keys(config_class, config[key], key_fields)
 
 
-def split_combined_config(config: dict) -> tuple:
+def split_mixed_config(config: dict) -> tuple:
 	"""
-	Utility function that splits a potentially combined config of hyperparameters and environment-variables
+	Utility function that splits a potentially mixed config of hyperparameters and environment-variables
 	into two dictionaries for the two configurations.
 
 	Args:
-		config (dict): The potentially combined configuration.
+		config (dict): The potentially mixed configuration.
 
 	Returns:
 		dict: The hyperparameter_config
@@ -167,5 +167,5 @@ if __name__ == '__main__':  # pragma: no cover
 			}
 		]
 	}
-	hyper, env = split_combined_config(test_config)
+	hyper, env = split_mixed_config(test_config)
 	check_config_types(hyper, env)
