@@ -20,6 +20,7 @@ class SimMarketKalibrated(gym.Env):
 		self.bxy5 = bxy5
 		self.by6 = by6
 		self.bxy6 = bxy6
+		# These can be probably discarded and placed in the fucntions directly
 		self.M1 = M1
 		self.M2 = M2
 		self.M3 = M3
