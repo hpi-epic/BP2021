@@ -22,7 +22,7 @@ def setup_function(function):
 		plot_interval=10,
 		marketplace=circular_market.CircularEconomy(),
 		agents=[(QLearningCEAgent, [os.path.join(os.path.dirname(__file__), os.pardir, 'test_data',
-			'CircularEconomyMonopolyScenario_QLearningCEAgent.dat')])],
+			'CircularEconomy_QLearningCEAgent.dat')])],
 		subfolder_name=f'test_plots_{function.__name__}')
 
 
