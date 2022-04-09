@@ -28,9 +28,9 @@ class QLearningTrainer(RLTrainer):
 		rmse_losses = []
 		selected_q_vals = []
 		finished_episodes = 0
+		mean_reward = -np.inf
 
 		for frame_idx in range(number_of_training_steps):
-			self.callback.num_timesteps = frame_idx
 			epsilon = max(config.epsilon_final, config.epsilon_start - frame_idx / config.epsilon_decay_last_frame)
 
 			action = self.callback.model.policy(state, epsilon)
@@ -49,10 +49,13 @@ class QLearningTrainer(RLTrainer):
 					averaged_info['Loss/selected_q_vals'] = np.mean(selected_q_vals[-1000:])
 					averaged_info['epsilon'] = epsilon
 					ut.write_dict_to_tensorboard(self.callback.writer, averaged_info, frame_idx / config.episode_length, is_cumulative=True)
-					self.callback._on_step(finished_episodes, averaged_info['profits/all']['vendor_0'])
+					mean_reward = averaged_info['profits/all']['vendor_0']
 
 				vendors_cumulated_info = None
 				marketplace.reset()
+
+			self.callback.num_timesteps = frame_idx + 1
+			self.callback._on_step(finished_episodes, mean_reward)
 
 			if len(self.callback.model.buffer) < config.replay_start_size:
 				continue

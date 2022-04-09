@@ -40,7 +40,7 @@ class ActorCriticTrainer(RLTrainer):
 			verbose (bool, optional): Should additional information about agent steps be written to the tensorboard? Defaults to False.
 			total_envs (int, optional): The number of environments you use in parallel to fulfill the iid assumption. Defaults to 128.
 		"""
-		self.initialize_callback(number_of_training_steps)
+		self.initialize_callback(number_of_training_steps * config.batch_size)
 
 		all_dicts = []
 		if verbose:
@@ -50,11 +50,12 @@ class ActorCriticTrainer(RLTrainer):
 		all_policy_losses = []
 
 		finished_episodes = 0
+		mean_reward = -np.inf
+		self.callback.num_timesteps = 0
 		environments = [self.marketplace_class() for _ in range(total_envs)]
 		info_accumulators = [None for _ in range(total_envs)]
 
 		for step_number in range(number_of_training_steps):
-			self.callback.num_timesteps = step_number
 			chosen_envs = self.choose_random_envs(total_envs)
 
 			states = []
@@ -62,6 +63,7 @@ class ActorCriticTrainer(RLTrainer):
 			rewards = []
 			states_dash = []
 			for env in chosen_envs:
+				self.callback.num_timesteps += 1
 				state = environments[env]._observation()
 				if not verbose:
 					action = self.callback.model.policy(state, verbose=False, raw_action=True)
@@ -98,7 +100,9 @@ class ActorCriticTrainer(RLTrainer):
 					environments[env].reset()
 					info_accumulators[env] = None
 
-					self.callback._on_step(finished_episodes, averaged_info['profits/all']['vendor_0'])
+					mean_reward = averaged_info['profits/all']['vendor_0']
+
+				self.callback._on_step(finished_episodes, mean_reward)
 
 			policy_loss, valueloss = self.callback.model.train_batch(
 				torch.Tensor(np.array(states)),

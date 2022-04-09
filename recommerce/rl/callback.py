@@ -43,6 +43,7 @@ class PerStepCheck(BaseCallback):
 		self.file_ending = file_ending
 		self.tqdm_instance = trange(training_steps)
 		self.saved_parameter_paths = []
+		self.last_finished_episode = 0
 		signal.signal(signal.SIGINT, self._signal_handler)
 
 		self.initialize_io_related(log_dir_prepend)
@@ -71,15 +72,12 @@ class PerStepCheck(BaseCallback):
 		os.makedirs(os.path.abspath(self.save_path), exist_ok=True)
 		self.tmp_parameters = os.path.join(self.save_path, f'tmp_model.{self.file_ending}')
 
-	def _on_step(self, finished_episodes: int = None, mean_reward: float = None) -> bool:
+	def _on_step(self, finished_episodes: int = None, mean_reward: float = None, forcecontinue: bool = False) -> bool:
 		"""
 		This method is called at every step by the stable baselines agents.
 		"""
 		assert (finished_episodes is None) == (mean_reward is None), 'finished_episodes must be exactly None if mean_reward is None'
 		self.tqdm_instance.update()
-		if (self.num_timesteps - 1) % config.episode_length != 0 or self.num_timesteps <= config.episode_length:
-			return True
-		self.tqdm_instance.refresh()
 		if finished_episodes is None:
 			finished_episodes = self.num_timesteps // config.episode_length
 			x, y = ts2xy(load_results(self.save_path), 'timesteps')
@@ -87,6 +85,12 @@ class PerStepCheck(BaseCallback):
 			mean_reward = np.mean(y[-100:])
 		assert isinstance(finished_episodes, int)
 		assert isinstance(mean_reward, float)
+
+		assert finished_episodes >= self.last_finished_episode
+		if finished_episodes == self.last_finished_episode or finished_episodes < 5:
+			return True
+		else:
+			self.last_finished_episode = finished_episodes
 
 		# consider print info
 		if (finished_episodes) % 10 == 0:
@@ -110,8 +114,7 @@ class PerStepCheck(BaseCallback):
 	def _on_training_end(self) -> None:
 		self.tqdm_instance.close()
 		if self.best_mean_interim_reward is not None:
-			finished_episodes = self.num_timesteps // config.episode_length
-			self.save_parameters(finished_episodes)
+			self.save_parameters(self.last_finished_episode)
 
 		# analyze trained agents
 		if len(self.saved_parameter_paths) == 0:
