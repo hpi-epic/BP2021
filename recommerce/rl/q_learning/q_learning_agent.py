@@ -47,7 +47,6 @@ class QLearningAgent(ReinforcementLearningAgent, ABC):
 		self.name = name
 		print(f'I initiate a QLearningAgent using {self.device} device')
 		self.net = network_architecture(n_observations, n_actions).to(self.device)
-		self.best_interim_net = network_architecture(n_observations, n_actions)
 		if load_path:
 			self.net.load_state_dict(torch.load(load_path, map_location=self.device))
 		if optim:
@@ -119,9 +118,6 @@ class QLearningAgent(ReinforcementLearningAgent, ABC):
 		expected_state_action_values = next_state_values * config.gamma + rewards_v
 		return torch.nn.MSELoss()(state_action_values, expected_state_action_values), state_action_values.mean()
 
-	def sync_to_best_interim(self):
-		self.best_interim_net.load_state_dict(self.net.state_dict())
-
 	def save(self, model_path: str) -> None:
 		"""
 		Save a trained model to the specified folder within 'trainedModels'.
@@ -132,7 +128,7 @@ class QLearningAgent(ReinforcementLearningAgent, ABC):
 		"""
 		assert model_path.endswith('.dat'), f'the modelname must end in ".dat": {model_path}'
 		# assert os.path.exists(model_path), f'the specified path does not exist: {model_path}'
-		torch.save(self.best_interim_net.state_dict(), model_path)
+		torch.save(self.net.state_dict(), model_path)
 
 
 class QLearningLEAgent(QLearningAgent, LinearAgent):

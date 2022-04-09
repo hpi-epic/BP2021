@@ -45,8 +45,7 @@ def test_market_scenario(market_class, agent_class):
 		ut_t.check_mock_file(mock_file, json)
 		config = import_config()
 
-	with patch('recommerce.rl.training.SummaryWriter'):
-		q_learning_training.QLearningTrainer(market_class, agent_class, log_dir_prepend='test_').train_agent(int(config.replay_start_size * 1.2))
+	q_learning_training.QLearningTrainer(market_class, agent_class, log_dir_prepend='test_').train_agent(int(config.replay_start_size * 1.2))
 
 
 @pytest.mark.training
@@ -59,5 +58,4 @@ def test_training_with_tensorboard():
 		market_class = linear_market.ClassicScenario
 		agent_class = QLearningLEAgent
 
-	with patch('recommerce.rl.training.SummaryWriter'):
-		q_learning_training.QLearningTrainer(market_class, agent_class, log_dir_prepend='test_').train_agent(int(config.replay_start_size * 1.2))
+	q_learning_training.QLearningTrainer(market_class, agent_class, log_dir_prepend='test_').train_agent(int(config.replay_start_size * 1.2))
