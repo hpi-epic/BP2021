@@ -90,7 +90,9 @@ class RecommerceCallback(BaseCallback):
 		if finished_episodes is None:
 			finished_episodes = self.num_timesteps // config.episode_length
 			x, y = ts2xy(load_results(self.save_path), 'timesteps')
-			assert len(x) > 0 and len(x) == len(y)
+			if len(x) <= 0:
+				return True
+			assert len(x) == len(y)
 			mean_return = np.mean(y[-100:])
 		assert isinstance(finished_episodes, int)
 		assert isinstance(mean_return, float)
