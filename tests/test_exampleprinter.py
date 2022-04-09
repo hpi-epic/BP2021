@@ -40,7 +40,7 @@ def test_full_episode_rule_based(marketplace, agent):
 		patch('recommerce.monitoring.exampleprinter.SummaryWriter'):
 		printer = ExamplePrinter()
 		printer.setup_exampleprinter(marketplace, agent)
-		assert printer.run_example(log_dir_prepend='test_') >= -5000
+		assert printer.run_example() >= -5000
 
 
 full_episode_testcases_rl_agent = [
@@ -65,10 +65,10 @@ def test_full_episode_rl_agents(marketplace, agent_class, parameters_file):
 		patch('recommerce.monitoring.exampleprinter.SummaryWriter'):
 		printer = ExamplePrinter()
 		printer.setup_exampleprinter(marketplace, agent)
-		assert printer.run_example(log_dir_prepend='test_') >= -5000
+		assert printer.run_example() >= -5000
 
 
 @pytest.mark.slow
 def test_exampleprinter_with_tensorboard():
 	with patch('recommerce.monitoring.exampleprinter.SVGManipulator'):
-		assert ExamplePrinter().run_example(log_dir_prepend='test_') >= -5000
+		assert ExamplePrinter().run_example() >= -5000

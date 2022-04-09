@@ -9,25 +9,22 @@ from recommerce.rl.reinforcement_learning_agent import ReinforcementLearningAgen
 
 
 class RLTrainer(ABC):
-	def __init__(self, marketplace_class, agent_class, log_dir_prepend=''):
+	def __init__(self, marketplace_class, agent_class):
 		"""
 		Initialize an RLTrainer to train one specific configuration.
 		Args:
 			marketplace_class (subclass of SimMarket): The market scenario you want to train.
 			agent_class (subclass of RLAgent): The agent you want to train.
-			log_dir_prepend (str, optional): A prefix that is written before the saved data. Defaults to ''.
 		"""
 		# TODO: assert Agent and marketplace fit together
 		assert issubclass(agent_class, ReinforcementLearningAgent)
 		self.marketplace_class = marketplace_class
 		self.agent_class = agent_class
-		self.log_dir_prepend = log_dir_prepend
 		assert self.trainer_agent_fit()
 
 	def initialize_callback(self, training_steps):
 		agent = self.agent_class(marketplace=self.marketplace_class(), optim=torch.optim.Adam)
-		self.callback = RecommerceCallback(
-			self.agent_class, self.marketplace_class, self.log_dir_prepend, training_steps, 500, 'dat', agent.name)
+		self.callback = RecommerceCallback(self.agent_class, self.marketplace_class, training_steps, 500, 'dat', agent.name)
 		self.callback.model = agent
 
 	def calculate_dict_average(self, all_dicts) -> dict:
