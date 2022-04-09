@@ -11,7 +11,7 @@ from recommerce.configuration.hyperparameter_config import config
 from recommerce.market.circular.circular_vendors import CircularAgent
 from recommerce.market.linear.linear_vendors import LinearAgent
 from recommerce.market.sim_market import SimMarket
-from recommerce.rl.experience_buffer import ExperienceBuffer
+from recommerce.rl.q_learning.experience_buffer import ExperienceBuffer
 from recommerce.rl.reinforcement_learning_agent import ReinforcementLearningAgent
 
 
