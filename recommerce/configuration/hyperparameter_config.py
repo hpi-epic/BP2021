@@ -275,7 +275,7 @@ class HyperparameterConfig():
 		self.production_price = config['production_price']
 		self.storage_cost_per_product = config['storage_cost_per_product']
 
-		self.mean_reward_bound = self.episode_length * self.max_price * self.number_of_customers
+		self.mean_return_bound = self.episode_length * self.max_price * self.number_of_customers
 
 
 class HyperparameterConfigLoader():

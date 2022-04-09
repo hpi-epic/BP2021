@@ -50,7 +50,7 @@ class ActorCriticTrainer(RLTrainer):
 		all_policy_losses = []
 
 		finished_episodes = 0
-		mean_reward = -np.inf
+		mean_return = -np.inf
 		self.callback.num_timesteps = 0
 		environments = [self.marketplace_class() for _ in range(total_envs)]
 		info_accumulators = [None for _ in range(total_envs)]
@@ -100,9 +100,9 @@ class ActorCriticTrainer(RLTrainer):
 					environments[env].reset()
 					info_accumulators[env] = None
 
-					mean_reward = averaged_info['profits/all']['vendor_0']
+					mean_return = averaged_info['profits/all']['vendor_0']
 
-				self.callback._on_step(finished_episodes, mean_reward)
+				self.callback._on_step(finished_episodes, mean_return)
 
 			policy_loss, valueloss = self.callback.model.train_batch(
 				torch.Tensor(np.array(states)),

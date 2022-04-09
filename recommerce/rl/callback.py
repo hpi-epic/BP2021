@@ -72,28 +72,28 @@ class RecommerceCallback(BaseCallback):
 		os.makedirs(os.path.abspath(self.save_path), exist_ok=True)
 		self.tmp_parameters = os.path.join(self.save_path, f'tmp_model.{self.file_ending}')
 
-	def _on_step(self, finished_episodes: int = None, mean_reward: float = None) -> bool:
+	def _on_step(self, finished_episodes: int = None, mean_return: float = None) -> bool:
 		"""
 		This method is called during training after step in the environment is called.
-		If you don't provide finished_episodes and mean_reward, the agent will conclude this from the number of timesteps.
-		Note that you must provide finished_episodes if and only if you provide mean_reward.
+		If you don't provide finished_episodes and mean_return, the agent will conclude this from the number of timesteps.
+		Note that you must provide finished_episodes if and only if you provide mean_return.
 
 		Args:
 			finished_episodes (int, optional): The episodes that are already finished. Defaults to None.
-			mean_reward (float, optional): The recieved return over the last episodes. Defaults to None.
+			mean_return (float, optional): The recieved return over the last episodes. Defaults to None.
 
 		Returns:
 			bool: True should be returned. False will be interpreted as error.
 		"""
-		assert (finished_episodes is None) == (mean_reward is None), 'finished_episodes must be exactly None if mean_reward is None'
+		assert (finished_episodes is None) == (mean_return is None), 'finished_episodes must be exactly None if mean_return is None'
 		self.tqdm_instance.update()
 		if finished_episodes is None:
 			finished_episodes = self.num_timesteps // config.episode_length
 			x, y = ts2xy(load_results(self.save_path), 'timesteps')
 			assert len(x) > 0 and len(x) == len(y)
-			mean_reward = np.mean(y[-100:])
+			mean_return = np.mean(y[-100:])
 		assert isinstance(finished_episodes, int)
-		assert isinstance(mean_reward, float)
+		assert isinstance(mean_return, float)
 
 		assert finished_episodes >= self.last_finished_episode
 		if finished_episodes == self.last_finished_episode or finished_episodes < 5:
@@ -103,12 +103,12 @@ class RecommerceCallback(BaseCallback):
 
 		# consider print info
 		if (finished_episodes) % 10 == 0:
-			tqdm.write(f'{self.num_timesteps}: {finished_episodes} episodes trained, mean return {mean_reward:.3f}')
+			tqdm.write(f'{self.num_timesteps}: {finished_episodes} episodes trained, mean return {mean_return:.3f}')
 
 		# consider update best model
-		if self.best_mean_interim_reward is None or mean_reward > self.best_mean_interim_reward + 15:
+		if self.best_mean_interim_reward is None or mean_return > self.best_mean_interim_reward + 15:
 			self.model.save(self.tmp_parameters)
-			self.best_mean_interim_reward = mean_reward
+			self.best_mean_interim_reward = mean_return
 			if self.best_mean_overall_reward is None or self.best_mean_interim_reward > self.best_mean_overall_reward:
 				if self.best_mean_overall_reward is not None:
 					tqdm.write(f'Best overall reward updated {self.best_mean_overall_reward:.3f} -> {self.best_mean_interim_reward:.3f}')
