@@ -6,8 +6,8 @@ from stable_baselines3.common.noise import NormalActionNoise
 from recommerce.market.circular.circular_vendors import CircularAgent
 from recommerce.market.linear.linear_vendors import LinearAgent
 from recommerce.market.sim_market import SimMarket
+from recommerce.rl.callback import PerStepCheck
 from recommerce.rl.reinforcement_learning_agent import ReinforcementLearningAgent
-from recommerce.rl.stable_baselines.stable_baselines_callback import PerStepCheck
 
 
 class StableBaselinesAgent(ReinforcementLearningAgent, LinearAgent, CircularAgent):
