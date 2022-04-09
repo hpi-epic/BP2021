@@ -1,5 +1,4 @@
 import numpy as np
-from tqdm.auto import trange
 
 import recommerce.configuration.utils as ut
 from recommerce.configuration.hyperparameter_config import config
@@ -9,7 +8,7 @@ from recommerce.rl.training import RLTrainer
 
 class QLearningTrainer(RLTrainer):
 	def trainer_agent_fit(self) -> bool:
-		return isinstance(self.RL_agent, QLearningAgent), f'the passed agent must be a QLearningAgent: {self.RL_agent}'
+		return issubclass(self.agent_class, QLearningAgent), f'the passed agent must be a QLearningAgent: {self.agent_class}'
 
 	def train_agent(self, number_of_training_steps=2 * config.epsilon_decay_last_frame) -> None:
 		"""
@@ -19,6 +18,7 @@ class QLearningTrainer(RLTrainer):
 			number_of_training_steps (int, optional): The maximum number of steps the training will run for.
 			Defaults to 2*config.epsilon_decay_last_frame.
 		"""
+		self.initialize_callback(number_of_training_steps)
 		marketplace = self.marketplace_class()
 		state = marketplace.reset()
 
@@ -29,12 +29,13 @@ class QLearningTrainer(RLTrainer):
 		selected_q_vals = []
 		finished_episodes = 0
 
-		for frame_idx in trange(number_of_training_steps, unit=' frames', leave=False):
+		for frame_idx in range(number_of_training_steps):
+			self.callback.num_timesteps = frame_idx
 			epsilon = max(config.epsilon_final, config.epsilon_start - frame_idx / config.epsilon_decay_last_frame)
 
-			action = self.RL_agent.policy(state, epsilon)
+			action = self.callback.model.policy(state, epsilon)
 			state, reward, is_done, info = marketplace.step(action)
-			self.RL_agent.set_feedback(reward, is_done, state)
+			self.callback.model.set_feedback(reward, is_done, state)
 			vendors_cumulated_info = info if vendors_cumulated_info is None else ut.add_content_of_two_dicts(vendors_cumulated_info, info)
 
 			if is_done:
@@ -47,24 +48,20 @@ class QLearningTrainer(RLTrainer):
 					averaged_info['Loss/RMSE'] = np.mean(rmse_losses[-1000:])
 					averaged_info['Loss/selected_q_vals'] = np.mean(selected_q_vals[-1000:])
 					averaged_info['epsilon'] = epsilon
-					ut.write_dict_to_tensorboard(self.writer, averaged_info, frame_idx / config.episode_length, is_cumulative=True)
-					self.consider_print_info(frame_idx, finished_episodes, averaged_info, epsilon)
-					self.consider_update_best_model(averaged_info)
-					self.consider_save_model(finished_episodes)
+					ut.write_dict_to_tensorboard(self.callback.writer, averaged_info, frame_idx / config.episode_length, is_cumulative=True)
+					self.callback._on_step(finished_episodes, averaged_info['profits/all']['vendor_0'])
 
 				vendors_cumulated_info = None
 				marketplace.reset()
 
-			if len(self.RL_agent.buffer) < config.replay_start_size:
+			if len(self.callback.model.buffer) < config.replay_start_size:
 				continue
 
-			loss, selected_q_val_mean = self.RL_agent.train_batch()
+			loss, selected_q_val_mean = self.callback.model.train_batch()
 			losses.append(loss)
 			rmse_losses.append(np.sqrt(loss))
 			selected_q_vals.append(selected_q_val_mean)
 
 			self.consider_sync_tgt_net(frame_idx)
 
-		self.consider_save_model(finished_episodes, force=True)
-		self.analyze_trained_agents()
-		self._end_of_training()
+		self.callback._on_training_end()

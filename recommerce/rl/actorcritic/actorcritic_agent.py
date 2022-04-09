@@ -1,4 +1,3 @@
-import os
 from abc import ABC, abstractmethod
 
 import numpy as np
@@ -75,7 +74,7 @@ class ActorCriticAgent(ReinforcementLearningAgent, ABC):
 		self.best_interim_actor_net.load_state_dict(self.actor_net.state_dict())
 		self.best_interim_critic_net.load_state_dict(self.critic_net.state_dict())
 
-	def save(self, model_path, model_name) -> None:
+	def save(self, model_path: str) -> None:
 		"""
 		Save a trained model to the specified folder within 'trainedModels'.
 		For each model an actor and a critic net will be saved.
@@ -85,12 +84,9 @@ class ActorCriticAgent(ReinforcementLearningAgent, ABC):
 			model_path (str): The path to the folder within 'trainedModels' where the model should be saved.
 			model_name (str): The name of the .dat file of this specific model.
 		"""
-		assert model_name.endswith('.dat'), f'the modelname must end in ".dat": {model_name}'
-		assert os.path.exists(model_path), f'the specified path does not exist: {model_path}'
-		actor_path = os.path.join(model_path, f'actor_parameters{model_name}')
-		torch.save(self.best_interim_actor_net.state_dict(), actor_path)
-		torch.save(self.best_interim_critic_net.state_dict(), os.path.join(model_path, 'critic_parameters' + model_name))
-		return actor_path
+		assert model_path.endswith('.dat'), f'the modelname must end in ".dat": {model_path}'
+		# assert os.path.exists(model_path), f'the specified path does not exist: {model_path}'
+		torch.save(self.best_interim_actor_net.state_dict(), model_path)
 
 	def train_batch(self, states, actions, rewards, next_states, regularization=False):
 		"""

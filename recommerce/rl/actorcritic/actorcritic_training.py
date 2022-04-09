@@ -2,7 +2,6 @@ import random
 
 import numpy as np
 import torch
-from tqdm.auto import trange
 
 import recommerce.configuration.utils as ut
 import recommerce.rl.actorcritic.actorcritic_agent as actorcritic_agent
@@ -12,7 +11,7 @@ from recommerce.rl.training import RLTrainer
 
 class ActorCriticTrainer(RLTrainer):
 	def trainer_agent_fit(self) -> bool:
-		return isinstance(self.RL_agent, actorcritic_agent.ActorCriticAgent)
+		return issubclass(self.agent_class, actorcritic_agent.ActorCriticAgent)
 
 	def choose_random_envs(self, total_envs) -> set:
 		"""
@@ -41,6 +40,7 @@ class ActorCriticTrainer(RLTrainer):
 			verbose (bool, optional): Should additional information about agent steps be written to the tensorboard? Defaults to False.
 			total_envs (int, optional): The number of environments you use in parallel to fulfill the iid assumption. Defaults to 128.
 		"""
+		self.initialize_callback(number_of_training_steps)
 
 		all_dicts = []
 		if verbose:
@@ -53,7 +53,8 @@ class ActorCriticTrainer(RLTrainer):
 		environments = [self.marketplace_class() for _ in range(total_envs)]
 		info_accumulators = [None for _ in range(total_envs)]
 
-		for step_number in trange(number_of_training_steps, unit=' frames', leave=False):
+		for step_number in range(number_of_training_steps):
+			self.callback.num_timesteps = step_number
 			chosen_envs = self.choose_random_envs(total_envs)
 
 			states = []
@@ -63,12 +64,12 @@ class ActorCriticTrainer(RLTrainer):
 			for env in chosen_envs:
 				state = environments[env]._observation()
 				if not verbose:
-					action = self.RL_agent.policy(state, verbose=False, raw_action=True)
+					action = self.callback.model.policy(state, verbose=False, raw_action=True)
 				else:
-					action, net_output, v_estimate = self.RL_agent.policy(state, verbose=True, raw_action=True)
+					action, net_output, v_estimate = self.callback.model.policy(state, verbose=True, raw_action=True)
 					all_network_outputs.append(net_output.reshape(-1))
 					all_v_estimates.append(v_estimate)
-				next_state, reward, is_done, info = environments[env].step(self.RL_agent.agent_output_to_market_form(action))
+				next_state, reward, is_done, info = environments[env].step(self.callback.model.agent_output_to_market_form(action))
 
 				states.append(state)
 				actions.append(action)
@@ -92,16 +93,14 @@ class ActorCriticTrainer(RLTrainer):
 							averaged_info[f'verbose/min/information_{str(action_num)}'] = np.min(myactions[:, action_num])
 							averaged_info[f'verbose/max/information_{str(action_num)}'] = np.max(myactions[:, action_num])
 
-					ut.write_dict_to_tensorboard(self.writer, averaged_info, finished_episodes, is_cumulative=True)
+					ut.write_dict_to_tensorboard(self.callback.writer, averaged_info, finished_episodes, is_cumulative=True)
 
 					environments[env].reset()
 					info_accumulators[env] = None
 
-					self.consider_print_info(step_number, finished_episodes, averaged_info)
-					self.consider_update_best_model(averaged_info)
-					self.consider_save_model(finished_episodes)
+					self.callback._on_step(finished_episodes, averaged_info['profits/all']['vendor_0'])
 
-			policy_loss, valueloss = self.RL_agent.train_batch(
+			policy_loss, valueloss = self.callback.model.train_batch(
 				torch.Tensor(np.array(states)),
 				torch.from_numpy(np.array(actions, dtype=np.int64)),
 				torch.Tensor(np.array(rewards)),
@@ -112,6 +111,4 @@ class ActorCriticTrainer(RLTrainer):
 
 			self.consider_sync_tgt_net(step_number)
 
-		self.consider_save_model(finished_episodes, force=True)
-		self.analyze_trained_agents()
-		self._end_of_training()
+		self.callback._on_training_end()
