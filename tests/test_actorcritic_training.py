@@ -1,4 +1,3 @@
-
 import pytest
 
 import recommerce.market.circular.circular_sim_market as circular_market
