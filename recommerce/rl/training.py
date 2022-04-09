@@ -25,8 +25,10 @@ class RLTrainer(ABC):
 		assert self.trainer_agent_fit()
 
 	def initialize_callback(self, training_steps):
-		self.callback = RecommerceCallback(self.agent_class, self.marketplace_class, self.log_dir_prepend, training_steps, 500, 'dat')
-		self.callback.model = self.agent_class(marketplace=self.marketplace_class(), optim=torch.optim.Adam)
+		agent = self.agent_class(marketplace=self.marketplace_class(), optim=torch.optim.Adam)
+		self.callback = RecommerceCallback(
+			self.agent_class, self.marketplace_class, self.log_dir_prepend, training_steps, 500, 'dat', agent.name)
+		self.callback.model = agent
 
 	def calculate_dict_average(self, all_dicts) -> dict:
 		"""

@@ -27,7 +27,8 @@ class RecommerceCallback(BaseCallback):
 	Callback for saving a model (the check is done every `check_freq` steps)
 	based on the training reward (in practice, we recommend using `EvalCallback`).
 	"""
-	def __init__(self, agent_class, marketplace_class, log_dir_prepend='', training_steps=10000, iteration_length=500, file_ending='zip'):
+	def __init__(self, agent_class, marketplace_class, log_dir_prepend='', training_steps=10000,
+			iteration_length=500, file_ending='zip', signature='training'):
 		assert issubclass(agent_class, ReinforcementLearningAgent)
 		assert issubclass(marketplace_class, SimMarket)
 		assert isinstance(log_dir_prepend, str), \
@@ -41,6 +42,7 @@ class RecommerceCallback(BaseCallback):
 		self.agent_class = agent_class
 		self.iteration_length = iteration_length
 		self.file_ending = file_ending
+		self.signature = signature
 		self.tqdm_instance = trange(training_steps)
 		self.saved_parameter_paths = []
 		self.last_finished_episode = 0
@@ -65,7 +67,6 @@ class RecommerceCallback(BaseCallback):
 		"""
 		ut.ensure_results_folders_exist()
 		self.curr_time = time.strftime('%b%d_%H-%M-%S')
-		self.signature = 'Stable_Baselines_Training'
 		self.writer = SummaryWriter(log_dir=os.path.join(PathManager.results_path, 'runs', f'{log_dir_prepend}training_{self.curr_time}'))
 		path_name = f'{self.signature}_{self.curr_time}'
 		self.save_path = os.path.join(PathManager.results_path, 'trainedModels', log_dir_prepend + path_name)
