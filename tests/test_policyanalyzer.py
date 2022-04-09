@@ -5,6 +5,7 @@ import numpy as np
 import pytest
 
 from recommerce.configuration.path_manager import PathManager
+from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPriceMonopolyScenario, CircularEconomyRebuyPriceOneCompetitor
 from recommerce.market.circular.circular_vendors import RuleBasedCERebuyAgent, RuleBasedCERebuyAgentCompetitive
 from recommerce.market.linear.linear_vendors import CompetitorLinearRatio1
 from recommerce.monitoring.policyanalyzer import PolicyAnalyzer
@@ -68,7 +69,7 @@ monopoly_test_cases = [
 @pytest.mark.parametrize('title, policyaccess, expected_filename', monopoly_test_cases)
 def test_circular_monopoly_q_learning(title, policyaccess, expected_filename):
 	q_learing_agent = QLearningCERebuyAgent(
-		2, 1000, load_path=os.path.join(PathManager.data_path,
+		marketplace=CircularEconomyRebuyPriceMonopolyScenario(), load_path=os.path.join(PathManager.data_path,
 		'CircularEconomyRebuyPriceMonopolyScenario_QLearningCERebuyAgent.dat')
 	)
 	pa = PolicyAnalyzer(q_learing_agent)
@@ -93,7 +94,7 @@ one_competitor_test_cases = [
 @pytest.mark.parametrize('title, policyaccess, expected_filename', one_competitor_test_cases)
 def test_circular_duopol_q_learning(title, policyaccess, expected_filename):
 	q_learing_agent = QLearningCERebuyAgent(
-		6, 1000, load_path=os.path.join(PathManager.data_path,
+		marketplace=CircularEconomyRebuyPriceOneCompetitor(), load_path=os.path.join(PathManager.data_path,
 		'CircularEconomyRebuyPriceOneCompetitor_QLearningCERebuyAgent.dat')
 	)
 	pa = PolicyAnalyzer(q_learing_agent)
@@ -118,7 +119,7 @@ one_competitor_test_cases = [
 @pytest.mark.parametrize('title, policyaccess, expected_filename', one_competitor_test_cases)
 def test_circular_duopol_continuos_actorcritic(title, policyaccess, expected_filename):
 	a2c_agent = ContinuosActorCriticAgentFixedOneStd(
-		6, 3, load_path=os.path.join(PathManager.data_path,
+		marketplace=CircularEconomyRebuyPriceOneCompetitor(), load_path=os.path.join(PathManager.data_path,
 			'actor_parametersCircularEconomyRebuyPriceOneCompetitor_ContinuosActorCriticAgentFixedOneStd.dat')
 	)
 	pa = PolicyAnalyzer(a2c_agent)
