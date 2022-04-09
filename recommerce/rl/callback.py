@@ -22,7 +22,7 @@ from recommerce.rl.reinforcement_learning_agent import ReinforcementLearningAgen
 warnings.filterwarnings('ignore')
 
 
-class PerStepCheck(BaseCallback):
+class RecommerceCallback(BaseCallback):
 	"""
 	Callback for saving a model (the check is done every `check_freq` steps)
 	based on the training reward (in practice, we recommend using `EvalCallback`).
@@ -34,7 +34,7 @@ class PerStepCheck(BaseCallback):
 			f'log_dir_prepend should be a string, but {log_dir_prepend} is {type(log_dir_prepend)}'
 		assert isinstance(training_steps, int) and training_steps > 0
 		assert isinstance(iteration_length, int) and iteration_length > 0
-		super(PerStepCheck, self).__init__(True)
+		super(RecommerceCallback, self).__init__(True)
 		self.best_mean_interim_reward = None
 		self.best_mean_overall_reward = None
 		self.marketplace_class = marketplace_class
@@ -72,9 +72,18 @@ class PerStepCheck(BaseCallback):
 		os.makedirs(os.path.abspath(self.save_path), exist_ok=True)
 		self.tmp_parameters = os.path.join(self.save_path, f'tmp_model.{self.file_ending}')
 
-	def _on_step(self, finished_episodes: int = None, mean_reward: float = None, forcecontinue: bool = False) -> bool:
+	def _on_step(self, finished_episodes: int = None, mean_reward: float = None) -> bool:
 		"""
-		This method is called at every step by the stable baselines agents.
+		This method is called during training after step in the environment is called.
+		If you don't provide finished_episodes and mean_reward, the agent will conclude this from the number of timesteps.
+		Note that you must provide finished_episodes if and only if you provide mean_reward.
+
+		Args:
+			finished_episodes (int, optional): The episodes that are already finished. Defaults to None.
+			mean_reward (float, optional): The recieved return over the last episodes. Defaults to None.
+
+		Returns:
+			bool: True should be returned. False will be interpreted as error.
 		"""
 		assert (finished_episodes is None) == (mean_reward is None), 'finished_episodes must be exactly None if mean_reward is None'
 		self.tqdm_instance.update()

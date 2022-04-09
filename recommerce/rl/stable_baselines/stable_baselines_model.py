@@ -6,7 +6,7 @@ from stable_baselines3.common.noise import NormalActionNoise
 from recommerce.market.circular.circular_vendors import CircularAgent
 from recommerce.market.linear.linear_vendors import LinearAgent
 from recommerce.market.sim_market import SimMarket
-from recommerce.rl.callback import PerStepCheck
+from recommerce.rl.callback import RecommerceCallback
 from recommerce.rl.reinforcement_learning_agent import ReinforcementLearningAgent
 
 
@@ -38,7 +38,7 @@ class StableBaselinesAgent(ReinforcementLearningAgent, LinearAgent, CircularAgen
 		assert False, 'This method may never be used in a StableBaselinesAgent!'
 
 	def train_agent(self, training_steps=100000, iteration_length=500):
-		callback = PerStepCheck(type(self), type(self.marketplace), training_steps=training_steps, iteration_length=iteration_length)
+		callback = RecommerceCallback(type(self), type(self.marketplace), training_steps=training_steps, iteration_length=iteration_length)
 		self.model.set_env(stable_baselines3.common.monitor.Monitor(self.marketplace, callback.save_path))
 		self.model.learn(training_steps, callback=callback)
 

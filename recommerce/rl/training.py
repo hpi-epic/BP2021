@@ -4,7 +4,7 @@ import torch
 
 import recommerce.configuration.utils as ut
 from recommerce.configuration.hyperparameter_config import config
-from recommerce.rl.callback import PerStepCheck
+from recommerce.rl.callback import RecommerceCallback
 from recommerce.rl.reinforcement_learning_agent import ReinforcementLearningAgent
 
 
@@ -25,7 +25,7 @@ class RLTrainer(ABC):
 		assert self.trainer_agent_fit()
 
 	def initialize_callback(self, training_steps):
-		self.callback = PerStepCheck(self.agent_class, self.marketplace_class, self.log_dir_prepend, training_steps, 500, 'dat')
+		self.callback = RecommerceCallback(self.agent_class, self.marketplace_class, self.log_dir_prepend, training_steps, 500, 'dat')
 		self.callback.model = self.agent_class(marketplace=self.marketplace_class(), optim=torch.optim.Adam)
 
 	def calculate_dict_average(self, all_dicts) -> dict:

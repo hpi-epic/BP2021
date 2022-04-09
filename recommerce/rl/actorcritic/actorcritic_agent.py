@@ -73,15 +73,12 @@ class ActorCriticAgent(ReinforcementLearningAgent, ABC):
 	def save(self, model_path: str) -> None:
 		"""
 		Save a trained model to the specified folder within 'trainedModels'.
-		For each model an actor and a critic net will be saved.
-		This method is copied from our Q-Learning Agent
+		For each model only the actor net will be saved.
 
 		Args:
-			model_path (str): The path to the folder within 'trainedModels' where the model should be saved.
-			model_name (str): The name of the .dat file of this specific model.
+			model_path (str): The path inclusively the name where the model should be saved.
 		"""
 		assert model_path.endswith('.dat'), f'the modelname must end in ".dat": {model_path}'
-		# assert os.path.exists(model_path), f'the specified path does not exist: {model_path}'
 		torch.save(self.actor_net.state_dict(), model_path)
 
 	def train_batch(self, states, actions, rewards, next_states, regularization=False):
