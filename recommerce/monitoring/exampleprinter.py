@@ -47,12 +47,9 @@ class ExamplePrinter():
 		print('\nAborting exampleprinter run...')
 		sys.exit(0)
 
-	def run_example(self, log_dir_prepend='') -> int:
+	def run_example(self) -> int:
 		"""
 		Run a specified marketplace with a (pre-trained, if RL) agent and record various statistics using TensorBoard.
-
-		Args:
-			log_dir_prepend (str, optional): What to prepend to the log_dir folder name. Defaults to ''.
 
 		Returns:
 			int: The profit made.
@@ -63,7 +60,7 @@ class ExamplePrinter():
 		is_done = False
 		state = self.marketplace.reset()
 
-		signature = f'{log_dir_prepend}exampleprinter_{time.strftime("%b%d_%H-%M-%S")}'
+		signature = f'exampleprinter_{time.strftime("%b%d_%H-%M-%S")}'
 		writer = SummaryWriter(log_dir=os.path.join(PathManager.results_path, 'runs', signature))
 
 		if isinstance(self.marketplace, circular_market.CircularEconomyRebuyPriceOneCompetitor):
