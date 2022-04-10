@@ -18,25 +18,17 @@ class ActorCriticAgent(ReinforcementLearningAgent, ABC):
 	"""
 	def __init__(
 			self,
-			n_observations=None,
-			n_actions=None,
-			marketplace=None,
+			marketplace: SimMarket,
 			optim=None,
 			device='cuda' if torch.cuda.is_available() else 'cpu',
 			load_path=None,
 			critic_path=None,
 			name='actor_critic',
 			network_architecture=model.simple_network):
-		assert marketplace is None or isinstance(marketplace, SimMarket), \
-			f'if marketplace is provided, marketplace must be a SimMarket, but is {type(marketplace)}'
-		assert (n_actions is None) == (n_observations is None), 'n_actions must be None exactly when n_observations is None'
-		assert (n_actions is None) != (marketplace is None), \
-			'You must specify the network size either by providing input and output size, or by a marketplace'
-		assert n_actions is None
+		assert isinstance(marketplace, SimMarket), f'marketplace must be a SimMarket, but is {type(marketplace)}'
 
-		if marketplace is not None:
-			n_observations = marketplace.observation_space.shape[0]
-			n_actions = marketplace.get_actions_dimension() if isinstance(self, ContinuosActorCriticAgent) else marketplace.get_n_actions()
+		n_observations = marketplace.observation_space.shape[0]
+		n_actions = marketplace.get_actions_dimension() if isinstance(self, ContinuosActorCriticAgent) else marketplace.get_n_actions()
 
 		self.device = device
 		self.name = name
@@ -49,8 +41,6 @@ class ActorCriticAgent(ReinforcementLearningAgent, ABC):
 			self.critic_tgt_net.load_state_dict(torch.load(critic_path, map_location=self.device))
 
 	def synchronize_tgt_net(self):
-		# Not printing this anymore since it clutters the output when training
-		# print('Now I synchronize the tgt net')
 		self.critic_tgt_net.load_state_dict(self.critic_net.state_dict())
 
 	@abstractmethod

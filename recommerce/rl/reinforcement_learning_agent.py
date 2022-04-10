@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 
 import torch
 
+from recommerce.market.sim_market import SimMarket
 from recommerce.market.vendors import Agent
 
 
@@ -9,9 +10,7 @@ class ReinforcementLearningAgent(Agent, ABC):
 	@abstractmethod
 	def __init__(
 			self,
-			n_observations=None,
-			n_actions=None,
-			marketplace=None,
+			marketplace: SimMarket,
 			optim=None,
 			device='cuda' if torch.cuda.is_available() else 'cpu',
 			load_path=None,
@@ -20,8 +19,7 @@ class ReinforcementLearningAgent(Agent, ABC):
 		Every ReinforcementLearningAgent must offer initialization by these parameters
 
 		Args:
-			n_observations (int): length of input (observation) vector
-			n_actions (int): length of output vector
+			marketplace (SimMarket): The marketplace the agent will interact with.
 			load_path (str, optional): The path to load existing parameters of a network corresponding to this agent.
 			Note that this only refers to a network responsible for behaviour.
 			Assistance networks may be initialized differently.
