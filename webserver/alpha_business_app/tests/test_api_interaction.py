@@ -235,14 +235,43 @@ class ButtonTests(TestCase):
 		test_button_handler = self._setup_button_handler('download.html', request)
 		with patch('alpha_business_app.buttons.send_post_request') as post_request_mock, \
 			patch('alpha_business_app.buttons.redirect')as redirect_mock:
-			post_request_mock.return_value = APIResponse('success', content={'id': '12345'})
+			api_response_dict = {
+				'0': {
+					'id': '2cc1fcd41e69f60055962e89c764f5c442cb2f4b76a9c4c8316c2bb9a5ffcdc6',
+					'status': 'running',
+					'data': 6006,
+					'stream': None
+				}, '1': {
+					'id': 'ca166cff9b83bee9791b435e378574e52d71150c0f790df4fe793d02a86e031f',
+					'status': 'sleeping',
+					'data': 6007,
+					'stream': None
+				}
+			}
+			post_request_mock.return_value = APIResponse('success', content=api_response_dict)
 
 			test_button_handler.do_button_click()
-			post_request_mock.assert_called_once_with('start', EXAMPLE_HIERARCHY_DICT)
+			post_request_mock.assert_called_once_with('start', EXAMPLE_HIERARCHY_DICT, 2)
 			redirect_mock.assert_called_once_with('/observe', {'success': 'You successfully launched an experiment'})
 
-			config_object = Config.objects.all()[1]
-			assert 'Config for test_experiment' == config_object.name
+		# assert config exists
+		config_object = Config.objects.all()[1]
+		assert 'Config for test_experiment' == config_object.name
+
+		# assert two container were created
+		container_set = Container.objects.filter(id='2cc1fcd41e69f60055962e89c764f5c442cb2f4b76a9c4c8316c2bb9a5ffcdc6')
+		assert 1 == len(container_set)
+		container1 = container_set[0]
+		assert container1
+		assert 'test_experiment (0)' == container1.name
+		assert 'running' == container1.health_status
+
+		container_set = Container.objects.filter(id='ca166cff9b83bee9791b435e378574e52d71150c0f790df4fe793d02a86e031f')
+		assert 1 == len(container_set)
+		container2 = container_set[0]
+		assert container2
+		assert 'test_experiment (1)' == container2.name
+		assert 'sleeping' == container2.health_status
 
 	def _setup_button_handler(self, view: str, request: RequestFactory) -> ButtonHandler:
 		return ButtonHandler(request, view=view,

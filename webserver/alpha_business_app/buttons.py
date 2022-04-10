@@ -1,5 +1,3 @@
-import copy
-
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
@@ -7,7 +5,8 @@ from django.utils import timezone
 from recommerce.configuration.config_validation import validate_config
 
 from .config_merger import ConfigMerger
-from .config_parser import ConfigFlatDictParser, ConfigModelParser
+from .config_parser import ConfigFlatDictParser
+from .container_parser import parse_response_to_database
 from .handle_files import download_file
 from .handle_requests import send_get_request, send_get_request_with_streaming, send_post_request, stop_container
 from .models.config import Config
@@ -302,24 +301,15 @@ class ButtonHandler():
 			self.message = ['error', validate_data]
 			return self._decide_rendering()
 
-		response = send_post_request('start', config_dict)
+		num_experiments = post_request['num_experiments'][0] if post_request['num_experiments'][0] else 1
+		response = send_post_request('start', config_dict, num_experiments)
+
 		if response.ok():
 			# put container into database
-			response = response.content
-			# check if a container with the same id already exists
-			if Container.objects.filter(id=response['id']).exists():
-				# we will kindly ask the user to try it again and stop the container
-				# TODO insert better handling here
-				self.message = ['error', 'The new container has the same id as an already existing container, please try again.']
+			container_name = post_request['experiment_name'][0]
+			was_successfull, self.message = parse_response_to_database(response, config_dict, container_name)
+			if not was_successfull:
 				return self._remove()
-			# get all necessary parameters for container object
-			container_name = self.request.POST['experiment_name']
-			container_name = container_name if container_name != '' else response['id'][:10]
-			config_object = ConfigModelParser().parse_config(copy.deepcopy(config_dict))
-			command = config_object.environment.task
-			Container.objects.create(id=response['id'], config=config_object, name=container_name, command=command)
-			config_object.name = f'Config for {container_name}'
-			config_object.save()
 			return redirect('/observe', {'success': 'You successfully launched an experiment'})
 		else:
 			self.message = response.status()
