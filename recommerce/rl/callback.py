@@ -24,8 +24,9 @@ warnings.filterwarnings('ignore')
 
 class RecommerceCallback(BaseCallback):
 	"""
-	Callback for saving a model (the check is done every `check_freq` steps)
-	based on the training reward (in practice, we recommend using `EvalCallback`).
+	This callback checks if the current mean return is better than the best mean return.
+	This check happens every episode.
+	After 'iteration_length' episodes, the best model in that time span is saved to disk.
 	"""
 	def __init__(self, agent_class, marketplace_class, training_steps=10000, iteration_length=500, file_ending='zip', signature='train'):
 		assert issubclass(agent_class, ReinforcementLearningAgent)

@@ -28,24 +28,24 @@ def import_config() -> hyperparameter_config.HyperparameterConfig:
 
 
 test_scenarios = [
-	(linear_market.ClassicScenario, QLearningAgent),
-	(linear_market.MultiCompetitorScenario, QLearningAgent),
-	(circular_market.CircularEconomyMonopolyScenario, QLearningAgent),
-	(circular_market.CircularEconomyRebuyPriceMonopolyScenario, QLearningAgent),
-	(circular_market.CircularEconomyRebuyPriceOneCompetitor, QLearningAgent)
+	linear_market.ClassicScenario,
+	linear_market.MultiCompetitorScenario,
+	circular_market.CircularEconomyMonopolyScenario,
+	circular_market.CircularEconomyRebuyPriceMonopolyScenario,
+	circular_market.CircularEconomyRebuyPriceOneCompetitor
 ]
 
 
 @pytest.mark.training
 @pytest.mark.slow
-@pytest.mark.parametrize('market_class, agent_class', test_scenarios)
-def test_market_scenario(market_class, agent_class):
+@pytest.mark.parametrize('market_class', test_scenarios)
+def test_market_scenario(market_class):
 	json = ut_t.create_hyperparameter_mock_json(rl=ut_t.create_hyperparameter_mock_json_rl(replay_start_size='500', sync_target_frames='100'))
 	with patch('builtins.open', mock_open(read_data=json)) as mock_file:
 		ut_t.check_mock_file(mock_file, json)
 		config = import_config()
 
-	q_learning_training.QLearningTrainer(market_class, agent_class).train_agent(int(config.replay_start_size * 1.2))
+	q_learning_training.QLearningTrainer(market_class, QLearningAgent).train_agent(int(config.replay_start_size * 1.2))
 
 
 @pytest.mark.training

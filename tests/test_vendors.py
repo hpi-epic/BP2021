@@ -67,17 +67,8 @@ def test_non_abstract_agent_classes(agent):
 	agent()
 
 
-# actual n_observation and n_action are not needed, we just test if the initialization fails or not
-non_abstract_qlearning_agent_classes_testcases = [
-	(QLearningAgent, MultiCompetitorScenario),
-	(QLearningAgent, MultiCompetitorScenario),
-	(QLearningAgent, MultiCompetitorScenario)
-]
-
-
-@pytest.mark.parametrize('agent, marketplace_class', non_abstract_qlearning_agent_classes_testcases)
-def test_non_abstract_qlearning_agent_classes(agent, marketplace_class):
-	agent(marketplace=marketplace_class())
+def test_non_abstract_qlearning_agent():
+	QLearningAgent(marketplace=MultiCompetitorScenario())
 
 
 fixed_price_agent_observation_policy_pairs_testcases = [

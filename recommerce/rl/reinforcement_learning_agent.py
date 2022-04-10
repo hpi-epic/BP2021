@@ -14,15 +14,19 @@ class ReinforcementLearningAgent(Agent, ABC):
 			optim=None,
 			device='cuda' if torch.cuda.is_available() else 'cpu',
 			load_path=None,
-			name='enter a name here'):
+			name='ReinforcementLearningAgent'):
 		"""
 		Every ReinforcementLearningAgent must offer initialization by these parameters
 
 		Args:
 			marketplace (SimMarket): The marketplace the agent will interact with.
+			optim (torch.optim): The optimizer used for training.
+			device (str): The device the agent will be trained on.
 			load_path (str, optional): The path to load existing parameters of a network corresponding to this agent.
 			Note that this only refers to a network responsible for behaviour.
 			Assistance networks may be initialized differently.
+			name (str, optional): The name of the agent.
+			Defaults to 'ReinforcementLearningAgent'.
 
 		Raises:
 			NotImplementedError: This is an abstract interface definition
