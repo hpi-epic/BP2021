@@ -2,7 +2,6 @@ import os
 import signal
 import sys
 import time
-import warnings
 
 import numpy as np
 from stable_baselines3.common.callbacks import BaseCallback
@@ -18,8 +17,6 @@ from recommerce.market.sim_market import SimMarket
 from recommerce.monitoring.agent_monitoring.am_evaluation import Evaluator
 from recommerce.monitoring.agent_monitoring.am_monitoring import Monitor
 from recommerce.rl.reinforcement_learning_agent import ReinforcementLearningAgent
-
-warnings.filterwarnings('ignore')
 
 
 class RecommerceCallback(BaseCallback):

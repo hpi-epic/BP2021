@@ -34,6 +34,7 @@ class SimMarket(gym.Env, ABC):
 		self.competitors = self._get_competitor_list()
 		# The agent's price does not belong to the observation_space any more because an agent should not depend on it
 		self._setup_action_observation_space(support_continuous_action_space)
+		self.support_continuous_action_space = support_continuous_action_space
 		self._owner = None
 		self._customer = None
 		self._number_of_vendors = self._get_number_of_vendors()
@@ -136,6 +137,8 @@ class SimMarket(gym.Env, ABC):
 			# the competitor, which turn it is, will update its pricing
 			if i < len(self.competitors):
 				action_competitor_i = self.competitors[i].policy(self._observation(i + 1))
+				if self.support_continuous_action_space:
+					action_competitor_i = np.array(action_competitor_i, dtype=np.float32)
 				assert self.action_space.contains(action_competitor_i), 'This vendor does not deliver a suitable action'
 				self.vendor_actions[i + 1] = action_competitor_i
 

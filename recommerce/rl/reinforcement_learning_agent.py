@@ -25,8 +25,7 @@ class ReinforcementLearningAgent(Agent, ABC):
 			load_path (str, optional): The path to load existing parameters of a network corresponding to this agent.
 			Note that this only refers to a network responsible for behaviour.
 			Assistance networks may be initialized differently.
-			name (str, optional): The name of the agent.
-			Defaults to 'ReinforcementLearningAgent'.
+			name (str, optional): The name of the agent. Defaults to 'ReinforcementLearningAgent'.
 
 		Raises:
 			NotImplementedError: This is an abstract interface definition
