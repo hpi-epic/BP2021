@@ -127,6 +127,9 @@ class RecommerceCallback(BaseCallback):
 			return
 		monitor = Monitor()
 		agent_list = [(self.agent_class, [parameter_path]) for parameter_path in self.saved_parameter_paths]
+
+		# The next line is a bit hacky. We have to provide if the marketplace is continuos or not.
+		# Only Stable Baselines agents use continuous actions at the moment. And only Stable Baselines agents have the attribute env.
 		monitor.configurator.setup_monitoring(False, 250, 250, self.marketplace_class, agent_list,
 			support_continuous_action_space=hasattr(self.model, 'env'))
 		rewards = monitor.run_marketplace()

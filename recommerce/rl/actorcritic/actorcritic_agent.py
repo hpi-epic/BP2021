@@ -19,7 +19,6 @@ class ActorCriticAgent(ReinforcementLearningAgent, ABC):
 	def __init__(
 			self,
 			marketplace: SimMarket,
-			optim=None,
 			device='cuda' if torch.cuda.is_available() else 'cpu',
 			load_path=None,
 			critic_path=None,

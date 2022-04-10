@@ -22,7 +22,6 @@ class QLearningAgent(ReinforcementLearningAgent, CircularAgent, LinearAgent):
 	def __init__(
 			self,
 			marketplace: SimMarket,
-			optim=None,
 			device='cuda' if torch.cuda.is_available() else 'cpu',
 			load_path=None,
 			name='QLearningAgent',
@@ -35,14 +34,16 @@ class QLearningAgent(ReinforcementLearningAgent, CircularAgent, LinearAgent):
 
 		self.device = device
 		self.buffer_for_feedback = None
-		self.optimizer = None
 		self.name = name
 		print(f'I initiate a QLearningAgent using {self.device} device')
 		self.net = network_architecture(n_observations, self.n_actions).to(self.device)
 		if load_path:
+			self.optimizer = None
 			self.net.load_state_dict(torch.load(load_path, map_location=self.device))
-		if optim:
-			self.optimizer = optim(self.net.parameters(), lr=config.learning_rate)
+
+		# Here is assumed that training happens if and only if no load_path is given.
+		if load_path is None:
+			self.optimizer = torch.optim.Adam(self.net.parameters(), lr=config.learning_rate)
 			self.tgt_net = network_architecture(n_observations, self.n_actions).to(self.device)
 			if load_path:
 				self.tgt_net.load_state_dict(torch.load(load_path), map_location=self.device)

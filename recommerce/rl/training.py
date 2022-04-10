@@ -1,7 +1,5 @@
 from abc import ABC, abstractmethod
 
-import torch
-
 import recommerce.configuration.utils as ut
 from recommerce.configuration.hyperparameter_config import config
 from recommerce.rl.callback import RecommerceCallback
@@ -23,7 +21,7 @@ class RLTrainer(ABC):
 		assert self.trainer_agent_fit()
 
 	def initialize_callback(self, training_steps):
-		agent = self.agent_class(marketplace=self.marketplace_class(), optim=torch.optim.Adam)
+		agent = self.agent_class(marketplace=self.marketplace_class())
 		self.callback = RecommerceCallback(self.agent_class, self.marketplace_class, training_steps, 500, 'dat', agent.name)
 		self.callback.model = agent
 
