@@ -8,7 +8,7 @@ import recommerce.market.circular.circular_vendors as circular_vendors
 import recommerce.market.linear.linear_sim_market as linear_market
 from recommerce.market.linear.linear_vendors import FixedPriceLEAgent
 from recommerce.monitoring.exampleprinter import ExamplePrinter
-from recommerce.rl.actorcritic.actorcritic_agent import ContinuosActorCriticAgentFixedOneStd, DiscreteACACircularEconomyRebuy
+from recommerce.rl.actorcritic.actorcritic_agent import ContinuosActorCriticAgentFixedOneStd, DiscreteActorCriticAgent
 from recommerce.rl.q_learning.q_learning_agent import QLearningCEAgent, QLearningCERebuyAgent, QLearningLEAgent
 
 # The load path for the agent modelfiles
@@ -53,7 +53,7 @@ full_episode_testcases_rl_agent = [
 		'CircularEconomyRebuyPriceOneCompetitor_QLearningCERebuyAgent.dat'),
 	(circular_market.CircularEconomyRebuyPriceOneCompetitor(), ContinuosActorCriticAgentFixedOneStd,
 		'actor_parametersCircularEconomyRebuyPriceOneCompetitor_ContinuosActorCriticAgentFixedOneStd.dat'),
-	(circular_market.CircularEconomyRebuyPriceOneCompetitor(), DiscreteACACircularEconomyRebuy,
+	(circular_market.CircularEconomyRebuyPriceOneCompetitor(), DiscreteActorCriticAgent,
 		'actor_parametersCircularEconomyRebuyPriceOneCompetitor_DiscreteACACircularEconomyRebuy.dat')
 ]
 

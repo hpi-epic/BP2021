@@ -28,12 +28,14 @@ class ActorCriticAgent(ReinforcementLearningAgent, ABC):
 		assert isinstance(marketplace, SimMarket), f'marketplace must be a SimMarket, but is {type(marketplace)}'
 
 		n_observations = marketplace.observation_space.shape[0]
-		n_actions = marketplace.get_actions_dimension() if isinstance(self, ContinuosActorCriticAgent) else marketplace.get_n_actions()
+		network_output_size = marketplace.get_actions_dimension() if isinstance(self, ContinuosActorCriticAgent) else marketplace.get_n_actions()
+		if isinstance(self, DiscreteActorCriticAgent):
+			self.actions_dimension = marketplace.get_actions_dimension()
 
 		self.device = device
 		self.name = name
 		print(f'I initiate an ActorCriticAgent using {self.device} device')
-		self.initialize_models_and_optimizer(n_observations, n_actions, network_architecture)
+		self.initialize_models_and_optimizer(n_observations, network_output_size, network_architecture)
 		if load_path is not None:
 			self.actor_net.load_state_dict(torch.load(load_path, map_location=self.device))
 		if critic_path is not None:
@@ -44,7 +46,7 @@ class ActorCriticAgent(ReinforcementLearningAgent, ABC):
 		self.critic_tgt_net.load_state_dict(self.critic_net.state_dict())
 
 	@abstractmethod
-	def initialize_models_and_optimizer(self, n_observations, n_actions) -> None:  # pragma: no cover
+	def initialize_models_and_optimizer(self, n_observations, network_output_size) -> None:  # pragma: no cover
 		raise NotImplementedError('This method is abstract. Use a subclass')
 
 	@abstractmethod
@@ -147,14 +149,14 @@ class ActorCriticAgent(ReinforcementLearningAgent, ABC):
 		raise NotImplementedError('This method is abstract. Use a subclass')
 
 
-class DiscreteActorCriticAgent(ActorCriticAgent):
+class DiscreteActorCriticAgent(ActorCriticAgent, LinearAgent, CircularAgent):
 	"""
 	This is an actor critic agent with discrete action space.
 	It generates preferences and uses softmax to gain the probabilities.
 	For our three markets we have three kinds of specific agents you must use.
 	"""
-	def initialize_models_and_optimizer(self, n_observations, n_actions, network_architecture):
-		self.actor_net = network_architecture(n_observations, n_actions).to(self.device)
+	def initialize_models_and_optimizer(self, n_observations, network_output_size, network_architecture):
+		self.actor_net = network_architecture(n_observations, network_output_size).to(self.device)
 		self.actor_optimizer = torch.optim.Adam(self.actor_net.parameters(), lr=0.0000025)
 		self.critic_net = network_architecture(n_observations, 1).to(self.device)
 		self.critic_optimizer = torch.optim.Adam(self.critic_net.parameters(), lr=0.00025)
@@ -179,23 +181,15 @@ class DiscreteActorCriticAgent(ActorCriticAgent):
 	def log_probability_given_action(self, states, actions):
 		return -torch.log(torch.softmax(self.actor_net(states), dim=0).gather(1, actions.unsqueeze(-1)))
 
-
-class DiscreteACALinear(DiscreteActorCriticAgent, LinearAgent):
 	def agent_output_to_market_form(self, action):
-		return action
-
-
-class DiscreteACACircularEconomy(DiscreteActorCriticAgent, CircularAgent):
-	def agent_output_to_market_form(self, action):
-		return (int(action % config.max_price), int(action / config.max_price))
-
-
-class DiscreteACACircularEconomyRebuy(DiscreteActorCriticAgent, CircularAgent):
-	def agent_output_to_market_form(self, action):
-		return (
-			int(action / (config.max_price * config.max_price)),
-			int(action / config.max_price % config.max_price),
-			int(action % config.max_price))
+		if self.actions_dimension == 1:
+			return action
+		else:
+			action_list = []
+			for _ in range(self.actions_dimension):
+				action_list.append(action % config.max_price)
+				action = action // config.max_price
+			return tuple(action_list)
 
 
 class ContinuosActorCriticAgent(ActorCriticAgent, LinearAgent, CircularAgent):
@@ -209,9 +203,8 @@ class ContinuosActorCriticAgent(ActorCriticAgent, LinearAgent, CircularAgent):
 	softplus = torch.nn.Softplus()
 	name = 'ContinuosActorCriticAgent'
 
-	def initialize_models_and_optimizer(self, n_observations, n_actions, network_architecture):
-		self.n_actions = n_actions
-		self.actor_net = network_architecture(n_observations, self.n_actions).to(self.device)
+	def initialize_models_and_optimizer(self, n_observations, network_output_size, network_architecture):
+		self.actor_net = network_architecture(n_observations, network_output_size).to(self.device)
 		self.actor_optimizer = torch.optim.Adam(self.actor_net.parameters(), lr=0.0002)
 		self.critic_net = network_architecture(n_observations, 1).to(self.device)
 		self.critic_optimizer = torch.optim.Adam(self.critic_net.parameters(), lr=0.002)

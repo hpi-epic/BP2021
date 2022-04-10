@@ -8,7 +8,6 @@ import recommerce.rl.actorcritic.actorcritic_agent as actorcritic_agent
 
 abstract_agent_classes_testcases = [
 	actorcritic_agent.ActorCriticAgent,
-	actorcritic_agent.DiscreteActorCriticAgent,
 	actorcritic_agent.ContinuosActorCriticAgent
 ]
 
@@ -16,7 +15,7 @@ abstract_agent_classes_testcases = [
 @pytest.mark.parametrize('agent', abstract_agent_classes_testcases)
 def test_abstract_agent_classes(agent):
 	with pytest.raises(TypeError) as error_message:
-		agent()
+		agent(linear_market.ClassicScenario)
 	assert 'Can\'t instantiate abstract class' in str(error_message.value)
 
 
