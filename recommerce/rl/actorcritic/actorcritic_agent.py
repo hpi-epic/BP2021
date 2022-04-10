@@ -32,6 +32,7 @@ class ActorCriticAgent(ReinforcementLearningAgent, ABC):
 		assert (n_actions is None) == (n_observations is None), 'n_actions must be None exactly when n_observations is None'
 		assert (n_actions is None) != (marketplace is None), \
 			'You must specify the network size either by providing input and output size, or by a marketplace'
+		assert n_actions is None
 
 		if marketplace is not None:
 			n_observations = marketplace.observation_space.shape[0]

@@ -100,7 +100,7 @@ class SimMarket(gym.Env, ABC):
 				continue
 			self._complete_purchase(profits, seller - 1, frequency)
 
-	def step(self, action) -> Tuple[np.array, np.float32, bool, dict]:
+	def step(self, action) -> Tuple[np.array, float, bool, dict]:
 		"""
 		Simulate the market between actions by the agent.
 		It is part of the gym library for reinforcement learning.
@@ -109,7 +109,7 @@ class SimMarket(gym.Env, ABC):
 			action (int | Tuple): The action of the agent. In discrete case: the action must be between 0 and number of actions -1.
 			Note that you must add one to this price to get the real price!
 		Returns:
-			Tuple[np.array, np.float32, bool, dict]: A Tuple,
+			Tuple[np.array, float, bool, dict]: A Tuple,
 			containing the observation the agents makes right before his next action,
 			the reward he made between these actions,
 			a flag indicating if the market closes and information about the market for logging purposes.
@@ -143,7 +143,7 @@ class SimMarket(gym.Env, ABC):
 
 		self._ensure_output_dict_has('profits/all', profits)
 		is_done = self.step_counter >= config.episode_length
-		return self._observation(), profits[0], is_done, self._output_dict
+		return self._observation(), float(profits[0]), is_done, self._output_dict
 
 	def _observation(self, vendor_view=0) -> np.array:
 		"""
@@ -226,6 +226,16 @@ class SimMarket(gym.Env, ABC):
 			int: The number of actions the agents should take in this marketplace.
 		"""
 		raise NotImplementedError('This method is abstract. Use a subclass')
+
+	def get_observations_dimension(self) -> int:
+		"""
+		Get the dimension of the observation space.
+		This can be used to set the number of inputs for vendors.
+
+		Returns:
+			int: The dimension of the observation space.
+		"""
+		return self.observation_space.shape[0]
 
 	def get_actions_dimension(self) -> int:
 		"""
