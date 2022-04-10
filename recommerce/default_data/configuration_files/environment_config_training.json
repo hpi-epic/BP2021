@@ -4,7 +4,7 @@
 	"agents": [
 		{
 			"name": "CE Rebuy Agent (QLearning)",
-			"agent_class": "recommerce.rl.q_learning.q_learning_agent.QLearningCERebuyAgent",
+			"agent_class": "recommerce.rl.q_learning.q_learning_agent.QLearningAgent",
 			"argument": ""
 		}
 	]

@@ -10,7 +10,7 @@ import recommerce.market.circular.circular_vendors as circular_vendors
 import recommerce.market.linear.linear_vendors as linear_vendors
 import recommerce.market.vendors as vendors
 from recommerce.market.linear.linear_sim_market import MultiCompetitorScenario
-from recommerce.rl.q_learning.q_learning_agent import QLearningAgent, QLearningCEAgent, QLearningCERebuyAgent, QLearningLEAgent
+from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
 from recommerce.rl.reinforcement_learning_agent import ReinforcementLearningAgent
 
 
@@ -39,8 +39,7 @@ abstract_agent_classes_testcases = [
 	vendors.HumanPlayer,
 	vendors.RuleBasedAgent,
 	vendors.FixedPriceAgent,
-	ReinforcementLearningAgent,
-	QLearningAgent
+	ReinforcementLearningAgent
 ]
 
 
@@ -70,9 +69,9 @@ def test_non_abstract_agent_classes(agent):
 
 # actual n_observation and n_action are not needed, we just test if the initialization fails or not
 non_abstract_qlearning_agent_classes_testcases = [
-	(QLearningLEAgent, MultiCompetitorScenario),
-	(QLearningCEAgent, MultiCompetitorScenario),
-	(QLearningCERebuyAgent, MultiCompetitorScenario)
+	(QLearningAgent, MultiCompetitorScenario),
+	(QLearningAgent, MultiCompetitorScenario),
+	(QLearningAgent, MultiCompetitorScenario)
 ]
 
 

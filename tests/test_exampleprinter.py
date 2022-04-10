@@ -9,7 +9,7 @@ import recommerce.market.linear.linear_sim_market as linear_market
 from recommerce.market.linear.linear_vendors import FixedPriceLEAgent
 from recommerce.monitoring.exampleprinter import ExamplePrinter
 from recommerce.rl.actorcritic.actorcritic_agent import ContinuosActorCriticAgentFixedOneStd, DiscreteActorCriticAgent
-from recommerce.rl.q_learning.q_learning_agent import QLearningCEAgent, QLearningCERebuyAgent, QLearningLEAgent
+from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
 
 # The load path for the agent modelfiles
 parameters_path = os.path.join('tests', 'test_data')
@@ -44,13 +44,13 @@ def test_full_episode_rule_based(marketplace, agent):
 
 
 full_episode_testcases_rl_agent = [
-	(linear_market.ClassicScenario(), QLearningLEAgent, 'ClassicScenario_QLearningLEAgent.dat'),
-	(circular_market.CircularEconomyMonopolyScenario(), QLearningCEAgent,
-		'CircularEconomyMonopolyScenario_QLearningCEAgent.dat'),
-	(circular_market.CircularEconomyRebuyPriceMonopolyScenario(), QLearningCERebuyAgent,
-		'CircularEconomyRebuyPriceMonopolyScenario_QLearningCERebuyAgent.dat'),
-	(circular_market.CircularEconomyRebuyPriceOneCompetitor(), QLearningCERebuyAgent,
-		'CircularEconomyRebuyPriceOneCompetitor_QLearningCERebuyAgent.dat'),
+	(linear_market.ClassicScenario(), QLearningAgent, 'ClassicScenario_QLearningAgent.dat'),
+	(circular_market.CircularEconomyMonopolyScenario(), QLearningAgent,
+		'CircularEconomyMonopolyScenario_QLearningAgent.dat'),
+	(circular_market.CircularEconomyRebuyPriceMonopolyScenario(), QLearningAgent,
+		'CircularEconomyRebuyPriceMonopolyScenario_QLearningAgent.dat'),
+	(circular_market.CircularEconomyRebuyPriceOneCompetitor(), QLearningAgent,
+		'CircularEconomyRebuyPriceOneCompetitor_QLearningAgent.dat'),
 	(circular_market.CircularEconomyRebuyPriceOneCompetitor(), ContinuosActorCriticAgentFixedOneStd,
 		'actor_parametersCircularEconomyRebuyPriceOneCompetitor_ContinuosActorCriticAgentFixedOneStd.dat'),
 	(circular_market.CircularEconomyRebuyPriceOneCompetitor(), DiscreteActorCriticAgent,

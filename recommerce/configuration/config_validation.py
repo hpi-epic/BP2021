@@ -157,12 +157,12 @@ if __name__ == '__main__':  # pragma: no cover
 		'agents': [
 			{
 				'name': 'CE Rebuy Agent (QLearning)',
-				'agent_class': 'recommerce.rl.q_learning.q_learning_agent.QLearningCERebuyAgent',
+				'agent_class': 'recommerce.rl.q_learning.q_learning_agent.QLearningAgent',
 				'argument': ''
 			},
 			{
 				'name': 'CE Rebuy Agent (QLearaning)',
-				'agent_class': 'recommerce.rl.q_learning.q_learning_agent.QLearningCERebuyAgent',
+				'agent_class': 'recommerce.rl.q_learning.q_learning_agent.QLearningAgent',
 				'argument': ''
 			}
 		]

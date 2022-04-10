@@ -1,6 +1,5 @@
 import collections
 import random
-from abc import ABC, abstractmethod
 
 import numpy as np
 import torch
@@ -14,7 +13,7 @@ from recommerce.rl.q_learning.experience_buffer import ExperienceBuffer
 from recommerce.rl.reinforcement_learning_agent import ReinforcementLearningAgent
 
 
-class QLearningAgent(ReinforcementLearningAgent, ABC):
+class QLearningAgent(ReinforcementLearningAgent, CircularAgent, LinearAgent):
 	Experience = collections.namedtuple('Experience', field_names=['observation', 'action', 'reward', 'done', 'new_observation'])
 
 	# If you enter load_path, the model will be loaded. For example, if you want to use a pretrained net or test a given agent.
@@ -26,12 +25,13 @@ class QLearningAgent(ReinforcementLearningAgent, ABC):
 			optim=None,
 			device='cuda' if torch.cuda.is_available() else 'cpu',
 			load_path=None,
-			name='q_learning',
+			name='QLearningAgent',
 			network_architecture=model.simple_network):
 		assert isinstance(marketplace, SimMarket), f'marketplace must be a SimMarket, but is {type(marketplace)}'
 
 		n_observations = marketplace.observation_space.shape[0]
 		self.n_actions = marketplace.get_n_actions()
+		self.actions_dimension = marketplace.get_actions_dimension()
 
 		self.device = device
 		self.buffer_for_feedback = None
@@ -59,8 +59,7 @@ class QLearningAgent(ReinforcementLearningAgent, ABC):
 			self.buffer_for_feedback = (observation, action)
 		return self.agent_output_to_market_form(action)
 
-	@abstractmethod
-	def agent_output_to_market_form(self, action) -> tuple or int:  # pragma: no cover
+	def agent_output_to_market_form(self, action):
 		"""
 		Takes a raw action and transforms it to a form that is accepted by the market.
 		A raw action is for example three numbers in one.
@@ -71,7 +70,14 @@ class QLearningAgent(ReinforcementLearningAgent, ABC):
 		Returns:
 			tuple or int: the action accepted by the market.
 		"""
-		raise NotImplementedError('This method is abstract. Use a subclass')
+		if self.actions_dimension == 1:
+			return action
+		else:
+			action_list = []
+			for _ in range(self.actions_dimension):
+				action_list.append(action % config.max_price)
+				action = action // config.max_price
+			return tuple(action_list)
 
 	def set_feedback(self, reward, is_done, new_observation):
 		exp = self.Experience(*self.buffer_for_feedback, reward, is_done, new_observation)
@@ -117,21 +123,3 @@ class QLearningAgent(ReinforcementLearningAgent, ABC):
 		"""
 		assert model_path.endswith('.dat'), f'the modelname must end in ".dat": {model_path}'
 		torch.save(self.net.state_dict(), model_path)
-
-
-class QLearningLEAgent(QLearningAgent, LinearAgent):
-	def agent_output_to_market_form(self, action):
-		return action
-
-
-class QLearningCEAgent(QLearningAgent, CircularAgent):
-	def agent_output_to_market_form(self, action):
-		return (int(action % config.max_price), int(action / config.max_price))
-
-
-class QLearningCERebuyAgent(QLearningAgent, CircularAgent):
-	def agent_output_to_market_form(self, action):
-		return (
-			int(action / (config.max_price * config.max_price)),
-			int(action / config.max_price % config.max_price),
-			int(action % config.max_price))

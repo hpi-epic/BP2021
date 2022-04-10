@@ -8,7 +8,7 @@ import recommerce.configuration.hyperparameter_config as hyperparameter_config
 import recommerce.market.circular.circular_sim_market as circular_market
 import recommerce.market.linear.linear_sim_market as linear_market
 import recommerce.rl.q_learning.q_learning_training as q_learning_training
-from recommerce.rl.q_learning.q_learning_agent import QLearningCEAgent, QLearningCERebuyAgent, QLearningLEAgent
+from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
 
 
 def teardown_module(module):
@@ -28,11 +28,11 @@ def import_config() -> hyperparameter_config.HyperparameterConfig:
 
 
 test_scenarios = [
-	(linear_market.ClassicScenario, QLearningLEAgent),
-	(linear_market.MultiCompetitorScenario, QLearningLEAgent),
-	(circular_market.CircularEconomyMonopolyScenario, QLearningCEAgent),
-	(circular_market.CircularEconomyRebuyPriceMonopolyScenario, QLearningCERebuyAgent),
-	(circular_market.CircularEconomyRebuyPriceOneCompetitor, QLearningCERebuyAgent)
+	(linear_market.ClassicScenario, QLearningAgent),
+	(linear_market.MultiCompetitorScenario, QLearningAgent),
+	(circular_market.CircularEconomyMonopolyScenario, QLearningAgent),
+	(circular_market.CircularEconomyRebuyPriceMonopolyScenario, QLearningAgent),
+	(circular_market.CircularEconomyRebuyPriceOneCompetitor, QLearningAgent)
 ]
 
 
@@ -56,6 +56,6 @@ def test_training_with_tensorboard():
 		ut_t.check_mock_file(mock_file, json)
 		config = import_config()
 		market_class = linear_market.ClassicScenario
-		agent_class = QLearningLEAgent
+		agent_class = QLearningAgent
 
 	q_learning_training.QLearningTrainer(market_class, agent_class).train_agent(int(config.replay_start_size * 1.2))
