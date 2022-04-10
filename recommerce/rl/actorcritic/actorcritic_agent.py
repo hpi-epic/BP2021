@@ -27,7 +27,7 @@ class ActorCriticAgent(ReinforcementLearningAgent, ABC):
 			network_architecture=model.simple_network):
 		assert isinstance(marketplace, SimMarket), f'marketplace must be a SimMarket, but is {type(marketplace)}'
 
-		n_observations = marketplace.observation_space.shape[0]
+		n_observations = get_observations_dimension
 		network_output_size = marketplace.get_actions_dimension() if isinstance(self, ContinuosActorCriticAgent) else marketplace.get_n_actions()
 		if isinstance(self, DiscreteActorCriticAgent):
 			self.actions_dimension = marketplace.get_actions_dimension()
