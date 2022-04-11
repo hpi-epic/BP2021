@@ -70,10 +70,10 @@ class Monitor():
 				rewards[current_agent_index] += [episode_reward]
 
 			if (episode % self.configurator.plot_interval) == 0:
-				self.evaluator.create_histogram(rewards, False, f'episode_{episode}')
+				self.evaluator.create_histogram(rewards, False, f'episode_{episode}.svg')
 
 		# only one histogram after the whole monitoring process
-		self.evaluator.create_histogram(rewards, True, 'Cumulative_rewards_per_episode')
+		self.evaluator.create_histogram(rewards, True, 'Cumulative_rewards_per_episode.svg')
 
 		return rewards
 
