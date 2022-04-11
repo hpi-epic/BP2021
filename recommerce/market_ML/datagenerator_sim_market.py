@@ -6,13 +6,14 @@ import pandas as pd
 import torch
 
 from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPriceOneCompetitor
-from recommerce.market.circular.circular_vendors import RuleBasedCERebuyAgentCompetitive
 
 
 class CircularEconomyDatagenerator(CircularEconomyRebuyPriceOneCompetitor):
 
-	def _get_competitor_list(self) -> list:
-		return [RuleBasedCERebuyAgentCompetitive()]
+	def __init__(self, support_continuous_action_space: bool = False) -> None:
+		super.__init__(support_continuous_action_space)
+		self.cumulated_states = torch.tensor([np.zeros(25)])
+		self.cumulated_states = self.cumulated_states.transpose(0, 1)
 
 	def step(self, action) -> Tuple[np.array, np.float32, bool, dict]:
 		step_output_tuple = super.step(action)

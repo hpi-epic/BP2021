@@ -3,7 +3,6 @@ from typing import Tuple
 
 import gym
 import numpy as np
-import torch
 
 from recommerce.configuration.hyperparameter_config import config
 
@@ -39,8 +38,6 @@ class SimMarket(gym.Env, ABC):
 		self._customer = None
 		self._number_of_vendors = self._get_number_of_vendors()
 		# TODO: Better testing for the observation and action space
-		self.cumulated_states = torch.tensor([np.zeros(25)])
-		self.cumulated_states = self.cumulated_states.transpose(0, 1)
 		assert (self.observation_space and self.action_space), 'Your observation or action space is not defined'
 		# Make sure that variables such as state, customer are known
 		self.reset()
