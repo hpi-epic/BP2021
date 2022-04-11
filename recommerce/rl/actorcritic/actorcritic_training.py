@@ -50,7 +50,7 @@ class ActorCriticTrainer(RLTrainer):
 		all_policy_losses = []
 
 		finished_episodes = 0
-		environments = [self.marketplace for _ in range(total_envs)]
+		environments = [type(self.marketplace)() for _ in range(total_envs)]
 		info_accumulators = [None for _ in range(total_envs)]
 
 		for step_number in trange(number_of_training_steps, unit=' frames', leave=False):
