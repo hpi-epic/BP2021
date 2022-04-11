@@ -32,8 +32,9 @@ def handle_uploaded_file(request, uploaded_config) -> HttpResponse:
 	Checks if an uploaded config file is valid and parses it to the datastructure.
 
 	Args:
-		request (Request):
+		request (Request): post request by the user
 		uploaded_config (InMemoryUploadedFile): by user uploaded config file
+		filename (str, optional): the filename of the uploaded file. Defaults to ''.
 
 	Returns:
 		HttpResponse: either a redirect to the configurator or a render for the upload with an error message
@@ -69,7 +70,9 @@ def handle_uploaded_file(request, uploaded_config) -> HttpResponse:
 	except ValueError:
 		return render(request, 'upload.html', {'error': 'Your config is wrong'})
 
-	Config.objects.create(environment=web_environment_config, hyperparameter=web_hyperparameter_config, name=request.POST['config_name'])
+	given_name = request.POST['config_name']
+	config_name = given_name if given_name else uploaded_config.name
+	Config.objects.create(environment=web_environment_config, hyperparameter=web_hyperparameter_config, name=config_name)
 	return redirect('/configurator', {'success': 'You successfully uploaded a config file'})
 
 

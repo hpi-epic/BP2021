@@ -2,6 +2,7 @@ EXAMPLE_POST_REQUEST_ARGUMENTS = {
 		'csrfmiddlewaretoken': ['PHZ3VkxiJkrk2gnBCkgNfYJAdUsdb4V5e7CO26nJuENMtSas7BVapRGJJ0B3t9HZ'],
 		'action': ['start'],
 		'experiment_name': ['test_experiment'],
+		'num_experiments': ['2'],
 		'environment-task': ['training'],
 		'environment-episodes': [''],
 		'environment-plot_interval': [''],
