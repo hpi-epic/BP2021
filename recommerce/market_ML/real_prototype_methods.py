@@ -33,9 +33,11 @@ def generate_training_data():
 		x[9, i] = np.round_(np.random.uniform(0, 10)) if i < 20 else x[4, i]-0.5-np.round_(x[1, i]/200)if 1 < x[4, i] <= 5 else 5
 		# agent price rebuy
 		x[10, i] = x[1, i] * 0.05  # agent storage cost
+
 		x[22, i] = x[7, i]-1+np.round_(x[5, i]/200) if 9 < x[7, i] <= 20 else 20  # comp price new reaction
 		x[23, i] = x[8, i]-1+np.round_(x[5, i]/200) if 5 < x[8, i] <= 15 else 15  # comp price used reaction
 		x[24, i] = x[9, i]-0.5 - np.round_(x[5, i]/200) if 1 < x[9, i] <= 5 else 5  # comp price rebuy reaction
+
 		x[11, i] = np.round_(max(0, np.random.uniform(5, 15)-x[7, i] + x[2, i]/4 + x[22, i]/4))  # agent sales new
 		x[12, i] = np.round_(min(x[1, i],  max(0, np.random.uniform(5, 15)-x[8, i] + x[3, i]/4 + x[23, i]/4)))  # agent sales used
 		x[13, i] = np.round_(min(x[6, i]/2, max(0, np.random.uniform(5, 15)+x[9, i] - x[4, i]/4 - x[24, i]/4)))  # agent repurchases

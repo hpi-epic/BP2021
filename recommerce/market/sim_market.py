@@ -1,10 +1,8 @@
-import datetime
 from abc import ABC, abstractmethod
 from typing import Tuple
 
 import gym
 import numpy as np
-import pandas as pd
 import torch
 
 from recommerce.configuration.hyperparameter_config import config
@@ -41,6 +39,8 @@ class SimMarket(gym.Env, ABC):
 		self._customer = None
 		self._number_of_vendors = self._get_number_of_vendors()
 		# TODO: Better testing for the observation and action space
+		self.cumulated_states = torch.tensor([np.zeros(25)])
+		self.cumulated_states = self.cumulated_states.transpose(0, 1)
 		assert (self.observation_space and self.action_space), 'Your observation or action space is not defined'
 		# Make sure that variables such as state, customer are known
 		self.reset()
@@ -146,50 +146,7 @@ class SimMarket(gym.Env, ABC):
 
 		self._ensure_output_dict_has('profits/all', profits)
 		is_done = self.step_counter >= config.episode_length
-		self.output_dict_saver(self._output_dict, self.step_counter)
-		exit()
 		return self._observation(), profits[0], is_done, self._output_dict
-
-	def output_dict_saver(self, output_dict: dict, i):
-		x = torch.tensor([(1 if k == 0 else np.round(np.random.uniform(0, 20))) for k in range(24 + 1)])
-
-		# agent period: 1st half: agent x[7]vs x[2]| 2nd half: agent x[7] vs x[2, i+1]
-		# comp period: 1st half: com x[2, i-1] vs x[7, i-1] | 2nd half: com x[2, i-1] vs x[7]
-
-		x[0] = 0
-		x[1] = output_dict['state/in_storage']['vendor_0']  # agent inventory
-
-		x[2] = output_dict['actions/price_new']['vendor_1']  # comp price new
-		x[3] = output_dict['actions/price_refurbished']['vendor_1']  # comp price used
-		x[4] = output_dict['actions/price_rebuy']['vendor_1']  # comp price rebuy
-
-		x[5] = output_dict['state/in_storage']['vendor_1']  # comp inventory
-
-		x[6] = output_dict['state/in_circulation']  # resource in use
-
-		x[7] = output_dict['actions/price_refurbished']['vendor_0']  # agent price new
-		x[8] = output_dict['actions/price_new']['vendor_0']  # agent price used
-		x[9] = output_dict['actions/price_new']['vendor_0']  # agent price rebuy
-
-		x[10] = output_dict['profits/storage_cost']['vendor_0']  # agent storage cost
-
-		# 22, 23, 24 missing because it can not be observed in one step (at the end)
-
-		x[11] = output_dict['customer/purchases_new']['vendor_0']  # agent sales new
-		x[12] = output_dict['customer/purchases_refurbished']['vendor_0']  # agent sales used
-		x[13] = output_dict['owner/rebuys']['vendor_0']  # agent repurchases
-
-		x[14] = output_dict['profits/storage_cost']['vendor_1']  # comp holding cost
-
-		x[15] = output_dict['customer/purchases_new']['vendor_1']  # comp sales new
-		x[16] = output_dict['customer/purchases_refurbished']['vendor_1']  # comp sales used
-		x[17] = output_dict['owner/rebuys']['vendor_0']  # comp sales rebuy
-
-		x[18] = output_dict['profits/all']['vendor_0']  # agent total reward
-		x[19] = output_dict['profits/all']['vendor_1']  # comp total reward
-		# 20, 21 missing because they contain cumulated values
-		pd.DataFrame(x).to_csv(f'training_data-{datetime.datetime.now()}.csv', index=False)
-		exit()
 
 	def _observation(self, vendor_view=0) -> np.array:
 		"""
