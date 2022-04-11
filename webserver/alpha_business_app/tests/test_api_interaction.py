@@ -230,11 +230,11 @@ class ButtonTests(TestCase):
 
 	def test_start_button(self):
 		# mock a request that is sent when user presses a button
-		request = self._setup_request_with_parameters('/start_container', 'start', EXAMPLE_POST_REQUEST_ARGUMENTS)
+		request = self._setup_request_with_parameters('/configurator', 'start', EXAMPLE_POST_REQUEST_ARGUMENTS)
 		# setup a button handler for this request
-		test_button_handler = self._setup_button_handler('download.html', request)
+		test_button_handler = self._setup_button_handler('configurator.html', request, rendering='config')
 		with patch('alpha_business_app.buttons.send_post_request') as post_request_mock, \
-			patch('alpha_business_app.buttons.redirect')as redirect_mock:
+			patch('alpha_business_app.buttons.redirect') as redirect_mock:
 			api_response_dict = {
 				'0': {
 					'id': '2cc1fcd41e69f60055962e89c764f5c442cb2f4b76a9c4c8316c2bb9a5ffcdc6',
@@ -273,10 +273,32 @@ class ButtonTests(TestCase):
 		assert 'test_experiment (1)' == container2.name
 		assert 'sleeping' == container2.health_status
 
-	def _setup_button_handler(self, view: str, request: RequestFactory) -> ButtonHandler:
+	def test_id_from_api_already_exists(self):
+		# mock a request that is sent when user presses a button
+		request = self._setup_request_with_parameters('/configurator', 'start', EXAMPLE_POST_REQUEST_ARGUMENTS)
+		# setup a button handler for this request
+		test_button_handler = self._setup_button_handler('configurator.html', request, rendering='config')
+		with patch('alpha_business_app.buttons.send_post_request') as post_request_mock, \
+			patch('alpha_business_app.buttons.render')as render_mock:
+			api_response_dict = {
+				'0': {
+					'id': '1234',
+					'status': 'running',
+					'data': 6006,
+					'stream': None
+				}
+			}
+			post_request_mock.return_value = APIResponse('success', content=api_response_dict)
+
+			test_button_handler.do_button_click()
+			post_request_mock.assert_called_once_with('start', EXAMPLE_HIERARCHY_DICT, 2)
+			render_mock.assert_called_once()
+		assert 1 == len(Container.objects.all())
+
+	def _setup_button_handler(self, view: str, request: RequestFactory, rendering: str = 'default') -> ButtonHandler:
 		return ButtonHandler(request, view=view,
 						container=self.test_container,
-						rendering_method='default')
+						rendering_method=rendering)
 
 	def _setup_request(self, view: str, action: str) -> RequestFactory:
 		request = RequestFactory().post(view, {'action': action, 'container_id': '1234'})

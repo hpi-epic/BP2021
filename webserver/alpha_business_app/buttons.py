@@ -307,8 +307,9 @@ class ButtonHandler():
 		if response.ok():
 			# put container into database
 			container_name = post_request['experiment_name'][0]
-			was_successfull, self.message = parse_response_to_database(response, config_dict, container_name)
+			was_successfull, data = parse_response_to_database(response, config_dict, container_name)
 			if not was_successfull:
+				self.message = ['error', data]
 				return self._remove()
 			return redirect('/observe', {'success': 'You successfully launched an experiment'})
 		else:
