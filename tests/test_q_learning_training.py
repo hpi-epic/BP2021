@@ -1,3 +1,4 @@
+import json
 from importlib import reload
 from unittest.mock import mock_open, patch
 
@@ -40,9 +41,10 @@ test_scenarios = [
 @pytest.mark.slow
 @pytest.mark.parametrize('market_class, agent_class', test_scenarios)
 def test_market_scenario(market_class, agent_class):
-	json = ut_t.create_hyperparameter_mock_json(rl=ut_t.create_hyperparameter_mock_json_rl(replay_start_size='500', sync_target_frames='100'))
-	with patch('builtins.open', mock_open(read_data=json)) as mock_file:
-		ut_t.check_mock_file(mock_file, json)
+	mock_json = json.dumps(ut_t.create_hyperparameter_mock_dict(
+		rl=ut_t.create_hyperparameter_mock_dict_rl(replay_start_size=500, sync_target_frames=100)))
+	with patch('builtins.open', mock_open(read_data=mock_json)) as mock_file:
+		ut_t.check_mock_file(mock_file, mock_json)
 		config = import_config()
 
 	q_learning_training.QLearningTrainer(market_class, agent_class, log_dir_prepend='test_').train_agent(int(config.replay_start_size * 1.2))
@@ -51,9 +53,10 @@ def test_market_scenario(market_class, agent_class):
 @pytest.mark.training
 @pytest.mark.slow
 def test_training_with_tensorboard():
-	json = ut_t.create_hyperparameter_mock_json(rl=ut_t.create_hyperparameter_mock_json_rl(replay_start_size='500', sync_target_frames='100'))
-	with patch('builtins.open', mock_open(read_data=json)) as mock_file:
-		ut_t.check_mock_file(mock_file, json)
+	mock_json = json.dumps(ut_t.create_hyperparameter_mock_dict(
+		rl=ut_t.create_hyperparameter_mock_dict_rl(replay_start_size=500, sync_target_frames=100)))
+	with patch('builtins.open', mock_open(read_data=mock_json)) as mock_file:
+		ut_t.check_mock_file(mock_file, mock_json)
 		config = import_config()
 		market_class = linear_market.ClassicScenario
 		agent_class = QLearningLEAgent
