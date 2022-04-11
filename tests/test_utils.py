@@ -1,3 +1,4 @@
+import json
 from importlib import reload
 from unittest.mock import Mock, mock_open, patch
 
@@ -31,7 +32,8 @@ testcases_shuffle_quality = [1, 10, 100, 1000]
 
 @pytest.mark.parametrize('max_quality', testcases_shuffle_quality)
 def test_shuffle_quality(max_quality: int):
-	mock_json = ut_t.create_hyperparameter_mock_json(sim_market=ut_t.create_hyperparameter_mock_json_sim_market(max_quality=str(max_quality)))
+	mock_json = json.dumps(ut_t.create_hyperparameter_mock_dict(
+		sim_market=ut_t.create_hyperparameter_mock_dict_sim_market(max_quality=max_quality)))
 	with patch('builtins.open', mock_open(read_data=mock_json)) as mock_file:
 		ut_t.check_mock_file(mock_file, mock_json)
 		import_config()
@@ -277,8 +279,8 @@ def test_write_content_of_dict_to_overview_svg(
 		episode_dictionary: dict,
 		cumulated_dictionary: dict,
 		expected: dict):
-	mock_json = (ut_t.create_hyperparameter_mock_json(
-		sim_market=ut_t.create_hyperparameter_mock_json_sim_market(episode_length='50', number_of_customers='20', production_price='3')))
+	mock_json = json.dumps((ut_t.create_hyperparameter_mock_dict(
+		sim_market=ut_t.create_hyperparameter_mock_dict_sim_market(episode_length=50, number_of_customers=20, production_price=3))))
 	with patch('builtins.open', mock_open(read_data=mock_json)) as mock_file:
 		ut_t.check_mock_file(mock_file, mock_json)
 		import_config()
