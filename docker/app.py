@@ -1,7 +1,7 @@
 # app.py
 
 import uvicorn
-from docker_manager import DockerManager
+from docker_manager import DockerInfo, DockerManager
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse, StreamingResponse
 
@@ -42,14 +42,16 @@ def is_invalid_status(status: str) -> bool:
 
 @app.post('/start')
 async def start_container(num_experiments: int, config: Request) -> JSONResponse:
-	final_infos = []
-	for number in range(num_experiments):
-		final_infos += [manager.start(config=await config.json())]
-		if (is_invalid_status(final_infos[number].status) or final_infos[number].data is False):
-			return JSONResponse(status_code=404, content=vars(final_infos[0]))
+	all_container_infos = manager.start(config=await config.json(), count=num_experiments)
+	# check if all prerequisite were met
+	if type(all_container_infos) == DockerInfo:
+		return JSONResponse(status_code=404, content=vars(all_container_infos))
+
 	return_dict = {}
 	for index in range(num_experiments):
-		return_dict[index] = vars(final_infos[index])
+		if (is_invalid_status(all_container_infos[index].status) or all_container_infos[index].data is False):
+			return JSONResponse(status_code=404, content=vars(all_container_infos[index]))
+		return_dict[index] = vars(all_container_infos[index])
 	print(f'successfully started {num_experiments} container')
 	return JSONResponse(return_dict)
 
