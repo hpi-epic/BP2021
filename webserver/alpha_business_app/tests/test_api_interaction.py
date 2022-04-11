@@ -280,7 +280,8 @@ class ButtonTests(TestCase):
 		# setup a button handler for this request
 		test_button_handler = self._setup_button_handler('configurator.html', request, rendering='config')
 		with patch('alpha_business_app.buttons.send_post_request') as post_request_mock, \
-			patch('alpha_business_app.buttons.render')as render_mock:
+			patch('alpha_business_app.buttons.render') as render_mock, \
+			patch('alpha_business_app.buttons.stop_container'):
 			api_response_dict = {
 				'0': {
 					'id': '1234',
