@@ -44,6 +44,7 @@ class ButtonTests(TestCase):
 			actual_arguments[2]['all_saved_containers'] = list(actual_arguments[2]['all_saved_containers'])
 
 			render_mock.assert_called_once()
+			get_request_mock.assert_called_once()
 			assert expected_arguments == actual_arguments
 			assert 'healthy :)' == Container.objects.get(id='1234').health_status
 

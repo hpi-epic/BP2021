@@ -42,6 +42,17 @@ def is_invalid_status(status: str) -> bool:
 
 @app.post('/start')
 async def start_container(num_experiments: int, config: Request) -> JSONResponse:
+	"""
+	Start a container with the specified config.json and perform a command on it.
+
+	Args:
+		num_experiments (int): the number of container, that should be started with this configuration
+		config (Request):  The combined hyperparameter_config.json and environment_config_command.json files that should be sent to the container.
+
+	Returns:
+		JSONResponse: If starting was successfull the response contains multiple dicts, one for each started container.
+			If not, there will be one dict with an error message
+	"""
 	all_container_infos = manager.start(config=await config.json(), count=num_experiments)
 	# check if all prerequisite were met
 	if type(all_container_infos) == DockerInfo:
