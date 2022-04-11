@@ -76,7 +76,7 @@ class ActorCriticAgent(ReinforcementLearningAgent, ABC):
 		For each model only the actor net will be saved.
 
 		Args:
-			model_path (str): The path inclusively the name where the model should be saved.
+			model_path (str): The path including the name where the model should be saved.
 		"""
 		assert model_path.endswith('.dat'), f'the modelname must end in ".dat": {model_path}'
 		torch.save(self.actor_net.state_dict(), model_path)
