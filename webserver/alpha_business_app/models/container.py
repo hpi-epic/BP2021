@@ -24,15 +24,22 @@ class Container(models.Model):
 		return self.tensorboard_link != ''
 
 
-def update_container(container_id: str, updated_values: dict) -> None:
+def update_container(container_id: str, updated_values: dict) -> bool:
 	"""
 	This will update the container belonging to the given id with the data given in `updated_values`.
 
 	Args:
 		id (str): id for the container that should be updated
 		updated_values (dict): All keys need to be member variables of `Container`.
+
+	Returns:
+		bool: indicating if updating the container worked.
 	"""
-	saved_container = Container.objects.get(id=container_id)
+	try:
+		saved_container = Container.objects.get(id=container_id)
+	except Exception:
+		return False
 	for key, value in updated_values.items():
 		setattr(saved_container, key, value)
 	saved_container.save()
+	return True

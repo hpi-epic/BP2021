@@ -1,5 +1,3 @@
-import copy
-
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
@@ -7,7 +5,8 @@ from django.utils import timezone
 from recommerce.configuration.config_validation import validate_config
 
 from .config_merger import ConfigMerger
-from .config_parser import ConfigFlatDictParser, ConfigModelParser
+from .config_parser import ConfigFlatDictParser
+from .container_parser import parse_response_to_database
 from .handle_files import download_file
 from .handle_requests import send_get_request, send_get_request_with_streaming, send_post_request, stop_container
 from .models.config import Config
@@ -181,9 +180,8 @@ class ButtonHandler():
 		Returns:
 			HttpResponse: a defined rendering.
 		"""
-		raw_data = {'container_id': self.wanted_container.id}
 		if not self.wanted_container.is_archived():
-			self.message = stop_container(raw_data).status()
+			self.message = stop_container(self.wanted_container.id).status()
 
 		if self.message[0] == 'success' or self.wanted_container.is_archived():
 			self.wanted_container.delete()
@@ -216,7 +214,7 @@ class ButtonHandler():
 		Returns:
 			HttpResponse: A default response with default values or a response containing the error field.
 		"""
-		response = send_get_request('health', self.request.POST)
+		response = send_get_request('health', self.request.POST['container_id'])
 		if response.ok():
 			response = response.content
 			update_container(response['id'], {'last_check_at': timezone.now(), 'health_status': response['status']})
@@ -234,7 +232,7 @@ class ButtonHandler():
 		Returns:
 			HttpResponse: A default response with default values or a response containing the error field.
 		"""
-		response = send_get_request('logs', self.request.POST)
+		response = send_get_request('logs', self.request.POST['container_id'])
 		self.data = ''
 		if response.ok():
 			# reverse the output for better readability
@@ -282,7 +280,7 @@ class ButtonHandler():
 		Returns:
 			HttpResponse: An appropriate rendering
 		"""
-		self.message = stop_container(self.request.POST).status()
+		self.message = stop_container(self.request.POST['container_id']).status()
 		return self._decide_rendering()
 
 	def _start(self) -> HttpResponse:
@@ -302,24 +300,18 @@ class ButtonHandler():
 			self.message = ['error', validate_data]
 			return self._decide_rendering()
 
-		response = send_post_request('start', config_dict)
+		num_experiments = post_request['num_experiments'][0] if post_request['num_experiments'][0] else 1
+		response = send_post_request('start', config_dict, num_experiments)
+
 		if response.ok():
 			# put container into database
-			response = response.content
-			# check if a container with the same id already exists
-			if Container.objects.filter(id=response['id']).exists():
-				# we will kindly ask the user to try it again and stop the container
-				# TODO insert better handling here
-				self.message = ['error', 'The new container has the same id as an already existing container, please try again.']
-				return self._remove()
-			# get all necessary parameters for container object
-			container_name = self.request.POST['experiment_name']
-			container_name = container_name if container_name != '' else response['id'][:10]
-			config_object = ConfigModelParser().parse_config(copy.deepcopy(config_dict))
-			command = config_object.environment.task
-			Container.objects.create(id=response['id'], config=config_object, name=container_name, command=command)
-			config_object.name = f'Config for {container_name}'
-			config_object.save()
+			container_name = post_request['experiment_name'][0]
+			was_successful, error_container_ids, data = parse_response_to_database(response, config_dict, container_name)
+			if not was_successful:
+				self.message = ['error', data]
+				for error_container_id in error_container_ids:
+					stop_container(error_container_id)
+				return self._decide_rendering()
 			return redirect('/observe', {'success': 'You successfully launched an experiment'})
 		else:
 			self.message = response.status()
@@ -335,7 +327,7 @@ class ButtonHandler():
 		"""
 		if self.wanted_container.has_tensorboard_link():
 			return redirect(self.wanted_container.tensorboard_link)
-		response = send_get_request('data/tensorboard', self.request.POST)
+		response = send_get_request('data/tensorboard', self.request.POST['container_id'])
 		if response.ok():
 			update_container(self.wanted_container.id, {'tensorboard_link': response.content['data']})
 			return redirect(response.content['data'])
@@ -352,9 +344,9 @@ class ButtonHandler():
 		"""
 		# check, whether the request wants to pause or to unpause the container
 		if self.wanted_container.is_paused():
-			response = send_get_request('unpause', self.request.POST)
+			response = send_get_request('unpause', self.request.POST['container_id'])
 		else:
-			response = send_get_request('pause', self.request.POST)
+			response = send_get_request('pause', self.request.POST['container_id'])
 
 		if response.ok():
 			response = response.content
