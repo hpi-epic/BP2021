@@ -18,6 +18,7 @@ def run_training_session(marketplace=circular_market.CircularEconomyRebuyPriceOn
 		Defaults to circular_market.CircularEconomyRebuyPriceOneCompetitor.
 		agent (QLearningAgent subclass, optional): What kind of QLearningAgent to train. Defaults to q_learning_agent.QLearningCERebuyAgent.
 	"""
+	print('in training session')
 	assert issubclass(marketplace, sim_market.SimMarket), \
 		f'the type of the passed marketplace must be a subclass of SimMarket: {marketplace}'
 	assert issubclass(agent, (q_learning_agent.QLearningAgent, actorcritic_agent.ActorCriticAgent)), \
@@ -25,9 +26,12 @@ def run_training_session(marketplace=circular_market.CircularEconomyRebuyPriceOn
 	assert issubclass(agent, CircularAgent) == issubclass(marketplace, circular_market.CircularEconomy), \
 		f'the agent and marketplace must be of the same economy type (Linear/Circular): {agent} and {marketplace}'
 
+	print('done asserts')
 	if issubclass(agent, q_learning_agent.QLearningAgent):
+		print('got qlearning')
 		QLearningTrainer(marketplace, agent).train_agent()
 	else:
+		print('got actorcritic')
 		ActorCriticTrainer(marketplace, agent).train_agent(number_of_training_steps=10000)
 
 
@@ -61,12 +65,16 @@ def train_from_config():
 	"""
 	Use the `environment_config_training.json` file to decide on the training parameters.
 	"""
+	print('start loading config')
 	config: TrainingEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_training')
+	print('done loading config')
 	# TODO: Theoretically, the name of the agent is saved in config['name'], but we don't use it yet.
 	run_training_session(config.marketplace, config.agent['agent_class'])
+	print('done training session')
 
 
 def main():
+	print('got to main')
 	train_from_config()
 
 
