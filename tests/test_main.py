@@ -52,5 +52,4 @@ handle_command_testcases = [
 @pytest.mark.slow
 @pytest.mark.parametrize('command', handle_command_testcases)
 def test_handle_command(command):
-	with patch('recommerce.rl.training.SummaryWriter'):
-		main.handle_command(command)
+	main.handle_command(command)
