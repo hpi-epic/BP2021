@@ -45,8 +45,6 @@ class QLearningAgent(ReinforcementLearningAgent, CircularAgent, LinearAgent):
 		if load_path is None:
 			self.optimizer = torch.optim.Adam(self.net.parameters(), lr=config.learning_rate)
 			self.tgt_net = network_architecture(n_observations, self.n_actions).to(self.device)
-			if load_path:
-				self.tgt_net.load_state_dict(torch.load(load_path), map_location=self.device)
 			self.buffer = ExperienceBuffer(config.replay_size)
 
 	@torch.no_grad()
@@ -78,7 +76,7 @@ class QLearningAgent(ReinforcementLearningAgent, CircularAgent, LinearAgent):
 			for _ in range(self.actions_dimension):
 				action_list.append(action % config.max_price)
 				action = action // config.max_price
-			return tuple(action_list)
+			return tuple(action_list.reverse())
 
 	def set_feedback(self, reward, is_done, new_observation):
 		exp = self.Experience(*self.buffer_for_feedback, reward, is_done, new_observation)
@@ -120,7 +118,7 @@ class QLearningAgent(ReinforcementLearningAgent, CircularAgent, LinearAgent):
 		Save a trained model to the specified folder within 'trainedModels'.
 
 		Args:
-			model_path (str): The path inclusively the name where the model should be saved.
+			model_path (str): The path including the name where the model should be saved.
 		"""
 		assert model_path.endswith('.dat'), f'the modelname must end in ".dat": {model_path}'
 		torch.save(self.net.state_dict(), model_path)

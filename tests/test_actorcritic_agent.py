@@ -57,7 +57,7 @@ def test_continous_agents_initializes_networks_correct(market_class):
 
 
 @pytest.mark.parametrize('market_class', marketplace_classes)
-def test_std_estimating_agents_agents_initializes_networks_correct(market_class):
+def test_std_estimating_agents_initializes_networks_correct(market_class):
 	marketplace = market_class()
 	agent = actorcritic_agent.ContinuosActorCriticAgentEstimatingStd(marketplace=marketplace)
 	assert agent.actor_net is not None

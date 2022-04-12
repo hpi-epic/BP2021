@@ -68,7 +68,7 @@ class ActorCriticAgent(ReinforcementLearningAgent, ABC):
 		For each model only the actor net will be saved.
 
 		Args:
-			model_path (str): The path inclusively the name where the model should be saved.
+			model_path (str): The path including the name where the model should be saved.
 		"""
 		assert model_path.endswith('.dat'), f'the modelname must end in ".dat": {model_path}'
 		torch.save(self.actor_net.state_dict(), model_path)
@@ -188,7 +188,7 @@ class DiscreteActorCriticAgent(ActorCriticAgent, LinearAgent, CircularAgent):
 			for _ in range(self.actions_dimension):
 				action_list.append(action % config.max_price)
 				action = action // config.max_price
-			return tuple(action_list)
+			return tuple(action_list.reverse())
 
 
 class ContinuosActorCriticAgent(ActorCriticAgent, LinearAgent, CircularAgent):
