@@ -6,21 +6,19 @@ from .models.container import update_container
 DOCKER_API = 'http://127.0.0.1:8000'  # remember to include the port and the protocol, i.e. http://
 
 
-def send_get_request(wanted_action: str, raw_data: dict) -> APIResponse:
+def send_get_request(wanted_action: str, container_id: str) -> APIResponse:
 	"""
 	Sends a get request to the API with the wanted action for a wanted container.
 
 	Args:
 		wanted_action (str): The API call that should be performed. Needs to be a key in `raw_data`
-		raw_data (dict): various post parameters,
-			must include the wanted action as key and the container_id as the value for this key.
+		container_id (str): id of container the action should be performed on
 
 	Returns:
 		APIResponse: Response from the API converted into our special format.
 	"""
-	wanted_container = raw_data['container_id']
 	try:
-		response = requests.get(f'{DOCKER_API}/{wanted_action}', params={'id': str(wanted_container)})
+		response = requests.get(f'{DOCKER_API}/{wanted_action}', params={'id': str(container_id)})
 	except requests.exceptions.RequestException:
 		return APIResponse('error', content='The API is unavailable')
 	if response.ok:
@@ -48,19 +46,9 @@ def send_get_request_with_streaming(wanted_action: str, wanted_container: str) -
 	return _error_handling_API(response)
 
 
-def send_post_request(route: str, body: dict) -> APIResponse:
-	"""
-	Sends a post request to the API with the requested parameter, a body and a command as parameter
-
-	Args:
-		route (str): A post route from the API.
-		body (dict): The body that should be send to the API.
-
-	Returns:
-		APIResponse: Response from the API converted into our special format.
-	"""
+def send_post_request(route: str, body: dict, num_experiments: int) -> APIResponse:
 	try:
-		response = requests.post(f'{DOCKER_API}/{route}', json=body)
+		response = requests.post(f'{DOCKER_API}/{route}', json=body, params={'num_experiments': num_experiments})
 	except requests.exceptions.RequestException:
 		return APIResponse('error', content='The API is unavailable')
 	if response.ok:
@@ -68,20 +56,20 @@ def send_post_request(route: str, body: dict) -> APIResponse:
 	return _error_handling_API(response)
 
 
-def stop_container(post_request: dict) -> APIResponse:
+def stop_container(container_id: str) -> APIResponse:
 	"""
 	Sends an API request to stop and remove the container on the remote machine.
 
 	Args:
-		post_request (dict): parameters for the request, must include the key 'remove' and as its value the container_id
+		post_request (str): id of container that should be stopped
 
 	Returns:
 		APIResponse: Response from the API converted into our special format.
 	"""
-	response = send_get_request('remove', post_request)
+	response = send_get_request('remove', container_id)
 	if response.ok() or response.not_found():
 		# mark container as archived
-		update_container(post_request['container_id'], {'health_status': 'archived'})
+		update_container(container_id, {'health_status': 'archived'})
 		return APIResponse('success', content='You successfully stopped the container')
 	return response
 

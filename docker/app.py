@@ -1,7 +1,7 @@
 # app.py
 
 import uvicorn
-from docker_manager import DockerManager
+from docker_manager import DockerInfo, DockerManager
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse, StreamingResponse
 
@@ -41,21 +41,30 @@ def is_invalid_status(status: str) -> bool:
 
 
 @app.post('/start')
-async def start_container(config: Request) -> JSONResponse:
+async def start_container(num_experiments: int, config: Request) -> JSONResponse:
 	"""
 	Start a container with the specified config.json and perform a command on it.
 
 	Args:
-		config (Request): The combined hyperparameter_config.json and environment_config_command.json files that should be sent to the container.
+		num_experiments (int): the number of container, that should be started with this configuration
+		config (Request):  The combined hyperparameter_config.json and environment_config_command.json files that should be sent to the container.
 
 	Returns:
-		JSONResponse: The response of the Docker start request. Contains the port used on the host in the data-field.
+		JSONResponse: If starting was successfull the response contains multiple dicts, one for each started container.
+			If not, there will be one dict with an error message
 	"""
-	container_info = manager.start(config=await config.json())
-	if (is_invalid_status(container_info.status) or container_info.data is False):
-		return JSONResponse(status_code=404, content=vars(container_info))
-	else:
-		return JSONResponse(vars(container_info))
+	all_container_infos = manager.start(config=await config.json(), count=num_experiments)
+	# check if all prerequisites were met
+	if type(all_container_infos) == DockerInfo:
+		return JSONResponse(status_code=404, content=vars(all_container_infos))
+
+	return_dict = {}
+	for index in range(num_experiments):
+		if (is_invalid_status(all_container_infos[index].status) or all_container_infos[index].data is False):
+			return JSONResponse(status_code=404, content=vars(all_container_infos[index]))
+		return_dict[index] = vars(all_container_infos[index])
+	print(f'successfully started {num_experiments} container')
+	return JSONResponse(return_dict)
 
 
 @app.get('/health/')

@@ -47,6 +47,8 @@ def observe(request) -> HttpResponse:
 def upload(request) -> HttpResponse:
 	if request.method == 'POST':
 		form = UploadFileForm(request.POST, request.FILES)
+		if not request.FILES:
+			return render(request, 'upload.html', {'form': form, 'error': 'You need to upload a file before submitting'})
 		return handle_uploaded_file(request, request.FILES['upload_config'])
 	else:
 		form = UploadFileForm()

@@ -37,7 +37,11 @@
                 {% csrf_token %}
                 <input type="hidden" name="action" value="start">
                 {% include "configuration_items/config.html" with prefill=prefill should_show=True error_dict=error_dict %}
-                <input class="form-control" type="text" placeholder="experiment name" name="experiment_name">
+                <div class="d-flex m-2">
+                    <input class="form-control m-1" type="text" placeholder="experiment name" name="experiment_name">
+                    <input class="form-control m-1" type="number" placeholder="number of experiments" name="num_experiments">
+                </div>
+
                 <div class="d-flex">
                     <button class="btn btn-outline-secondary btn-rounded m-3">launch</button>
                     <div class="ms-auto d-flex">

@@ -32,6 +32,15 @@ class DockerInfo():
 		self.data = data
 		self.stream = stream
 
+	def __eq__(self, other: object) -> bool:
+		if not isinstance(other, DockerInfo):
+			# don't attempt to compare against unrelated types
+			return False
+		return self.id == other.id \
+			and self.status == other.status \
+			and self.data == other.data \
+			and self.stream == other.stream
+
 
 class DockerManager():
 	"""
@@ -63,15 +72,17 @@ class DockerManager():
 			cls._update_port_mapping()
 		return cls._instance
 
-	def start(self, config: dict) -> DockerInfo:
+	def start(self, config: dict, count: int) -> DockerInfo or list:
 		"""
 		To be called by the REST API. Create and start a new docker container from the image of the specified command.
 
 		Args:
-			config (dict): The combined hyperparameter_config and environment_config_command dictionaries that should be sent to the container.
+			config (dict): The combined hyperparameter_config and environment_config_command dicts that should be sent to the container.
+			count (int): number of containers that should be started
 
 		Returns:
-			DockerInfo: A JSON serializable object containing the id and the status of the new container.
+			DockerInfo or list: A JSON serializable object containing the error messages if the prerequisite were not met, or a list of
+				DockerInfos for the container(s)
 		"""
 		if 'hyperparameter' not in config:
 			return DockerInfo(id='No container was started', status='The config is missing the "hyperparameter"-field')
@@ -84,17 +95,20 @@ class DockerManager():
 			print(f'Command with ID {command_id} not allowed')
 			return DockerInfo(id='No container was started', status=f'Command not allowed: {command_id}')
 
-		image_id = self._confirm_image_exists()
-		if image_id is None:
-			return DockerInfo(None, 'Image build failed')
+		if not self._confirm_image_exists():
+			return DockerInfo(id='No container was started', status='Image build failed')
 
-		# start a container for the image of the requested command
-		container_info: DockerInfo = self._create_container(command_id, config, use_gpu=False)
-		if container_info.status.__contains__('Image not found') or container_info.data is False:
-			self.remove_container(container_info.id)
-			return container_info
-
-		return self._start_container(container_info.id)
+		all_container_infos = []
+		for _ in range(count):
+			# start a container for the image of the requested command
+			container_info: DockerInfo = self._create_container(command_id, config, use_gpu=False)
+			if 'Image not found' in container_info.status or container_info.data is False:
+				# something is wrong with our container
+				self.remove_container(container_info.id)
+				return container_info
+			# the container is fine, we can start the container now
+			all_container_infos += [self._start_container(container_info.id)]
+		return all_container_infos
 
 	def health(self, container_id: str) -> DockerInfo:
 		"""

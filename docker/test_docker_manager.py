@@ -94,3 +94,73 @@ def test_port_mapping_initialization():
 def test_allowed_commands_is_up_to_date():
 	assert set(manager._allowed_commands) == {'training', 'exampleprinter', 'agent_monitoring'}, \
 		'The set of allowed commands has changed, please update this and all the other tests!'
+
+
+invalid_start_parameter_testcases = [
+	({'environment': {'task': 'fasel'}, 'hyperparameter': {'test': 'fasel'}},
+		{'id': 'No container was started', 'status': 'Command not allowed: fasel'}),
+	({'environment': {'task': 'fasel'}}, {'id': 'No container was started', 'status': 'The config is missing the \"hyperparameter\"-field'}),
+	({'hyperparameter': {'task': 'fasel'}}, {'id': 'No container was started', 'status': 'The config is missing the \"environment\"-field'})
+]
+
+
+@pytest.mark.parametrize('test_config, expected_docker_info_params', invalid_start_parameter_testcases)
+def test_start_with_invalid_command(test_config, expected_docker_info_params):
+	expected_docker_info = docker_manager.DockerInfo(**expected_docker_info_params)
+
+	actual_docker_info = docker_manager.DockerManager().start(test_config, 2)
+	assert expected_docker_info == actual_docker_info
+
+
+def test_start_but_no_image():
+	test_config = {'environment': {'task': 'training'}, 'hyperparameter': {'bal': 'fasel'}}
+	expected_docker_info = docker_manager.DockerInfo(id='No container was started', status='Image build failed')
+
+	with patch('docker_manager.DockerManager._confirm_image_exists') as image_exists_mock:
+		image_exists_mock.return_value = None
+
+		actual_docker_info = docker_manager.DockerManager().start(test_config, 2)
+		assert expected_docker_info == actual_docker_info
+		image_exists_mock.assert_called_once()
+
+
+invalid_create_container_status_testcases = [
+	({'id': 'test', 'status': 'Image not found bla'}),
+	({'id': 'test', 'status': 'test status', 'data': False})
+]
+
+
+@pytest.mark.parametrize('docker_info_mock_parameter', invalid_create_container_status_testcases)
+def test_start_create_container_failed(docker_info_mock_parameter):
+	test_config = {'environment': {'task': 'training'}, 'hyperparameter': {'bal': 'fasel'}}
+	expected_docker_info = docker_manager.DockerInfo(**docker_info_mock_parameter)
+
+	with patch('docker_manager.DockerManager._confirm_image_exists') as image_exists_mock, \
+		patch('docker_manager.DockerManager._create_container') as create_container_mock, \
+		patch('docker_manager.DockerManager.remove_container') as remove_container_mock:
+		image_exists_mock.return_value = '12345'
+		create_container_mock.return_value = docker_manager.DockerInfo(**docker_info_mock_parameter)
+
+		actual_docker_info = docker_manager.DockerManager().start(test_config, 2)
+
+		assert expected_docker_info == actual_docker_info
+		image_exists_mock.assert_called_once()
+		remove_container_mock.assert_called_once_with('test')
+
+
+def test_start_container_works():
+	test_config = {'environment': {'task': 'training'}, 'hyperparameter': {'bal': 'fasel'}}
+	docker_info = docker_manager.DockerInfo(id='test1', status='have a wonderful day')
+
+	with patch('docker_manager.DockerManager._confirm_image_exists') as image_exists_mock, \
+		patch('docker_manager.DockerManager._create_container') as create_container_mock, \
+		patch('docker_manager.DockerManager.remove_container') as remove_container_mock, \
+		patch('docker_manager.DockerManager._start_container') as start_container_mock:
+		image_exists_mock.return_value = '12345'
+		create_container_mock.return_value = docker_info
+		actual_docker_infos = docker_manager.DockerManager().start(test_config, 2)
+
+		assert 2 == len(actual_docker_infos)
+		image_exists_mock.assert_called_once()
+		remove_container_mock.assert_not_called()
+		start_container_mock.assert_called()
