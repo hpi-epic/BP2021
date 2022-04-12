@@ -16,6 +16,24 @@ def test_abstract_parent_class():
 	assert "Can't instantiate abstract class EnvironmentConfig" in str(error_message.value)
 
 
+def test_get_required_fields_valid():
+	fields = env_config.EnvironmentConfig.get_required_fields('top-dict')
+	assert fields == {
+				'task': False,
+				'enable_live_draw': False,
+				'episodes': False,
+				'plot_interval': False,
+				'marketplace': False,
+				'agents': False
+			}
+
+
+def test_get_required_fields_invalid():
+	with pytest.raises(AssertionError) as error_message:
+		env_config.EnvironmentConfig.get_required_fields('wrong_key')
+	assert 'The given level does not exist in an environment-config: wrong_key' in str(error_message.value)
+
+
 def test_str_representation():
 	test_dict = {
 		'task': 'training',

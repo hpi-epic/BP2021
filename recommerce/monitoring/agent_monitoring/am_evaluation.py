@@ -51,7 +51,7 @@ class Evaluator():
 		print(f'All plots were saved to {os.path.abspath(self.configurator.folder_path)}')
 
 	# visualize metrics
-	def create_histogram(self, rewards: list, is_last_histogram: bool, filename: str = 'default') -> None:
+	def create_histogram(self, rewards: list, is_last_histogram: bool, filename: str = 'default_histogram.svg') -> None:
 		"""
 		Create a histogram sorting rewards into bins of 1000.
 
@@ -64,7 +64,6 @@ class Evaluator():
 			return
 		assert all(len(curr_reward) == len(rewards[0]) for curr_reward in rewards), 'all rewards-arrays must be of the same size'
 
-		filename += '.svg'
 		plt.clf()
 		plt.xlabel('Reward', fontsize='18')
 		plt.ylabel('Episodes', fontsize='18')

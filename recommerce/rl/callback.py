@@ -19,13 +19,22 @@ from recommerce.monitoring.agent_monitoring.am_monitoring import Monitor
 from recommerce.rl.reinforcement_learning_agent import ReinforcementLearningAgent
 
 
+<<<<<<< HEAD:recommerce/rl/callback.py
+=======
+
+>>>>>>> development:recommerce/rl/stable_baselines/stable_baselines_callback.py
 class RecommerceCallback(BaseCallback):
 	"""
 	This callback checks if the current mean return is better than the best mean return.
 	This check happens every episode.
 	After 'iteration_length' episodes, the best model in that time span is saved to disk.
 	"""
+<<<<<<< HEAD:recommerce/rl/callback.py
 	def __init__(self, agent_class, marketplace_class, training_steps=10000, iteration_length=500, file_ending='zip', signature='train'):
+=======
+	def __init__(self, agent_class, marketplace_class, log_dir_prepend='', training_steps=10000,
+			iteration_length=500, file_ending='zip', signature='training'):
+>>>>>>> development:recommerce/rl/stable_baselines/stable_baselines_callback.py
 		assert issubclass(agent_class, ReinforcementLearningAgent)
 		assert issubclass(marketplace_class, SimMarket)
 		assert isinstance(training_steps, int) and training_steps > 0
@@ -127,9 +136,12 @@ class RecommerceCallback(BaseCallback):
 			return
 		monitor = Monitor()
 		agent_list = [(self.agent_class, [parameter_path]) for parameter_path in self.saved_parameter_paths]
+<<<<<<< HEAD:recommerce/rl/callback.py
 
 		# The next line is a bit hacky. We have to provide if the marketplace is continuos or not.
 		# Only Stable Baselines agents use continuous actions at the moment. And only Stable Baselines agents have the attribute env.
+=======
+>>>>>>> development:recommerce/rl/stable_baselines/stable_baselines_callback.py
 		monitor.configurator.setup_monitoring(False, 250, 250, self.marketplace_class, agent_list,
 			support_continuous_action_space=hasattr(self.model, 'env'))
 		rewards = monitor.run_marketplace()
