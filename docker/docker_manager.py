@@ -35,7 +35,7 @@ class DockerInfo():
 	def __eq__(self, other: object) -> bool:
 		if not isinstance(other, DockerInfo):
 			# don't attempt to compare against unrelated types
-			return NotImplemented
+			return False
 		return self.id == other.id \
 			and self.status == other.status \
 			and self.data == other.data \

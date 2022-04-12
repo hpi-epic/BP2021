@@ -1,5 +1,3 @@
-from unittest.mock import patch
-
 import pytest
 
 import recommerce.market.circular.circular_sim_market as circular_market
@@ -30,8 +28,7 @@ test_scenarios = [
 @pytest.mark.slow
 @pytest.mark.parametrize('market_class, agent_class, verbose', test_scenarios)
 def test_training_configurations(market_class, agent_class, verbose):
-	with patch('recommerce.rl.training.SummaryWriter'):
-		ActorCriticTrainer(market_class, agent_class, log_dir_prepend='test_').train_agent(
-			verbose=verbose,
-			number_of_training_steps=120,
-			total_envs=64)
+	ActorCriticTrainer(market_class, agent_class, log_dir_prepend='test_').train_agent(
+		verbose=verbose,
+		number_of_training_steps=120,
+		total_envs=64)

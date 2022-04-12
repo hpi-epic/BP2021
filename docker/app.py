@@ -54,7 +54,7 @@ async def start_container(num_experiments: int, config: Request) -> JSONResponse
 			If not, there will be one dict with an error message
 	"""
 	all_container_infos = manager.start(config=await config.json(), count=num_experiments)
-	# check if all prerequisite were met
+	# check if all prerequisites were met
 	if type(all_container_infos) == DockerInfo:
 		return JSONResponse(status_code=404, content=vars(all_container_infos))
 

@@ -306,8 +306,8 @@ class ButtonHandler():
 		if response.ok():
 			# put container into database
 			container_name = post_request['experiment_name'][0]
-			was_successfull, error_container_ids, data = parse_response_to_database(response, config_dict, container_name)
-			if not was_successfull:
+			was_successful, error_container_ids, data = parse_response_to_database(response, config_dict, container_name)
+			if not was_successful:
 				self.message = ['error', data]
 				for error_container_id in error_container_ids:
 					stop_container(error_container_id)
