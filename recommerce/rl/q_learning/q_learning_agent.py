@@ -76,7 +76,8 @@ class QLearningAgent(ReinforcementLearningAgent, CircularAgent, LinearAgent):
 			for _ in range(self.actions_dimension):
 				action_list.append(action % config.max_price)
 				action = action // config.max_price
-			return tuple(action_list.reverse())
+			action_list.reverse()
+			return tuple(action_list)
 
 	def set_feedback(self, reward, is_done, new_observation):
 		exp = self.Experience(*self.buffer_for_feedback, reward, is_done, new_observation)

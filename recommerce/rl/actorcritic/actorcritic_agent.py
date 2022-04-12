@@ -188,7 +188,8 @@ class DiscreteActorCriticAgent(ActorCriticAgent, LinearAgent, CircularAgent):
 			for _ in range(self.actions_dimension):
 				action_list.append(action % config.max_price)
 				action = action // config.max_price
-			return tuple(action_list.reverse())
+			action_list.reverse()
+			return tuple(action_list)
 
 
 class ContinuosActorCriticAgent(ActorCriticAgent, LinearAgent, CircularAgent):
