@@ -109,7 +109,6 @@ def main():  # pragma: no cover
 		marketplace=config.marketplace,
 		agents=config.agent
 	)
-	print('done setting up monitoring')
 	run_monitoring_session(monitor)
 
 

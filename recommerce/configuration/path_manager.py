@@ -61,7 +61,7 @@ class PathManager():
 			assert old_path != '', 'Please provide the `--datapath` argument before proceeding. Use "." to use the current directory'
 			# There is a valid path saved
 			if is_readable_dir(old_path):
-				print(f'Data will be read from and saved to manage user path"{old_path}"')
+				print(f'Data will be read from and saved to "{old_path}"')
 				return
 			# A path has previously been saved, but is no longer a valid directory
 			raise AssertionError(f'The current saved data path is invalid: {old_path}\nPlease update it using the `--datapath` argument')
@@ -87,7 +87,7 @@ class PathManager():
 
 		cls.user_path = os.path.abspath(new_path)
 
-		print(f'Data will be read from and saved to update file path "{cls.user_path}"')
+		print(f'Data will be read from and saved to "{cls.user_path}"')
 
 
 if __name__ == '__main__':
