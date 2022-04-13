@@ -6,6 +6,8 @@ import time
 from itertools import count, filterfalse
 from types import GeneratorType
 
+from torch.cuda import is_available
+
 import docker
 from docker.models.containers import Container
 
@@ -101,7 +103,8 @@ class DockerManager():
 		all_container_infos = []
 		for _ in range(count):
 			# start a container for the image of the requested command
-			container_info: DockerInfo = self._create_container(command_id, config, use_gpu=False)
+			print('cuda?', is_available())
+			container_info: DockerInfo = self._create_container(command_id, config, use_gpu=is_available())
 			if 'Image not found' in container_info.status or container_info.data is False:
 				# something is wrong with our container
 				self.remove_container(container_info.id)
