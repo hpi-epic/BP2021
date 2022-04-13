@@ -17,7 +17,7 @@ validate_config_valid_combined_final_testcases = [
 	ut_t.create_combined_mock_dict(environment=ut_t.create_environment_mock_dict(agents=[
 		{
 			'name': 'Test_agent',
-			'agent_class': 'recommerce.rl.q_learning.q_learning_agent.QLearningCERebuyAgent',
+			'agent_class': 'recommerce.rl.q_learning.q_learning_agent.QLearningAgent',
 			'argument': ''
 		},
 		{
@@ -129,8 +129,8 @@ validate_config_valid_not_final_dicts = [
 			},
 			{
 				'name': 'CE Rebuy Agent (QLearning)',
-				'agent_class': 'recommerce.rl.q_learning.q_learning_agent.QLearningCERebuyAgent',
-				'argument': 'CircularEconomyRebuyPriceMonopolyScenario_QLearningCERebuyAgent.dat'
+				'agent_class': 'recommerce.rl.q_learning.q_learning_agent.QLearningAgent',
+				'argument': 'CircularEconomyRebuyPriceMonopolyScenario_QLearningAgent.dat'
 			}
 		]
 	},

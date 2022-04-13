@@ -8,8 +8,8 @@ import recommerce.market.circular.circular_vendors as circular_vendors
 import recommerce.market.linear.linear_sim_market as linear_market
 from recommerce.market.linear.linear_vendors import FixedPriceLEAgent
 from recommerce.monitoring.exampleprinter import ExamplePrinter
-from recommerce.rl.actorcritic.actorcritic_agent import ContinuosActorCriticAgentFixedOneStd, DiscreteACACircularEconomyRebuy
-from recommerce.rl.q_learning.q_learning_agent import QLearningCEAgent, QLearningCERebuyAgent, QLearningLEAgent
+from recommerce.rl.actorcritic.actorcritic_agent import ContinuosActorCriticAgentFixedOneStd, DiscreteActorCriticAgent
+from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
 
 # The load path for the agent modelfiles
 parameters_path = os.path.join('tests', 'test_data')
@@ -40,20 +40,20 @@ def test_full_episode_rule_based(marketplace, agent):
 		patch('recommerce.monitoring.exampleprinter.SummaryWriter'):
 		printer = ExamplePrinter()
 		printer.setup_exampleprinter(marketplace, agent)
-		assert printer.run_example(log_dir_prepend='test_') >= -5000
+		assert printer.run_example() >= -5000
 
 
 full_episode_testcases_rl_agent = [
-	(linear_market.ClassicScenario(), QLearningLEAgent, 'ClassicScenario_QLearningLEAgent.dat'),
-	(circular_market.CircularEconomyMonopolyScenario(), QLearningCEAgent,
-		'CircularEconomyMonopolyScenario_QLearningCEAgent.dat'),
-	(circular_market.CircularEconomyRebuyPriceMonopolyScenario(), QLearningCERebuyAgent,
-		'CircularEconomyRebuyPriceMonopolyScenario_QLearningCERebuyAgent.dat'),
-	(circular_market.CircularEconomyRebuyPriceOneCompetitor(), QLearningCERebuyAgent,
-		'CircularEconomyRebuyPriceOneCompetitor_QLearningCERebuyAgent.dat'),
+	(linear_market.ClassicScenario(), QLearningAgent, 'ClassicScenario_QLearningAgent.dat'),
+	(circular_market.CircularEconomyMonopolyScenario(), QLearningAgent,
+		'CircularEconomyMonopolyScenario_QLearningAgent.dat'),
+	(circular_market.CircularEconomyRebuyPriceMonopolyScenario(), QLearningAgent,
+		'CircularEconomyRebuyPriceMonopolyScenario_QLearningAgent.dat'),
+	(circular_market.CircularEconomyRebuyPriceOneCompetitor(), QLearningAgent,
+		'CircularEconomyRebuyPriceOneCompetitor_QLearningAgent.dat'),
 	(circular_market.CircularEconomyRebuyPriceOneCompetitor(), ContinuosActorCriticAgentFixedOneStd,
 		'actor_parametersCircularEconomyRebuyPriceOneCompetitor_ContinuosActorCriticAgentFixedOneStd.dat'),
-	(circular_market.CircularEconomyRebuyPriceOneCompetitor(), DiscreteACACircularEconomyRebuy,
+	(circular_market.CircularEconomyRebuyPriceOneCompetitor(), DiscreteActorCriticAgent,
 		'actor_parametersCircularEconomyRebuyPriceOneCompetitor_DiscreteACACircularEconomyRebuy.dat')
 ]
 
@@ -65,10 +65,10 @@ def test_full_episode_rl_agents(marketplace, agent_class, parameters_file):
 		patch('recommerce.monitoring.exampleprinter.SummaryWriter'):
 		printer = ExamplePrinter()
 		printer.setup_exampleprinter(marketplace, agent)
-		assert printer.run_example(log_dir_prepend='test_') >= -5000
+		assert printer.run_example() >= -5000
 
 
 @pytest.mark.slow
 def test_exampleprinter_with_tensorboard():
 	with patch('recommerce.monitoring.exampleprinter.SVGManipulator'):
-		assert ExamplePrinter().run_example(log_dir_prepend='test_') >= -5000
+		assert ExamplePrinter().run_example() >= -5000

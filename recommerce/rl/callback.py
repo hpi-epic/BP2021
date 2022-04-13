@@ -2,7 +2,6 @@ import os
 import signal
 import sys
 import time
-import warnings
 
 import numpy as np
 from stable_baselines3.common.callbacks import BaseCallback
@@ -19,20 +18,16 @@ from recommerce.monitoring.agent_monitoring.am_evaluation import Evaluator
 from recommerce.monitoring.agent_monitoring.am_monitoring import Monitor
 from recommerce.rl.reinforcement_learning_agent import ReinforcementLearningAgent
 
-warnings.filterwarnings('ignore')
-
 
 class RecommerceCallback(BaseCallback):
 	"""
-	Callback for saving a model (the check is done every `check_freq` steps)
-	based on the training reward (in practice, we recommend using `EvalCallback`).
+	This callback checks if the current mean return is better than the best mean return.
+	This check happens every episode.
+	After 'iteration_length' episodes, the best model in that time span is saved to disk.
 	"""
-	def __init__(self, agent_class, marketplace_class, log_dir_prepend='', training_steps=10000,
-			iteration_length=500, file_ending='zip', signature='training'):
+	def __init__(self, agent_class, marketplace_class, training_steps=10000, iteration_length=500, file_ending='zip', signature='train'):
 		assert issubclass(agent_class, ReinforcementLearningAgent)
 		assert issubclass(marketplace_class, SimMarket)
-		assert isinstance(log_dir_prepend, str), \
-			f'log_dir_prepend should be a string, but {log_dir_prepend} is {type(log_dir_prepend)}'
 		assert isinstance(training_steps, int) and training_steps > 0
 		assert isinstance(iteration_length, int) and iteration_length > 0
 		super(RecommerceCallback, self).__init__(True)
@@ -48,7 +43,7 @@ class RecommerceCallback(BaseCallback):
 		self.last_finished_episode = 0
 		signal.signal(signal.SIGINT, self._signal_handler)
 
-		self.initialize_io_related(log_dir_prepend)
+		self.initialize_io_related()
 
 	def _signal_handler(self, signum, frame) -> None:  # pragma: no cover
 		"""
@@ -58,18 +53,16 @@ class RecommerceCallback(BaseCallback):
 		self._end_of_training()
 		sys.exit(0)
 
-	def initialize_io_related(self, log_dir_prepend) -> None:
+	def initialize_io_related(self) -> None:
 		"""
 		Initializes the local variables self.curr_time, self.signature, self.writer, self.save_path
 		and self.tmp_parameters which are needed for saving the models and writing to tensorboard
-		Args:
-			log_dir_prepend (str): A prefix that is written before the saved data
 		"""
 		ut.ensure_results_folders_exist()
 		self.curr_time = time.strftime('%b%d_%H-%M-%S')
-		self.writer = SummaryWriter(log_dir=os.path.join(PathManager.results_path, 'runs', f'{log_dir_prepend}training_{self.curr_time}'))
+		self.writer = SummaryWriter(log_dir=os.path.join(PathManager.results_path, 'runs', f'training_{self.curr_time}'))
 		path_name = f'{self.signature}_{self.curr_time}'
-		self.save_path = os.path.join(PathManager.results_path, 'trainedModels', log_dir_prepend + path_name)
+		self.save_path = os.path.join(PathManager.results_path, 'trainedModels', path_name)
 		os.makedirs(os.path.abspath(self.save_path), exist_ok=True)
 		self.tmp_parameters = os.path.join(self.save_path, f'tmp_model.{self.file_ending}')
 
@@ -134,6 +127,9 @@ class RecommerceCallback(BaseCallback):
 			return
 		monitor = Monitor()
 		agent_list = [(self.agent_class, [parameter_path]) for parameter_path in self.saved_parameter_paths]
+
+		# The next line is a bit hacky. We have to provide if the marketplace is continuos or not.
+		# Only Stable Baselines agents use continuous actions at the moment. And only Stable Baselines agents have the attribute env.
 		monitor.configurator.setup_monitoring(False, 250, 250, self.marketplace_class, agent_list,
 			support_continuous_action_space=hasattr(self.model, 'env'))
 		rewards = monitor.run_marketplace()

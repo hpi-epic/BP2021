@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 
 import torch
 
+from recommerce.market.sim_market import SimMarket
 from recommerce.market.vendors import Agent
 
 
@@ -9,23 +10,20 @@ class ReinforcementLearningAgent(Agent, ABC):
 	@abstractmethod
 	def __init__(
 			self,
-			n_observations=None,
-			n_actions=None,
-			marketplace=None,
-			optim=None,
+			marketplace: SimMarket,
 			device='cuda' if torch.cuda.is_available() else 'cpu',
 			load_path=None,
-			name='enter a name here'):
+			name='ReinforcementLearningAgent'):
 		"""
 		Every ReinforcementLearningAgent must offer initialization by these parameters
 
 		Args:
-			n_observations (int): length of input (observation) vector
-			n_actions (int): length of output vector
+			marketplace (SimMarket): The marketplace the agent will interact with.
+			device (str): The device the agent will be trained on.
 			load_path (str, optional): The path to load existing parameters of a network corresponding to this agent.
 			Note that this only refers to a network responsible for behaviour.
 			Assistance networks may be initialized differently.
-			Defaults to ''.
+			name (str, optional): The name of the agent. Defaults to 'ReinforcementLearningAgent'.
 
 		Raises:
 			NotImplementedError: This is an abstract interface definition
