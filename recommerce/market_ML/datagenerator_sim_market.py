@@ -14,27 +14,33 @@ class CircularEconomyDatagenerator(CircularEconomyRebuyPriceOneCompetitor):
 		super(CircularEconomyDatagenerator, self).__init__(support_continuous_action_space)
 		self.cumulated_states = np.array(np.zeros(25)).reshape(25, 1)
 		print(self.cumulated_states.shape)
+		self._i = 0
 		# self.cumulated_states = self.cumulated_states
 
 	def step(self, action) -> Tuple[np.array, np.float32, bool, dict]:
 		step_output_tuple = super(CircularEconomyDatagenerator, self).step(action)
-		print("step_counter: ", self.step_counter)
-		self.output_dict_append(self._output_dict, self.step_counter)
+		self.output_dict_append(self._output_dict, self._i)
+		self._i += 1
 		return step_output_tuple
 
 	def output_dict_append(self, output_dict: dict, i):
 		x = np.array(np.zeros(25)).reshape(25, 1)
 		print("i: ", i)
 		print("cumulated_states: ", self.cumulated_states)
+		tmp_cumulated_states = self.cumulated_states.reshape(25, i + 1)
 		# agent period: 1st half: agent x[7]vs x[2]| 2nd half: agent x[7] vs x[2, i+1]
 		# comp period: 1st half: com x[2, i-1] vs x[7, i-1] | 2nd half: com x[2, i-1] vs x[7]
 
 		x[0, 0] = i
 		x[1, 0] = output_dict['state/in_storage']['vendor_0']  # agent inventory
-
-		x[2, 0] = self.cumulated_states[22, i-1]  # comp price new (old)
-		x[3, 0] = self.cumulated_states[23, i-1]   # comp price used (old)
-		x[4, 0] = self.cumulated_states[24, i-1]   # comp price rebuy (old)
+		if i == 1:
+			x[2, 0] = tmp_cumulated_states[22, 0]  # comp price new (old)
+			x[3, 0] = tmp_cumulated_states[23, 0]   # comp price used (old)
+			x[4, 0] = tmp_cumulated_states[24, 0]   # comp price rebuy (old)
+		else:
+			x[2, 0] = tmp_cumulated_states[22, i-1]  # comp price new (old)
+			x[3, 0] = tmp_cumulated_states[23, i-1]   # comp price used (old)
+			x[4, 0] = tmp_cumulated_states[24, i-1]   # comp price rebuy (old)
 
 		x[5, 0] = output_dict['state/in_storage']['vendor_1']  # comp inventory
 
@@ -63,9 +69,10 @@ class CircularEconomyDatagenerator(CircularEconomyRebuyPriceOneCompetitor):
 		x[18, 0] = output_dict['profits/all']['vendor_0']  # agent total reward
 		x[19, 0] = output_dict['profits/all']['vendor_1']  # comp total reward
 
-		x[20, 0] = self.cumulated_states[20, i-1] + x[18]  # agent culmulated reward
-		x[21, 0] = self.cumulated_states[21, i-1] + x[19]  # comp culmulated reward
+		x[20, 0] = tmp_cumulated_states[20, i-1] + x[18]  # agent culmulated reward
+		x[21, 0] = tmp_cumulated_states[21, i-1] + x[19]  # comp culmulated reward
 		# pd.DataFrame(x).to_csv(f'kalibration_data/training_data-{datetime.datetime.now()}.csv', index=False)
-
-		print(x.shape)
-		self.cumulated_states = np.append(self.cumulated_states, x)
+		tmp = np.append(self.cumulated_states, x)
+		print("tmp: ", tmp)
+		self.cumulated_states = tmp
+		print(self)
