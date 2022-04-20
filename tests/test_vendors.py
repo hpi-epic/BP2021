@@ -10,7 +10,7 @@ import recommerce.configuration.hyperparameter_config as hyperparameter_config
 import recommerce.market.circular.circular_vendors as circular_vendors
 import recommerce.market.linear.linear_vendors as linear_vendors
 import recommerce.market.vendors as vendors
-from recommerce.market.linear.linear_sim_market import MultiCompetitorScenario
+from recommerce.market.linear.linear_sim_market import LinearEconomyOligopoly
 from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
 from recommerce.rl.reinforcement_learning_agent import ReinforcementLearningAgent
 
@@ -69,7 +69,7 @@ def test_non_abstract_agent_classes(agent):
 
 
 def test_non_abstract_qlearning_agent():
-	QLearningAgent(marketplace=MultiCompetitorScenario())
+	QLearningAgent(marketplace=LinearEconomyOligopoly())
 
 
 fixed_price_agent_observation_policy_pairs_testcases = [

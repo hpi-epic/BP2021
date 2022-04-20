@@ -208,7 +208,7 @@ class CircularEconomy(SimMarket, ABC):
 		return len(probability_distribution) == 1 + (2 * self._number_of_vendors)
 
 
-class CircularEconomyMonopolyScenario(CircularEconomy):
+class CircularEconomyMonopoly(CircularEconomy):
 
 	def _get_competitor_list(self) -> list:
 		return []
@@ -255,13 +255,13 @@ class CircularEconomyRebuyPrice(CircularEconomy, ABC):
 		return self.vendor_actions[vendor_idx][2]
 
 
-class CircularEconomyRebuyPriceMonopolyScenario(CircularEconomyRebuyPrice):
+class CircularEconomyRebuyPriceMonopoly(CircularEconomyRebuyPrice):
 
 	def _get_competitor_list(self) -> list:
 		return []
 
 
-class CircularEconomyRebuyPriceOneCompetitor(CircularEconomyRebuyPrice):
+class CircularEconomyRebuyPriceDuopoly(CircularEconomyRebuyPrice):
 
 	def _get_competitor_list(self) -> list:
 		return [RuleBasedCERebuyAgentCompetitive()]
