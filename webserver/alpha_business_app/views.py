@@ -110,3 +110,7 @@ def config_validation(request):
 		if not validate_status:
 			return render(request, 'notice_field.html', {'error': validate_data})
 	return render(request, 'notice_field.html', {'success': 'This config is valid'})
+
+
+def test(request):
+	return render(request, 'test.html')

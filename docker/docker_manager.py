@@ -72,6 +72,10 @@ class DockerManager():
 			cls._update_port_mapping()
 		return cls._instance
 
+	def check_health_of_all_container(self) -> list:
+		print(self._get_client().containers)
+		return ['1']
+
 	def start(self, config: dict, count: int) -> DockerInfo or list:
 		"""
 		To be called by the REST API. Create and start a new docker container from the image of the specified command.
