@@ -41,15 +41,6 @@ class DockerInfo():
 			and self.data == other.data \
 			and self.stream == other.stream
 
-	def __sub__(self, other_object):
-		if other_object is None:
-			return self
-		if not isinstance(other_object, DockerInfo):
-			raise NotImplementedError
-		resulting_ids = ';'.join(set(self.id.split(';')) - set(other_object.id.split(';')))
-		resulting_status = ';'.join(set(self.status.split(';')) - set(other_object.status.split(';')))
-		return DockerInfo(id=resulting_ids, status=resulting_status)
-
 
 class DockerManager():
 	"""
