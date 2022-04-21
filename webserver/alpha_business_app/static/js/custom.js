@@ -68,8 +68,40 @@ $(document).ready(function() {
 				formdata
 			},
 			success: function (data) {
-				$("p.notice-field").replaceWith(data);
+				const notice_field = $('#notice-field');
+				if (notice_field.length > 0) {
+					notice_field.replaceWith(data);
+				} else {
+					const endOfContent = document.getElementById('end-of-content');
+					endOfContent.insertAdjacentHTML('afterend', data);
+				}
 			}
 		});
 	});
+
+	var url = "ws://192.168.159.134:8001/ws";
+	var ws = new WebSocket(url);
+	ws.onopen = function (_) {
+		console.log("connection to ", url, "open");
+	}
+	ws.onmessage = function(event) {
+		const csrftoken = getCookie('csrftoken');
+		$.ajax({
+			type: "POST",
+			url: "/container_notification",
+			data: {
+				csrfmiddlewaretoken: csrftoken,
+				api_response: event.data
+			},
+			success: function (data) {
+				var nav_bar = document.getElementById('main-nav-bar');
+				nav_bar.insertAdjacentHTML('afterend', data)
+			}
+		});
+		console.log(event.data);
+	}
+
+	ws.onclose = function(_) {
+		console.log("connection to ", url, "closed");
+	}
 });

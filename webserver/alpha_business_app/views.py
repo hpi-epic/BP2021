@@ -9,6 +9,7 @@ from recommerce.configuration.config_validation import validate_config
 
 from .buttons import ButtonHandler
 from .config_parser import ConfigFlatDictParser
+from .container_helper import get_actually_stopped_container_from_api_notification
 from .forms import UploadFileForm
 from .handle_files import handle_uploaded_file
 from .handle_requests import DOCKER_API
@@ -112,5 +113,7 @@ def config_validation(request):
 	return render(request, 'notice_field.html', {'success': 'This config is valid'})
 
 
-def test(request):
-	return render(request, 'test.html')
+def container_notification(request):
+	if request.method == 'POST':
+		is_notification_necessary, result = get_actually_stopped_container_from_api_notification(request.POST['api_response'])
+	return render(request, 'alert_field.html', {'warning': result, 'should_render': is_notification_necessary})

@@ -15,7 +15,7 @@
     </head>
     <body>
         <div class="container">
-            <nav class="navbar navbar-expand-md navbar-light bg-light">
+            <nav class="navbar navbar-expand-md navbar-light bg-light" id="main-nav-bar">
                 <div class="container-fluid">
                     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                         <span class="navbar-toggler-icon"></span>
@@ -37,9 +37,6 @@
                             <li class="nav-item">
                                 <a class="nav-item nav-link" href="/download">Download</a>
                             </li>
-                            <li class="container-crashed-alert">
-
-                            </li>
                             <li class="nav-item d-flex ms-auto">
                                 <a class="nav-item nav-link mr-1"></a>
                                 {% include "api_buttons/api_health_button.html" %}
@@ -48,11 +45,11 @@
                     </div>
                 </div>
             </nav>
+            {% include "alert_field.html" %}
             {% block content %}
             {% endblock content %}
-            <br>
-            {% include "notice_field.html" %}
-
+            <br id="end-of-content">
+            {% include "notice_field.html"%}
             <footer class="footer footer-light mt-5">
                 <table class="table table-responsive align-middle">
                     <tr>

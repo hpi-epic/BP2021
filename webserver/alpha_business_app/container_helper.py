@@ -1,4 +1,5 @@
 import copy
+import json
 
 import names
 
@@ -51,3 +52,27 @@ def parse_response_to_database(api_response, config_dict: dict, given_name: str)
 			health_status=container_info['status'],
 			name=current_container_name)
 	return True, [], name
+
+
+def get_actually_stopped_container_from_api_notification(api_response: str) -> str:
+	try:
+		raw_data = json.loads(json.loads(api_response))
+	except json.decoder.JSONDecodeError:
+		print(f'Could not parse API Response to valid JSON {api_response}')
+		return False, []
+
+	polished_data = [item[1:-1].split(',') for item in raw_data['status'].split(';')]
+	result = []
+	for container_id, exit_code in polished_data:
+		try:
+			wanted_container = Container.objects.get(id=container_id)
+		except Container.DoesNotExist:
+			continue
+		if wanted_container.health_status.startswith('exit'):
+			continue
+		result += [wanted_container.name, exit_code]
+	print(result)
+	if not result:
+		return False, []
+
+	return True, result

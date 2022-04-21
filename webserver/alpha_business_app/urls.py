@@ -14,6 +14,5 @@ urlpatterns = [
 	path('agent', views.agent, name='agent'),
 	path('api_availability', views.api_availability, name='api_availability'),
 	path('validate_config', views.config_validation, name='config_validation'),
-
-	path('test', views.test, name='test')
+	path('container_notification', views.container_notification, name='container_notification')
 ]
