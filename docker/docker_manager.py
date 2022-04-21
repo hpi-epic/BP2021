@@ -35,11 +35,20 @@ class DockerInfo():
 	def __eq__(self, other: object) -> bool:
 		if not isinstance(other, DockerInfo):
 			# don't attempt to compare against unrelated types
-			return NotImplemented
+			return False
 		return self.id == other.id \
 			and self.status == other.status \
 			and self.data == other.data \
 			and self.stream == other.stream
+
+	def __sub__(self, other_object):
+		if other_object is None:
+			return self
+		if not isinstance(other_object, DockerInfo):
+			raise NotImplementedError
+		resulting_ids = ';'.join(set(self.id.split(';')) - set(other_object.id.split(';')))
+		resulting_status = ';'.join(set(self.status.split(';')) - set(other_object.status.split(';')))
+		return DockerInfo(id=resulting_ids, status=resulting_status)
 
 
 class DockerManager():
@@ -73,8 +82,13 @@ class DockerManager():
 		return cls._instance
 
 	def check_health_of_all_container(self) -> list:
-		print(self._get_client().containers)
-		return ['1']
+		exited_recommerce_containers = list(self._get_client().containers.list(filters={'label': 'recommerce', 'status': 'exited'}))
+		exited_container = []
+		for container in exited_recommerce_containers:
+			exited_container += [(container.id, docker.APIClient().inspect_container(container.id)['State']['ExitCode'])]
+		all_container_ids = ';'.join([str(container_id) for container_id, exit_code in exited_container])
+		all_container_status = ';'.join([str((container_id, exit_code)) for container_id, exit_code in exited_container])
+		return exited_recommerce_containers != [], DockerInfo(id=all_container_ids, status=all_container_status)
 
 	def start(self, config: dict, count: int) -> DockerInfo or list:
 		"""
