@@ -47,6 +47,9 @@ class HumanPlayerCERebuy(HumanPlayerCE):
 
 
 class FixedPriceCEAgent(CircularAgent, FixedPriceAgent):
+	"""
+	This vendor's policy is trying to succeed with set constant prices.
+	"""
 	def __init__(self, fixed_price=(2, 4), name='fixed_price_ce'):
 		assert isinstance(fixed_price, tuple), f'fixed_price must be a tuple: {fixed_price} ({type(fixed_price)})'
 		assert len(fixed_price) == 2, f'fixed_price must contain two values: {fixed_price}'
@@ -59,6 +62,9 @@ class FixedPriceCEAgent(CircularAgent, FixedPriceAgent):
 
 
 class FixedPriceCERebuyAgent(FixedPriceCEAgent):
+	"""
+	This vendor's policy is the a version of the FixedPriceCEAgent with rebuy price.
+	"""
 	def __init__(self, fixed_price=(3, 6, 2), name='fixed_price_ce_rebuy'):
 		assert isinstance(fixed_price, tuple), f'fixed_price must be a tuple: {fixed_price} ({type(fixed_price)})'
 		assert len(fixed_price) == 3, f'fixed_price must contain three values: {fixed_price}'
@@ -71,6 +77,10 @@ class FixedPriceCERebuyAgent(FixedPriceCEAgent):
 
 
 class RuleBasedCEAgent(RuleBasedAgent, CircularAgent):
+	"""
+	This vendor's policy does not consider the competitor's prices.
+	It tries to succeed by taking the its own storage costs into account.
+	"""
 	def __init__(self, name='rule_based_ce'):
 		self.name = name
 
@@ -112,11 +122,17 @@ class RuleBasedCEAgent(RuleBasedAgent, CircularAgent):
 
 
 class RuleBasedCERebuyAgent(RuleBasedCEAgent):
+	"""
+	This vendor's policy is the a version of the RuleBasedCEAgent with rebuy price.
+	"""
 	def return_prices(self, price_refurbished, price_new, rebuy_price):
 		return (price_refurbished, price_new, rebuy_price)
 
 
 class RuleBasedCERebuyAgentCompetitive(RuleBasedAgent, CircularAgent):
+	"""
+	This vendor's policy is aiming to succeed by highly reacting to the competitor's prices.
+	"""
 	def __init__(self, name='rule_based_ce_rebuy_competitive'):
 		self.name = name
 
@@ -133,8 +149,6 @@ class RuleBasedCERebuyAgentCompetitive(RuleBasedAgent, CircularAgent):
 		if own_storage < config.max_storage / 15:
 			# fill up the storage immediately
 			price_refurbished = min(competitors_refurbished_prices) + 2
-			# price_refurbished = max(competitors_refurbished_prices) + 2
-			# price_refurbished = (sum(competitors_refurbished_prices) / len(competitors_refurbished_prices)) + 2
 			rebuy_price = max(min(competitors_rebuy_prices) + 1, 2)
 		elif own_storage < config.max_storage / 10:
 			# fill up the storage
@@ -147,7 +161,6 @@ class RuleBasedCERebuyAgentCompetitive(RuleBasedAgent, CircularAgent):
 		else:
 			# storage too full, we need to get rid of some refurbished products
 			rebuy_price = max(min(competitors_rebuy_prices) - 2, 1)
-			# price_refurbished = max(min(competitors_refurbished_prices) - 2, rebuy_price + 1)
 			price_refurbished = max(round(np.quantile(competitors_refurbished_prices, 0.75)) - 2, rebuy_price + 1)
 
 		return (self._clamp_price(price_refurbished), self._clamp_price(price_new), self._clamp_price(rebuy_price))
@@ -155,9 +168,9 @@ class RuleBasedCERebuyAgentCompetitive(RuleBasedAgent, CircularAgent):
 
 class RuleBasedCERebuyAgentStockist(RuleBasedAgent, CircularAgent):
 	"""
-	This policy reacts to the competitors' prices and uses the own storage extensively.
+	This vendor's policy reacts to the competitors' prices and uses the own storage extensively.
 	"""
-	def __init__(self, name='rule_based_ce_rebuy_competitive'):
+	def __init__(self, name='rule_based_ce_rebuy_stockist'):
 		self.name = name
 
 	def policy(self, observation, *_) -> tuple:
