@@ -3,10 +3,10 @@ from abc import ABC
 import gym
 import numpy as np
 
+import recommerce.market.circular.circular_sim_market as circular_sim_market
 import recommerce.market.owner as owner
 from recommerce.configuration.hyperparameter_config import config
 from recommerce.market.circular.circular_customers import CustomerCircular
-from recommerce.market.circular.circular_vendors import FixedPriceCERebuyAgent, RuleBasedCERebuyAgent, RuleBasedCERebuyAgentCompetitive
 from recommerce.market.customer import Customer
 from recommerce.market.owner import Owner
 from recommerce.market.sim_market import SimMarket
@@ -264,15 +264,15 @@ class CircularEconomyRebuyPriceMonopoly(CircularEconomyRebuyPrice):
 class CircularEconomyRebuyPriceDuopoly(CircularEconomyRebuyPrice):
 
 	def _get_competitor_list(self) -> list:
-		return [RuleBasedCERebuyAgentCompetitive()]
+		return [circular_sim_market.RuleBasedCERebuyAgentCompetitive()]
 
 
 class CircularEconomyRebuyPriceOligopoly(CircularEconomyRebuyPrice):
 
 	def _get_competitor_list(self) -> list:
 		return [
-			RuleBasedCERebuyAgentCompetitive(),
-			RuleBasedCERebuyAgent(),
-			FixedPriceCERebuyAgent(fixed_price=(3, 6, 2)),
-			FixedPriceCERebuyAgent(fixed_price=(4, 7, 3))
+			circular_sim_market.RuleBasedCERebuyAgentCompetitive(),
+			circular_sim_market.RuleBasedCERebuyAgent(),
+			circular_sim_market.FixedPriceCERebuyAgent(fixed_price=(3, 6, 2)),
+			circular_sim_market.RuleBasedCERebuyAgentStockist()
 			]

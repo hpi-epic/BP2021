@@ -1,4 +1,5 @@
 from abc import ABC
+from statistics import median
 
 import numpy as np
 
@@ -7,7 +8,22 @@ from recommerce.market.vendors import Agent, FixedPriceAgent, HumanPlayer, RuleB
 
 
 class CircularAgent(Agent, ABC):
-	pass
+	def _clamp_price(self, price, min_price=0, max_price=config.max_price - 1) -> int:
+		price = int(price)
+		price = max(price, min_price)
+		price = min(price, max_price)
+		return price
+
+	def _get_competitor_prices(self, observation: np.ndarray):
+		# in_circulation is ignored
+		competitors_refurbished_prices = []
+		competitors_new_prices = []
+		competitors_rebuy_prices = []
+		for competitor_id in range(2, observation.size, 4):
+			competitors_refurbished_prices.append(observation[competitor_id].item())
+			competitors_new_prices.append(observation[competitor_id + 1].item())
+			competitors_rebuy_prices.append(observation[competitor_id + 2].item())
+		return competitors_refurbished_prices, competitors_new_prices, competitors_rebuy_prices
 
 
 class HumanPlayerCE(CircularAgent, HumanPlayer):
@@ -104,25 +120,13 @@ class RuleBasedCERebuyAgentCompetitive(RuleBasedAgent, CircularAgent):
 	def __init__(self, name='rule_based_ce_rebuy_competitive'):
 		self.name = name
 
-	def _clamp_price(self, price, min_price=0, max_price=config.max_price - 1) -> int:
-		price = int(price)
-		price = max(price, min_price)
-		price = min(price, max_price)
-		return price
-
 	def policy(self, observation, *_) -> tuple:
 		assert isinstance(observation, np.ndarray), 'observation must be a np.ndarray'
 		# TODO: find a proper way asserting the length of observation (as implemented in AC & QLearning via passing marketplace)
 
 		# in_circulation is ignored
 		own_storage = observation[1].item()
-		competitors_refurbished_prices = []
-		competitors_new_prices = []
-		competitors_rebuy_prices = []
-		for competitor_id in range(2, observation.size, 4):
-			competitors_refurbished_prices.append(observation[competitor_id].item())
-			competitors_new_prices.append(observation[competitor_id + 1].item())
-			competitors_rebuy_prices.append(observation[competitor_id + 2].item())
+		competitors_refurbished_prices, competitors_new_prices, competitors_rebuy_prices = self._get_competitor_prices(observation)
 
 		price_new = max(min(competitors_new_prices) - 1, config.production_price + 1)
 		# competitor's storage is ignored
@@ -145,5 +149,35 @@ class RuleBasedCERebuyAgentCompetitive(RuleBasedAgent, CircularAgent):
 			rebuy_price = max(min(competitors_rebuy_prices) - 2, 1)
 			# price_refurbished = max(min(competitors_refurbished_prices) - 2, rebuy_price + 1)
 			price_refurbished = max(round(np.quantile(competitors_refurbished_prices, 0.75)) - 2, rebuy_price + 1)
+
+		return (self._clamp_price(price_refurbished), self._clamp_price(price_new), self._clamp_price(rebuy_price))
+
+
+class RuleBasedCERebuyAgentStockist(RuleBasedAgent, CircularAgent):
+	"""
+	This policy reacts to the competitors' prices and uses the own storage extensively.
+	"""
+	def __init__(self, name='rule_based_ce_rebuy_competitive'):
+		self.name = name
+
+	def policy(self, observation, *_) -> tuple:
+		assert isinstance(observation, np.ndarray), 'observation must be a np.ndarray'
+		# TODO: find a proper way asserting the length of observation (as implemented in AC & QLearning via passing marketplace)
+
+		# in_circulation is ignored
+		own_storage = observation[1].item()
+		competitors_refurbished_prices, competitors_new_prices, competitors_rebuy_prices = self._get_competitor_prices(observation)
+
+		price_new = max(median(competitors_new_prices) - 1, config.production_price + 1)
+		# competitor's storage is ignored
+		if own_storage < config.max_storage / 15:
+			# fill up the storage immediately
+			price_refurbished = max(competitors_new_prices + competitors_refurbished_prices)
+			rebuy_price = price_new - 1
+		else:
+			# storage too full, we need to get rid of some refurbished products
+			rebuy_price = min(competitors_rebuy_prices) - config.max_price / 0.1
+			# rebuy_price = min(competitors_rebuy_prices + competitors_new_prices + competitors_refurbished_prices)
+			price_refurbished = int(np.quantile(competitors_refurbished_prices, 0.25))
 
 		return (self._clamp_price(price_refurbished), self._clamp_price(price_new), self._clamp_price(rebuy_price))
