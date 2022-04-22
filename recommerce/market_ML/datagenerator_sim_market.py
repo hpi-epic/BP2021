@@ -1,9 +1,10 @@
 # import datetime
 from typing import Tuple
-
+import pandas as pd
 import numpy as np
 # import pandas as pd
 # import torch
+from recommerce.configuration.path_manager import PathManager
 
 from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPriceOneCompetitor
 
@@ -25,8 +26,8 @@ class CircularEconomyDatagenerator(CircularEconomyRebuyPriceOneCompetitor):
 
 	def output_dict_append(self, output_dict: dict, i):
 		x = np.array(np.zeros(25)).reshape(25, 1)
-		print("i: ", i)
-		print("cumulated_states: ", self.cumulated_states)
+		# print("i: ", i)
+		# print("cumulated_states: ", self.cumulated_states)
 		tmp_cumulated_states = self.cumulated_states.reshape(25, i + 1)
 		# agent period: 1st half: agent x[7]vs x[2]| 2nd half: agent x[7] vs x[2, i+1]
 		# comp period: 1st half: com x[2, i-1] vs x[7, i-1] | 2nd half: com x[2, i-1] vs x[7]
@@ -73,6 +74,9 @@ class CircularEconomyDatagenerator(CircularEconomyRebuyPriceOneCompetitor):
 		x[21, 0] = tmp_cumulated_states[21, i-1] + x[19]  # comp culmulated reward
 		# pd.DataFrame(x).to_csv(f'kalibration_data/training_data-{datetime.datetime.now()}.csv', index=False)
 		tmp = np.append(self.cumulated_states, x)
-		print("tmp: ", tmp)
+		# print("tmp: ", tmp)
 		self.cumulated_states = tmp
-		print(self)
+		if i == 5000:
+			pd.DataFrame(self.cumulated_states.reshape(25,i + 2)).to_csv(f'{PathManager.user_path}/kalibration_data/training_data.csv', index=False)
+			exit()
+		# print(self)

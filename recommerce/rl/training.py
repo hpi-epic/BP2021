@@ -15,7 +15,6 @@ from recommerce.monitoring.agent_monitoring.am_evaluation import Evaluator
 from recommerce.monitoring.agent_monitoring.am_monitoring import Monitor
 from recommerce.rl.reinforcement_learning_agent import ReinforcementLearningAgent
 
-
 class RLTrainer(ABC):
 	def __init__(self, marketplace_class, agent_class, log_dir_prepend=''):
 		"""

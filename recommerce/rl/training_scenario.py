@@ -7,7 +7,7 @@ from recommerce.configuration.environment_config import EnvironmentConfigLoader,
 from recommerce.market.circular.circular_vendors import CircularAgent
 from recommerce.rl.actorcritic.actorcritic_training import ActorCriticTrainer
 from recommerce.rl.q_learning.q_learning_training import QLearningTrainer
-
+from recommerce.market_ML.datagenerator_sim_market import CircularEconomyDatagenerator
 
 def run_training_session(marketplace=circular_market.CircularEconomyRebuyPriceOneCompetitor, agent=q_learning_agent.QLearningCERebuyAgent):
 	"""
@@ -59,6 +59,13 @@ def train_from_config():
 	config: TrainingEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_training')
 	# TODO: Theoretically, the name of the agent is saved in config['name'], but we don't use it yet.
 	run_training_session(config.marketplace, config.agent['agent_class'])
+
+
+def train_to_calibrate_marketplace():
+	"""
+	Train an ActorCriticAgent on a Circular Economy Market with Rebuy Prices and one competitor.
+	"""
+	run_training_session(CircularEconomyDatagenerator, actorcritic_agent.ContinuosActorCriticAgentFixedOneStd)
 
 
 def main():

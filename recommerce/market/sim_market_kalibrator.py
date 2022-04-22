@@ -1,6 +1,9 @@
 import numpy as np
 import torch
+import pandas as pd
 from sim_market_kalibrated import SimMarketKalibrated
+import recommerce.rl.training_scenario as training_scenario
+from recommerce.configuration.path_manager import PathManager
 
 
 class SimMarketKalibrator:
@@ -77,7 +80,9 @@ class SimMarketKalibrator:
 
 
 if __name__ == '__main__':
-	data = np.array([])
+	# training_scenario.train_to_calibrate_marketplace()
+	data_frame = pd.read_csv(f'{PathManager.user_path}/kalibration_data/training_data.csv')
+	data = torch.tensor(data_frame.values)
 	M123 = (0, 1, 2, 3, 4, 7, 8, 9, 22, 23, 24)
 	y1_index = 11
 	y2_index = 12
@@ -93,3 +98,5 @@ if __name__ == '__main__':
 	y6_index = 4
 
 	kalibrator = SimMarketKalibrator(M123, M123, M123, M4, M5, M6, M4x, M5x, M6x)
+	kalibrated_market = kalibrator.kalibrate_market(data, y1_index, y2_index, y3_index, y4_index, y5_index, y6_index)
+	
