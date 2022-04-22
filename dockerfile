@@ -1,4 +1,5 @@
-FROM pure/python:3.8-cuda10.2-runtime
+FROM nvidia/cuda:11.3.0-base-ubuntu20.04
+RUN sudo apt-get install -y python 3.8
 
 WORKDIR /app
 EXPOSE 6006
