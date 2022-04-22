@@ -214,6 +214,23 @@ class CircularEconomyMonopoly(CircularEconomy):
 		return []
 
 
+class CircularEconomyDuopoly(CircularEconomy):
+
+	def _get_competitor_list(self) -> list:
+		return [circular_vendors.RuleBasedCEAgent()]
+
+
+class CircularEconomyOligopoly(CircularEconomy):
+
+	def _get_competitor_list(self) -> list:
+		return [
+			circular_vendors.RuleBasedCEAgent(),
+			circular_vendors.RuleBasedCEAgent(),
+			circular_vendors.FixedPriceCEAgent(fixed_price=(3, 5)),
+			circular_vendors.FixedPriceCEAgent(fixed_price=(2, 6))
+			]
+
+
 class CircularEconomyRebuyPrice(CircularEconomy, ABC):
 
 	def _setup_action_observation_space(self, support_continuous_action_space: bool) -> None:
