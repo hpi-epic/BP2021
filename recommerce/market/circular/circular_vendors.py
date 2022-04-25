@@ -146,7 +146,7 @@ class RuleBasedCERebuyAgentCompetitive(RuleBasedAgent, CircularAgent):
 
 		# in_circulation is ignored
 		own_storage = observation[1].item()
-		competitors_refurbished_prices, competitors_new_prices, competitors_rebuy_prices = self._get_competitor_prices(observation)
+		competitors_refurbished_prices, competitors_new_prices, competitors_rebuy_prices = self._get_competitor_prices(observation, True)
 
 		price_new = max(min(competitors_new_prices) - 1, config.production_price + 1)
 		# competitor's storage is ignored
@@ -183,7 +183,7 @@ class RuleBasedCERebuyAgentStorageMinimizer(RuleBasedAgent, CircularAgent):
 
 		# in_circulation is ignored
 		own_storage = observation[1].item()
-		competitors_refurbished_prices, competitors_new_prices, competitors_rebuy_prices = self._get_competitor_prices(observation)
+		competitors_refurbished_prices, competitors_new_prices, competitors_rebuy_prices = self._get_competitor_prices(observation, True)
 
 		price_new = max(median(competitors_new_prices) - 1, config.production_price + 1)
 		# competitor's storage is ignored
