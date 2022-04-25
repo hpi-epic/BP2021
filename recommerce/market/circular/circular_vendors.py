@@ -83,12 +83,12 @@ class FixedPriceCERebuyAgent(FixedPriceCEAgent):
 class RuleBasedCEAgent(RuleBasedAgent, CircularAgent):
 	"""
 	This vendor's policy does not consider the competitor's prices.
-	It tries to succeed by taking the its own storage costs into account.
+	It tries to succeed by taking its own storage costs into account.
 	"""
 	def __init__(self, name='rule_based_ce'):
 		self.name = name
 
-	def return_prices(self, price_refurbished, price_new, rebuy_price):
+	def convert_price_format(self, price_refurbished, price_new, rebuy_price):
 		return (price_refurbished, price_new)
 
 	def policy(self, observation, epsilon=0) -> tuple:
@@ -122,14 +122,14 @@ class RuleBasedCEAgent(RuleBasedAgent, CircularAgent):
 
 		price_new = min(9, price_new)
 		assert price_refurbished <= price_new, 'The price for used products should be lower or equal to the price of new products'
-		return self.return_prices(price_refurbished, price_new, rebuy_price)
+		return self.convert_price_format(price_refurbished, price_new, rebuy_price)
 
 
 class RuleBasedCERebuyAgent(RuleBasedCEAgent):
 	"""
-	This vendor's policy is the a version of the RuleBasedCEAgent with rebuy price.
+	This vendor's policy is a version of the RuleBasedCEAgent with rebuy price.
 	"""
-	def return_prices(self, price_refurbished, price_new, rebuy_price):
+	def convert_price_format(self, price_refurbished, price_new, rebuy_price):
 		return (price_refurbished, price_new, rebuy_price)
 
 
