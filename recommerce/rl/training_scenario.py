@@ -14,13 +14,13 @@ from recommerce.rl.q_learning.q_learning_training import QLearningTrainer
 print('successfully imported torch: cuda?', torch.cuda.is_available())
 
 
-def run_training_session(marketplace=circular_market.CircularEconomyRebuyPriceOneCompetitor, agent=q_learning_agent.QLearningCERebuyAgent):
+def run_training_session(marketplace=circular_market.CircularEconomyRebuyPriceOneCompetitor, agent=q_learning_agent.QLearningAgent):
 	"""
 	Run a training session with the passed marketplace and QLearningAgent.
 	Args:
 		marketplace (SimMarket subclass, optional): What marketplace to run the training session on.
 		Defaults to circular_market.CircularEconomyRebuyPriceOneCompetitor.
-		agent (QLearningAgent subclass, optional): What kind of QLearningAgent to train. Defaults to q_learning_agent.QLearningCERebuyAgent.
+		agent (QLearningAgent subclass, optional): What kind of QLearningAgent to train. Defaults to q_learning_agent.QLearningAgent.
 	"""
 	assert issubclass(marketplace, sim_market.SimMarket), \
 		f'the type of the passed marketplace must be a subclass of SimMarket: {marketplace}'
@@ -40,14 +40,14 @@ def train_q_learning_classic_scenario():
 	"""
 	Train a Linear QLearningAgent on a Linear Market with one competitor.
 	"""
-	run_training_session(linear_market.ClassicScenario, q_learning_agent.QLearningLEAgent)
+	run_training_session(linear_market.ClassicScenario, q_learning_agent.QLearningAgent)
 
 
 def train_q_learning_circular_economy_rebuy():
 	"""
 	Train a Circular Economy QLearningAgent on a Circular Economy Market with Rebuy Prices and one competitor.
 	"""
-	run_training_session(circular_market.CircularEconomyRebuyPriceOneCompetitor, q_learning_agent.QLearningCERebuyAgent)
+	run_training_session(circular_market.CircularEconomyRebuyPriceOneCompetitor, q_learning_agent.QLearningAgent)
 
 
 def train_continuos_a2c_circular_economy_rebuy():

@@ -10,7 +10,8 @@ import recommerce.configuration.hyperparameter_config as hyperparameter_config
 import recommerce.market.circular.circular_vendors as circular_vendors
 import recommerce.market.linear.linear_vendors as linear_vendors
 import recommerce.market.vendors as vendors
-from recommerce.rl.q_learning.q_learning_agent import QLearningAgent, QLearningCEAgent, QLearningCERebuyAgent, QLearningLEAgent
+from recommerce.market.linear.linear_sim_market import MultiCompetitorScenario
+from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
 from recommerce.rl.reinforcement_learning_agent import ReinforcementLearningAgent
 
 
@@ -39,8 +40,7 @@ abstract_agent_classes_testcases = [
 	vendors.HumanPlayer,
 	vendors.RuleBasedAgent,
 	vendors.FixedPriceAgent,
-	ReinforcementLearningAgent,
-	QLearningAgent
+	ReinforcementLearningAgent
 ]
 
 
@@ -68,17 +68,8 @@ def test_non_abstract_agent_classes(agent):
 	agent()
 
 
-# actual n_observation and n_action are not needed, we just test if the initialization fails or not
-non_abstract_qlearning_agent_classes_testcases = [
-	(QLearningLEAgent, 10, 10),
-	(QLearningCEAgent, 10, 10),
-	(QLearningCERebuyAgent, 10, 10)
-]
-
-
-@pytest.mark.parametrize('agent, n_observation, n_actions', non_abstract_qlearning_agent_classes_testcases)
-def test_non_abstract_qlearning_agent_classes(agent, n_observation, n_actions):
-	agent(n_observation, n_actions)
+def test_non_abstract_qlearning_agent():
+	QLearningAgent(marketplace=MultiCompetitorScenario())
 
 
 fixed_price_agent_observation_policy_pairs_testcases = [

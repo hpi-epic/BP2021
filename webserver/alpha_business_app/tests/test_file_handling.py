@@ -159,8 +159,8 @@ class FileHandling(TestCase):
 		assert 2 == len(all_agents)
 		assert 'recommerce.market.circular.circular_vendors.RuleBasedCERebuyAgent' == all_agents[0].agent_class
 		assert '' == all_agents[0].argument
-		assert 'recommerce.rl.q_learning.q_learning_agent.QLearningCERebuyAgent' == all_agents[1].agent_class
-		assert 'CircularEconomyRebuyPriceMonopolyScenario_QLearningCERebuyAgent.dat' == all_agents[1].argument
+		assert 'recommerce.rl.q_learning.q_learning_agent.QLearningAgent' == all_agents[1].agent_class
+		assert 'CircularEconomyRebuyPriceMonopolyScenario_QLearningAgent.dat' == all_agents[1].argument
 
 	def test_parsing_mixed_config(self):
 		# get a test config to be parsed

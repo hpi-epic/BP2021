@@ -105,8 +105,8 @@ class ConfigMergerTest(TestCase):
 					},
 					{
 						'name': 'CE Rebuy Agent (QLearning)',
-						'agent_class': 'recommerce.rl.q_learning.q_learning_agent.QLearningCERebuyAgent',
-						'argument': 'CircularEconomyRebuyPriceMonopolyScenario_QLearningCERebuyAgent.dat'
+						'agent_class': 'recommerce.rl.q_learning.q_learning_agent.QLearningAgent',
+						'argument': 'CircularEconomyRebuyPriceMonopolyScenario_QLearningAgent.dat'
 					}
 				]
 			}, 'hyperparameter': {

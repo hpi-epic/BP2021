@@ -6,7 +6,7 @@ import pytest
 import recommerce.market.circular.circular_sim_market as circular_market
 import recommerce.monitoring.agent_monitoring.am_monitoring as monitoring
 from recommerce.market.circular.circular_vendors import FixedPriceCEAgent
-from recommerce.rl.q_learning.q_learning_agent import QLearningCEAgent
+from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
 
 monitor = monitoring.Monitor()
 
@@ -21,8 +21,8 @@ def setup_function(function):
 		episodes=50,
 		plot_interval=10,
 		marketplace=circular_market.CircularEconomyMonopolyScenario,
-		agents=[(QLearningCEAgent, [os.path.join(os.path.dirname(__file__), os.pardir, 'test_data',
-			'CircularEconomyMonopolyScenario_QLearningCEAgent.dat')])],
+		agents=[(QLearningAgent, [os.path.join(os.path.dirname(__file__), os.pardir, 'test_data',
+			'CircularEconomyMonopolyScenario_QLearningAgent.dat')])],
 		subfolder_name=f'test_plots_{function.__name__}')
 
 
