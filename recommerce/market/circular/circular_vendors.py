@@ -131,7 +131,7 @@ class RuleBasedCERebuyAgent(RuleBasedCEAgent):
 
 class RuleBasedCERebuyAgentCompetitive(RuleBasedAgent, CircularAgent):
 	"""
-	This vendor's policy is aiming to succeed by highly reacting to the competitor's prices.
+	This vendor's policy is aiming to succeed by undercutting the competitor's prices.
 	"""
 	def __init__(self, name='rule_based_ce_rebuy_competitive'):
 		self.name = name
@@ -166,9 +166,9 @@ class RuleBasedCERebuyAgentCompetitive(RuleBasedAgent, CircularAgent):
 		return (self._clamp_price(price_refurbished), self._clamp_price(price_new), self._clamp_price(rebuy_price))
 
 
-class RuleBasedCERebuyAgentStockist(RuleBasedAgent, CircularAgent):
+class RuleBasedCERebuyAgentStorageMinimizer(RuleBasedAgent, CircularAgent):
 	"""
-	This vendor's policy reacts to the competitors' prices and uses the own storage extensively.
+	This vendor's policy reacts to the competitors' prices and minimizes the usage of storage.
 	"""
 	def __init__(self, name='rule_based_ce_rebuy_stockist'):
 		self.name = name

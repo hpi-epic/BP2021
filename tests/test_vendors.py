@@ -59,7 +59,9 @@ non_abstract_agent_classes_testcases = [
 	circular_vendors.FixedPriceCERebuyAgent,
 	linear_vendors.FixedPriceLEAgent,
 	circular_vendors.RuleBasedCEAgent,
-	circular_vendors.RuleBasedCERebuyAgent
+	circular_vendors.RuleBasedCERebuyAgent,
+	circular_vendors.RuleBasedCERebuyAgentCompetitive,
+	circular_vendors.RuleBasedCERebuyAgentStorageMinimizer
 ]
 
 
