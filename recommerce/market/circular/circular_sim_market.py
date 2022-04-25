@@ -16,7 +16,7 @@ class CircularEconomy(SimMarket, ABC):
 
 	def _setup_action_observation_space(self, support_continuous_action_space: bool) -> None:
 		# cell 0: number of products in the used storage, cell 1: number of products in circulation
-		self.max_storage = 1e2
+		self.max_storage = config.max_storage
 		self.max_circulation = 10 * self.max_storage
 		self.observation_space = gym.spaces.Box(
 			np.array([0, 0] + [0, 0, 0] * len(self.competitors), dtype=np.float32),
@@ -291,5 +291,5 @@ class CircularEconomyRebuyPriceOligopoly(CircularEconomyRebuyPrice):
 			circular_vendors.RuleBasedCERebuyAgentCompetitive(),
 			circular_vendors.RuleBasedCERebuyAgent(),
 			circular_vendors.FixedPriceCERebuyAgent(fixed_price=(3, 6, 2)),
-			circular_vendors.RuleBasedCERebuyAgentStockist()
+			circular_vendors.RuleBasedCERebuyAgentStorageMinimizer()
 			]

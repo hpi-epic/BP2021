@@ -14,16 +14,20 @@ class CircularAgent(Agent, ABC):
 		price = min(price, max_price)
 		return price
 
-	def _get_competitor_prices(self, observation: np.ndarray):
+	def _get_competitor_prices(self, observation: np.ndarray, is_rebuy_economy: bool):
 		# in_circulation is ignored
 		competitors_refurbished_prices = []
 		competitors_new_prices = []
 		competitors_rebuy_prices = []
-		for competitor_id in range(2, observation.size, 4):
-			competitors_refurbished_prices.append(observation[competitor_id].item())
-			competitors_new_prices.append(observation[competitor_id + 1].item())
-			competitors_rebuy_prices.append(observation[competitor_id + 2].item())
-		return competitors_refurbished_prices, competitors_new_prices, competitors_rebuy_prices
+		for competitor in range(2, observation.size, 4):
+			competitors_refurbished_prices.append(observation[competitor].item())
+			competitors_new_prices.append(observation[competitor + 1].item())
+			if is_rebuy_economy is True:
+				competitors_rebuy_prices.append(observation[competitor + 2].item())
+		if is_rebuy_economy is True:
+			return competitors_refurbished_prices, competitors_new_prices, competitors_rebuy_prices
+		else:
+			return competitors_refurbished_prices, competitors_new_prices
 
 
 class HumanPlayerCE(CircularAgent, HumanPlayer):
