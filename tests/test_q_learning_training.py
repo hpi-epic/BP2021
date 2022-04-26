@@ -29,11 +29,11 @@ def import_config() -> hyperparameter_config.HyperparameterConfig:
 
 
 test_scenarios = [
-	linear_market.ClassicScenario,
-	linear_market.MultiCompetitorScenario,
-	circular_market.CircularEconomyMonopolyScenario,
-	circular_market.CircularEconomyRebuyPriceMonopolyScenario,
-	circular_market.CircularEconomyRebuyPriceOneCompetitor
+	linear_market.LinearEconomyDuopoly,
+	linear_market.LinearEconomyOligopoly,
+	circular_market.CircularEconomyMonopoly,
+	circular_market.CircularEconomyRebuyPriceMonopoly,
+	circular_market.CircularEconomyRebuyPriceDuopoly
 ]
 
 
@@ -58,7 +58,7 @@ def test_training_with_tensorboard():
 	with patch('builtins.open', mock_open(read_data=mock_json)) as mock_file:
 		ut_t.check_mock_file(mock_file, mock_json)
 		config = import_config()
-		market_class = linear_market.ClassicScenario
+		market_class = linear_market.LinearEconomyDuopoly
 		agent_class = QLearningAgent
 
 	q_learning_training.QLearningTrainer(market_class, agent_class).train_agent(int(config.replay_start_size * 1.2))

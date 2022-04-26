@@ -25,7 +25,7 @@ def setup_function(function):
 		enable_live_draw=False,
 		episodes=50,
 		plot_interval=10,
-		marketplace=circular_market.CircularEconomyMonopolyScenario,
+		marketplace=circular_market.CircularEconomyMonopoly,
 		agents=[(FixedPriceCERebuyAgent, [])],
 		subfolder_name=f'test_plots_{function.__name__}')
 
@@ -67,9 +67,9 @@ def test_incorrect_update_agents_RL(agents, expected_message):
 correct_update_agents_RL_testcases = [
 	[(QLearningAgent, [])],
 	[(QLearningAgent, ['new_name'])],
-	[(QLearningAgent, ['CircularEconomyMonopolyScenario_QLearningAgent.dat'])],
-	[(QLearningAgent, ['CircularEconomyMonopolyScenario_QLearningAgent.dat', 'new_name'])],
-	[(QLearningAgent, [f'{circular_market.CircularEconomyMonopolyScenario.__name__}_{QLearningAgent.__name__}.dat'])]
+	[(QLearningAgent, ['CircularEconomyMonopoly_QLearningAgent.dat'])],
+	[(QLearningAgent, ['CircularEconomyMonopoly_QLearningAgent.dat', 'new_name'])],
+	[(QLearningAgent, [f'{circular_market.CircularEconomyMonopoly.__name__}_{QLearningAgent.__name__}.dat'])]
 ]
 
 
@@ -83,14 +83,14 @@ def test_correct_setup_monitoring():
 		enable_live_draw=False,
 		episodes=10,
 		plot_interval=2,
-		marketplace=circular_market.CircularEconomyMonopolyScenario,
+		marketplace=circular_market.CircularEconomyMonopoly,
 		agents=[(HumanPlayerCERebuy, ['reptiloid']),
-			(QLearningAgent, ['CircularEconomyMonopolyScenario_QLearningAgent.dat', 'q_learner'])],
+			(QLearningAgent, ['CircularEconomyMonopoly_QLearningAgent.dat', 'q_learner'])],
 		subfolder_name='subfoldername')
 	assert monitor.configurator.enable_live_draw is False
 	assert 10 == monitor.configurator.episodes
 	assert 2 == monitor.configurator.plot_interval
-	assert isinstance(monitor.configurator.marketplace, circular_market.CircularEconomyMonopolyScenario)
+	assert isinstance(monitor.configurator.marketplace, circular_market.CircularEconomyMonopoly)
 	assert 2 == len(monitor.configurator.agents)
 	assert isinstance(monitor.configurator.agents[0], HumanPlayerCERebuy)
 	assert isinstance(monitor.configurator.agents[1], QLearningAgent)
@@ -113,27 +113,27 @@ def test_setting_multiple_agents(agents):
 
 
 def test_setting_market_not_agents():
-	monitor.configurator.setup_monitoring(marketplace=circular_market.CircularEconomyMonopolyScenario)
+	monitor.configurator.setup_monitoring(marketplace=circular_market.CircularEconomyMonopoly)
 
 
 correct_setup_monitoring_testcases = [
-	({'marketplace': linear_market.ClassicScenario,
-		'agents': [(QLearningAgent, ['ClassicScenario_QLearningAgent.dat'])]}),
-	({'marketplace': circular_market.CircularEconomyRebuyPriceMonopolyScenario,
+	({'marketplace': linear_market.LinearEconomyDuopoly,
+		'agents': [(QLearningAgent, ['LinearEconomyDuopoly_QLearningAgent.dat'])]}),
+	({'marketplace': circular_market.CircularEconomyRebuyPriceMonopoly,
 		'agents': [(QLearningAgent,
-		['CircularEconomyRebuyPriceMonopolyScenario_QLearningAgent.dat'])]}),
-	({'marketplace': circular_market.CircularEconomyRebuyPriceMonopolyScenario,
+		['CircularEconomyRebuyPriceMonopoly_QLearningAgent.dat'])]}),
+	({'marketplace': circular_market.CircularEconomyRebuyPriceMonopoly,
 		'agents': [(actorcritic_agent.ContinuosActorCriticAgentEstimatingStd,
-		['actor_parametersCircularEconomyRebuyPriceMonopolyScenario_ContinuosActorCriticAgentEstimatingStd.dat'])]}),
-	({'marketplace': circular_market.CircularEconomyRebuyPriceOneCompetitor,
+		['actor_parametersCircularEconomyRebuyPriceMonopoly_ContinuosActorCriticAgentEstimatingStd.dat'])]}),
+	({'marketplace': circular_market.CircularEconomyRebuyPriceDuopoly,
 		'agents': [(actorcritic_agent.ContinuosActorCriticAgentFixedOneStd,
-		['actor_parametersCircularEconomyRebuyPriceOneCompetitor_ContinuosActorCriticAgentFixedOneStd.dat'])]}),
-	({'marketplace': circular_market.CircularEconomyRebuyPriceOneCompetitor,
+		['actor_parametersCircularEconomyRebuyPriceDuopoly_ContinuosActorCriticAgentFixedOneStd.dat'])]}),
+	({'marketplace': circular_market.CircularEconomyRebuyPriceDuopoly,
 		'agents': [(actorcritic_agent.DiscreteActorCriticAgent,
-		['actor_parametersCircularEconomyRebuyPriceOneCompetitor_DiscreteACACircularEconomyRebuy.dat'])]}),
-	({'marketplace': circular_market.CircularEconomyRebuyPriceOneCompetitor,
+		['actor_parametersCircularEconomyRebuyPriceDuopoly_DiscreteACACircularEconomyRebuy.dat'])]}),
+	({'marketplace': circular_market.CircularEconomyRebuyPriceDuopoly,
 		'agents': [(QLearningAgent,
-		['CircularEconomyRebuyPriceOneCompetitor_QLearningAgent.dat'])]})
+		['CircularEconomyRebuyPriceDuopoly_QLearningAgent.dat'])]})
 ]
 
 
@@ -169,7 +169,7 @@ incorrect_setup_monitoring_testcases = [
 	({'plot_interval': 0}, 'plot_interval must not be 0'),
 	({'episodes': 4, 'plot_interval': 5}, 'plot_interval must be <= episodes, or no plots can be generated.'),
 	({'marketplace': RuleBasedCEAgent}, 'the marketplace must be a subclass of SimMarket'),
-	({'marketplace': linear_market.ClassicScenario, 'agents': [(RuleBasedCEAgent, [])]},
+	({'marketplace': linear_market.LinearEconomyDuopoly, 'agents': [(RuleBasedCEAgent, [])]},
 		'If the market is linear, the agent must be linear too!'),
 	({'agents': [RuleBasedCEAgent]}, 'agents must be a list of tuples'),
 	({'agents': [[RuleBasedCEAgent, 1, '2']]}, 'agents must be a list of tuples'),
@@ -177,37 +177,37 @@ incorrect_setup_monitoring_testcases = [
 	({'agents': [FixedPriceLEAgent, FixedPriceCERebuyAgent]}, 'agents must be a list of tuples'),
 	({'agents': [(RuleBasedCEAgent, ['arg'], 'too_much')]},
 		'the list entries in agents must have size 2 ([agent_class, arguments])'),
-	({'agents': [(linear_market.ClassicScenario, [])]}, 'the first entry in each agent-tuple must be an agent class in `vendors.py`'),
-	({'agents': [(RuleBasedCEAgent, linear_market.ClassicScenario)]}, 'the second entry in each agent-tuple must be a list'),
+	({'agents': [(linear_market.LinearEconomyDuopoly, [])]}, 'the first entry in each agent-tuple must be an agent class in `vendors.py`'),
+	({'agents': [(RuleBasedCEAgent, linear_market.LinearEconomyDuopoly)]}, 'the second entry in each agent-tuple must be a list'),
 	({'agents': [(RuleBasedCEAgent, 'new_name')]}, 'the second entry in each agent-tuple must be a list'),
 	({'agents': [(RuleBasedCEAgent, []), (FixedPriceLEAgent, [])]},
 		'the agents must all be of the same type (Linear/Circular)'),
 	({'agents': [(RuleBasedCEAgent, []), (FixedPriceLEAgent, []), (FixedPriceCEAgent, [])]},
 		'the agents must all be of the same type (Linear/Circular)'),
-	({'marketplace': circular_market.CircularEconomyRebuyPriceMonopolyScenario, 'agents': [(FixedPriceLEAgent, [])]},
+	({'marketplace': circular_market.CircularEconomyRebuyPriceMonopoly, 'agents': [(FixedPriceLEAgent, [])]},
 		'If the market is circular, the agent must be circular too!'),
-	({'marketplace': linear_market.ClassicScenario, 'agents': [(FixedPriceCEAgent, [])]},
+	({'marketplace': linear_market.LinearEconomyDuopoly, 'agents': [(FixedPriceCEAgent, [])]},
 		'If the market is linear, the agent must be linear too!'),
 	({'subfolder_name': 1}, 'subfolder_name must be of type str'),
-	({'marketplace': linear_market.MultiCompetitorScenario,
+	({'marketplace': linear_market.LinearEconomyOligopoly,
 		'agents': [(QLearningAgent,
-		['CircularEconomyRebuyPriceMonopolyScenario_QLearningAgent.dat'])]},
+		['CircularEconomyRebuyPriceMonopoly_QLearningAgent.dat'])]},
 		'the modelfile is not compatible with the agent you tried to instantiate'),
-	({'marketplace': circular_market.CircularEconomyRebuyPriceMonopolyScenario,
+	({'marketplace': circular_market.CircularEconomyRebuyPriceMonopoly,
 		'agents': [(actorcritic_agent.ContinuosActorCriticAgentFixedOneStd,
-		['actor_parametersCircularEconomyRebuyPriceMonopolyScenario_ContinuosActorCriticAgentEstimatingStd.dat'])]},
+		['actor_parametersCircularEconomyRebuyPriceMonopoly_ContinuosActorCriticAgentEstimatingStd.dat'])]},
 		'the modelfile is not compatible with the agent you tried to instantiate'),
-	({'marketplace': circular_market.CircularEconomyRebuyPriceOneCompetitor,
+	({'marketplace': circular_market.CircularEconomyRebuyPriceDuopoly,
 		'agents': [(actorcritic_agent.DiscreteActorCriticAgent,
-		['actor_parametersCircularEconomyRebuyPriceOneCompetitor_ContinuosActorCriticAgentFixedOneStd.dat'])]},
+		['actor_parametersCircularEconomyRebuyPriceDuopoly_ContinuosActorCriticAgentFixedOneStd.dat'])]},
 		'the modelfile is not compatible with the agent you tried to instantiate'),
-	({'marketplace': circular_market.CircularEconomyMonopolyScenario,
+	({'marketplace': circular_market.CircularEconomyMonopoly,
 		'agents': [(actorcritic_agent.DiscreteActorCriticAgent,
-		['actor_parametersCircularEconomyRebuyPriceOneCompetitor_DiscreteACACircularEconomyRebuy.dat'])]},
+		['actor_parametersCircularEconomyRebuyPriceDuopoly_DiscreteACACircularEconomyRebuy.dat'])]},
 		'the modelfile is not compatible with the agent you tried to instantiate'),
-	({'marketplace': circular_market.CircularEconomyMonopolyScenario,
+	({'marketplace': circular_market.CircularEconomyMonopoly,
 		'agents': [(QLearningAgent,
-		['CircularEconomyRebuyPriceOneCompetitor_QLearningAgent.dat'])]},
+		['CircularEconomyRebuyPriceDuopoly_QLearningAgent.dat'])]},
 		'the modelfile is not compatible with the agent you tried to instantiate')
 ]
 
@@ -239,8 +239,8 @@ def test_incorrect_setup_monitoring(parameters, expected_message):
 
 
 incorrect_setup_monitoring_type_errors_testcases = [
-	{'marketplace': linear_market.ClassicScenario()},
-	{'agents': [(linear_market.ClassicScenario(), [])]},
+	{'marketplace': linear_market.LinearEconomyDuopoly()},
+	{'agents': [(linear_market.LinearEconomyDuopoly(), [])]},
 	{'agents': [(RuleBasedCEAgent(), [])]}
 ]
 

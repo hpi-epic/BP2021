@@ -15,16 +15,16 @@ abstract_agent_classes_testcases = [
 @pytest.mark.parametrize('agent', abstract_agent_classes_testcases)
 def test_abstract_agent_classes(agent):
 	with pytest.raises(TypeError) as error_message:
-		agent(linear_market.ClassicScenario)
+		agent(linear_market.LinearEconomyDuopoly)
 	assert 'Can\'t instantiate abstract class' in str(error_message.value)
 
 
 marketplace_classes = [
-	linear_market.ClassicScenario,
-	linear_market.MultiCompetitorScenario,
-	circular_market.CircularEconomyMonopolyScenario,
-	circular_market.CircularEconomyRebuyPriceMonopolyScenario,
-	circular_market.CircularEconomyRebuyPriceOneCompetitor
+	linear_market.LinearEconomyDuopoly,
+	linear_market.LinearEconomyOligopoly,
+	circular_market.CircularEconomyMonopoly,
+	circular_market.CircularEconomyRebuyPriceMonopoly,
+	circular_market.CircularEconomyRebuyPriceDuopoly
 ]
 
 
