@@ -22,7 +22,7 @@ COPY setup.cfg setup.cfg
 # How can we do this before actually having the code?
 # Because we install using -e a symbolic link is created, so any files we copy over into the ./recommerce
 # path later are automatically recognised as part of the package
-RUN pip install -e .
+RUN pip install -e . -f https://download.pytorch.org/whl/torch_stable.html
 
 # ...so now we can copy over the often-changed files *after* installing the dependencies, saving lots of time due to caching!
 COPY ./recommerce ./recommerce
