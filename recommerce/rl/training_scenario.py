@@ -54,7 +54,11 @@ def train_continuos_a2c_circular_economy_rebuy():
 
 
 def train_stable_baselines_ppo():
-	sbmodel.StableBaselinesPPO(circular_market.CircularEconomyRebuyPriceOneCompetitor(True)).train_agent()
+	sbmodel.StableBaselinesPPO(circular_market.CircularEconomyRebuyPriceOneCompetitor(True)).train_agent(training_steps=1000000)
+
+
+def train_stable_baselines_sac():
+	sbmodel.StableBaselinesSAC(circular_market.CircularEconomyRebuyPriceOneCompetitor(True)).train_agent()
 
 
 def train_from_config():
@@ -71,4 +75,4 @@ def main():
 
 
 if __name__ == '__main__':
-	main()
+	train_stable_baselines_sac()
