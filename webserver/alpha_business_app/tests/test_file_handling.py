@@ -1,6 +1,7 @@
 import os
 from unittest.mock import patch
 
+from django.contrib.auth.models import User
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.test import TestCase
 from django.test.client import RequestFactory
@@ -28,6 +29,9 @@ class MockedUploadedFile():
 
 
 class FileHandling(TestCase):
+
+	def setUp(self):
+		self.user = User.objects.create(username='test_user', password='top_secret')
 
 	def test_uploaded_file_is_not_json(self):
 		test_uploaded_file = MockedUploadedFile('test_file.jpg', b'this is a jpg')
@@ -71,7 +75,8 @@ class FileHandling(TestCase):
 		assert resulting_config.rl is not None
 
 		# test all sim_market values
-		sim_market_field_names = get_config_field_names(SimMarketConfig)
+		sim_market_field_names = ['max_storage', 'episode_length', 'max_price', 'max_quality', 'number_of_customers', 'production_price',
+			'storage_cost_per_product']
 		for name in sim_market_field_names:
 			if name != 'episode_length':
 				assert getattr(resulting_config.sim_market, name) is None
@@ -79,7 +84,8 @@ class FileHandling(TestCase):
 				assert 50 == getattr(resulting_config.sim_market, name)
 
 		# test all rl values
-		rl_field_names = get_config_field_names(RlConfig)
+		rl_field_names = ['gamma', 'batch_size', 'replay_size', 'learning_rate', 'sync_target_frames', 'replay_start_size',
+			'epsilon_decay_last_frame', 'epsilon_start', 'epsilon_final']
 		for name in rl_field_names:
 			if name != 'batch_size':
 				assert getattr(resulting_config.rl, name) is None
@@ -219,6 +225,7 @@ class FileHandling(TestCase):
 
 	def _setup_request(self) -> RequestFactory:
 		request = RequestFactory().post('upload.html', {'action': 'start', 'config_name': 'test'})
+		request.user = self.user
 		middleware = SessionMiddleware(request)
 		middleware.process_request(request)
 		request.session.save()

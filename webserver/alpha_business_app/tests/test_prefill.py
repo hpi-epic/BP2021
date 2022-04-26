@@ -1,5 +1,6 @@
 import copy
 
+from django.contrib.auth.models import User
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.test import TestCase
 from django.test.client import RequestFactory
@@ -14,6 +15,9 @@ from .constant_tests import EMPTY_STRUCTURE_CONFIG, EXAMPLE_HIERARCHY_DICT, EXAM
 
 
 class ConfigMergerTest(TestCase):
+
+	def setUp(self):
+		self.user = User.objects.create(username='test_user', password='top_secret')
 
 	# def test_no_configs_selected(self):
 	# 	request = self._setup_request({})
@@ -260,6 +264,7 @@ class ConfigMergerTest(TestCase):
 
 	def _setup_request(self, arguments: dict) -> RequestFactory:
 		request = RequestFactory().post('configurator.html', {'action': 'pre-fill', **arguments})
+		request.user = self.user
 		middleware = SessionMiddleware(request)
 		middleware.process_request(request)
 		request.session.save()

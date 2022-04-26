@@ -172,14 +172,6 @@ class SimMarketConfig(models.Model):
 		}
 
 
-def get_config_field_names(model):
-	ret = [f.name for f in model._meta.fields]
-	# the id is auto generated and we do not use it for our config.
-	if 'id' in ret:
-		ret.remove('id')
-	return ret
-
-
 def capitalize(word: str) -> str:
 	return word.upper() if len(word) <= 1 else word[0].upper() + word[1:]
 
