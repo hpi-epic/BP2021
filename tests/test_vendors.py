@@ -215,8 +215,7 @@ def test_clamp_price(price):
 	assert 0 <= circular_vendors.RuleBasedCEAgent()._clamp_price(price, 0, 9) <= 9
 
 
-def test_get_competitors_prices():
-	# test function for CircularEconomyRebuyPrice
+def test_get_competitors_prices_with_rebuy():
 	observation = random_offer_circular_oligopoly(is_rebuy_economy=True)
 	competitors_refurbished_prices, competitors_new_prices, competitors_rebuy_prices = \
 		circular_vendors.RuleBasedCERebuyAgentCompetitive()._get_competitor_prices(observation=observation, is_rebuy_economy=True)
@@ -226,7 +225,8 @@ def test_get_competitors_prices():
 		assert competitors_new_prices[competitor] == observation[(competitor * 4) + 3]
 		assert competitors_rebuy_prices[competitor] == observation[(competitor * 4) + 4]
 
-	# test function for CircularEconomy
+
+def test_get_competitors_prices():
 	observation = random_offer_circular_oligopoly(is_rebuy_economy=False)
 	competitors_refurbished_prices, competitors_new_prices = \
 		circular_vendors.RuleBasedCEAgent()._get_competitor_prices(observation=observation, is_rebuy_economy=False)
