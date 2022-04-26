@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Welcome{% endblock title %}
 {% block content %}
-    <h1>Welcome to the Recommerce simulation</i></h1>
+    <h1>Hello, {{ user.username|default:'Guest' }} Welcome to the Recommerce simulation</i></h1>
     <div class="row p-2">
         <div class="col-6">
             <div class="card" style="width: 100%">

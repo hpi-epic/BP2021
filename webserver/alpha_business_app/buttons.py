@@ -40,7 +40,7 @@ class ButtonHandler():
 		self.data = data
 		self.message = [None, None]
 		self.wanted_key = None
-		self.all_containers = Container.objects.all()
+		self.all_containers = Container.objects.all().filter(user=request.user)
 		self.wanted_config = wanted_config
 
 		if request.method == 'POST':
@@ -102,7 +102,7 @@ class ButtonHandler():
 		Returns:
 			dict: a dictionary of all_containers, a container, data and the error or success message.
 		"""
-		return {'all_saved_containers': self.all_containers,
+		return {'all_saved_containers': self.all_containers.filter(user=self.request.user),
 				'container': self.wanted_container,
 				'data': self.data,
 				**self._message_for_view()}
@@ -124,9 +124,9 @@ class ButtonHandler():
 			dict: contains all current configuration objects, the current config and this config as dict if it exists.
 		"""
 		return {
-			'all_configurations': Config.objects.all(),
-			'config': self.wanted_config,
-			'config_dict': self.wanted_config.as_dict() if self.wanted_config else None,
+			'all_configurations': Config.objects.all().filter(user=self.request.user),
+			# 'config': self.wanted_config,
+			# 'config_dict': self.wanted_config.as_dict() if self.wanted_config else None,
 			**self._params_for_selection()
 			}
 
@@ -151,7 +151,7 @@ class ButtonHandler():
 		Returns:
 			HttpResponse: a default rendering with default values, some might be set by the different functions.
 		"""
-		self.all_containers = Container.objects.all()
+		self.all_containers = Container.objects.all().filter(user=self.request.user)
 		return render(self.request, self.view_to_render, self._default_params_for_view())
 
 	def _render_without_archived(self) -> HttpResponse:
@@ -161,7 +161,7 @@ class ButtonHandler():
 		Returns:
 			HttpResponse: a default rendering without all archived containers.
 		"""
-		self.all_containers = Container.objects.all().exclude(health_status='archived')
+		self.all_containers = Container.objects.all().exclude(health_status='archived').filter(user=self.request.user)
 		return render(self.request, self.view_to_render, self._default_params_for_view())
 
 	def _render_configuration(self) -> HttpResponse:
@@ -172,6 +172,23 @@ class ButtonHandler():
 			HttpResponse: a rendering for the configurator with all configuration parameters.
 		"""
 		return render(self.request, self.view_to_render, {**self._params_for_config(), **self._message_for_view()})
+
+	def _render_prefill(self, pre_fill_dict: dict, error_dict: dict) -> HttpResponse:
+		"""
+		This will return a rendering for `self.view` with params for selection a prefill dict and the error dict
+
+		Args:
+			pre_fill_dict (dict): dictioary of prefilled values for the configuration form
+			error_dict (dict): errors which came up when rendering
+
+		Returns:
+			HttpResponse: _description_
+		"""
+		return render(self.request, self.view_to_render,
+			{'prefill': pre_fill_dict,
+			'error_dict': error_dict,
+			'all_configurations': Config.objects.all().filter(user=self.request.user),
+			**self._params_for_selection()})
 
 	def _delete_container(self) -> HttpResponse:
 		"""
@@ -270,8 +287,7 @@ class ButtonHandler():
 		# set an id for each agent (necessary for view)
 		for agent_index in range(len(final_dict['environment']['agents'])):
 			final_dict['environment']['agents'][agent_index]['id'] = agent_index
-		return render(self.request, self.view_to_render,
-			{'prefill': final_dict, 'error_dict': error_dict, 'all_configurations': Config.objects.all(), **self._params_for_selection()})
+		return self._render_prefill(final_dict, error_dict)
 
 	def _remove(self) -> HttpResponse:
 		"""
@@ -306,7 +322,7 @@ class ButtonHandler():
 		if response.ok():
 			# put container into database
 			container_name = post_request['experiment_name'][0]
-			was_successful, error_container_ids, data = parse_response_to_database(response, config_dict, container_name)
+			was_successful, error_container_ids, data = parse_response_to_database(response, config_dict, container_name, self.request.user)
 			if not was_successful:
 				self.message = ['error', data]
 				for error_container_id in error_container_ids:

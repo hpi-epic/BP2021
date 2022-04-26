@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from django.db import models
 
 
@@ -5,6 +6,7 @@ class Config(models.Model):
 	environment = models.ForeignKey('EnvironmentConfig', on_delete=models.CASCADE, null=True)
 	hyperparameter = models.ForeignKey('HyperparameterConfig', on_delete=models.CASCADE, null=True)
 	name = models.CharField(max_length=100, editable=False, default='')
+	user = models.ForeignKey(User, on_delete=models.CASCADE, null=True,)
 
 	def as_dict(self) -> dict:
 		environment_dict = self.environment.as_dict() if self.environment is not None else None
