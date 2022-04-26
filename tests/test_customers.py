@@ -11,7 +11,7 @@ from recommerce.market.linear.linear_customers import CustomerLinear
 # Test the Customer parent class, i.e. make sure it cannot be used
 def test_customer_parent_class():
 	with pytest.raises(NotImplementedError) as assertion_message:
-		customer.Customer.generate_purchase_probabilities_from_offer(CustomerLinear, *random_offer(linear_market.ClassicScenario))
+		customer.Customer.generate_purchase_probabilities_from_offer(CustomerLinear, *random_offer(linear_market.LinearEconomyDuopoly))
 	assert 'This method is abstract. Use a subclass' in str(assertion_message.value)
 
 
@@ -42,10 +42,10 @@ def test_generate_purchase_probabilities_from_offer(customer, common_state, vend
 
 
 customer_action_range_testcases = [
-	(CustomerLinear, linear_market.ClassicScenario),
-	(CustomerLinear, linear_market.MultiCompetitorScenario),
-	(CustomerCircular, circular_market.CircularEconomyMonopolyScenario),
-	(CustomerCircular, circular_market.CircularEconomyRebuyPriceMonopolyScenario)
+	(CustomerLinear, linear_market.LinearEconomyDuopoly),
+	(CustomerLinear, linear_market.LinearEconomyOligopoly),
+	(CustomerCircular, circular_market.CircularEconomyMonopoly),
+	(CustomerCircular, circular_market.CircularEconomyRebuyPriceMonopoly)
 ]
 
 

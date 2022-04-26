@@ -32,7 +32,7 @@ class ConfigParserTest(TestCase):
 		'environment': {
 			'task': 'training',
 			'enable_live_draw': False,
-			'marketplace': 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
+			'marketplace': 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopoly',
 			'agents': [
 				{
 					'name': 'Rule_Based Agent',
@@ -54,7 +54,7 @@ class ConfigParserTest(TestCase):
 			'environment-task': ['training'],
 			'environment-episodes': [''],
 			'environment-plot_interval': [''],
-			'environment-marketplace': ['recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario'],
+			'environment-marketplace': ['recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopoly'],
 			'environment-agents-name': ['Rule_Based Agent'],
 			'environment-agents-agent_class': ['recommerce.market.circular.circular_vendors.RuleBasedCERebuyAgent'],
 			'environment-agents-argument': [''],
@@ -113,7 +113,7 @@ class ConfigParserTest(TestCase):
 			'episodes': [''],
 			'plot_interval': [''],
 			'enable_live_draw': [''],
-			'marketplace': ['recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario'],
+			'marketplace': ['recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopoly'],
 			'agents-name': ['Rule_Based Agent'],
 			'agents-agent_class': ['recommerce.market.circular.circular_vendors.RuleBasedCERebuyAgent'],
 			'agents-argument': [''],
@@ -198,7 +198,7 @@ class ConfigParserTest(TestCase):
 		assert environment_config.enable_live_draw is False
 		assert environment_config.episodes is None
 		assert environment_config.plot_interval is None
-		assert 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario' == environment_config.marketplace
+		assert 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopoly' == environment_config.marketplace
 		assert environment_config.agents is not None
 
 		environment_agents: AgentsConfig = environment_config.agents
