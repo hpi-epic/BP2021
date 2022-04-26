@@ -40,6 +40,13 @@
                                 <a class="nav-item nav-link mr-1"></a>
                                 {% include "api_buttons/api_health_button.html" %}
                             </li>
+                            <li class="nav-item d-flex ms-auto">
+                                {% if user.is_authenticated %}
+                                    <a class="nav-item nav-link mr-1" href="{% url 'logout' %}">Hello {{user}}, Logout</a>
+                                {% else %}
+                                    <a class="nav-item nav-link mr-1" href="{% url 'login' %}">Login</a>
+                                {% endif %}
+                            </li>
                         </ul>
                     </div>
                 </div>

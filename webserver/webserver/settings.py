@@ -12,9 +12,6 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 import os
 from pathlib import Path
 
-#import mimetypes
-#mimetypes.add_type("text/css", ".css", True)
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -34,10 +31,14 @@ CSRF_COOKIE_SECURE = True
 ALLOWED_HOSTS = ['*']
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
+# Users
+LOGIN_REDIRECT_URL = 'index'
+LOGOUT_REDIRECT_URL = 'index'
 
 # Application definition
 
 INSTALLED_APPS = [
+	'users',
 	'alpha_business_app',
 	'django.contrib.admin',
 	'django.contrib.auth',
