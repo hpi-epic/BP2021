@@ -16,6 +16,8 @@ from recommerce.configuration.path_manager import PathManager
 from recommerce.market.sim_market import SimMarket
 from recommerce.monitoring.agent_monitoring.am_evaluation import Evaluator
 from recommerce.monitoring.agent_monitoring.am_monitoring import Monitor
+from recommerce.rl.actorcritic.actorcritic_agent import ActorCriticAgent
+from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
 from recommerce.rl.reinforcement_learning_agent import ReinforcementLearningAgent
 
 
@@ -88,8 +90,9 @@ class RecommerceCallback(BaseCallback):
 			bool: True should be returned. False will be interpreted as error.
 		"""
 		assert (finished_episodes is None) == (mean_return is None), 'finished_episodes must be exactly None if mean_return is None'
-		info = self.locals['infos'][0]
-		self.all_dicts.append(info)
+		if not issubclass(self.agent_class, QLearningAgent) and not issubclass(self.agent_class, ActorCriticAgent):
+			info = self.locals['infos'][0]
+			self.all_dicts.append(info)
 		self.tqdm_instance.update()
 		if finished_episodes is None:
 			finished_episodes = self.num_timesteps // config.episode_length
