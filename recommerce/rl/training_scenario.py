@@ -75,4 +75,4 @@ def main():
 
 
 if __name__ == '__main__':
-	train_stable_baselines_sac()
+	main()

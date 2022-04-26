@@ -90,9 +90,12 @@ class RecommerceCallback(BaseCallback):
 			bool: True should be returned. False will be interpreted as error.
 		"""
 		assert (finished_episodes is None) == (mean_return is None), 'finished_episodes must be exactly None if mean_return is None'
+
+		# This means if it is a subclass of StableBaselinesAgent. Unfortunately, circular imports are not possible.
 		if not issubclass(self.agent_class, QLearningAgent) and not issubclass(self.agent_class, ActorCriticAgent):
 			info = self.locals['infos'][0]
 			self.all_dicts.append(info)
+
 		self.tqdm_instance.update()
 		if finished_episodes is None:
 			finished_episodes = self.num_timesteps // config.episode_length

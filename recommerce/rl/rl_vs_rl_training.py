@@ -29,7 +29,7 @@ def train_rl_vs_rl():
 	plt.plot(smoothed_return_estimation[0], label=agents[0].name)
 	plt.plot(smoothed_return_estimation[1], label=agents[1].name)
 	plt.legend()
-	plt.show()
+	plt.show()  # Save the figure later in a nice folder.
 
 
 if __name__ == '__main__':
