@@ -25,7 +25,13 @@ class RecommerceCallback(BaseCallback):
 	This check happens every episode.
 	After 'iteration_length' episodes, the best model in that time span is saved to disk.
 	"""
-	def __init__(self, agent_class, marketplace_class, training_steps=10000, iteration_length=500, file_ending='zip', signature='train'):
+	def __init__(
+			self, agent_class, marketplace_class,
+			training_steps=10000,
+			iteration_length=500,
+			file_ending='zip',
+			signature='train',
+			analyze_after_training=True):
 		assert issubclass(agent_class, ReinforcementLearningAgent)
 		assert issubclass(marketplace_class, SimMarket)
 		assert isinstance(training_steps, int) and training_steps > 0
@@ -41,6 +47,8 @@ class RecommerceCallback(BaseCallback):
 		self.tqdm_instance = trange(training_steps)
 		self.saved_parameter_paths = []
 		self.last_finished_episode = 0
+		self.analyze_after_training = analyze_after_training
+		self.all_dicts = []
 		signal.signal(signal.SIGINT, self._signal_handler)
 
 		self.initialize_io_related()
@@ -80,6 +88,8 @@ class RecommerceCallback(BaseCallback):
 			bool: True should be returned. False will be interpreted as error.
 		"""
 		assert (finished_episodes is None) == (mean_return is None), 'finished_episodes must be exactly None if mean_return is None'
+		info = self.locals['infos']
+		self.all_dicts.append(info)
 		self.tqdm_instance.update()
 		if finished_episodes is None:
 			finished_episodes = self.num_timesteps // config.episode_length
@@ -128,13 +138,14 @@ class RecommerceCallback(BaseCallback):
 		monitor = Monitor()
 		agent_list = [(self.agent_class, [parameter_path]) for parameter_path in self.saved_parameter_paths]
 
-		# The next line is a bit hacky. We have to provide if the marketplace is continuos or not.
-		# Only Stable Baselines agents use continuous actions at the moment. And only Stable Baselines agents have the attribute env.
-		monitor.configurator.setup_monitoring(False, 250, 250, self.marketplace_class, agent_list,
-			support_continuous_action_space=hasattr(self.model, 'env'))
-		rewards = monitor.run_marketplace()
-		episode_numbers = [int(parameter_path[-9:][:5]) for parameter_path in self.saved_parameter_paths]
-		Evaluator(monitor.configurator).evaluate_session(rewards, episode_numbers)
+		if self.analyze_after_training:
+			# The next line is a bit hacky. We have to provide if the marketplace is continuos or not.
+			# Only Stable Baselines agents use continuous actions at the moment. And only Stable Baselines agents have the attribute env.
+			monitor.configurator.setup_monitoring(False, 250, 250, self.marketplace_class, agent_list,
+				support_continuous_action_space=hasattr(self.model, 'env'))
+			rewards = monitor.run_marketplace()
+			episode_numbers = [int(parameter_path[-9:][:5]) for parameter_path in self.saved_parameter_paths]
+			Evaluator(monitor.configurator).evaluate_session(rewards, episode_numbers)
 
 	def save_parameters(self, finished_episodes: int):
 		assert isinstance(finished_episodes, int)
