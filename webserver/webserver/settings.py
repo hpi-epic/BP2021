@@ -24,6 +24,8 @@ SECRET_KEY = os.environ['SECRET_KEY']  # '*&qf$4_z-z(0+f@ngx++bjx7i-v-^6lj9wd^q8
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
 
 ALLOWED_HOSTS = ['*']
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
