@@ -5,7 +5,7 @@ import requests
 from .api_response import APIResponse
 from .models.container import update_container
 
-DOCKER_API = 'http://192.168.159.134:8000'  # remember to include the port and the protocol, i.e. http://
+DOCKER_API = 'http://vm-midea03.eaalab.hpi.uni-potsdam.de:8000'  # remember to include the port and the protocol, i.e. http://
 
 
 def send_get_request(wanted_action: str, container_id: str) -> APIResponse:
