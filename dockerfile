@@ -3,9 +3,9 @@ FROM nvidia/cuda:11.3.0-base-ubuntu20.04
 ENV DEBIAN_FRONTEND=noninteractiv
 RUN apt update && apt install -y --no-install-recommends python3 python3-pip \
 	&& ln -sf python3 /usr/bin/python \
-    && ln -sf pip3 /usr/bin/pip \
-    && pip install --upgrade pip \
-    && pip install wheel setuptool
+	&& ln -sf pip3 /usr/bin/pip \
+	&& pip install --upgrade pip \
+	&& pip install wheel setuptools
 
 WORKDIR /app
 EXPOSE 6006
