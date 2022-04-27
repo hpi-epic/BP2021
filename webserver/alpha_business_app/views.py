@@ -100,6 +100,8 @@ def agent(request):
 
 
 def api_availability(request):
+	if not request.user.is_authenticated:
+		return render(request, 'api_buttons/api_health_button.html')
 	try:
 		api_is_available = requests.get(f'{DOCKER_API}/api_health', timeout=1)
 	except requests.exceptions.RequestException:
