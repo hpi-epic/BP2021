@@ -13,12 +13,12 @@ class Evaluator():
 	def __init__(self, configuration: am_configuration.Configurator):
 		self.configurator = configuration
 
-	def evaluate_session(self, rewards: list, episode_numbers: list = None):
+	def evaluate_session(self, watchers: list, episode_numbers: list = None):
 		"""
 		Print statistics for monitored agents and create statistics-plots.
 
 		Args:
-			rewards (list): The rewards that should be evaluated. Contains a list per agent.
+			watchers (list): The watchers with all data to be evaluated. Contains a watcher per agent.
 			episode_numbers (list of int): The training stages the empirical distributions belong to.
 			If it is None, a prior functionality is used.
 		"""
@@ -26,28 +26,33 @@ class Evaluator():
 		# You should be able to evaluate sessions as before without giving episode_numbers and
 		# to analyze agents belonging to different training stages.
 		# This code should be improved on further issues related to monitoring!
-		if episode_numbers is not None:
-			assert len(rewards) == len(episode_numbers), 'the len of the rewards and the episode numbers must be the same'
-			for single_rewards, episode in zip(rewards, episode_numbers):
-				print()
-				print(f'Statistics for episode {episode}')
-				print(f'The average reward over {episode} episodes is: {np.mean(single_rewards)}')
-				print(f'The median reward over {episode} episodes is: {np.median(single_rewards)}')
-				print(f'The maximum reward over {episode} episodes is: {np.max(single_rewards)}')
-				print(f'The minimum reward over {episode} episodes is: {np.min(single_rewards)}')
-		else:
-			for i in range(len(rewards)):
-				print()
-				print(f'Statistics for agent: {self.configurator.agents[i].name}')
-				print(f'The average reward over {self.configurator.episodes} episodes is: {np.mean(rewards[i])}')
-				print(f'The median reward over {self.configurator.episodes} episodes is: {np.median(rewards[i])}')
-				print(f'The maximum reward over {self.configurator.episodes} episodes is: {np.max(rewards[i])}')
-				print(f'The minimum reward over {self.configurator.episodes} episodes is: {np.min(rewards[i])}')
+		for i in range(watchers[0].get_number_of_vendors()):
+			rewards = [watcher.get_all_samples_of_property('profits/all', i) for watcher in watchers]
+			if episode_numbers is not None:
+				assert len(rewards) == len(episode_numbers), 'the len of the rewards and the episode numbers must be the same'
+				for single_rewards, episode in zip(rewards, episode_numbers):
+					print()
+					print(f'Statistics for episode {episode} and vendor {i}')
+					print(f'The average reward is: {np.mean(single_rewards)}')
+					print(f'The median reward is: {np.median(single_rewards)}')
+					print(f'The maximum reward is: {np.max(single_rewards)}')
+					print(f'The minimum reward is: {np.min(single_rewards)}')
+			else:
+				for i in range(len(rewards)):
+					print()
+					print(f'Statistics for agent: {self.configurator.agents[i].name} and vendor: {i}')
+					print(f'The average reward is: {np.mean(rewards[i])}')
+					print(f'The median reward is: {np.median(rewards[i])}')
+					print(f'The maximum reward is: {np.max(rewards[i])}')
+					print(f'The minimum reward is: {np.min(rewards[i])}')
 
 		print()
 		self._create_statistics_plots(rewards)
 		if episode_numbers is not None:
-			self._create_violin_plot(rewards, episode_numbers)
+			for property_name in ['profits/all']:
+				for i in range(watchers[0].get_number_of_vendors()):
+					samples = [watcher.get_all_samples_of_property(property_name, i) for watcher in watchers]
+					self._create_violin_plot(samples, episode_numbers, f'Progress of {property_name} of agent {i}')
 		print(f'All plots were saved to {os.path.abspath(self.configurator.folder_path)}')
 
 	# visualize metrics
@@ -157,7 +162,7 @@ class Evaluator():
 		plt.grid(True)
 		plt.savefig(fname=os.path.join(self.configurator.get_folder(), filename))
 
-	def _create_violin_plot(self, all_rewards, episode_numbers):
+	def _create_violin_plot(self, all_rewards, episode_numbers, title='Add a title for this violin plot'):
 		"""
 		This method generates a violinplot to visualize the training progress of the agent.
 		Provide the empirical distributions and it will not just show the mean, min and max,
@@ -178,10 +183,10 @@ class Evaluator():
 
 		plt.clf()
 		plt.violinplot(all_rewards, episode_numbers, showmeans=True, widths=450)
-		plt.title('Learning Progress Of The Agent')
+		plt.title(title)
 		plt.xlabel('Learned Episodes')
 		plt.ylabel('Reward Density')
-		savepath = os.path.join(self.configurator.get_folder(), 'agent_learning_process_violinplot.svg')
+		savepath = os.path.join(self.configurator.get_folder(), title.replace(' ', '_').replace('/', '_') + '.svg')
 		plt.savefig(fname=savepath)
 
 

@@ -68,3 +68,6 @@ class Watcher:
 	def get_progress_values_of_property(self, property_name: str, vendor: int, look_back: int = 100) -> list:
 		progress_values = [mydict[property_name][f'vendor_{vendor}'] for mydict in self.all_dicts]
 		return [np.mean(progress_values[max(i-look_back, 0):i]) for i in range(len(progress_values))]
+
+	def get_number_of_vendors(self) -> int:
+		return len(self.all_dicts[0]['profits/all'])

@@ -119,8 +119,8 @@ def add_content_of_two_dicts(dict1, dict2) -> dict:
 		if isinstance(dict1[key], dict):
 			newdict[key] = add_content_of_two_dicts(dict1[key], dict2[key])
 		else:
-			assert isinstance(dict1[key], (int, float)), 'dict1 should only contain numbers (int or float)'
-			assert isinstance(dict2[key], (int, float)), 'dict2 should only contain numbers (int or float)'
+			assert isinstance(dict1[key], (int, float, np.float32)), f'dict1 should only contain numbers (int or float): {dict1}'
+			assert isinstance(dict2[key], (int, float, np.float32)), f'dict2 should only contain numbers (int or float): {dict2}'
 			newdict[key] = dict1[key] + dict2[key]
 	return newdict
 

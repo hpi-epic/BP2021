@@ -32,9 +32,9 @@ def test_run_marketplace():
 		patch('recommerce.monitoring.agent_monitoring.am_configuration.os.makedirs'), \
 		patch('recommerce.monitoring.agent_monitoring.am_configuration.os.path.exists') as exists_mock:
 		exists_mock.return_value = True
-		agent_rewards = monitor.run_marketplace()
-		assert 1 == len(agent_rewards)
-		assert monitor.configurator.episodes == len(agent_rewards[0])
+		agent_watchers = monitor.run_marketplace()
+		assert 1 == len(agent_watchers)
+		assert monitor.configurator.episodes == len(agent_watchers[0].all_dicts)
 
 
 def test_run_monitoring_session():
