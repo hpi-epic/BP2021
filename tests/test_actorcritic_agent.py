@@ -90,5 +90,5 @@ def test_agents_generate_valid_actions(agent_class, market_class):
 	assert isinstance(reward, float)
 	assert isinstance(done, bool)
 	assert isinstance(info, dict)
-	critic_output = agent.critic_net(torch.from_numpy(next_state))
+	critic_output = agent.critic_net(torch.from_numpy(next_state).to(agent.device))
 	assert isinstance(critic_output.to('cpu').item(), float)
