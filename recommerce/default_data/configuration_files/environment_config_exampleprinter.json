@@ -1,11 +1,11 @@
 {
 	"task": "exampleprinter",
-	"marketplace": "recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceOneCompetitor",
+	"marketplace": "recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceDuopoly",
 	"agents": [
 		{
 			"name": "CE Rebuy Agent (QLearning)",
 			"agent_class": "recommerce.rl.q_learning.q_learning_agent.QLearningAgent",
-			"argument": "CircularEconomyRebuyPriceOneCompetitor_QLearningAgent.dat"
+			"argument": "CircularEconomyRebuyPriceDuopoly_QLearningAgent.dat"
 		}
 	]
 }

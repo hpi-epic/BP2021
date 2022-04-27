@@ -80,13 +80,13 @@ class LinearEconomy(SimMarket, ABC):
 		return np.array([])
 
 
-class ClassicScenario(LinearEconomy):
+class LinearEconomyDuopoly(LinearEconomy):
 
 	def _get_competitor_list(self) -> list:
 		return [CompetitorLinearRatio1()]
 
 
-class MultiCompetitorScenario(LinearEconomy):
+class LinearEconomyOligopoly(LinearEconomy):
 
 	def _get_competitor_list(self) -> list:
 		return [

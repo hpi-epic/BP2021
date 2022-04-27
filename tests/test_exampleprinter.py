@@ -17,20 +17,20 @@ parameters_path = os.path.join('tests', 'test_data')
 
 def test_setup_exampleprinter():
 	printer = ExamplePrinter()
-	printer.setup_exampleprinter(marketplace=linear_market.ClassicScenario(), agent=FixedPriceLEAgent())
-	assert isinstance(printer.marketplace, linear_market.ClassicScenario)
+	printer.setup_exampleprinter(marketplace=linear_market.LinearEconomyDuopoly(), agent=FixedPriceLEAgent())
+	assert isinstance(printer.marketplace, linear_market.LinearEconomyDuopoly)
 	assert isinstance(printer.agent, FixedPriceLEAgent)
 
 
 full_episode_testcases_rule_based = [
-	(linear_market.ClassicScenario(), FixedPriceLEAgent()),
-	(linear_market.MultiCompetitorScenario(), FixedPriceLEAgent()),
-	(circular_market.CircularEconomyMonopolyScenario(), circular_vendors.FixedPriceCEAgent()),
-	(circular_market.CircularEconomyMonopolyScenario(), circular_vendors.RuleBasedCEAgent()),
-	(circular_market.CircularEconomyRebuyPriceMonopolyScenario(), circular_vendors.FixedPriceCERebuyAgent()),
-	(circular_market.CircularEconomyRebuyPriceMonopolyScenario(), circular_vendors.RuleBasedCERebuyAgent()),
-	(circular_market.CircularEconomyRebuyPriceOneCompetitor(), circular_vendors.FixedPriceCERebuyAgent()),
-	(circular_market.CircularEconomyRebuyPriceOneCompetitor(), circular_vendors.RuleBasedCERebuyAgent())
+	(linear_market.LinearEconomyDuopoly(), FixedPriceLEAgent()),
+	(linear_market.LinearEconomyOligopoly(), FixedPriceLEAgent()),
+	(circular_market.CircularEconomyMonopoly(), circular_vendors.FixedPriceCEAgent()),
+	(circular_market.CircularEconomyMonopoly(), circular_vendors.RuleBasedCEAgent()),
+	(circular_market.CircularEconomyRebuyPriceMonopoly(), circular_vendors.FixedPriceCERebuyAgent()),
+	(circular_market.CircularEconomyRebuyPriceMonopoly(), circular_vendors.RuleBasedCERebuyAgent()),
+	(circular_market.CircularEconomyRebuyPriceDuopoly(), circular_vendors.FixedPriceCERebuyAgent()),
+	(circular_market.CircularEconomyRebuyPriceDuopoly(), circular_vendors.RuleBasedCERebuyAgent())
 ]
 
 
@@ -44,17 +44,17 @@ def test_full_episode_rule_based(marketplace, agent):
 
 
 full_episode_testcases_rl_agent = [
-	(linear_market.ClassicScenario(), QLearningAgent, 'ClassicScenario_QLearningAgent.dat'),
-	(circular_market.CircularEconomyMonopolyScenario(), QLearningAgent,
-		'CircularEconomyMonopolyScenario_QLearningAgent.dat'),
-	(circular_market.CircularEconomyRebuyPriceMonopolyScenario(), QLearningAgent,
-		'CircularEconomyRebuyPriceMonopolyScenario_QLearningAgent.dat'),
-	(circular_market.CircularEconomyRebuyPriceOneCompetitor(), QLearningAgent,
-		'CircularEconomyRebuyPriceOneCompetitor_QLearningAgent.dat'),
-	(circular_market.CircularEconomyRebuyPriceOneCompetitor(), ContinuosActorCriticAgentFixedOneStd,
-		'actor_parametersCircularEconomyRebuyPriceOneCompetitor_ContinuosActorCriticAgentFixedOneStd.dat'),
-	(circular_market.CircularEconomyRebuyPriceOneCompetitor(), DiscreteActorCriticAgent,
-		'actor_parametersCircularEconomyRebuyPriceOneCompetitor_DiscreteACACircularEconomyRebuy.dat')
+	(linear_market.LinearEconomyDuopoly(), QLearningAgent, 'LinearEconomyDuopoly_QLearningAgent.dat'),
+	(circular_market.CircularEconomyMonopoly(), QLearningAgent,
+		'CircularEconomyMonopoly_QLearningAgent.dat'),
+	(circular_market.CircularEconomyRebuyPriceMonopoly(), QLearningAgent,
+		'CircularEconomyRebuyPriceMonopoly_QLearningAgent.dat'),
+	(circular_market.CircularEconomyRebuyPriceDuopoly(), QLearningAgent,
+		'CircularEconomyRebuyPriceDuopoly_QLearningAgent.dat'),
+	(circular_market.CircularEconomyRebuyPriceDuopoly(), ContinuosActorCriticAgentFixedOneStd,
+		'actor_parametersCircularEconomyRebuyPriceDuopoly_ContinuosActorCriticAgentFixedOneStd.dat'),
+	(circular_market.CircularEconomyRebuyPriceDuopoly(), DiscreteActorCriticAgent,
+		'actor_parametersCircularEconomyRebuyPriceDuopoly_DiscreteACACircularEconomyRebuy.dat')
 ]
 
 

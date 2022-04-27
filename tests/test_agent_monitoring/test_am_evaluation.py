@@ -22,8 +22,8 @@ def setup_function(function):
 		enable_live_draw=False,
 		episodes=50,
 		plot_interval=10,
-		marketplace=circular_market.CircularEconomyMonopolyScenario,
-		agents=[(QLearningAgent, [os.path.join(PathManager.data_path, 'CircularEconomyMonopolyScenario_QLearningAgent.dat')])],
+		marketplace=circular_market.CircularEconomyMonopoly,
+		agents=[(QLearningAgent, [os.path.join(PathManager.data_path, 'CircularEconomyMonopoly_QLearningAgent.dat')])],
 		subfolder_name=f'test_plots_{function.__name__}')
 
 

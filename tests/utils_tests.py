@@ -101,7 +101,7 @@ def create_environment_mock_dict(task: str = 'agent_monitoring',
 	enable_live_draw: bool = False,
 	episodes: int = 10,
 	plot_interval: int = 5,
-	marketplace: str = 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
+	marketplace: str = 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopoly',
 	agents: dict = None) -> dict:
 	"""
 	Create a mock dictionary in the format of an environment_config.json.
@@ -112,7 +112,7 @@ def create_environment_mock_dict(task: str = 'agent_monitoring',
 		episodes (int, optional): How many episodes to run. Defaults to 10.
 		plot_interval (int, optional): How often plots should be drawn. Defaults to 5.
 		marketplace (str, optional): What marketplace to run on.
-			Defaults to "recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario".
+			Defaults to "recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopoly".
 		agents (dict, optional): What agents to use. Defaults to
 			[{'name': 'Fixed CE Rebuy Agent', 'agent_class': 'recommerce.market.circular.circular_vendors.RuleBasedCERebuyAgent', 'argument': ''}].
 
