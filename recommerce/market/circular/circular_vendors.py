@@ -8,7 +8,7 @@ from recommerce.market.vendors import Agent, FixedPriceAgent, HumanPlayer, RuleB
 
 
 class CircularAgent(Agent, ABC):
-	def _clamp_price(self, price, min_price=0, max_price=config.max_price - 1) -> int:
+	def _clamp_price(self, price, min_price=0, max_price=self.config.max_price - 1) -> int:
 		price = int(price)
 		price = max(price, min_price)
 		price = min(price, max_price)

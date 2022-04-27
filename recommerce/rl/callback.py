@@ -11,7 +11,7 @@ from tqdm import tqdm
 from tqdm.auto import trange
 
 import recommerce.configuration.utils as ut
-from recommerce.configuration.hyperparameter_config import config
+from recommerce.configuration.hyperparameter_config import HyperparameterConfig
 from recommerce.configuration.path_manager import PathManager
 from recommerce.market.sim_market import SimMarket
 from recommerce.monitoring.agent_monitoring.am_evaluation import Evaluator
@@ -25,7 +25,7 @@ class RecommerceCallback(BaseCallback):
 	This check happens every episode.
 	After 'iteration_length' episodes, the best model in that time span is saved to disk.
 	"""
-	def __init__(self, agent_class, marketplace_class, training_steps=10000, iteration_length=500, file_ending='zip', signature='train'):
+	def __init__(self, agent_class, marketplace_class, config: HyperparameterConfig, training_steps=10000, iteration_length=500, file_ending='zip', signature='train'):
 		assert issubclass(agent_class, ReinforcementLearningAgent)
 		assert issubclass(marketplace_class, SimMarket)
 		assert isinstance(training_steps, int) and training_steps > 0
@@ -33,8 +33,9 @@ class RecommerceCallback(BaseCallback):
 		super(RecommerceCallback, self).__init__(True)
 		self.best_mean_interim_reward = None
 		self.best_mean_overall_reward = None
-		self.marketplace_class = marketplace_class
 		self.agent_class = agent_class
+		self.marketplace_class = marketplace_class
+		self.config = config
 		self.iteration_length = iteration_length
 		self.file_ending = file_ending
 		self.signature = signature
@@ -82,7 +83,7 @@ class RecommerceCallback(BaseCallback):
 		assert (finished_episodes is None) == (mean_return is None), 'finished_episodes must be exactly None if mean_return is None'
 		self.tqdm_instance.update()
 		if finished_episodes is None:
-			finished_episodes = self.num_timesteps // config.episode_length
+			finished_episodes = self.num_timesteps // self.config.episode_length
 			x, y = ts2xy(load_results(self.save_path), 'timesteps')
 			if len(x) <= 0:
 				return True

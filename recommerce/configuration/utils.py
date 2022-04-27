@@ -3,7 +3,7 @@ import random
 
 import numpy as np
 
-from recommerce.configuration.hyperparameter_config import config
+from recommerce.configuration.hyperparameter_config import HyperparameterConfig
 from recommerce.configuration.path_manager import PathManager
 from recommerce.monitoring.svg_manipulation import SVGManipulator
 
@@ -19,7 +19,7 @@ def ensure_results_folders_exist():
 		os.makedirs(os.path.join(PathManager.results_path, folder), exist_ok=True)
 
 
-def shuffle_quality() -> int:
+def shuffle_quality(config: HyperparameterConfig) -> int:
 	return min(max(int(np.random.normal(config.max_quality / 2, 2 * config.max_quality / 5)), 1), config.max_quality)
 
 
@@ -129,7 +129,8 @@ def write_content_of_dict_to_overview_svg(
 		manipulator: SVGManipulator,
 		episode: int,
 		episode_dictionary: dict,
-		cumulated_dictionary: dict) -> None:
+		cumulated_dictionary: dict,
+		config: HyperparameterConfig) -> None:
 	"""
 	This function takes a SVGManipulator and two dictionaries and translates the svg placeholder to the values in the dictionary
 

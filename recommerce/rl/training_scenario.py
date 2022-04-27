@@ -10,7 +10,7 @@ from recommerce.market.circular.circular_vendors import CircularAgent
 from recommerce.rl.actorcritic.actorcritic_training import ActorCriticTrainer
 from recommerce.rl.q_learning.q_learning_training import QLearningTrainer
 
-def run_training_session(config_hyperparameter, marketplace=circular_market.CircularEconomyRebuyPriceDuopoly, agent=q_learning_agent.QLearningAgent):
+def run_training_session(config_hyperparameter: HyperparameterConfig, marketplace=circular_market.CircularEconomyRebuyPriceDuopoly, agent=q_learning_agent.QLearningAgent):
 	"""
 	Run a training session with the passed marketplace and QLearningAgent.
 	Args:
@@ -26,9 +26,9 @@ def run_training_session(config_hyperparameter, marketplace=circular_market.Circ
 		f'the agent and marketplace must be of the same economy type (Linear/Circular): {agent} and {marketplace}'
 
 	if issubclass(agent, q_learning_agent.QLearningAgent):
-		QLearningTrainer(marketplace, agent).train_agent()
+		QLearningTrainer(marketplace_class=marketplace, agent_class=agent, config=config_hyperparameter).train_agent()
 	else:
-		ActorCriticTrainer(marketplace, agent).train_agent(number_of_training_steps=10000)
+		ActorCriticTrainer(marketplace_class=marketplace, agent_class=agent, config=config_hyperparameter).train_agent(number_of_training_steps=10000)
 
 
 # Just add some standard usecases.
