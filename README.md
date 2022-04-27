@@ -354,7 +354,8 @@ To run tests you have written for the Django webserver go into the *webserver* f
 python3 ./manage.py test -v 2
 ```
 
-We use bootstrap for layout stuff. When developing, you need to run `npm install` in the webserver directory.
+When deploying the webserver and the [API](#63-docker-api) you need to set two environment variables: `SECRET_KEY` (webserver `settings.py`) and `API_TOKEN`. Both should be random long strings.
+Set `API_TOKEN` on the webserver machine to the same value as on the machine you are running the API on, because you will need this for authorization against the API.
 
 ### 6.3. Docker API
 
@@ -369,6 +370,10 @@ uvicorn app:app --reload
 Don't use `--reload` when deploying in production.
 
 You can just run the `app.py` with python from the docker folder as well.
+
+If you want to use the API, you need to provide an `API_TOKEN` in your environment variables. For each API request the value at the authorization header will be checked. You can only perform actions on the API, when this value is the same, as the value in your environment variable.
+
+WARNING: Please keep in mind, that the `API_TOKEN` must be kept a secret, if it is revealed, you need to revoke it and set a new secret. Furthermore, think about using transport encryption to ensure that the token won't get stolen on the way.
 
 ## 7. Tensorboard
 
