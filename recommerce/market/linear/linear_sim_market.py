@@ -40,7 +40,7 @@ class LinearEconomy(SimMarket, ABC):
 		See also:
 			`configuration.utils.shuffle_quality`
 		"""
-		return [ut.shuffle_quality()]
+		return [ut.shuffle_quality(self.config)]
 
 	def _choose_customer(self) -> Customer:
 		return CustomerLinear()

@@ -28,7 +28,7 @@ class HyperparameterConfig():
 		return cls._instance
 	"""
 
-	def __init__():
+	def __init__(config):
 		pass
 
 	@classmethod
@@ -303,6 +303,7 @@ class HyperparameterConfigLoader():
 
 		filename += '.json'
 		path = os.path.join(PathManager.user_path, filename)
+		print('Loading config from:', path)
 		with open(path) as config_file:
 			config = json.load(config_file)
 		return HyperparameterConfig(config)

@@ -1,3 +1,4 @@
+from distutils.command.config import config
 import json
 from importlib import reload
 from unittest.mock import Mock, mock_open, patch
@@ -38,7 +39,7 @@ def test_shuffle_quality(max_quality: int):
 		ut_t.check_mock_file(mock_file, mock_json)
 		import_config()
 		reload(ut)
-		quality = ut.shuffle_quality()
+		quality = ut.shuffle_quality(config)
 		assert quality <= max_quality and quality >= 1
 
 

@@ -2,7 +2,6 @@ import math
 import random
 from abc import ABC
 
-from recommerce.configuration.hyperparameter_config import config
 from recommerce.market.vendors import Agent, FixedPriceAgent, HumanPlayer, RuleBasedAgent
 
 
@@ -21,7 +20,10 @@ class HumanPlayerLE(LinearAgent, HumanPlayer):
 
 
 class FixedPriceLEAgent(LinearAgent, FixedPriceAgent):
-	def __init__(self, fixed_price=config.production_price + 3, name='fixed_price_le'):
+	def __init__(self, fixed_price=None, name='fixed_price_le'):
+		if fixed_price == None:
+			fixed_price = self.config.production_price + 3
+
 		assert isinstance(fixed_price, int), f'the fixed_price must be an integer: {fixed_price} ({type(fixed_price)})'
 		self.name = name
 		self.fixed_price = fixed_price
@@ -45,12 +47,12 @@ class CompetitorLinearRatio1(LinearAgent, RuleBasedAgent):
 				max_competing_ratio = ratio
 
 		intended = math.floor(1 / max_competing_ratio * state[0]) - 1
-		return min(max(config.production_price + 1, intended), config.max_price - 1)  # actual price
+		return min(max(self.config.production_price + 1, intended), self.config.max_price - 1)  # actual price
 
 
 class CompetitorRandom(LinearAgent, RuleBasedAgent):
 	def policy(self, state, epsilon=0):
-		return random.randint(config.production_price + 1, config.max_price - 1)
+		return random.randint(self.config.production_price + 1, self.config.max_price - 1)
 
 
 class CompetitorJust2Players(LinearAgent, RuleBasedAgent):
@@ -89,10 +91,10 @@ class CompetitorJust2Players(LinearAgent, RuleBasedAgent):
 		elif comp_quality == agent_quality:
 			# same quality
 			new_price = agent_price
-		if new_price < config.production_price:
-			new_price = config.production_price + 1
-		elif new_price >= config.max_price:
-			new_price = config.max_price - 1
+		if new_price < self.config.production_price:
+			new_price = self.config.production_price + 1
+		elif new_price >= self.config.max_price:
+			new_price = self.config.max_price - 1
 		new_price = int(new_price)
 		assert isinstance(new_price, int), 'new_price must be an int'
 		return new_price
