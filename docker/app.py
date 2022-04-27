@@ -55,7 +55,10 @@ def verify_token(request: Request) -> bool:
 	try:
 		token = request.headers['Authorization']
 	except KeyError:
+		print('The request did not set an Authorization header')
 		return False
+	print(f'Verifying token: {token == os.environ["AUTHORIZATION_TOKEN"]}, \
+		given token: {token}, right token: {os.environ["AUTHORIZATION_TOKEN"]}')
 	return token == os.environ['AUTHORIZATION_TOKEN']
 
 
