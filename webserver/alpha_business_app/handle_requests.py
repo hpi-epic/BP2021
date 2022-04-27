@@ -1,9 +1,11 @@
+import os
+
 import requests
 
 from .api_response import APIResponse
 from .models.container import update_container
 
-DOCKER_API = 'http://vm-midea03.eaalab.hpi.uni-potsdam.de:8000'  # remember to include the port and the protocol, i.e. http://
+DOCKER_API = 'http://192.168.159.134:8000'  # remember to include the port and the protocol, i.e. http://
 
 
 def send_get_request(wanted_action: str, container_id: str) -> APIResponse:
@@ -18,7 +20,8 @@ def send_get_request(wanted_action: str, container_id: str) -> APIResponse:
 		APIResponse: Response from the API converted into our special format.
 	"""
 	try:
-		response = requests.get(f'{DOCKER_API}/{wanted_action}', params={'id': str(container_id)})
+		token = os.environ['API_TOKEN']
+		response = requests.get(f'{DOCKER_API}/{wanted_action}', params={'id': str(container_id)}, headers={'Authorization': token})
 	except requests.exceptions.RequestException:
 		return APIResponse('error', content='The API is unavailable')
 	if response.ok:
@@ -84,7 +87,11 @@ def _error_handling_API(response) -> APIResponse:
 	Returns:
 		APIResponse: Response from the API converted into our special format.
 	"""
-	if response.status_code < 500:
-		return APIResponse('error', content=response.json()['status'], http_status=response.status_code)
-	print(f'Got status code {response.status_code} from API')
-	return APIResponse('error', content='Something is wrong with the API. Please try again later.', http_status=response.status_code)
+	try:
+
+		if response.status_code < 500:
+			return APIResponse('error', content=response.json()['status'], http_status=response.status_code)
+		print(f'Got status code {response.status_code} from API')
+		return APIResponse('error', content='Something is wrong with the API. Please try again later.', http_status=response.status_code)
+	except Exception:
+		return APIResponse('error', content='The API response is invalid')
