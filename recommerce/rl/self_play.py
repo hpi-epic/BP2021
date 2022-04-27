@@ -9,10 +9,10 @@ def train_self_play():
 	old_marketplace = CircularEconomyRebuyPriceDuopoly(True)
 	agent = StableBaselinesPPO(old_marketplace)
 	marketplace = CircularEconomyVariableDuopoly(agent)
-	agent.model.set_env(marketplace)
+	agent.set_marketplace(marketplace)
 
 	rewards = [[], []]
-	last_dicts = agent.train_agent(training_steps=200000, analyze_after_training=False)
+	last_dicts = agent.train_agent(training_steps=1000000, analyze_after_training=False)
 	for mydict in last_dicts:
 		rewards[0].append(mydict['profits/all']['vendor_0'])
 		rewards[1].append(mydict['profits/all']['vendor_1'])
@@ -24,8 +24,8 @@ def train_self_play():
 	print(return_estimation)
 	print('\n\n')
 	print(smoothed_return_estimation)
-	plt.plot(smoothed_return_estimation[0], label='version 1')
-	plt.plot(smoothed_return_estimation[1], label='version 2')
+	plt.plot(smoothed_return_estimation[0], label='policy under training')
+	plt.plot(smoothed_return_estimation[1], label='same policy (opponent)')
 	plt.legend()
 	plt.show()  # Save the figure later in a nice folder.
 

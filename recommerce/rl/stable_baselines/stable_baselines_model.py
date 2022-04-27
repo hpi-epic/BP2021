@@ -36,6 +36,10 @@ class StableBaselinesAgent(ReinforcementLearningAgent, LinearAgent, CircularAgen
 	def synchronize_tgt_net(self):  # pragma: no cover
 		assert False, 'This method may never be used in a StableBaselinesAgent!'
 
+	def set_marketplace(self, new_marketplace: SimMarket):
+		self.marketplace = new_marketplace
+		self.model.set_env(new_marketplace)
+
 	def train_agent(self, training_steps=100000, iteration_length=500, analyze_after_training=True):
 		callback = RecommerceCallback(
 			type(self), type(self.marketplace), training_steps=training_steps, iteration_length=iteration_length,

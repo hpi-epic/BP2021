@@ -11,7 +11,7 @@ def train_rl_vs_rl():
 	marketplace_for_agent2 = CircularEconomyVariableDuopoly(agent1)
 	agent2 = StableBaselinesSAC(marketplace_for_agent2)
 	marketplace_for_agent1 = CircularEconomyVariableDuopoly(agent2)
-	agent1.model.set_env(marketplace_for_agent1)
+	agent1.set_marketplace(marketplace_for_agent1)
 	agents = [agent1, agent2]
 
 	rewards = [[], []]
