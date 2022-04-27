@@ -1,21 +1,18 @@
 FROM nvidia/cuda:11.3.0-base-ubuntu20.04
 
 ENV DEBIAN_FRONTEND=noninteractiv
+# Install Python
 RUN apt update && apt install -y --no-install-recommends python3 python3-pip \
 	&& ln -sf python3 /usr/bin/python \
 	&& ln -sf pip3 /usr/bin/pip \
 	&& pip install --upgrade pip \
-	&& pip install wheel setuptools
+	&& pip install wheel setuptools docker
 
 WORKDIR /app
 EXPOSE 6006
 
 # Do not buffer stdout so we can see it live
 ENV PYTHONUNBUFFERED 1
-
-# Update pip
-# RUN python3 -m ensurepip --upgrade
-# RUN pip install --upgrade pip
 
 # This directory is needed for pip installation
 RUN mkdir -p ./recommerce/configuration
@@ -30,10 +27,13 @@ COPY setup.cfg setup.cfg
 # Because we install using -e a symbolic link is created, so any files we copy over into the ./recommerce
 # path later are automatically recognised as part of the package
 RUN pip install -e .[gpu] -f https://download.pytorch.org/whl/torch_stable.html
-RUN pip freeze
 
 # ...so now we can copy over the often-changed files *after* installing the dependencies, saving lots of time due to caching!
 COPY ./recommerce ./recommerce
+
+# Install again but without the -e flag to fix a weird bug where pip doesn't recognize the package otherwise
+# we still want to install with -e earlier to be able to use caching for the large dependencies!
+RUN pip install .[gpu] -f https://download.pytorch.org/whl/torch_stable.html
 
 # set the datapath and unpack the default data
 # we only want the modelfiles and remove the config files to make sure we can only use the ones provided by the user
@@ -44,5 +44,5 @@ RUN rm environment_config_training.json
 RUN rm environment_config_exampleprinter.json
 RUN rm environment_config_agent_monitoring.json
 
-# Perform the specified action when starting the container
-ENTRYPOINT ["echo", "ENTRYPOINT not overwritten! The container does nothing and will be stopped now. Make sure to start the container using the API, not directly through Docker"]
+# This is a placeholder Entrypoint that will be overwritten when creating a container with a specified task
+ENTRYPOINT ["echo", "ENTRYPOINT not overwritten! The container does nothing and will be stopped now. Make sure to start the container using the API, not directly through Docker."]
