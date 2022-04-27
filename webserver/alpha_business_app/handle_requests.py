@@ -6,7 +6,7 @@ import requests
 from .api_response import APIResponse
 from .models.container import update_container
 
-DOCKER_API = 'http://vm-midea03.eaalab.hpi.uni-potsdam.de:8000'  # remember to include the port and the protocol, i.e. http://
+DOCKER_API = 'https://vm-midea03.eaalab.hpi.uni-potsdam.de:8000'  # remember to include the port and the protocol, i.e. http://
 
 
 def _get_api_token() -> str:
@@ -19,9 +19,10 @@ def _get_api_token() -> str:
 
 def _default_request_parameter(wanted_action: str, params: dict):
 	return {
-		'url': f'{DOCKER_API}/{wanted_action}',
+		'url': f'{DOCKER_API}/api_health',
 		'params': params,
-		'headers': {'Authorization': _get_api_token()}
+		'headers': {'Authorization': _get_api_token()},
+		'verify': '/etc/ssl_cert/api_cert.crt'
 	}
 
 
@@ -37,6 +38,7 @@ def send_get_request(wanted_action: str, container_id: str) -> APIResponse:
 		APIResponse: Response from the API converted into our special format.
 	"""
 	try:
+		print(_default_request_parameter())
 		response = requests.get(**_default_request_parameter(wanted_action, {'id': str(container_id)}))
 	except requests.exceptions.RequestException:
 		return APIResponse('error', content='The API is unavailable')
