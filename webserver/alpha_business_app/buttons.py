@@ -317,7 +317,7 @@ class ButtonHandler():
 			return self._decide_rendering()
 
 		num_experiments = post_request['num_experiments'][0] if post_request['num_experiments'][0] else 1
-		response = send_post_request('start', config_dict, num_experiments)
+		response = send_post_request('start', config_dict, {'num_experiments': num_experiments})
 
 		if response.ok():
 			# put container into database

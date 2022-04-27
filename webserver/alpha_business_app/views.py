@@ -1,7 +1,5 @@
-import datetime
 from uuid import uuid4
 
-import requests
 from django.contrib.auth.decorators import login_required
 from django.http import Http404, HttpResponse
 from django.shortcuts import render
@@ -12,7 +10,7 @@ from .buttons import ButtonHandler
 from .config_parser import ConfigFlatDictParser
 from .forms import UploadFileForm
 from .handle_files import handle_uploaded_file
-from .handle_requests import DOCKER_API
+from .handle_requests import get_api_status
 from .models.config import Config
 from .models.container import Container
 
@@ -102,16 +100,8 @@ def agent(request):
 def api_availability(request):
 	if not request.user.is_authenticated:
 		return render(request, 'api_buttons/api_health_button.html')
-	try:
-		api_is_available = requests.get(f'{DOCKER_API}/api_health', timeout=1)
-	except requests.exceptions.RequestException:
-		current_time = datetime.datetime.now().strftime('%H:%M:%S')
-		return render(request, 'api_buttons/api_health_button.html', {'api_timeout': f'API unavailable - {current_time}'})
-
-	current_time = datetime.datetime.now().strftime('%H:%M:%S')
-	if api_is_available.status_code == 200:
-		return render(request, 'api_buttons/api_health_button.html', {'api_success': f'API available - {current_time}'})
-	return render(request, 'api_buttons/api_health_button.html', {'api_docker_timeout': f'Docker  unavailable - {current_time}'})
+	parameter_dict = get_api_status()
+	return render(request, 'api_buttons/api_health_button.html', parameter_dict)
 
 
 @login_required
