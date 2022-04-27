@@ -5,7 +5,6 @@ import numpy as np
 
 import recommerce.market.circular.circular_vendors as circular_vendors
 import recommerce.market.owner as owner
-from recommerce.configuration.hyperparameter_config import config
 from recommerce.market.circular.circular_customers import CustomerCircular
 from recommerce.market.customer import Customer
 from recommerce.market.owner import Owner
@@ -16,17 +15,17 @@ class CircularEconomy(SimMarket, ABC):
 
 	def _setup_action_observation_space(self, support_continuous_action_space: bool) -> None:
 		# cell 0: number of products in the used storage, cell 1: number of products in circulation
-		self.max_storage = config.max_storage
+		self.max_storage = self.config.max_storage
 		self.max_circulation = 10 * self.max_storage
 		self.observation_space = gym.spaces.Box(
 			np.array([0, 0] + [0, 0, 0] * len(self.competitors), dtype=np.float32),
 			np.array([self.max_circulation, self.max_storage] +
-				[config.max_price, config.max_price, self.max_storage] * len(self.competitors), dtype=np.float32))
+				[self.config.max_price, self.config.max_price, self.max_storage] * len(self.competitors), dtype=np.float32))
 
 		if support_continuous_action_space:
-			self.action_space = gym.spaces.Box(np.array([0] * 2, dtype=np.float32), np.array([config.max_price] * 2, dtype=np.float32))
+			self.action_space = gym.spaces.Box(np.array([0] * 2, dtype=np.float32), np.array([self.config.max_price] * 2, dtype=np.float32))
 		else:
-			self.action_space = gym.spaces.Tuple((gym.spaces.Discrete(config.max_price), gym.spaces.Discrete(config.max_price)))
+			self.action_space = gym.spaces.Tuple((gym.spaces.Discrete(self.config.max_price), gym.spaces.Discrete(self.config.max_price)))
 
 	def _reset_vendor_specific_state(self) -> list:
 		"""
@@ -49,7 +48,7 @@ class CircularEconomy(SimMarket, ABC):
 		Returns:
 			tuple: (refurbished_price, new_price)
 		"""
-		return (config.production_price, config.production_price + 1)
+		return (self.config.production_price, self.config.production_price + 1)
 
 	def _choose_customer(self) -> Customer:
 		return CustomerCircular()
@@ -141,13 +140,13 @@ class CircularEconomy(SimMarket, ABC):
 
 			# Punish the agent for not having enough second-hand-products
 			impossible_refurbished_sales = frequency - possible_refurbished_sales
-			punishment = 2 * config.max_price * impossible_refurbished_sales
+			punishment = 2 * self.config.max_price * impossible_refurbished_sales
 			profits[chosen_vendor] -= punishment
 			self._output_dict['profits/by_selling_refurbished'][f'vendor_{chosen_vendor}'] -= punishment
 
 		else:
 			self._output_dict['customer/purchases_new'][f'vendor_{chosen_vendor}'] += frequency
-			profit = frequency * (self.vendor_actions[chosen_vendor][1] - config.production_price)
+			profit = frequency * (self.vendor_actions[chosen_vendor][1] - self.config.production_price)
 			profits[chosen_vendor] += profit
 			self._output_dict['profits/by_selling_new'][f'vendor_{chosen_vendor}'] += profit
 			# The number of items in circulation is bounded
@@ -162,7 +161,7 @@ class CircularEconomy(SimMarket, ABC):
 			profits (np.array(int)): The profits of all vendors.
 		"""
 		for vendor in range(self._number_of_vendors):
-			storage_cost_per_timestep = -self.vendor_specific_state[vendor][0] * config.storage_cost_per_product
+			storage_cost_per_timestep = -self.vendor_specific_state[vendor][0] * self.config.storage_cost_per_product
 			profits[vendor] += storage_cost_per_timestep
 			self._output_dict['profits/storage_cost'][f'vendor_{vendor}'] = storage_cost_per_timestep
 
@@ -237,14 +236,14 @@ class CircularEconomyRebuyPrice(CircularEconomy, ABC):
 		super()._setup_action_observation_space(support_continuous_action_space)
 		self.observation_space = gym.spaces.Box(
 			np.array([0, 0] + [0, 0, 0, 0] * len(self.competitors), dtype=np.float32),
-			np.array([self.max_circulation, self.max_storage] + [config.max_price, config.max_price,
-				config.max_price, self.max_storage] * len(self.competitors), dtype=np.float32))
+			np.array([self.max_circulation, self.max_storage] + [self.config.max_price, self.config.max_price,
+				self.config.max_price, self.max_storage] * len(self.competitors), dtype=np.float32))
 
 		if support_continuous_action_space:
-			self.action_space = gym.spaces.Box(np.array([0] * 3, dtype=np.float32), np.array([config.max_price] * 3, dtype=np.float32))
+			self.action_space = gym.spaces.Box(np.array([0] * 3, dtype=np.float32), np.array([self.config.max_price] * 3, dtype=np.float32))
 		else:
 			self.action_space = gym.spaces.Tuple(
-				(gym.spaces.Discrete(config.max_price), gym.spaces.Discrete(config.max_price), gym.spaces.Discrete(config.max_price)))
+				(gym.spaces.Discrete(self.config.max_price), gym.spaces.Discrete(self.config.max_price), gym.spaces.Discrete(self.config.max_price)))
 
 	def _reset_vendor_actions(self) -> tuple:
 		"""
@@ -252,7 +251,7 @@ class CircularEconomyRebuyPrice(CircularEconomy, ABC):
 		Returns:
 			tuple: (refurbished_price, new_price, rebuy_price)
 		"""
-		return (config.production_price, config.production_price + 1, 1)
+		return (self.config.production_price, self.config.production_price + 1, 1)
 
 	def _choose_owner(self) -> Owner:
 		return owner.OwnerRebuy()

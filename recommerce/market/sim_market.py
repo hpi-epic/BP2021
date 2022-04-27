@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Tuple
+from recommerce.configuration.hyperparameter_config import HyperparameterConfig
 
 import gym
 import numpy as np
@@ -19,7 +20,7 @@ class SimMarket(gym.Env, ABC):
 	Inherits from `gym.env`.
 	"""
 
-	def __init__(self, config, support_continuous_action_space: bool = False) -> None:
+	def __init__(self, config: HyperparameterConfig, support_continuous_action_space: bool = False) -> None:
 		"""
 		Initialize a SimMarket instance.
 		Set up needed values such as competitors and action/observation-space and reset the environment.

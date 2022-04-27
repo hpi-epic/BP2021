@@ -310,5 +310,5 @@ class HyperparameterConfigLoader():
 
 # config: HyperparameterConfig = HyperparameterConfigLoader.load('hyperparameter_config')
 
-if __name__ == '__main__':  # pragma: no cover
-	print(config)
+# if __name__ == '__main__':  # pragma: no cover
+	# print(config)

@@ -5,7 +5,6 @@ import torch
 
 import recommerce.configuration.utils as ut
 import recommerce.rl.actorcritic.actorcritic_agent as actorcritic_agent
-from recommerce.configuration.hyperparameter_config import config
 from recommerce.rl.training import RLTrainer
 
 
@@ -15,7 +14,7 @@ class ActorCriticTrainer(RLTrainer):
 
 	def choose_random_envs(self, total_envs) -> set:
 		"""
-		This method samples config.batch_size distinct numbers out of 0, ..., total_envs - 1
+		This method samples self.config.batch_size distinct numbers out of 0, ..., total_envs - 1
 
 		Args:
 			total_envs (int): The number of envs
@@ -24,7 +23,7 @@ class ActorCriticTrainer(RLTrainer):
 			set: the distinct shuffled numbers
 		"""
 		chosen_envs = set()
-		while len(chosen_envs) < config.batch_size:
+		while len(chosen_envs) < self.config.batch_size:
 			number = random.randint(0, total_envs - 1)
 			if number not in chosen_envs:
 				chosen_envs.add(number)
@@ -40,7 +39,7 @@ class ActorCriticTrainer(RLTrainer):
 			verbose (bool, optional): Should additional information about agent steps be written to the tensorboard? Defaults to False.
 			total_envs (int, optional): The number of environments you use in parallel to fulfill the iid assumption. Defaults to 128.
 		"""
-		self.initialize_callback(number_of_training_steps * config.batch_size)
+		self.initialize_callback(number_of_training_steps * self.config.batch_size)
 
 		all_dicts = []
 		if verbose:
