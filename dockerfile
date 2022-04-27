@@ -1,5 +1,12 @@
 FROM nvidia/cuda:11.3.0-base-ubuntu20.04
-RUN sudo apt-get install -y python 3.8
+
+ENV DEBIAN_FRONTEND=noninteractiv
+RUN apt update 
+    && apt install -y --no-install-recommends python3 python3-pip 
+    && ln -sf python3 /usr/bin/python 
+    && ln -sf pip3 /usr/bin/pip 
+    && pip install --upgrade pip 
+    && pip install wheel setuptool
 
 WORKDIR /app
 EXPOSE 6006
@@ -8,8 +15,8 @@ EXPOSE 6006
 ENV PYTHONUNBUFFERED 1
 
 # Update pip
-RUN python3 -m ensurepip --upgrade
-RUN pip install --upgrade pip
+# RUN python3 -m ensurepip --upgrade
+# RUN pip install --upgrade pip
 
 # This directory is needed for pip installation
 RUN mkdir -p ./recommerce/configuration
@@ -24,6 +31,7 @@ COPY setup.cfg setup.cfg
 # Because we install using -e a symbolic link is created, so any files we copy over into the ./recommerce
 # path later are automatically recognised as part of the package
 RUN pip install -e .[gpu] -f https://download.pytorch.org/whl/torch_stable.html
+RUN pip freeze
 
 # ...so now we can copy over the often-changed files *after* installing the dependencies, saving lots of time due to caching!
 COPY ./recommerce ./recommerce
