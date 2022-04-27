@@ -33,7 +33,6 @@ class RecommerceCallback(BaseCallback):
 		assert isinstance(training_steps, int) and training_steps > 0
 		assert isinstance(iteration_length, int) and iteration_length > 0
 		super(RecommerceCallback, self).__init__(True)
-		assert issubclass(agent_class, ActorCriticAgent)
 		self.watcher = Watcher(128) if issubclass(agent_class, ActorCriticAgent) else Watcher()
 		self.best_mean_interim_reward = None
 		self.best_mean_overall_reward = None
