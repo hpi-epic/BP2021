@@ -103,7 +103,7 @@ class RecommerceCallback(BaseCallback):
 		else:
 			self.last_finished_episode = finished_episodes
 
-		if finished_episodes is not None:
+		if info is not None:
 			mean_return = self.watcher.get_average_dict()['profits/all']['vendor_0']
 		assert isinstance(mean_return, float)
 
