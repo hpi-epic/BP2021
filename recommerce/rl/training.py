@@ -7,7 +7,7 @@ from recommerce.rl.reinforcement_learning_agent import ReinforcementLearningAgen
 
 
 class RLTrainer(ABC):
-	def __init__(self, marketplace_class, agent_class):
+	def __init__(self, marketplace_class, agent_class, config):
 		"""
 		Initialize an RLTrainer to train one specific configuration.
 		Args:
@@ -18,6 +18,7 @@ class RLTrainer(ABC):
 		assert issubclass(agent_class, ReinforcementLearningAgent)
 		self.marketplace_class = marketplace_class
 		self.agent_class = agent_class
+		self.config = config
 		assert self.trainer_agent_fit()
 
 	def initialize_callback(self, training_steps):
@@ -43,7 +44,7 @@ class RLTrainer(ABC):
 		return averaged_info
 
 	def consider_sync_tgt_net(self, frame_idx) -> None:
-		if (frame_idx + 1) % config.sync_target_frames == 0:
+		if (frame_idx + 1) % self.config.sync_target_frames == 0:
 			self.callback.model.synchronize_tgt_net()
 
 	@abstractmethod

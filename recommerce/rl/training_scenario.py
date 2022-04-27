@@ -5,12 +5,12 @@ import recommerce.rl.actorcritic.actorcritic_agent as actorcritic_agent
 import recommerce.rl.q_learning.q_learning_agent as q_learning_agent
 import recommerce.rl.stable_baselines.stable_baselines_model as sbmodel
 from recommerce.configuration.environment_config import EnvironmentConfigLoader, TrainingEnvironmentConfig
+from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader, HyperparameterConfig
 from recommerce.market.circular.circular_vendors import CircularAgent
 from recommerce.rl.actorcritic.actorcritic_training import ActorCriticTrainer
 from recommerce.rl.q_learning.q_learning_training import QLearningTrainer
 
-
-def run_training_session(marketplace=circular_market.CircularEconomyRebuyPriceDuopoly, agent=q_learning_agent.QLearningAgent):
+def run_training_session(config_hyperparameter, marketplace=circular_market.CircularEconomyRebuyPriceDuopoly, agent=q_learning_agent.QLearningAgent):
 	"""
 	Run a training session with the passed marketplace and QLearningAgent.
 	Args:
@@ -62,8 +62,9 @@ def train_from_config():
 	Use the `environment_config_training.json` file to decide on the training parameters.
 	"""
 	config: TrainingEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_training')
+	config_hyperparameter: HyperparameterConfig = HyperparameterConfigLoader.load('hyperparameter_config')
 	# TODO: Theoretically, the name of the agent is saved in config['name'], but we don't use it yet.
-	run_training_session(config.marketplace, config.agent['agent_class'])
+	run_training_session(config_hyperparameter, config.marketplace, config.agent['agent_class'])
 
 
 def main():

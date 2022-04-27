@@ -8,15 +8,16 @@ from recommerce.configuration.path_manager import PathManager
 
 
 class HyperparameterConfig():
-	_instance = None
+	# _instance = None
 
+	"""
 	def __new__(cls, config: dict = None):
-		"""
+	
 		This function makes sure that the `HyperparameterConfig` is a singleton.
 
 		Returns:
 			HyperparameterConfig: The HyperparameterConfig instance.
-		"""
+		
 		if cls._instance is None:
 			# print('A new instance of HyperparameterConfig is being initialized')
 			cls._instance = super(HyperparameterConfig, cls).__new__(cls)
@@ -25,6 +26,10 @@ class HyperparameterConfig():
 			print('An instance of HyperparameterConfig already exists and it will not be overwritten')
 
 		return cls._instance
+	"""
+
+	def __init__():
+		pass
 
 	@classmethod
 	def get_required_fields(cls, dict_key) -> dict:
@@ -293,8 +298,8 @@ class HyperparameterConfigLoader():
 			HyperparameterConfig: An instance of `HyperparameterConfig`.
 		"""
 		# in case there already is an instance of the config, we do not need to load the file again
-		if HyperparameterConfig._instance is not None:
-			return HyperparameterConfig()
+		# if HyperparameterConfig._instance is not None:
+		#	return HyperparameterConfig()
 
 		filename += '.json'
 		path = os.path.join(PathManager.user_path, filename)
@@ -303,7 +308,7 @@ class HyperparameterConfigLoader():
 		return HyperparameterConfig(config)
 
 
-config: HyperparameterConfig = HyperparameterConfigLoader.load('hyperparameter_config')
+# config: HyperparameterConfig = HyperparameterConfigLoader.load('hyperparameter_config')
 
 if __name__ == '__main__':  # pragma: no cover
 	print(config)
