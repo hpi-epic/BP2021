@@ -22,7 +22,7 @@ class ExamplePrinter():
 
 	def __init__(self):
 		ut.ensure_results_folders_exist()
-		self.marketplace = circular_market.CircularEconomyRebuyPriceOneCompetitor()
+		self.marketplace = circular_market.CircularEconomyRebuyPriceDuopoly()
 		self.agent = RuleBasedCERebuyAgent()
 		# Signal handler for e.g. KeyboardInterrupt
 		signal.signal(signal.SIGINT, self._signal_handler)
@@ -47,12 +47,9 @@ class ExamplePrinter():
 		print('\nAborting exampleprinter run...')
 		sys.exit(0)
 
-	def run_example(self, log_dir_prepend='') -> int:
+	def run_example(self) -> int:
 		"""
 		Run a specified marketplace with a (pre-trained, if RL) agent and record various statistics using TensorBoard.
-
-		Args:
-			log_dir_prepend (str, optional): What to prepend to the log_dir folder name. Defaults to ''.
 
 		Returns:
 			int: The profit made.
@@ -63,10 +60,10 @@ class ExamplePrinter():
 		is_done = False
 		state = self.marketplace.reset()
 
-		signature = f'{log_dir_prepend}exampleprinter_{time.strftime("%b%d_%H-%M-%S")}'
+		signature = f'exampleprinter_{time.strftime("%b%d_%H-%M-%S")}'
 		writer = SummaryWriter(log_dir=os.path.join(PathManager.results_path, 'runs', signature))
 
-		if isinstance(self.marketplace, circular_market.CircularEconomyRebuyPriceOneCompetitor):
+		if isinstance(self.marketplace, circular_market.CircularEconomyRebuyPriceDuopoly):
 			svg_manipulator = SVGManipulator(signature)
 		cumulative_dict = None
 
@@ -81,14 +78,14 @@ class ExamplePrinter():
 					cumulative_dict = copy.deepcopy(logdict)
 				ut.write_dict_to_tensorboard(writer, logdict, counter)
 				ut.write_dict_to_tensorboard(writer, cumulative_dict, counter, is_cumulative=True)
-				if isinstance(self.marketplace, circular_market.CircularEconomyRebuyPriceOneCompetitor):
+				if isinstance(self.marketplace, circular_market.CircularEconomyRebuyPriceDuopoly):
 					ut.write_content_of_dict_to_overview_svg(svg_manipulator, counter, logdict, cumulative_dict)
 				our_profit += reward
 				counter += 1
-				if isinstance(self.marketplace, circular_market.CircularEconomyRebuyPriceOneCompetitor):
+				if isinstance(self.marketplace, circular_market.CircularEconomyRebuyPriceDuopoly):
 					svg_manipulator.save_overview_svg(filename=('MarketOverview_%.3d' % counter))
 
-		if isinstance(self.marketplace, circular_market.CircularEconomyRebuyPriceOneCompetitor):
+		if isinstance(self.marketplace, circular_market.CircularEconomyRebuyPriceDuopoly):
 			svg_manipulator.to_html()
 
 		return our_profit
@@ -108,8 +105,7 @@ def main():  # pragma: no cover
 	if issubclass(config.agent['agent_class'], QLearningAgent):
 		printer.setup_exampleprinter(marketplace=marketplace,
 			agent=config.agent['agent_class'](
-				n_observations=marketplace.observation_space.shape[0],
-				n_actions=marketplace.get_n_actions(),
+				marketplace=marketplace,
 				load_path=os.path.abspath(os.path.join(PathManager.data_path, config.agent['argument']))))
 	else:
 		printer.setup_exampleprinter(marketplace=marketplace, agent=config.agent['agent_class']())

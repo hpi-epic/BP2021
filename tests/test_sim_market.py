@@ -5,11 +5,11 @@ import recommerce.market.circular.circular_sim_market as circular_market
 import recommerce.market.linear.linear_sim_market as linear_market
 
 unique_output_dict_testcases = [
-	linear_market.ClassicScenario,
-	linear_market.MultiCompetitorScenario,
-	circular_market.CircularEconomyMonopolyScenario,
-	circular_market.CircularEconomyRebuyPriceMonopolyScenario,
-	circular_market.CircularEconomyRebuyPriceOneCompetitor
+	linear_market.LinearEconomyDuopoly,
+	linear_market.LinearEconomyOligopoly,
+	circular_market.CircularEconomyMonopoly,
+	circular_market.CircularEconomyRebuyPriceMonopoly,
+	circular_market.CircularEconomyRebuyPriceDuopoly
 ]
 
 

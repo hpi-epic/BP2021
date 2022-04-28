@@ -2,11 +2,12 @@ import pytest
 import torch
 
 import recommerce.configuration.utils as ut
+import recommerce.market.circular.circular_sim_market as circular_market
+import recommerce.market.linear.linear_sim_market as linear_market
 import recommerce.rl.actorcritic.actorcritic_agent as actorcritic_agent
 
 abstract_agent_classes_testcases = [
 	actorcritic_agent.ActorCriticAgent,
-	actorcritic_agent.DiscreteActorCriticAgent,
 	actorcritic_agent.ContinuosActorCriticAgent
 ]
 
@@ -14,75 +15,80 @@ abstract_agent_classes_testcases = [
 @pytest.mark.parametrize('agent', abstract_agent_classes_testcases)
 def test_abstract_agent_classes(agent):
 	with pytest.raises(TypeError) as error_message:
-		agent()
+		agent(linear_market.LinearEconomyDuopoly)
 	assert 'Can\'t instantiate abstract class' in str(error_message.value)
 
 
-agent_initialization_testcases = [
-	actorcritic_agent.DiscreteACALinear,
-	actorcritic_agent.DiscreteACACircularEconomy,
-	actorcritic_agent.DiscreteACACircularEconomyRebuy,
-	actorcritic_agent.ContinuosActorCriticAgentFixedOneStd
+marketplace_classes = [
+	linear_market.LinearEconomyDuopoly,
+	linear_market.LinearEconomyOligopoly,
+	circular_market.CircularEconomyMonopoly,
+	circular_market.CircularEconomyRebuyPriceMonopoly,
+	circular_market.CircularEconomyRebuyPriceDuopoly
 ]
-input_sizes = [1, 3, 7, 19]
-output_sizes_greater_zero = [2, 7, 15, 100, 1234]
 
 
-@pytest.mark.parametrize(
-	'agent_class, input_output',
-	ut.cartesian_product(agent_initialization_testcases,
-	ut.cartesian_product(input_sizes, output_sizes_greater_zero)))
-def test_agents_initializes_networks_correct_output_greater_zero(agent_class, input_output):
-	input_size, output_size = input_output
-	agent = agent_class(input_size, output_size)
+@pytest.mark.parametrize('market_class', marketplace_classes)
+def test_discrete_agents_initializes_networks_correct(market_class):
+	marketplace = market_class()
+	agent = actorcritic_agent.DiscreteActorCriticAgent(marketplace=marketplace)
 	assert agent.actor_net is not None
 	assert agent.critic_net is not None
 	assert agent.critic_tgt_net is not None
+	input_size = marketplace.get_observations_dimension()
+	output_size = marketplace.get_n_actions()
 	test_input = torch.ones(input_size).to(agent.device)
 	actor_output = agent.actor_net(test_input)
 	assert len(actor_output.to('cpu')) == output_size
-	critic_output = agent.critic_net(test_input)
-	assert isinstance(critic_output.to('cpu').item(), float)
 
 
-@pytest.mark.parametrize('agent_class, input_size', ut.cartesian_product(agent_initialization_testcases, input_sizes))
-def test_agents_initializes_network_correct_output_one(agent_class, input_size):
-	agent = agent_class(input_size, 1)
+@pytest.mark.parametrize('market_class', marketplace_classes)
+def test_continous_agents_initializes_networks_correct(market_class):
+	marketplace = market_class()
+	agent = actorcritic_agent.ContinuosActorCriticAgentFixedOneStd(marketplace=marketplace)
 	assert agent.actor_net is not None
 	assert agent.critic_net is not None
 	assert agent.critic_tgt_net is not None
+	input_size = marketplace.get_observations_dimension()
+	output_size = marketplace.get_actions_dimension()
 	test_input = torch.ones(input_size).to(agent.device)
 	actor_output = agent.actor_net(test_input)
-	assert isinstance(actor_output.to('cpu').item(), float)
-	critic_output = agent.critic_net(test_input)
-	assert isinstance(critic_output.to('cpu').item(), float)
+	assert len(actor_output.to('cpu')) == output_size
 
 
-@pytest.mark.parametrize('input_size, output_size', ut.cartesian_product(input_sizes, output_sizes_greater_zero))
-def test_std_estimating_agents_initializes_networks_correct_output_greater_zero(input_size, output_size):
-	agent_class = actorcritic_agent.ContinuosActorCriticAgentEstimatingStd
-	agent = agent_class(input_size, output_size)
+@pytest.mark.parametrize('market_class', marketplace_classes)
+def test_std_estimating_agents_initializes_networks_correct(market_class):
+	marketplace = market_class()
+	agent = actorcritic_agent.ContinuosActorCriticAgentEstimatingStd(marketplace=marketplace)
 	assert agent.actor_net is not None
 	assert agent.critic_net is not None
 	assert agent.critic_tgt_net is not None
+	input_size = marketplace.get_observations_dimension()
+	output_size = marketplace.get_actions_dimension()
 	test_input = torch.ones(input_size).to(agent.device)
 	actor_output = agent.actor_net(test_input)
-	# For each parameter we need two outputs: One for the mean and one for the standard deviation
 	assert len(actor_output.to('cpu')) == 2 * output_size
-	critic_output = agent.critic_net(test_input)
-	assert isinstance(critic_output.to('cpu').item(), float)
 
 
-@pytest.mark.parametrize('input_size', input_sizes)
-def test_std_estimating_agents_initializes_network_correct_output_one(input_size):
-	agent_class = actorcritic_agent.ContinuosActorCriticAgentEstimatingStd
-	agent = agent_class(input_size, 1)
-	assert agent.actor_net is not None
-	assert agent.critic_net is not None
-	assert agent.critic_tgt_net is not None
-	test_input = torch.ones(input_size).to(agent.device)
-	actor_output = agent.actor_net(test_input)
-	# We need exactly two outputs: One for the mean and one for the standard deviation
-	assert len(actor_output.to('cpu')) == 2
-	critic_output = agent.critic_net(test_input)
+agent_initialization_testcases = [
+	actorcritic_agent.DiscreteActorCriticAgent,
+	actorcritic_agent.ContinuosActorCriticAgentFixedOneStd,
+	actorcritic_agent.ContinuosActorCriticAgentFixedOneStd
+]
+
+
+@pytest.mark.parametrize(
+	'agent_class, market_class',
+	ut.cartesian_product(agent_initialization_testcases, marketplace_classes)
+)
+def test_agents_generate_valid_actions(agent_class, market_class):
+	marketplace = market_class()
+	agent = agent_class(marketplace=marketplace)
+	test_input = marketplace.observation_space.sample()
+	action = agent.policy(test_input)
+	next_state, reward, done, info = marketplace.step(action)
+	assert isinstance(reward, float)
+	assert isinstance(done, bool)
+	assert isinstance(info, dict)
+	critic_output = agent.critic_net(torch.from_numpy(next_state).to(agent.device))
 	assert isinstance(critic_output.to('cpu').item(), float)

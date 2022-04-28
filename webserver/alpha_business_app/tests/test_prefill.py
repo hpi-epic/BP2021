@@ -90,7 +90,7 @@ class ConfigMergerTest(TestCase):
 				'enable_live_draw': True,
 				'episodes': None,
 				'plot_interval': None,
-				'marketplace': 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
+				'marketplace': 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopoly',
 				'task': 'monitoring',
 				'agents': [
 					{
@@ -105,8 +105,8 @@ class ConfigMergerTest(TestCase):
 					},
 					{
 						'name': 'CE Rebuy Agent (QLearning)',
-						'agent_class': 'recommerce.rl.q_learning.q_learning_agent.QLearningCERebuyAgent',
-						'argument': 'CircularEconomyRebuyPriceMonopolyScenario_QLearningCERebuyAgent.dat'
+						'agent_class': 'recommerce.rl.q_learning.q_learning_agent.QLearningAgent',
+						'argument': 'CircularEconomyRebuyPriceMonopoly_QLearningAgent.dat'
 					}
 				]
 			}, 'hyperparameter': {

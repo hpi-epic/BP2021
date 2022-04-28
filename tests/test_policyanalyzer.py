@@ -5,11 +5,12 @@ import numpy as np
 import pytest
 
 from recommerce.configuration.path_manager import PathManager
+from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPriceDuopoly, CircularEconomyRebuyPriceMonopoly
 from recommerce.market.circular.circular_vendors import RuleBasedCERebuyAgent, RuleBasedCERebuyAgentCompetitive
 from recommerce.market.linear.linear_vendors import CompetitorLinearRatio1
 from recommerce.monitoring.policyanalyzer import PolicyAnalyzer
 from recommerce.rl.actorcritic.actorcritic_agent import ContinuosActorCriticAgentFixedOneStd
-from recommerce.rl.q_learning.q_learning_agent import QLearningCERebuyAgent
+from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
 
 write_to_path = os.path.join(PathManager.results_path, 'policyanalyzer')
 
@@ -67,9 +68,9 @@ monopoly_test_cases = [
 
 @pytest.mark.parametrize('title, policyaccess, expected_filename', monopoly_test_cases)
 def test_circular_monopoly_q_learning(title, policyaccess, expected_filename):
-	q_learing_agent = QLearningCERebuyAgent(
-		2, 1000, load_path=os.path.join(PathManager.data_path,
-		'CircularEconomyRebuyPriceMonopolyScenario_QLearningCERebuyAgent.dat')
+	q_learing_agent = QLearningAgent(
+		marketplace=CircularEconomyRebuyPriceMonopoly(), load_path=os.path.join(PathManager.data_path,
+		'CircularEconomyRebuyPriceMonopoly_QLearningAgent.dat')
 	)
 	pa = PolicyAnalyzer(q_learing_agent)
 	given_path = pa.analyze_policy(
@@ -92,9 +93,9 @@ one_competitor_test_cases = [
 
 @pytest.mark.parametrize('title, policyaccess, expected_filename', one_competitor_test_cases)
 def test_circular_duopol_q_learning(title, policyaccess, expected_filename):
-	q_learing_agent = QLearningCERebuyAgent(
-		6, 1000, load_path=os.path.join(PathManager.data_path,
-		'CircularEconomyRebuyPriceOneCompetitor_QLearningCERebuyAgent.dat')
+	q_learing_agent = QLearningAgent(
+		marketplace=CircularEconomyRebuyPriceDuopoly(), load_path=os.path.join(PathManager.data_path,
+		'CircularEconomyRebuyPriceDuopoly_QLearningAgent.dat')
 	)
 	pa = PolicyAnalyzer(q_learing_agent)
 	given_path = pa.analyze_policy(
@@ -118,8 +119,8 @@ one_competitor_test_cases = [
 @pytest.mark.parametrize('title, policyaccess, expected_filename', one_competitor_test_cases)
 def test_circular_duopol_continuos_actorcritic(title, policyaccess, expected_filename):
 	a2c_agent = ContinuosActorCriticAgentFixedOneStd(
-		6, 3, load_path=os.path.join(PathManager.data_path,
-			'actor_parametersCircularEconomyRebuyPriceOneCompetitor_ContinuosActorCriticAgentFixedOneStd.dat')
+		marketplace=CircularEconomyRebuyPriceDuopoly(), load_path=os.path.join(PathManager.data_path,
+			'actor_parametersCircularEconomyRebuyPriceDuopoly_ContinuosActorCriticAgentFixedOneStd.dat')
 	)
 	pa = PolicyAnalyzer(a2c_agent)
 	given_path = pa.analyze_policy(
