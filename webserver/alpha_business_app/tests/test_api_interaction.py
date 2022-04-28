@@ -127,11 +127,11 @@ class ButtonTests(TestCase):
 
 		with patch('alpha_business_app.buttons.redirect') as redirect_mock, \
 			patch('alpha_business_app.buttons.send_get_request') as get_request_mock:
-			get_request_mock.return_value = APIResponse('success', '200', {'id': '1234', 'data': 'tensorboard_link:6006'})
+			get_request_mock.return_value = APIResponse('success', '200', {'id': '1234', 'data': '6006'})
 
 			test_button_handler.do_button_click()
 
-			redirect_mock.assert_called_once_with('tensorboard_link:6006')
+			redirect_mock.assert_called_once_with('http://vm-midea03.eaalab.hpi.uni-potsdam.de:6006')
 
 	def test_stop_button(self):
 		# mock a request that is sent when user presses a button
@@ -255,7 +255,7 @@ class ButtonTests(TestCase):
 			post_request_mock.return_value = APIResponse('success', content=api_response_dict)
 
 			test_button_handler.do_button_click()
-			post_request_mock.assert_called_once_with('start', EXAMPLE_HIERARCHY_DICT, 2)
+			post_request_mock.assert_called_once_with('start', EXAMPLE_HIERARCHY_DICT, {'num_experiments': 2})
 			redirect_mock.assert_called_once_with('/observe', {'success': 'You successfully launched an experiment'})
 
 		# assert config exists
@@ -296,7 +296,7 @@ class ButtonTests(TestCase):
 			post_request_mock.return_value = APIResponse('success', content=api_response_dict)
 
 			test_button_handler.do_button_click()
-			post_request_mock.assert_called_once_with('start', EXAMPLE_HIERARCHY_DICT, 2)
+			post_request_mock.assert_called_once_with('start', EXAMPLE_HIERARCHY_DICT, {'num_experiments': 2})
 			render_mock.assert_called_once()
 		assert 1 == len(Container.objects.all())
 
