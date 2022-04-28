@@ -104,7 +104,8 @@ def main():  # pragma: no cover
 		episodes=config.episodes,
 		plot_interval=config.plot_interval,
 		marketplace=config.marketplace,
-		agents=config.agent
+		agents=config.agent, 
+		config=config
 	)
 	run_monitoring_session(monitor)
 

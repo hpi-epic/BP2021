@@ -104,7 +104,6 @@ Has priority over --command""")
 		# display help message when no args are passed.
 		print('Please provide an argument!')
 		parser.print_help()
-		sys.exit(1)
 
 	# Handle provided arguments
 	handle_datapath(args.datapath)
