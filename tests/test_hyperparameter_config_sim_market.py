@@ -20,8 +20,7 @@ def import_config() -> hyperparameter_config.HyperparameterConfig:
 	Returns:
 		HyperparameterConfig: The config object.
 	"""
-	reload(hyperparameter_config)
-	return hyperparameter_config.config
+	return hyperparameter_config.HyperparameterConfigLoader.load('hyperparameter_config')
 
 
 # mock format taken from:
