@@ -63,7 +63,24 @@ class Watcher:
 		return averaged_info
 
 	def get_all_samples_of_property(self, property_name: str, vendor: int) -> list:
-		return [mydict[property_name][f'vendor_{vendor}'] for mydict in self.all_dicts]
+		if vendor is None:
+			return [mydict[property_name] for mydict in self.all_dicts]
+		else:
+			return [mydict[property_name][f'vendor_{vendor}'] for mydict in self.all_dicts]
+
+	def get_cumulative_properties(self) -> dict:
+		output_dict = {}
+		for key in sorted(list(self.all_dicts[0].keys())):
+			if key.startswith('state') or key.startswith('actions'):
+				continue  # skip these properties because they are not cumulative
+
+			if isinstance(self.all_dicts[0][key], dict):
+				for vendor in range(self.get_number_of_vendors()):
+					output_dict[f'{key}/vendor_{vendor}'] = self.get_all_samples_of_property(key, vendor)
+			else:
+				output_dict[key] = self.get_all_samples_of_property(key, None)
+
+		return output_dict
 
 	def get_progress_values_of_property(self, property_name: str, vendor: int, look_back: int = 100) -> list:
 		progress_values = [mydict[property_name][f'vendor_{vendor}'] for mydict in self.all_dicts]

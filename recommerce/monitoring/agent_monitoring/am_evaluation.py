@@ -13,46 +13,33 @@ class Evaluator():
 	def __init__(self, configuration: am_configuration.Configurator):
 		self.configurator = configuration
 
-	def evaluate_session(self, watchers: list, episode_numbers: list = None):
+	def evaluate_session(self, analyses: dict, episode_numbers: list = None):
 		"""
 		Print statistics for monitored agents and create statistics-plots.
 
 		Args:
-			watchers (list): The watchers with all data to be evaluated. Contains a watcher per agent.
+			analyses (list): A list for every analyzed vendor. Contains a dict with the properties as keys and all samples of this property.
 			episode_numbers (list of int): The training stages the empirical distributions belong to.
 			If it is None, a prior functionality is used.
 		"""
-		# This logic seems to be a bit doubled. It is done to support all of the requests on this method.
-		# You should be able to evaluate sessions as before without giving episode_numbers and
-		# to analyze agents belonging to different training stages.
-		# This code should be improved on further issues related to monitoring!
-		for i in range(watchers[0].get_number_of_vendors()):
-			rewards = [watcher.get_all_samples_of_property('profits/all', i) for watcher in watchers]
-			if episode_numbers is not None:
-				assert len(rewards) == len(episode_numbers), 'the len of the rewards and the episode numbers must be the same'
-				for single_rewards, episode in zip(rewards, episode_numbers):
-					print()
-					print(f'Statistics for episode {episode} and vendor {i}')
-					print(f'The average reward is: {np.mean(single_rewards)}')
-					print(f'The median reward is: {np.median(single_rewards)}')
-					print(f'The maximum reward is: {np.max(single_rewards)}')
-					print(f'The minimum reward is: {np.min(single_rewards)}')
+		# Print the statistics
+		for index, analysis in enumerate(analyses):
+			if episode_numbers is None:
+				print(f'\nStatistics for agent: {self.configurator.agents[index].name}')
 			else:
-				for i in range(len(rewards)):
-					print()
-					print(f'Statistics for agent: {self.configurator.agents[i].name} and vendor: {i}')
-					print(f'The average reward is: {np.mean(rewards[i])}')
-					print(f'The median reward is: {np.median(rewards[i])}')
-					print(f'The maximum reward is: {np.max(rewards[i])}')
-					print(f'The minimum reward is: {np.min(rewards[i])}')
+				print(f'\nStatistics for episode {episode_numbers[index]}')
+
+			for property in analysis:
+				samples = analysis[property]
+				print('%40s: %7.2f (mean), %7.2f (median), %7.2f (std), %7.2f (min), %7.2f (max)' % (
+					property, np.mean(samples), np.median(samples), np.std(samples), np.min(samples), np.max(samples)))
 
 		print()
-		self._create_statistics_plots(rewards)
+		# self._create_statistics_plots(rewards)
 		if episode_numbers is not None:
-			for property_name in ['profits/all']:
-				for i in range(watchers[0].get_number_of_vendors()):
-					samples = [watcher.get_all_samples_of_property(property_name, i) for watcher in watchers]
-					self._create_violin_plot(samples, episode_numbers, f'Progress of {property_name} of agent {i}')
+			for property_name in analyses[0]:
+				samples = [analysis[property_name] for analysis in analyses]
+				self._create_violin_plot(samples, episode_numbers, f'Progress of {property_name}')
 		print(f'All plots were saved to {os.path.abspath(self.configurator.folder_path)}')
 
 	# visualize metrics

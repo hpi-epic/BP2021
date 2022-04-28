@@ -28,25 +28,25 @@ def setup_function(function):
 
 
 evaluate_session_testcases = [
-	([(RuleBasedCEAgent, [])], [[5, 10, 0, -5]]),
-	([(RuleBasedCEAgent, []), (FixedPriceCEAgent, [])], [[5, 10, 0, -5], [5, -10, 60, 5]])
+	([(RuleBasedCEAgent, [])], [{'profits/all/vendor_0': [5, 10, 0, -5], 'profits/testprofits': [10, 15, 25, -50]}]),
+	([(RuleBasedCEAgent, []), (FixedPriceCEAgent, [])], [{'profits/all/vendor_0': [5, 10, 0, -5]}, {'profits/all/vendor_0': [5, -10, 60, 5]}]),
 ]
 
 
-# @pytest.mark.parametrize('agents, rewards', evaluate_session_testcases)
-# def test_evaluate_session(agents, rewards):
-# 	with patch('recommerce.monitoring.agent_monitoring.am_evaluation.plt.clf'), \
-# 		patch('recommerce.monitoring.agent_monitoring.am_evaluation.plt.xlabel'), \
-# 		patch('recommerce.monitoring.agent_monitoring.am_evaluation.plt.title'), \
-# 		patch('recommerce.monitoring.agent_monitoring.am_evaluation.plt.legend'), \
-# 		patch('recommerce.monitoring.agent_monitoring.am_evaluation.plt.pause'), \
-# 		patch('recommerce.monitoring.agent_monitoring.am_evaluation.plt.draw'), \
-# 		patch('recommerce.monitoring.agent_monitoring.am_evaluation.plt.savefig'), \
-# 		patch('recommerce.monitoring.agent_monitoring.am_configuration.os.makedirs'), \
-# 		patch('recommerce.monitoring.agent_monitoring.am_configuration.os.path.exists') as exists_mock:
-# 		exists_mock.return_value = True
-# 		monitor.configurator.setup_monitoring(episodes=4, plot_interval=1, agents=agents)
-# 		monitor.evaluator.evaluate_session(rewards)
+@pytest.mark.parametrize('agents, rewards', evaluate_session_testcases)
+def test_evaluate_session(agents, rewards):
+	with patch('recommerce.monitoring.agent_monitoring.am_evaluation.plt.clf'), \
+		patch('recommerce.monitoring.agent_monitoring.am_evaluation.plt.xlabel'), \
+		patch('recommerce.monitoring.agent_monitoring.am_evaluation.plt.title'), \
+		patch('recommerce.monitoring.agent_monitoring.am_evaluation.plt.legend'), \
+		patch('recommerce.monitoring.agent_monitoring.am_evaluation.plt.pause'), \
+		patch('recommerce.monitoring.agent_monitoring.am_evaluation.plt.draw'), \
+		patch('recommerce.monitoring.agent_monitoring.am_evaluation.plt.savefig'), \
+		patch('recommerce.monitoring.agent_monitoring.am_configuration.os.makedirs'), \
+		patch('recommerce.monitoring.agent_monitoring.am_configuration.os.path.exists') as exists_mock:
+		exists_mock.return_value = True
+		monitor.configurator.setup_monitoring(episodes=4, plot_interval=1, agents=agents)
+		monitor.evaluator.evaluate_session(rewards)
 
 
 # all arrays in rewards must be of the same size
