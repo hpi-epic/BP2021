@@ -8,7 +8,7 @@ from .config_merger import ConfigMerger
 from .config_parser import ConfigFlatDictParser
 from .container_parser import parse_response_to_database
 from .handle_files import download_file
-from .handle_requests import send_get_request, send_get_request_with_streaming, send_post_request, stop_container
+from .handle_requests import DOCKER_API, send_get_request, send_get_request_with_streaming, send_post_request, stop_container
 from .models.config import Config
 from .models.container import Container, update_container
 
@@ -346,7 +346,7 @@ class ButtonHandler():
 		response = send_get_request('data/tensorboard', self.request.POST['container_id'])
 		if response.ok():
 			update_container(self.wanted_container.id, {'tensorboard_link': response.content['data']})
-			return redirect(response.content['data'])
+			return redirect(f'{DOCKER_API}/{response.content["data"]}')
 		else:
 			self.message = response.status()
 			return self._decide_rendering()

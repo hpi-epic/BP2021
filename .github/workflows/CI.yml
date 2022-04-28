@@ -27,7 +27,7 @@ jobs:
         run: |
           coverage run --source=. -m pytest
       - name: Test Webserver
-        env: 
+        env:
           SECRET_KEY: 'fake_secret_key'
           API_TOKEN: 'fake_api_token'
         shell: bash -l {0}
