@@ -6,22 +6,12 @@ import pytest
 import utils_tests as ut_t
 
 import recommerce.configuration.hyperparameter_config as hyperparameter_config
+from tests.utils_tests import import_config
 
 
 def teardown_module(module):
 	print('***TEARDOWN***')
 	reload(hyperparameter_config)
-
-
-def import_config() -> hyperparameter_config.HyperparameterConfig:
-	"""
-	Reload the hyperparameter_config file to update the config variable with the mocked values.
-
-	Returns:
-		HyperparameterConfig: The config object.
-	"""
-	reload(hyperparameter_config)
-	return hyperparameter_config.config
 
 
 ######
