@@ -235,6 +235,7 @@ def test_incorrect_setup_monitoring(parameters, expected_message):
 			plot_interval=dict['plot_interval'],
 			marketplace=dict['marketplace'],
 			agents=dict['agents'],
+			config=config_hyperparameter,
 			subfolder_name=dict['subfolder_name']
 		)
 	assert expected_message in str(assertion_message.value)
@@ -268,26 +269,27 @@ def test_incorrect_setup_monitoring_type_errors(parameters):
 			plot_interval=dict['plot_interval'],
 			marketplace=dict['marketplace'],
 			agents=dict['agents'],
+			config=config_hyperparameter,
 			subfolder_name=dict['subfolder_name']
 		)
 
 
 print_configuration_testcases = [
-	([(RuleBasedCEAgent, [])]),
-	([(RuleBasedCEAgent, []), (FixedPriceCEAgent, [])])
+	([(RuleBasedCEAgent, [config_hyperparameter])]),
+	([(RuleBasedCEAgent, [config_hyperparameter]), (FixedPriceCEAgent, [config_hyperparameter])])
 ]
 
 
 @pytest.mark.parametrize('agents', print_configuration_testcases)
 def test_print_configuration(agents):
-	monitor.configurator.setup_monitoring(agents=agents)
+	monitor.configurator.setup_monitoring(agents=agents, config=config_hyperparameter)
 
 	monitor.configurator.print_configuration()
 
 
 @pytest.mark.parametrize('agents', print_configuration_testcases)
 def test_print_configuration_ratio(agents):
-	monitor.configurator.setup_monitoring(episodes=51, plot_interval=1, agents=agents)
+	monitor.configurator.setup_monitoring(config=config_hyperparameter, episodes=51, plot_interval=1, agents=agents)
 
 	with patch('recommerce.monitoring.agent_monitoring.am_configuration.input', create=True) as mocked_input:
 		mocked_input.side_effect = ['n']
