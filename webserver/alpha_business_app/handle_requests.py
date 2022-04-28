@@ -19,7 +19,7 @@ def _get_api_token() -> str:
 
 def _default_request_parameter(wanted_action: str, params: dict):
 	return {
-		'url': f'{DOCKER_API}/api_health',
+		'url': f'{DOCKER_API}/{wanted_action}',
 		'params': params,
 		'headers': {'Authorization': _get_api_token()},
 		'verify': '/etc/ssl_cert/api_cert.crt'
