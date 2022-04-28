@@ -2,6 +2,7 @@ from typing import Tuple, Union
 
 import recommerce.market.circular.circular_sim_market as circular_market
 import recommerce.market.linear.linear_sim_market as linear_market
+import recommerce.configuration.hyperparameter_config as hyperparameter_config
 
 
 def create_hyperparameter_mock_dict_rl(gamma: float = 0.99,
@@ -226,3 +227,12 @@ def create_mock_action(market_subclass) -> Union[int, Tuple]:
 		return (1, 2, 3)
 	elif issubclass(market_subclass, circular_market.CircularEconomy):
 		return (1, 2)
+
+def import_config() -> hyperparameter_config.HyperparameterConfig:
+	"""
+	Reload the hyperparameter_config file to update the config variable with the mocked values.
+
+	Returns:
+		HyperparameterConfig: The config object.
+	"""
+	return hyperparameter_config.HyperparameterConfigLoader.load('hyperparameter_config')

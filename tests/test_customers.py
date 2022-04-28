@@ -4,9 +4,12 @@ import pytest
 import recommerce.market.circular.circular_sim_market as circular_market
 import recommerce.market.customer as customer
 import recommerce.market.linear.linear_sim_market as linear_market
+from recommerce.market.sim_market import SimMarket
 from recommerce.market.circular.circular_customers import CustomerCircular
 from recommerce.market.linear.linear_customers import CustomerLinear
+from tests.utils_tests import import_config
 
+config_hyperparameter = import_config()
 
 # Test the Customer parent class, i.e. make sure it cannot be used
 def test_customer_parent_class():
@@ -54,7 +57,7 @@ customer_action_range_testcases = [
 def test_customer_action_range(customer, market):
 	offers = random_offer(market)
 	probability_distribution = customer.generate_purchase_probabilities_from_offer(customer, *offers)
-	assert len(probability_distribution) == market()._get_number_of_vendors() * \
+	assert len(probability_distribution) == market(config=config_hyperparameter)._get_number_of_vendors() * \
 		(1 if issubclass(market, linear_market.LinearEconomy) else 2) + 1
 
 
@@ -102,7 +105,7 @@ def test_circular_higher_price_lower_purchase_probability():
 	assert probability_distribution[2] < probability_distribution[4]
 
 
-def random_offer(marketplace):
+def random_offer(marketplace: SimMarket):
 	"""
 	Helper function that creates a random offer (state that includes the agent's price) to test customer behaviour.
 
@@ -111,7 +114,7 @@ def random_offer(marketplace):
 	Args:
 		marketplace (SimMarket): The marketplace for which offers should be generated.
 	"""
-	marketplace = marketplace()
+	marketplace = marketplace(config=config_hyperparameter)
 	marketplace.reset()
 	marketplace.vendor_actions[0] = marketplace.action_space.sample()
 	return marketplace._get_common_state_array(), marketplace.vendor_specific_state, marketplace.vendor_actions

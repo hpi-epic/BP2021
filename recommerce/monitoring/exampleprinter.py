@@ -98,17 +98,18 @@ def main():  # pragma: no cover
 	Defines what is performed when the `agent_monitoring` command is chosen in `main.py`.
 	"""
 	config_hyperparameter: HyperparameterConfig = HyperparameterConfigLoader.load('hyperparameter_config')
-	printer = ExamplePrinter(config_hyperparameter)
+	printer = ExamplePrinter(config=config_hyperparameter)
 
 	config: ExampleprinterEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_exampleprinter')
 	# TODO: Theoretically, the name of the agent is saved in config['name'], but we don't use it yet.
-	marketplace = config.marketplace()
+	marketplace = config.marketplace(config=config_hyperparameter)
 
 	# QLearningAgents need more initialization
 	if issubclass(config.agent['agent_class'], QLearningAgent):
 		printer.setup_exampleprinter(marketplace=marketplace,
 			agent=config.agent['agent_class'](
 				marketplace=marketplace,
+				config=config_hyperparameter,
 				load_path=os.path.abspath(os.path.join(PathManager.data_path, config.agent['argument']))))
 	else:
 		printer.setup_exampleprinter(marketplace=marketplace, agent=config.agent['agent_class']())
