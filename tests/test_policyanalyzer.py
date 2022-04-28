@@ -11,12 +11,13 @@ from recommerce.market.linear.linear_vendors import CompetitorLinearRatio1
 from recommerce.monitoring.policyanalyzer import PolicyAnalyzer
 from recommerce.rl.actorcritic.actorcritic_agent import ContinuosActorCriticAgentFixedOneStd
 from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
+from tests.utils_tests import import_config
 
 write_to_path = os.path.join(PathManager.results_path, 'policyanalyzer')
 
 
 def test_rule_based_linear_competitor1():
-	pa = PolicyAnalyzer(CompetitorLinearRatio1())
+	pa = PolicyAnalyzer(CompetitorLinearRatio1(config=import_config()))
 	given_path = pa.analyze_policy(np.array([15, -1, 10]), [(1, 'competitor price', range(1, 11))])
 	expected_path = os.path.join(write_to_path, 'add_a_title_here.png')
 	assert expected_path in given_path
@@ -25,7 +26,7 @@ def test_rule_based_linear_competitor1():
 
 
 def test_rule_based_linear_competitor2():
-	pa = PolicyAnalyzer(CompetitorLinearRatio1())
+	pa = PolicyAnalyzer(CompetitorLinearRatio1(config=import_config()))
 	given_path = pa.analyze_policy(
 		np.array([-1, -1, 10]),
 		[(0, 'own quality', range(5, 20)), (1, 'competitor price', range(1, 11))],
@@ -38,7 +39,7 @@ def test_rule_based_linear_competitor2():
 
 
 def test_rule_based_circular_competitor1():
-	pa = PolicyAnalyzer(RuleBasedCERebuyAgent())
+	pa = PolicyAnalyzer(RuleBasedCERebuyAgent(config=import_config()))
 	given_path = pa.analyze_policy(np.array([50, -1]), [(1, 'self storage stock', range(30))], 'refurbished price only on storage', 0)
 	expected_path = os.path.join(write_to_path, 'refurbished_price_only_on_storage.png')
 	assert expected_path in given_path
@@ -47,7 +48,7 @@ def test_rule_based_circular_competitor1():
 
 
 def test_rule_based_circular_competitor2():
-	pa = PolicyAnalyzer(RuleBasedCERebuyAgent())
+	pa = PolicyAnalyzer(RuleBasedCERebuyAgent(config=import_config()))
 	given_path = pa.analyze_policy(
 		np.array([-1, -1]),
 		[(1, 'self storage stock', range(30)), (0, 'in circulation', range(200))],
@@ -69,7 +70,7 @@ monopoly_test_cases = [
 @pytest.mark.parametrize('title, policyaccess, expected_filename', monopoly_test_cases)
 def test_circular_monopoly_q_learning(title, policyaccess, expected_filename):
 	q_learing_agent = QLearningAgent(
-		marketplace=CircularEconomyRebuyPriceMonopoly(), load_path=os.path.join(PathManager.data_path,
+		marketplace=CircularEconomyRebuyPriceMonopoly(config=import_config()), config=import_config(), load_path=os.path.join(PathManager.data_path,
 		'CircularEconomyRebuyPriceMonopoly_QLearningAgent.dat')
 	)
 	pa = PolicyAnalyzer(q_learing_agent)
@@ -94,7 +95,7 @@ one_competitor_test_cases = [
 @pytest.mark.parametrize('title, policyaccess, expected_filename', one_competitor_test_cases)
 def test_circular_duopol_q_learning(title, policyaccess, expected_filename):
 	q_learing_agent = QLearningAgent(
-		marketplace=CircularEconomyRebuyPriceDuopoly(), load_path=os.path.join(PathManager.data_path,
+		marketplace=CircularEconomyRebuyPriceDuopoly(config=import_config()), config=import_config(), load_path=os.path.join(PathManager.data_path,
 		'CircularEconomyRebuyPriceDuopoly_QLearningAgent.dat')
 	)
 	pa = PolicyAnalyzer(q_learing_agent)
@@ -119,7 +120,7 @@ one_competitor_test_cases = [
 @pytest.mark.parametrize('title, policyaccess, expected_filename', one_competitor_test_cases)
 def test_circular_duopol_continuos_actorcritic(title, policyaccess, expected_filename):
 	a2c_agent = ContinuosActorCriticAgentFixedOneStd(
-		marketplace=CircularEconomyRebuyPriceDuopoly(), load_path=os.path.join(PathManager.data_path,
+		marketplace=CircularEconomyRebuyPriceDuopoly(config=import_config()), config=import_config(), load_path=os.path.join(PathManager.data_path,
 			'actor_parametersCircularEconomyRebuyPriceDuopoly_ContinuosActorCriticAgentFixedOneStd.dat')
 	)
 	pa = PolicyAnalyzer(a2c_agent)
@@ -143,7 +144,7 @@ one_competitor_test_cases = [
 
 @pytest.mark.parametrize('title, policyaccess, expected_filename', one_competitor_test_cases)
 def test_circular_duopol_rule_based_agent(title, policyaccess, expected_filename):
-	pa = PolicyAnalyzer(RuleBasedCERebuyAgentCompetitive(), 'rule_based_competitive_policy')
+	pa = PolicyAnalyzer(RuleBasedCERebuyAgentCompetitive(config=import_config()), 'rule_based_competitive_policy')
 	given_path = pa.analyze_policy(
 		np.array([75, 10, -1, -1, 2, 12]),
 		[(2, "competitor's refurbished price", range(10)), (3, "competitor's new price", range(10))],
