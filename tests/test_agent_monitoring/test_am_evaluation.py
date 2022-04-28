@@ -9,8 +9,11 @@ import recommerce.monitoring.agent_monitoring.am_monitoring as monitoring
 from recommerce.configuration.path_manager import PathManager
 from recommerce.market.circular.circular_vendors import FixedPriceCEAgent, RuleBasedCEAgent
 from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
+from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader, HyperparameterConfig
 
 monitor = monitoring.Monitor()
+
+config_hyperparameter: HyperparameterConfig = HyperparameterConfigLoader.load('hyperparameter_config')
 
 
 # setup before each test
@@ -28,8 +31,8 @@ def setup_function(function):
 
 
 evaluate_session_testcases = [
-	([(RuleBasedCEAgent, [])], [[5, 10, 0, -5]]),
-	([(RuleBasedCEAgent, []), (FixedPriceCEAgent, [])], [[5, 10, 0, -5], [5, -10, 60, 5]])
+	([(RuleBasedCEAgent, [config_hyperparameter])], [[5, 10, 0, -5]]),
+	([(RuleBasedCEAgent, [config_hyperparameter]), (FixedPriceCEAgent, [config_hyperparameter])], [[5, 10, 0, -5], [5, -10, 60, 5]])
 ]
 
 
@@ -61,10 +64,10 @@ def test_rewards_array_size():
 
 
 create_histogram_statistics_plots_testcases = [
-	([(RuleBasedCEAgent, [])], [[100, 0]], 1, [(1.0, 0.0, 0.0, 1.0)], (0.0, 1000.0)),
-	([(RuleBasedCEAgent, []), (RuleBasedCEAgent, [])],
+	([(RuleBasedCEAgent, [config_hyperparameter])], [[100, 0]], 1, [(1.0, 0.0, 0.0, 1.0)], (0.0, 1000.0)),
+	([(RuleBasedCEAgent, [config_hyperparameter]), (RuleBasedCEAgent, [config_hyperparameter])],
 		[[100, 0], [10, 5]], 1, [(1.0, 0.0, 0.0, 1.0), (0.0, 1.0, 0.9531223422015865, 1.0)], (0.0, 1000.0)),
-	([(RuleBasedCEAgent, []), (RuleBasedCEAgent, []), (RuleBasedCEAgent, []), (RuleBasedCEAgent, [])],
+	([(RuleBasedCEAgent, [config_hyperparameter]), (RuleBasedCEAgent, [config_hyperparameter]), (RuleBasedCEAgent, [config_hyperparameter]), (RuleBasedCEAgent, [config_hyperparameter])],
 		[[100, 0], [10, 5], [100, 10000], [10, 1000]],
 		10,
 		[(1.0, 0.0, 0.0, 1.0), (0.5234360234360234, 1.0, 0.0, 1.0), (0.0, 1.0, 0.9531223422015865, 1.0), (0.4296860234360234, 0.0, 1.0, 1.0)],
@@ -96,7 +99,7 @@ def test_create_histogram(agents, rewards, plot_bins, agent_color, lower_upper_r
 
 
 def test_create_histogram_without_saving_to_directory():
-	monitor.configurator.setup_monitoring(enable_live_draw=False, agents=[(RuleBasedCEAgent, [])])
+	monitor.configurator.setup_monitoring(enable_live_draw=False, agents=[(RuleBasedCEAgent, [config_hyperparameter])])
 	with patch('recommerce.monitoring.agent_monitoring.am_evaluation.plt.clf'), \
 		patch('recommerce.monitoring.agent_monitoring.am_evaluation.plt.xlabel'), \
 		patch('recommerce.monitoring.agent_monitoring.am_evaluation.plt.title'), \
