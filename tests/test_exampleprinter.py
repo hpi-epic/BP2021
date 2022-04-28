@@ -20,7 +20,7 @@ config_hyperparameter: HyperparameterConfig = HyperparameterConfigLoader.load('h
 
 def test_setup_exampleprinter():
 	printer = ExamplePrinter(config=config_hyperparameter)
-	printer.setup_exampleprinter(marketplace=linear_market.LinearEconomyDuopoly(), agent=FixedPriceLEAgent())
+	printer.setup_exampleprinter(marketplace=linear_market.LinearEconomyDuopoly(config=config_hyperparameter), agent=FixedPriceLEAgent(config=config_hyperparameter))
 	assert isinstance(printer.marketplace, linear_market.LinearEconomyDuopoly)
 	assert isinstance(printer.agent, FixedPriceLEAgent)
 
@@ -28,11 +28,11 @@ def test_setup_exampleprinter():
 full_episode_testcases_rule_based = [
 	(linear_market.LinearEconomyDuopoly(config=config_hyperparameter), FixedPriceLEAgent(config=config_hyperparameter)),
 	(linear_market.LinearEconomyOligopoly(config=config_hyperparameter), FixedPriceLEAgent(config=config_hyperparameter)),
-	(circular_market.CircularEconomyMonopoly(config=config_hyperparameter), circular_vendors.FixedPriceCEAgent()),
+	(circular_market.CircularEconomyMonopoly(config=config_hyperparameter), circular_vendors.FixedPriceCEAgent(config=config_hyperparameter)),
 	(circular_market.CircularEconomyMonopoly(config=config_hyperparameter), circular_vendors.RuleBasedCEAgent(config=config_hyperparameter)),
-	(circular_market.CircularEconomyRebuyPriceMonopoly(config=config_hyperparameter), circular_vendors.FixedPriceCERebuyAgent()),
+	(circular_market.CircularEconomyRebuyPriceMonopoly(config=config_hyperparameter), circular_vendors.FixedPriceCERebuyAgent(config=config_hyperparameter)),
 	(circular_market.CircularEconomyRebuyPriceMonopoly(config=config_hyperparameter), circular_vendors.RuleBasedCERebuyAgent(config=config_hyperparameter)),
-	(circular_market.CircularEconomyRebuyPriceDuopoly(config=config_hyperparameter), circular_vendors.FixedPriceCERebuyAgent()),
+	(circular_market.CircularEconomyRebuyPriceDuopoly(config=config_hyperparameter), circular_vendors.FixedPriceCERebuyAgent(config=config_hyperparameter)),
 	(circular_market.CircularEconomyRebuyPriceDuopoly(config=config_hyperparameter), circular_vendors.RuleBasedCERebuyAgent(config=config_hyperparameter))
 ]
 
@@ -63,7 +63,7 @@ full_episode_testcases_rl_agent = [
 
 @pytest.mark.parametrize('marketplace, agent_class, parameters_file', full_episode_testcases_rl_agent)
 def test_full_episode_rl_agents(marketplace, agent_class, parameters_file):
-	agent = agent_class(marketplace=marketplace, load_path=os.path.join(parameters_path, parameters_file))
+	agent = agent_class(marketplace=marketplace, config=config_hyperparameter,load_path=os.path.join(parameters_path, parameters_file))
 	with patch('recommerce.monitoring.exampleprinter.SVGManipulator'),\
 		patch('recommerce.monitoring.exampleprinter.SummaryWriter'):
 		printer = ExamplePrinter(config=config_hyperparameter)
