@@ -2,6 +2,7 @@ import os
 
 import matplotlib.pyplot as plt
 import numpy as np
+from scipy.stats import kde
 
 import recommerce.monitoring.agent_monitoring.am_configuration as am_configuration
 
@@ -35,6 +36,21 @@ class Evaluator():
 					property, np.mean(samples), np.median(samples), np.std(samples), np.min(samples), np.max(samples)))
 
 		print()
+		# Create density plots
+		for index, analysis in enumerate(analyses):
+			for property in analysis:
+				if 'vendor_' not in property:
+					self.create_density_plot([analysis[property]], property)
+				elif 'vendor_0' in property:
+					counter = 0
+					samples = []
+					while (property[:-1] + str(counter)) in analysis:
+						samples.append(analysis[property[:-1] + str(counter)])
+						counter += 1
+
+					prefix = f'episode_{episode_numbers[index]}_' if episode_numbers is not None else f'{self.configurator.agents[index].name}_'
+					self.create_density_plot(samples, prefix + property[:-9])
+
 		# self._create_statistics_plots(rewards)
 		if episode_numbers is not None:
 			for property_name in analyses[0]:
@@ -43,6 +59,21 @@ class Evaluator():
 		print(f'All plots were saved to {os.path.abspath(self.configurator.folder_path)}')
 
 	# visualize metrics
+	def create_density_plot(self, samples: list, property: str):
+		plt.clf()
+		min_value = min([min(s) for s in samples])
+		max_value = max([max(s) for s in samples])
+		offset = (max_value - min_value) / 7
+
+		x = np.linspace(min_value - offset, max_value + offset, 100)
+		densities = [kde.gaussian_kde(s) for s in samples]
+		ys = [d(x) for d in densities]
+		for i, y in enumerate(ys):
+			plt.plot(x, y, label=f'vendor_{i}')
+		plt.title(f'Density plot of {property}')
+		plt.legend()
+		plt.savefig(fname=os.path.join(self.configurator.get_folder(), 'density_plot_' + property.replace('/', '_') + '.svg'))
+
 	def create_histogram(self, rewards: list, is_last_histogram: bool, filename: str = 'default_histogram.svg') -> None:
 		"""
 		Create a histogram sorting rewards into bins of 1000.
