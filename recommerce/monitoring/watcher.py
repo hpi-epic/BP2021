@@ -52,6 +52,14 @@ class Watcher:
 			self.step_counter[index] = 0
 
 	def get_average_dict(self, look_back: int = 100) -> dict:
+		"""
+		Takes a list of dictionaries and calculates the average over the last look_back episodes.
+		Assumes that all dicts have the same shape.
+		Args:
+			look_back (int): The number of episode dictionaries to average over.
+		Returns:
+			dict: A dict of the same shape containing the average in each entry.
+		"""
 		if len(self.all_dicts) == 0:
 			return {}
 		slice_dicts = self.all_dicts[-look_back:]

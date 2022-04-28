@@ -65,8 +65,8 @@ class Monitor():
 					watchers[current_agent_index].add_info(info)
 
 		# only one histogram after the whole monitoring process
-		# returns = [watcher.get_all_samples_of_property('profits/all', 0) for watcher in watchers]
-		# self.evaluator.create_histogram(returns, True, 'Cumulative_rewards_per_episode.svg')
+		returns = [watcher.get_all_samples_of_property('profits/all', 0) for watcher in watchers]
+		self.evaluator.create_histogram(returns, True, 'Cumulative_rewards_per_episode.svg')
 
 		return [watcher.get_cumulative_properties() for watcher in watchers]
 
