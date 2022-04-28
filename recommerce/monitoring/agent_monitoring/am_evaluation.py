@@ -2,6 +2,7 @@ import os
 
 import matplotlib.pyplot as plt
 import numpy as np
+from numpy import linalg
 from scipy.stats import kde
 
 import recommerce.monitoring.agent_monitoring.am_configuration as am_configuration
@@ -66,8 +67,14 @@ class Evaluator():
 		offset = (max_value - min_value) / 7
 
 		x = np.linspace(min_value - offset, max_value + offset, 100)
-		densities = [kde.gaussian_kde(s) for s in samples]
-		ys = [d(x) for d in densities]
+		ys = []
+		for s in samples:
+			try:
+				density = kde.gaussian_kde(s)
+			except linalg.LinAlgError:
+				continue
+			ys.append(density(x))
+
 		for i, y in enumerate(ys):
 			plt.plot(x, y, label=f'vendor_{i}')
 		plt.title(f'Density plot of {property}')
