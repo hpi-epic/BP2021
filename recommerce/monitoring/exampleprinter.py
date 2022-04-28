@@ -23,8 +23,9 @@ class ExamplePrinter():
 
 	def __init__(self, config: HyperparameterConfig):
 		ut.ensure_results_folders_exist()
-		self.marketplace = circular_market.CircularEconomyRebuyPriceDuopoly()
-		self.agent = RuleBasedCERebuyAgent()
+		self.config = config
+		self.marketplace = circular_market.CircularEconomyRebuyPriceDuopoly(config=self.config)
+		self.agent = RuleBasedCERebuyAgent(config=self.config)
 		# Signal handler for e.g. KeyboardInterrupt
 		signal.signal(signal.SIGINT, self._signal_handler)
 

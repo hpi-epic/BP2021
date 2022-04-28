@@ -8,9 +8,11 @@ import pytest
 import utils_tests as ut_t
 
 import recommerce.configuration.hyperparameter_config as hyperparameter_config
+from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader, HyperparameterConfig
 import recommerce.configuration.utils as ut
 from recommerce.monitoring.svg_manipulation import SVGManipulator
 
+config_hyperparameter: HyperparameterConfig = HyperparameterConfigLoader.load('hyperparameter_config')
 
 def teardown_module(module):
 	reload(hyperparameter_config)
@@ -33,14 +35,9 @@ testcases_shuffle_quality = [1, 10, 100, 1000]
 
 @pytest.mark.parametrize('max_quality', testcases_shuffle_quality)
 def test_shuffle_quality(max_quality: int):
-	mock_json = json.dumps(ut_t.create_hyperparameter_mock_dict(
-		sim_market=ut_t.create_hyperparameter_mock_dict_sim_market(max_quality=max_quality)))
-	with patch('builtins.open', mock_open(read_data=mock_json)) as mock_file:
-		ut_t.check_mock_file(mock_file, mock_json)
-		import_config()
-		reload(ut)
-		quality = ut.shuffle_quality(config)
-		assert quality <= max_quality and quality >= 1
+	config_hyperparameter.max_quality = max_quality
+	quality = ut.shuffle_quality(config_hyperparameter)
+	assert quality <= max_quality and quality >= 1
 
 
 testcases_softmax = [
@@ -280,12 +277,8 @@ def test_write_content_of_dict_to_overview_svg(
 		episode_dictionary: dict,
 		cumulated_dictionary: dict,
 		expected: dict):
-	mock_json = json.dumps((ut_t.create_hyperparameter_mock_dict(
-		sim_market=ut_t.create_hyperparameter_mock_dict_sim_market(episode_length=50, number_of_customers=20, production_price=3))))
-	with patch('builtins.open', mock_open(read_data=mock_json)) as mock_file:
-		ut_t.check_mock_file(mock_file, mock_json)
-		import_config()
-		reload(ut)
-		with patch('recommerce.monitoring.svg_manipulation.SVGManipulator.write_dict_to_svg') as mock_write_dict_to_svg:
-			ut.write_content_of_dict_to_overview_svg(SVGManipulator(), episode, episode_dictionary, cumulated_dictionary)
-		mock_write_dict_to_svg.assert_called_once_with(target_dictionary=expected)
+	mock_json = HyperparameterConfig(ut_t.create_hyperparameter_mock_dict(
+		sim_market=ut_t.create_hyperparameter_mock_dict_sim_market(episode_length=50, number_of_customers=20, production_price=3)))
+	with patch('recommerce.monitoring.svg_manipulation.SVGManipulator.write_dict_to_svg') as mock_write_dict_to_svg:
+		ut.write_content_of_dict_to_overview_svg(SVGManipulator(), episode, episode_dictionary, cumulated_dictionary, mock_json)
+	mock_write_dict_to_svg.assert_called_once_with(target_dictionary=expected)

@@ -52,11 +52,11 @@ non_abstract_agent_classes_testcases = [
 
 @pytest.mark.parametrize('agent', non_abstract_agent_classes_testcases)
 def test_non_abstract_agent_classes(agent):
-	agent()
+	agent(config_hyperparameter)
 
 
 def test_non_abstract_qlearning_agent():
-	QLearningAgent(marketplace=LinearEconomyOligopoly())
+	QLearningAgent(marketplace=LinearEconomyOligopoly(config=config_hyperparameter))
 
 
 fixed_price_agent_observation_policy_pairs_testcases = [
