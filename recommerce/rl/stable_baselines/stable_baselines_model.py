@@ -8,17 +8,17 @@ from recommerce.market.linear.linear_vendors import LinearAgent
 from recommerce.market.sim_market import SimMarket
 from recommerce.rl.callback import RecommerceCallback
 from recommerce.rl.reinforcement_learning_agent import ReinforcementLearningAgent
-
+from recommerce.configuration.hyperparameter_config import HyperparameterConfig
 
 class StableBaselinesAgent(ReinforcementLearningAgent, LinearAgent, CircularAgent):
-	def __init__(self, marketplace=None, optim=None, load_path=None, name=None):
+	def __init__(self, config: HyperparameterConfig, marketplace=None, optim=None, load_path=None, name=None):
 		assert marketplace is not None
 		assert isinstance(marketplace, SimMarket), \
 			f'if marketplace is provided, marketplace must be a SimMarket, but is {type(marketplace)}'
 		assert optim is None
 		assert load_path is None or isinstance(load_path, str)
 		assert name is None or isinstance(name, str)
-
+		self.config = config
 		self.marketplace = marketplace
 		if load_path is None:
 			self._initialize_model(marketplace)
@@ -39,7 +39,7 @@ class StableBaselinesAgent(ReinforcementLearningAgent, LinearAgent, CircularAgen
 
 	def train_agent(self, training_steps=100000, iteration_length=500):
 		callback = RecommerceCallback(
-			type(self), type(self.marketplace), training_steps=training_steps, iteration_length=iteration_length, signature=self.name)
+			type(self), type(self.marketplace), config=self.config ,training_steps=training_steps, iteration_length=iteration_length, signature=self.name)
 		self.model.set_env(stable_baselines3.common.monitor.Monitor(self.marketplace, callback.save_path))
 		self.model.learn(training_steps, callback=callback)
 
