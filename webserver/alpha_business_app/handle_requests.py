@@ -38,7 +38,6 @@ def send_get_request(wanted_action: str, container_id: str) -> APIResponse:
 		APIResponse: Response from the API converted into our special format.
 	"""
 	try:
-		print(_default_request_parameter())
 		response = requests.get(**_default_request_parameter(wanted_action, {'id': str(container_id)}))
 	except requests.exceptions.RequestException:
 		return APIResponse('error', content='The API is unavailable')
