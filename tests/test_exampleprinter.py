@@ -6,6 +6,7 @@ import pytest
 import recommerce.market.circular.circular_sim_market as circular_market
 import recommerce.market.circular.circular_vendors as circular_vendors
 import recommerce.market.linear.linear_sim_market as linear_market
+from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader, HyperparameterConfig
 from recommerce.market.linear.linear_vendors import FixedPriceLEAgent
 from recommerce.monitoring.exampleprinter import ExamplePrinter
 from recommerce.rl.actorcritic.actorcritic_agent import ContinuosActorCriticAgentFixedOneStd, DiscreteActorCriticAgent
@@ -13,6 +14,8 @@ from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
 
 # The load path for the agent modelfiles
 parameters_path = os.path.join('tests', 'test_data')
+
+config_hyperparameter: HyperparameterConfig = HyperparameterConfigLoader.load('hyperparameter_config')
 
 
 def test_setup_exampleprinter():
@@ -23,14 +26,14 @@ def test_setup_exampleprinter():
 
 
 full_episode_testcases_rule_based = [
-	(linear_market.LinearEconomyDuopoly(), FixedPriceLEAgent()),
-	(linear_market.LinearEconomyOligopoly(), FixedPriceLEAgent()),
-	(circular_market.CircularEconomyMonopoly(), circular_vendors.FixedPriceCEAgent()),
-	(circular_market.CircularEconomyMonopoly(), circular_vendors.RuleBasedCEAgent()),
-	(circular_market.CircularEconomyRebuyPriceMonopoly(), circular_vendors.FixedPriceCERebuyAgent()),
-	(circular_market.CircularEconomyRebuyPriceMonopoly(), circular_vendors.RuleBasedCERebuyAgent()),
-	(circular_market.CircularEconomyRebuyPriceDuopoly(), circular_vendors.FixedPriceCERebuyAgent()),
-	(circular_market.CircularEconomyRebuyPriceDuopoly(), circular_vendors.RuleBasedCERebuyAgent())
+	(linear_market.LinearEconomyDuopoly(config=config_hyperparameter), FixedPriceLEAgent(config=config_hyperparameter)),
+	(linear_market.LinearEconomyOligopoly(config=config_hyperparameter), FixedPriceLEAgent(config=config_hyperparameter)),
+	(circular_market.CircularEconomyMonopoly(config=config_hyperparameter), circular_vendors.FixedPriceCEAgent()),
+	(circular_market.CircularEconomyMonopoly(config=config_hyperparameter), circular_vendors.RuleBasedCEAgent(config=config_hyperparameter)),
+	(circular_market.CircularEconomyRebuyPriceMonopoly(config=config_hyperparameter), circular_vendors.FixedPriceCERebuyAgent()),
+	(circular_market.CircularEconomyRebuyPriceMonopoly(config=config_hyperparameter), circular_vendors.RuleBasedCERebuyAgent(config=config_hyperparameter)),
+	(circular_market.CircularEconomyRebuyPriceDuopoly(config=config_hyperparameter), circular_vendors.FixedPriceCERebuyAgent()),
+	(circular_market.CircularEconomyRebuyPriceDuopoly(config=config_hyperparameter), circular_vendors.RuleBasedCERebuyAgent(config=config_hyperparameter))
 ]
 
 
@@ -44,16 +47,16 @@ def test_full_episode_rule_based(marketplace, agent):
 
 
 full_episode_testcases_rl_agent = [
-	(linear_market.LinearEconomyDuopoly(), QLearningAgent, 'LinearEconomyDuopoly_QLearningAgent.dat'),
-	(circular_market.CircularEconomyMonopoly(), QLearningAgent,
+	(linear_market.LinearEconomyDuopoly(config=config_hyperparameter), QLearningAgent, 'LinearEconomyDuopoly_QLearningAgent.dat'),
+	(circular_market.CircularEconomyMonopoly(config=config_hyperparameter), QLearningAgent,
 		'CircularEconomyMonopoly_QLearningAgent.dat'),
-	(circular_market.CircularEconomyRebuyPriceMonopoly(), QLearningAgent,
+	(circular_market.CircularEconomyRebuyPriceMonopoly(config=config_hyperparameter), QLearningAgent,
 		'CircularEconomyRebuyPriceMonopoly_QLearningAgent.dat'),
-	(circular_market.CircularEconomyRebuyPriceDuopoly(), QLearningAgent,
+	(circular_market.CircularEconomyRebuyPriceDuopoly(config=config_hyperparameter), QLearningAgent,
 		'CircularEconomyRebuyPriceDuopoly_QLearningAgent.dat'),
-	(circular_market.CircularEconomyRebuyPriceDuopoly(), ContinuosActorCriticAgentFixedOneStd,
+	(circular_market.CircularEconomyRebuyPriceDuopoly(config=config_hyperparameter), ContinuosActorCriticAgentFixedOneStd,
 		'actor_parametersCircularEconomyRebuyPriceDuopoly_ContinuosActorCriticAgentFixedOneStd.dat'),
-	(circular_market.CircularEconomyRebuyPriceDuopoly(), DiscreteActorCriticAgent,
+	(circular_market.CircularEconomyRebuyPriceDuopoly(config=config_hyperparameter), DiscreteActorCriticAgent,
 		'actor_parametersCircularEconomyRebuyPriceDuopoly_DiscreteACACircularEconomyRebuy.dat')
 ]
 

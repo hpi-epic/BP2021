@@ -7,7 +7,7 @@ import pytest
 import utils_tests as ut_t
 from numpy import random
 
-import recommerce.configuration.hyperparameter_config as hyperparameter_config
+from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader, HyperparameterConfig
 import recommerce.market.circular.circular_vendors as circular_vendors
 import recommerce.market.linear.linear_vendors as linear_vendors
 import recommerce.market.vendors as vendors
@@ -16,23 +16,7 @@ from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
 from recommerce.rl.reinforcement_learning_agent import ReinforcementLearningAgent
 
 
-def teardown_module(module):
-	print('***TEARDOWN***')
-	reload(hyperparameter_config)
-
-
-def import_config() -> hyperparameter_config.HyperparameterConfig:
-	"""
-	Reload the hyperparameter_config file to update the config variable with the mocked values.
-
-	Returns:
-		HyperparameterConfig: The config object.
-	"""
-	reload(hyperparameter_config)
-	return hyperparameter_config.config
-
-
-config = 
+config_hyperparameter: HyperparameterConfig = HyperparameterConfigLoader.load('hyperparameter_config')
 
 abstract_agent_classes_testcases = [
 	vendors.Agent,
@@ -76,8 +60,8 @@ def test_non_abstract_qlearning_agent():
 
 
 fixed_price_agent_observation_policy_pairs_testcases = [
-	(linear_vendors.FixedPriceLEAgent(), config.production_price + 3),
-	(linear_vendors.FixedPriceLEAgent(7), 7),
+	(linear_vendors.FixedPriceLEAgent(config=config_hyperparameter), config_hyperparameter.production_price + 3),
+	(linear_vendors.FixedPriceLEAgent(config=config_hyperparameter, fixed_price=7), 7),
 	(circular_vendors.FixedPriceCEAgent(), (2, 4)),
 	(circular_vendors.FixedPriceCEAgent((3, 5)), (3, 5)),
 	(circular_vendors.FixedPriceCERebuyAgent(), (3, 6, 2)),
@@ -105,8 +89,7 @@ def test_storage_evaluation(state, expected_prices):
 		sim_market=ut_t.create_hyperparameter_mock_dict_sim_market(max_price=10, production_price=2)))
 	with patch('builtins.open', mock_open(read_data=mock_json)) as mock_file:
 		ut_t.check_mock_file(mock_file, mock_json)
-		import_config()
-		agent = circular_vendors.RuleBasedCEAgent()
+		agent = circular_vendors.RuleBasedCEAgent(config=config_hyperparameter)
 		assert expected_prices == agent.policy(state)
 
 
@@ -124,8 +107,7 @@ def test_storage_evaluation_with_rebuy_price(state, expected_prices):
 		sim_market=ut_t.create_hyperparameter_mock_dict_sim_market(max_price=10, production_price=2)))
 	with patch('builtins.open', mock_open(read_data=mock_json)) as mock_file:
 		ut_t.check_mock_file(mock_file, mock_json)
-		import_config()
-		agent = circular_vendors.RuleBasedCERebuyAgent()
+		agent = circular_vendors.RuleBasedCERebuyAgent(config=config_hyperparameter)
 		assert expected_prices == agent.policy(state)
 
 
@@ -134,8 +116,7 @@ def test_prices_are_not_higher_than_allowed():
 		sim_market=ut_t.create_hyperparameter_mock_dict_sim_market(max_price=10, production_price=9)))
 	with patch('builtins.open', mock_open(read_data=mock_json)) as mock_file:
 		ut_t.check_mock_file(mock_file, mock_json)
-		import_config()
-		test_agent = circular_vendors.RuleBasedCEAgent()
+		test_agent = circular_vendors.RuleBasedCEAgent(config=config_hyperparameter)
 		assert (9, 9) >= test_agent.policy([50, 60])
 
 
@@ -143,20 +124,20 @@ def test_prices_are_not_higher_than_allowed():
 # This is dependent on the sim_market working!
 # TODO: Make deterministic #174
 def random_offer_linear_duopoly():
-	return [random.randint(1, config.max_quality), random.randint(1, config.max_price), random.randint(1, config.max_quality)]
+	return [random.randint(1, config_hyperparameter.max_quality), random.randint(1, config_hyperparameter.max_price), random.randint(1, config_hyperparameter.max_quality)]
 
 
 def random_offer_circular_oligopoly(is_rebuy_economy: bool):
 	single_comp_prices = [
-		random.randint(1, config.max_price),
-		random.randint(1, config.max_price),
-		random.randint(0, config.max_storage)
+		random.randint(1, config_hyperparameter.max_price),
+		random.randint(1, config_hyperparameter.max_price),
+		random.randint(0, config_hyperparameter.max_storage)
 		]
-	viewed_agent_list = [random.randint(1, 1000), random.randint(0, config.max_storage)]
+	viewed_agent_list = [random.randint(1, 1000), random.randint(0, config_hyperparameter.max_storage)]
 	observation = viewed_agent_list
 	if is_rebuy_economy:
 		for _ in range(4):
-			observation += [random.randint(1, config.max_price)] + single_comp_prices
+			observation += [random.randint(1, config_hyperparameter.max_price)] + single_comp_prices
 		return np.array(observation)
 	else:
 		for _ in range(4):
@@ -197,10 +178,9 @@ def test_policy_plus_one(competitor_class, state):
 		sim_market=ut_t.create_hyperparameter_mock_dict_sim_market(max_price=10, production_price=2)))
 	with patch('builtins.open', mock_open(read_data=mock_json)) as mock_file:
 		ut_t.check_mock_file(mock_file, mock_json)
-		import_config()
-		competitor = competitor_class()
+		competitor = competitor_class(config=config_hyperparameter)
 
-		assert config.production_price + 1 <= competitor.policy(state) < config.max_price
+		assert config_hyperparameter.production_price + 1 <= competitor.policy(state) < config_hyperparameter.max_price
 
 
 clamp_price_testcases = [

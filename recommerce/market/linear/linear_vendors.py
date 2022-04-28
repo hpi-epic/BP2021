@@ -3,7 +3,7 @@ import random
 from abc import ABC
 
 from recommerce.market.vendors import Agent, FixedPriceAgent, HumanPlayer, RuleBasedAgent
-
+from recommerce.configuration.hyperparameter_config import HyperparameterConfig
 
 class LinearAgent(Agent, ABC):
 	pass
@@ -20,7 +20,9 @@ class HumanPlayerLE(LinearAgent, HumanPlayer):
 
 
 class FixedPriceLEAgent(LinearAgent, FixedPriceAgent):
-	def __init__(self, fixed_price=None, name='fixed_price_le'):
+	def __init__(self, config: HyperparameterConfig, fixed_price: int=None, name='fixed_price_le'):
+		
+		self.config = config
 		if fixed_price == None:
 			fixed_price = self.config.production_price + 3
 

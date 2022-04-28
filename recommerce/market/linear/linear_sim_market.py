@@ -89,7 +89,7 @@ class LinearEconomyOligopoly(LinearEconomy):
 
 	def _get_competitor_list(self) -> list:
 		return [
-			CompetitorLinearRatio1(),
-			CompetitorRandom(),
-			CompetitorJust2Players(),
+			CompetitorLinearRatio1(config=self.config),
+			CompetitorRandom(config=self.config),
+			CompetitorJust2Players(config=self.config),
 		]

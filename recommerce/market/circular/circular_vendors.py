@@ -4,7 +4,7 @@ from statistics import median
 import numpy as np
 
 from recommerce.market.vendors import Agent, FixedPriceAgent, HumanPlayer, RuleBasedAgent
-
+from recommerce.configuration.hyperparameter_config import HyperparameterConfig
 
 class CircularAgent(Agent, ABC):
 	def _clamp_price(self, price, min_price=0, max_price=None) -> int:
@@ -86,8 +86,9 @@ class RuleBasedCEAgent(RuleBasedAgent, CircularAgent):
 	This vendor's policy does not consider the competitor's prices.
 	It tries to succeed by taking its own storage costs into account.
 	"""
-	def __init__(self, name='rule_based_ce'):
+	def __init__(self, config: HyperparameterConfig, name='rule_based_ce'):
 		self.name = name
+		self.config = config
 
 	def convert_price_format(self, price_refurbished, price_new, rebuy_price):
 		return (price_refurbished, price_new)
