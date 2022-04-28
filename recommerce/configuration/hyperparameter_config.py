@@ -28,8 +28,8 @@ class HyperparameterConfig():
 		return cls._instance
 	"""
 
-	def __init__(config):
-		pass
+	def __init__(self, config):
+		self._validate_and_set_config(config)
 
 	@classmethod
 	def get_required_fields(cls, dict_key) -> dict:

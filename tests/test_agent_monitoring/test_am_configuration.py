@@ -9,12 +9,14 @@ import recommerce.market.linear.linear_sim_market as linear_market
 import recommerce.monitoring.agent_monitoring.am_monitoring as monitoring
 import recommerce.rl.actorcritic.actorcritic_agent as actorcritic_agent
 from recommerce.configuration.path_manager import PathManager
+from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader, HyperparameterConfig
 from recommerce.market.circular.circular_vendors import FixedPriceCEAgent, FixedPriceCERebuyAgent, HumanPlayerCERebuy, RuleBasedCEAgent
 from recommerce.market.linear.linear_vendors import FixedPriceLEAgent
 from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
 
 monitor = monitoring.Monitor()
 
+config_hyperparameter: HyperparameterConfig = HyperparameterConfigLoader.load('hyperparameter_config')
 
 # setup before each test
 def setup_function(function):
@@ -239,8 +241,8 @@ def test_incorrect_setup_monitoring(parameters, expected_message):
 
 
 incorrect_setup_monitoring_type_errors_testcases = [
-	{'marketplace': linear_market.LinearEconomyDuopoly()},
-	{'agents': [(linear_market.LinearEconomyDuopoly(), [])]},
+	{'marketplace': linear_market.LinearEconomyDuopoly(config=config_hyperparameter)},
+	{'agents': [(linear_market.LinearEconomyDuopoly(config=config_hyperparameter), [])]},
 	{'agents': [(RuleBasedCEAgent(), [])]}
 ]
 

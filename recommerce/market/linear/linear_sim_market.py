@@ -82,7 +82,7 @@ class LinearEconomy(SimMarket, ABC):
 class LinearEconomyDuopoly(LinearEconomy):
 
 	def _get_competitor_list(self) -> list:
-		return [CompetitorLinearRatio1()]
+		return [CompetitorLinearRatio1(config=self.config)]
 
 
 class LinearEconomyOligopoly(LinearEconomy):

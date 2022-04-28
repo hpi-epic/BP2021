@@ -32,7 +32,7 @@ def import_config() -> hyperparameter_config.HyperparameterConfig:
 	return hyperparameter_config.config
 
 
-config = import_config()
+config = 
 
 abstract_agent_classes_testcases = [
 	vendors.Agent,
