@@ -13,6 +13,7 @@ from recommerce.market.linear.linear_vendors import LinearAgent
 from recommerce.market.vendors import Agent, HumanPlayer, RuleBasedAgent
 from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
 from recommerce.rl.reinforcement_learning_agent import ReinforcementLearningAgent
+from recommerce.configuration.hyperparameter_config import HyperparameterConfig, HyperparameterConfigLoader
 
 
 class Configurator():
@@ -28,6 +29,7 @@ class Configurator():
 		self.marketplace = circular_market.CircularEconomyMonopoly
 		default_agent = FixedPriceCEAgent
 		self.agents = [default_agent()]
+		self.config: HyperparameterConfig = HyperparameterConfigLoader.load('hyperparameter_config')
 		self.agent_colors = [(0.0, 0.0, 1.0, 1.0)]
 		self.folder_path = os.path.abspath(os.path.join(PathManager.results_path, 'monitoring', 'plots_' + time.strftime('%b%d_%H-%M-%S')))
 
@@ -121,7 +123,7 @@ class Configurator():
 						raise RuntimeError('invalid arguments provided')
 
 					# create the agent
-					new_agent = current_agent[0](marketplace=self.marketplace, load_path=self._get_modelfile_path(agent_modelfile), name=agent_name)
+					new_agent = current_agent[0](marketplace=self.marketplace, config=self.config, load_path=self._get_modelfile_path(agent_modelfile), name=agent_name)
 					self.agents.append(new_agent)
 				except RuntimeError:  # pragma: no cover
 					raise RuntimeError('the modelfile is not compatible with the agent you tried to instantiate')
@@ -139,6 +141,7 @@ class Configurator():
 		plot_interval: int = None,
 		marketplace: sim_market.SimMarket = None,
 		agents: list = None,
+		config: HyperparameterConfig = None,
 		subfolder_name: str = None,
 		support_continuous_action_space: bool = False) -> None:
 		"""
@@ -171,10 +174,12 @@ class Configurator():
 			assert plot_interval <= self.episodes, \
 				f'plot_interval must be <= episodes, or no plots can be generated. Episodes: {self.episodes}. Plot_interval: {plot_interval}'
 			self.plot_interval = plot_interval
-
+		if(config is not None):
+			assert isinstance(config, HyperparameterConfig), 'config must be of type HyperparameterConfig'
+			self.config = config
 		if(marketplace is not None):
 			assert issubclass(marketplace, sim_market.SimMarket), 'the marketplace must be a subclass of SimMarket'
-			self.marketplace = marketplace(support_continuous_action_space)
+			self.marketplace = marketplace(config=self.config, support_continuous_action_space=support_continuous_action_space)
 			# If the agents have not been changed, we reuse the old agents
 			if(agents is None):
 				print('Warning: Your agents are being overwritten by new instances of themselves!')

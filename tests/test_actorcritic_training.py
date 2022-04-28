@@ -4,6 +4,9 @@ import recommerce.market.circular.circular_sim_market as circular_market
 import recommerce.market.linear.linear_sim_market as linear_market
 import recommerce.rl.actorcritic.actorcritic_agent as actorcritic_agent
 from recommerce.rl.actorcritic.actorcritic_training import ActorCriticTrainer
+from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader, HyperparameterConfig
+
+config_hyperparameter: HyperparameterConfig = HyperparameterConfigLoader.load('hyperparameter_config')
 
 test_scenarios = [
 	(linear_market.LinearEconomyDuopoly, actorcritic_agent.DiscreteActorCriticAgent, True),
@@ -28,7 +31,7 @@ test_scenarios = [
 @pytest.mark.slow
 @pytest.mark.parametrize('market_class, agent_class, verbose', test_scenarios)
 def test_training_configurations(market_class, agent_class, verbose):
-	ActorCriticTrainer(market_class, agent_class).train_agent(
+	ActorCriticTrainer(market_class, agent_class, config=config_hyperparameter).train_agent(
 		verbose=verbose,
 		number_of_training_steps=120,
 		total_envs=64)

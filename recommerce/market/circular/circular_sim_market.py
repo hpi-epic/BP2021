@@ -15,6 +15,7 @@ class CircularEconomy(SimMarket, ABC):
 
 	def _setup_action_observation_space(self, support_continuous_action_space: bool) -> None:
 		# cell 0: number of products in the used storage, cell 1: number of products in circulation
+		print(self.config.max_storage)
 		self.max_storage = self.config.max_storage
 		self.max_circulation = 10 * self.max_storage
 		self.observation_space = gym.spaces.Box(
