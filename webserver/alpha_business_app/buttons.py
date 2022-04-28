@@ -346,7 +346,8 @@ class ButtonHandler():
 		response = send_get_request('data/tensorboard', self.request.POST['container_id'])
 		if response.ok():
 			update_container(self.wanted_container.id, {'tensorboard_link': response.content['data']})
-			return redirect(f'{DOCKER_API}/{response.content["data"]}')
+			docker_base_url = DOCKER_API.split(':')
+			return redirect(f'{docker_base_url[0]}:{response.content["data"]}')
 		else:
 			self.message = response.status()
 			return self._decide_rendering()
