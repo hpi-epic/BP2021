@@ -88,7 +88,7 @@ async def start_container(num_experiments: int, config: Request, authorized: boo
 			return JSONResponse(status_code=404, content=vars(all_container_infos[index]))
 		return_dict[index] = vars(all_container_infos[index])
 	print(f'successfully started {num_experiments} container')
-	return JSONResponse(return_dict)
+	return JSONResponse(return_dict, status_code=200)
 
 
 @app.get('/health/')
@@ -110,7 +110,7 @@ async def is_container_alive(id: str, authorized: bool = Depends(verify_token)) 
 	if is_invalid_status(container_info.status):
 		return JSONResponse(status_code=404, content=vars(container_info))
 	else:
-		return JSONResponse(vars(container_info))
+		return JSONResponse(vars(container_info), status_code=200)
 
 
 @app.get('/logs/')
@@ -143,9 +143,9 @@ async def get_container_logs(id: str,
 			headers={
 				'Container-ID': f'{container_info.id}',
 				'Container-Status': f'{container_info.status}',
-			})
+			}, status_code=200)
 	else:
-		return JSONResponse(content=vars(container_info))
+		return JSONResponse(content=vars(container_info), status_code=200)
 
 
 @app.get('/data/')
@@ -173,7 +173,7 @@ async def get_container_data(id: str, path: str = '/app/results', authorized: bo
 				'Container-ID': f'{container_info.id}',
 				'Container-Status': f'{container_info.status}',
 			},
-			media_type='application/x-tar')
+			media_type='application/x-tar', status_code=200)
 
 
 @app.get('/data/tensorboard/')
@@ -193,7 +193,7 @@ async def get_tensorboard_link(id: str, authorized: bool = Depends(verify_token)
 	if is_invalid_status(container_info.status):
 		return JSONResponse(status_code=404, content=vars(container_info))
 	else:
-		return JSONResponse(vars(container_info))
+		return JSONResponse(vars(container_info), status_code=200)
 
 
 @app.get('/pause/')
@@ -213,7 +213,7 @@ async def pause_container(id: str, authorized: bool = Depends(verify_token)) -> 
 	if is_invalid_status(container_info.status):
 		return JSONResponse(status_code=404, content=vars(container_info))
 	else:
-		return JSONResponse(vars(container_info))
+		return JSONResponse(vars(container_info), status_code=200)
 
 
 @app.get('/unpause/')
@@ -233,7 +233,7 @@ async def unpause_container(id: str, authorized: bool = Depends(verify_token)) -
 	if is_invalid_status(container_info.status):
 		return JSONResponse(status_code=404, content=vars(container_info))
 	else:
-		return JSONResponse(vars(container_info))
+		return JSONResponse(vars(container_info), status_code=200)
 
 
 @app.get('/remove/')
@@ -253,7 +253,7 @@ async def remove_container(id: str, authorized: bool = Depends(verify_token)) ->
 	if is_invalid_status(container_info.status):
 		return JSONResponse(status_code=404, content=vars(container_info))
 	else:
-		return JSONResponse(vars(container_info))
+		return JSONResponse(vars(container_info), status_code=200)
 
 
 @app.get('/api_health')
@@ -274,4 +274,8 @@ async def check_if_api_is_available(authorized: bool = Depends(verify_token)) ->
 
 
 if __name__ == '__main__':
-	uvicorn.run('app:app', host='0.0.0.0', port=8000, ssl_keyfile='/etc/sslzertifikat/api_cert.key', ssl_certfile='/etc/sslzertifikat/api_cert.crt')
+	uvicorn.run('app:app',
+		host='0.0.0.0',
+		port=8000,
+		ssl_keyfile='/etc/sslzertifikat/api_cert.key',
+		ssl_certfile='/etc/sslzertifikat/api_cert.crt')

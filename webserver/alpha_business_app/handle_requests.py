@@ -138,7 +138,6 @@ def _error_handling_API(response) -> APIResponse:
 		APIResponse: Response from the API converted into our special format.
 	"""
 	try:
-
 		if response.status_code < 500:
 			return APIResponse('error', content=response.json()['status'], http_status=response.status_code)
 		print(f'Got status code {response.status_code} from API')
