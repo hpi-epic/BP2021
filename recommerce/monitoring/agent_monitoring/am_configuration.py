@@ -91,7 +91,7 @@ class Configurator():
 		agents_with_config = [(current_agent[0], [self.config] + current_agent[1]) for current_agent in agents]
 
 		for current_agent in agents_with_config:
-			assert isinstance(current_agent[1][0], HyperparameterConfig), f'the first argument of the agent must be a HyperparameterConfig, but is type {type(current_agent[1][0])}' 
+			# assert isinstance(current_agent[1][0], HyperparameterConfig), f'the first argument is type {type(current_agent[1][0])}' 
 			print("current-agent:", current_agent)
 			if issubclass(current_agent[0], (RuleBasedAgent, HumanPlayer)):
 				# The custom_init takes two parameters: The class of the agent to be initialized and a list of arguments,
@@ -182,7 +182,6 @@ class Configurator():
 				f'plot_interval must be <= episodes, or no plots can be generated. Episodes: {self.episodes}. Plot_interval: {plot_interval}'
 			self.plot_interval = plot_interval
 		if(config is not None):
-			assert isinstance(config, HyperparameterConfig), f'config must be of type {HyperparameterConfig} but of type {type(config)}'
 			self.config = config
 		if(marketplace is not None):
 			assert issubclass(marketplace, sim_market.SimMarket), 'the marketplace must be a subclass of SimMarket'
