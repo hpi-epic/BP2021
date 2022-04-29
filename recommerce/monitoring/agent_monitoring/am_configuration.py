@@ -7,13 +7,13 @@ import recommerce.configuration.utils as ut
 import recommerce.market.circular.circular_sim_market as circular_market
 import recommerce.market.linear.linear_sim_market as linear_market
 import recommerce.market.sim_market as sim_market
+from recommerce.configuration.hyperparameter_config import HyperparameterConfig, HyperparameterConfigLoader
 from recommerce.configuration.path_manager import PathManager
 from recommerce.market.circular.circular_vendors import CircularAgent, FixedPriceCEAgent
 from recommerce.market.linear.linear_vendors import LinearAgent
 from recommerce.market.vendors import Agent, HumanPlayer, RuleBasedAgent
 from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
 from recommerce.rl.reinforcement_learning_agent import ReinforcementLearningAgent
-from recommerce.configuration.hyperparameter_config import HyperparameterConfig, HyperparameterConfigLoader
 
 
 class Configurator():
@@ -91,8 +91,8 @@ class Configurator():
 		agents_with_config = [(current_agent[0], [self.config] + current_agent[1]) for current_agent in agents]
 
 		for current_agent in agents_with_config:
-			# assert isinstance(current_agent[1][0], HyperparameterConfig), f'the first argument is type {type(current_agent[1][0])}' 
-			print("current-agent:", current_agent)
+			# assert isinstance(current_agent[1][0], HyperparameterConfig), f'the first argument is type {type(current_agent[1][0])}'
+			print('current-agent:', current_agent)
 			if issubclass(current_agent[0], (RuleBasedAgent, HumanPlayer)):
 				# The custom_init takes two parameters: The class of the agent to be initialized and a list of arguments,
 				# e.g. for the fixed prices or names
@@ -107,7 +107,7 @@ class Configurator():
 					agent_name = 'q_learning' if issubclass(current_agent[0], QLearningAgent) else 'actor_critic'
 					# no arguments
 					if len(current_agent[1]) == 0:
-						assert False, "There should always be at least a config"
+						assert False, 'There should always be at least a config'
 					# only configfile argument
 					elif len(current_agent[1]) == 1:
 						pass
@@ -122,7 +122,8 @@ class Configurator():
 					# both arguments, first must be the modelfile, second the name
 					elif len(current_agent[1]) == 3:
 						assert current_agent[1][1].endswith('.dat'), \
-							f'if two arguments as well as a config are provided, the first extra one must be the modelfile. Arg1: {current_agent[1][1]}, Arg2: {current_agent[1][2]}'
+							f'if two arguments as well as a config are provided, \
+								the first extra one must be the modelfile. Arg1: {current_agent[1][1]}, Arg2: {current_agent[1][2]}'
 						agent_modelfile = current_agent[1][1]
 						agent_name = current_agent[1][2]
 					# this should never happen due to the asserts before, but you never know
@@ -130,7 +131,12 @@ class Configurator():
 						raise RuntimeError('invalid arguments provided')
 
 					# create the agent
-					new_agent = current_agent[0](marketplace=self.marketplace, config=self.config, load_path=self._get_modelfile_path(agent_modelfile), name=agent_name)
+					new_agent = current_agent[0](
+						marketplace=self.marketplace,
+						config=self.config,
+						load_path=self._get_modelfile_path(agent_modelfile),
+						name=agent_name
+						)
 					self.agents.append(new_agent)
 				except RuntimeError:  # pragma: no cover
 					raise RuntimeError('The modelfile is not compatible with the agent you tried to instantiate')

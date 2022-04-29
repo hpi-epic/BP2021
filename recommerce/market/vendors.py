@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+
 from recommerce.configuration.hyperparameter_config import HyperparameterConfig
 
 

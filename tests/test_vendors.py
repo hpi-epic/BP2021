@@ -1,5 +1,4 @@
 import json
-from importlib import reload
 from unittest.mock import mock_open, patch
 
 import numpy as np
@@ -7,14 +6,13 @@ import pytest
 import utils_tests as ut_t
 from numpy import random
 
-from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader, HyperparameterConfig
 import recommerce.market.circular.circular_vendors as circular_vendors
 import recommerce.market.linear.linear_vendors as linear_vendors
 import recommerce.market.vendors as vendors
+from recommerce.configuration.hyperparameter_config import HyperparameterConfig, HyperparameterConfigLoader
 from recommerce.market.linear.linear_sim_market import LinearEconomyOligopoly
 from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
 from recommerce.rl.reinforcement_learning_agent import ReinforcementLearningAgent
-
 
 config_hyperparameter: HyperparameterConfig = HyperparameterConfigLoader.load('hyperparameter_config')
 
@@ -124,7 +122,11 @@ def test_prices_are_not_higher_than_allowed():
 # This is dependent on the sim_market working!
 # TODO: Make deterministic #174
 def random_offer_linear_duopoly():
-	return [random.randint(1, config_hyperparameter.max_quality), random.randint(1, config_hyperparameter.max_price), random.randint(1, config_hyperparameter.max_quality)]
+	return [
+		random.randint(1, config_hyperparameter.max_quality),
+		random.randint(1, config_hyperparameter.max_price),
+		random.randint(1, config_hyperparameter.max_quality)
+		]
 
 
 def random_offer_circular_oligopoly(is_rebuy_economy: bool):
@@ -198,7 +200,9 @@ def test_clamp_price(price):
 def test_get_competitors_prices_with_rebuy():
 	observation = random_offer_circular_oligopoly(is_rebuy_economy=True)
 	competitors_refurbished_prices, competitors_new_prices, competitors_rebuy_prices = \
-		circular_vendors.RuleBasedCERebuyAgentCompetitive(config=config_hyperparameter)._get_competitor_prices(observation=observation, is_rebuy_economy=True)
+		circular_vendors.RuleBasedCERebuyAgentCompetitive(config=config_hyperparameter)._get_competitor_prices(
+			observation=observation,
+			is_rebuy_economy=True)
 	assert len(competitors_new_prices) == len(competitors_rebuy_prices) == len(competitors_refurbished_prices)
 	for competitor in range(len(competitors_new_prices)):
 		assert competitors_refurbished_prices[competitor] == observation[(competitor * 4) + 2]

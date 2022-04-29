@@ -3,12 +3,13 @@ from statistics import median
 
 import numpy as np
 
-from recommerce.market.vendors import Agent, FixedPriceAgent, HumanPlayer, RuleBasedAgent
 from recommerce.configuration.hyperparameter_config import HyperparameterConfig
+from recommerce.market.vendors import Agent, FixedPriceAgent, HumanPlayer, RuleBasedAgent
+
 
 class CircularAgent(Agent, ABC):
 	def _clamp_price(self, price, min_price=0, max_price=None) -> int:
-		
+
 		max_price = self.config.max_price - 1 if max_price is None else max_price
 		price = int(price)
 		price = max(price, min_price)

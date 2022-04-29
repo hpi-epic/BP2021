@@ -2,8 +2,9 @@ import math
 import random
 from abc import ABC
 
-from recommerce.market.vendors import Agent, FixedPriceAgent, HumanPlayer, RuleBasedAgent
 from recommerce.configuration.hyperparameter_config import HyperparameterConfig
+from recommerce.market.vendors import Agent, FixedPriceAgent, HumanPlayer, RuleBasedAgent
+
 
 class LinearAgent(Agent, ABC):
 	pass
@@ -21,9 +22,9 @@ class HumanPlayerLE(LinearAgent, HumanPlayer):
 
 class FixedPriceLEAgent(LinearAgent, FixedPriceAgent):
 	def __init__(self, config: HyperparameterConfig, fixed_price: int=None, name='fixed_price_le'):
-		
+
 		self.config = config
-		if fixed_price == None:
+		if fixed_price is None:
 			fixed_price = self.config.production_price + 3
 
 		assert isinstance(fixed_price, int), f'the fixed_price must be an integer: {fixed_price} ({type(fixed_price)})'

@@ -6,7 +6,7 @@ from recommerce.rl.training import RLTrainer
 
 
 class QLearningTrainer(RLTrainer):
-	
+
 	def trainer_agent_fit(self) -> bool:
 		return issubclass(self.agent_class, QLearningAgent), f'the passed agent must be a QLearningAgent: {self.agent_class}'
 

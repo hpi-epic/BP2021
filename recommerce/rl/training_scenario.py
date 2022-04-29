@@ -5,12 +5,16 @@ import recommerce.rl.actorcritic.actorcritic_agent as actorcritic_agent
 import recommerce.rl.q_learning.q_learning_agent as q_learning_agent
 import recommerce.rl.stable_baselines.stable_baselines_model as sbmodel
 from recommerce.configuration.environment_config import EnvironmentConfigLoader, TrainingEnvironmentConfig
-from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader, HyperparameterConfig
+from recommerce.configuration.hyperparameter_config import HyperparameterConfig, HyperparameterConfigLoader
 from recommerce.market.circular.circular_vendors import CircularAgent
 from recommerce.rl.actorcritic.actorcritic_training import ActorCriticTrainer
 from recommerce.rl.q_learning.q_learning_training import QLearningTrainer
 
-def run_training_session(config_hyperparameter: HyperparameterConfig, marketplace=circular_market.CircularEconomyRebuyPriceDuopoly, agent=q_learning_agent.QLearningAgent):
+
+def run_training_session(
+	config_hyperparameter: HyperparameterConfig,
+	marketplace=circular_market.CircularEconomyRebuyPriceDuopoly,
+	agent=q_learning_agent.QLearningAgent):
 	"""
 	Run a training session with the passed marketplace and QLearningAgent.
 	Args:
@@ -28,7 +32,11 @@ def run_training_session(config_hyperparameter: HyperparameterConfig, marketplac
 	if issubclass(agent, q_learning_agent.QLearningAgent):
 		QLearningTrainer(marketplace_class=marketplace, agent_class=agent, config=config_hyperparameter).train_agent()
 	else:
-		ActorCriticTrainer(marketplace_class=marketplace, agent_class=agent, config=config_hyperparameter).train_agent(number_of_training_steps=10000)
+		ActorCriticTrainer(
+			marketplace_class=marketplace,
+			agent_class=agent,
+			config=config_hyperparameter
+			).train_agent(number_of_training_steps=10000)
 
 
 # Just add some standard usecases.

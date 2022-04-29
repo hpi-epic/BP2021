@@ -1,18 +1,18 @@
-from distutils.command.config import config
 import copy
 from importlib import reload
-from unittest.mock import Mock, mock_open, patch
+from unittest.mock import Mock, patch
 
 import numpy as np
 import pytest
 import utils_tests as ut_t
 
 import recommerce.configuration.hyperparameter_config as hyperparameter_config
-from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader, HyperparameterConfig
 import recommerce.configuration.utils as ut
+from recommerce.configuration.hyperparameter_config import HyperparameterConfig, HyperparameterConfigLoader
 from recommerce.monitoring.svg_manipulation import SVGManipulator
 
 config_hyperparameter: HyperparameterConfig = HyperparameterConfigLoader.load('hyperparameter_config')
+
 
 def teardown_module(module):
 	reload(hyperparameter_config)

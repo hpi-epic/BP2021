@@ -1,9 +1,10 @@
 from abc import ABC, abstractmethod
 from typing import Tuple
-from recommerce.configuration.hyperparameter_config import HyperparameterConfig
 
 import gym
 import numpy as np
+
+from recommerce.configuration.hyperparameter_config import HyperparameterConfig
 
 # An offer is a market state that contains all prices and qualities
 

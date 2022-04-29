@@ -100,13 +100,13 @@ def main():  # pragma: no cover
 	"""
 	monitor = Monitor()
 	config_environment_am: AgentMonitoringEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_agent_monitoring')
-	config_hyperparameter : HyperparameterConfig = HyperparameterConfigLoader.load('hyperparameter_config')
+	config_hyperparameter: HyperparameterConfig = HyperparameterConfigLoader.load('hyperparameter_config')
 	monitor.configurator.setup_monitoring(
 		enable_live_draw=config_environment_am.enable_live_draw,
 		episodes=config_environment_am.episodes,
 		plot_interval=config_environment_am.plot_interval,
 		marketplace=config_environment_am.marketplace,
-		agents=config_environment_am.agent, 
+		agents=config_environment_am.agent,
 		config=config_hyperparameter
 	)
 	run_monitoring_session(monitor)

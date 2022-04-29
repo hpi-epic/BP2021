@@ -3,12 +3,13 @@ import stable_baselines3.common.monitor
 from stable_baselines3 import A2C, DDPG, PPO, SAC, TD3
 from stable_baselines3.common.noise import NormalActionNoise
 
+from recommerce.configuration.hyperparameter_config import HyperparameterConfig
 from recommerce.market.circular.circular_vendors import CircularAgent
 from recommerce.market.linear.linear_vendors import LinearAgent
 from recommerce.market.sim_market import SimMarket
 from recommerce.rl.callback import RecommerceCallback
 from recommerce.rl.reinforcement_learning_agent import ReinforcementLearningAgent
-from recommerce.configuration.hyperparameter_config import HyperparameterConfig
+
 
 class StableBaselinesAgent(ReinforcementLearningAgent, LinearAgent, CircularAgent):
 	def __init__(self, config: HyperparameterConfig, marketplace=None, optim=None, load_path=None, name=None):
@@ -39,7 +40,13 @@ class StableBaselinesAgent(ReinforcementLearningAgent, LinearAgent, CircularAgen
 
 	def train_agent(self, training_steps=100000, iteration_length=500):
 		callback = RecommerceCallback(
-			agent_class=type(self), marketplace_class=type(self.marketplace), config=self.config ,training_steps=training_steps, iteration_length=iteration_length, signature=self.name)
+			agent_class=type(self),
+			marketplace_class=type(self.marketplace),
+			config=self.config,
+			training_steps=training_steps,
+			iteration_length=iteration_length,
+			signature=self.name
+			)
 		self.model.set_env(stable_baselines3.common.monitor.Monitor(self.marketplace, callback.save_path))
 		self.model.learn(training_steps, callback=callback)
 

@@ -12,12 +12,12 @@ class HyperparameterConfig():
 
 	"""
 	def __new__(cls, config: dict = None):
-	
+
 		This function makes sure that the `HyperparameterConfig` is a singleton.
 
 		Returns:
 			HyperparameterConfig: The HyperparameterConfig instance.
-		
+
 		if cls._instance is None:
 			# print('A new instance of HyperparameterConfig is being initialized')
 			cls._instance = super(HyperparameterConfig, cls).__new__(cls)
@@ -297,10 +297,6 @@ class HyperparameterConfigLoader():
 		Returns:
 			HyperparameterConfig: An instance of `HyperparameterConfig`.
 		"""
-		# in case there already is an instance of the config, we do not need to load the file again
-		# if HyperparameterConfig._instance is not None:
-		#	return HyperparameterConfig()
-
 		filename += '.json'
 		path = os.path.join(PathManager.user_path, filename)
 		print('Loading config from:', path)

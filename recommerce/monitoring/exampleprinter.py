@@ -10,7 +10,7 @@ from torch.utils.tensorboard import SummaryWriter
 import recommerce.configuration.utils as ut
 import recommerce.market.circular.circular_sim_market as circular_market
 from recommerce.configuration.environment_config import EnvironmentConfigLoader, ExampleprinterEnvironmentConfig
-from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader, HyperparameterConfig
+from recommerce.configuration.hyperparameter_config import HyperparameterConfig, HyperparameterConfigLoader
 from recommerce.configuration.path_manager import PathManager
 from recommerce.market.circular.circular_vendors import RuleBasedCERebuyAgent
 from recommerce.market.sim_market import SimMarket

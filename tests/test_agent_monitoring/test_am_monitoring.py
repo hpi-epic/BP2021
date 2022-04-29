@@ -5,13 +5,14 @@ import pytest
 
 import recommerce.market.circular.circular_sim_market as circular_market
 import recommerce.monitoring.agent_monitoring.am_monitoring as monitoring
+from recommerce.configuration.hyperparameter_config import HyperparameterConfig, HyperparameterConfigLoader
 from recommerce.market.circular.circular_vendors import FixedPriceCEAgent
 from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
-from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader, HyperparameterConfig
 
 monitor = monitoring.Monitor()
 
 config_hyperparameter: HyperparameterConfig = HyperparameterConfigLoader.load('hyperparameter_config')
+
 
 # setup before each test
 def setup_function(function):
@@ -30,7 +31,12 @@ def setup_function(function):
 
 
 def test_run_marketplace():
-	monitor.configurator.setup_monitoring(episodes=100, plot_interval=100, agents=[(FixedPriceCEAgent, [(5, 2)])], config=config_hyperparameter)
+	monitor.configurator.setup_monitoring(
+		episodes=100,
+		plot_interval=100,
+		agents=[(FixedPriceCEAgent, [(5, 2)])],
+		config=config_hyperparameter
+		)
 	with patch('recommerce.monitoring.agent_monitoring.am_evaluation.plt'), \
 		patch('recommerce.monitoring.agent_monitoring.am_configuration.os.makedirs'), \
 		patch('recommerce.monitoring.agent_monitoring.am_configuration.os.path.exists') as exists_mock:
