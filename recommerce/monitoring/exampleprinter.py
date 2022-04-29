@@ -100,19 +100,19 @@ def main():  # pragma: no cover
 	config_hyperparameter: HyperparameterConfig = HyperparameterConfigLoader.load('hyperparameter_config')
 	printer = ExamplePrinter(config=config_hyperparameter)
 
-	config: ExampleprinterEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_exampleprinter')
-	# TODO: Theoretically, the name of the agent is saved in config['name'], but we don't use it yet.
-	marketplace = config.marketplace(config=config_hyperparameter)
+	config_environment: ExampleprinterEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_exampleprinter')
+	# TODO: Theoretically, the name of the agent is saved in config_environment['name'], but we don't use it yet.
+	marketplace = config_environment.marketplace(config=config_hyperparameter)
 
 	# QLearningAgents need more initialization
-	if issubclass(config.agent['agent_class'], QLearningAgent):
+	if issubclass(config_environment.agent['agent_class'], QLearningAgent):
 		printer.setup_exampleprinter(marketplace=marketplace,
-			agent=config.agent['agent_class'](
+			agent=config_environment.agent['agent_class'](
 				marketplace=marketplace,
 				config=config_hyperparameter,
-				load_path=os.path.abspath(os.path.join(PathManager.data_path, config.agent['argument']))))
+				load_path=os.path.abspath(os.path.join(PathManager.data_path, config_environment.agent['argument']))))
 	else:
-		printer.setup_exampleprinter(marketplace=marketplace, agent=config.agent['agent_class']())
+		printer.setup_exampleprinter(marketplace=marketplace, agent=config_environment.agent['agent_class']())
 
 	print(f'The final profit was: {printer.run_example()}')
 

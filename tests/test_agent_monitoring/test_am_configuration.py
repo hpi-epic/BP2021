@@ -29,6 +29,7 @@ def setup_function(function):
 		plot_interval=10,
 		marketplace=circular_market.CircularEconomyMonopoly,
 		agents=[(FixedPriceCERebuyAgent, [])],
+		config=config_hyperparameter,
 		subfolder_name=f'test_plots_{function.__name__}')
 
 
@@ -54,7 +55,7 @@ incorrect_update_agents_RL_testcases = [
 	([(QLearningAgent, [1, 2, 3, 4])], 'the argument list for a RL-agent must have length between 0 and 2'),
 	([(QLearningAgent, ['modelfile.dat', 35])], 'the arguments for a RL-agent must be of type str'),
 	([(QLearningAgent, [25])], 'the arguments for a RL-agent must be of type str'),
-	([(QLearningAgent, ['agent_name', 'modelfile.dat'])], 'if two arguments are provided, the first one must be the modelfile.'),
+	([(QLearningAgent, ['agent_name', 'modelfile.dat'])], 'if two arguments as well as a config are provided, the first extra one must be the modelfile.'),
 	([(QLearningAgent, ['mymodel.dat'])], 'the specified modelfile does not exist')
 ]
 
@@ -194,23 +195,23 @@ incorrect_setup_monitoring_testcases = [
 	({'marketplace': linear_market.LinearEconomyOligopoly,
 		'agents': [(QLearningAgent,
 		['CircularEconomyRebuyPriceMonopoly_QLearningAgent.dat'])]},
-		'the modelfile is not compatible with the agent you tried to instantiate'),
+		'The modelfile is not compatible with the agent you tried to instantiate'),
 	({'marketplace': circular_market.CircularEconomyRebuyPriceMonopoly,
 		'agents': [(actorcritic_agent.ContinuosActorCriticAgentFixedOneStd,
 		['actor_parametersCircularEconomyRebuyPriceMonopoly_ContinuosActorCriticAgentEstimatingStd.dat'])]},
-		'the modelfile is not compatible with the agent you tried to instantiate'),
+		'The modelfile is not compatible with the agent you tried to instantiate'),
 	({'marketplace': circular_market.CircularEconomyRebuyPriceDuopoly,
 		'agents': [(actorcritic_agent.DiscreteActorCriticAgent,
 		['actor_parametersCircularEconomyRebuyPriceDuopoly_ContinuosActorCriticAgentFixedOneStd.dat'])]},
-		'the modelfile is not compatible with the agent you tried to instantiate'),
+		'The modelfile is not compatible with the agent you tried to instantiate'),
 	({'marketplace': circular_market.CircularEconomyMonopoly,
 		'agents': [(actorcritic_agent.DiscreteActorCriticAgent,
 		['actor_parametersCircularEconomyRebuyPriceDuopoly_DiscreteACACircularEconomyRebuy.dat'])]},
-		'the modelfile is not compatible with the agent you tried to instantiate'),
+		'The modelfile is not compatible with the agent you tried to instantiate'),
 	({'marketplace': circular_market.CircularEconomyMonopoly,
 		'agents': [(QLearningAgent,
 		['CircularEconomyRebuyPriceDuopoly_QLearningAgent.dat'])]},
-		'the modelfile is not compatible with the agent you tried to instantiate')
+		'The modelfile is not compatible with the agent you tried to instantiate')
 ]
 
 
@@ -275,8 +276,8 @@ def test_incorrect_setup_monitoring_type_errors(parameters):
 
 
 print_configuration_testcases = [
-	([(RuleBasedCEAgent, [config_hyperparameter])]),
-	([(RuleBasedCEAgent, [config_hyperparameter]), (FixedPriceCEAgent, [config_hyperparameter])])
+	([(RuleBasedCEAgent, [])]),
+	([(RuleBasedCEAgent, []), (FixedPriceCEAgent, [])])
 ]
 
 

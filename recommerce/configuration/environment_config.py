@@ -180,6 +180,7 @@ class EnvironmentConfig(ABC):
 					f'The "argument" field must contain a modelfile and therefore end in ".dat" or ".zip": {agent["argument"]}'
 				# Check that the modelfile exists. Taken from am_configuration::_get_modelfile_path()
 				full_path = os.path.abspath(os.path.join(PathManager.data_path, agent['argument']))
+				print(full_path)
 				assert os.path.exists(full_path), f'the specified modelfile does not exist: {full_path}'
 
 			elif issubclass(agent['agent_class'], FixedPriceAgent):
@@ -374,11 +375,11 @@ class EnvironmentConfigLoader():
 
 
 if __name__ == '__main__':  # pragma: no cover
-	config: ExampleprinterEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_exampleprinter')
-	print(config)
+	config_environment_exampleprinter: ExampleprinterEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_exampleprinter')
+	print(config_environment_exampleprinter)
 	print()
-	config: AgentMonitoringEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_agent_monitoring')
-	print(config)
+	config_environment_am: AgentMonitoringEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_agent_monitoring')
+	print(config_environment_am)
 	print()
-	config: TrainingEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_training')
-	print(config)
+	config_environment_training: TrainingEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_training')
+	print(config_environment_training)

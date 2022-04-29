@@ -27,12 +27,13 @@ def setup_function(function):
 		plot_interval=10,
 		marketplace=circular_market.CircularEconomyMonopoly,
 		agents=[(QLearningAgent, [os.path.join(PathManager.data_path, 'CircularEconomyMonopoly_QLearningAgent.dat')])],
+		config=config_hyperparameter,
 		subfolder_name=f'test_plots_{function.__name__}')
 
 
 evaluate_session_testcases = [
-	([(RuleBasedCEAgent, [config_hyperparameter])], [[5, 10, 0, -5]]),
-	([(RuleBasedCEAgent, [config_hyperparameter]), (FixedPriceCEAgent, [config_hyperparameter])], [[5, 10, 0, -5], [5, -10, 60, 5]])
+	([(RuleBasedCEAgent, [])], [[5, 10, 0, -5]]),
+	([(RuleBasedCEAgent, []), (FixedPriceCEAgent, [])], [[5, 10, 0, -5], [5, -10, 60, 5]])
 ]
 
 
@@ -64,10 +65,10 @@ def test_rewards_array_size():
 
 
 create_histogram_statistics_plots_testcases = [
-	([(RuleBasedCEAgent, [config_hyperparameter])], [[100, 0]], 1, [(1.0, 0.0, 0.0, 1.0)], (0.0, 1000.0)),
-	([(RuleBasedCEAgent, [config_hyperparameter]), (RuleBasedCEAgent, [config_hyperparameter])],
+	([(RuleBasedCEAgent, [])], [[100, 0]], 1, [(1.0, 0.0, 0.0, 1.0)], (0.0, 1000.0)),
+	([(RuleBasedCEAgent, []), (RuleBasedCEAgent, [])],
 		[[100, 0], [10, 5]], 1, [(1.0, 0.0, 0.0, 1.0), (0.0, 1.0, 0.9531223422015865, 1.0)], (0.0, 1000.0)),
-	([(RuleBasedCEAgent, [config_hyperparameter]), (RuleBasedCEAgent, [config_hyperparameter]), (RuleBasedCEAgent, [config_hyperparameter]), (RuleBasedCEAgent, [config_hyperparameter])],
+	([(RuleBasedCEAgent, []), (RuleBasedCEAgent, []), (RuleBasedCEAgent, []), (RuleBasedCEAgent, [])],
 		[[100, 0], [10, 5], [100, 10000], [10, 1000]],
 		10,
 		[(1.0, 0.0, 0.0, 1.0), (0.5234360234360234, 1.0, 0.0, 1.0), (0.0, 1.0, 0.9531223422015865, 1.0), (0.4296860234360234, 0.0, 1.0, 1.0)],
@@ -99,7 +100,7 @@ def test_create_histogram(agents, rewards, plot_bins, agent_color, lower_upper_r
 
 
 def test_create_histogram_without_saving_to_directory():
-	monitor.configurator.setup_monitoring(enable_live_draw=False, agents=[(RuleBasedCEAgent, [config_hyperparameter])])
+	monitor.configurator.setup_monitoring(enable_live_draw=False, agents=[(RuleBasedCEAgent, [])])
 	with patch('recommerce.monitoring.agent_monitoring.am_evaluation.plt.clf'), \
 		patch('recommerce.monitoring.agent_monitoring.am_evaluation.plt.xlabel'), \
 		patch('recommerce.monitoring.agent_monitoring.am_evaluation.plt.title'), \

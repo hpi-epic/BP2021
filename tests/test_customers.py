@@ -7,9 +7,9 @@ import recommerce.market.linear.linear_sim_market as linear_market
 from recommerce.market.sim_market import SimMarket
 from recommerce.market.circular.circular_customers import CustomerCircular
 from recommerce.market.linear.linear_customers import CustomerLinear
-from tests.utils_tests import import_config
+from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader, HyperparameterConfig
 
-config_hyperparameter = import_config()
+config_hyperparameter: HyperparameterConfig = HyperparameterConfigLoader.load('hyperparameter_config')
 
 # Test the Customer parent class, i.e. make sure it cannot be used
 def test_customer_parent_class():

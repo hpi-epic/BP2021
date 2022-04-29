@@ -1,4 +1,4 @@
-import json
+import copy
 from importlib import reload
 from unittest.mock import mock_open, patch
 
@@ -14,21 +14,6 @@ from recommerce.configuration.hyperparameter_config import HyperparameterConfigL
 
 config_hyperparameter: HyperparameterConfig = HyperparameterConfigLoader.load('hyperparameter_config')
 
-def teardown_module(module):
-	print('***TEARDOWN***')
-	reload(hyperparameter_config)
-
-
-def import_config() -> hyperparameter_config.HyperparameterConfig:
-	"""
-	Reload the hyperparameter_config file to update the config variable with the mocked values.
-
-	Returns:
-		HyperparameterConfig: The config object.
-	"""
-	reload(hyperparameter_config)
-	return hyperparameter_config.config
-
 
 test_scenarios = [
 	linear_market.LinearEconomyDuopoly,
@@ -43,7 +28,7 @@ test_scenarios = [
 @pytest.mark.slow
 @pytest.mark.parametrize('marketplace_class', test_scenarios)
 def test_market_scenario(marketplace_class):
-	mock_config = config_hyperparameter
+	mock_config = copy.deepcopy(config_hyperparameter)
 	mock_config.replay_start_size = 500
 	mock_config.sync_target_frames = 100
 	q_learning_training.QLearningTrainer(marketplace_class=marketplace_class, agent_class=QLearningAgent, config=mock_config).train_agent(int(mock_config.replay_start_size * 1.2))
@@ -52,7 +37,7 @@ def test_market_scenario(marketplace_class):
 @pytest.mark.training
 @pytest.mark.slow
 def test_training_with_tensorboard():
-	mock_config = config_hyperparameter
+	mock_config = copy.deepcopy(config_hyperparameter)
 	mock_config.replay_start_size = 500
 	mock_config.sync_target_frames = 100
 	

@@ -6,7 +6,6 @@ from recommerce.configuration.hyperparameter_config import HyperparameterConfigL
 
 config_hyperparameter: HyperparameterConfig = HyperparameterConfigLoader.load('hyperparameter_config')
 
-
 @pytest.mark.training
 @pytest.mark.slow
 def test_ddpg_training():
@@ -28,10 +27,10 @@ def test_a2c_training():
 @pytest.mark.training
 @pytest.mark.slow
 def test_ppo_training():
-	sb_model.StableBaselinesPPO(config_hyperparameter, circular_market.CircularEconomyRebuyPriceDuopoly(config=config_hyperparameter, support_continuous_action_space=True)).train_agent(1500, 30)
+	sb_model.StableBaselinesPPO(config=config_hyperparameter, marketplace=circular_market.CircularEconomyRebuyPriceDuopoly(config=config_hyperparameter, support_continuous_action_space=True)).train_agent(1500, 30)
 
 
 @pytest.mark.training
 @pytest.mark.slow
 def test_sac_training():
-	sb_model.StableBaselinesSAC(config_hyperparameter, circular_market.CircularEconomyRebuyPriceDuopoly(config=config_hyperparameter, support_continuous_action_space=True)).train_agent(1500, 30)
+	sb_model.StableBaselinesSAC(config=config_hyperparameter, marketplace=circular_market.CircularEconomyRebuyPriceDuopoly(config=config_hyperparameter, support_continuous_action_space=True)).train_agent(1500, 30)

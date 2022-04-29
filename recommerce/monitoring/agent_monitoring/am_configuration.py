@@ -28,8 +28,8 @@ class Configurator():
 		self.plot_interval = 50
 		self.marketplace = circular_market.CircularEconomyMonopoly
 		default_agent = FixedPriceCEAgent
-		self.agents = [default_agent()]
 		self.config: HyperparameterConfig = HyperparameterConfigLoader.load('hyperparameter_config')
+		self.agents = [default_agent(config=self.config)]
 		self.agent_colors = [(0.0, 0.0, 1.0, 1.0)]
 		self.folder_path = os.path.abspath(os.path.join(PathManager.results_path, 'monitoring', 'plots_' + time.strftime('%b%d_%H-%M-%S')))
 
@@ -88,36 +88,43 @@ class Configurator():
 		self.agents = []
 
 		# Instantiate all agents. If they are not rule-based, use the marketplace parameters accordingly
-		for current_agent in agents:
+		agents_with_config = [(current_agent[0], [self.config] + current_agent[1]) for current_agent in agents]
+
+		for current_agent in agents_with_config:
+			assert isinstance(current_agent[1][0], HyperparameterConfig), f'the first argument of the agent must be a HyperparameterConfig, but is type {type(current_agent[1][0])}' 
+			print("current-agent:", current_agent)
 			if issubclass(current_agent[0], (RuleBasedAgent, HumanPlayer)):
 				# The custom_init takes two parameters: The class of the agent to be initialized and a list of arguments,
 				# e.g. for the fixed prices or names
 				self.agents.append(Agent.custom_init(current_agent[0], current_agent[1]))
 			elif issubclass(current_agent[0], ReinforcementLearningAgent):
 				try:
-					assert (0 <= len(current_agent[1]) <= 2), 'the argument list for a RL-agent must have length between 0 and 2'
-					assert all(isinstance(argument, str) for argument in current_agent[1]), 'the arguments for a RL-agent must be of type str'
+					assert (1 <= len(current_agent[1]) <= 3), 'the argument list for a RL-agent must have length between 0 and 2'
+					assert all(isinstance(argument, str) for argument in current_agent[1][1:]), 'the arguments for a RL-agent must be of type str'
 
 					# Stablebaselines ends in .zip - we don't
 					agent_modelfile = f'{type(self.marketplace).__name__}_{current_agent[0].__name__}.dat'
 					agent_name = 'q_learning' if issubclass(current_agent[0], QLearningAgent) else 'actor_critic'
 					# no arguments
 					if len(current_agent[1]) == 0:
-						pass
-					# only modelfile argument
-					elif len(current_agent[1]) == 1 and \
-						(current_agent[1][0].endswith('.dat') or current_agent[1][0].endswith('.zip')):
-						agent_modelfile = current_agent[1][0]
-					# only name argument
+						assert False, "There should always be at least a config"
+					# only configfile argument
 					elif len(current_agent[1]) == 1:
-						# get implicit modelfile name
-						agent_name = current_agent[1][0]
-					# both arguments, first must be the modelfile, second the name
+						pass
+					# configfile and modelfile argument
+					elif len(current_agent[1]) == 2 and \
+						(current_agent[1][1].endswith('.dat') or current_agent[1][1].endswith('.zip')):
+						agent_modelfile = current_agent[1][1]
+					# only name argument
 					elif len(current_agent[1]) == 2:
-						assert current_agent[1][0].endswith('.dat'), \
-							f'if two arguments are provided, the first one must be the modelfile. Arg1: {current_agent[1][0]}, Arg2: {current_agent[1][1]}'
-						agent_modelfile = current_agent[1][0]
+						# get implicit modelfile name
 						agent_name = current_agent[1][1]
+					# both arguments, first must be the modelfile, second the name
+					elif len(current_agent[1]) == 3:
+						assert current_agent[1][1].endswith('.dat'), \
+							f'if two arguments as well as a config are provided, the first extra one must be the modelfile. Arg1: {current_agent[1][1]}, Arg2: {current_agent[1][2]}'
+						agent_modelfile = current_agent[1][1]
+						agent_name = current_agent[1][2]
 					# this should never happen due to the asserts before, but you never know
 					else:  # pragma: no cover
 						raise RuntimeError('invalid arguments provided')
@@ -126,7 +133,7 @@ class Configurator():
 					new_agent = current_agent[0](marketplace=self.marketplace, config=self.config, load_path=self._get_modelfile_path(agent_modelfile), name=agent_name)
 					self.agents.append(new_agent)
 				except RuntimeError:  # pragma: no cover
-					raise RuntimeError('the modelfile is not compatible with the agent you tried to instantiate')
+					raise RuntimeError('The modelfile is not compatible with the agent you tried to instantiate')
 			else:  # pragma: no cover
 				assert False, f'{current_agent[0]} is neither a RuleBased nor a QLearning agent nor a HumanPlayer'
 
@@ -175,7 +182,7 @@ class Configurator():
 				f'plot_interval must be <= episodes, or no plots can be generated. Episodes: {self.episodes}. Plot_interval: {plot_interval}'
 			self.plot_interval = plot_interval
 		if(config is not None):
-			assert isinstance(config, HyperparameterConfig), 'config must be of type HyperparameterConfig'
+			assert isinstance(config, HyperparameterConfig), f'config must be of type {HyperparameterConfig} but of type {type(config)}'
 			self.config = config
 		if(marketplace is not None):
 			assert issubclass(marketplace, sim_market.SimMarket), 'the marketplace must be a subclass of SimMarket'

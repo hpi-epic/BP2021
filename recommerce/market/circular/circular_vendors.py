@@ -32,7 +32,7 @@ class CircularAgent(Agent, ABC):
 
 
 class HumanPlayerCE(CircularAgent, HumanPlayer):
-	def __init__(self, name='YOU - Circular'):
+	def __init__(self, config=None, name='YOU - Circular'):
 		self.name = name
 		print('Welcome to this funny game! Now, you are the one playing the game!')
 
@@ -178,8 +178,9 @@ class RuleBasedCERebuyAgentStorageMinimizer(RuleBasedAgent, CircularAgent):
 	"""
 	This vendor's policy reacts to the competitors' prices and minimizes the usage of storage.
 	"""
-	def __init__(self, name='rule_based_ce_rebuy_stockist'):
+	def __init__(self, config: HyperparameterConfig, name='rule_based_ce_rebuy_stockist'):
 		self.name = name
+		self.config = config
 
 	def policy(self, observation, *_) -> tuple:
 		assert isinstance(observation, np.ndarray), 'observation must be a np.ndarray'

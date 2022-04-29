@@ -8,6 +8,7 @@ from tqdm import trange
 import recommerce.monitoring.agent_monitoring.am_configuration as am_configuration
 import recommerce.monitoring.agent_monitoring.am_evaluation as am_evaluation
 from recommerce.configuration.environment_config import AgentMonitoringEnvironmentConfig, EnvironmentConfigLoader
+from recommerce.configuration.hyperparameter_config import HyperparameterConfig, HyperparameterConfigLoader
 
 
 class Monitor():
@@ -98,14 +99,15 @@ def main():  # pragma: no cover
 	Defines what is performed when the `agent_monitoring` command is chosen in `main.py`.
 	"""
 	monitor = Monitor()
-	config: AgentMonitoringEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_agent_monitoring')
+	config_environment_am: AgentMonitoringEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_agent_monitoring')
+	config_hyperparameter : HyperparameterConfig = HyperparameterConfigLoader.load('hyperparameter_config')
 	monitor.configurator.setup_monitoring(
-		enable_live_draw=config.enable_live_draw,
-		episodes=config.episodes,
-		plot_interval=config.plot_interval,
-		marketplace=config.marketplace,
-		agents=config.agent, 
-		config=config
+		enable_live_draw=config_environment_am.enable_live_draw,
+		episodes=config_environment_am.episodes,
+		plot_interval=config_environment_am.plot_interval,
+		marketplace=config_environment_am.marketplace,
+		agents=config_environment_am.agent, 
+		config=config_hyperparameter
 	)
 	run_monitoring_session(monitor)
 

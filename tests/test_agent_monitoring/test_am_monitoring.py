@@ -7,9 +7,11 @@ import recommerce.market.circular.circular_sim_market as circular_market
 import recommerce.monitoring.agent_monitoring.am_monitoring as monitoring
 from recommerce.market.circular.circular_vendors import FixedPriceCEAgent
 from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
+from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader, HyperparameterConfig
 
 monitor = monitoring.Monitor()
 
+config_hyperparameter: HyperparameterConfig = HyperparameterConfigLoader.load('hyperparameter_config')
 
 # setup before each test
 def setup_function(function):
@@ -23,6 +25,7 @@ def setup_function(function):
 		marketplace=circular_market.CircularEconomyMonopoly,
 		agents=[(QLearningAgent, [os.path.join(os.path.dirname(__file__), os.pardir, 'test_data',
 			'CircularEconomyMonopoly_QLearningAgent.dat')])],
+		config=config_hyperparameter,
 		subfolder_name=f'test_plots_{function.__name__}')
 
 

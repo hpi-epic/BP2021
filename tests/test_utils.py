@@ -1,5 +1,5 @@
 from distutils.command.config import config
-import json
+import copy
 from importlib import reload
 from unittest.mock import Mock, mock_open, patch
 
@@ -35,7 +35,8 @@ testcases_shuffle_quality = [1, 10, 100, 1000]
 
 @pytest.mark.parametrize('max_quality', testcases_shuffle_quality)
 def test_shuffle_quality(max_quality: int):
-	config_hyperparameter.max_quality = max_quality
+	edited_config = copy.deepcopy(config_hyperparameter)
+	edited_config.max_quality = max_quality
 	quality = ut.shuffle_quality(config_hyperparameter)
 	assert quality <= max_quality and quality >= 1
 

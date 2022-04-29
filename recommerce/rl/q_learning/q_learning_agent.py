@@ -21,8 +21,8 @@ class QLearningAgent(ReinforcementLearningAgent, CircularAgent, LinearAgent):
 	# Give no optim if you don't want training.
 	def __init__(
 			self,
-			marketplace: SimMarket,
 			config: HyperparameterConfig,
+			marketplace: SimMarket,
 			device='cuda' if torch.cuda.is_available() else 'cpu',
 			load_path=None,
 			name='QLearningAgent',
