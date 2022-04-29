@@ -1,8 +1,8 @@
 {% if should_render %}
-    <div class="alert alert-warning alert-dismissible fade show {% if not warning %}d-none{% endif %}" role="alert">
+    <div class="alert alert-warning alert-dismissible fade show {% if not warning %}d-none{% endif %} m-3" id="alert-field" role="alert">
         <strong>The following container stopped:</strong>
-        {% for container_name, exit_code in warning %}
-            {{container_name}} exited({{exit_code}})
+        {% for item in warning %}
+            {{item.container_name}} exited({{item.exit_code}})
         {% endfor %}
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>

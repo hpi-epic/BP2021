@@ -23,7 +23,7 @@ $(document).ready(function() {
 	updateAPIHealth();
 
 	$("select.task-selection").change(function () {
-		// displays the monitoring options when 'agent_monitoring' is selected
+		// displays the monitoring options when "agent_monitoring" is selected
 		var self = this
 		if(self.value == "agent_monitoring") {
 			$(".hide-not-monitoring").each(function () {
@@ -34,22 +34,31 @@ $(document).ready(function() {
 				$(this).addClass("d-none")
 			});
 		}
-	}).trigger('change');
+	}).trigger("change");
 
 	function getCookie(name) {
 		let cookieValue = null;
-		if (document.cookie && document.cookie !== '') {
-			const cookies = document.cookie.split(';');
+		if (document.cookie && document.cookie !== "") {
+			const cookies = document.cookie.split(";");
 			for (let i = 0; i < cookies.length; i++) {
 				const cookie = cookies[i].trim();
 				// Does this cookie string begin with the name we want?
-				if (cookie.substring(0, name.length + 1) === (name + '=')) {
+				if (cookie.substring(0, name.length + 1) === (name + "=")) {
 					cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
 					break;
 				}
 			}
 		}
 		return cookieValue;
+	}
+
+	function replaceOrInsert(element, identifier, data) {
+		if (element.length > 0) {
+			element.replaceWith(data);
+		} else {
+			const endOfContent = document.getElementById(identifier);
+			endOfContent.insertAdjacentHTML("afterend", data);
+		}
 	}
 	
 	$("button.form-check").click(function () {
@@ -59,7 +68,7 @@ $(document).ready(function() {
 		var form = $("form.config-form");
 		var formdata = form.serializeArray();
 
-		const csrftoken = getCookie('csrftoken');
+		const csrftoken = getCookie("csrftoken");
 		$.ajax({
 			type: "POST",
 			url: self.data("url"),
@@ -68,24 +77,23 @@ $(document).ready(function() {
 				formdata
 			},
 			success: function (data) {
-				const notice_field = $('#notice-field');
-				if (notice_field.length > 0) {
-					notice_field.replaceWith(data);
-				} else {
-					const endOfContent = document.getElementById('end-of-content');
-					endOfContent.insertAdjacentHTML('afterend', data);
-				}
+				replaceOrInsert($("#notice-field"), "end-of-content", data);
 			}
 		});
 	});
-
 	var url = "ws://192.168.159.134:8001/ws";
+	// const url = "";
+	// $.ajax({url: "/api_info",
+	// 	success: function (data) {
+	// 		url = data;
+	// 	}
+	// });
 	var ws = new WebSocket(url);
 	ws.onopen = function (_) {
 		console.log("connection to ", url, "open");
 	}
 	ws.onmessage = function(event) {
-		const csrftoken = getCookie('csrftoken');
+		const csrftoken = getCookie("csrftoken");
 		$.ajax({
 			type: "POST",
 			url: "/container_notification",
@@ -94,8 +102,8 @@ $(document).ready(function() {
 				api_response: event.data
 			},
 			success: function (data) {
-				var nav_bar = document.getElementById('main-nav-bar');
-				nav_bar.insertAdjacentHTML('afterend', data)
+				const endOfContent = document.getElementById("main-nav-bar");
+				endOfContent.insertAdjacentHTML("afterend", data);
 			}
 		});
 		console.log(event.data);

@@ -1,5 +1,5 @@
 {% load static %}
-<div class="alert alert-dismissible fade show {% if success %}alert-success{% elif error %}alert-danger{% else %}d-none{% endif %} m-3 notice-field"
+<div class="alert alert-dismissible fade show {% if success %}alert-success{% elif error %}alert-danger{% else %}d-none{% endif %} m-3"
     id="notice-field">
     {% if success %}
         <img src="{% static 'icons/happy_emoji.svg' %}" width="25px" class="ms-auto m-2"></img>

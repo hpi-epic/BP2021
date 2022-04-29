@@ -117,3 +117,7 @@ def container_notification(request):
 	if request.method == 'POST':
 		is_notification_necessary, result = get_actually_stopped_container_from_api_notification(request.POST['api_response'])
 	return render(request, 'alert_field.html', {'warning': result, 'should_render': is_notification_necessary})
+
+
+def get_api_url(request):
+	return DOCKER_API
