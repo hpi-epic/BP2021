@@ -6,8 +6,8 @@ from recommerce.rl.stable_baselines.stable_baselines_model import StableBaseline
 
 
 def train_self_play():
-	old_marketplace = CircularEconomyRebuyPriceDuopoly(True)
-	agent = StableBaselinesPPO(old_marketplace)
+	tmp_marketplace = CircularEconomyRebuyPriceDuopoly(True)
+	agent = StableBaselinesPPO(tmp_marketplace)
 	marketplace = CircularEconomyVariableDuopoly(agent)
 	agent.set_marketplace(marketplace)
 
@@ -28,7 +28,3 @@ def train_self_play():
 	plt.plot(smoothed_return_estimation[1], label='same policy (opponent)')
 	plt.legend()
 	plt.show()  # Save the figure later in a nice folder.
-
-
-if __name__ == '__main__':
-	train_self_play()

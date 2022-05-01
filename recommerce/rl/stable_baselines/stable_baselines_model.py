@@ -44,10 +44,8 @@ class StableBaselinesAgent(ReinforcementLearningAgent, LinearAgent, CircularAgen
 		callback = RecommerceCallback(
 			type(self), type(self.marketplace), training_steps=training_steps, iteration_length=iteration_length,
 			signature=self.name, analyze_after_training=analyze_after_training)
-		tmp_marketplace = self.marketplace
 		self.model.set_env(stable_baselines3.common.monitor.Monitor(self.marketplace, callback.save_path))
 		self.model.learn(training_steps, callback=callback)
-		self.model.set_env(tmp_marketplace)
 		return callback.all_dicts
 
 
