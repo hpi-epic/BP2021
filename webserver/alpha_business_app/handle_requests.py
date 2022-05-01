@@ -1,5 +1,7 @@
 import datetime
+import hashlib
 import os
+import time
 
 import requests
 
@@ -11,7 +13,9 @@ DOCKER_API = 'https://vm-midea03.eaalab.hpi.uni-potsdam.de:8000'  # remember to 
 
 def _get_api_token() -> str:
 	try:
-		return os.environ['API_TOKEN']
+		master_secret_as_int = sum(ord(c) for c in os.environ['API_TOKEN'])
+		current_time = int(time.time() / 3600)  # unix time in hours
+		return hashlib.sha256(str(master_secret_as_int + current_time)).hexdigest()
 	except Exception:
 		print('Could not get API_TOKEN')
 		return 'abc'

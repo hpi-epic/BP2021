@@ -1,5 +1,7 @@
 # app.py
+import hashlib
 import os
+import time
 
 import uvicorn
 from docker_manager import DockerInfo, DockerManager
@@ -57,9 +59,13 @@ def verify_token(request: Request) -> bool:
 	except KeyError:
 		print('The request did not set an Authorization header')
 		return False
+	master_secret_as_int = sum(ord(c) for c in os.environ['API_TOKEN'])
+	current_time = int(time.time() / 3600)  # unix time in hours
+	expected_this_token = hashlib.sha256(str(master_secret_as_int + current_time)).hexdigest()  # token, that is currently expected
+	expected_last_token = hashlib.sha256(str(master_secret_as_int + (current_time - 3600))). hexdigest()  # token that was expected last hour
 	print(f'Verifying token: {token == os.environ["AUTHORIZATION_TOKEN"]}, \
 		given token: {token}, right token: {os.environ["AUTHORIZATION_TOKEN"]}')
-	return token == os.environ['AUTHORIZATION_TOKEN']
+	return token == expected_this_token or token == expected_last_token
 
 
 @app.post('/start')
