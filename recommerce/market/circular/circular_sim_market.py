@@ -293,3 +293,17 @@ class CircularEconomyRebuyPriceOligopoly(CircularEconomyRebuyPrice):
 			circular_vendors.FixedPriceCERebuyAgent(fixed_price=(3, 6, 2)),
 			circular_vendors.RuleBasedCERebuyAgentStorageMinimizer()
 			]
+
+
+class CircularEconomyRebuyPriceVariableDuopoly(CircularEconomyRebuyPrice):
+	"""
+	This Scenario allows the training of an RL-agent against a customizable agent
+	that is passed as a parameter to the constructor of the class.
+	"""
+
+	def __init__(self, constant_agent: circular_vendors.CircularAgent):
+		self.customized_competitor_list = [constant_agent]
+		super().__init__(True)
+
+	def _get_competitor_list(self) -> list:
+		return self.customized_competitor_list
