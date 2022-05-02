@@ -180,7 +180,6 @@ class EnvironmentConfig(ABC):
 					f'The "argument" field must contain a modelfile and therefore end in ".dat" or ".zip": {agent["argument"]}'
 				# Check that the modelfile exists. Taken from am_configuration::_get_modelfile_path()
 				full_path = os.path.abspath(os.path.join(PathManager.data_path, agent['argument']))
-				print(full_path)
 				assert os.path.exists(full_path), f'the specified modelfile does not exist: {full_path}'
 
 			elif issubclass(agent['agent_class'], FixedPriceAgent):

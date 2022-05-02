@@ -8,9 +8,10 @@ from recommerce.market.vendors import Agent, FixedPriceAgent, HumanPlayer, RuleB
 
 
 class CircularAgent(Agent, ABC):
-	def _clamp_price(self, price, min_price=0, max_price=None) -> int:
-		max_price = self.config.max_price - 1 if max_price is None else max_price
+	def _clamp_price(self, price) -> int:
+		max_price = self.config.max_price - 1
 		price = int(price)
+		min_price = 0
 		price = max(price, min_price)
 		price = min(price, max_price)
 		return price
@@ -32,7 +33,7 @@ class CircularAgent(Agent, ABC):
 
 
 class HumanPlayerCE(CircularAgent, HumanPlayer):
-	def __init__(self, config=None, name='YOU - Circular'):
+	def __init__(self, config: HyperparameterConfig=None, name='YOU - Circular'):
 		self.name = name
 		print('Welcome to this funny game! Now, you are the one playing the game!')
 
@@ -178,7 +179,7 @@ class RuleBasedCERebuyAgentStorageMinimizer(RuleBasedAgent, CircularAgent):
 	"""
 	This vendor's policy reacts to the competitors' prices and minimizes the usage of storage.
 	"""
-	def __init__(self, config: HyperparameterConfig, name='rule_based_ce_rebuy_stockist'):
+	def __init__(self, config: HyperparameterConfig, name='rule_based_ce_rebuy_storage_minimizer'):
 		self.name = name
 		self.config = config
 
