@@ -55,8 +55,10 @@ class Watcher:
 		"""
 		Takes a list of dictionaries and calculates the average over the last look_back episodes.
 		Assumes that all dicts have the same shape.
+
 		Args:
 			look_back (int): The number of episode dictionaries to average over.
+
 		Returns:
 			dict: A dict of the same shape containing the average in each entry.
 		"""
