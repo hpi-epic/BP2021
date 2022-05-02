@@ -2,7 +2,6 @@ import os
 
 import matplotlib.pyplot as plt
 import numpy as np
-from numpy import linalg
 from scipy.stats import kde
 
 import recommerce.monitoring.agent_monitoring.am_configuration as am_configuration
@@ -62,6 +61,15 @@ class Evaluator():
 
 	# visualize metrics
 	def create_density_plot(self, samples: list, property: str):
+		"""
+		Give a list of list of samples and a property name, it will create a density plot.
+		The density plot is like a histogram, but with a gaussian kernel.
+		It will use the property to name and save the plot in the monitoring folder.
+
+		Args:
+			samples (list of lists): a list of list of numbers. Each list represents an empirical distribution to be plotted.
+			property (str): the name of the property in natural language.
+		"""
 		plt.clf()
 		min_value = min(min(s) for s in samples)
 		max_value = max(max(s) for s in samples)
@@ -70,17 +78,24 @@ class Evaluator():
 		x = np.linspace(min_value - offset, max_value + offset, 100)
 		ys = []
 		for sample in samples:
+			# The gaussian kernel used some sort of matrix inverse which throws an error if the matrix is not invertible.
+			# This happens if all samples in the distribution are the same.
+			# This is very rare but happens especially at the beginning of the training (early and bad rl models).
+			# In this case, the diagram is just skipped.
 			try:
 				density = kde.gaussian_kde(sample)
-			except linalg.LinAlgError:
+			except np.linalg.LinAlgError:
 				continue
 			ys.append(density(x))
 
 		for i, y in enumerate(ys):
 			plt.plot(x, y, label=f'vendor_{i}')
+
+		plt.xlabel(property)
+		plt.ylabel('Probability density')
 		plt.title(f'Density plot of {property}')
 		plt.legend()
-		plt.savefig(fname=os.path.join(self.configurator.get_folder(), 'density_plot_' + property.replace('/', '_') + '.svg'))
+		plt.savefig(fname=os.path.join(self.configurator.get_folder(), f'density_plot_{property.replace("/", "_")}.svg'))
 
 	def create_histogram(self, rewards: list, is_last_histogram: bool, filename: str = 'default_histogram.svg') -> None:
 		"""
