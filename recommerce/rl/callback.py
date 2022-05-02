@@ -28,7 +28,9 @@ class RecommerceCallback(BaseCallback):
 	After 'iteration_length' episodes, the best model in that time span is saved to disk.
 	"""
 	def __init__(
-			self, agent_class, marketplace_class,
+			self,
+			agent_class,
+			marketplace_class,
 			training_steps=10000,
 			iteration_length=500,
 			file_ending='zip',
