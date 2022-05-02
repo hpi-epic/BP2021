@@ -1,14 +1,14 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPriceDuopoly, CircularEconomyVariableDuopoly
+from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPriceDuopoly, CircularEconomyRebuyPriceVariableDuopoly
 from recommerce.rl.stable_baselines.stable_baselines_model import StableBaselinesPPO  # , StableBaselinesSAC
 
 
 def train_self_play():
 	tmp_marketplace = CircularEconomyRebuyPriceDuopoly(True)
 	agent = StableBaselinesPPO(tmp_marketplace)
-	marketplace = CircularEconomyVariableDuopoly(agent)
+	marketplace = CircularEconomyRebuyPriceVariableDuopoly(agent)
 	agent.set_marketplace(marketplace)
 
 	rewards = [[], []]

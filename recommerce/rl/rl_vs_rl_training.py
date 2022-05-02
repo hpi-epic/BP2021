@@ -1,16 +1,16 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPriceDuopoly, CircularEconomyVariableDuopoly
+from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPriceDuopoly, CircularEconomyRebuyPriceVariableDuopoly
 from recommerce.rl.stable_baselines.stable_baselines_model import StableBaselinesPPO, StableBaselinesSAC
 
 
 def train_rl_vs_rl():
 	tmp_marketplace = CircularEconomyRebuyPriceDuopoly(True)
 	agent1 = StableBaselinesPPO(tmp_marketplace)
-	marketplace_for_agent2 = CircularEconomyVariableDuopoly(agent1)
+	marketplace_for_agent2 = CircularEconomyRebuyPriceVariableDuopoly(agent1)
 	agent2 = StableBaselinesSAC(marketplace_for_agent2)
-	marketplace_for_agent1 = CircularEconomyVariableDuopoly(agent2)
+	marketplace_for_agent1 = CircularEconomyRebuyPriceVariableDuopoly(agent2)
 	agent1.set_marketplace(marketplace_for_agent1)
 	agents = [agent1, agent2]
 	assert len(agents) == 2, 'This scenario is only for exactly two agents.'
