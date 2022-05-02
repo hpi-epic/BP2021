@@ -18,6 +18,7 @@ from recommerce.monitoring.agent_monitoring.am_evaluation import Evaluator
 from recommerce.monitoring.agent_monitoring.am_monitoring import Monitor
 from recommerce.monitoring.watcher import Watcher
 from recommerce.rl.actorcritic.actorcritic_agent import ActorCriticAgent
+from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
 from recommerce.rl.reinforcement_learning_agent import ReinforcementLearningAgent
 
 
@@ -27,7 +28,15 @@ class RecommerceCallback(BaseCallback):
 	This check happens every episode.
 	After 'iteration_length' episodes, the best model in that time span is saved to disk.
 	"""
-	def __init__(self, agent_class, marketplace_class, training_steps=10000, iteration_length=500, file_ending='zip', signature='train'):
+	def __init__(
+			self,
+			agent_class,
+			marketplace_class,
+			training_steps=10000,
+			iteration_length=500,
+			file_ending='zip',
+			signature='train',
+			analyze_after_training=True):
 		assert issubclass(agent_class, ReinforcementLearningAgent)
 		assert issubclass(marketplace_class, SimMarket)
 		assert isinstance(training_steps, int) and training_steps > 0
@@ -45,6 +54,8 @@ class RecommerceCallback(BaseCallback):
 		self.tqdm_instance = trange(training_steps)
 		self.saved_parameter_paths = []
 		self.last_finished_episode = 0
+		self.analyze_after_training = analyze_after_training
+		self.all_dicts = []
 		signal.signal(signal.SIGINT, self._signal_handler)
 
 		self.initialize_io_related()
@@ -84,7 +95,15 @@ class RecommerceCallback(BaseCallback):
 		Returns:
 			bool: True should be returned. False will be interpreted as error.
 		"""
-		assert (finished_episodes is None) == (info is None), 'finished_episodes must be exactly None if mean_return is None'
+		assert (finished_episodes is None) == (info is None), 'finished_episodes must be exactly None if info is None'
+
+		# This means if it is a subclass of StableBaselinesAgent. Unfortunately, circular imports are not possible.
+		if not issubclass(self.agent_class, QLearningAgent) and not issubclass(self.agent_class, ActorCriticAgent):
+			# self.locals is a feature offered by stablebaselines
+			# locals is a dict with all local variables in the training method of stablebaselines
+			info = self.locals['infos'][0]
+			self.all_dicts.append(info)
+
 		self.tqdm_instance.update()
 		if finished_episodes is None:
 			finished_episodes = self.num_timesteps // config.episode_length
@@ -137,16 +156,18 @@ class RecommerceCallback(BaseCallback):
 		if len(self.saved_parameter_paths) == 0:
 			print('No agents saved! Nothing to monitor.')
 			return
-		monitor = Monitor()
-		agent_list = [(self.agent_class, [parameter_path]) for parameter_path in self.saved_parameter_paths]
 
-		# The next line is a bit hacky. We have to provide if the marketplace is continuos or not.
-		# Only Stable Baselines agents use continuous actions at the moment. And only Stable Baselines agents have the attribute env.
-		monitor.configurator.setup_monitoring(False, 250, 250, self.marketplace_class, agent_list,
-			support_continuous_action_space=hasattr(self.model, 'env'))
-		rewards = monitor.run_marketplace()
-		episode_numbers = [int(parameter_path[-9:][:5]) for parameter_path in self.saved_parameter_paths]
-		Evaluator(monitor.configurator).evaluate_session(rewards, episode_numbers)
+		if self.analyze_after_training:
+			monitor = Monitor()
+			agent_list = [(self.agent_class, [parameter_path]) for parameter_path in self.saved_parameter_paths]
+			# The next line is a bit hacky. We have to provide if the marketplace is continuos or not.
+			# Only Stable Baselines agents use continuous actions at the moment. And only Stable Baselines agents have the attribute env.
+			# The correct way of doing this would be by checking for `isinstance(StableBaselinesAgent)`, but that would result in a circular import.
+			monitor.configurator.setup_monitoring(False, 250, 250, self.marketplace_class, agent_list,
+				support_continuous_action_space=hasattr(self.model, 'env'))
+			rewards = monitor.run_marketplace()
+			episode_numbers = [int(parameter_path[-9:][:5]) for parameter_path in self.saved_parameter_paths]
+			Evaluator(monitor.configurator).evaluate_session(rewards, episode_numbers)
 
 	def save_parameters(self, finished_episodes: int):
 		assert isinstance(finished_episodes, int)

@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from django.db import models
 
 
@@ -13,6 +14,7 @@ class Container(models.Model):
 	last_check_at = models.DateTimeField(auto_now_add=True)
 	name = models.CharField(max_length=20)
 	tensorboard_link = models.CharField(max_length=100, default='')
+	user = models.ForeignKey(User, on_delete=models.CASCADE, default=-1)
 
 	def is_archived(self):
 		return self.health_status == 'archived'
