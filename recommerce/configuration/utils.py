@@ -31,10 +31,10 @@ def softmax(preferences: np.array) -> np.array:
 
 def shuffle_from_probabilities(probabilities: np.array) -> int:
 	randomnumber = random.random()
-	sum = 0
+	probability_sum = 0
 	for i, p in enumerate(probabilities):
-		sum += p
-		if randomnumber <= sum:
+		probability_sum += p
+		if randomnumber <= probability_sum:
 			return i
 	return len(probabilities) - 1
 

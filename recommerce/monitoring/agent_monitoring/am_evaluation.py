@@ -62,8 +62,8 @@ class Evaluator():
 	# visualize metrics
 	def create_density_plot(self, samples: list, property: str):
 		plt.clf()
-		min_value = min([min(s) for s in samples])
-		max_value = max([max(s) for s in samples])
+		min_value = min(min(s) for s in samples)
+		max_value = max(max(s) for s in samples)
 		offset = (max_value - min_value) / 7
 
 		x = np.linspace(min_value - offset, max_value + offset, 100)
