@@ -20,6 +20,7 @@ class SimMarketKalibrator:
 		self.M6x = M6x
 
 	def kalibrate_market(self, data, y1_index, y2_index, y3_index, y4_index, y5_index, y6_index):
+		self.N = len(data[0])
 		by1 = self.first_regression(data, self.M1, y1_index)
 		by2 = self.first_regression(data, self.M2, y2_index)
 		by3 = self.first_regression(data, self.M3, y3_index)
@@ -29,16 +30,19 @@ class SimMarketKalibrator:
 		return SimMarketKalibrated(by1, by2, by3, by4, bxy4, by5, bxy5, by6, bxy6,
 			self.M1, self.M2, self.M3, self.M4, self.M5, self.M6, self.M4x, self.M5x, self.M6x)
 
-	def first_regression(data, x_rows, y_index: int):
+	def first_regression(self, data, x_rows, y_index: int):
 		x = data
-		N = len(data)
 		# param y3 {i in 1..N} := x[13,i];
 		# set M3 := {0,1,2,3,4,7,8,9,22,23,24};
-		y3 = torch.tensor([x[y_index, i] for i in range(N + 1)])
-		x_y3 = torch.tensor(x[x_rows, :])
+		y3 = torch.tensor([x[y_index, i] for i in range(self.N)])
+		# torch.transpose(y3, 0, 1)
+		x_y3 = torch.tensor(x[x_rows, 0:self.N])
 
 		transposed_x_y3 = x_y3.transpose(0, 1)
-
+		print()
+		print("transposed_x_y3", transposed_x_y3.size())
+		print("y3", y3.size())
+		print()
 		# minimize OLSy3: sum{i in 1..N} ( sum{k in M3} beta3[k]*x[k,i] - y3[i] )^2;
 		# objective OLSy3; solve; for{k in M3} let b3[k]:=beta3[k];;
 		result_tuple_y3 = torch.linalg.lstsq(transposed_x_y3, y3)
@@ -47,7 +51,7 @@ class SimMarketKalibrator:
 
 		return b3
 
-	def fourth_regression(data, x_rows, xx_rows, y_index: int, flag: str):
+	def fourth_regression(self, data, x_rows, xx_rows, y_index: int, flag: str):
 		xb_first_index = -1
 		if flag == 'new':
 			xb_first_index = 7
@@ -81,7 +85,8 @@ class SimMarketKalibrator:
 
 if __name__ == '__main__':
 	# training_scenario.train_to_calibrate_marketplace()
-	data_frame = pd.read_csv(f'{PathManager.user_path}/kalibration_data/training_data.csv')
+	data_path = f'{PathManager.data_path}/kalibration_data/training_data.csv'
+	data_frame = pd.read_csv(data_path)
 	data = torch.tensor(data_frame.values)
 	M123 = (0, 1, 2, 3, 4, 7, 8, 9, 22, 23, 24)
 	y1_index = 11
@@ -99,4 +104,3 @@ if __name__ == '__main__':
 
 	kalibrator = SimMarketKalibrator(M123, M123, M123, M4, M5, M6, M4x, M5x, M6x)
 	kalibrated_market = kalibrator.kalibrate_market(data, y1_index, y2_index, y3_index, y4_index, y5_index, y6_index)
-	
