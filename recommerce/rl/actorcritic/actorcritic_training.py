@@ -116,3 +116,25 @@ class ActorCriticTrainer(RLTrainer):
 			self.consider_sync_tgt_net(step_number)
 
 		self.callback._on_training_end()
+
+
+# class ActorCriticTrainermarketObject(ActorCriticTrainer):
+
+# 	def __init__(self, marketplace, agent_class):
+# 		"""
+# 		Initialize an RLTrainer to train one specific configuration.
+# 		Args:
+# 			marketplace_class (subclass of SimMarket): The market scenario you want to train.
+# 			agent_class (subclass of RLAgent): The agent you want to train.
+# 		"""
+# 		# TODO: assert Agent and marketplace fit together
+# 		assert issubclass(agent_class, ReinforcementLearningAgent)
+# 		self.marketplace_class = type(marketplace)
+# 		self.marketplace = marketplace
+# 		self.agent_class = agent_class
+# 		assert self.trainer_agent_fit()
+
+# 	def initialize_callback(self, training_steps):
+# 		agent = self.agent_class(marketplace=self.marketplace)
+# 		self.callback = RecommerceCallback(self.agent_class, self.marketplace_class, training_steps, 500, 'dat', agent.name)
+# 		self.callback.model = agent

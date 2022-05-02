@@ -5,6 +5,7 @@ from recommerce.configuration.hyperparameter_config import config
 from recommerce.rl.callback import RecommerceCallback
 from recommerce.rl.reinforcement_learning_agent import ReinforcementLearningAgent
 
+
 class RLTrainer(ABC):
 	def __init__(self, marketplace_class, agent_class):
 		"""
@@ -44,6 +45,15 @@ class RLTrainer(ABC):
 	def consider_sync_tgt_net(self, frame_idx) -> None:
 		if (frame_idx + 1) % config.sync_target_frames == 0:
 			self.callback.model.synchronize_tgt_net()
+
+	@abstractmethod
+	def trainer_agent_fit(self) -> bool:
+		"""
+		Checks if the agent and the marketplace fit together.
+		Returns:
+			bool: True if the agent and the marketplace fit together, False otherwise.
+		"""
+		raise NotImplementedError('This method is abstract. Use a subclass')
 
 	@abstractmethod
 	def train_agent(self, maxsteps) -> None:

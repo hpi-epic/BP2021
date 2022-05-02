@@ -10,12 +10,11 @@ import recommerce.rl.self_play as self_play
 import recommerce.rl.stable_baselines.stable_baselines_model as sbmodel
 from recommerce.configuration.environment_config import EnvironmentConfigLoader, TrainingEnvironmentConfig
 from recommerce.market.circular.circular_vendors import CircularAgent
+from recommerce.market_ML.datagenerator_sim_market import CircularEconomyDatagenerator
 from recommerce.rl.actorcritic.actorcritic_training import ActorCriticTrainer
 from recommerce.rl.q_learning.q_learning_training import QLearningTrainer
-from recommerce.market_ML.datagenerator_sim_market import CircularEconomyDatagenerator
 
 print('successfully imported torch: cuda?', torch.cuda.is_available())
-
 
 
 def run_training_session(marketplace=circular_market.CircularEconomyRebuyPriceDuopoly, agent=q_learning_agent.QLearningAgent):
@@ -91,6 +90,10 @@ def train_to_calibrate_marketplace():
 	Train an ActorCriticAgent on a Circular Economy Market with Rebuy Prices and one competitor.
 	"""
 	run_training_session(CircularEconomyDatagenerator, actorcritic_agent.ContinuosActorCriticAgentFixedOneStd)
+
+
+def train_with_calibrated_marketplace(marketplace):
+	sbmodel.StableBaselinesPPO(marketplace).train_agent()
 
 
 def main():

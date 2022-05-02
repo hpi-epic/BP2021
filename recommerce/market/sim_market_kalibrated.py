@@ -4,10 +4,12 @@ import gym
 import numpy as np
 import torch
 
+from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPriceDuopoly
+
 NB = 200
 
 
-class SimMarketKalibrated(gym.Env):
+class SimMarketKalibrated(CircularEconomyRebuyPriceDuopoly):
 	cost_new_product = 3
 
 	def __init__(self, by1, by2, by3, by4, bxy4, by5, bxy5, by6, bxy6, M1, M2, M3, M4, M5, M6, M4x, M5x, M6x) -> None:
@@ -30,10 +32,11 @@ class SimMarketKalibrated(gym.Env):
 		self.M4x = M4x
 		self.M5x = M5x
 		self.M6x = M6x
-		self.prev = torch.tensor([-1.0000e+00,  2.3400e+02,  2.2745e+01,  1.3406e+01,  2.5241e+00,
+		self.previous_state = torch.tensor([-1.0000e+00,  2.3400e+02,  2.2745e+01,  1.3406e+01,  2.5241e+00,
 		2.7200e+02,  2.7000e+01,  1.8000e+01,  1.2000e+01,  2.4086e-02,
 		1.1700e+01,  2.0000e+00,  0.0000e+00,  0.0000e+00,  1.3600e+01,
 		3.0000e+00,  0.0000e+00,  3.0000e+00,  1.6300e+01, 0, 0, 0,  1.8651e+01,  1.2789e+01,  4.5772e+00])
+		super(CircularEconomyRebuyPriceDuopoly, self).__init__()
 
 	def comp_prices(self, Mi, Mix, bi, bix, flag: str, xb, state_to_get_parameters_from):
 		xb_index = -1
@@ -49,7 +52,7 @@ class SimMarketKalibrated(gym.Env):
 		# xb[4,i] = sum{k in M6}  b6[k] *xb[k,i-1] + sum{k in M6x} b6x[k]*(if xb[9,i-1]<k then 1 else 0)  # comp price rebuy (old)
 		# xb[24,i]= sum{k in M6}  b6[k] *xb[k,i] + sum{k in M6x} b6x[k]*(if xb[9,i]<k then 1 else 0)  # comp price rebuy (updated)
 		return sum([bi[ki] * state_to_get_parameters_from[k] for ki, k in enumerate(Mi)]) + \
-			sum([bix[ki] * (1 if state_to_get_parameters_from[xb_index] < k else 0) for ki, k in enumerate(Mix)])
+			sum([bix[ki] * (1 if (state_to_get_parameters_from[xb_index] < k) else 0) for ki, k in enumerate(Mix)])
 
 	def reset(self) -> np.array:
 		observable_state = (6, 1, 22, 23, 24)
@@ -62,12 +65,18 @@ class SimMarketKalibrated(gym.Env):
 
 	def step(self, agent_action) -> Tuple[np.array, np.float32, bool, dict]:
 		prev = self.previous_state
+		print(agent_action)
+		if isinstance(agent_action, np.ndarray):
+			agent_action = np.array(agent_action, dtype=np.float32)
+
+		assert self.action_space.contains(agent_action), f'{agent_action} ({type(agent_action)}) invalid'
+
 		xb = torch.tensor([[(1. if k-1 == 0 else 5. if i == 0 else -1.) for k in range(0, 25)] for i in range(0, NB)]).transpose(0, 1)
 		xb[1] = prev[1] - prev[12] + prev[13]  # agent inventory (after the previous step)
 
-		xb[2] = self.comp_prices(self.Mb, self.M4x, self.b4, self.b4x, 'new', xb, prev)  # comp price new 		(old)
-		xb[3] = self.comp_prices(self.Mb, self.M5x, self.b5, self.b5x, 'used', xb, prev)  # comp price used 	(old)
-		xb[4] = self.comp_prices(self.Mb, self.M6x, self.b6, self.b6x, 'rebuy', xb, prev)  # comp price rebuy 	(old)
+		xb[2] = self.comp_prices(self.M4, self.M4x, self.by4, self.bxy4, 'new', xb, prev)  # comp price new 		(old)
+		xb[3] = self.comp_prices(self.M5, self.M5x, self.by5, self.bxy5, 'used', xb, prev)  # comp price used 	(old)
+		xb[4] = self.comp_prices(self.M6, self.M6x, self.by6, self.bxy6, 'rebuy', xb, prev)  # comp price rebuy 	(old)
 
 		xb[5] = prev[5] - prev[16] + prev[17]  # comp inventory (after the previous step)
 
@@ -81,16 +90,15 @@ class SimMarketKalibrated(gym.Env):
 		# xb[7] = xb[2] - 1 + np.round_(x[1]/200) if 9 < xb[2] <= 18 else 18  # agent price new
 		# xb[8] = xb[3] - 1 + np.round_(x[1]/200) if 5 < xb[3] <= 12 else 12  # agent price used
 		# xb[9] = xb[4] - 0.5 - np.round_(x[1]/200) if 1 < xb[4] <= 5 else 5    # agent price rebuy
-
-		xb[7] = agent_action[0]
-		xb[8] = agent_action[1]
-		xb[9] = agent_action[2]
+		xb[7] = float(agent_action[0])
+		xb[8] = float(agent_action[1])
+		xb[9] = float(agent_action[2])
 
 		xb[10] = xb[1] * 0.05  # agent holding cost
 
-		xb[22] = self.comp_prices(self.Mb, self.M4x, self.b4, self.b4x, 'new', xb, xb)  # comp price new 		(updated)
-		xb[23] = self.comp_prices(self.Mb, self.M5x, self.b5, self.b5x, 'used', xb, xb)  # comp price used 	(updated)
-		xb[24] = self.comp_prices(self.Mb, self.M6x, self.b6, self.b6x, 'rebuy', xb, xb)  # comp price rebuy 	(updated)
+		xb[22] = self.comp_prices(self.M4, self.M4x, self.by4, self.bxy4, 'new', xb, xb)  # comp price new 		(updated)
+		xb[23] = self.comp_prices(self.M5, self.M5x, self.by5, self.bxy5, 'used', xb, xb)  # comp price used 	(updated)
+		xb[24] = self.comp_prices(self.M6, self.M6x, self.by6, self.bxy6, 'rebuy', xb, xb)  # comp price rebuy 	(updated)
 
 		# xb[11,i]= np.round_(max(0, np.random.uniform(-5,5) + sum{k in self.Ma} self.b1[k]*xb[k,i]))
 
@@ -131,41 +139,41 @@ class SimMarketKalibrated(gym.Env):
 		agent_observation = np.array([xb[state_index] for state_index in observable_state])
 		return agent_observation, xb[18], False, {}
 
-	M123 = (0, 1, 2, 3, 4, 7, 8, 9, 22, 23, 24)
-	# 0
-	# 1 agent inventory
-	# 2 comp price new (old)
-	# 3 comp price used (old)
-	# 4 comp price rebuy (old)
-	# 7 agent price new
-	# 8 agent price used
-	# 9 agent price rebuy
-	# 22 comp price new (updated)
-	# 23 comp price used (updated)
-	# 24 comp price rebuy (updated)
-	y1_index = 11
-	y2_index = 12
-	y3_index = 13
-	# by1 = first_regression(data, M123, y1_index)
-	# by2 = first_regression(data, M123, y2_index)
-	# by3 = first_regression(data, M123, y3_index)
+	# M123 = (0, 1, 2, 3, 4, 7, 8, 9, 22, 23, 24)
+	# # 0
+	# # 1 agent inventory
+	# # 2 comp price new (old)
+	# # 3 comp price used (old)
+	# # 4 comp price rebuy (old)
+	# # 7 agent price new
+	# # 8 agent price used
+	# # 9 agent price rebuy
+	# # 22 comp price new (updated)
+	# # 23 comp price used (updated)
+	# # 24 comp price rebuy (updated)
+	# y1_index = 11
+	# y2_index = 12
+	# y3_index = 13
+	# # by1 = first_regression(data, M123, y1_index)
+	# # by2 = first_regression(data, M123, y2_index)
+	# # by3 = first_regression(data, M123, y3_index)
 
-	M4 = (0, 2, 3, 4, 7, 8, 9)
-	# 0
-	# 2 comp price new (old)
-	# 3 comp price used (old)
-	# 4 comp price rebuy (old)
-	# 7 agent price new
-	# 8 agent price used
-	# 9 agent price rebuy
-	M4x = (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20)
-	y4_index = 2
-	M5 = (0, 2, 3, 4, 7, 8, 9)
-	M5x = (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20)
-	y5_index = 3
-	M6 = (0, 2, 3, 4, 7, 8, 9)
-	M6x = (1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10)
-	y6_index = 4
+	# M4 = (0, 2, 3, 4, 7, 8, 9)
+	# # 0
+	# # 2 comp price new (old)
+	# # 3 comp price used (old)
+	# # 4 comp price rebuy (old)
+	# # 7 agent price new
+	# # 8 agent price used
+	# # 9 agent price rebuy
+	# M4x = (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20)
+	# y4_index = 2
+	# M5 = (0, 2, 3, 4, 7, 8, 9)
+	# M5x = (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20)
+	# y5_index = 3
+	# M6 = (0, 2, 3, 4, 7, 8, 9)
+	# M6x = (1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10)
+	# y6_index = 4
 	# by4, bxy4 = fourth_regression(data, M4, M4x, y4_index, 'new')
 	# by5, bxy5 = fourth_regression(data, M5, M5x, y5_index, 'used')
 	# by6, bxy6 = fourth_regression(data, M6, M6x, y6_index, 'rebuy')
@@ -187,3 +195,26 @@ class SimMarketKalibrated(gym.Env):
 	# 	print(observation, reward, done, info)
 	# 	if done:
 	# 		break
+
+	def _get_competitor_list(self):
+		np.array([])
+
+	def _get_number_of_vendors(self) -> int:
+		return 2
+
+	def _setup_action_observation_space(self, support_continuous_action_space: bool = True) -> None:
+		# cell 0: number of products in the used storage, cell 1: number of products in circulation
+		# ADAPTED FROM SUPERCLASS TODO: fix magic numbers
+		assert not support_continuous_action_space
+		self.max_storage = 100
+		max_price = 10
+		self.max_circulation = 10 * self.max_storage
+		self.observation_space = gym.spaces.Box(np.array([0, 0] + [0, 0, 0], dtype=np.float32),
+			np.array([self.max_circulation, self.max_storage]
+			+ [max_price, max_price, self.max_storage], dtype=np.float32))
+
+		support_continuous_action_space = True
+		if support_continuous_action_space:
+			self.action_space = gym.spaces.Box(np.array([0] * 3, dtype=np.float32), np.array([max_price] * 3, dtype=np.float32))
+		else:
+			self.action_space = gym.spaces.Tuple((gym.spaces.Discrete(max_price), gym.spaces.Discrete(max_price)))

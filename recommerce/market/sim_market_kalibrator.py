@@ -1,7 +1,7 @@
-import numpy as np
-import torch
 import pandas as pd
+import torch
 from sim_market_kalibrated import SimMarketKalibrated
+
 import recommerce.rl.training_scenario as training_scenario
 from recommerce.configuration.path_manager import PathManager
 
@@ -40,8 +40,8 @@ class SimMarketKalibrator:
 
 		transposed_x_y3 = x_y3.transpose(0, 1)
 		print()
-		print("transposed_x_y3", transposed_x_y3.size())
-		print("y3", y3.size())
+		print('transposed_x_y3', transposed_x_y3.size())
+		print('y3', y3.size())
 		print()
 		# minimize OLSy3: sum{i in 1..N} ( sum{k in M3} beta3[k]*x[k,i] - y3[i] )^2;
 		# objective OLSy3; solve; for{k in M3} let b3[k]:=beta3[k];;
@@ -104,3 +104,4 @@ if __name__ == '__main__':
 
 	kalibrator = SimMarketKalibrator(M123, M123, M123, M4, M5, M6, M4x, M5x, M6x)
 	kalibrated_market = kalibrator.kalibrate_market(data, y1_index, y2_index, y3_index, y4_index, y5_index, y6_index)
+	training_scenario.train_with_calibrated_marketplace(kalibrated_market)

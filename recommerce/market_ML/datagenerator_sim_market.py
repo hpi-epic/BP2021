@@ -2,13 +2,14 @@
 from typing import Tuple
 
 import numpy as np
+
+from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPriceDuopoly
+
 # import pandas as pd
 # import torch
 
-from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPriceOneCompetitor
 
-
-class CircularEconomyDatagenerator(CircularEconomyRebuyPriceOneCompetitor):
+class CircularEconomyDatagenerator(CircularEconomyRebuyPriceDuopoly):
 
 	def __init__(self, support_continuous_action_space: bool = False) -> None:
 		super(CircularEconomyDatagenerator, self).__init__(support_continuous_action_space)
@@ -23,8 +24,8 @@ class CircularEconomyDatagenerator(CircularEconomyRebuyPriceOneCompetitor):
 
 	def output_dict_append(self, output_dict: dict, i):
 		x = np.array(np.zeros(25)).reshape(25, 1)
-		print("i: ", i)
-		print("cumulated_states: ", self.cumulated_states)
+		print('i: ', i)
+		print('cumulated_states: ', self.cumulated_states)
 		# agent period: 1st half: agent x[7]vs x[2]| 2nd half: agent x[7] vs x[2, i+1]
 		# comp period: 1st half: com x[2, i-1] vs x[7, i-1] | 2nd half: com x[2, i-1] vs x[7]
 
