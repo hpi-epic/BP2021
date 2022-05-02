@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from django.test import TestCase
 from django.utils import timezone
 
@@ -9,13 +10,15 @@ class ContainerTest(TestCase):
 	def setUp(self):
 		# get a container for testing
 		config_object = Config.objects.create()
+		user = User.objects.create(username='test_user', password='top_secret')
 		Container.objects.create(
 								command='training',
 								id='123',
 								created_at='01.01.1970',
 								last_check_at='now',
 								name='test_container',
-								config=config_object
+								config=config_object,
+								user=user
 								)
 
 	def test_container_is_archived(self):
