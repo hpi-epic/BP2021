@@ -1,5 +1,6 @@
 from unittest.mock import patch
 
+from django.contrib.auth.models import User
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.test import TestCase
 from django.test.client import RequestFactory
@@ -15,13 +16,15 @@ class ButtonTests(TestCase):
 	def setUp(self):
 		# get a container for testing
 		config_object = Config.objects.create()
+		self.user = User.objects.create(username='test_user', password='top_secret')
 		self.test_container = Container.objects.create(
 								command='training',
 								id='1234',
 								created_at='01.01.1970',
 								last_check_at='now',
 								name='test_container',
-								config=config_object
+								config=config_object,
+								user=self.user
 								)
 
 	def test_health_button(self):
@@ -124,11 +127,11 @@ class ButtonTests(TestCase):
 
 		with patch('alpha_business_app.buttons.redirect') as redirect_mock, \
 			patch('alpha_business_app.buttons.send_get_request') as get_request_mock:
-			get_request_mock.return_value = APIResponse('success', '200', {'id': '1234', 'data': 'tensorboard_link:6006'})
+			get_request_mock.return_value = APIResponse('success', '200', {'id': '1234', 'data': '6006'})
 
 			test_button_handler.do_button_click()
 
-			redirect_mock.assert_called_once_with('tensorboard_link:6006')
+			redirect_mock.assert_called_once_with('http://vm-midea03.eaalab.hpi.uni-potsdam.de:6006')
 
 	def test_stop_button(self):
 		# mock a request that is sent when user presses a button
@@ -252,7 +255,7 @@ class ButtonTests(TestCase):
 			post_request_mock.return_value = APIResponse('success', content=api_response_dict)
 
 			test_button_handler.do_button_click()
-			post_request_mock.assert_called_once_with('start', EXAMPLE_HIERARCHY_DICT, 2)
+			post_request_mock.assert_called_once_with('start', EXAMPLE_HIERARCHY_DICT, {'num_experiments': 2})
 			redirect_mock.assert_called_once_with('/observe', {'success': 'You successfully launched an experiment'})
 
 		# assert config exists
@@ -293,7 +296,7 @@ class ButtonTests(TestCase):
 			post_request_mock.return_value = APIResponse('success', content=api_response_dict)
 
 			test_button_handler.do_button_click()
-			post_request_mock.assert_called_once_with('start', EXAMPLE_HIERARCHY_DICT, 2)
+			post_request_mock.assert_called_once_with('start', EXAMPLE_HIERARCHY_DICT, {'num_experiments': 2})
 			render_mock.assert_called_once()
 		assert 1 == len(Container.objects.all())
 
@@ -304,6 +307,7 @@ class ButtonTests(TestCase):
 
 	def _setup_request(self, view: str, action: str) -> RequestFactory:
 		request = RequestFactory().post(view, {'action': action, 'container_id': '1234'})
+		request.user = self.user
 		middleware = SessionMiddleware(request)
 		middleware.process_request(request)
 		request.session.save()
@@ -313,6 +317,7 @@ class ButtonTests(TestCase):
 		default_dict = {'action': action, 'container_id': '1234'}
 		# if we switch to python 3.9+, we could also use default_dict | parameter here
 		request = RequestFactory().post(view, {**default_dict, **parameter})
+		request.user = self.user
 		middleware = SessionMiddleware(request)
 		middleware.process_request(request)
 		request.session.save()

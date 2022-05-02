@@ -1,3 +1,5 @@
+import torch
+
 import recommerce.market.circular.circular_sim_market as circular_market
 import recommerce.market.linear.linear_sim_market as linear_market
 import recommerce.market.sim_market as sim_market
@@ -8,6 +10,8 @@ from recommerce.configuration.environment_config import EnvironmentConfigLoader,
 from recommerce.market.circular.circular_vendors import CircularAgent
 from recommerce.rl.actorcritic.actorcritic_training import ActorCriticTrainer
 from recommerce.rl.q_learning.q_learning_training import QLearningTrainer
+
+print('successfully imported torch: cuda?', torch.cuda.is_available())
 
 
 def run_training_session(marketplace=circular_market.CircularEconomyRebuyPriceDuopoly, agent=q_learning_agent.QLearningAgent):

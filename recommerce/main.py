@@ -86,9 +86,9 @@ def main():  # pragma: no cover
 	parser.add_argument('-d', '--datapath', type=str, help="""provide the path where `recommerce` will look for and save data.
 Relative paths are supported""")
 
-	parser.add_argument('--get-defaults', action='store_true', help="""default files, such as a hyperparameter_config.json and
+	parser.add_argument('-gd', '--get-defaults', action='store_true', help="""default files, such as a hyperparameter_config.json and
 trained models will be copied to your DATAPATH""")
-	parser.add_argument('--get-defaults-unpack', action='store_true', dest='unpack',
+	parser.add_argument('-gdu', '--get-defaults-unpack', action='store_true', dest='unpack',
 		help="""Works the same as --get-defaults, but also unpacks the default files so they are in the correct relative
 locations to be used by the program. Has priority over --get-defaults.
 NOTE: Any existing files with the same name as the default files will be overwritten!""")
