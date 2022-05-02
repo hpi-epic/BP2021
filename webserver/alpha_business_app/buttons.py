@@ -1,5 +1,3 @@
-import copy
-
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
@@ -7,9 +5,10 @@ from django.utils import timezone
 from recommerce.configuration.config_validation import validate_config
 
 from .config_merger import ConfigMerger
-from .config_parser import ConfigFlatDictParser, ConfigModelParser
+from .config_parser import ConfigFlatDictParser
+from .container_parser import parse_response_to_database
 from .handle_files import download_file
-from .handle_requests import send_get_request, send_get_request_with_streaming, send_post_request, stop_container
+from .handle_requests import DOCKER_API, send_get_request, send_get_request_with_streaming, send_post_request, stop_container
 from .models.config import Config
 from .models.container import Container, update_container
 
@@ -41,7 +40,7 @@ class ButtonHandler():
 		self.data = data
 		self.message = [None, None]
 		self.wanted_key = None
-		self.all_containers = Container.objects.all()
+		self.all_containers = Container.objects.all().filter(user=request.user)
 		self.wanted_config = wanted_config
 
 		if request.method == 'POST':
@@ -103,7 +102,7 @@ class ButtonHandler():
 		Returns:
 			dict: a dictionary of all_containers, a container, data and the error or success message.
 		"""
-		return {'all_saved_containers': self.all_containers,
+		return {'all_saved_containers': self.all_containers.filter(user=self.request.user),
 				'container': self.wanted_container,
 				'data': self.data,
 				**self._message_for_view()}
@@ -125,9 +124,7 @@ class ButtonHandler():
 			dict: contains all current configuration objects, the current config and this config as dict if it exists.
 		"""
 		return {
-			'all_configurations': Config.objects.all(),
-			'config': self.wanted_config,
-			'config_dict': self.wanted_config.as_dict() if self.wanted_config else None,
+			'all_configurations': Config.objects.all().filter(user=self.request.user),
 			**self._params_for_selection()
 			}
 
@@ -135,10 +132,10 @@ class ButtonHandler():
 		# TODO: implement the selection parameters here
 		# import recommerce.market.circular.circular_sim_market as circular_market
 		# circular_market_places = list(set(filter(lambda class_name: class_name.startswith('CircularEconomy'), dir(circular_market))))
-		circular_market_places = ['CircularEconomyMonopolyScenario',
+		circular_market_places = ['CircularEconomyMonopoly',
 			'CircularEconomyRebuyPrice',
-			'CircularEconomyRebuyPriceMonopolyScenario',
-			'CircularEconomyRebuyPriceOneCompetitor']
+			'CircularEconomyRebuyPriceMonopoly',
+			'CircularEconomyRebuyPriceDuopoly']
 		circular_market_places = [('recommerce.market.circular.circular_sim_market.' + market, market) for market in circular_market_places]
 		return {
 			'selections': {
@@ -152,7 +149,7 @@ class ButtonHandler():
 		Returns:
 			HttpResponse: a default rendering with default values, some might be set by the different functions.
 		"""
-		self.all_containers = Container.objects.all()
+		self.all_containers = Container.objects.all().filter(user=self.request.user)
 		return render(self.request, self.view_to_render, self._default_params_for_view())
 
 	def _render_without_archived(self) -> HttpResponse:
@@ -162,7 +159,7 @@ class ButtonHandler():
 		Returns:
 			HttpResponse: a default rendering without all archived containers.
 		"""
-		self.all_containers = Container.objects.all().exclude(health_status='archived')
+		self.all_containers = Container.objects.all().exclude(health_status='archived').filter(user=self.request.user)
 		return render(self.request, self.view_to_render, self._default_params_for_view())
 
 	def _render_configuration(self) -> HttpResponse:
@@ -174,6 +171,23 @@ class ButtonHandler():
 		"""
 		return render(self.request, self.view_to_render, {**self._params_for_config(), **self._message_for_view()})
 
+	def _render_prefill(self, pre_fill_dict: dict, error_dict: dict) -> HttpResponse:
+		"""
+		This will return a rendering for `self.view` with params for selection a prefill dict and the error dict
+
+		Args:
+			pre_fill_dict (dict): dictioary of prefilled values for the configuration form
+			error_dict (dict): errors which came up when rendering
+
+		Returns:
+			HttpResponse: _description_
+		"""
+		return render(self.request, self.view_to_render,
+			{'prefill': pre_fill_dict,
+			'error_dict': error_dict,
+			'all_configurations': Config.objects.all().filter(user=self.request.user),
+			**self._params_for_selection()})
+
 	def _delete_container(self) -> HttpResponse:
 		"""
 		This will delete the selected container and all data belonging to this container.
@@ -181,9 +195,8 @@ class ButtonHandler():
 		Returns:
 			HttpResponse: a defined rendering.
 		"""
-		raw_data = {'container_id': self.wanted_container.id}
 		if not self.wanted_container.is_archived():
-			self.message = stop_container(raw_data).status()
+			self.message = stop_container(self.wanted_container.id).status()
 
 		if self.message[0] == 'success' or self.wanted_container.is_archived():
 			self.wanted_container.delete()
@@ -216,7 +229,7 @@ class ButtonHandler():
 		Returns:
 			HttpResponse: A default response with default values or a response containing the error field.
 		"""
-		response = send_get_request('health', self.request.POST)
+		response = send_get_request('health', self.request.POST['container_id'])
 		if response.ok():
 			response = response.content
 			update_container(response['id'], {'last_check_at': timezone.now(), 'health_status': response['status']})
@@ -234,7 +247,7 @@ class ButtonHandler():
 		Returns:
 			HttpResponse: A default response with default values or a response containing the error field.
 		"""
-		response = send_get_request('logs', self.request.POST)
+		response = send_get_request('logs', self.request.POST['container_id'])
 		self.data = ''
 		if response.ok():
 			# reverse the output for better readability
@@ -269,8 +282,10 @@ class ButtonHandler():
 			return self._decide_rendering()
 		merger = ConfigMerger()
 		final_dict, error_dict = merger.merge_config_objects(post_request['config_id'])
-		return render(self.request, self.view_to_render,
-			{'prefill': final_dict, 'error_dict': error_dict, 'all_configurations': Config.objects.all(), **self._params_for_selection()})
+		# set an id for each agent (necessary for view)
+		for agent_index in range(len(final_dict['environment']['agents'])):
+			final_dict['environment']['agents'][agent_index]['id'] = agent_index
+		return self._render_prefill(final_dict, error_dict)
 
 	def _remove(self) -> HttpResponse:
 		"""
@@ -279,7 +294,7 @@ class ButtonHandler():
 		Returns:
 			HttpResponse: An appropriate rendering
 		"""
-		self.message = stop_container(self.request.POST).status()
+		self.message = stop_container(self.request.POST['container_id']).status()
 		return self._decide_rendering()
 
 	def _start(self) -> HttpResponse:
@@ -299,24 +314,18 @@ class ButtonHandler():
 			self.message = ['error', validate_data]
 			return self._decide_rendering()
 
-		response = send_post_request('start', config_dict)
+		num_experiments = post_request['num_experiments'][0] if post_request['num_experiments'][0] else 1
+		response = send_post_request('start', config_dict, {'num_experiments': num_experiments})
+
 		if response.ok():
 			# put container into database
-			response = response.content
-			# check if a container with the same id already exists
-			if Container.objects.filter(id=response['id']).exists():
-				# we will kindly ask the user to try it again and stop the container
-				# TODO insert better handling here
-				self.message = ['error', 'The new container has the same id as an already existing container, please try again.']
-				return self._remove()
-			# get all necessary parameters for container object
-			container_name = self.request.POST['experiment_name']
-			container_name = container_name if container_name != '' else response['id'][:10]
-			config_object = ConfigModelParser().parse_config(copy.deepcopy(config_dict))
-			command = config_object.environment.task
-			Container.objects.create(id=response['id'], config=config_object, name=container_name, command=command)
-			config_object.name = f'Config for {container_name}'
-			config_object.save()
+			container_name = post_request['experiment_name'][0]
+			was_successful, error_container_ids, data = parse_response_to_database(response, config_dict, container_name, self.request.user)
+			if not was_successful:
+				self.message = ['error', data]
+				for error_container_id in error_container_ids:
+					stop_container(error_container_id)
+				return self._decide_rendering()
 			return redirect('/observe', {'success': 'You successfully launched an experiment'})
 		else:
 			self.message = response.status()
@@ -332,10 +341,12 @@ class ButtonHandler():
 		"""
 		if self.wanted_container.has_tensorboard_link():
 			return redirect(self.wanted_container.tensorboard_link)
-		response = send_get_request('data/tensorboard', self.request.POST)
+		response = send_get_request('data/tensorboard', self.request.POST['container_id'])
 		if response.ok():
-			update_container(self.wanted_container.id, {'tensorboard_link': response.content['data']})
-			return redirect(response.content['data'])
+			docker_base_url = DOCKER_API.split(':')
+			tensorboard_link = f'http:{docker_base_url[1]}:{response.content["data"]}'
+			update_container(self.wanted_container.id, {'tensorboard_link': tensorboard_link})
+			return redirect(tensorboard_link)
 		else:
 			self.message = response.status()
 			return self._decide_rendering()
@@ -349,9 +360,9 @@ class ButtonHandler():
 		"""
 		# check, whether the request wants to pause or to unpause the container
 		if self.wanted_container.is_paused():
-			response = send_get_request('unpause', self.request.POST)
+			response = send_get_request('unpause', self.request.POST['container_id'])
 		else:
-			response = send_get_request('pause', self.request.POST)
+			response = send_get_request('pause', self.request.POST['container_id'])
 
 		if response.ok():
 			response = response.content

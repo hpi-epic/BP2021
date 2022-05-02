@@ -1,7 +1,7 @@
 <form method="post" enctype="multipart/form-data" target="_blank">
-	{% csrf_token %}
-	<input type="hidden" name="action", value="data/tensorboard">
-	<button class="btn btn-sm bc-outline-tensorboard" 
-		title="view the tensorboard of the running container"
-		name="container_id" value="{{ container.id }}" type="submit">Check it out</button>
-</form> 
+    {% csrf_token %}
+    <input type="hidden" name="action", value="data/tensorboard">
+    <button class="btn btn-sm bc-outline-tensorboard"
+        title="view the tensorboard of the running container"
+        name="container_id" value="{{ container.id }}" type="submit">Check it out</button>
+</form>

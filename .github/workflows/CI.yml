@@ -6,7 +6,7 @@ jobs:
   build-linux:
     runs-on: [self-hosted, ubuntu-20.04]
     name: CI on Ubuntu
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -17,7 +17,7 @@ jobs:
       - name: Install Recommerce package
         shell: bash -l {0}
         run: |
-          pip install -e ./
+          pip install -e .[cpu]
       - name: Setup Recommerce
         shell: bash -l {0}
         run: |
@@ -27,6 +27,9 @@ jobs:
         run: |
           coverage run --source=. -m pytest
       - name: Test Webserver
+        env:
+          SECRET_KEY: 'fake_secret_key'
+          API_TOKEN: 'fake_api_token'
         shell: bash -l {0}
         run: |
           (cd ./webserver && python ./manage.py test -v 2)

@@ -1,44 +1,12 @@
 from django.test import TestCase
 
 from ..models.config import *
-from ..models.config import get_config_field_names, remove_none_values_from_dict
+from ..models.config import remove_none_values_from_dict
 from ..models.container import Container
 from .constant_tests import EMPTY_STRUCTURE_CONFIG
 
 
 class ConfigTest(TestCase):
-	def test_right_field_names_config(self):
-		expected_field_names = ['environment', 'hyperparameter', 'name']
-		actual_field_names = get_config_field_names(Config)
-		assert expected_field_names == actual_field_names
-
-	def test_right_field_names_environment_config(self):
-		expected_field_names = ['agents', 'enable_live_draw', 'episodes', 'plot_interval', 'marketplace', 'task']
-		actual_field_names = get_config_field_names(EnvironmentConfig)
-		assert expected_field_names == actual_field_names
-
-	def test_right_field_names_agents_config(self):
-		expected_field_names = []
-		actual_field_names = get_config_field_names(AgentsConfig)
-		assert expected_field_names == actual_field_names
-
-	def test_right_field_names_hyperparameter_config(self):
-		expected_field_names = ['rl', 'sim_market']
-		actual_field_names = get_config_field_names(HyperparameterConfig)
-		assert expected_field_names == actual_field_names
-
-	def test_right_field_names_rl_config(self):
-		expected_field_names = ['gamma', 'batch_size', 'replay_size', 'learning_rate', 'sync_target_frames', 'replay_start_size',
-			'epsilon_decay_last_frame', 'epsilon_start', 'epsilon_final']
-		actual_field_names = get_config_field_names(RlConfig)
-		assert expected_field_names == actual_field_names
-
-	def test_right_field_names_sim_market_config(self):
-		expected_field_names = ['max_storage', 'episode_length', 'max_price', 'max_quality', 'number_of_customers', 'production_price',
-			'storage_cost_per_product']
-		actual_field_names = get_config_field_names(SimMarketConfig)
-		assert expected_field_names == actual_field_names
-
 	def test_class_name_config(self):
 		assert 'Config' == to_config_class_name('')
 
@@ -70,7 +38,9 @@ class ConfigTest(TestCase):
 		test_config_not_referenced = Config.objects.create()
 		test_config_referenced = Config.objects.create()
 
-		Container.objects.create(config=test_config_referenced)
+		from django.contrib.auth.models import User
+		user = User.objects.create(username='test_user', password='top_secret')
+		Container.objects.create(config=test_config_referenced, user=user)
 
 		assert test_config_not_referenced.is_referenced() is False
 		assert test_config_referenced.is_referenced() is True
@@ -83,7 +53,7 @@ class ConfigTest(TestCase):
 			argument='', agents_config=agents_config, name='Rule_Based Agent')
 
 		env_config = EnvironmentConfig.objects.create(agents=agents_config,
-			marketplace='recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
+			marketplace='recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopoly',
 			task='training')
 
 		rl_config = RlConfig.objects.create(gamma=0.99,
@@ -134,7 +104,7 @@ class ConfigTest(TestCase):
 				},
 				'environment': {
 					'task': 'training',
-					'marketplace': 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
+					'marketplace': 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopoly',
 					'agents': [
 						{
 							'name': 'Rule_Based Agent',

@@ -6,6 +6,8 @@ import time
 from itertools import count, filterfalse
 from types import GeneratorType
 
+from torch.cuda import is_available
+
 import docker
 from docker.models.containers import Container
 
@@ -32,6 +34,15 @@ class DockerInfo():
 		self.data = data
 		self.stream = stream
 
+	def __eq__(self, other: object) -> bool:
+		if not isinstance(other, DockerInfo):
+			# don't attempt to compare against unrelated types
+			return False
+		return self.id == other.id \
+			and self.status == other.status \
+			and self.data == other.data \
+			and self.stream == other.stream
+
 
 class DockerManager():
 	"""
@@ -57,20 +68,23 @@ class DockerManager():
 		if cls._instance is None:
 			print('A new instance of DockerManager is being initialized')
 			cls._instance = super(DockerManager, cls).__new__(cls)
-			cls._client = docker.from_env()
+			cls._client = cls._get_client()
 
-		cls._initialize_port_mapping()
+		if cls._client is not None:
+			cls._update_port_mapping()
 		return cls._instance
 
-	def start(self, config: dict) -> DockerInfo:
+	def start(self, config: dict, count: int) -> DockerInfo or list:
 		"""
 		To be called by the REST API. Create and start a new docker container from the image of the specified command.
 
 		Args:
-			config (dict): The combined hyperparameter_config and environment_config_command dictionaries that should be sent to the container.
+			config (dict): The combined hyperparameter_config and environment_config_command dicts that should be sent to the container.
+			count (int): number of containers that should be started
 
 		Returns:
-			DockerInfo: A JSON serializable object containing the id and the status of the new container.
+			DockerInfo or list: A JSON serializable object containing the error messages if the prerequisite were not met, or a list of
+				DockerInfos for the container(s)
 		"""
 		if 'hyperparameter' not in config:
 			return DockerInfo(id='No container was started', status='The config is missing the "hyperparameter"-field')
@@ -83,15 +97,21 @@ class DockerManager():
 			print(f'Command with ID {command_id} not allowed')
 			return DockerInfo(id='No container was started', status=f'Command not allowed: {command_id}')
 
-		self._confirm_image_exists()
+		if not self._confirm_image_exists():
+			return DockerInfo(id='No container was started', status='Image build failed')
 
-		# start a container for the image of the requested command
-		container_info: DockerInfo = self._create_container(command_id, config, use_gpu=False)
-		if container_info.status.__contains__('Image not found') or container_info.data is False:
-			self.remove_container(container_info.id)
-			return container_info
-
-		return self._start_container(container_info.id)
+		all_container_infos = []
+		for _ in range(count):
+			# start a container for the image of the requested command
+			print('cuda?', is_available())
+			container_info: DockerInfo = self._create_container(command_id, config, use_gpu=is_available())
+			if 'Image not found' in container_info.status or container_info.data is False:
+				# something is wrong with our container
+				self.remove_container(container_info.id)
+				return container_info
+			# the container is fine, we can start the container now
+			all_container_infos += [self._start_container(container_info.id)]
+		return all_container_infos
 
 	def health(self, container_id: str) -> DockerInfo:
 		"""
@@ -109,7 +129,7 @@ class DockerManager():
 			return DockerInfo(container_id, status='Container not found')
 
 		if container.status == 'exited':
-			return DockerInfo(container_id, status=f'exited ({container.wait()["StatusCode"]})')
+			return DockerInfo(container_id, status=f'exited ({docker.APIClient().inspect_container(container.id)["State"]["ExitCode"]})')
 
 		return DockerInfo(container_id, status=container.status)
 
@@ -187,7 +207,7 @@ class DockerManager():
 		print(f'Starting tensorboard for: {container_id}')
 		container.exec_run(cmd='tensorboard serve --host 0.0.0.0 --logdir ./results/runs', detach=True)
 		port = self._port_mapping[container.id]
-		return DockerInfo(container_id, status=container.status, data=f'http://localhost:{port}')
+		return DockerInfo(container_id, status=container.status, data=str(port))
 
 	def get_container_logs(self, container_id: str, timestamps: bool, stream: bool, tail: int) -> DockerInfo:
 		"""
@@ -207,15 +227,14 @@ class DockerManager():
 		if not container:
 			return DockerInfo(container_id, status='Container not found')
 
-		print(f'Getting logs for {container_id}')
+		print(f'Getting logs for {container_id}...')
 
-		container_status = container.status
-
-		logs = container.logs(stream=stream, timestamps=timestamps, tail=tail, stderr=container_status == 'exited')
+		logs = container.logs(stream=stream, timestamps=timestamps, tail=tail,
+			stderr=docker.APIClient().inspect_container(container.id)['State']['ExitCode'] != 0)
 		if stream:
-			return DockerInfo(container_id, status=container_status, stream=logs)
+			return DockerInfo(container_id, status=container.status, stream=logs)
 		else:
-			return DockerInfo(container_id, status=container_status, data=logs.decode('utf-8'))
+			return DockerInfo(container_id, status=container.status, data=logs.decode('utf-8'))
 
 	def get_container_data(self, container_id: str, container_path: str) -> DockerInfo:
 		"""
@@ -232,14 +251,12 @@ class DockerManager():
 		container: Container = self._get_container(container_id)
 		if not container:
 			return DockerInfo(container_id, status='Container not found')
-		# a list of all changes in the containers file system since it was created
-		path_list = [file_dict['Path'] for file_dict in container.diff()]
-		# if the requested path exists, we return it as a tar archive, else we return an error to the API
-		if any('app/results' in path for path in path_list):
+		try:
 			bits, _ = container.get_archive(path=container_path)
 			return DockerInfo(container_id, status=container.status,
 				data=f'archive_{container_path.rpartition("/")[2]}_{time.strftime("%b%d_%H-%M-%S")}', stream=bits)
-		return DockerInfo(container_id, status=f'The requested path does not exist on the container: {container_path}')
+		except docker.errors.NotFound:
+			return DockerInfo(container_id, status=f'The requested path does not exist on the container: {container_path}')
 
 	def remove_container(self, container_id: str) -> DockerInfo:
 		"""
@@ -265,19 +282,47 @@ class DockerManager():
 			exit_code = container.wait()['StatusCode']
 			container.remove()
 			# update the local port mapping
-			self._port_mapping.pop(container.id)
-			# remove the port mapping of the old container from the occupied_ports.txt
-			with open(os.path.join(os.path.dirname(__file__), 'occupied_ports.txt'), 'w') as port_file:
-				pass
-			with open(os.path.join(os.path.dirname(__file__), 'occupied_ports.txt'), 'a') as port_file:
-				for id, port in self._port_mapping.items():
-					port_file.write(f'{id}\n{port}\n')
+			self._update_port_mapping()
 
 			return DockerInfo(id=container_id, status=f'removed ({exit_code})')
 		except docker.errors.APIError as error:
 			return DockerInfo(id=container_id, status=f'APIError encountered while removing container.\n{error}')
 
+	def ping(self) -> bool:
+		"""
+		Wrapper around docker.ping() that pings the docker server to see if it is running.
+
+		Returns:
+			bool: If the server is running or not.
+		"""
+		print('Pinging docker server...')
+		try:
+			return self._get_client().ping()
+		except Exception:
+			print('Docker server is not responding!')
+			return False
+
 	# PRIVATE METHODS
+	@classmethod
+	def _get_client(cls) -> docker.DockerClient:
+		"""
+		"Wrapper" around `cls._client`. If the `cls._client` is already set, return it.
+		Otherwise, try and get a new client from docker and set it as the `cls._client`.
+		If docker is unavailable, `cls.client` will stay as `None`.
+
+		This function makes it possible for docker to become unavailable and available again without crashing the DockerManager.
+
+		Returns:
+			docker.DockerClient: The docker client, or None if docker is unavailable.
+		"""
+		if cls._client is not None:
+			return cls._client
+		try:
+			cls._client = docker.from_env()
+		except docker.errors.DockerException:
+			cls._client = None
+		return cls._client
+
 	def _confirm_image_exists(self, update: bool = False) -> str:
 		"""
 		Find out if the recommerce image exists. If not, the image will be built.
@@ -286,11 +331,11 @@ class DockerManager():
 			update (bool): Whether or not to always build/update an image for this id. Defaults to False.
 
 		Returns:
-			str: The id of the image.
+			str: The id of the image or None if the build failed.
 		"""
 
 		# Get the image tag of all images on the system.
-		all_images = self._client.images.list()
+		all_images = self._get_client().images.list()
 		tagged_images = [image.tags[0].rsplit(':')[0] for image in all_images if len(image.tags)]
 
 		if len(all_images) != len(tagged_images):
@@ -307,33 +352,38 @@ class DockerManager():
 			print('Recommerce image does not exist and will be created')
 			return self._build_image()
 		print('Recommerce image already exists')
-		return self._client.images.get('recommerce').id[7:]
+		return self._get_client().images.get('recommerce').id[7:]
 
 	def _build_image(self) -> str:
 		"""
 		Build an image for the recommerce application, and name it 'recommerce'.
 
 		Returns:
-			str: The id of the image.
+			str: The id of the image or None if the build failed.
 		"""
 		# https://docker-py.readthedocs.io/en/stable/images.html
 		print('Building recommerce image')
 
 		# Find out if an image with the name already exists to remove it afterwards
 		try:
-			old_img = self._client.images.get('recommerce')
+			old_img = self._get_client().images.get('recommerce')
 		except docker.errors.ImageNotFound:
 			old_img = None
 		try:
-			img, _ = self._client.images.build(path=os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)),
-				tag='recommerce', forcerm=True, network_mode='host')
+			# Using the low-level API to be able to get live-logs
+			logs = docker.APIClient().build(path=os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)),
+				tag='recommerce', forcerm=True, network_mode='host', decode=True)
+			for output in logs:
+				if 'stream' in output:
+					output_str = output['stream'].strip('\r\n').strip('\n')
+					print(output_str)
+			img = self._get_client().images.get('recommerce')
 		except docker.errors.BuildError or docker.errors.APIError as error:
 			print(f'An error occurred while building the recommerce image\n{error}')
-			exit(1)
-
+			return None
 		if old_img is not None and old_img.id != img.id:
-			print('A recommerce image already exists, it will be overwritten')
-			self._client.images.remove(old_img.id[7:])
+			print('\nA recommerce image already exists, it will be overwritten')
+			self._get_client().images.remove(old_img.id[7:])
 		# return id without the 'sha256:'-prefix
 		return img.id[7:]
 
@@ -352,14 +402,17 @@ class DockerManager():
 		# https://docker-py.readthedocs.io/en/stable/containers.html
 		print(f'Creating container for command: {command_id}')
 
+		# first update the port mapping in case containers were added/removed without our knowledge
+		self._update_port_mapping()
 		# find the next available port to map to 6006 in the container
 		used_port = next(filterfalse(set(self._port_mapping.values()).__contains__, count(6006)))
 		# create a device request to use all available GPU devices with compute capabilities
 		if use_gpu:
 			device_request_gpu = docker.types.DeviceRequest(driver='nvidia', count=-1, capabilities=[['compute']])
 			try:
-				container: Container = self._client.containers.create('recommerce',
+				container: Container = self._get_client().containers.create('recommerce',
 					detach=True,
+					labels=['recommerce'],
 					ports={'6006/tcp': used_port},
 					entrypoint=f'recommerce -c {command_id}',
 					device_requests=[device_request_gpu])
@@ -367,16 +420,15 @@ class DockerManager():
 				return DockerInfo(id=command_id, status=f'Image not found.\n{error}')
 		else:
 			try:
-				container: Container = self._client.containers.create('recommerce',
+				container: Container = self._get_client().containers.create('recommerce',
 					detach=True,
+					labels=['recommerce'],
 					ports={'6006/tcp': used_port},
 					entrypoint=f'recommerce -c {command_id}')
 			except docker.errors.ImageNotFound as error:
 				return DockerInfo(id=command_id, status=f'Image not found.\n{error}')
 
-		# Add the container.id and used_port to the occupied_ports.txt and the self._port_mapping
-		with open(os.path.join(os.path.dirname(__file__), 'occupied_ports.txt'), 'a') as port_file:
-			port_file.write(f'{container.id}\n{used_port}\n')
+		# add the new container to the port mapping
 		self._port_mapping.update({container.id: used_port})
 
 		upload_info = self._upload_config(container.id, command_id, config)
@@ -423,7 +475,7 @@ class DockerManager():
 			docker.models.containers.Container: The container for the given id or None if the container does not exist.
 		"""
 		try:
-			return self._client.containers.get(container_id)
+			return self._get_client().containers.get(container_id)
 		except docker.errors.NotFound:
 			return None
 
@@ -507,58 +559,19 @@ class DockerManager():
 		return DockerInfo(id=container_id, status=container.status, data=hyper_ok and env_ok)
 
 	@classmethod
-	def _initialize_port_mapping(cls):
+	def _update_port_mapping(cls):
 		"""
-		Initialize the cls._port_mapping dictionary.
+		Update the cls._port_mapping dictionary.
 
-		Opens the 'occupied_ports.txt' and reads the containers registered there, creating a dictionary of container_id:port mappings.
-		Checks that the registered containers and the currently running containers are the same.
+		Gets all containers tagged with `recommerce` and find the port forwarded from 6006.
 		"""
-		# make sure the 'occupied_ports.txt' exists
-		with open(os.path.join(os.path.dirname(__file__), 'occupied_ports.txt'), 'a'):
-			pass
-		# initialize the list of occupied ports by reading from the file
-		with open(os.path.join(os.path.dirname(__file__), 'occupied_ports.txt'), 'r') as port_file:
-			occupied_ports = port_file.readlines()
-		# occupied_ports is a tuple with alternating container_id and port
-		occupied_ports = (item[:-1] for item in occupied_ports)
-		# the port mapping is a dictionary with the container_id being the key and its port the value
-		cls._port_mapping = dict(zip(occupied_ports, occupied_ports))
-
-		# make sure all containers are mapped and registered to the manager
-		running_containers = [container.id for container in cls._client.containers.list(all=True)]
-		mapped_containers = list(cls._port_mapping.keys())
-		assert set(mapped_containers) == set(running_containers), \
-f'''Container-Port mapping is mismatched! Check the \'occupied_ports.txt\' and your running docker containers (`docker ps -a`)!
-running_containers: {running_containers}
-mapped_containers: {mapped_containers}'''
-
-		# make the ports integers
-		cls._port_mapping.update((key, int(value)) for key, value in cls._port_mapping.items())
-
-	# OBSERVER
-	def attach(self, id: int, observer) -> None:
-		"""
-		Attach an observer to the container.
-		"""
-		observer.implements()
-		self._observers[id] = observer
-
-	def notify(self, message_id, message_text) -> None:
-		"""
-		Notify all observers about an event, events should be: the container is done, the container stopped working (any reason).
-		The observer will implement observer.update(message_id, message_text)
-
-		Args:
-			message_id (int): The id of the event, so the system knows how to hande it.
-			message_text (str): This is the message that will be displayed to the user.
-		"""
-		allowed_message_ids = [0, 1]
-		assert message_id in allowed_message_ids, f'The message id is not allowed: {message_id}'
-
-		for observer in self._observers:
-			observer.update(message_id, message_text)
-	# END OBSERVER
+		# Get all RUNNING containers with the recommerce label
+		# we don't care about already exited containers, since we can't see the tensorboard anyways
+		running_recommerce_containers = list(cls._get_client().containers.list(filters={'label': 'recommerce'}))
+		# Get the port mapped to '6006/tcp' within the container
+		occupied_ports = [int(container.ports['6006/tcp'][0]['HostPort']) for container in running_recommerce_containers]
+		# Create a dictionary of container_id: mapped port
+		cls._port_mapping = dict(zip([container.id for container in running_recommerce_containers], occupied_ports))
 
 
 if __name__ == '__main__':  # pragma: no cover

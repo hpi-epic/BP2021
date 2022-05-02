@@ -66,11 +66,6 @@ class EnvironmentConfig(ABC):
 				'marketplace': False,
 				'agents': False
 			}
-		elif dict_key == 'agents':
-			return {
-				'agent_class': False,
-				'argument': False
-			}
 		else:
 			raise AssertionError(f'The given level does not exist in an environment-config: {dict_key}')
 
@@ -130,7 +125,7 @@ class EnvironmentConfig(ABC):
 						try:
 							get_class(agent['agent_class'])
 						except Exception as error:
-							raise AssertionError(f'This agent could not be parsed to a valid class: "{config["agents"][agent]["agent_class"]}"') from error
+							raise AssertionError(f'This agent could not be parsed to a valid class: "{agent["agent_class"]}"') from error
 				# make sure the marketplace class can be parsed/is valid
 				elif key == 'marketplace':
 					try:
@@ -181,8 +176,8 @@ class EnvironmentConfig(ABC):
 			if needs_modelfile and issubclass(agent['agent_class'], (QLearningAgent, ActorCriticAgent)):
 				assert isinstance(agent['argument'], str), \
 					f'The "argument" field of this agent ({agent["name"]}) must be a string but was ({type(agent["argument"])})'
-				assert agent['argument'].endswith('.dat'), \
-					f'The "argument" field must contain a modelfile and therefore end in ".dat": {agent["argument"]}'
+				assert agent['argument'].endswith('.dat') or agent['argument'].endswith('.zip'), \
+					f'The "argument" field must contain a modelfile and therefore end in ".dat" or ".zip": {agent["argument"]}'
 				# Check that the modelfile exists. Taken from am_configuration::_get_modelfile_path()
 				full_path = os.path.abspath(os.path.join(PathManager.data_path, agent['argument']))
 				assert os.path.exists(full_path), f'the specified modelfile does not exist: {full_path}'

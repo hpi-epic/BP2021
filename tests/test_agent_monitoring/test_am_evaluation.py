@@ -8,7 +8,7 @@ import recommerce.market.circular.circular_sim_market as circular_market
 import recommerce.monitoring.agent_monitoring.am_monitoring as monitoring
 from recommerce.configuration.path_manager import PathManager
 from recommerce.market.circular.circular_vendors import FixedPriceCEAgent, RuleBasedCEAgent
-from recommerce.rl.q_learning.q_learning_agent import QLearningCEAgent
+from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
 
 monitor = monitoring.Monitor()
 
@@ -22,8 +22,8 @@ def setup_function(function):
 		enable_live_draw=False,
 		episodes=50,
 		plot_interval=10,
-		marketplace=circular_market.CircularEconomyMonopolyScenario,
-		agents=[(QLearningCEAgent, [os.path.join(PathManager.data_path, 'CircularEconomyMonopolyScenario_QLearningCEAgent.dat')])],
+		marketplace=circular_market.CircularEconomyMonopoly,
+		agents=[(QLearningAgent, [os.path.join(PathManager.data_path, 'CircularEconomyMonopoly_QLearningAgent.dat')])],
 		subfolder_name=f'test_plots_{function.__name__}')
 
 
@@ -92,7 +92,7 @@ def test_create_histogram(agents, rewards, plot_bins, agent_color, lower_upper_r
 		hist_mock.assert_called_once_with(rewards, bins=plot_bins, color=agent_color, rwidth=0.9, range=lower_upper_range, edgecolor='black')
 		legend_mock.assert_called_once_with(name_list)
 		draw_mock.assert_called_once()
-		save_mock.assert_called_once_with(fname=os.path.join(monitor.configurator.folder_path, 'default.svg'))
+		save_mock.assert_called_once_with(fname=os.path.join(monitor.configurator.folder_path, 'default_histogram.svg'))
 
 
 def test_create_histogram_without_saving_to_directory():

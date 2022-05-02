@@ -26,7 +26,7 @@ def validate_config(config: dict, config_is_final: bool) -> tuple:
 			raise AssertionError('If your config contains one of "environment" or "hyperparameter" it must also contain the other')
 		else:
 			# try to split the config. If any keys are unknown, an AssertionError will be thrown
-			hyperparameter_config, environment_config = split_combined_config(config)
+			hyperparameter_config, environment_config = split_mixed_config(config)
 		# then validate that all given values have the correct types
 		check_config_types(hyperparameter_config, environment_config, config_is_final)
 
@@ -57,9 +57,11 @@ def validate_sub_keys(config_class: HyperparameterConfig or EnvironmentConfig, c
 	for key, _ in config.items():
 		# we need to separately check agents, since it is a list of dictionaries
 		if key == 'agents':
+			assert isinstance(config['agents'], list), f'The "agents" key must have a value of type list, but was {type(config["agents"])}'
 			for agent in config['agents']:
+				assert isinstance(agent, dict), f'All agents must be of type dict, but this one was {type(agent)}'
 				assert all(agent_key in {'name', 'agent_class', 'argument'} for agent_key in agent.keys()), \
-					f'an invalid key for agents was provided: {agent.keys()}'
+					f'An invalid key for agents was provided: {agent.keys()}'
 		# the key is key of a dictionary in the config
 		elif top_level_keys[key]:
 			assert isinstance(config[key], dict), f'The value of this key must be of type dict: {key}, but was {type(config[key])}'
@@ -73,13 +75,13 @@ def validate_sub_keys(config_class: HyperparameterConfig or EnvironmentConfig, c
 			validate_sub_keys(config_class, config[key], key_fields)
 
 
-def split_combined_config(config: dict) -> tuple:
+def split_mixed_config(config: dict) -> tuple:
 	"""
-	Utility function that splits a potentially combined config of hyperparameters and environment-variables
+	Utility function that splits a potentially mixed config of hyperparameters and environment-variables
 	into two dictionaries for the two configurations.
 
 	Args:
-		config (dict): The potentially combined configuration.
+		config (dict): The potentially mixed configuration.
 
 	Returns:
 		dict: The hyperparameter_config
@@ -118,7 +120,7 @@ def check_config_types(hyperparameter_config: dict, environment_config: dict, mu
 		must_contain (bool): Whether or not the configuration should contain all required keys.
 
 	Raises:
-		AssertionError: If one of the values has the wring type.
+		AssertionError: If one of the values has the wrong type.
 	"""
 	# check types for hyperparameter_config
 	HyperparameterConfig.check_types(hyperparameter_config, 'top-dict', must_contain)
@@ -157,15 +159,15 @@ if __name__ == '__main__':  # pragma: no cover
 		'agents': [
 			{
 				'name': 'CE Rebuy Agent (QLearning)',
-				'agent_class': 'recommerce.rl.q_learning.q_learning_agent.QLearningCERebuyAgent',
+				'agent_class': 'recommerce.rl.q_learning.q_learning_agent.QLearningAgent',
 				'argument': ''
 			},
 			{
 				'name': 'CE Rebuy Agent (QLearaning)',
-				'agent_class': 'recommerce.rl.q_learning.q_learning_agent.QLearningCERebuyAgent',
+				'agent_class': 'recommerce.rl.q_learning.q_learning_agent.QLearningAgent',
 				'argument': ''
 			}
 		]
 	}
-	hyper, env = split_combined_config(test_config)
+	hyper, env = split_mixed_config(test_config)
 	check_config_types(hyper, env)

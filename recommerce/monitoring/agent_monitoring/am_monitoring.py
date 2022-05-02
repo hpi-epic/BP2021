@@ -3,11 +3,14 @@ import signal
 import sys
 from copy import deepcopy
 
+import torch
 from tqdm import trange
 
 import recommerce.monitoring.agent_monitoring.am_configuration as am_configuration
 import recommerce.monitoring.agent_monitoring.am_evaluation as am_evaluation
 from recommerce.configuration.environment_config import AgentMonitoringEnvironmentConfig, EnvironmentConfigLoader
+
+print('successfully imported torch: cuda?', torch.cuda.is_available())
 
 
 class Monitor():
@@ -70,10 +73,10 @@ class Monitor():
 				rewards[current_agent_index] += [episode_reward]
 
 			if (episode % self.configurator.plot_interval) == 0:
-				self.evaluator.create_histogram(rewards, False, f'episode_{episode}')
+				self.evaluator.create_histogram(rewards, False, f'episode_{episode}.svg')
 
 		# only one histogram after the whole monitoring process
-		self.evaluator.create_histogram(rewards, True, 'Cumulative_rewards_per_episode')
+		self.evaluator.create_histogram(rewards, True, 'Cumulative_rewards_per_episode.svg')
 
 		return rewards
 

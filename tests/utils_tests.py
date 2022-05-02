@@ -1,104 +1,107 @@
-import os
 from typing import Tuple, Union
 
 import recommerce.market.circular.circular_sim_market as circular_market
 import recommerce.market.linear.linear_sim_market as linear_market
-from recommerce.configuration.path_manager import PathManager
 
 
-def create_hyperparameter_mock_json_rl(gamma='0.99',
-	batch_size='32',
-	replay_size='100000',
-	learning_rate='1e-6',
-	sync_target_frames='1000',
-	replay_start_size='10000',
-	epsilon_decay_last_frame='75000',
-	epsilon_start='1.0',
-	epsilon_final='0.1') -> str:
+def create_hyperparameter_mock_dict_rl(gamma: float = 0.99,
+	batch_size: int = 32,
+	replay_size: int = 100000,
+	learning_rate: float = 1e-6,
+	sync_target_frames: int = 1000,
+	replay_start_size: int = 10000,
+	epsilon_decay_last_frame: int = 75000,
+	epsilon_start: float = 1.0,
+	epsilon_final: float = 0.1) -> dict:
 	"""
-	Create a string in JSON format that can be used to mock the config_rl.json file.
+	Create dictionary that can be used to mock the rl part of the hyperparameter_config.json file by calling json.dumps() on it.
 
 	Args:
-		gamma (str, optional): Defaults to '0.99'.
-		batch_size (str, optional): Defaults to '32'.
-		replay_size (str, optional): Defaults to '100000'.
-		learning_rate (str, optional): Defaults to '1e-6'.
-		sync_target_frames (str, optional): Defaults to '1000'.
-		replay_start_size (str, optional): Defaults to '10000'.
-		epsilon_decay_last_frame (str, optional): Defaults to '75000'.
-		epsilon_start (str, optional): Defaults to '1.0'.
-		epsilon_final (str, optional): Defaults to '0.1'.
+		gamma (float, optional): Defaults to 0.99.
+		batch_size (int, optional): Defaults to 32.
+		replay_size (int, optional): Defaults to 100000.
+		learning_rate (float, optional): Defaults to 1e-6.
+		sync_target_frames (int, optional): Defaults to 1000.
+		replay_start_size (int, optional): Defaults to 10000.
+		epsilon_decay_last_frame (int, optional): Defaults to 75000.
+		epsilon_start (float, optional): Defaults to 1.0.
+		epsilon_final (float, optional): Defaults to 0.1.
 
 	Returns:
-		str: A string in JSON format.
+		dict: The mock dictionary.
 	"""
-	return '{\n\t\t"gamma": ' + gamma + ',\n' + \
-		'\t\t"batch_size": ' + batch_size + ',\n' + \
-		'\t\t"replay_size": ' + replay_size + ',\n' + \
-		'\t\t"learning_rate": ' + learning_rate + ',\n' + \
-		'\t\t"sync_target_frames": ' + sync_target_frames + ',\n' + \
-		'\t\t"replay_start_size": ' + replay_start_size + ',\n' + \
-		'\t\t"epsilon_decay_last_frame": ' + epsilon_decay_last_frame + ',\n' + \
-		'\t\t"epsilon_start": ' + epsilon_start + ',\n' + \
-		'\t\t"epsilon_final": ' + epsilon_final + '\n' + \
-		'\t}'
+	return {
+		'gamma': gamma,
+		'batch_size': batch_size,
+		'replay_size': replay_size,
+		'learning_rate': learning_rate,
+		'sync_target_frames': sync_target_frames,
+		'replay_start_size': replay_start_size,
+		'epsilon_decay_last_frame': epsilon_decay_last_frame,
+		'epsilon_start': epsilon_start,
+		'epsilon_final': epsilon_final,
+	}
 
 
-def create_hyperparameter_mock_json_sim_market(
-	max_storage='20',
-	episode_length='20',
-	max_price='15',
-	max_quality='100',
-	number_of_customers='30',
-	production_price='5',
-	storage_cost_per_product='0.3') -> str:
+def create_hyperparameter_mock_dict_sim_market(
+	max_storage: int = 20,
+	episode_length: int = 20,
+	max_price: int = 15,
+	max_quality: int = 100,
+	number_of_customers: int = 30,
+	production_price: int = 5,
+	storage_cost_per_product: float = 0.3) -> dict:
 	"""
-	Create a string in JSON format that can be used to mock the config_sim_market.json file.
+	Create dictionary that can be used to mock the sim_market part of the hyperparameter_config.json file by calling json.dumps() on it.
 
 	Args:
-		max_storage (str, optional): Defaults to '20'.
-		episode_length (str, optional): Defaults to '20'.
-		max_price (str, optional): Defaults to '15'.
-		max_quality (str, optional): Defaults to '100'.
-		number_of_customers (str, optional): Defaults to '30'.
-		production_price (str, optional): Defaults to '5'.
-		storage_cost_per_product (str, optional): Defaults to '0.3'.
+		max_storage (int, optional): Defaults to 20.
+		episode_length (int, optional): Defaults to 20.
+		max_price (int, optional): Defaults to 15.
+		max_quality (int, optional): Defaults to 100.
+		number_of_customers (int, optional): Defaults to 30.
+		production_price (int, optional): Defaults to 5.
+		storage_cost_per_product (float, optional): Defaults to 0.3.
 
 	Returns:
-		str: A string in JSON format.
+		dict: The mock dictionary.
 	"""
-	return '{\n\t\t"max_storage": ' + max_storage + ',\n' + \
-		'\t\t"episode_length": ' + episode_length + ',\n' + \
-		'\t\t"max_price": ' + max_price + ',\n' + \
-		'\t\t"max_quality": ' + max_quality + ',\n' + \
-		'\t\t"number_of_customers": ' + number_of_customers + ',\n' + \
-		'\t\t"production_price": ' + production_price + ',\n' + \
-		'\t\t"storage_cost_per_product": ' + storage_cost_per_product + '\n' + \
-		'\t}'
+	return {
+		'max_storage': max_storage,
+		'episode_length': episode_length,
+		'max_price': max_price,
+		'max_quality': max_quality,
+		'number_of_customers': number_of_customers,
+		'production_price': production_price,
+		'storage_cost_per_product': storage_cost_per_product,
+	}
 
 
-def create_hyperparameter_mock_json(rl: str = create_hyperparameter_mock_json_rl(),
-	sim_market: str = create_hyperparameter_mock_json_sim_market()) -> str:
+def create_hyperparameter_mock_dict(rl: dict = create_hyperparameter_mock_dict_rl(),
+	sim_market: dict = create_hyperparameter_mock_dict_sim_market()) -> dict:
 	"""
-	Create a mock json in the format of the hyperparameter_config.json.
+	Create a dictionary in the format of the hyperparameter_config.json.
+	Call json.dumps() on the return value of this to mock the json file.
 
 	Args:
-		rl (str, optional): The string that should be used for the rl-part. Defaults to create_hyperparameter_mock_json_rl().
-		sim_market (str, optional): The string that should be used for the sim_market-part.
-			Defaults to create_hyperparameter_mock_json_sim_market().
+		rl (dict, optional): The dictionary that should be used for the rl-part. Defaults to create_hyperparameter_mock_dict_rl().
+		sim_market (dict, optional): The dictionary that should be used for the sim_market-part.
+			Defaults to create_hyperparameter_mock_dict_sim_market().
 
 	Returns:
-		str: The mock json.
+		dict: The mock dictionary.
 	"""
-	return '{\n' + '\t"rl": ' + rl + ',\n' + '\t"sim_market": ' + sim_market + '\n}'
+	return {
+		'rl': rl,
+		'sim_market': sim_market
+	}
 
 
-def create_environment_mock_dict(
-	task: str = 'agent_monitoring',
+def create_environment_mock_dict(task: str = 'agent_monitoring',
 	enable_live_draw: bool = False,
 	episodes: int = 10,
 	plot_interval: int = 5,
-	marketplace: str = 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
+	marketplace: str = 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopoly',
 	agents: dict = None) -> dict:
 	"""
 	Create a mock dictionary in the format of an environment_config.json.
@@ -109,19 +112,21 @@ def create_environment_mock_dict(
 		episodes (int, optional): How many episodes to run. Defaults to 10.
 		plot_interval (int, optional): How often plots should be drawn. Defaults to 5.
 		marketplace (str, optional): What marketplace to run on.
-			Defaults to "recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario".
-		agents (dict, optional): What agents to use.
-			Defaults to {"Fixed CE Rebuy Agent": {"class": "market.vendors.FixedPriceCERebuyAgent"}}.
+			Defaults to "recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopoly".
+		agents (dict, optional): What agents to use. Defaults to
+			[{'name': 'Fixed CE Rebuy Agent', 'agent_class': 'recommerce.market.circular.circular_vendors.RuleBasedCERebuyAgent', 'argument': ''}].
 
 	Returns:
 		dict: The mock dictionary.
 	"""
 	if agents is None:
-		agents = {
-			'Fixed CE Rebuy Agent': {
-				'class': 'market.vendors.FixedPriceCERebuyAgent'
+		agents = [
+			{
+				'name': 'Fixed CE Rebuy Agent',
+				'agent_class': 'recommerce.market.circular.circular_vendors.RuleBasedCERebuyAgent',
+				'argument': ''
 			}
-		}
+		]
 
 	return {
 		'task': task,
@@ -133,35 +138,63 @@ def create_environment_mock_dict(
 	}
 
 
-def check_mock_file(mock_file, json) -> None:
+def create_combined_mock_dict(hyperparameter: dict or None = create_hyperparameter_mock_dict(),
+	environment: dict or None = create_environment_mock_dict()) -> dict:
 	"""
-	Confirm that a mock JSON for the config.json is read correctly.
+	Create a mock dictionary in the format of a configuration file with both a hyperparameter and environment part.
+	If any of the two parameters is `None`, leave that key out of the resulting dictionary.
+
+	Args:
+		hyperparameter (dict | None, optional): The hyperparameter part of the combined config. Defaults to create_hyperparameter_mock_dict().
+		environment (dict | None, optional): The environment part of the combined config. Defaults to create_environment_mock_dict().
+
+	Returns:
+		dict: The mock dictionary.
+	"""
+	if hyperparameter is None and environment is None:
+		return {}
+	elif hyperparameter is None:
+		return {
+			'environment': environment
+		}
+	elif environment is None:
+		return {
+			'hyperparameter': hyperparameter
+		}
+	return {
+		'hyperparameter': hyperparameter,
+		'environment': environment
+	}
+
+
+def check_mock_file(mock_file, mocked_file_content) -> None:
+	"""
+	Confirm that a mock JSON is read correctly.
 
 	Args:
 		mock_file (unittest.mock.MagicMock): The mocked file.
-		json (str): The mock JSON string to be checked.
+		mocked_file_content (str): The mocked_file_content to be checked.
 	"""
-	path = os.path.join(PathManager.user_path, 'config.json')
-	assert open(path).read() == json, 'the mock did not work correctly, as the read file was not equal to the set mock-json'
+	path = 'some_path'
+	with open(path) as file:
+		assert file.read() == mocked_file_content, \
+			'the mock did not work correctly, as the read file was not equal to the set mocked_file_content'
 	mock_file.assert_called_with(path)
 
 
-def remove_line(number, json) -> str:
+def remove_key(key: str, original_dict: dict) -> dict:
 	"""
-	Remove the specified line from a mock JSON string.
+	Remove the specified key from a dictionary and return the dictionary.
 
 	Args:
-		number (int): The line that should be removed.
-		json (str): The JSON string from which to remove the line.
+		key (str): The key that should be removed.
+		json (dict): The dictionary from which to remove the line.
 
 	Returns:
-		str: The JSON string with the missing line.
+		dict: The dictionary without the key.
 	"""
-	lines = json.split('\n')
-	final_lines = lines[:number + 1]
-	final_lines += lines[number + 2:]
-	final_lines[-2] = final_lines[-2].replace(',', '')
-	return '\n'.join(final_lines)
+	original_dict.pop(key)
+	return original_dict
 
 
 def create_mock_rewards(num_entries) -> list:

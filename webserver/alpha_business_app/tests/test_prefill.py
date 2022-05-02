@@ -1,5 +1,6 @@
 import copy
 
+from django.contrib.auth.models import User
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.test import TestCase
 from django.test.client import RequestFactory
@@ -14,6 +15,9 @@ from .constant_tests import EMPTY_STRUCTURE_CONFIG, EXAMPLE_HIERARCHY_DICT, EXAM
 
 
 class ConfigMergerTest(TestCase):
+
+	def setUp(self):
+		self.user = User.objects.create(username='test_user', password='top_secret')
 
 	# def test_no_configs_selected(self):
 	# 	request = self._setup_request({})
@@ -90,7 +94,7 @@ class ConfigMergerTest(TestCase):
 				'enable_live_draw': True,
 				'episodes': None,
 				'plot_interval': None,
-				'marketplace': 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
+				'marketplace': 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopoly',
 				'task': 'monitoring',
 				'agents': [
 					{
@@ -105,8 +109,8 @@ class ConfigMergerTest(TestCase):
 					},
 					{
 						'name': 'CE Rebuy Agent (QLearning)',
-						'agent_class': 'recommerce.rl.q_learning.q_learning_agent.QLearningCERebuyAgent',
-						'argument': 'CircularEconomyRebuyPriceMonopolyScenario_QLearningCERebuyAgent.dat'
+						'agent_class': 'recommerce.rl.q_learning.q_learning_agent.QLearningAgent',
+						'argument': 'CircularEconomyRebuyPriceMonopoly_QLearningAgent.dat'
 					}
 				]
 			}, 'hyperparameter': {
@@ -260,6 +264,7 @@ class ConfigMergerTest(TestCase):
 
 	def _setup_request(self, arguments: dict) -> RequestFactory:
 		request = RequestFactory().post('configurator.html', {'action': 'pre-fill', **arguments})
+		request.user = self.user
 		middleware = SessionMiddleware(request)
 		middleware.process_request(request)
 		request.session.save()

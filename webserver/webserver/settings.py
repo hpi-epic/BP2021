@@ -20,18 +20,29 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '*&qf$4_z-z(0+f@ngx++bjx7i-v-^6lj9wd^q8q9zmbhj6na7s'
+SECRET_KEY = os.environ['SECRET_KEY']  # '*&qf$4_z-z(0+f@ngx++bjx7i-v-^6lj9wd^q8q9zmbhj6na7s'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DJANGO_DEBUG', '') != 'False'
 
-ALLOWED_HOSTS = []
+# TODO: change this if https is enabled
+# SESSION_COOKIE_SECURE = True
+# CSRF_COOKIE_SECURE = True
+# SECURE_SSL_REDIRECT = True
+
+
+ALLOWED_HOSTS = ['*']
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
+CSRF_TRUSTED_ORIGINS = ['http://vm-bp2021-websrv.eaalab.hpi.uni-potsdam.de']
+# Users
+LOGIN_REDIRECT_URL = 'index'
+LOGOUT_REDIRECT_URL = 'index'
 
 # Application definition
 
 INSTALLED_APPS = [
+	'users',
 	'alpha_business_app',
 	'django.contrib.admin',
 	'django.contrib.auth',
@@ -107,7 +118,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Berlin'
 
 USE_I18N = True
 
@@ -120,3 +131,33 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATIC_URL = '/static/'
+
+LOGGING = {
+	'version': 1,
+	'disable_existing_loggers': False,
+	'root': {'level': 'INFO', 'handlers': ['file']},
+	'handlers': {
+		'file': {
+			'level': 'INFO',
+			'class': 'logging.FileHandler',
+			'filename': './django.log',
+			'formatter': 'app',
+		},
+	},
+	'loggers': {
+		'django': {
+			'handlers': ['file'],
+			'level': 'INFO',
+			'propagate': True
+		},
+	},
+	'formatters': {
+		'app': {
+			'format': (
+				u'%(asctime)s [%(levelname)-8s] '
+				'(%(module)s.%(funcName)s) %(message)s'
+			),
+			'datefmt': '%Y-%m-%d %H:%M:%S',
+		},
+	},
+}

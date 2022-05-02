@@ -3,10 +3,10 @@ from abc import ABC
 import gym
 import numpy as np
 
+import recommerce.market.circular.circular_vendors as circular_vendors
 import recommerce.market.owner as owner
 from recommerce.configuration.hyperparameter_config import config
 from recommerce.market.circular.circular_customers import CustomerCircular
-from recommerce.market.circular.circular_vendors import RuleBasedCERebuyAgentCompetitive
 from recommerce.market.customer import Customer
 from recommerce.market.owner import Owner
 from recommerce.market.sim_market import SimMarket
@@ -16,7 +16,7 @@ class CircularEconomy(SimMarket, ABC):
 
 	def _setup_action_observation_space(self, support_continuous_action_space: bool) -> None:
 		# cell 0: number of products in the used storage, cell 1: number of products in circulation
-		self.max_storage = 1e2
+		self.max_storage = config.max_storage
 		self.max_circulation = 10 * self.max_storage
 		self.observation_space = gym.spaces.Box(
 			np.array([0, 0] + [0, 0, 0] * len(self.competitors), dtype=np.float32),
@@ -208,10 +208,27 @@ class CircularEconomy(SimMarket, ABC):
 		return len(probability_distribution) == 1 + (2 * self._number_of_vendors)
 
 
-class CircularEconomyMonopolyScenario(CircularEconomy):
+class CircularEconomyMonopoly(CircularEconomy):
 
 	def _get_competitor_list(self) -> list:
 		return []
+
+
+class CircularEconomyDuopoly(CircularEconomy):
+
+	def _get_competitor_list(self) -> list:
+		return [circular_vendors.RuleBasedCEAgent()]
+
+
+class CircularEconomyOligopoly(CircularEconomy):
+
+	def _get_competitor_list(self) -> list:
+		return [
+			circular_vendors.RuleBasedCEAgent(),
+			circular_vendors.RuleBasedCEAgent(),
+			circular_vendors.FixedPriceCEAgent(fixed_price=(3, 5)),
+			circular_vendors.FixedPriceCEAgent(fixed_price=(2, 6))
+			]
 
 
 class CircularEconomyRebuyPrice(CircularEconomy, ABC):
@@ -255,13 +272,38 @@ class CircularEconomyRebuyPrice(CircularEconomy, ABC):
 		return self.vendor_actions[vendor_idx][2]
 
 
-class CircularEconomyRebuyPriceMonopolyScenario(CircularEconomyRebuyPrice):
+class CircularEconomyRebuyPriceMonopoly(CircularEconomyRebuyPrice):
 
 	def _get_competitor_list(self) -> list:
 		return []
 
 
-class CircularEconomyRebuyPriceOneCompetitor(CircularEconomyRebuyPrice):
+class CircularEconomyRebuyPriceDuopoly(CircularEconomyRebuyPrice):
 
 	def _get_competitor_list(self) -> list:
-		return [RuleBasedCERebuyAgentCompetitive()]
+		return [circular_vendors.RuleBasedCERebuyAgentCompetitive()]
+
+
+class CircularEconomyRebuyPriceOligopoly(CircularEconomyRebuyPrice):
+
+	def _get_competitor_list(self) -> list:
+		return [
+			circular_vendors.RuleBasedCERebuyAgentCompetitive(),
+			circular_vendors.RuleBasedCERebuyAgent(),
+			circular_vendors.FixedPriceCERebuyAgent(fixed_price=(3, 6, 2)),
+			circular_vendors.RuleBasedCERebuyAgentStorageMinimizer()
+			]
+
+
+class CircularEconomyRebuyPriceVariableDuopoly(CircularEconomyRebuyPrice):
+	"""
+	This Scenario allows the training of an RL-agent against a customizable agent
+	that is passed as a parameter to the constructor of the class.
+	"""
+
+	def __init__(self, constant_agent: circular_vendors.CircularAgent):
+		self.customized_competitor_list = [constant_agent]
+		super().__init__(True)
+
+	def _get_competitor_list(self) -> list:
+		return self.customized_competitor_list

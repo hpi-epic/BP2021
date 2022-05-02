@@ -2,10 +2,11 @@ EXAMPLE_POST_REQUEST_ARGUMENTS = {
 		'csrfmiddlewaretoken': ['PHZ3VkxiJkrk2gnBCkgNfYJAdUsdb4V5e7CO26nJuENMtSas7BVapRGJJ0B3t9HZ'],
 		'action': ['start'],
 		'experiment_name': ['test_experiment'],
+		'num_experiments': ['2'],
 		'environment-task': ['training'],
 		'environment-episodes': [''],
 		'environment-plot_interval': [''],
-		'environment-marketplace': ['recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario'],
+		'environment-marketplace': ['recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopoly'],
 		'environment-agents-name': ['Rule_Based Agent'],
 		'environment-agents-agent_class': ['recommerce.market.circular.circular_vendors.RuleBasedCERebuyAgent'],
 		'environment-agents-argument': [''],
@@ -30,7 +31,7 @@ EXAMPLE_POST_REQUEST_ARGUMENTS = {
 EXAMPLE_HIERARCHY_DICT = {
 		'environment': {
 			'task': 'training',
-			'marketplace': 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
+			'marketplace': 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopoly',
 			'enable_live_draw': False,
 			'agents': [
 				{
@@ -68,7 +69,7 @@ EXAMPLE_HIERARCHY_DICT2 = {
 		'environment': {
 			'task': 'monitoring',
 			'enable_live_draw': True,
-			'marketplace': 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopolyScenario',
+			'marketplace': 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopoly',
 			'agents': [
 				{
 					'name': 'Rule_Based Agent',
@@ -77,8 +78,8 @@ EXAMPLE_HIERARCHY_DICT2 = {
 				},
 				{
 					'name': 'CE Rebuy Agent (QLearning)',
-					'agent_class': 'recommerce.rl.q_learning.q_learning_agent.QLearningCERebuyAgent',
-					'argument': 'CircularEconomyRebuyPriceMonopolyScenario_QLearningCERebuyAgent.dat'
+					'agent_class': 'recommerce.rl.q_learning.q_learning_agent.QLearningAgent',
+					'argument': 'CircularEconomyRebuyPriceMonopoly_QLearningAgent.dat'
 				}
 			]
 		},
