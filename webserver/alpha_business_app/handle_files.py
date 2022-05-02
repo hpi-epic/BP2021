@@ -72,7 +72,7 @@ def handle_uploaded_file(request, uploaded_config) -> HttpResponse:
 
 	given_name = request.POST['config_name']
 	config_name = given_name if given_name else uploaded_config.name
-	Config.objects.create(environment=web_environment_config, hyperparameter=web_hyperparameter_config, name=config_name)
+	Config.objects.create(environment=web_environment_config, hyperparameter=web_hyperparameter_config, name=config_name, user=request.user)
 	return redirect('/configurator', {'success': 'You successfully uploaded a config file'})
 
 
