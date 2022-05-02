@@ -22,6 +22,7 @@
 	- [6.1. Docker](#61-docker)
 		- [6.1.1. Docker-API](#611-docker-api)
 		- [6.1.2. Using Docker natively](#612-using-docker-natively)
+		- [6.1.3. Docker/GPU-VM Troubleshooting](#613-dockergpu-vm-troubleshooting)
 	- [6.2. Webserver](#62-webserver)
 	- [6.3. Docker API](#63-docker-api)
 - [7. Tensorboard](#7-tensorboard)
@@ -124,17 +125,22 @@ python Path/To/Anaconda3/Scripts/pywin32_postinstall.py -install
 
 ## 3. Installing the `Recommerce` package
 
-In order to use our project, you must perform the following command:
+Before installing, please inform yourself on whether or not your device has `cuda`-support, one starting point could be [this](https://developer.nvidia.com/cuda-gpus) resource by NVIDIA. This decides if you should install our project with cuda support, or without, which comes down to the specific version of `torch` that will be installed. 
+
+If you device supports cuda and you want to utilize its capabilities, use the following command within the project directory:
 
 ```terminal
-pip install -e .
+pip install -e .[gpu] -f https://download.pytorch.org/whl/torch_stable.html
 ```
 
-This installs the `recommerce` folder (and its subdirectories) as a local pip package. The `-e` flag indicates to pip that the package should be installed in an editable state. This results in the packages not being directly written to where pip dependencies usually would, but only a "link" to you current working directory being created. In order to install the package, we use `setuptools`, which uses the `setup.py`, `setup.cfg` and `pyproject.toml` files located in the `recommerce` directory of the project. The `setup.cfg` file includes all necessary metadata needed to correctly install the project. If you want to properly install the project as a pip package, use the following command:
+Otherwise, to install without cuda support, use:
 
 ```terminal
-pip install .
+pip install -e .[cpu]
 ```
+
+This installs the `recommerce` folder (and its subdirectories) as a local pip package. The `-e` flag indicates to pip that the package should be installed in an editable state. This results in the packages not being directly written to where pip dependencies usually would, but only a "link" to you current working directory being created. In order to install the package, we use `setuptools`, which uses the `setup.py`, `setup.cfg` and `pyproject.toml` files located in the `recommerce` directory of the project. The `setup.cfg` file includes all necessary metadata needed to correctly install the project. If you want to properly install the project as a pip package, omit the `-e` flag.
+
 
 This will "copy" the packages into your pip-installation folder (when using conda, this will be `Path/To/anaconda3/envs/your_venv_name/Lib/site-packages`), meaning that any changes to your source-code will only be reflected when installing the package again, therefore you should not use that command if you plan on changing the code.
 
@@ -283,7 +289,7 @@ Path\To\anaconda3\envs\your_venv_name\DLLs
 To use docker, first install it on your machine, for more convenience we recommend using [Docker Desktop](https://www.docker.com/products/docker-desktop/). Afterwards, you can build the images used in our repository using the following command:
 
 ```terminal
-python3 ./docker/docker_manager.py
+python ./docker/docker_manager.py
 ```
 
 #### 6.1.1. Docker-API
@@ -292,16 +298,29 @@ We recommend interacting with Docker using the Webserver as outlined in the [Web
 
 #### 6.1.2. Using Docker natively
 
-This command will create an image for each command that can be executed in a docker container. Building the images may take a while, it is about 5GB in size. To see all current images on your system use:
+You can also build the recommerce image using the following command while in the root directory containing the `dockerfile`:
+
+```terminal
+docker build . -t recommerce
+```
+
+Building the image may take a while, it is about 7GB in size. To see all current images on your system use:
 
 ```terminal
 docker images
 ```
 
-You can create and run a container for an image using the following command:
+You can create and run a container for the recommerce image using the following command:
+Note that if your machine does not have a dedicated GPU, you may need to omit the `--gpus all` flag.
 
 ```terminal
-docker run IMAGE_ID
+docker run -it --entrypoint /bin/bash --gpus all recommerce
+```
+
+Running this command will start a container and automatically open an interactive shell for you. Here you can now perform any command you like, start by using:
+
+```terminal
+recommerce --help
 ```
 
 At any point you can list all current containers with:
@@ -319,7 +338,53 @@ docker stop CONTAINER_ID
 And remove it with:
 
 ```terminal
-docker remove CONTAINER_ID
+docker rm CONTAINER_ID
+```
+
+#### 6.1.3. Docker/GPU-VM Troubleshooting
+
+This section is aimed at developers, and any errors described here should only occur when trying to deploy the webserver/docker to a new environment/virtual machine.
+
+##### 6.1.3.1. Running a docker container with GPU-support <!-- omit in toc -->
+
+When trying to run a docker container (with a gpu device request), you get the following error:
+
+```text
+failed to create shim: OCI runtime create failed: container_linux.go:380: starting container process caused: process_linux.go:545: container init caused: Running hook #0:: error running hook: signal: segmentation fault, stdout: , stderr:: unknown
+```
+
+This error is caused by your local linux distribution (on Windows this pertains to the WSL instance used by docker) not having required packages installed needed to support cuda.
+A proposed workaround is to update/downgrade the following packages:
+
+```terminal
+apt install libnvidia-container1=1.4.0-1 libnvidia-container-tools=1.4.0-1 nvidia-container-toolkit=1.5.1-1
+```
+
+Issues in the `nvidia-docker`-repository that describe this error can be found [here](https://github.com/NVIDIA/nvidia-docker/issues/1533), [here](https://github.com/NVIDIA/nvidia-docker/issues/1534), and [here](https://github.com/NVIDIA/nvidia-docker/issues/1536). Please note that we have not confirmed that the workaround solves this problem.
+
+
+##### 6.1.3.2. Starting a training session with GPU-support <!-- omit in toc -->
+
+*Note: This error should no longer occur if the recommerce package was installed with the correct extra selected. We are still including this section for completeness.*
+
+When trying to start a training session on the VM or your machine (e.g. using `recommerce -c training`) you get the following error:
+
+```terminal
+RuntimeError: CUDA error: CUBLAS_STATUS_EXECUTION_FAILED when calling `cublasSgemm( handle, opa, apb, m, n, k, &alpha, a, lda, b, ldb, &beta, c, ldc)`
+```
+
+This error comes from your torch installation not having cuda-support, but your machine supporting cuda. You should confirm that you installed the correct version of recommerce in the [Installing the `Recommerce` package](#3-installing-the-recommerce-package) section. In this case, you should install recommerce with the `gpu` extra, which installs the following versions of torch:
+
+```text
+torch==1.11.0+cu115
+torchvision==0.12.0+cu115
+torchaudio==0.11.0+cu115
+```
+
+You can also manually update these versions using
+
+```terminal
+pip install torch==1.11.0+cu115 torchvision==0.12.0+cu115 torchaudio==0.11.0+cu115 -f https://download.pytorch.org/whl/torch_stable.html
 ```
 
 ### 6.2. Webserver
@@ -349,7 +414,8 @@ To run tests you have written for the Django webserver go into the *webserver* f
 python3 ./manage.py test -v 2
 ```
 
-We use bootstrap for layout stuff. When developing, you need to run `npm install` in the webserver directory.
+When deploying the webserver and the [API](#63-docker-api) you need to set two environment variables: `SECRET_KEY` (webserver `settings.py`) and `API_TOKEN`. Both should be random long strings.
+Set `API_TOKEN` on the webserver machine to the same value as on the machine you are running the API on, because you will need this for authorization against the API.
 
 ### 6.3. Docker API
 
@@ -358,12 +424,16 @@ There is a RESTful API written with the python libary FastAPI for communicating 
 The API needs to run on `127.0.0.1:8000`. To start the API go to `/docker` and run
 
 ```terminal
-uvicorn app:app --reload 
+uvicorn app:app --reload
 ```
 
 Don't use `--reload` when deploying in production.
 
 You can just run the `app.py` with python from the docker folder as well.
+
+If you want to use the API, you need to provide an `API_TOKEN` in your environment variables. For each API request the value at the authorization header will be checked. You can only perform actions on the API, when this value is the same, as the value in your environment variable.
+
+WARNING: Please keep in mind, that the `API_TOKEN` must be kept a secret, if it is revealed, you need to revoke it and set a new secret. Furthermore, think about using transport encryption to ensure that the token won't get stolen on the way.
 
 ## 7. Tensorboard
 

@@ -3,12 +3,15 @@ import signal
 import sys
 from copy import deepcopy
 
+import torch
 from tqdm import trange
 
 import recommerce.monitoring.agent_monitoring.am_configuration as am_configuration
 import recommerce.monitoring.agent_monitoring.am_evaluation as am_evaluation
 from recommerce.configuration.environment_config import AgentMonitoringEnvironmentConfig, EnvironmentConfigLoader
 from recommerce.configuration.hyperparameter_config import HyperparameterConfig, HyperparameterConfigLoader
+
+print('successfully imported torch: cuda?', torch.cuda.is_available())
 
 
 class Monitor():

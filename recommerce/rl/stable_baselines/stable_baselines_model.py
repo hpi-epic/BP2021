@@ -12,11 +12,10 @@ from recommerce.rl.reinforcement_learning_agent import ReinforcementLearningAgen
 
 
 class StableBaselinesAgent(ReinforcementLearningAgent, LinearAgent, CircularAgent):
-	def __init__(self, config: HyperparameterConfig, marketplace=None, optim=None, load_path=None, name=None):
+	def __init__(self, config: HyperparameterConfig, marketplace=None, load_path=None, name=None):
 		assert marketplace is not None
 		assert isinstance(marketplace, SimMarket), \
 			f'if marketplace is provided, marketplace must be a SimMarket, but is {type(marketplace)}'
-		assert optim is None
 		assert load_path is None or isinstance(load_path, str)
 		assert name is None or isinstance(name, str)
 		self.config = config
@@ -38,17 +37,17 @@ class StableBaselinesAgent(ReinforcementLearningAgent, LinearAgent, CircularAgen
 	def synchronize_tgt_net(self):  # pragma: no cover
 		assert False, 'This method may never be used in a StableBaselinesAgent!'
 
-	def train_agent(self, training_steps=100000, iteration_length=500):
+	def set_marketplace(self, new_marketplace: SimMarket):
+		self.marketplace = new_marketplace
+		self.model.set_env(new_marketplace)
+
+	def train_agent(self, training_steps=100000, iteration_length=500, analyze_after_training=True):
 		callback = RecommerceCallback(
-			agent_class=type(self),
-			marketplace_class=type(self.marketplace),
-			config=self.config,
-			training_steps=training_steps,
-			iteration_length=iteration_length,
-			signature=self.name
-			)
+			type(self), type(self.marketplace), training_steps=training_steps, iteration_length=iteration_length,
+			signature=self.name, analyze_after_training=analyze_after_training, config=self.config)
 		self.model.set_env(stable_baselines3.common.monitor.Monitor(self.marketplace, callback.save_path))
 		self.model.learn(training_steps, callback=callback)
+		return callback.all_dicts
 
 
 class StableBaselinesDDPG(StableBaselinesAgent):

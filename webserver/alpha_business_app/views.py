@@ -1,7 +1,6 @@
-import datetime
 from uuid import uuid4
 
-import requests
+from django.contrib.auth.decorators import login_required
 from django.http import Http404, HttpResponse
 from django.shortcuts import render
 
@@ -11,14 +10,17 @@ from .buttons import ButtonHandler
 from .config_parser import ConfigFlatDictParser
 from .forms import UploadFileForm
 from .handle_files import handle_uploaded_file
-from .handle_requests import DOCKER_API
+from .handle_requests import get_api_status
 from .models.config import Config
 from .models.container import Container
 
 
+@login_required
 def detail(request, container_id) -> HttpResponse:
+	if not request.user.is_authenticated:
+		return HttpResponse('Unauthorized', status=401)
 	try:
-		wanted_container = Container.objects.get(id=container_id)
+		wanted_container = Container.objects.get(id=container_id, user=request.user)
 	except Container.DoesNotExist as error:
 		raise Http404('Container does not exist') from error
 	if request.POST.get('action', '') == 'remove':
@@ -30,21 +32,33 @@ def detail(request, container_id) -> HttpResponse:
 	return button_handler.do_button_click()
 
 
+@login_required
 def download(request) -> HttpResponse:
+	if not request.user.is_authenticated:
+		return HttpResponse('Unauthorized', status=401)
 	button_handler = ButtonHandler(request, view='download.html')
 	return button_handler.do_button_click()
 
 
+@login_required
 def index(request) -> HttpResponse:
+	if not request.user.is_authenticated:
+		return HttpResponse('Unauthorized', status=401)
 	return render(request, 'index.html')
 
 
+@login_required
 def observe(request) -> HttpResponse:
+	if not request.user.is_authenticated:
+		return HttpResponse('Unauthorized', status=401)
 	button_handler = ButtonHandler(request, view='observe.html', rendering_method='archived')
 	return button_handler.do_button_click()
 
 
+@login_required
 def upload(request) -> HttpResponse:
+	if not request.user.is_authenticated:
+		return HttpResponse('Unauthorized', status=401)
 	if request.method == 'POST':
 		form = UploadFileForm(request.POST, request.FILES)
 		if not request.FILES:
@@ -55,12 +69,18 @@ def upload(request) -> HttpResponse:
 	return render(request, 'upload.html', {'form': form})
 
 
+@login_required
 def configurator(request):
+	if not request.user.is_authenticated:
+		return HttpResponse('Unauthorized', status=401)
 	button_handler = ButtonHandler(request, view='configurator.html', rendering_method='config')
 	return button_handler.do_button_click()
 
 
+@login_required
 def delete_config(request, config_id) -> HttpResponse:
+	if not request.user.is_authenticated:
+		return HttpResponse('Unauthorized', status=401)
 	try:
 		wanted_config = Config.objects.get(id=config_id)
 	except Config.DoesNotExist as error:
@@ -70,24 +90,24 @@ def delete_config(request, config_id) -> HttpResponse:
 
 
 # AJAX relevant views
+@login_required
 def agent(request):
+	if not request.user.is_authenticated:
+		return HttpResponse('Unauthorized', status=401)
 	return render(request, 'configuration_items/agent.html', {'id': str(uuid4())})
 
 
 def api_availability(request):
-	try:
-		api_is_available = requests.get(f'{DOCKER_API}/api_health', timeout=1)
-	except requests.exceptions.RequestException:
-		current_time = datetime.datetime.now().strftime('%H:%M:%S')
-		return render(request, 'api_buttons/api_health_button.html', {'api_timeout': f'API unavailable - {current_time}'})
-
-	current_time = datetime.datetime.now().strftime('%H:%M:%S')
-	if api_is_available.status_code == 200:
-		return render(request, 'api_buttons/api_health_button.html', {'api_success': f'API available - {current_time}'})
-	return render(request, 'api_buttons/api_health_button.html', {'api_docker_timeout': f'Docker  unavailable - {current_time}'})
+	if not request.user.is_authenticated:
+		return render(request, 'api_buttons/api_health_button.html')
+	parameter_dict = get_api_status()
+	return render(request, 'api_buttons/api_health_button.html', parameter_dict)
 
 
+@login_required
 def config_validation(request):
+	if not request.user.is_authenticated:
+		return HttpResponse('Unauthorized', status=401)
 	if request.method == 'POST':
 		post_request = request.POST
 		# convert formdata dict to normal form dict
