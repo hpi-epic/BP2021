@@ -38,6 +38,7 @@ class Evaluator():
 
 		print()
 		# Create density plots
+		print('Creating density plots...')
 		for index, analysis in enumerate(analyses):
 			for property in analysis:
 				if 'vendor_' not in property:
@@ -68,9 +69,9 @@ class Evaluator():
 
 		x = np.linspace(min_value - offset, max_value + offset, 100)
 		ys = []
-		for s in samples:
+		for sample in samples:
 			try:
-				density = kde.gaussian_kde(s)
+				density = kde.gaussian_kde(sample)
 			except linalg.LinAlgError:
 				continue
 			ys.append(density(x))
@@ -187,15 +188,16 @@ class Evaluator():
 		plt.grid(True)
 		plt.savefig(fname=os.path.join(self.configurator.get_folder(), filename))
 
-	def _create_violin_plot(self, all_rewards, episode_numbers, title='Add a title for this violin plot'):
+	def _create_violin_plot(self, all_rewards: 'list[list]', episode_numbers: 'list[int]', title: str = 'plot_title'):
 		"""
 		This method generates a violinplot to visualize the training progress of the agent.
 		Provide the empirical distributions and it will not just show the mean, min and max,
 		but also the distribution at the provided episode numbers.
 
 		Args:
-			all_rewards (list of lists): each entry contains samples for the empirical probability distribution
-			episode_numbers (list of int): the training stages the empirical distributions belong to
+			all_rewards (list of lists): Each entry contains samples for the empirical probability distribution
+			episode_numbers (list of int): The training stages the empirical distributions belong to.
+			title (str, optional): The filename of the plot.
 		"""
 		assert isinstance(all_rewards, list), f'all_rewards must be of type list, but is {type(all_rewards)}'
 		assert isinstance(episode_numbers, list), f'episode_numbers must be of type list, but is {type(all_rewards)}'
