@@ -125,8 +125,6 @@ class ButtonHandler():
 		"""
 		return {
 			'all_configurations': Config.objects.all().filter(user=self.request.user),
-			# 'config': self.wanted_config,
-			# 'config_dict': self.wanted_config.as_dict() if self.wanted_config else None,
 			**self._params_for_selection()
 			}
 
