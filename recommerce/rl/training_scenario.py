@@ -5,6 +5,8 @@ import recommerce.market.linear.linear_sim_market as linear_market
 import recommerce.market.sim_market as sim_market
 import recommerce.rl.actorcritic.actorcritic_agent as actorcritic_agent
 import recommerce.rl.q_learning.q_learning_agent as q_learning_agent
+import recommerce.rl.rl_vs_rl_training as rl_vs_rl_training
+import recommerce.rl.self_play as self_play
 import recommerce.rl.stable_baselines.stable_baselines_model as sbmodel
 from recommerce.configuration.environment_config import EnvironmentConfigLoader, TrainingEnvironmentConfig
 from recommerce.market.circular.circular_vendors import CircularAgent
@@ -59,6 +61,18 @@ def train_continuos_a2c_circular_economy_rebuy():
 
 def train_stable_baselines_ppo():
 	sbmodel.StableBaselinesPPO(circular_market.CircularEconomyRebuyPriceDuopoly(True)).train_agent()
+
+
+def train_stable_baselines_sac():
+	sbmodel.StableBaselinesSAC(circular_market.CircularEconomyRebuyPriceDuopoly(True)).train_agent()
+
+
+def train_rl_vs_rl():
+	rl_vs_rl_training.train_rl_vs_rl()
+
+
+def train_self_play():
+	self_play.train_self_play()
 
 
 def train_from_config():
