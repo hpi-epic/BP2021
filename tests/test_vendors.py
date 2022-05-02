@@ -1,9 +1,7 @@
-import json
-from unittest.mock import mock_open, patch
+import copy
 
 import numpy as np
 import pytest
-import utils_tests as ut_t
 from numpy import random
 
 import recommerce.market.circular.circular_vendors as circular_vendors
@@ -83,39 +81,34 @@ storage_evaluation_testcases = [
 
 @pytest.mark.parametrize('state, expected_prices', storage_evaluation_testcases)
 def test_storage_evaluation(state, expected_prices):
-	mock_json = json.dumps(ut_t.create_hyperparameter_mock_dict(
-		sim_market=ut_t.create_hyperparameter_mock_dict_sim_market(max_price=10, production_price=2)))
-	with patch('builtins.open', mock_open(read_data=mock_json)) as mock_file:
-		ut_t.check_mock_file(mock_file, mock_json)
-		agent = circular_vendors.RuleBasedCEAgent(config=config_hyperparameter)
-		assert expected_prices == agent.policy(state)
+	agent = circular_vendors.RuleBasedCEAgent(config=config_hyperparameter)
+	assert expected_prices == agent.policy(state)
 
 
 storage_evaluation_with_rebuy_price_testcases = [
-	([50, 5], (6, 9, 5)),
-	([50, 9], (5, 8, 3)),
-	([50, 12], (4, 7, 2)),
+	([50, 5], (6, 8, 5)),
+	([50, 9], (5, 7, 3)),
+	([50, 12], (4, 6, 2)),
 	([50, 15], (2, 9, 0))
 ]
 
 
 @pytest.mark.parametrize('state, expected_prices', storage_evaluation_with_rebuy_price_testcases)
 def test_storage_evaluation_with_rebuy_price(state, expected_prices):
-	mock_json = json.dumps(ut_t.create_hyperparameter_mock_dict(
-		sim_market=ut_t.create_hyperparameter_mock_dict_sim_market(max_price=10, production_price=2)))
-	with patch('builtins.open', mock_open(read_data=mock_json)) as mock_file:
-		ut_t.check_mock_file(mock_file, mock_json)
-		agent = circular_vendors.RuleBasedCERebuyAgent(config=config_hyperparameter)
-		assert expected_prices == agent.policy(state)
+	changed_config = copy.deepcopy(config_hyperparameter)
+	changed_config.max_price = 10
+	changed_config.production_price = 2
+	agent = circular_vendors.RuleBasedCERebuyAgent(config=changed_config)
+	print('*********************************')
+	assert expected_prices == agent.policy(state)
 
 
 def test_prices_are_not_higher_than_allowed():
-	mock_json = json.dumps(ut_t.create_hyperparameter_mock_dict(
-		sim_market=ut_t.create_hyperparameter_mock_dict_sim_market(max_price=10, production_price=9)))
-	with patch('builtins.open', mock_open(read_data=mock_json)) as mock_file:
-		ut_t.check_mock_file(mock_file, mock_json)
-		test_agent = circular_vendors.RuleBasedCEAgent(config=config_hyperparameter)
-		assert (9, 9) >= test_agent.policy([50, 60])
+	changed_config = copy.deepcopy(config_hyperparameter)
+	changed_config.max_price = 10
+	changed_config.production_price = 9
+	test_agent = circular_vendors.RuleBasedCEAgent(config=changed_config)
+	assert (9, 9) >= test_agent.policy([50, 60])
 
 
 # Helper function that creates a random offer (state that includes the agent's price) to test customer behaviour.
@@ -176,13 +169,12 @@ policy_plus_one_testcases = [
 # TODO: Update this test for all current competitors
 @pytest.mark.parametrize('competitor_class, state', policy_plus_one_testcases)
 def test_policy_plus_one(competitor_class, state):
-	mock_json = json.dumps(ut_t.create_hyperparameter_mock_dict(
-		sim_market=ut_t.create_hyperparameter_mock_dict_sim_market(max_price=10, production_price=2)))
-	with patch('builtins.open', mock_open(read_data=mock_json)) as mock_file:
-		ut_t.check_mock_file(mock_file, mock_json)
-		competitor = competitor_class(config=config_hyperparameter)
+	changed_config = copy.deepcopy(config_hyperparameter)
+	changed_config.max_price = 10
+	changed_config.production_price = 2
 
-		assert config_hyperparameter.production_price + 1 <= competitor.policy(state) < config_hyperparameter.max_price
+	competitor = competitor_class(config=changed_config)
+	assert changed_config.production_price + 1 <= competitor.policy(state) < changed_config.max_price
 
 
 clamp_price_testcases = [
@@ -194,7 +186,9 @@ clamp_price_testcases = [
 
 @pytest.mark.parametrize('price', clamp_price_testcases)
 def test_clamp_price(price):
-	assert 0 <= circular_vendors.RuleBasedCEAgent(config=config_hyperparameter)._clamp_price(price, 0, 9) <= 9
+	changed_config = copy.deepcopy(config_hyperparameter)
+	changed_config.max_price = 9
+	assert 0 <= circular_vendors.RuleBasedCEAgent(config=changed_config)._clamp_price(price) <= 9
 
 
 def test_get_competitors_prices_with_rebuy():
