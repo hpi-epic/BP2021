@@ -1,7 +1,7 @@
 from uuid import uuid4
 
 from django.contrib.auth.decorators import login_required
-from django.http import Http404, HttpResponse
+from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import render
 
 from recommerce.configuration.config_validation import validate_config
@@ -11,7 +11,7 @@ from .config_parser import ConfigFlatDictParser
 from .container_helper import get_actually_stopped_container_from_api_notification
 from .forms import UploadFileForm
 from .handle_files import handle_uploaded_file
-from .handle_requests import get_api_status
+from .handle_requests import get_api_status, websocket_url
 from .models.config import Config
 from .models.container import Container
 
@@ -140,4 +140,4 @@ def container_notification(request):
 
 
 def get_api_url(request):
-	return 'http://192.168.159.134:8001'
+	return JsonResponse({'url': websocket_url()}, status=200, content_type='application/json')

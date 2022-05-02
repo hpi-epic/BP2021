@@ -30,6 +30,10 @@ def _default_request_parameter(wanted_action: str, params: dict):
 	}
 
 
+def websocket_url():
+	return 'http://192.168.159.134:8001'
+
+
 def send_get_request(wanted_action: str, container_id: str) -> APIResponse:
 	"""
 	Sends a get request to the API with the wanted action for a wanted container.

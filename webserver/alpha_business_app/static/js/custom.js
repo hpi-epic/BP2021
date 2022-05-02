@@ -81,13 +81,14 @@ $(document).ready(function() {
 			}
 		});
 	});
-	var url = "ws://192.168.159.134:8001/ws";
-	// const url = "";
-	// $.ajax({url: "/api_info",
-	// 	success: function (data) {
-	// 		url = data;
-	// 	}
-	// });
+	// var url = "ws://192.168.159.134:8001/ws";
+	let url = "";
+	$.ajax({url: "/api_info",
+		success: function (data) {
+			url = data["url"];
+			console.log(url)
+		}
+	});
 	var ws = new WebSocket(url);
 	ws.onopen = function (_) {
 		console.log("connection to ", url, "open");

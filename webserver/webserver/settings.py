@@ -20,7 +20,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ['SECRET_KEY']  # '*&qf$4_z-z(0+f@ngx++bjx7i-v-^6lj9wd^q8q9zmbhj6na7s'
+SECRET_KEY = '*&qf$4_z-z(0+f@ngx++bjx7i-v-^6lj9wd^q8q9zmbhj6na7s'  # os.environ['SECRET_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DJANGO_DEBUG', '') != 'False'
@@ -131,33 +131,3 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATIC_URL = '/static/'
-
-LOGGING = {
-	'version': 1,
-	'disable_existing_loggers': False,
-	'root': {'level': 'INFO', 'handlers': ['file']},
-	'handlers': {
-		'file': {
-			'level': 'INFO',
-			'class': 'logging.FileHandler',
-			'filename': './django.log',
-			'formatter': 'app',
-		},
-	},
-	'loggers': {
-		'django': {
-			'handlers': ['file'],
-			'level': 'INFO',
-			'propagate': True
-		},
-	},
-	'formatters': {
-		'app': {
-			'format': (
-				u'%(asctime)s [%(levelname)-8s] '
-				'(%(module)s.%(funcName)s) %(message)s'
-			),
-			'datefmt': '%Y-%m-%d %H:%M:%S',
-		},
-	},
-}
