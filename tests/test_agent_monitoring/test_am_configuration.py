@@ -56,8 +56,8 @@ incorrect_update_agents_RL_testcases = [
 	([(QLearningAgent, [1, 2, 3, 4])], 'the argument list for a RL-agent must have length between 0 and 2'),
 	([(QLearningAgent, ['modelfile.dat', 35])], 'the arguments for a RL-agent must be of type str'),
 	([(QLearningAgent, [25])], 'the arguments for a RL-agent must be of type str'),
-	([(QLearningAgent, ['agent_name', 'modelfile.dat'])], 'if two arguments as well as a config are provided, \
-		the first extra one must be the modelfile.'),
+	([(QLearningAgent, ['agent_name', 'modelfile.dat'])], 'if two arguments as well as a config are provided, ' +
+		'the first extra one must be the modelfile.'),
 	([(QLearningAgent, ['mymodel.dat'])], 'the specified modelfile does not exist')
 ]
 

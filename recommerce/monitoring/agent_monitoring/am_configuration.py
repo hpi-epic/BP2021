@@ -122,8 +122,8 @@ class Configurator():
 					# both arguments, first must be the modelfile, second the name
 					elif len(current_agent[1]) == 3:
 						assert current_agent[1][1].endswith('.dat'), \
-							f'if two arguments as well as a config are provided, \
-								the first extra one must be the modelfile. Arg1: {current_agent[1][1]}, Arg2: {current_agent[1][2]}'
+							'if two arguments as well as a config are provided, ' + \
+							f'the first extra one must be the modelfile. Arg1: {current_agent[1][1]}, Arg2: {current_agent[1][2]}'
 						agent_modelfile = current_agent[1][1]
 						agent_name = current_agent[1][2]
 					# this should never happen due to the asserts before, but you never know
