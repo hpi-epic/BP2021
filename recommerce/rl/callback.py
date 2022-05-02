@@ -93,6 +93,8 @@ class RecommerceCallback(BaseCallback):
 
 		# This means if it is a subclass of StableBaselinesAgent. Unfortunately, circular imports are not possible.
 		if not issubclass(self.agent_class, QLearningAgent) and not issubclass(self.agent_class, ActorCriticAgent):
+			# self.locals is a feature offered by stablebaselines
+			# locals is a dict with all local variables in the training method of stablebaselines
 			info = self.locals['infos'][0]
 			self.all_dicts.append(info)
 
@@ -141,12 +143,13 @@ class RecommerceCallback(BaseCallback):
 		if len(self.saved_parameter_paths) == 0:
 			print('No agents saved! Nothing to monitor.')
 			return
-		monitor = Monitor()
-		agent_list = [(self.agent_class, [parameter_path]) for parameter_path in self.saved_parameter_paths]
 
 		if self.analyze_after_training:
+			monitor = Monitor()
+			agent_list = [(self.agent_class, [parameter_path]) for parameter_path in self.saved_parameter_paths]
 			# The next line is a bit hacky. We have to provide if the marketplace is continuos or not.
 			# Only Stable Baselines agents use continuous actions at the moment. And only Stable Baselines agents have the attribute env.
+			# The correct way of doing this would be by checking for `isinstance(StableBaselinesAgent)`, but that would result in a circular import.
 			monitor.configurator.setup_monitoring(False, 250, 250, self.marketplace_class, agent_list,
 				support_continuous_action_space=hasattr(self.model, 'env'))
 			rewards = monitor.run_marketplace()
