@@ -3,15 +3,12 @@ import signal
 import sys
 import time
 
-import numpy as np
 from stable_baselines3.common.callbacks import BaseCallback
-from stable_baselines3.common.results_plotter import load_results, ts2xy
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 from tqdm.auto import trange
 
 import recommerce.configuration.utils as ut
-from recommerce.configuration.hyperparameter_config import config
 from recommerce.configuration.path_manager import PathManager
 from recommerce.market.sim_market import SimMarket
 from recommerce.monitoring.agent_monitoring.am_evaluation import Evaluator
@@ -102,30 +99,21 @@ class RecommerceCallback(BaseCallback):
 			# self.locals is a feature offered by stablebaselines
 			# locals is a dict with all local variables in the training method of stablebaselines
 			info = self.locals['infos'][0]
-			self.all_dicts.append(info)
+			finished_episodes = len(self.watcher.all_dicts)
 
+		self.watcher.add_info(info)
 		self.tqdm_instance.update()
-		if finished_episodes is None:
-			finished_episodes = self.num_timesteps // config.episode_length
-			x, y = ts2xy(load_results(self.save_path), 'timesteps')
-			if len(x) <= 0:
-				return True
-			assert len(x) == len(y)
-			mean_return = np.mean(y[-100:])
-		else:
-			assert isinstance(info, dict)
-			self.watcher.add_info(info, env_index)
 
 		assert isinstance(finished_episodes, int)
 
 		assert finished_episodes >= self.last_finished_episode
+		# Do the following part only if a new episode is finished.
 		if finished_episodes == self.last_finished_episode or finished_episodes < 5:
 			return True
 		else:
 			self.last_finished_episode = finished_episodes
 
-		if info is not None:
-			mean_return = self.watcher.get_average_dict()['profits/all']['vendor_0']
+		mean_return = self.watcher.get_average_dict()['profits/all']['vendor_0']
 		assert isinstance(mean_return, float)
 
 		# consider print info

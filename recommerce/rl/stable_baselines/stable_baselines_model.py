@@ -1,5 +1,4 @@
 import numpy as np
-import stable_baselines3.common.monitor
 from stable_baselines3 import A2C, DDPG, PPO, SAC, TD3
 from stable_baselines3.common.noise import NormalActionNoise
 
@@ -44,7 +43,6 @@ class StableBaselinesAgent(ReinforcementLearningAgent, LinearAgent, CircularAgen
 		callback = RecommerceCallback(
 			type(self), type(self.marketplace), training_steps=training_steps, iteration_length=iteration_length,
 			signature=self.name, analyze_after_training=analyze_after_training)
-		self.model.set_env(stable_baselines3.common.monitor.Monitor(self.marketplace, callback.save_path))
 		self.model.learn(training_steps, callback=callback)
 		return callback.all_dicts
 

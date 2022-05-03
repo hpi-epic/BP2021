@@ -97,7 +97,7 @@ def divide_content_of_dict(dict1: dict, divisor) -> dict:
 		if isinstance(dict1[key], dict):
 			newdict[key] = divide_content_of_dict(dict1[key], divisor)
 		else:
-			assert isinstance(dict1[key], (int, float)), 'the dictionary should only contain numbers (int or float)'
+			assert isinstance(dict1[key], (int, float, np.float32)), f'the dictionary should only contain numbers (int or float): {dict1}'
 			newdict[key] = dict1[key] / divisor
 	return newdict
 
