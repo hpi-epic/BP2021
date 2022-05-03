@@ -9,9 +9,9 @@ from recommerce.market.vendors import Agent, FixedPriceAgent, HumanPlayer, RuleB
 
 class CircularAgent(Agent, ABC):
 	def _clamp_price(self, price) -> int:
+		min_price = 0
 		max_price = self.config.max_price - 1
 		price = int(price)
-		min_price = 0
 		price = max(price, min_price)
 		price = min(price, max_price)
 		return price
@@ -35,6 +35,7 @@ class CircularAgent(Agent, ABC):
 class HumanPlayerCE(CircularAgent, HumanPlayer):
 	def __init__(self, config: HyperparameterConfig=None, name='YOU - Circular'):
 		self.name = name
+		self.config = config
 		print('Welcome to this funny game! Now, you are the one playing the game!')
 
 	def policy(self, observation, *_) -> tuple:
@@ -78,6 +79,7 @@ class FixedPriceCERebuyAgent(FixedPriceCEAgent):
 		assert all(isinstance(price, int) for price in fixed_price), f'the prices in fixed_price must be integers: {fixed_price}'
 		self.name = name
 		self.fixed_price = fixed_price
+		self.config = config
 
 	def policy(self, *_) -> tuple:
 		return self.fixed_price
