@@ -52,7 +52,6 @@ class RecommerceCallback(BaseCallback):
 		self.saved_parameter_paths = []
 		self.last_finished_episode = 0
 		self.analyze_after_training = analyze_after_training
-		self.all_dicts = []
 		signal.signal(signal.SIGINT, self._signal_handler)
 
 		self.initialize_io_related()

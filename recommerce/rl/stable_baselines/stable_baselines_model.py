@@ -44,7 +44,7 @@ class StableBaselinesAgent(ReinforcementLearningAgent, LinearAgent, CircularAgen
 			type(self), type(self.marketplace), training_steps=training_steps, iteration_length=iteration_length,
 			signature=self.name, analyze_after_training=analyze_after_training)
 		self.model.learn(training_steps, callback=callback)
-		return callback.all_dicts
+		return callback.watcher.all_dicts
 
 
 class StableBaselinesDDPG(StableBaselinesAgent):
