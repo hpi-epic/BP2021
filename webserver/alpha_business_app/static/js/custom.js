@@ -1,13 +1,18 @@
 $(document).ready(function() {
-	$("button.add-more").click(function () {
-		// adds the return value of the ajax call (html) before the element.
-		var self = $(this)
-		$.ajax({url: self.data("url"),
-		success: function (data) {
-			self.before(data)
-		}
+	function addEventToAddMoreButton () {
+		$("button.add-more").click(function () {
+			// adds the return value of the ajax call (html) before the element.
+			var self = $(this)
+			const csrftoken = getCookie("")
+			$.ajax({
+				url: self.data("url"),
+			success: function (data) {
+				self.before(data)
+			}
+			});
 		});
-	});
+	};
+	addEventToAddMoreButton()
 	
 	function updateAPIHealth() {
 		// replaces the element by the element returned by ajax (html) and adds this click event to it
@@ -35,6 +40,36 @@ $(document).ready(function() {
 			});
 		}
 	}).trigger('change');
+
+	$("select.marketplace-selection").change(function () {
+		// will be called when another marketplace has been added
+		console.log("marketplace changed")
+		var self = $(this);
+		const csrftoken = getCookie("csrftoken");
+		console.log(self)
+		console.log(self.data("url"))
+		var all_agents = $("div.all-agents");
+		$.ajax({
+			type: "POST",
+			url: self.data("url"),
+			data: {
+				csrfmiddlewaretoken: csrftoken,
+				"marketplace": self.val(),
+				"agents_html": all_agents.html()
+			},
+			success: function (data) {
+				//console.log(all_agents.html())
+				//console.log(data)
+				console.log(all_agents)
+				all_agents.empty().append(data)
+				console.log(all_agents)
+				//.append(data)
+				// all_agents.replaceWith(data);
+				addEventToAddMoreButton()
+			}
+		});
+	}).trigger('change');
+	
 
 	function getCookie(name) {
 		let cookieValue = null;

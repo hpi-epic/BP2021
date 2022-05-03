@@ -1,7 +1,7 @@
 <div class="accordion-item copy after-add-more">
     <h2 class="accordion-header">
         <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" aria-expanded="false" data-bs-target="#collapseAgent{{id}}">
-            Agent
+            {{name}}
         </button>
     </h2>
     <div id="collapseAgent{{id}}" class="accordion-collapse collapse">
@@ -19,7 +19,9 @@
                     class
                 </div>
                 <div class="col-6">
-                    <input class="form-control" type="text" name="environment-agents-agent_class" value="{{prefill.agent_class}}">
+                    <select class="form-select {% if error_dict.task %} bc-error-field {% endif %} {{name.lower}}-agent-class" name="environment-agents-agent_class">
+                        {% include "configuration_items/selection_list.html" with prefill_value=prefill.agent_class selections=agent_selections %}
+                    </select>
                 </div>
             </div>
             <div class="row p-2">

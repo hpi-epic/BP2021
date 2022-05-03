@@ -30,7 +30,7 @@ class FixedPriceLEAgent(LinearAgent, FixedPriceAgent):
 		return self.fixed_price
 
 
-class CompetitorLinearRatio1(LinearAgent, RuleBasedAgent):
+class LinearRatio1LEAgent(LinearAgent, RuleBasedAgent):
 	def policy(self, state, epsilon=0):
 		# this stratgy calculates the value per money for each competing vendor and tries to adapt to it
 		ratios = []
@@ -48,12 +48,12 @@ class CompetitorLinearRatio1(LinearAgent, RuleBasedAgent):
 		return min(max(config.production_price + 1, intended), config.max_price - 1)  # actual price
 
 
-class CompetitorRandom(LinearAgent, RuleBasedAgent):
+class LERandomAgent(LinearAgent, RuleBasedAgent):
 	def policy(self, state, epsilon=0):
 		return random.randint(config.production_price + 1, config.max_price - 1)
 
 
-class CompetitorJust2Players(LinearAgent, RuleBasedAgent):
+class Just2PlayersLEAgent(LinearAgent, RuleBasedAgent):
 	def policy(self, state, epsilon=0) -> int:
 		"""
 		This competitor is based on quality and agents actions.

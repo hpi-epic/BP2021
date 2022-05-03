@@ -1,5 +1,6 @@
 import os
 import random
+import re
 
 import numpy as np
 
@@ -172,3 +173,8 @@ def write_content_of_dict_to_overview_svg(
 	}
 
 	manipulator.write_dict_to_svg(target_dictionary=translated_dict)
+
+
+def filtered_class_str_from_dir(import_path: str, all_classes: list, regex_match: str):
+	filtered_classes = list(set(filter(lambda class_name: re.match(regex_match, class_name), all_classes)))
+	return [import_path + '.' + f_class for f_class in sorted(filtered_classes)]

@@ -13,6 +13,7 @@ from .handle_files import handle_uploaded_file
 from .handle_requests import get_api_status
 from .models.config import Config
 from .models.container import Container
+from .selection_manager import SelectionManager
 
 
 @login_required
@@ -94,7 +95,14 @@ def delete_config(request, config_id) -> HttpResponse:
 def agent(request):
 	if not request.user.is_authenticated:
 		return HttpResponse('Unauthorized', status=401)
-	return render(request, 'configuration_items/agent.html', {'id': str(uuid4())})
+	if request.method == 'POST':
+		post_request = request.POST
+		# print(post_request)
+		marketplace_class = post_request['marketplace']
+		raw_html = post_request['agents_html']
+		return HttpResponse(content=SelectionManager().get_correct_agents_html_on_add_agent(request, marketplace_class, raw_html))
+
+	return render(request, 'configuration_items/agent.html', {'id': str(uuid4()), 'name': 'Competitor'})
 
 
 def api_availability(request):
@@ -130,3 +138,15 @@ def config_validation(request):
 		if not validate_status:
 			return render(request, 'notice_field.html', {'error': validate_data})
 	return render(request, 'notice_field.html', {'success': 'This config is valid'})
+
+
+def marketplace_changed(request):
+	if not request.user.is_authenticated:
+		return HttpResponse('Unauthorized', status=401)
+	marketplace_class = None
+	if request.method == 'POST':
+		post_request = request.POST
+		# print(post_request)
+		marketplace_class = post_request['marketplace']
+		raw_html = post_request['agents_html']
+	return HttpResponse(content=SelectionManager().get_correct_agents_html_on_marketplace_change(request, marketplace_class, raw_html))

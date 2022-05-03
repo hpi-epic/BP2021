@@ -7,7 +7,7 @@ import pytest
 from recommerce.configuration.path_manager import PathManager
 from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPriceDuopoly, CircularEconomyRebuyPriceMonopoly
 from recommerce.market.circular.circular_vendors import RuleBasedCERebuyAgent, RuleBasedCERebuyAgentCompetitive
-from recommerce.market.linear.linear_vendors import CompetitorLinearRatio1
+from recommerce.market.linear.linear_vendors import LinearRatio1LEAgent
 from recommerce.monitoring.policyanalyzer import PolicyAnalyzer
 from recommerce.rl.actorcritic.actorcritic_agent import ContinuosActorCriticAgentFixedOneStd
 from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
@@ -16,7 +16,7 @@ write_to_path = os.path.join(PathManager.results_path, 'policyanalyzer')
 
 
 def test_rule_based_linear_competitor1():
-	pa = PolicyAnalyzer(CompetitorLinearRatio1())
+	pa = PolicyAnalyzer(LinearRatio1LEAgent())
 	given_path = pa.analyze_policy(np.array([15, -1, 10]), [(1, 'competitor price', range(1, 11))])
 	expected_path = os.path.join(write_to_path, 'add_a_title_here.png')
 	assert expected_path in given_path
@@ -25,7 +25,7 @@ def test_rule_based_linear_competitor1():
 
 
 def test_rule_based_linear_competitor2():
-	pa = PolicyAnalyzer(CompetitorLinearRatio1())
+	pa = PolicyAnalyzer(LinearRatio1LEAgent())
 	given_path = pa.analyze_policy(
 		np.array([-1, -1, 10]),
 		[(0, 'own quality', range(5, 20)), (1, 'competitor price', range(1, 11))],

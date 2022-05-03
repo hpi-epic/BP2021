@@ -5,6 +5,7 @@ import gym
 import numpy as np
 
 from recommerce.configuration.hyperparameter_config import config
+from recommerce.configuration.utils import filtered_class_str_from_dir
 
 # An offer is a market state that contains all prices and qualities
 
@@ -20,6 +21,25 @@ class SimMarket(gym.Env, ABC):
 	Abstract class that cannot be instantiated.
 	Inherits from `gym.env`.
 	"""
+	@staticmethod
+	def get_num_competitors() -> list:
+		return np.inf
+
+	@staticmethod
+	def get_possible_agents() -> list:
+		import recommerce.rl.actorcritic.actorcritic_agent as ac_agents
+		import recommerce.rl.q_learning.q_learning_agent as q_agents
+		import recommerce.rl.stable_baselines.stable_baselines_model as sb_agents
+		all_actorcritic = filtered_class_str_from_dir('recommerce.rl.actorcritic.actorcritic_agent', dir(ac_agents), '^.+ActorCriticAgent.*$')
+		all_qlearning = filtered_class_str_from_dir('recommerce.rl.q_learning.q_learning_agent', dir(q_agents), '^QLearningAgent$')
+		all_stable_base_lines = filtered_class_str_from_dir('recommerce.rl.stable_baselines', dir(sb_agents), '^StableBaselines.*')
+
+		return sorted(all_actorcritic + all_qlearning + all_stable_base_lines)
+
+	@staticmethod
+	def get_competior_classes() -> list:
+		# raise NotImplementedError
+		return []
 
 	def __init__(self, support_continuous_action_space: bool = False) -> None:
 		"""

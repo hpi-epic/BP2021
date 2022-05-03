@@ -81,7 +81,7 @@ class Monitor():
 		return rewards
 
 
-def run_monitoring_session(monitor: Monitor = Monitor()) -> None:
+def run_monitoring_session(monitor: Monitor) -> None:
 	"""
 	Run a monitoring session with a configured Monitor() and display and save metrics.
 
