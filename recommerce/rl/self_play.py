@@ -17,7 +17,7 @@ def train_self_play(agent_class: StableBaselinesAgent = StableBaselinesPPO, trai
 		rewards[0].append(mydict['profits/all']['vendor_0'])
 		rewards[1].append(mydict['profits/all']['vendor_1'])
 
-	# This is a bit hacky. It should be replaced by better monitoring later.
+	# This is a bit hacky. It will be improved as soon as #446 is done
 	smoothed_return_estimation = \
 		[[np.mean(rewards[idx][max(i-50, 0):i]) for i in range(len(rewards[idx]))] for idx in range(2)]
 	print(rewards)

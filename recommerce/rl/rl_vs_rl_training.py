@@ -24,7 +24,7 @@ def train_rl_vs_rl(num_switches: int = 30, num_steps_per_switch: int = 25000):
 			rewards[i % 2].append(mydict['profits/all']['vendor_0'])
 			rewards[(i + 1) % 2].append(mydict['profits/all']['vendor_1'])
 
-	# This is a bit hacky. It should be replaced by better monitoring later.
+	# This is a bit hacky. It will be improved as soon as #446 is done
 	smoothed_return_estimation = \
 		[[np.mean(rewards[idx][max(i-50, 0):i]) for i in range(len(rewards[idx]))] for idx in range(2)]
 	plt.plot(smoothed_return_estimation[0], label=agents[0].name)
