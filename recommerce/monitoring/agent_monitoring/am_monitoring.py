@@ -9,6 +9,7 @@ from tqdm import trange
 import recommerce.monitoring.agent_monitoring.am_configuration as am_configuration
 import recommerce.monitoring.agent_monitoring.am_evaluation as am_evaluation
 from recommerce.configuration.environment_config import AgentMonitoringEnvironmentConfig, EnvironmentConfigLoader
+from recommerce.configuration.path_manager import PathManager
 
 print('successfully imported torch: cuda?', torch.cuda.is_available())
 
@@ -113,4 +114,7 @@ def main():  # pragma: no cover
 
 
 if __name__ == '__main__':  # pragma: no cover
+	# Make sure a valid datapath is set
+	PathManager.manage_user_path()
+
 	main()
