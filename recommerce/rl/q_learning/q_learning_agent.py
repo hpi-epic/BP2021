@@ -71,13 +71,13 @@ class QLearningAgent(ReinforcementLearningAgent, CircularAgent, LinearAgent):
 		"""
 		if self.actions_dimension == 1:
 			return action
-		else:
-			action_list = []
-			for _ in range(self.actions_dimension):
-				action_list.append(action % config.max_price)
-				action = action // config.max_price
-			action_list.reverse()
-			return tuple(action_list)
+
+		action_list = []
+		for _ in range(self.actions_dimension):
+			action_list.append(action % config.max_price)
+			action = action // config.max_price
+		action_list.reverse()
+		return tuple(action_list)
 
 	def set_feedback(self, reward, is_done, new_observation):
 		exp = self.Experience(*self.buffer_for_feedback, reward, is_done, new_observation)

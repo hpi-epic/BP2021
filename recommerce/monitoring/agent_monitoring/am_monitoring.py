@@ -9,6 +9,7 @@ from tqdm import trange
 import recommerce.monitoring.agent_monitoring.am_configuration as am_configuration
 import recommerce.monitoring.agent_monitoring.am_evaluation as am_evaluation
 from recommerce.configuration.environment_config import AgentMonitoringEnvironmentConfig, EnvironmentConfigLoader
+from recommerce.monitoring.watcher import Watcher
 
 print('successfully imported torch: cuda?', torch.cuda.is_available())
 
@@ -44,8 +45,8 @@ class Monitor():
 			list: A list with a list of rewards for each agent
 		"""
 
-		# initialize the rewards list with a list for each agent
-		rewards = [[] for _ in range(len(self.configurator.agents))]
+		# initialize the watcher list with a list for each agent
+		watchers = [Watcher() for _ in range(len(self.configurator.agents))]
 
 		for episode in trange(1, self.configurator.episodes + 1, unit=' episodes', leave=False):
 			# reset the state & marketplace once to be used by all agents
@@ -58,27 +59,19 @@ class Monitor():
 
 				# reset values for all agents
 				state = source_state
-				episode_reward = 0
 				is_done = False
 
 				# run marketplace for this agent
 				while not is_done:
 					action = self.configurator.agents[current_agent_index].policy(state)
-					state, step_reward, is_done, _ = self.configurator.marketplace.step(action)
-					episode_reward += step_reward
-
-				# removing this will decrease our performance when we still want to do live drawing
-				# could think about a caching strategy for live drawing
-				# add the reward to the current agent's reward-Array
-				rewards[current_agent_index] += [episode_reward]
-
-			if (episode % self.configurator.plot_interval) == 0:
-				self.evaluator.create_histogram(rewards, False, f'episode_{episode}.svg')
+					state, _, is_done, info = self.configurator.marketplace.step(action)
+					watchers[current_agent_index].add_info(info)
 
 		# only one histogram after the whole monitoring process
-		self.evaluator.create_histogram(rewards, True, 'Cumulative_rewards_per_episode.svg')
+		returns = [watcher.get_all_samples_of_property('profits/all', 0) for watcher in watchers]
+		self.evaluator.create_histogram(returns, True, 'Cumulative_rewards_per_episode.svg')
 
-		return rewards
+		return [watcher.get_cumulative_properties() for watcher in watchers]
 
 
 def run_monitoring_session(monitor: Monitor = Monitor()) -> None:
