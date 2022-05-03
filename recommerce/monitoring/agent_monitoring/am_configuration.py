@@ -174,22 +174,22 @@ class Configurator():
 			Each agent will generate data points in the diagrams. Defaults to None.
 			subfolder_name (str, optional): The name of the folder to save the diagrams in. Defaults to None.
 		"""
-		if(enable_live_draw is not None):
+		if enable_live_draw is not None:
 			assert isinstance(enable_live_draw, bool), 'enable_live_draw must be a Boolean'
 			self.enable_live_draw = enable_live_draw
-		if(episodes is not None):
+		if episodes is not None:
 			assert isinstance(episodes, int), 'episodes must be of type int'
 			assert episodes > 0, 'episodes must not be 0'
 			self.episodes = episodes
-		if(plot_interval is not None):
+		if plot_interval is not None:
 			assert isinstance(plot_interval, int), 'plot_interval must be of type int'
 			assert plot_interval > 0, 'plot_interval must not be 0'
 			assert plot_interval <= self.episodes, \
 				f'plot_interval must be <= episodes, or no plots can be generated. Episodes: {self.episodes}. Plot_interval: {plot_interval}'
 			self.plot_interval = plot_interval
-		if(config is not None):
+		if config is not None:
 			self.config = config
-		if(marketplace is not None):
+		if marketplace is not None:
 			assert issubclass(marketplace, sim_market.SimMarket), 'the marketplace must be a subclass of SimMarket'
 			self.marketplace = marketplace(config=self.config, support_continuous_action_space=support_continuous_action_space)
 			# If the agents have not been changed, we reuse the old agents
@@ -199,10 +199,10 @@ class Configurator():
 			self._update_agents(agents)
 
 		# marketplace has not changed but agents have
-		elif(agents is not None):
+		elif agents is not None:
 			self._update_agents(agents)
 
-		if(subfolder_name is not None):
+		if subfolder_name is not None:
 			assert isinstance(subfolder_name, str), f'subfolder_name must be of type str: {type(subfolder_name)}, {subfolder_name}'
 			self.folder_path = os.path.join(PathManager.results_path, 'monitoring', subfolder_name)
 
