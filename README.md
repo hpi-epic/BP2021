@@ -390,6 +390,26 @@ pip install torch==1.11.0+cu115 torchvision==0.12.0+cu115 torchaudio==0.11.0+cu1
 ### 6.2. Webserver
 
 We provide a Django Webserver with a simple user interface to manage the docker container.
+To use the webserver you need to eiter have a `.env.txt` in `BP2021/webserver` or have the environment variables `SECRET_KEY` and `API_TOKEN` set.
+
+Here is an example for a `.env.txt`
+
+```text
+this_line_contains_the_secret_key_for_the_django_server
+this_line_contains_the_master_secret_for_the_api
+```
+
+Remember to change these secrets when they are leaked to the public. Both secrets should be random long strings. Keep in mind, that the master_secret for the API (`API_TOKEN`) should be equal to the `AUTHORIZATION_TOKEN` on the API side.
+
+When starting the webserver, you will notice, that you have a login page. 
+To create a superuser and login to the page, you need to run:
+
+```terminal
+python3 ./manage.py createsuperuser
+```
+
+To manage your other users, go to `127.0.0.1:2709/admin` and login with the credentials you provided when creating the superuser.
+
 To start the webserver on `127.0.0.1:2709` go to `/webserver` and start the server by using the following command
 
 ```terminal
@@ -414,9 +434,6 @@ To run tests you have written for the Django webserver go into the *webserver* f
 python3 ./manage.py test -v 2
 ```
 
-When deploying the webserver and the [API](#63-docker-api) you need to set two environment variables: `SECRET_KEY` (webserver `settings.py`) and `API_TOKEN`. Both should be random long strings.
-Set `API_TOKEN` on the webserver machine to the same value as on the machine you are running the API on, because you will need this for authorization against the API.
-
 ### 6.3. Docker API
 
 There is a RESTful API written with the python libary FastAPI for communicating with docker containers that can be found in `/docker`.
@@ -431,9 +448,9 @@ Don't use `--reload` when deploying in production.
 
 You can just run the `app.py` with python from the docker folder as well.
 
-If you want to use the API, you need to provide an `API_TOKEN` in your environment variables. For each API request the value at the authorization header will be checked. You can only perform actions on the API, when this value is the same, as the value in your environment variable.
+If you want to use the API, you need to provide an `AUTHORIZATION_TOKEN` in your environment variables. For each API request the value at the authorization header will be checked. You can only perform actions on the API, when this value is the same, as the value in your environment variable.
 
-WARNING: Please keep in mind, that the `API_TOKEN` must be kept a secret, if it is revealed, you need to revoke it and set a new secret. Furthermore, think about using transport encryption to ensure that the token won't get stolen on the way.
+WARNING: Please keep in mind, that the `AUTHORIZATION_TOKEN` must be kept a secret, if it is revealed, you need to revoke it and set a new secret. Furthermore, think about using transport encryption to ensure that the token won't get stolen on the way.
 
 ## 7. Tensorboard
 
