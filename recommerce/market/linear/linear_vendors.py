@@ -89,7 +89,7 @@ class CompetitorJust2Players(LinearAgent, RuleBasedAgent):
 		elif comp_quality == agent_quality:
 			# same quality
 			new_price = agent_price
-		if new_price < config.production_price:
+		if new_price <= config.production_price:
 			new_price = config.production_price + 1
 		elif new_price >= config.max_price:
 			new_price = config.max_price - 1
