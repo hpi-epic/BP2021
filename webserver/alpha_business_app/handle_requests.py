@@ -13,10 +13,10 @@ DOCKER_API = 'https://vm-midea03.eaalab.hpi.uni-potsdam.de:8000'  # remember to 
 
 def _get_api_token() -> str:
 	"""
-	Returns an time limited API token for the API.
+	Returns a time limited API token for the API.
 
 	Returns:
-		str: API token to be send to the API.
+		str: API token to be sent to the API.
 	"""
 	try:
 		with open('./.env.txt', 'r') as file:

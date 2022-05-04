@@ -25,7 +25,7 @@ if __name__ == '__main__':
 	extra_files = package_files('recommerce')
 	# handle the user_path.txt in configuration/
 	with open(os.path.join(os.path.dirname(__file__), 'recommerce', 'configuration', 'user_path.txt'), 'w') as path_file:
-		path_file.write('')
+		path_file.write(os.path.abspath('.'))
 
 	# install the pip package
 	setup(

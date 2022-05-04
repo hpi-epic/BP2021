@@ -42,7 +42,6 @@ class ActorCriticTrainer(RLTrainer):
 		"""
 		self.initialize_callback(number_of_training_steps * config.batch_size)
 
-		all_dicts = []
 		if verbose:
 			all_network_outputs = []
 			all_v_estimates = []
@@ -50,10 +49,8 @@ class ActorCriticTrainer(RLTrainer):
 		all_policy_losses = []
 
 		finished_episodes = 0
-		mean_return = -np.inf
 		self.callback.num_timesteps = 0
 		environments = [self.marketplace_class() for _ in range(total_envs)]
-		info_accumulators = [None for _ in range(total_envs)]
 
 		for step_number in range(number_of_training_steps):
 			chosen_envs = self.choose_random_envs(total_envs)
@@ -77,13 +74,13 @@ class ActorCriticTrainer(RLTrainer):
 				actions.append(action)
 				rewards.append(reward)
 				states_dash.append(next_state)
-				info_accumulators[env] = info if info_accumulators[env] is None else ut.add_content_of_two_dicts(info_accumulators[env], info)
 
 				if is_done:
 					finished_episodes += 1
-					all_dicts.append(info_accumulators[env])
 
-					averaged_info = self.calculate_dict_average(all_dicts)
+				self.callback._on_step(finished_episodes, info, env)
+				if is_done:
+					averaged_info = self.callback.watcher.get_average_dict()
 					averaged_info['loss/value'] = np.mean(all_value_losses[-1000:])
 					averaged_info['loss/policy'] = np.mean(all_policy_losses[-1000:])
 
@@ -98,11 +95,6 @@ class ActorCriticTrainer(RLTrainer):
 					ut.write_dict_to_tensorboard(self.callback.writer, averaged_info, finished_episodes, is_cumulative=True)
 
 					environments[env].reset()
-					info_accumulators[env] = None
-
-					mean_return = averaged_info['profits/all']['vendor_0']
-
-				self.callback._on_step(finished_episodes, mean_return)
 
 			policy_loss, valueloss = self.callback.model.train_batch(
 				torch.Tensor(np.array(states)),
