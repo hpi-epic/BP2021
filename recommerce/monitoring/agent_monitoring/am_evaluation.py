@@ -2,8 +2,9 @@ import os
 
 import matplotlib.pyplot as plt
 import numpy as np
-from scipy.stats import kde
+import scipy.stats
 
+import recommerce.configuration.utils as ut
 import recommerce.monitoring.agent_monitoring.am_configuration as am_configuration
 
 
@@ -30,8 +31,7 @@ class Evaluator():
 			else:
 				print(f'\nStatistics for episode {episode_numbers[index]}')
 
-			for property in analysis:
-				samples = analysis[property]
+			for property, samples in ut.unroll_dict_with_list(analysis).items():
 				print('%40s: %7.2f (mean), %7.2f (median), %7.2f (std), %7.2f (min), %7.2f (max)' % (
 					property, np.mean(samples), np.median(samples), np.std(samples), np.min(samples), np.max(samples)))
 
@@ -39,24 +39,15 @@ class Evaluator():
 		# Create density plots
 		print('Creating density plots...')
 		for index, analysis in enumerate(analyses):
-			for property in analysis:
-				if 'vendor_' not in property:
-					self.create_density_plot([analysis[property]], property)
-				elif 'vendor_0' in property:
-					counter = 0
-					samples = []
-					while (property[:-1] + str(counter)) in analysis:
-						samples.append(analysis[property[:-1] + str(counter)])
-						counter += 1
-
-					prefix = f'episode_{episode_numbers[index]}_' if episode_numbers is not None else f'{self.configurator.agents[index].name}_'
-					self.create_density_plot(samples, prefix + property[:-9])
+			for property, samples in analysis.items():
+				prefix = f'episode_{episode_numbers[index]}_' if episode_numbers is not None else f'{self.configurator.agents[index].name}_'
+				self.create_density_plot(samples if isinstance(samples[0], list) else [samples], prefix + property)
 
 		# self._create_statistics_plots(rewards)
 		if episode_numbers is not None:
-			for property_name in analyses[0]:
-				samples = [analysis[property_name] for analysis in analyses]
-				self._create_violin_plot(samples, episode_numbers, f'Progress of {property_name}')
+			for property_name in ut.unroll_dict_with_list(analyses[0]).keys():
+				samples = [ut.unroll_dict_with_list(analysis)[property_name] for analysis in analyses]
+				self._create_violin_plot(samples, episode_numbers, f'violinplot showing progress of {property_name}')
 		print(f'All plots were saved to {os.path.abspath(self.configurator.folder_path)}')
 
 	# visualize metrics
@@ -83,7 +74,7 @@ class Evaluator():
 			# This is very rare but happens especially at the beginning of the training (early and bad rl models).
 			# In this case, the diagram is just skipped.
 			try:
-				density = kde.gaussian_kde(sample)
+				density = scipy.stats.gaussian_kde(sample)
 			except np.linalg.LinAlgError:
 				continue
 			ys.append(density(x))
@@ -225,6 +216,7 @@ class Evaluator():
 
 		plt.clf()
 		plt.violinplot(all_rewards, episode_numbers, showmeans=True, widths=450)
+		plt.plot(episode_numbers, [np.mean(rewards_on_training_stage) for rewards_on_training_stage in all_rewards], color='steelblue')
 		plt.title(title)
 		plt.xlabel('Learned Episodes')
 		plt.ylabel('Reward Density')

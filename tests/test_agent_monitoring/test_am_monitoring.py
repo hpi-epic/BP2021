@@ -3,6 +3,7 @@ from unittest.mock import patch
 
 import pytest
 
+import recommerce.configuration.utils as ut
 import recommerce.market.circular.circular_sim_market as circular_market
 import recommerce.monitoring.agent_monitoring.am_monitoring as monitoring
 from recommerce.market.circular.circular_vendors import FixedPriceCEAgent
@@ -34,7 +35,7 @@ def test_run_marketplace():
 		exists_mock.return_value = True
 		analysis_results = monitor.run_marketplace()
 		assert 1 == len(analysis_results)
-		assert monitor.configurator.episodes == len(analysis_results[0]['profits/all/vendor_0'])
+		assert monitor.configurator.episodes == len(ut.unroll_dict_with_list(analysis_results[0])['profits/all/vendor_0'])
 
 
 def test_run_monitoring_session():

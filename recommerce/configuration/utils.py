@@ -125,6 +125,26 @@ def add_content_of_two_dicts(dict1, dict2) -> dict:
 	return newdict
 
 
+def unroll_dict_with_list(input_dict: dict) -> dict:
+	"""
+	This function takes a dictionary containing numbers and lists and unrolls it into a flat dictionary.
+
+	Args:
+		input_dict (dict): the dictionary you would like to unroll
+
+	Returns:
+		dict: the unrolled dictionary
+	"""
+	newdict = {}
+	for key in input_dict:
+		if isinstance(input_dict[key], list) and isinstance(input_dict[key][0], list):
+			for i, element in enumerate(input_dict[key]):
+				newdict[f'{key}/vendor_{i}'] = element
+		else:
+			newdict[key] = input_dict[key]
+	return newdict
+
+
 def write_content_of_dict_to_overview_svg(
 		manipulator: SVGManipulator,
 		episode: int,

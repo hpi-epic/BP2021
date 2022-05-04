@@ -2,7 +2,10 @@ import os
 import signal
 import sys
 import time
+import warnings
 
+import matplotlib.pyplot as plt
+import numpy as np
 from stable_baselines3.common.callbacks import BaseCallback
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
@@ -17,6 +20,8 @@ from recommerce.monitoring.watcher import Watcher
 from recommerce.rl.actorcritic.actorcritic_agent import ActorCriticAgent
 from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
 from recommerce.rl.reinforcement_learning_agent import ReinforcementLearningAgent
+
+warnings.filterwarnings('error')
 
 
 class RecommerceCallback(BaseCallback):
@@ -155,6 +160,35 @@ class RecommerceCallback(BaseCallback):
 			rewards = monitor.run_marketplace()
 			episode_numbers = [int(parameter_path[-9:][:5]) for parameter_path in self.saved_parameter_paths]
 			Evaluator(monitor.configurator).evaluate_session(rewards, episode_numbers)
+
+			# Create scatterplots
+			ignore_first_samples = 15  # the number of samples you want to skip because they can be severe outliers
+			cumulative_properties = self.watcher.get_cumulative_properties()
+			for property, samples in ut.unroll_dict_with_list(cumulative_properties).items():
+				x_values = np.array(range(len(samples[ignore_first_samples:]))) + 15
+				plt.clf()
+				plt.scatter(x_values, samples[ignore_first_samples:])
+				plt.title(f'Scatterplot showing all samples of {property} for each episode')
+				plt.xlabel('Episode')
+				plt.ylabel(property)
+				plt.savefig(os.path.join(monitor.configurator.folder_path, f'scatterplot_samples_{property.replace("/", "_")}.svg'))
+
+			# Create lineplots with smoothed averages for this property
+			for property, samples in cumulative_properties.items():
+				plt.clf()
+				if not isinstance(samples[0], list):
+					plot_values = [self.watcher.get_progress_values_of_property(property)[ignore_first_samples:]]
+				else:
+					plot_values = [self.watcher.get_progress_values_of_property(property, vendor)[ignore_first_samples:]
+						for vendor in range(self.watcher.get_number_of_vendors())]
+					plt.legend()
+
+				for values in plot_values:
+					plt.plot(x_values, values)
+				plt.title(f'Lineplot showing training progress of {property}')
+				plt.xlabel('Episode')
+				plt.ylabel(property)
+				plt.savefig(os.path.join(monitor.configurator.folder_path, f'lineplot_progress_{property.replace("/", "_")}.svg'))
 
 	def save_parameters(self, finished_episodes: int):
 		assert isinstance(finished_episodes, int)
