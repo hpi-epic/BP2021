@@ -138,8 +138,8 @@ class Configurator():
 						name=agent_name
 						)
 					self.agents.append(new_agent)
-				except RuntimeError:  # pragma: no cover
-					raise RuntimeError('The modelfile is not compatible with the agent you tried to instantiate')
+				except RuntimeError as e:  # pragma: no cover
+					raise RuntimeError('The modelfile is not compatible with the agent you tried to instantiate') from e
 			else:  # pragma: no cover
 				assert False, f'{current_agent[0]} is neither a RuleBased nor a QLearning agent nor a HumanPlayer'
 

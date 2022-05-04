@@ -1,11 +1,13 @@
-import os
 import json
+import os
 from unittest.mock import mock_open, patch
-import utils_tests as ut_t
+
 import pytest
+import utils_tests as ut_t
+
 import recommerce.market.circular.circular_sim_market as circular_market
 import recommerce.monitoring.agent_monitoring.am_monitoring as monitoring
-from recommerce.configuration.hyperparameter_config import HyperparameterConfig, HyperparameterConfigLoader
+from recommerce.configuration.hyperparameter_config import HyperparameterConfig
 from recommerce.market.circular.circular_vendors import FixedPriceCEAgent
 from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
 
@@ -18,7 +20,14 @@ config_hyperparameter: HyperparameterConfig = None
 def setup_function(function):
 	print('***SETUP***')
 	global monitor, config_hyperparameter
-	mock_json = json.dumps(ut_t.create_hyperparameter_mock_dict())
+	mock_json = json.dumps(ut_t.create_hyperparameter_mock_dict(
+		rl=ut_t.create_hyperparameter_mock_dict_rl(
+			replay_size=500, sync_target_frames=10, replay_start_size=100, epsilon_decay_last_frame=400),
+		sim_market=ut_t.create_hyperparameter_mock_dict_sim_market(
+			max_storage=100, episode_length=25, max_price=10, max_quality=50,
+			number_of_customers=10, production_price=3, storage_cost_per_product=0.1
+		)
+	))
 	with patch('builtins.open', mock_open(read_data=mock_json)) as mock_file:
 		ut_t.check_mock_file(mock_file, mock_json)
 		config_hyperparameter = ut_t.import_config()
