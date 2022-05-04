@@ -18,9 +18,9 @@ print('successfully imported torch: cuda?', torch.cuda.is_available())
 
 
 def run_training_session(
-	config_hyperparameter: HyperparameterConfig,
-	marketplace=circular_market.CircularEconomyRebuyPriceDuopoly,
-	agent=q_learning_agent.QLearningAgent):
+		config_hyperparameter: HyperparameterConfig,
+		marketplace=circular_market.CircularEconomyRebuyPriceDuopoly,
+		agent=q_learning_agent.QLearningAgent):
 	"""
 	Run a training session with the passed marketplace and QLearningAgent.
 	Args:
