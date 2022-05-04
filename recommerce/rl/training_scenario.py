@@ -9,6 +9,7 @@ import recommerce.rl.rl_vs_rl_training as rl_vs_rl_training
 import recommerce.rl.self_play as self_play
 import recommerce.rl.stable_baselines.stable_baselines_model as sbmodel
 from recommerce.configuration.environment_config import EnvironmentConfigLoader, TrainingEnvironmentConfig
+from recommerce.configuration.path_manager import PathManager
 from recommerce.market.circular.circular_vendors import CircularAgent
 from recommerce.rl.actorcritic.actorcritic_training import ActorCriticTrainer
 from recommerce.rl.q_learning.q_learning_training import QLearningTrainer
@@ -89,4 +90,7 @@ def main():
 
 
 if __name__ == '__main__':
+	# Make sure a valid datapath is set
+	PathManager.manage_user_path()
+
 	main()
