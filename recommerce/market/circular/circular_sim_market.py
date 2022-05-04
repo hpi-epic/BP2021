@@ -3,6 +3,7 @@ from abc import ABC
 import gym
 import numpy as np
 
+import recommerce.configuration.utils as ut
 import recommerce.market.circular.circular_vendors as circular_vendors
 import recommerce.market.owner as owner
 from recommerce.configuration.hyperparameter_config import config
@@ -13,6 +14,11 @@ from recommerce.market.sim_market import SimMarket
 
 
 class CircularEconomy(SimMarket, ABC):
+	@staticmethod
+	def get_competitor_classes() -> list:
+		import recommerce.market.circular.circular_vendors as c_vendors
+		return sorted(ut.filtered_class_str_from_dir('recommerce.market.circular.circular_vendors', dir(c_vendors), '.*CE.*Agent.*'))
+
 	def _setup_action_observation_space(self, support_continuous_action_space: bool) -> None:
 		# cell 0: number of products in the used storage, cell 1: number of products in circulation
 		self.max_storage = config.max_storage

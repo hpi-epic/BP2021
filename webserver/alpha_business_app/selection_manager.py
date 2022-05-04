@@ -30,7 +30,7 @@ class SelectionManager:
 		return get_class(marketplace_class).get_num_competitors()
 
 	def get_competitor_options_for_marketplace(self, marketplace_class: str):
-		competitor_classes = get_class(marketplace_class).get_competior_classes()
+		competitor_classes = get_class(marketplace_class).get_competitor_classes()
 		# print('########################')
 		# print(competitor_classes)
 		return self._to_tuple_list(competitor_classes)
