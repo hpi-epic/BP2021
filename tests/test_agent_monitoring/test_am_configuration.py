@@ -1,14 +1,14 @@
 import os
 import shutil
 from unittest.mock import patch
-
+import utils_tests as ut_t
 import pytest
 
 import recommerce.market.circular.circular_sim_market as circular_market
 import recommerce.market.linear.linear_sim_market as linear_market
 import recommerce.monitoring.agent_monitoring.am_monitoring as monitoring
 import recommerce.rl.actorcritic.actorcritic_agent as actorcritic_agent
-from recommerce.configuration.hyperparameter_config import HyperparameterConfig, HyperparameterConfigLoader
+from recommerce.configuration.hyperparameter_config import HyperparameterConfig
 from recommerce.configuration.path_manager import PathManager
 from recommerce.market.circular.circular_vendors import FixedPriceCEAgent, FixedPriceCERebuyAgent, HumanPlayerCERebuy, RuleBasedCEAgent
 from recommerce.market.linear.linear_vendors import FixedPriceLEAgent
@@ -16,7 +16,7 @@ from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
 
 monitor = monitoring.Monitor()
 
-config_hyperparameter: HyperparameterConfig = HyperparameterConfigLoader.load('hyperparameter_config')
+config_hyperparameter: HyperparameterConfig = ut_t.mock_config_hyperparameter()
 
 
 # setup before each test

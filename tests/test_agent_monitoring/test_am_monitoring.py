@@ -1,6 +1,5 @@
-import json
 import os
-from unittest.mock import mock_open, patch
+from unittest.mock import patch
 
 import pytest
 import utils_tests as ut_t
@@ -13,24 +12,13 @@ from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
 
 monitor = monitoring.Monitor()
 
-config_hyperparameter: HyperparameterConfig = None
+config_hyperparameter: HyperparameterConfig = ut_t.mock_config_hyperparameter()
 
 
 # setup before each test
 def setup_function(function):
 	print('***SETUP***')
-	global monitor, config_hyperparameter
-	mock_json = json.dumps(ut_t.create_hyperparameter_mock_dict(
-		rl=ut_t.create_hyperparameter_mock_dict_rl(
-			replay_size=500, sync_target_frames=10, replay_start_size=100, epsilon_decay_last_frame=400),
-		sim_market=ut_t.create_hyperparameter_mock_dict_sim_market(
-			max_storage=100, episode_length=25, max_price=10, max_quality=50,
-			number_of_customers=10, production_price=3, storage_cost_per_product=0.1
-		)
-	))
-	with patch('builtins.open', mock_open(read_data=mock_json)) as mock_file:
-		ut_t.check_mock_file(mock_file, mock_json)
-		config_hyperparameter = ut_t.import_config()
+	global monitor
 	monitor = monitoring.Monitor()
 	monitor.configurator.setup_monitoring(
 		enable_live_draw=False,

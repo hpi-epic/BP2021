@@ -1,5 +1,6 @@
 from typing import Tuple, Union
-
+import json
+from unittest.mock import mock_open, patch
 import recommerce.configuration.hyperparameter_config as hyperparameter_config
 import recommerce.market.circular.circular_sim_market as circular_market
 import recommerce.market.linear.linear_sim_market as linear_market
@@ -230,10 +231,25 @@ def create_mock_action(market_subclass) -> Union[int, Tuple]:
 
 
 def import_config() -> hyperparameter_config.HyperparameterConfig:
+	return hyperparameter_config.HyperparameterConfigLoader.load('hyperparameter_config')
+
+
+def mock_config_hyperparameter() -> hyperparameter_config.HyperparameterConfig:
 	"""
 	Reload the hyperparameter_config file to update the config variable with the mocked values.
 
 	Returns:
-		HyperparameterConfig: The config object.
+		HyperparameterConfig: The mocked hyperparameter config object.
 	"""
-	return hyperparameter_config.HyperparameterConfigLoader.load('hyperparameter_config')
+	mock_json = json.dumps(create_hyperparameter_mock_dict(
+		rl=create_hyperparameter_mock_dict_rl(
+			replay_size=500, sync_target_frames=10, replay_start_size=100, epsilon_decay_last_frame=400),
+		sim_market=create_hyperparameter_mock_dict_sim_market(
+			max_storage=100, episode_length=25, max_price=10, max_quality=50,
+			number_of_customers=10, production_price=3, storage_cost_per_product=0.1
+		)
+	))
+	with patch('builtins.open', mock_open(read_data=mock_json)) as mock_file:
+		check_mock_file(mock_file, mock_json)
+		config_hyperparameter = hyperparameter_config.HyperparameterConfigLoader.load('hyperparameter_config')
+		return config_hyperparameter
