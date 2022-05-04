@@ -39,4 +39,8 @@ async def websocket_endpoint(websocket: WebSocket):
 
 
 if __name__ == '__main__':
-	uvicorn.run('container_notification_websocket:app', host='0.0.0.0', port=8001)
+	uvicorn.run('container_notification_websocket:app',
+		host='0.0.0.0',
+		port=8001,
+		ssl_keyfile='/etc/sslzertifikat/api_cert.key',
+		ssl_certfile='/etc/sslzertifikat/api_cert.crt')
