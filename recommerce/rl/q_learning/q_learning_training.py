@@ -22,13 +22,10 @@ class QLearningTrainer(RLTrainer):
 		marketplace = self.marketplace_class()
 		state = marketplace.reset()
 
-		vendors_cumulated_info = None
-		all_dicts = []
 		losses = []
 		rmse_losses = []
 		selected_q_vals = []
 		finished_episodes = 0
-		mean_return = -np.inf
 
 		for frame_idx in range(number_of_training_steps):
 			epsilon = max(config.epsilon_final, config.epsilon_start - frame_idx / config.epsilon_decay_last_frame)
@@ -36,12 +33,13 @@ class QLearningTrainer(RLTrainer):
 			action = self.callback.model.policy(state, epsilon)
 			state, reward, is_done, info = marketplace.step(action)
 			self.callback.model.set_feedback(reward, is_done, state)
-			vendors_cumulated_info = info if vendors_cumulated_info is None else ut.add_content_of_two_dicts(vendors_cumulated_info, info)
 
 			if is_done:
-				all_dicts.append(vendors_cumulated_info)
-				finished_episodes = len(all_dicts)
-				averaged_info = self.calculate_dict_average(all_dicts)
+				finished_episodes += 1
+
+			self.callback._on_step(finished_episodes, info)
+			if is_done:
+				averaged_info = self.callback.watcher.get_average_dict()
 
 				if frame_idx > config.replay_start_size:
 					averaged_info['Loss/MSE'] = np.mean(losses[-1000:])
@@ -49,13 +47,10 @@ class QLearningTrainer(RLTrainer):
 					averaged_info['Loss/selected_q_vals'] = np.mean(selected_q_vals[-1000:])
 					averaged_info['epsilon'] = epsilon
 					ut.write_dict_to_tensorboard(self.callback.writer, averaged_info, frame_idx / config.episode_length, is_cumulative=True)
-					mean_return = averaged_info['profits/all']['vendor_0']
 
-				vendors_cumulated_info = None
 				marketplace.reset()
 
 			self.callback.num_timesteps = frame_idx + 1
-			self.callback._on_step(finished_episodes, mean_return)
 
 			if len(self.callback.model.buffer) < config.replay_start_size:
 				continue
