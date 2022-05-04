@@ -214,6 +214,9 @@ class CircularEconomy(SimMarket, ABC):
 
 
 class CircularEconomyMonopoly(CircularEconomy):
+	"""
+	This is a circular economy with only one vendor having the monopol.
+	"""
 	@staticmethod
 	def get_num_competitors() -> list:
 		return 0
@@ -223,6 +226,9 @@ class CircularEconomyMonopoly(CircularEconomy):
 
 
 class CircularEconomyDuopoly(CircularEconomy):
+	"""
+	This is a circular economy with two vendors (one agent and one competitor) playing against each other.
+	"""
 	@staticmethod
 	def get_num_competitors() -> list:
 		return 1
@@ -232,7 +238,9 @@ class CircularEconomyDuopoly(CircularEconomy):
 
 
 class CircularEconomyOligopoly(CircularEconomy):
-
+	"""
+	This is a circular economy with multiple vendors.
+	"""
 	def _get_competitor_list(self) -> list:
 		return [
 			circular_vendors.RuleBasedCEAgent(),
@@ -243,7 +251,6 @@ class CircularEconomyOligopoly(CircularEconomy):
 
 
 class CircularEconomyRebuyPrice(CircularEconomy, ABC):
-
 	def _setup_action_observation_space(self, support_continuous_action_space: bool) -> None:
 		super()._setup_action_observation_space(support_continuous_action_space)
 		self.observation_space = gym.spaces.Box(
@@ -284,6 +291,10 @@ class CircularEconomyRebuyPrice(CircularEconomy, ABC):
 
 
 class CircularEconomyRebuyPriceMonopoly(CircularEconomyRebuyPrice):
+	"""
+	This is a circular economy with rebuy price, so the vendors buy their prdoducts from the customer.
+	There is only one vendor.
+	"""
 	@staticmethod
 	def get_num_competitors() -> list:
 		return 0
@@ -293,6 +304,10 @@ class CircularEconomyRebuyPriceMonopoly(CircularEconomyRebuyPrice):
 
 
 class CircularEconomyRebuyPriceDuopoly(CircularEconomyRebuyPrice):
+	"""
+	This is a circular economy with rebuy price, so the vendors buy their prdoducts from the customer.
+	There are two vendors.
+	"""
 	@staticmethod
 	def get_num_competitors() -> list:
 		return 1
@@ -302,7 +317,10 @@ class CircularEconomyRebuyPriceDuopoly(CircularEconomyRebuyPrice):
 
 
 class CircularEconomyRebuyPriceOligopoly(CircularEconomyRebuyPrice):
-
+	"""
+	This is a circular economy with rebuy price, so the vendors buy their prdoducts from the customer.
+	There are multiple vendors.
+	"""
 	def _get_competitor_list(self) -> list:
 		return [
 			circular_vendors.RuleBasedCERebuyAgentCompetitive(),

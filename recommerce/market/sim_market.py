@@ -32,7 +32,8 @@ class SimMarket(gym.Env, ABC):
 		import recommerce.rl.stable_baselines.stable_baselines_model as sb_agents
 		all_actorcritic = filtered_class_str_from_dir('recommerce.rl.actorcritic.actorcritic_agent', dir(ac_agents), '^.+ActorCriticAgent.*$')
 		all_qlearning = filtered_class_str_from_dir('recommerce.rl.q_learning.q_learning_agent', dir(q_agents), '^QLearningAgent$')
-		all_stable_base_lines = filtered_class_str_from_dir('recommerce.rl.stable_baselines', dir(sb_agents), '^StableBaselines.*')
+		all_stable_base_lines = filtered_class_str_from_dir('recommerce.rl.stable_baselines.stable_baselines_model',
+			dir(sb_agents), '^StableBaselines.*')
 
 		return sorted(all_actorcritic + all_qlearning + all_stable_base_lines)
 
