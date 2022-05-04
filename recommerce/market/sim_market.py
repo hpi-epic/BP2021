@@ -37,7 +37,7 @@ class SimMarket(gym.Env, ABC):
 		return sorted(all_actorcritic + all_qlearning + all_stable_base_lines)
 
 	@staticmethod
-	def get_competior_classes() -> list:
+	def get_competitor_classes() -> list:
 		# raise NotImplementedError
 		return []
 

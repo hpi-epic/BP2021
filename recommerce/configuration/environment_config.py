@@ -4,6 +4,8 @@ import json
 import os
 from abc import ABC, abstractmethod
 
+import numpy as np
+
 from recommerce.configuration.path_manager import PathManager
 from recommerce.market.circular.circular_sim_market import CircularEconomy
 from recommerce.market.circular.circular_vendors import CircularAgent
@@ -11,6 +13,7 @@ from recommerce.market.sim_market import SimMarket
 from recommerce.market.vendors import FixedPriceAgent
 from recommerce.rl.actorcritic.actorcritic_agent import ActorCriticAgent
 from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
+from recommerce.rl.reinforcement_learning_agent import ReinforcementLearningAgent
 
 
 def get_class(import_string: str) -> object:
@@ -255,13 +258,20 @@ class TrainingEnvironmentConfig(EnvironmentConfig):
 		agent (QlearningAgent or ActorCriticAgent subclass): A subclass of QlearningAgent or ActorCritic, the agent to be trained.
 	"""
 	def _validate_config(self, config: dict) -> None:
-		super(TrainingEnvironmentConfig, self)._validate_config(config, single_agent=True, needs_modelfile=False)
+		super(TrainingEnvironmentConfig, self)._validate_config(config, single_agent=False, needs_modelfile=False)
 
-		# Since we only have one agent we extract it from the provided list
-		# TODO: In #370 we can have more than one agent, since the rest are competitors
-		self.agent = self.agent[0]
-		assert issubclass(self.agent['agent_class'], (QLearningAgent, ActorCriticAgent)), \
-			f'The agent must be a subclass of either QLearningAgent or ActorCriticAgent: {self.agent}'
+		# Make sure the first given agent is a valid agent that can be trained
+		assert issubclass(self.agent[0]['agent_class'], ReinforcementLearningAgent), \
+			f'The first agent must be a ReinforcementLearningAgent: {self.agent}'
+
+		# If we get more than one agent, make sure the rest are valid competitors and that we have the right amount
+		if len(self.agent) > 1:
+			assert self.marketplace.get_num_competitors() == np.inf or len(self.agent)-1 == self.marketplace.get_num_competitors(), \
+				f'The number of competitors given is invalid: was {len(self.agent)-1} but should be {self.marketplace.get_num_competitors()}'
+
+			for agent in self.agent[1:]:
+				assert str(agent['agent_class'])[8:-2] in self.marketplace.get_competitor_classes(), \
+					f'{agent["agent_class"]} is not a valid competitor on a {self.marketplace} market'
 
 	def _get_task(self) -> str:
 		return 'training'

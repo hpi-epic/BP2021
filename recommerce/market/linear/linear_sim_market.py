@@ -13,7 +13,7 @@ from recommerce.market.sim_market import SimMarket
 
 class LinearEconomy(SimMarket, ABC):
 	@staticmethod
-	def get_competior_classes() -> list:
+	def get_competitor_classes() -> list:
 		import recommerce.market.linear.linear_vendors as l_vendors
 		return sorted(ut.filtered_class_str_from_dir('recommerce.market.linear.linear_vendors', dir(l_vendors), '.*LE.*Agent.*'))
 
