@@ -1,8 +1,8 @@
 import os
-from unittest.mock import patch
-
+import json
+from unittest.mock import mock_open, patch
+import utils_tests as ut_t
 import pytest
-
 import recommerce.market.circular.circular_sim_market as circular_market
 import recommerce.monitoring.agent_monitoring.am_monitoring as monitoring
 from recommerce.configuration.hyperparameter_config import HyperparameterConfig, HyperparameterConfigLoader
@@ -11,13 +11,17 @@ from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
 
 monitor = monitoring.Monitor()
 
-config_hyperparameter: HyperparameterConfig = HyperparameterConfigLoader.load('hyperparameter_config')
+config_hyperparameter: HyperparameterConfig = None
 
 
 # setup before each test
 def setup_function(function):
 	print('***SETUP***')
-	global monitor
+	global monitor, config_hyperparameter
+	mock_json = json.dumps(ut_t.create_hyperparameter_mock_dict())
+	with patch('builtins.open', mock_open(read_data=mock_json)) as mock_file:
+		ut_t.check_mock_file(mock_file, mock_json)
+		config_hyperparameter = ut_t.import_config()
 	monitor = monitoring.Monitor()
 	monitor.configurator.setup_monitoring(
 		enable_live_draw=False,
@@ -34,8 +38,7 @@ def test_run_marketplace():
 	monitor.configurator.setup_monitoring(
 		episodes=100,
 		plot_interval=100,
-		agents=[(FixedPriceCEAgent, [(5, 2)])],
-		config=config_hyperparameter
+		agents=[(FixedPriceCEAgent, [(5, 2)])]
 		)
 	with patch('recommerce.monitoring.agent_monitoring.am_evaluation.plt'), \
 		patch('recommerce.monitoring.agent_monitoring.am_configuration.os.makedirs'), \
