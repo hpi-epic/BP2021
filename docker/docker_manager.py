@@ -11,6 +11,8 @@ from torch.cuda import is_available
 import docker
 from docker.models.containers import Container
 
+IMAGE_NAME = 'recommerce'
+
 
 class DockerInfo():
 	"""
@@ -334,7 +336,7 @@ class DockerManager():
 
 	def _confirm_image_exists(self, update: bool = False) -> str:
 		"""
-		Find out if the recommerce image exists. If not, the image will be built.
+		Find out if the IMAGE_NAME image exists. If not, the image will be built.
 
 		Args:
 			update (bool): Whether or not to always build/update an image for this id. Defaults to False.
@@ -354,44 +356,44 @@ class DockerManager():
 					print(image.id)
 
 		if update:
-			print('Recommerce image will be created/updated.')
+			print(f'{IMAGE_NAME} image will be created/updated.')
 			return self._build_image()
 
-		if 'recommerce' not in tagged_images:
-			print('Recommerce image does not exist and will be created')
+		if IMAGE_NAME not in tagged_images:
+			print(f'{IMAGE_NAME} image does not exist and will be created')
 			return self._build_image()
-		print('Recommerce image already exists')
-		return self._get_client().images.get('recommerce').id[7:]
+		print(f'{IMAGE_NAME} image already exists')
+		return self._get_client().images.get(IMAGE_NAME).id[7:]
 
 	def _build_image(self) -> str:
 		"""
-		Build an image for the recommerce application, and name it 'recommerce'.
+		Build an image for the recommerce application, and name it IMAGE_NAME.
 
 		Returns:
 			str: The id of the image or None if the build failed.
 		"""
 		# https://docker-py.readthedocs.io/en/stable/images.html
-		print('Building recommerce image')
+		print(f'Building {IMAGE_NAME} image')
 
 		# Find out if an image with the name already exists to remove it afterwards
 		try:
-			old_img = self._get_client().images.get('recommerce')
+			old_img = self._get_client().images.get(IMAGE_NAME)
 		except docker.errors.ImageNotFound:
 			old_img = None
 		try:
 			# Using the low-level API to be able to get live-logs
 			logs = docker.APIClient().build(path=os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)),
-				tag='recommerce', forcerm=True, network_mode='host', decode=True)
+				tag=IMAGE_NAME, forcerm=True, network_mode='host', decode=True)
 			for output in logs:
 				if 'stream' in output:
 					output_str = output['stream'].strip('\r\n').strip('\n')
 					print(output_str)
-			img = self._get_client().images.get('recommerce')
+			img = self._get_client().images.get(IMAGE_NAME)
 		except docker.errors.BuildError or docker.errors.APIError as error:
-			print(f'An error occurred while building the recommerce image\n{error}')
+			print(f'An error occurred while building the {IMAGE_NAME} image\n{error}')
 			return None
 		if old_img is not None and old_img.id != img.id:
-			print('\nA recommerce image already exists, it will be overwritten')
+			print(f'\nA {IMAGE_NAME} image already exists, it will be overwritten')
 			self._get_client().images.remove(old_img.id[7:])
 		# return id without the 'sha256:'-prefix
 		return img.id[7:]
@@ -419,9 +421,9 @@ class DockerManager():
 		if use_gpu:
 			device_request_gpu = docker.types.DeviceRequest(driver='nvidia', count=-1, capabilities=[['compute']])
 			try:
-				container: Container = self._get_client().containers.create('recommerce',
+				container: Container = self._get_client().containers.create(IMAGE_NAME,
 					detach=True,
-					labels=['recommerce'],
+					labels=[IMAGE_NAME],
 					ports={'6006/tcp': used_port},
 					entrypoint=f'recommerce -c {command_id}',
 					device_requests=[device_request_gpu])
@@ -429,9 +431,9 @@ class DockerManager():
 				return DockerInfo(id=command_id, status=f'Image not found.\n{error}')
 		else:
 			try:
-				container: Container = self._get_client().containers.create('recommerce',
+				container: Container = self._get_client().containers.create(IMAGE_NAME,
 					detach=True,
-					labels=['recommerce'],
+					labels=[IMAGE_NAME],
 					ports={'6006/tcp': used_port},
 					entrypoint=f'recommerce -c {command_id}')
 			except docker.errors.ImageNotFound as error:
@@ -572,11 +574,11 @@ class DockerManager():
 		"""
 		Update the cls._port_mapping dictionary.
 
-		Gets all containers tagged with `recommerce` and find the port forwarded from 6006.
+		Gets all containers tagged with IMAGE_NAME and find the port forwarded from 6006.
 		"""
-		# Get all RUNNING containers with the recommerce label
+		# Get all RUNNING containers with the IMAGE_NAME label
 		# we don't care about already exited containers, since we can't see the tensorboard anyways
-		running_recommerce_containers = list(cls._get_client().containers.list(filters={'label': 'recommerce'}))
+		running_recommerce_containers = list(cls._get_client().containers.list(filters={'label': IMAGE_NAME}))
 		# Get the port mapped to '6006/tcp' within the container
 		occupied_ports = [int(container.ports['6006/tcp'][0]['HostPort']) for container in running_recommerce_containers]
 		# Create a dictionary of container_id: mapped port

@@ -48,7 +48,8 @@ to see the usage options of the package.
 
 ### 1.1. Quick-Start guide
 
-After installing, you will need to provide `recommerce` with a datapath, which is where `recommerce` will look for configuration files and write output files, such as trained models. Do so by using
+The `recommerce` package requires users to provide it with a datapath, which is where `recommerce` will look for configuration files and write output files, such as trained models.
+During installation of the package, the datapath was set to the current working directory. If you want to modify the datapath, you can use the following command:
 
 ```terminal
 recommerce --datapath "your_preferred_path"
@@ -58,6 +59,12 @@ You should see the following message indicating your path is valid:
 
 ```terminal
 Data will be read from and saved to "your_preferred_path"
+```
+
+You can check the currently set datapath at any point by running
+
+```terminal
+recommerce --get-datapath
 ```
 
 To start your first training or exampleprinter session, `recommerce` requires you to provide two configuration files. You can either write those yourself or use the following command to have `recommerce` copy over default files which you can immediately use or modify as you wish.
@@ -127,7 +134,7 @@ python Path/To/Anaconda3/Scripts/pywin32_postinstall.py -install
 
 Before installing, please inform yourself on whether or not your device has `cuda`-support, one starting point could be [this](https://developer.nvidia.com/cuda-gpus) resource by NVIDIA. This decides if you should install our project with cuda support, or without, which comes down to the specific version of `torch` that will be installed. 
 
-If you device supports cuda and you want to utilize its capabilities, use the following command within the project directory:
+If your device supports cuda and you want to utilize its capabilities, use the following command within the project directory:
 
 ```terminal
 pip install -e .[gpu] -f https://download.pytorch.org/whl/torch_stable.html
@@ -139,10 +146,9 @@ Otherwise, to install without cuda support, use:
 pip install -e .[cpu]
 ```
 
-This installs the `recommerce` folder (and its subdirectories) as a local pip package. The `-e` flag indicates to pip that the package should be installed in an editable state. This results in the packages not being directly written to where pip dependencies usually would, but only a "link" to you current working directory being created. In order to install the package, we use `setuptools`, which uses the `setup.py`, `setup.cfg` and `pyproject.toml` files located in the `recommerce` directory of the project. The `setup.cfg` file includes all necessary metadata needed to correctly install the project. If you want to properly install the project as a pip package, omit the `-e` flag.
+This installs the `recommerce` folder (and its subdirectories) as a local pip package. The `-e` flag indicates to pip that the package should be installed in an editable state. This results in the packages not being directly written to where pip dependencies usually would, but only a "link" to you current working directory being created. In order to install the package, we use `setuptools`, which uses the `setup.py`, `setup.cfg` and `pyproject.toml` files located in the `recommerce` directory of the project. The `setup.cfg` file includes all necessary metadata needed to correctly install the project.
 
-
-This will "copy" the packages into your pip-installation folder (when using conda, this will be `Path/To/anaconda3/envs/your_venv_name/Lib/site-packages`), meaning that any changes to your source-code will only be reflected when installing the package again, therefore you should not use that command if you plan on changing the code.
+If you want to properly install the project as a pip package, omit the `-e` flag. This will "copy" the packages into your pip-installation folder (when using conda, this will be `Path/To/anaconda3/envs/your_venv_name/Lib/site-packages`), meaning that any changes to your source-code will only be reflected when installing the package again, therefore you should not use that command if you plan on changing the code.
 
 You can confirm that the installation was successfull by checking
 
@@ -390,6 +396,26 @@ pip install torch==1.11.0+cu115 torchvision==0.12.0+cu115 torchaudio==0.11.0+cu1
 ### 6.2. Webserver
 
 We provide a Django Webserver with a simple user interface to manage the docker container.
+To use the webserver you need to eiter have a `.env.txt` in `BP2021/webserver` or have the environment variables `SECRET_KEY` and `API_TOKEN` set.
+
+Here is an example for a `.env.txt`
+
+```text
+this_line_contains_the_secret_key_for_the_django_server
+this_line_contains_the_master_secret_for_the_api
+```
+
+Remember to change these secrets when they are leaked to the public. Both secrets should be random long strings. Keep in mind, that the master_secret for the API (`API_TOKEN`) should be equal to the `AUTHORIZATION_TOKEN` on the API side.
+
+When starting the webserver, you will notice, that you have a login page. 
+To create a superuser and login to the page, you need to run:
+
+```terminal
+python3 ./manage.py createsuperuser
+```
+
+To manage your other users, go to `127.0.0.1:2709/admin` and login with the credentials you provided when creating the superuser.
+
 To start the webserver on `127.0.0.1:2709` go to `/webserver` and start the server by using the following command
 
 ```terminal
@@ -414,9 +440,6 @@ To run tests you have written for the Django webserver go into the *webserver* f
 python3 ./manage.py test -v 2
 ```
 
-When deploying the webserver and the [API](#63-docker-api) you need to set two environment variables: `SECRET_KEY` (webserver `settings.py`) and `API_TOKEN`. Both should be random long strings.
-Set `API_TOKEN` on the webserver machine to the same value as on the machine you are running the API on, because you will need this for authorization against the API.
-
 ### 6.3. Docker API
 
 There is a RESTful API written with the python libary FastAPI for communicating with docker containers that can be found in `/docker`.
@@ -431,9 +454,9 @@ Don't use `--reload` when deploying in production.
 
 You can just run the `app.py` with python from the docker folder as well.
 
-If you want to use the API, you need to provide an `API_TOKEN` in your environment variables. For each API request the value at the authorization header will be checked. You can only perform actions on the API, when this value is the same, as the value in your environment variable.
+If you want to use the API, you need to provide an `AUTHORIZATION_TOKEN` in your environment variables. For each API request the value at the authorization header will be checked. You can only perform actions on the API, when this value is the same, as the value in your environment variable.
 
-WARNING: Please keep in mind, that the `API_TOKEN` must be kept a secret, if it is revealed, you need to revoke it and set a new secret. Furthermore, think about using transport encryption to ensure that the token won't get stolen on the way.
+WARNING: Please keep in mind, that the `AUTHORIZATION_TOKEN` must be kept a secret, if it is revealed, you need to revoke it and set a new secret. Furthermore, think about using transport encryption to ensure that the token won't get stolen on the way.
 
 ## 7. Tensorboard
 

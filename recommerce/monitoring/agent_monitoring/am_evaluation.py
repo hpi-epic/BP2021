@@ -2,6 +2,7 @@ import os
 
 import matplotlib.pyplot as plt
 import numpy as np
+from scipy.stats import kde
 
 import recommerce.monitoring.agent_monitoring.am_configuration as am_configuration
 
@@ -13,44 +14,89 @@ class Evaluator():
 	def __init__(self, configuration: am_configuration.Configurator):
 		self.configurator = configuration
 
-	def evaluate_session(self, rewards: list, episode_numbers: list = None):
+	def evaluate_session(self, analyses: dict, episode_numbers: list = None):
 		"""
 		Print statistics for monitored agents and create statistics-plots.
 
 		Args:
-			rewards (list): The rewards that should be evaluated. Contains a list per agent.
+			analyses (list): A list for every analyzed vendor. Contains a dict with the properties as keys and all samples of this property.
 			episode_numbers (list of int): The training stages the empirical distributions belong to.
 			If it is None, a prior functionality is used.
 		"""
-		# This logic seems to be a bit doubled. It is done to support all of the requests on this method.
-		# You should be able to evaluate sessions as before without giving episode_numbers and
-		# to analyze agents belonging to different training stages.
-		# This code should be improved on further issues related to monitoring!
-		if episode_numbers is not None:
-			assert len(rewards) == len(episode_numbers), 'the len of the rewards and the episode numbers must be the same'
-			for single_rewards, episode in zip(rewards, episode_numbers):
-				print()
-				print(f'Statistics for episode {episode}')
-				print(f'The average reward over {episode} episodes is: {np.mean(single_rewards)}')
-				print(f'The median reward over {episode} episodes is: {np.median(single_rewards)}')
-				print(f'The maximum reward over {episode} episodes is: {np.max(single_rewards)}')
-				print(f'The minimum reward over {episode} episodes is: {np.min(single_rewards)}')
-		else:
-			for i in range(len(rewards)):
-				print()
-				print(f'Statistics for agent: {self.configurator.agents[i].name}')
-				print(f'The average reward over {self.configurator.episodes} episodes is: {np.mean(rewards[i])}')
-				print(f'The median reward over {self.configurator.episodes} episodes is: {np.median(rewards[i])}')
-				print(f'The maximum reward over {self.configurator.episodes} episodes is: {np.max(rewards[i])}')
-				print(f'The minimum reward over {self.configurator.episodes} episodes is: {np.min(rewards[i])}')
+		# Print the statistics
+		for index, analysis in enumerate(analyses):
+			if episode_numbers is None:
+				print(f'\nStatistics for agent: {self.configurator.agents[index].name}')
+			else:
+				print(f'\nStatistics for episode {episode_numbers[index]}')
+
+			for property in analysis:
+				samples = analysis[property]
+				print('%40s: %7.2f (mean), %7.2f (median), %7.2f (std), %7.2f (min), %7.2f (max)' % (
+					property, np.mean(samples), np.median(samples), np.std(samples), np.min(samples), np.max(samples)))
 
 		print()
-		self._create_statistics_plots(rewards)
+		# Create density plots
+		print('Creating density plots...')
+		for index, analysis in enumerate(analyses):
+			for property in analysis:
+				if 'vendor_' not in property:
+					self.create_density_plot([analysis[property]], property)
+				elif 'vendor_0' in property:
+					counter = 0
+					samples = []
+					while (property[:-1] + str(counter)) in analysis:
+						samples.append(analysis[property[:-1] + str(counter)])
+						counter += 1
+
+					prefix = f'episode_{episode_numbers[index]}_' if episode_numbers is not None else f'{self.configurator.agents[index].name}_'
+					self.create_density_plot(samples, prefix + property[:-9])
+
+		# self._create_statistics_plots(rewards)
 		if episode_numbers is not None:
-			self._create_violin_plot(rewards, episode_numbers)
+			for property_name in analyses[0]:
+				samples = [analysis[property_name] for analysis in analyses]
+				self._create_violin_plot(samples, episode_numbers, f'Progress of {property_name}')
 		print(f'All plots were saved to {os.path.abspath(self.configurator.folder_path)}')
 
 	# visualize metrics
+	def create_density_plot(self, samples: list, property: str):
+		"""
+		Give a list of list of samples and a property name, it will create a density plot.
+		The density plot is like a histogram, but with a gaussian kernel.
+		It will use the property to name and save the plot in the monitoring folder.
+
+		Args:
+			samples (list of lists): a list of list of numbers. Each list represents an empirical distribution to be plotted.
+			property (str): the name of the property in natural language.
+		"""
+		plt.clf()
+		min_value = min(min(s) for s in samples)
+		max_value = max(max(s) for s in samples)
+		offset = (max_value - min_value) / 7
+
+		x = np.linspace(min_value - offset, max_value + offset, 100)
+		ys = []
+		for sample in samples:
+			# The gaussian kernel used some sort of matrix inverse which throws an error if the matrix is not invertible.
+			# This happens if all samples in the distribution are the same.
+			# This is very rare but happens especially at the beginning of the training (early and bad rl models).
+			# In this case, the diagram is just skipped.
+			try:
+				density = kde.gaussian_kde(sample)
+			except np.linalg.LinAlgError:
+				continue
+			ys.append(density(x))
+
+		for i, y in enumerate(ys):
+			plt.plot(x, y, label=f'vendor_{i}')
+
+		plt.xlabel(property)
+		plt.ylabel('Probability density')
+		plt.title(f'Density plot of {property}')
+		plt.legend()
+		plt.savefig(fname=os.path.join(self.configurator.get_folder(), f'density_plot_{property.replace("/", "_")}.svg'))
+
 	def create_histogram(self, rewards: list, is_last_histogram: bool, filename: str = 'default_histogram.svg') -> None:
 		"""
 		Create a histogram sorting rewards into bins of 1000.
@@ -157,15 +203,16 @@ class Evaluator():
 		plt.grid(True)
 		plt.savefig(fname=os.path.join(self.configurator.get_folder(), filename))
 
-	def _create_violin_plot(self, all_rewards, episode_numbers):
+	def _create_violin_plot(self, all_rewards: 'list[list]', episode_numbers: 'list[int]', title: str = 'plot_title'):
 		"""
 		This method generates a violinplot to visualize the training progress of the agent.
 		Provide the empirical distributions and it will not just show the mean, min and max,
 		but also the distribution at the provided episode numbers.
 
 		Args:
-			all_rewards (list of lists): each entry contains samples for the empirical probability distribution
-			episode_numbers (list of int): the training stages the empirical distributions belong to
+			all_rewards (list of lists): Each entry contains samples for the empirical probability distribution
+			episode_numbers (list of int): The training stages the empirical distributions belong to.
+			title (str, optional): The filename of the plot.
 		"""
 		assert isinstance(all_rewards, list), f'all_rewards must be of type list, but is {type(all_rewards)}'
 		assert isinstance(episode_numbers, list), f'episode_numbers must be of type list, but is {type(all_rewards)}'
@@ -178,10 +225,10 @@ class Evaluator():
 
 		plt.clf()
 		plt.violinplot(all_rewards, episode_numbers, showmeans=True, widths=450)
-		plt.title('Learning Progress Of The Agent')
+		plt.title(title)
 		plt.xlabel('Learned Episodes')
 		plt.ylabel('Reward Density')
-		savepath = os.path.join(self.configurator.get_folder(), 'agent_learning_process_violinplot.svg')
+		savepath = os.path.join(self.configurator.get_folder(), title.replace(' ', '_').replace('/', '_') + '.svg')
 		plt.savefig(fname=savepath)
 
 
