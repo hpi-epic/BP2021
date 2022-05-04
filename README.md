@@ -48,7 +48,8 @@ to see the usage options of the package.
 
 ### 1.1. Quick-Start guide
 
-After installing, you will need to provide `recommerce` with a datapath, which is where `recommerce` will look for configuration files and write output files, such as trained models. Do so by using
+The `recommerce` package requires users to provide it with a datapath, which is where `recommerce` will look for configuration files and write output files, such as trained models.
+During installation of the package, the datapath was set to the current working directory. If you want to modify the datapath, you can use the following command:
 
 ```terminal
 recommerce --datapath "your_preferred_path"
@@ -58,6 +59,12 @@ You should see the following message indicating your path is valid:
 
 ```terminal
 Data will be read from and saved to "your_preferred_path"
+```
+
+You can check the currently set datapath at any point by running
+
+```terminal
+recommerce --get-datapath
 ```
 
 To start your first training or exampleprinter session, `recommerce` requires you to provide two configuration files. You can either write those yourself or use the following command to have `recommerce` copy over default files which you can immediately use or modify as you wish.
@@ -127,7 +134,7 @@ python Path/To/Anaconda3/Scripts/pywin32_postinstall.py -install
 
 Before installing, please inform yourself on whether or not your device has `cuda`-support, one starting point could be [this](https://developer.nvidia.com/cuda-gpus) resource by NVIDIA. This decides if you should install our project with cuda support, or without, which comes down to the specific version of `torch` that will be installed. 
 
-If you device supports cuda and you want to utilize its capabilities, use the following command within the project directory:
+If your device supports cuda and you want to utilize its capabilities, use the following command within the project directory:
 
 ```terminal
 pip install -e .[gpu] -f https://download.pytorch.org/whl/torch_stable.html
@@ -139,10 +146,9 @@ Otherwise, to install without cuda support, use:
 pip install -e .[cpu]
 ```
 
-This installs the `recommerce` folder (and its subdirectories) as a local pip package. The `-e` flag indicates to pip that the package should be installed in an editable state. This results in the packages not being directly written to where pip dependencies usually would, but only a "link" to you current working directory being created. In order to install the package, we use `setuptools`, which uses the `setup.py`, `setup.cfg` and `pyproject.toml` files located in the `recommerce` directory of the project. The `setup.cfg` file includes all necessary metadata needed to correctly install the project. If you want to properly install the project as a pip package, omit the `-e` flag.
+This installs the `recommerce` folder (and its subdirectories) as a local pip package. The `-e` flag indicates to pip that the package should be installed in an editable state. This results in the packages not being directly written to where pip dependencies usually would, but only a "link" to you current working directory being created. In order to install the package, we use `setuptools`, which uses the `setup.py`, `setup.cfg` and `pyproject.toml` files located in the `recommerce` directory of the project. The `setup.cfg` file includes all necessary metadata needed to correctly install the project.
 
-
-This will "copy" the packages into your pip-installation folder (when using conda, this will be `Path/To/anaconda3/envs/your_venv_name/Lib/site-packages`), meaning that any changes to your source-code will only be reflected when installing the package again, therefore you should not use that command if you plan on changing the code.
+If you want to properly install the project as a pip package, omit the `-e` flag. This will "copy" the packages into your pip-installation folder (when using conda, this will be `Path/To/anaconda3/envs/your_venv_name/Lib/site-packages`), meaning that any changes to your source-code will only be reflected when installing the package again, therefore you should not use that command if you plan on changing the code.
 
 You can confirm that the installation was successfull by checking
 

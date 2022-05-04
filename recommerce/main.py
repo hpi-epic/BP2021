@@ -4,8 +4,6 @@ import shutil
 import sys
 from importlib import metadata, reload
 
-import pytest
-
 import recommerce.configuration.path_manager as path_manager
 
 
@@ -43,15 +41,6 @@ def handle_get_defaults() -> None:  # pragma: no cover only library calls
 	print(f'The default data was copied to your datapath at "{path_manager.PathManager.user_path}"')
 
 
-def handle_tests() -> None:  # pragma: no cover
-	"""
-	Run the test suite located in the datapath.
-	"""
-	print('Running tests...')
-
-	pytest.main([])
-
-
 def handle_command(command: str) -> None:
 	"""
 	If a command is given, choose the file to run.
@@ -78,13 +67,17 @@ def main():  # pragma: no cover
 
 	Needs to be wrapped in a function to be callable as an entrypoint by the pip package.
 	"""
-	parser = argparse.ArgumentParser(description='Train and Monitor Reinforcement-Learning Agents on various Circular-Economy models.')
+	parser = argparse.ArgumentParser(description=f"""Train and Monitor Reinforcement-Learning Agents on various recommerce markets.
+The current datapath is "{path_manager.PathManager.user_path}".""")
 
 	parser.add_argument('-c', '--command', choices=('training', 'exampleprinter', 'agent_monitoring'),
 		help='choose the command to run')
 
 	parser.add_argument('-d', '--datapath', type=str, help="""provide the path where `recommerce` will look for and save data.
 Relative paths are supported""")
+	# We are cheesing a little bit here, since we always `handle_datapath` the datapath is printed anyways, no matter the command.
+	# So this one is more to make the users happy and provide a command that doesn't do anything else
+	parser.add_argument('--get-datapath', action='store_true', help='will print the currently set datapath')
 
 	parser.add_argument('-gd', '--get-defaults', action='store_true', help="""default files, such as a hyperparameter_config.json and
 trained models will be copied to your DATAPATH""")
@@ -92,9 +85,6 @@ trained models will be copied to your DATAPATH""")
 		help="""Works the same as --get-defaults, but also unpacks the default files so they are in the correct relative
 locations to be used by the program. Has priority over --get-defaults.
 NOTE: Any existing files with the same name as the default files will be overwritten!""")
-
-	parser.add_argument('-t', '--test', action='store_true', help="""run pytest on tests stored in the datapath.
-Has priority over --command""")
 
 	parser.add_argument('-v', '--version', action='version', version=f'Recommerce Version {metadata.version("recommerce")}')
 
@@ -104,7 +94,6 @@ Has priority over --command""")
 		# display help message when no args are passed.
 		print('Please provide an argument!')
 		parser.print_help()
-		sys.exit(1)
 
 	# Handle provided arguments
 	handle_datapath(args.datapath)
@@ -114,10 +103,7 @@ Has priority over --command""")
 	elif args.get_defaults:
 		handle_get_defaults()
 
-	if args.test:
-		handle_tests()
-	else:
-		handle_command(args.command)
+	handle_command(args.command)
 
 
 if __name__ == '__main__':
