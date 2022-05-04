@@ -2,7 +2,6 @@ import os
 import signal
 import sys
 import time
-import warnings
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -20,8 +19,6 @@ from recommerce.monitoring.watcher import Watcher
 from recommerce.rl.actorcritic.actorcritic_agent import ActorCriticAgent
 from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
 from recommerce.rl.reinforcement_learning_agent import ReinforcementLearningAgent
-
-warnings.filterwarnings('error')
 
 
 class RecommerceCallback(BaseCallback):
