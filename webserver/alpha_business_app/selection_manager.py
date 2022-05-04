@@ -1,5 +1,7 @@
+import copy
 import re
 
+import lxml.html
 from django.shortcuts import render
 
 from recommerce.configuration.environment_config import get_class
@@ -22,37 +24,36 @@ class SelectionManager:
 
 		return circular_tuples + linear_tuples
 
-	def get_agent_options_for_marketplace(self, marketplace_class: str):
-		agent_classes = get_class(marketplace_class).get_possible_agents()
-		return self._to_tuple_list(agent_classes)
+	def get_agent_options_for_marketplace(self, marketplace_class: str) -> list:
+		return self._to_tuple_list(get_class(marketplace_class).get_possible_agents())
 
-	def _get_number_of_competitors_for_marketplace(self, marketplace_class: str):
+	def _get_number_of_competitors_for_marketplace(self, marketplace_class: str) -> int:
 		return get_class(marketplace_class).get_num_competitors()
 
-	def get_competitor_options_for_marketplace(self, marketplace_class: str):
-		competitor_classes = get_class(marketplace_class).get_competior_classes()
-		# print('########################')
-		# print(competitor_classes)
-		return self._to_tuple_list(competitor_classes)
+	def get_competitor_options_for_marketplace(self, marketplace_class: str) -> list:
+		return self._to_tuple_list(get_class(marketplace_class).get_competior_classes())
 
 	def get_correct_agents_html_on_marketplace_change(self, request, marketplace_class: str, raw_agents_html: str) -> str:
-		# TODO: find a way to use correct xml parsing
-		# get all competitors
-		all_competitor_selections = re.findall('<select.*class=.*competitor-agent-class.*>[^</select>]*</select>', raw_agents_html)
-		if not all_competitor_selections:
+		# parse string to xml tree
+		html = lxml.html.fromstring(raw_agents_html)
+		# find all <select> of the competitors
+		competitor_selections = html.find_class('competitor-agent-class')
+		if not competitor_selections:
 			return raw_agents_html
-		# get new competitor options
+		# get the new options
 		competitor_classes = self.get_competitor_options_for_marketplace(marketplace_class)
 		new_select = render(request, 'configuration_items/selection_list.html', {'selections': competitor_classes}).content.decode('utf-8')
-		# replace current options with new options
-		for competitor_selection in all_competitor_selections:
-			select_line = competitor_selection.split('\n')
-			new_total_html = '\n'.join([select_line[0], new_select, select_line[-1]])
-			raw_html = raw_agents_html.replace(competitor_selection, new_total_html)
+		new_options = lxml.html.fragments_fromstring(new_select)
+		# remove old options and append new options
+		for select in competitor_selections:
+			old_options = list(select)
+			for option in old_options:
+				select.remove(option)
+			for option in new_options:
+				select.append(copy.deepcopy(option))
+		return lxml.html.tostring(html)
 
-		return raw_html
-
-	def get_correct_agents_html_on_add_agent(self, request, marketplace_class: str, raw_agents_html: str) -> str:
+	def get_agente_html_on_button_add(self, request, marketplace_class: str, raw_agents_html: str) -> str:
 		pass
 
 	def _to_tuple_list(self, list_of_class_names) -> list:

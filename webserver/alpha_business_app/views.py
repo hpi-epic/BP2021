@@ -100,7 +100,7 @@ def agent(request):
 		# print(post_request)
 		marketplace_class = post_request['marketplace']
 		raw_html = post_request['agents_html']
-		return HttpResponse(content=SelectionManager().get_correct_agents_html_on_add_agent(request, marketplace_class, raw_html))
+		return HttpResponse(content=SelectionManager().get_agente_html_on_button_add(request, marketplace_class, raw_html))
 
 	return render(request, 'configuration_items/agent.html', {'id': str(uuid4()), 'name': 'Competitor'})
 
