@@ -8,10 +8,11 @@ import utils_tests as ut_t
 
 import recommerce.monitoring.svg_manipulation as svg_manipulation
 from recommerce.monitoring.exampleprinter import ExamplePrinter
-from tests.utils_tests import import_config
+from recommerce.configuration.hyperparameter_config import HyperparameterConfig
 
 svg_manipulator = svg_manipulation.SVGManipulator()
-config_hyperparameter = import_config()
+
+config_hyperparameter: HyperparameterConfig = ut_t.mock_config_hyperparameter()
 
 
 def setup_function(function):

@@ -231,10 +231,6 @@ def create_mock_action(market_subclass) -> Union[int, Tuple]:
 		return (1, 2)
 
 
-def import_config() -> hyperparameter_config.HyperparameterConfig:
-	return hyperparameter_config.HyperparameterConfigLoader.load('hyperparameter_config')
-
-
 def mock_config_hyperparameter() -> hyperparameter_config.HyperparameterConfig:
 	"""
 	Reload the hyperparameter_config file to update the config variable with the mocked values.

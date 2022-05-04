@@ -1,15 +1,15 @@
 import numpy as np
 import pytest
-
+import utils_tests as ut_t
 import recommerce.market.circular.circular_sim_market as circular_market
 import recommerce.market.customer as customer
 import recommerce.market.linear.linear_sim_market as linear_market
-from recommerce.configuration.hyperparameter_config import HyperparameterConfig, HyperparameterConfigLoader
+from recommerce.configuration.hyperparameter_config import HyperparameterConfig
 from recommerce.market.circular.circular_customers import CustomerCircular
 from recommerce.market.linear.linear_customers import CustomerLinear
 from recommerce.market.sim_market import SimMarket
 
-config_hyperparameter: HyperparameterConfig = HyperparameterConfigLoader.load('hyperparameter_config')
+config_hyperparameter: HyperparameterConfig = ut_t.mock_config_hyperparameter()
 
 
 # Test the Customer parent class, i.e. make sure it cannot be used

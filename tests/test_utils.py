@@ -11,7 +11,7 @@ import recommerce.configuration.utils as ut
 from recommerce.configuration.hyperparameter_config import HyperparameterConfig, HyperparameterConfigLoader
 from recommerce.monitoring.svg_manipulation import SVGManipulator
 
-config_hyperparameter: HyperparameterConfig = HyperparameterConfigLoader.load('hyperparameter_config')
+config_hyperparameter: HyperparameterConfig = ut_t.mock_config_hyperparameter()
 
 
 def teardown_module(module):
