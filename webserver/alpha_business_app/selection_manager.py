@@ -33,7 +33,7 @@ class SelectionManager:
 		return get_class(self.current_marketplace).get_num_competitors()
 
 	def get_competitor_options_for_marketplace(self) -> list:
-		return self._to_tuple_list(get_class(self.current_marketplace).get_competior_classes())
+		return self._to_tuple_list(get_class(self.current_marketplace).get_competitor_classes())
 
 	def get_correct_agents_html_on_marketplace_change(self, request, marketplace_class: str, raw_agents_html: str) -> str:
 		# parse string to xml tree
