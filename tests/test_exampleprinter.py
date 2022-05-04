@@ -3,6 +3,7 @@ from unittest.mock import patch
 
 import pytest
 import utils_tests as ut_t
+
 import recommerce.market.circular.circular_sim_market as circular_market
 import recommerce.market.circular.circular_vendors as circular_vendors
 import recommerce.market.linear.linear_sim_market as linear_market

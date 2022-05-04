@@ -3,16 +3,16 @@ import time
 
 import numpy as np
 import pytest
+import utils_tests as ut_t
 
+from recommerce.configuration.hyperparameter_config import HyperparameterConfig
 from recommerce.configuration.path_manager import PathManager
 from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPriceDuopoly, CircularEconomyRebuyPriceMonopoly
 from recommerce.market.circular.circular_vendors import RuleBasedCERebuyAgent, RuleBasedCERebuyAgentCompetitive
 from recommerce.market.linear.linear_vendors import CompetitorLinearRatio1
-from recommerce.configuration.hyperparameter_config import HyperparameterConfig
 from recommerce.monitoring.policyanalyzer import PolicyAnalyzer
 from recommerce.rl.actorcritic.actorcritic_agent import ContinuosActorCriticAgentFixedOneStd
 from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
-import utils_tests as ut_t
 
 write_to_path = os.path.join(PathManager.results_path, 'policyanalyzer')
 

@@ -7,8 +7,8 @@ import pytest
 import utils_tests as ut_t
 
 import recommerce.monitoring.svg_manipulation as svg_manipulation
-from recommerce.monitoring.exampleprinter import ExamplePrinter
 from recommerce.configuration.hyperparameter_config import HyperparameterConfig
+from recommerce.monitoring.exampleprinter import ExamplePrinter
 
 svg_manipulator = svg_manipulation.SVGManipulator()
 

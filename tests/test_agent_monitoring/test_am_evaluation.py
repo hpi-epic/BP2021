@@ -1,8 +1,9 @@
 import os
 from unittest.mock import patch
-import utils_tests as ut_t
+
 import numpy as np
 import pytest
+import utils_tests as ut_t
 
 import recommerce.market.circular.circular_sim_market as circular_market
 import recommerce.monitoring.agent_monitoring.am_monitoring as monitoring

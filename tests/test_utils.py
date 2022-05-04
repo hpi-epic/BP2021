@@ -8,7 +8,7 @@ import utils_tests as ut_t
 
 import recommerce.configuration.hyperparameter_config as hyperparameter_config
 import recommerce.configuration.utils as ut
-from recommerce.configuration.hyperparameter_config import HyperparameterConfig, HyperparameterConfigLoader
+from recommerce.configuration.hyperparameter_config import HyperparameterConfig
 from recommerce.monitoring.svg_manipulation import SVGManipulator
 
 config_hyperparameter: HyperparameterConfig = ut_t.mock_config_hyperparameter()
@@ -17,17 +17,6 @@ config_hyperparameter: HyperparameterConfig = ut_t.mock_config_hyperparameter()
 def teardown_module(module):
 	reload(hyperparameter_config)
 	reload(ut)
-
-
-def import_config() -> hyperparameter_config.HyperparameterConfig:
-	"""
-	Reload the hyperparameter_config file to update the config variable with the mocked values.
-
-	Returns:
-		HyperparameterConfig: The config object.
-	"""
-	reload(hyperparameter_config)
-	return hyperparameter_config.config
 
 
 testcases_shuffle_quality = [1, 10, 100, 1000]

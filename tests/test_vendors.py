@@ -2,8 +2,9 @@ import copy
 
 import numpy as np
 import pytest
-from numpy import random
 import utils_tests as ut_t
+from numpy import random
+
 import recommerce.market.circular.circular_vendors as circular_vendors
 import recommerce.market.linear.linear_vendors as linear_vendors
 import recommerce.market.vendors as vendors

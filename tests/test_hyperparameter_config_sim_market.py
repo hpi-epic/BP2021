@@ -6,7 +6,6 @@ import pytest
 import utils_tests as ut_t
 
 import recommerce.configuration.hyperparameter_config as hyperparameter_config
-from tests.utils_tests import import_config
 
 
 def teardown_module(module):
@@ -22,7 +21,7 @@ def test_reading_file_values():
 	with patch('builtins.open', mock_open(read_data=mock_json)) as mock_file:
 		ut_t.check_mock_file(mock_file, mock_json)
 
-		config = import_config()
+		config = hyperparameter_config.HyperparameterConfigLoader.load('hyperparameter_config')
 
 		assert config.max_storage == 100
 		assert config.episode_length == 25
@@ -38,7 +37,7 @@ def test_reading_file_values():
 	with patch('builtins.open', mock_open(read_data=mock_json)) as mock_file:
 		ut_t.check_mock_file(mock_file, mock_json)
 
-		config = import_config()
+		config = hyperparameter_config.HyperparameterConfigLoader.load('hyperparameter_config')
 
 		assert config.max_storage == 50
 		assert config.episode_length == 50
@@ -105,5 +104,5 @@ def test_invalid_values(sim_market_json, expected_message):
 	with patch('builtins.open', mock_open(read_data=mock_json)) as mock_file:
 		ut_t.check_mock_file(mock_file, mock_json)
 		with pytest.raises(AssertionError) as assertion_message:
-			import_config()
+			hyperparameter_config.HyperparameterConfigLoader.load('hyperparameter_config')
 		assert expected_message in str(assertion_message.value)
