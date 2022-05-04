@@ -38,8 +38,7 @@ class SimMarket(gym.Env, ABC):
 
 	@staticmethod
 	def get_competitor_classes() -> list:
-		# raise NotImplementedError
-		return []
+		raise NotImplementedError
 
 	def __init__(self, support_continuous_action_space: bool = False) -> None:
 		"""
