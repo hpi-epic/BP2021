@@ -149,8 +149,41 @@ class RecommerceCallback(BaseCallback):
 			print('No agents saved! Nothing to monitor.')
 			return
 
+		monitor = Monitor()
+		monitor.configurator.get_folder()
+
+		print('Creating scatterplots...')
+		ignore_first_samples = 15  # the number of samples you want to skip because they can be severe outliers
+		cumulative_properties = self.watcher.get_cumulative_properties()
+		for property, samples in ut.unroll_dict_with_list(cumulative_properties).items():
+			x_values = np.array(range(len(samples[ignore_first_samples:]))) + 15
+			plt.clf()
+			plt.scatter(x_values, samples[ignore_first_samples:])
+			plt.title(f'Scatterplot showing all samples of {property} for each episode')
+			plt.xlabel('Episode')
+			plt.ylabel(property)
+			plt.savefig(os.path.join(monitor.configurator.folder_path, f'scatterplot_samples_{property.replace("/", "_")}.svg'))
+
+		print('Creating lineplots...')
+		for property, samples in cumulative_properties.items():
+			plt.clf()
+			if not isinstance(samples[0], list):
+				plot_values = [self.watcher.get_progress_values_of_property(property)[ignore_first_samples:]]
+			else:
+				plot_values = [self.watcher.get_progress_values_of_property(property, vendor)[ignore_first_samples:]
+					for vendor in range(self.watcher.get_number_of_vendors())]
+
+			for vendor, values in enumerate(plot_values):
+				plt.plot(x_values, values, label=f'Vendor {vendor}')
+
+			if isinstance(samples[0], list):
+				plt.legend()
+			plt.title(f'Lineplot showing training progress of {property}')
+			plt.xlabel('Episode')
+			plt.ylabel(property)
+			plt.savefig(os.path.join(monitor.configurator.folder_path, f'lineplot_progress_{property.replace("/", "_")}.svg'))
+
 		if self.analyze_after_training:
-			monitor = Monitor()
 			agent_list = [(self.agent_class, [parameter_path]) for parameter_path in self.saved_parameter_paths]
 			# The next line is a bit hacky. We have to provide if the marketplace is continuos or not.
 			# Only Stable Baselines agents use continuous actions at the moment. And only Stable Baselines agents have the attribute env.
@@ -160,35 +193,6 @@ class RecommerceCallback(BaseCallback):
 			rewards = monitor.run_marketplace()
 			episode_numbers = [int(parameter_path[-9:][:5]) for parameter_path in self.saved_parameter_paths]
 			Evaluator(monitor.configurator).evaluate_session(rewards, episode_numbers)
-
-			# Create scatterplots
-			ignore_first_samples = 15  # the number of samples you want to skip because they can be severe outliers
-			cumulative_properties = self.watcher.get_cumulative_properties()
-			for property, samples in ut.unroll_dict_with_list(cumulative_properties).items():
-				x_values = np.array(range(len(samples[ignore_first_samples:]))) + 15
-				plt.clf()
-				plt.scatter(x_values, samples[ignore_first_samples:])
-				plt.title(f'Scatterplot showing all samples of {property} for each episode')
-				plt.xlabel('Episode')
-				plt.ylabel(property)
-				plt.savefig(os.path.join(monitor.configurator.folder_path, f'scatterplot_samples_{property.replace("/", "_")}.svg'))
-
-			# Create lineplots with smoothed averages for this property
-			for property, samples in cumulative_properties.items():
-				plt.clf()
-				if not isinstance(samples[0], list):
-					plot_values = [self.watcher.get_progress_values_of_property(property)[ignore_first_samples:]]
-				else:
-					plot_values = [self.watcher.get_progress_values_of_property(property, vendor)[ignore_first_samples:]
-						for vendor in range(self.watcher.get_number_of_vendors())]
-					plt.legend()
-
-				for values in plot_values:
-					plt.plot(x_values, values)
-				plt.title(f'Lineplot showing training progress of {property}')
-				plt.xlabel('Episode')
-				plt.ylabel(property)
-				plt.savefig(os.path.join(monitor.configurator.folder_path, f'lineplot_progress_{property.replace("/", "_")}.svg'))
 
 	def save_parameters(self, finished_episodes: int):
 		assert isinstance(finished_episodes, int)
