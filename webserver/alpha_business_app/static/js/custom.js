@@ -3,9 +3,7 @@ $(document).ready(function() {
 		$("button.add-more").click(function () {
 			// adds the return value of the ajax call (html) before the element.
 			var self = $(this)
-			const csrftoken = getCookie("")
-			$.ajax({
-				url: self.data("url"),
+			$.ajax({url: self.data("url"),
 			success: function (data) {
 				self.before(data)
 			}
@@ -58,14 +56,8 @@ $(document).ready(function() {
 				"agents_html": all_agents.html()
 			},
 			success: function (data) {
-				//console.log(all_agents.html())
-				//console.log(data)
-				console.log(all_agents)
-				all_agents.empty().append(data)
-				console.log(all_agents)
-				//.append(data)
-				// all_agents.replaceWith(data);
-				addEventToAddMoreButton()
+				all_agents.empty().append(data);
+				addEventToAddMoreButton();
 			}
 		});
 	}).trigger('change');

@@ -136,8 +136,8 @@ class ButtonHandler():
 			'selections': {
 				'tasks': [('training', 'training'), ('agent_monitoring', 'agent_monitoring'), ('exampleprinter', 'exampleprinter')],
 				'marketplaces': marketplace_tuples,
-				'agents': self.selection_manager.get_agent_options_for_marketplace(marketplace_tuples[0][0]),
-				'competitors': self.selection_manager.get_competitor_options_for_marketplace(marketplace_tuples[0][0])
+				'agents': self.selection_manager.get_agent_options_for_marketplace(),
+				'competitors': self.selection_manager.get_competitor_options_for_marketplace()
 				}
 			}
 

@@ -15,6 +15,8 @@ from .models.config import Config
 from .models.container import Container
 from .selection_manager import SelectionManager
 
+selection_manager = SelectionManager()
+
 
 @login_required
 def detail(request, container_id) -> HttpResponse:
@@ -95,13 +97,6 @@ def delete_config(request, config_id) -> HttpResponse:
 def agent(request):
 	if not request.user.is_authenticated:
 		return HttpResponse('Unauthorized', status=401)
-	if request.method == 'POST':
-		post_request = request.POST
-		# print(post_request)
-		marketplace_class = post_request['marketplace']
-		raw_html = post_request['agents_html']
-		return HttpResponse(content=SelectionManager().get_agente_html_on_button_add(request, marketplace_class, raw_html))
-
 	return render(request, 'configuration_items/agent.html', {'id': str(uuid4()), 'name': 'Competitor'})
 
 
