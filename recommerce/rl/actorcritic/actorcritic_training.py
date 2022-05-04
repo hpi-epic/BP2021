@@ -29,7 +29,7 @@ class ActorCriticTrainer(RLTrainer):
 				chosen_envs.add(number)
 		return chosen_envs
 
-	def train_agent(self, number_of_training_steps=200, verbose=True, total_envs=128) -> None:
+	def train_agent(self, number_of_training_steps=200, verbose=False, total_envs=128) -> None:
 		"""
 		This is the central method you need to start training of actorcritic_agent.
 		You can customize the training by several parameters.
