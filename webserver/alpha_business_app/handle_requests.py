@@ -12,21 +12,44 @@ DOCKER_API = 'https://vm-midea03.eaalab.hpi.uni-potsdam.de:8000'  # remember to 
 
 
 def _get_api_token() -> str:
+	"""
+	Returns a time limited API token for the API.
+
+	Returns:
+		str: API token to be sent to the API.
+	"""
 	try:
-		master_secret_as_int = sum(ord(c) for c in os.environ['API_TOKEN'])
-		current_time = int(time.time() / 3600)  # unix time in hours
-		return hashlib.sha256(str(master_secret_as_int + current_time).encode('utf-8')).hexdigest()
-	except Exception:
-		print('Could not get API_TOKEN')
-		return 'abc'
+		with open('./.env.txt', 'r') as file:
+			lines = file.readlines()
+			master_secret = lines[1]
+	except FileNotFoundError:
+		print('No .env file found, using environment variable instead.')
+		try:
+			master_secret = os.environ['API_TOKEN']
+		except KeyError:
+			print('Could not get API key')
+			return 'abc'
+	master_secret_as_int = sum(ord(c) for c in master_secret)
+	current_time = int(time.time() / 3600)  # unix time in hours
+	return hashlib.sha256(str(master_secret_as_int + current_time).encode('utf-8')).hexdigest()
 
 
-def _default_request_parameter(wanted_action: str, params: dict):
+def _default_request_parameter(wanted_action: str, params: dict) -> dict:
+	"""
+	All parameters that are the same for all requests.
+
+	Args:
+		wanted_action (str): api route
+		params (dict): parameter for the request
+
+	Returns:
+		dict: default parameters as dictionary
+	"""
 	return {
 		'url': f'{DOCKER_API}/{wanted_action}',
 		'params': params,
 		'headers': {'Authorization': _get_api_token()},
-		'verify': '/etc/ssl_cert/api_cert.crt'
+		'verify': os.path.join('.', 'ssl_certificates', 'api.crt')
 	}
 
 
