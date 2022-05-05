@@ -54,6 +54,7 @@ class RecommerceCallback(BaseCallback):
 		self.analyze_after_training = analyze_after_training
 		self.all_dicts = []
 		signal.signal(signal.SIGINT, self._signal_handler)
+		print('initializing callback')
 
 		self.initialize_io_related()
 
@@ -92,7 +93,7 @@ class RecommerceCallback(BaseCallback):
 			bool: True should be returned. False will be interpreted as error.
 		"""
 		assert (finished_episodes is None) == (mean_return is None), 'finished_episodes must be exactly None if mean_return is None'
-
+		print('_on_step')
 		# This means if it is a subclass of StableBaselinesAgent. Unfortunately, circular imports are not possible.
 		if not issubclass(self.agent_class, QLearningAgent) and not issubclass(self.agent_class, ActorCriticAgent):
 			# self.locals is a feature offered by stablebaselines

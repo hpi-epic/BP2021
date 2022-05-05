@@ -61,14 +61,15 @@ class SimMarketKalibrator:
 			xb_first_index = 9
 		else:
 			assert False
-		N = len(data)
 		x = data
-		y = torch.tensor([x[y_index, i + 1] for i in range(0, N + 1 - 1)])
+		y = torch.tensor([x[y_index, i] for i in range(1, self.N)])
 		# flag determines which prices are set
-		x_y_x = torch.tensor([[1 if x[xb_first_index, i] < k else 0 for k in xx_rows] for i in range(1, N + 1)])
+		x_y_x = torch.tensor([[1 if x[xb_first_index, i] < k else 0 for k in xx_rows] for i in range(1, self. N)])
 		# matrix for price agent (the 0 and 1 stuff)
 
-		x_y = torch.tensor(x[x_rows, : N])
+		x_y = torch.tensor(x[x_rows, 1: self.N])
+
+		print('y: ', y.size())
 		print('x_y:', x_y.size())
 		print('x_y_x:', x_y_x.size())
 		x_y_combined = torch.concat((x_y.transpose(0, 1), x_y_x), 1)
@@ -86,8 +87,9 @@ class SimMarketKalibrator:
 if __name__ == '__main__':
 	# training_scenario.train_to_calibrate_marketplace()
 	data_path = f'{PathManager.data_path}/kalibration_data/training_data.csv'
+	print(data_path)
 	data_frame = pd.read_csv(data_path)
-	data = torch.tensor(data_frame.values)
+	data = torch.tensor(data_frame.values).transpose(0, 1)
 	M123 = (0, 1, 2, 3, 4, 7, 8, 9, 22, 23, 24)
 	y1_index = 11
 	y2_index = 12

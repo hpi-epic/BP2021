@@ -4,6 +4,7 @@ from typing import Tuple
 import numpy as np
 import pandas as pd
 
+from recommerce.configuration.path_manager import PathManager
 from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPriceDuopoly
 
 # import pandas as pd
@@ -88,6 +89,6 @@ class CircularEconomyDatagenerator(CircularEconomyRebuyPriceDuopoly):
 		print('episode_counter: ', self.episode_counter)
 		if self.episode_counter == 1100:
 
-			pd.DataFrame(self.cumulated_states).transpose().to_csv('kalibration_data/training_data_1000.csv', index=False)
+			pd.DataFrame(self.cumulated_states).to_csv(f'{PathManager.data_path}/kalibration_data/training_data_1000.csv', index=False)
 			print('data saved')
 			exit(0)

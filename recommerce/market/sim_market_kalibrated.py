@@ -67,11 +67,11 @@ class SimMarketKalibrated(CircularEconomyRebuyPriceDuopoly):
 		# 1.1700e+01,  2.0000e+00,  0.0000e+00,  0.0000e+00,  1.3600e+01,
 		# 3.0000e+00,  0.0000e+00,  3.0000e+00,  1.6300e+01,  3.5062e+01,
 		# 1.0208e+04,  2.3988e+03,  1.8651e+01,  1.2789e+01,  4.5772e+00])
+		self.step_counter = 0
 		return np.array([30, 20, 5, 5, 5, 20])
 
 	def step(self, agent_action) -> Tuple[np.array, np.float32, bool, dict]:
 		prev = self.previous_state
-		print(agent_action)
 		if isinstance(agent_action, np.ndarray):
 			agent_action = np.array(agent_action, dtype=np.float32)
 
@@ -138,7 +138,7 @@ class SimMarketKalibrated(CircularEconomyRebuyPriceDuopoly):
 		profit_new = xb[11] * (xb[7] - self.cost_new_product)
 		profit_used = xb[12] * xb[8]
 		cost_rebuy = xb[13] * xb[9]
-		print(f'profit_new: {profit_new}, profit_used: {profit_used}, cost_rebuy: {cost_rebuy}')
+		# print(f'profit_new: {profit_new}, profit_used: {profit_used}, cost_rebuy: {cost_rebuy}')
 		xb[18] = -xb[10] + profit_new + profit_used - cost_rebuy  # agent	total rewards
 		xb[19] = -xb[14] + xb[15] * (xb[2] - self.cost_new_product) + xb[16] * xb[3] - xb[17] * xb[4]  # comp 	total rewards
 
@@ -147,10 +147,11 @@ class SimMarketKalibrated(CircularEconomyRebuyPriceDuopoly):
 		xb[21] = xb[19] + (prev[21] if prev is not None else 0)  # comp total accumulated rewards
 		self.previous_state = xb
 		# (in_circulation, agent, storage, comp_used, comp_new, comp_rebuy, comp_storage)
-		agent_observation = np.array([30, 20, 5, 5, 5, 20])
-		# np.array([self._clamp_price(int(xb[state_index])) for state_index in self.observable_state])
-		# print('agent reward:', xb[18])
-		return agent_observation, 5, False, {}  # xb[18], False, {}
+		agent_observation = np.array([int(xb[state_index]) for state_index in self.observable_state])
+		# print(f'agent action: {agent_action}, agent reward: {float(xb[18])}')
+		assert xb[18] <= np.inf
+		is_done = self.step_counter >= 50
+		return agent_observation, float(xb[18]), is_done, {}  # xb[18], False, {}
 
 	def _clamp_price(self, price):
 		return max(0, min(price, 9))
@@ -222,14 +223,15 @@ class SimMarketKalibrated(CircularEconomyRebuyPriceDuopoly):
 		# ADAPTED FROM SUPERCLASS TODO: fix magic numbers
 		assert not support_continuous_action_space
 		self.max_storage = 100
-		max_price = 10
+		self.max_price = 10
 		self.max_circulation = 10 * self.max_storage
 		self.observation_space = gym.spaces.Box(np.array([0, 0, 0] + [0, 0, 0], dtype=np.float32),
 			np.array([self.max_circulation, self.max_storage]
-			+ [max_price, max_price, max_price, self.max_storage], dtype=np.float32))
+			+ [self.max_price, self.max_price, self.max_price, self.max_storage], dtype=np.float32))
 
 		support_continuous_action_space = True
 		if support_continuous_action_space:
-			self.action_space = gym.spaces.Box(np.array([0] * 3, dtype=np.float32), np.array([max_price] * 3, dtype=np.float32))
+			self.action_space = gym.spaces.Box(np.array([0] * 3, dtype=np.float32), np.array([self.max_price] * 3, dtype=np.float32))
 		else:
-			self.action_space = gym.spaces.Tuple((gym.spaces.Discrete(max_price), gym.spaces.Discrete(max_price)))
+			self.action_space = gym.spaces.Tuple(
+				(gym.spaces.Discrete(self.max_price), gym.spaces.Discrete(self.max_price), gym.spaces.Discrete(self.max_price)))

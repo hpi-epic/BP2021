@@ -101,4 +101,4 @@ def main():
 
 
 if __name__ == '__main__':
-	train_to_calibrate_marketplace()
+	train_stable_baselines_sac()
