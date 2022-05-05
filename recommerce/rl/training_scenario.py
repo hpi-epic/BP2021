@@ -73,7 +73,7 @@ def train_rl_vs_rl():
 
 
 def train_self_play():
-	self_play.train_self_play(training_steps=10000)
+	self_play.train_self_play()
 
 
 def train_from_config():
@@ -93,4 +93,4 @@ if __name__ == '__main__':
 	# Make sure a valid datapath is set
 	PathManager.manage_user_path()
 
-	train_self_play()
+	main()

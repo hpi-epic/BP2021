@@ -8,4 +8,4 @@ def train_self_play(agent_class: StableBaselinesAgent = StableBaselinesPPO, trai
 	marketplace = CircularEconomyRebuyPriceVariableDuopoly(agent)
 	agent.set_marketplace(marketplace)
 
-	agent.train_agent(training_steps=training_steps, analyze_after_training=False)
+	agent.train_agent(training_steps=training_steps)
