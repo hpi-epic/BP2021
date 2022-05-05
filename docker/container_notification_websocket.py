@@ -36,6 +36,7 @@ async def websocket_endpoint(websocket: WebSocket):
 				await websocket.send_json(json.dumps(vars(docker_info)))
 				last_docker_info = docker_info
 	except WebSocketDisconnect:
+		print('webserver disconnect exception')
 		connection_manager.disconnect(websocket)
 
 
