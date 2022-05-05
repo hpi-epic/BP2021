@@ -46,7 +46,6 @@ class ActorCriticTrainer(RLTrainer):
 		finished_episodes = 0
 		self.callback.num_timesteps = 0
 		environments = [self.marketplace_class(config=self.config) for _ in range(total_envs)]
-		info_accumulators = [None for _ in range(total_envs)]
 
 		for step_number in range(number_of_training_steps):
 			chosen_envs = self.choose_random_envs(total_envs)
@@ -65,15 +64,15 @@ class ActorCriticTrainer(RLTrainer):
 				next_state, reward, is_done, info = environments[env].step(self.callback.model.agent_output_to_market_form(action))
 
 				# The following numbers are divided by the episode length because they will be summed up later in the watcher
-				info['loss/value'] = last_value_loss / config.episode_length
-				info['loss/policy'] = last_policy_loss / config.episode_length
+				info['loss/value'] = last_value_loss / self.config.episode_length
+				info['loss/policy'] = last_policy_loss / self.config.episode_length
 				if verbose:
 					if isinstance(net_output, np.float32):
 						info['verbose/net_output'] = net_output
 					else:
 						for action_num, output in enumerate(net_output):
-							info[f'verbose/information_{str(action_num)}'] = output / config.episode_length
-					info['verbose/v_estimate'] = v_estimate / config.episode_length
+							info[f'verbose/information_{str(action_num)}'] = output / self.config.episode_length
+					info['verbose/v_estimate'] = v_estimate / self.config.episode_length
 
 				states.append(state)
 				actions.append(action)

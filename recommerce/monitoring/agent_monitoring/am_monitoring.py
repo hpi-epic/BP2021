@@ -46,9 +46,9 @@ class Monitor():
 		Returns:
 			list: A list with a list of rewards for each agent
 		"""
-
+		config = HyperparameterConfigLoader.load('hyperparameter_config')
 		# initialize the watcher list with a list for each agent
-		watchers = [Watcher() for _ in range(len(self.configurator.agents))]
+		watchers = [Watcher(config=config) for _ in range(len(self.configurator.agents))]
 
 		for episode in trange(1, self.configurator.episodes + 1, unit=' episodes', leave=False):
 			# reset the state & marketplace once to be used by all agents

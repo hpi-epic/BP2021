@@ -1,7 +1,5 @@
 import numpy as np
 
-import recommerce.configuration.utils as ut
-from recommerce.configuration.hyperparameter_config import config
 from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
 from recommerce.rl.training import RLTrainer
 
@@ -36,10 +34,10 @@ class QLearningTrainer(RLTrainer):
 			state, reward, is_done, info = marketplace.step(action)
 
 			# The following numbers are divided by the episode length because they will be summed up later in the watcher
-			info['Loss/MSE'] = last_loss / config.episode_length
-			info['Loss/RMSE'] = np.sqrt(last_loss) / config.episode_length
-			info['Loss/selected_q_vals'] = last_q_val_selected_action / config.episode_length
-			info['epsilon'] = epsilon / config.episode_length
+			info['Loss/MSE'] = last_loss / self.config.episode_length
+			info['Loss/RMSE'] = np.sqrt(last_loss) / self.config.episode_length
+			info['Loss/selected_q_vals'] = last_q_val_selected_action / self.config.episode_length
+			info['epsilon'] = epsilon / self.config.episode_length
 
 			self.callback.model.set_feedback(reward, is_done, state)
 

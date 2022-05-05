@@ -1,18 +1,20 @@
 import numpy as np
 
 import recommerce.configuration.utils as ut
-from recommerce.configuration.hyperparameter_config import config
+
+from recommerce.configuration.hyperparameter_config import HyperparameterConfig
 
 
 class Watcher:
 	"""
 	This class administrates all collectable information about the success and behaviour of the agent.
 	"""
-	def __init__(self, number_envs: int = 1):
+	def __init__(self, config: HyperparameterConfig, number_envs: int = 1):
 		self.number_envs = number_envs
 		self.all_dicts = []
 		self.step_counters = [0 for _ in range(number_envs)]
 		self.info_accumulators = [None for _ in range(number_envs)]
+		self.config = config
 
 	def add_info(self, info: dict, index: int = 0):
 		"""
@@ -27,8 +29,8 @@ class Watcher:
 		self.info_accumulators[index] = \
 			info if self.info_accumulators[index] is None else ut.add_content_of_two_dicts(self.info_accumulators[index], info)
 		self.step_counters[index] += 1
-		assert self.step_counters[index] <= config.episode_length
-		if self.step_counters[index] == config.episode_length:
+		assert self.step_counters[index] <= self.config.episode_length
+		if self.step_counters[index] == self.config.episode_length:
 			self._finish_episode(index)
 
 	def _finish_episode(self, index: int = 0):
@@ -36,7 +38,7 @@ class Watcher:
 		As soon as one episode is finished, the entries of this episode are added to the list of all dicts.
 		"""
 		assert index < self.number_envs and index >= 0
-		assert self.step_counters[index] == config.episode_length
+		assert self.step_counters[index] == self.config.episode_length
 		self.all_dicts.append(self.info_accumulators[index])
 		self.info_accumulators[index] = None
 		self.step_counters[index] = 0

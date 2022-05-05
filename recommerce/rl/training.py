@@ -1,8 +1,6 @@
 from abc import ABC, abstractmethod
-import recommerce.configuration.utils as ut
 from recommerce.configuration.hyperparameter_config import HyperparameterConfig
 from recommerce.market.sim_market import SimMarket
-from recommerce.configuration.hyperparameter_config import config
 from recommerce.rl.callback import RecommerceCallback
 from recommerce.rl.reinforcement_learning_agent import ReinforcementLearningAgent
 

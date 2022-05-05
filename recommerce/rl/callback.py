@@ -43,12 +43,12 @@ class RecommerceCallback(BaseCallback):
 		assert isinstance(iteration_length, int) and iteration_length > 0
 		super(RecommerceCallback, self).__init__(True)
 		# Change the 128 to the right parameter as soon as #211 is implemented.
-		self.watcher = Watcher(128) if issubclass(agent_class, ActorCriticAgent) else Watcher()
+		self.config = config
+		self.watcher = Watcher(config=self.config, number_envs=128) if issubclass(agent_class, ActorCriticAgent) else Watcher(config=self.config)
 		self.best_mean_interim_reward = None
 		self.best_mean_overall_reward = None
 		self.agent_class = agent_class
 		self.marketplace_class = marketplace_class
-		self.config = config
 		self.iteration_length = iteration_length
 		self.file_ending = file_ending
 		self.signature = signature
