@@ -251,6 +251,11 @@ class CircularEconomyOligopoly(CircularEconomy):
 
 
 class CircularEconomyRebuyPrice(CircularEconomy, ABC):
+	@staticmethod
+	def get_competitor_classes() -> list:
+		import recommerce.market.circular.circular_vendors as c_vendors
+		return sorted(ut.filtered_class_str_from_dir('recommerce.market.circular.circular_vendors', dir(c_vendors), '.*CERebuy.*Agent.*'))
+
 	def _setup_action_observation_space(self, support_continuous_action_space: bool) -> None:
 		super()._setup_action_observation_space(support_continuous_action_space)
 		self.observation_space = gym.spaces.Box(
