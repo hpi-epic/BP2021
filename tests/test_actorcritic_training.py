@@ -1,5 +1,3 @@
-import copy
-
 import pytest
 import utils_tests as ut_t
 

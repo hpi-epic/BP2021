@@ -1,5 +1,3 @@
-import copy
-
 import pytest
 import utils_tests as ut_t
 
@@ -25,7 +23,7 @@ test_scenarios = [
 @pytest.mark.slow
 @pytest.mark.parametrize('marketplace_class', test_scenarios)
 def test_market_scenario(marketplace_class):
-	mock_config = copy.deepcopy(config_hyperparameter)
+	mock_config = ut_t.mock_config_hyperparameter()
 	mock_config.replay_start_size = 500
 	mock_config.sync_target_frames = 100
 	q_learning_training.QLearningTrainer(
@@ -38,7 +36,7 @@ def test_market_scenario(marketplace_class):
 @pytest.mark.training
 @pytest.mark.slow
 def test_training_with_tensorboard():
-	mock_config = copy.deepcopy(config_hyperparameter)
+	mock_config = ut_t.mock_config_hyperparameter()
 	mock_config.replay_start_size = 500
 	mock_config.sync_target_frames = 100
 
