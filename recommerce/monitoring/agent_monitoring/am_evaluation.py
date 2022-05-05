@@ -47,7 +47,7 @@ class Evaluator():
 		if episode_numbers is not None:
 			for property_name in ut.unroll_dict_with_list(analyses[0]).keys():
 				samples = [ut.unroll_dict_with_list(analysis)[property_name] for analysis in analyses]
-				self._create_violin_plot(samples, episode_numbers, f'violinplot showing progress of {property_name}')
+				self._create_violin_plot(samples, episode_numbers, f'Violinplot showing progress of {property_name}')
 		print(f'All plots were saved to {os.path.abspath(self.configurator.folder_path)}')
 
 	# visualize metrics

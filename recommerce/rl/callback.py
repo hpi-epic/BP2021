@@ -157,7 +157,7 @@ class RecommerceCallback(BaseCallback):
 			x_values = np.array(range(len(samples[ignore_first_samples:]))) + 15
 			plt.clf()
 			plt.scatter(x_values, samples[ignore_first_samples:])
-			plt.title(f'Scatterplot showing all samples of {property} for each episode')
+			plt.title(f'All samples of {property} for each episode')
 			plt.xlabel('Episode')
 			plt.ylabel(property)
 			plt.savefig(os.path.join(monitor.configurator.folder_path, f'scatterplot_samples_{property.replace("/", "_")}.svg'))
