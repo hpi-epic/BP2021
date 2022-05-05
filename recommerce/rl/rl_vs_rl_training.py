@@ -1,6 +1,9 @@
+import os
+
 import matplotlib.pyplot as plt
 import numpy as np
 
+from recommerce.configuration.path_manager import PathManager
 from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPriceDuopoly, CircularEconomyRebuyPriceVariableDuopoly
 from recommerce.rl.stable_baselines.stable_baselines_model import StableBaselinesPPO, StableBaselinesSAC
 
@@ -24,10 +27,12 @@ def train_rl_vs_rl(num_switches: int = 30, num_steps_per_switch: int = 25000):
 			rewards[i % 2].append(mydict['profits/all']['vendor_0'])
 			rewards[(i + 1) % 2].append(mydict['profits/all']['vendor_1'])
 
-	# This is a bit hacky. It will be improved as soon as #446 is done
+	# This is a bit hacky. But it isn't used so often, so I will leave it for now.
+	# More heavy changes come with this.
 	smoothed_return_estimation = \
 		[[np.mean(rewards[idx][max(i-50, 0):(i + 1)]) for i in range(len(rewards[idx]))] for idx in range(2)]
+	plt.clf()
 	plt.plot(smoothed_return_estimation[0], label=agents[0].name)
 	plt.plot(smoothed_return_estimation[1], label=agents[1].name)
 	plt.legend()
-	# plt.show()  # Save the figure later in a nice folder.
+	plt.savefig(os.path.join(PathManager.results_path, 'monitoring', 'rl_vs_rl_all.svg'))  # Save the figure later in a nice folder.
