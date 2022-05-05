@@ -142,9 +142,12 @@ class SimMarketKalibrated(CircularEconomyRebuyPriceDuopoly):
 		xb[21] = xb[19] + (prev[21] if prev is not None else 0)  # comp total accumulated rewards
 		self.previous_state = xb
 		observable_state = (6, 1, 22, 23, 24)
-		agent_observation = np.array([xb[state_index] for state_index in observable_state])
+		agent_observation = np.array([self._clamp_price(int(xb[state_index])) for state_index in observable_state])
+		print('agent observation:', agent_observation)
 		return agent_observation, xb[18], False, {}
 
+	def _clamp_price(self, price):
+		return max(0, min(price, 10))
 	# M123 = (0, 1, 2, 3, 4, 7, 8, 9, 22, 23, 24)
 	# # 0
 	# # 1 agent inventory

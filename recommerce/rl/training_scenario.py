@@ -93,7 +93,7 @@ def train_to_calibrate_marketplace():
 
 
 def train_with_calibrated_marketplace(marketplace):
-	sbmodel.StableBaselinesPPO(marketplace).train_agent()
+	sbmodel.StableBaselinesSAC(marketplace).train_agent()
 
 
 def main():
