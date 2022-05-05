@@ -11,6 +11,7 @@ import recommerce.rl.stable_baselines.stable_baselines_model as sbmodel
 from recommerce.configuration.environment_config import EnvironmentConfigLoader, TrainingEnvironmentConfig
 from recommerce.configuration.path_manager import PathManager
 from recommerce.market.circular.circular_vendors import CircularAgent
+from recommerce.market.linear.linear_vendors import LinearAgent
 from recommerce.rl.actorcritic.actorcritic_training import ActorCriticTrainer
 from recommerce.rl.q_learning.q_learning_training import QLearningTrainer
 
@@ -29,8 +30,15 @@ def run_training_session(marketplace=circular_market.CircularEconomyRebuyPriceDu
 		f'the type of the passed marketplace must be a subclass of SimMarket: {marketplace}'
 	assert issubclass(agent, (q_learning_agent.QLearningAgent, actorcritic_agent.ActorCriticAgent)), \
 		f'the RL_agent_class passed must be a subclass of either QLearningAgent or ActorCriticAgent: {agent}'
-	assert issubclass(agent, CircularAgent) == issubclass(marketplace, circular_market.CircularEconomy), \
-		f'the agent and marketplace must be of the same economy type (Linear/Circular): {agent} and {marketplace}'
+	# assert issubclass(agent, CircularAgent) == issubclass(marketplace, circular_market.CircularEconomy), \
+	# 	f'the agent and marketplace must be of the same economy type (Linear/Circular): {agent} and {marketplace}'
+
+	if issubclass(marketplace, circular_market.CircularEconomy):
+		assert issubclass(agent, CircularAgent), \
+			f'The marketplace ({marketplace}) is circular, so all agents need to be circular agents {agent}'
+	elif issubclass(marketplace, linear_market.LinearEconomy):
+		assert issubclass(agent, LinearAgent), \
+			f'The marketplace ({marketplace}) is linear, so all agents need to be linear agents {agent}'
 
 	if issubclass(agent, q_learning_agent.QLearningAgent):
 		QLearningTrainer(marketplace, agent).train_agent()
@@ -82,7 +90,8 @@ def train_from_config():
 	"""
 	config: TrainingEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_training')
 	# TODO: Theoretically, the name of the agent is saved in config['name'], but we don't use it yet.
-	run_training_session(config.marketplace, config.agent['agent_class'])
+	print(config.agent)
+	run_training_session(config.marketplace, config.agent[0]['agent_class'])
 
 
 def main():

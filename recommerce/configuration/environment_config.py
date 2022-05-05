@@ -9,6 +9,8 @@ from recommerce.configuration.path_manager import PathManager
 from recommerce.configuration.utils import get_class
 from recommerce.market.circular.circular_sim_market import CircularEconomy
 from recommerce.market.circular.circular_vendors import CircularAgent
+from recommerce.market.linear.linear_sim_market import LinearEconomy
+from recommerce.market.linear.linear_vendors import LinearAgent
 from recommerce.market.sim_market import SimMarket
 from recommerce.market.vendors import FixedPriceAgent
 from recommerce.rl.actorcritic.actorcritic_agent import ActorCriticAgent
@@ -193,9 +195,12 @@ class EnvironmentConfig(ABC):
 		"""
 		Utility function that makes sure the agent(s) and marketplace are of the same type.
 		"""
-
-		assert all(issubclass(agent['agent_class'], CircularAgent) == issubclass(self.marketplace, CircularEconomy) for agent in self.agent), \
-			f'The agents and marketplace must be of the same economy type (Linear/Circular): {self.agent} and {self.marketplace}'
+		if issubclass(self.marketplace, CircularEconomy):
+			assert all(issubclass(agent['agent_class'], CircularAgent) for agent in self.agent), \
+				f'The marketplace ({self.marketplace}) is circular, so all agents need to be circular agents {self.agent}'
+		elif issubclass(self.marketplace, LinearEconomy):
+			assert all(issubclass(agent['agent_class'], LinearAgent) for agent in self.agent), \
+				f'The marketplace ({self.marketplace}) is linear, so all agents need to be linear agents {self.agent}'
 
 	def _validate_config(self, config: dict, single_agent: bool, needs_modelfile: bool) -> None:
 		"""
