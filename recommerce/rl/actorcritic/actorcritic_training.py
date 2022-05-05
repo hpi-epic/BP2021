@@ -40,7 +40,7 @@ class ActorCriticTrainer(RLTrainer):
 			verbose (bool, optional): Should additional information about agent steps be written to the tensorboard? Defaults to False.
 			total_envs (int, optional): The number of environments you use in parallel to fulfill the iid assumption. Defaults to 128.
 		"""
-		self.initialize_callback(number_of_training_steps * config.batch_size)
+		self.initialize_callback(training_steps=number_of_training_steps * config.batch_size)
 
 		all_dicts = []
 		if verbose:

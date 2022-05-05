@@ -35,7 +35,7 @@ def run_training_session(marketplace=circular_market.CircularEconomyRebuyPriceDu
 	if issubclass(agent, q_learning_agent.QLearningAgent):
 		QLearningTrainer(marketplace, agent).train_agent()
 	else:
-		ActorCriticTrainer(marketplace, agent).train_agent(number_of_training_steps=10000)
+		ActorCriticTrainer(marketplace, agent).train_agent(number_of_training_steps=100000)
 
 
 # Just add some standard usecases.
@@ -89,7 +89,7 @@ def train_to_calibrate_marketplace():
 	"""
 	Train an ActorCriticAgent on a Circular Economy Market with Rebuy Prices and one competitor.
 	"""
-	run_training_session(CircularEconomyDatagenerator, actorcritic_agent.ContinuosActorCriticAgentFixedOneStd)
+	run_training_session(CircularEconomyDatagenerator, actorcritic_agent.ContinuosActorCriticAgentEstimatingStd)
 
 
 def train_with_calibrated_marketplace(marketplace):
@@ -101,4 +101,4 @@ def main():
 
 
 if __name__ == '__main__':
-	main()
+	train_to_calibrate_marketplace()
