@@ -11,19 +11,23 @@ import recommerce.rl.stable_baselines.stable_baselines_model as sbmodel
 from recommerce.configuration.environment_config import EnvironmentConfigLoader, TrainingEnvironmentConfig
 from recommerce.configuration.path_manager import PathManager
 from recommerce.market.circular.circular_vendors import CircularAgent
+from recommerce.market.vendors import FixedPriceAgent
 from recommerce.rl.actorcritic.actorcritic_training import ActorCriticTrainer
 from recommerce.rl.q_learning.q_learning_training import QLearningTrainer
 
 print('successfully imported torch: cuda?', torch.cuda.is_available())
 
 
-def run_training_session(marketplace=circular_market.CircularEconomyRebuyPriceDuopoly, agent=q_learning_agent.QLearningAgent):
+def run_training_session(
+		marketplace=circular_market.CircularEconomyRebuyPriceDuopoly,
+		agent=q_learning_agent.QLearningAgent,
+		competitors: list = None) -> None:
 	"""
 	Run a training session with the passed marketplace and QLearningAgent.
 	Args:
-		marketplace (SimMarket subclass, optional): What marketplace to run the training session on.
-		Defaults to circular_market.CircularEconomyRebuyPriceDuopoly.
-		agent (QLearningAgent subclass, optional): What kind of QLearningAgent to train. Defaults to q_learning_agent.QLearningAgent.
+		marketplace (SimMarket subclass): What marketplace to run the training session on.
+		agent (QLearningAgent subclass): What kind of QLearningAgent to train.
+		competitors (list | None, optional): If set, which competitors should be used instead of the default ones.
 	"""
 	assert issubclass(marketplace, sim_market.SimMarket), \
 		f'the type of the passed marketplace must be a subclass of SimMarket: {marketplace}'
@@ -33,9 +37,9 @@ def run_training_session(marketplace=circular_market.CircularEconomyRebuyPriceDu
 		f'the agent and marketplace must be of the same economy type (Linear/Circular): {agent} and {marketplace}'
 
 	if issubclass(agent, q_learning_agent.QLearningAgent):
-		QLearningTrainer(marketplace, agent).train_agent()
+		QLearningTrainer(marketplace, agent, competitors).train_agent()
 	else:
-		ActorCriticTrainer(marketplace, agent).train_agent(number_of_training_steps=10000)
+		ActorCriticTrainer(marketplace, agent, competitors).train_agent(number_of_training_steps=10000)
 
 
 # Just add some standard usecases.
@@ -61,6 +65,8 @@ def train_continuos_a2c_circular_economy_rebuy():
 
 
 def train_stable_baselines_ppo():
+	# For stablebaselines, we do not currently use the given competitors.
+	# This should be implemented together with the config for stablebaselines
 	sbmodel.StableBaselinesPPO(circular_market.CircularEconomyRebuyPriceDuopoly(True)).train_agent()
 
 
@@ -82,7 +88,14 @@ def train_from_config():
 	"""
 	config: TrainingEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_training')
 	# TODO: Theoretically, the name of the agent is saved in config['name'], but we don't use it yet.
-	run_training_session(config.marketplace, config.agent['agent_class'])
+	# TODO: Same for the competitors, we extract
+	competitor_list = []
+	for competitor in config.agent[1:]:
+		if issubclass(competitor['agent_class'], FixedPriceAgent):
+			competitor_list.append(competitor['agent_class'](fixed_price=competitor['argument'], name=competitor['name']))
+		else:
+			competitor_list.append(competitor['agent_class'](name=competitor['name']))
+	run_training_session(config.marketplace, config.agent[0]['agent_class'], competitor_list)
 
 
 def main():
