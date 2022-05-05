@@ -9,7 +9,7 @@ from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyP
 from recommerce.market.circular.circular_vendors import RuleBasedCERebuyAgent, RuleBasedCERebuyAgentCompetitive
 from recommerce.market.linear.linear_vendors import LinearRatio1LEAgent
 from recommerce.monitoring.policyanalyzer import PolicyAnalyzer
-from recommerce.rl.actorcritic.actorcritic_agent import ContinuosActorCriticAgentFixedOneStd
+from recommerce.rl.actorcritic.actorcritic_agent import ContinuousActorCriticAgentFixedOneStd
 from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
 
 write_to_path = os.path.join(PathManager.results_path, 'policyanalyzer')
@@ -117,10 +117,10 @@ one_competitor_test_cases = [
 
 
 @pytest.mark.parametrize('title, policyaccess, expected_filename', one_competitor_test_cases)
-def test_circular_duopol_continuos_actorcritic(title, policyaccess, expected_filename):
-	a2c_agent = ContinuosActorCriticAgentFixedOneStd(
+def test_circular_duopol_continuous_actorcritic(title, policyaccess, expected_filename):
+	a2c_agent = ContinuousActorCriticAgentFixedOneStd(
 		marketplace=CircularEconomyRebuyPriceDuopoly(), load_path=os.path.join(PathManager.data_path,
-			'actor_parametersCircularEconomyRebuyPriceDuopoly_ContinuosActorCriticAgentFixedOneStd.dat')
+			'actor_parametersCircularEconomyRebuyPriceDuopoly_ContinuousActorCriticAgentFixedOneStd.dat')
 	)
 	pa = PolicyAnalyzer(a2c_agent)
 	given_path = pa.analyze_policy(

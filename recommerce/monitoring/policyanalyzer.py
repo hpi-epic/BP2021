@@ -6,7 +6,7 @@ import numpy as np
 import recommerce.configuration.utils as ut
 from recommerce.configuration.path_manager import PathManager
 from recommerce.market.circular.circular_vendors import RuleBasedCERebuyAgentCompetitive
-from recommerce.rl.actorcritic.actorcritic_agent import ContinuosActorCriticAgent
+from recommerce.rl.actorcritic.actorcritic_agent import ContinuousActorCriticAgent
 
 
 class PolicyAnalyzer():
@@ -28,7 +28,7 @@ class PolicyAnalyzer():
 		Returns:
 			tuple: The requested policy value
 		"""
-		if isinstance(self.agent_to_analyze, ContinuosActorCriticAgent):
+		if isinstance(self.agent_to_analyze, ContinuousActorCriticAgent):
 			return self.agent_to_analyze.policy(observation, mean_only=True)
 		else:
 			return self.agent_to_analyze.policy(observation)

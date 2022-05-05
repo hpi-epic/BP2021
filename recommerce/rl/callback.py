@@ -147,7 +147,7 @@ class RecommerceCallback(BaseCallback):
 		if self.analyze_after_training:
 			monitor = Monitor()
 			agent_list = [(self.agent_class, [parameter_path]) for parameter_path in self.saved_parameter_paths]
-			# The next line is a bit hacky. We have to provide if the marketplace is continuos or not.
+			# The next line is a bit hacky. We have to provide if the marketplace is continuous or not.
 			# Only Stable Baselines agents use continuous actions at the moment. And only Stable Baselines agents have the attribute env.
 			# The correct way of doing this would be by checking for `isinstance(StableBaselinesAgent)`, but that would result in a circular import.
 			monitor.configurator.setup_monitoring(False, 250, 250, self.marketplace_class, agent_list,

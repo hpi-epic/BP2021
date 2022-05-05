@@ -267,7 +267,7 @@ class SimMarket(gym.Env, ABC):
 	def get_actions_dimension(self) -> int:
 		"""
 		Get the dimension of the action space.
-		This can be used to set the number of outputs for vendors with continuos action space.
+		This can be used to set the number of outputs for vendors with continuous action space.
 
 		Returns:
 			int: The dimension of the action space.

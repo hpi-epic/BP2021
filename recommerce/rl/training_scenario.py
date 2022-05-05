@@ -65,11 +65,11 @@ def train_q_learning_circular_economy_rebuy():
 	run_training_session(circular_market.CircularEconomyRebuyPriceDuopoly, q_learning_agent.QLearningAgent)
 
 
-def train_continuos_a2c_circular_economy_rebuy():
+def train_continuous_a2c_circular_economy_rebuy():
 	"""
 	Train an ActorCriticAgent on a Circular Economy Market with Rebuy Prices and one competitor.
 	"""
-	run_training_session(circular_market.CircularEconomyRebuyPriceDuopoly, actorcritic_agent.ContinuosActorCriticAgentFixedOneStd)
+	run_training_session(circular_market.CircularEconomyRebuyPriceDuopoly, actorcritic_agent.ContinuousActorCriticAgentFixedOneStd)
 
 
 def train_stable_baselines_ppo():

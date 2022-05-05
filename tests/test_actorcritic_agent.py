@@ -8,7 +8,7 @@ import recommerce.rl.actorcritic.actorcritic_agent as actorcritic_agent
 
 abstract_agent_classes_testcases = [
 	actorcritic_agent.ActorCriticAgent,
-	actorcritic_agent.ContinuosActorCriticAgent
+	actorcritic_agent.ContinuousActorCriticAgent
 ]
 
 
@@ -45,7 +45,7 @@ def test_discrete_agents_initializes_networks_correct(market_class):
 @pytest.mark.parametrize('market_class', marketplace_classes)
 def test_continous_agents_initializes_networks_correct(market_class):
 	marketplace = market_class()
-	agent = actorcritic_agent.ContinuosActorCriticAgentFixedOneStd(marketplace=marketplace)
+	agent = actorcritic_agent.ContinuousActorCriticAgentFixedOneStd(marketplace=marketplace)
 	assert agent.actor_net is not None
 	assert agent.critic_net is not None
 	assert agent.critic_tgt_net is not None
@@ -59,7 +59,7 @@ def test_continous_agents_initializes_networks_correct(market_class):
 @pytest.mark.parametrize('market_class', marketplace_classes)
 def test_std_estimating_agents_initializes_networks_correct(market_class):
 	marketplace = market_class()
-	agent = actorcritic_agent.ContinuosActorCriticAgentEstimatingStd(marketplace=marketplace)
+	agent = actorcritic_agent.ContinuousActorCriticAgentEstimatingStd(marketplace=marketplace)
 	assert agent.actor_net is not None
 	assert agent.critic_net is not None
 	assert agent.critic_tgt_net is not None
@@ -72,8 +72,8 @@ def test_std_estimating_agents_initializes_networks_correct(market_class):
 
 agent_initialization_testcases = [
 	actorcritic_agent.DiscreteActorCriticAgent,
-	actorcritic_agent.ContinuosActorCriticAgentFixedOneStd,
-	actorcritic_agent.ContinuosActorCriticAgentFixedOneStd
+	actorcritic_agent.ContinuousActorCriticAgentFixedOneStd,
+	actorcritic_agent.ContinuousActorCriticAgentFixedOneStd
 ]
 
 
