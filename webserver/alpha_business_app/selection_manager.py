@@ -4,7 +4,7 @@ from uuid import uuid4
 import lxml.html
 from django.shortcuts import render
 
-from recommerce.configuration.environment_config import get_class
+from recommerce.configuration.utils import get_class
 
 
 class SelectionManager:
@@ -12,12 +12,24 @@ class SelectionManager:
 		self.current_marketplace = None
 
 	def get_agent_options_for_marketplace(self) -> list:
-		return self._to_tuple_list(self.current_marketplace.get_possible_agents())
+		return self._to_tuple_list(self.current_marketplace.get_possible_rl_agents())
 
 	def get_competitor_options_for_marketplace(self) -> list:
 		return self._to_tuple_list(self.current_marketplace.get_competitor_classes())
 
 	def get_correct_agents_html_on_marketplace_change(self, request, marketplace_class: str, raw_agents_html: str) -> str:
+		"""
+		Converts the agent accordion html to an agent accordion, that contains the right agent options.
+		It parses the html to xml elements and adds the right options to competitor class selection.
+
+		Args:
+			request (HttpRequest): the request made to the server
+			marketplace_class (str): marketplace as string in the form 'recommerce...'
+			raw_agents_html (str): original html of the agents accordion
+
+		Returns:
+			str: correct agent accordion
+		"""
 		# parse string to xml tree
 		self.current_marketplace = get_class(marketplace_class)
 		expected_num_competitors = self._get_number_of_competitors_for_marketplace()
@@ -53,7 +65,14 @@ class SelectionManager:
 
 		return lxml.html.tostring(html)
 
-	def get_marketplace_options(self):
+	def get_marketplace_options(self) -> list:
+		"""
+		Matches marketplaces of recommerce.market.circular.circular_sim_market and recommerce.market.linear.linear_sim_market,
+		who contain one of the Keywords: Oligopoly, Duopoly, Monopoly
+
+		Returns:
+			list: tuple list for selection
+		"""
 		import recommerce.market.circular.circular_sim_market as circular_market
 		import recommerce.market.linear.linear_sim_market as linear_market
 
@@ -70,7 +89,7 @@ class SelectionManager:
 		self.current_marketplace = get_class(circular_tuples[0][0])
 		return circular_tuples + linear_tuples
 
-	def _get_task_options(self):
+	def _get_task_options(self) -> list:
 		return [
 			('training', 'training', 'starts a training session'),
 			('agent_monitoring', 'agent_monitoring', 'monitors the performance of the agents in a marketplace'),
@@ -89,7 +108,17 @@ class SelectionManager:
 			big_accordion_div.remove(button[0])
 		return html
 
-	def _to_tuple_list(self, list_of_class_names) -> list:
+	def _to_tuple_list(self, list_of_class_names: list) -> list:
+		"""
+		Returns a list of tuples needed for the html `select` statement. The docstring of the class will be used as hovertext.
+
+		Args:
+			list_of_class_names (list): list of str containing recommerce class names in the form 'recommerce...'
+
+		Returns:
+			list: of tuples of strings on the form:
+				(actual class starting with 'recommerce...', name that should be shown as option, hovertext for selection)
+		"""
 		final_tuples = []
 		for class_name in list_of_class_names:
 			raw_parts = str(class_name).rsplit('.', 1)
@@ -98,8 +127,18 @@ class SelectionManager:
 			final_tuples += [(actual_class, visible_name, self._get_class_description(actual_class))]
 		return final_tuples
 
-	def _update_comp_options(self, html, request):
-		# find all <selecty>
+	def _update_comp_options(self, html, request) -> lxml.html.HtmlElement:
+		"""
+		Removes all children of html element with class 'competitor-agent-class' and adds new selection options to it
+
+		Args:
+			html (lxml.html.HtmlElement): parsed html as xml tree
+			request (HttpRequest): request made to the server
+
+		Returns:
+			lxml.html.HtmlElement: the updated html
+		"""
+		# find all <select> with class 'competitor-agent-class'
 		competitor_selections = html.find_class('competitor-agent-class')
 		if not competitor_selections:
 			return html

@@ -1,5 +1,4 @@
 # helper
-import importlib
 import json
 import os
 from abc import ABC, abstractmethod
@@ -7,6 +6,7 @@ from abc import ABC, abstractmethod
 import numpy as np
 
 from recommerce.configuration.path_manager import PathManager
+from recommerce.configuration.utils import get_class
 from recommerce.market.circular.circular_sim_market import CircularEconomy
 from recommerce.market.circular.circular_vendors import CircularAgent
 from recommerce.market.sim_market import SimMarket
@@ -14,25 +14,6 @@ from recommerce.market.vendors import FixedPriceAgent
 from recommerce.rl.actorcritic.actorcritic_agent import ActorCriticAgent
 from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
 from recommerce.rl.reinforcement_learning_agent import ReinforcementLearningAgent
-
-
-def get_class(import_string: str) -> object:
-	"""
-	Get the class from the given string.
-
-	Args:
-		import_string (str): A string containing the import path in the format 'module.submodule.class'.
-
-	Returns:
-		A class object: The imported class.
-	"""
-	module_name, class_name = import_string.rsplit('.', 1)
-	try:
-		return getattr(importlib.import_module(module_name), class_name)
-	except AttributeError as error:
-		raise AttributeError(f'The string you passed could not be resolved to a class: {import_string}') from error
-	except ModuleNotFoundError as error:
-		raise ModuleNotFoundError(f'The string you passed could not be resolved to a module: {import_string}') from error
 
 
 class EnvironmentConfig(ABC):
