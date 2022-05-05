@@ -34,7 +34,6 @@ test_scenarios = [
 @pytest.mark.slow
 @pytest.mark.parametrize('market_class, agent_class, verbose', test_scenarios)
 def test_training_configurations(market_class, agent_class, verbose):
-
 	ActorCriticTrainer(market_class, agent_class, config=copy.deepcopy(config_hyperparameter)).train_agent(
 		verbose=verbose,
 		number_of_training_steps=120,
