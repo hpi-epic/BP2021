@@ -79,7 +79,7 @@ class Watcher:
 		else:
 			return [tmp_dict[property_name][f'vendor_{vendor}'] for tmp_dict in self.all_dicts]
 
-	def get_cumulative_properties(self, unroll_interrelated_properties: bool = True) -> dict:
+	def get_cumulative_properties(self) -> dict:
 		"""
 		The watcher saves all steps of the episode with in dicts, one for each step.
 		But if you want to get samples to calculate with or to plot, you need all values of one property in one list.

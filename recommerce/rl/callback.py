@@ -154,7 +154,7 @@ class RecommerceCallback(BaseCallback):
 		ignore_first_samples = 15  # the number of samples you want to skip because they can be severe outliers
 		cumulative_properties = self.watcher.get_cumulative_properties()
 		for property, samples in ut.unroll_dict_with_list(cumulative_properties).items():
-			x_values = np.array(range(len(samples[ignore_first_samples:]))) + 15
+			x_values = np.array(range(len(samples[ignore_first_samples:]))) + ignore_first_samples
 			plt.clf()
 			plt.scatter(x_values, samples[ignore_first_samples:])
 			plt.title(f'All samples of {property} for each episode')
@@ -176,7 +176,7 @@ class RecommerceCallback(BaseCallback):
 
 			if isinstance(samples[0], list):
 				plt.legend()
-			plt.title(f'Lineplot showing training progress of {property}')
+			plt.title(f'Rolling average training progress of {property}')
 			plt.xlabel('Episode')
 			plt.ylabel(property)
 			plt.savefig(os.path.join(monitor.configurator.folder_path, f'lineplot_progress_{property.replace("/", "_")}.svg'))

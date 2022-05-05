@@ -40,8 +40,8 @@ class Evaluator():
 		print('Creating density plots...')
 		for index, analysis in enumerate(analyses):
 			for property, samples in analysis.items():
-				prefix = f'episode_{episode_numbers[index]}_' if episode_numbers is not None else f'{self.configurator.agents[index].name}_'
-				self.create_density_plot(samples if isinstance(samples[0], list) else [samples], prefix + property)
+				prefix = f'episode_{episode_numbers[index]}_' if episode_numbers is not None else f'{self.configurator.agents[index].name}'
+				self.create_density_plot(samples if isinstance(samples[0], list) else [samples], f'{prefix}_{property}')
 
 		# self._create_statistics_plots(rewards)
 		if episode_numbers is not None:
