@@ -131,11 +131,10 @@ class ButtonHandler():
 			}
 
 	def _params_for_selection(self) -> dict:
-		marketplace_tuples = self.selection_manager.get_marketplace_options()
 		return {
 			'selections': {
-				'tasks': [('training', 'training'), ('agent_monitoring', 'agent_monitoring'), ('exampleprinter', 'exampleprinter')],
-				'marketplaces': marketplace_tuples,
+				'tasks': self.selection_manager._get_task_options(),
+				'marketplaces': self.selection_manager.get_marketplace_options(),
 				'agents': self.selection_manager.get_agent_options_for_marketplace(),
 				'competitors': self.selection_manager.get_competitor_options_for_marketplace()
 				}

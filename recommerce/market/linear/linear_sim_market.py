@@ -85,6 +85,9 @@ class LinearEconomy(SimMarket, ABC):
 
 
 class LinearEconomyDuopoly(LinearEconomy):
+	"""
+	This is a linear economy, with two vendors.
+	"""
 	@staticmethod
 	def get_num_competitors() -> list:
 		return 1
@@ -94,7 +97,9 @@ class LinearEconomyDuopoly(LinearEconomy):
 
 
 class LinearEconomyOligopoly(LinearEconomy):
-
+	"""
+	This is a linear economy, with multiple vendors.
+	"""
 	def _get_competitor_list(self) -> list:
 		return [
 			LinearRatio1LEAgent(),
