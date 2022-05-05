@@ -82,13 +82,13 @@ $(document).ready(function() {
 		});
 	});
 	// var url = "ws://192.168.159.134:8001/ws";
-	let url = "";
-	$.ajax({url: "/api_info",
-		success: function (data) {
-			url = data["url"];
-			console.log(url)
-		}
-	});
+	let url = "wss://vm-midea03.eaalab.hpi.uni-potsdam.de:8001/ws";
+	// $.ajax({url: "/api_info",
+	// 	success: function (data) {
+	// 		url = data["url"];
+	// 		console.log(url)
+	// 	}
+	// });
 	var ws = new WebSocket(url);
 	ws.onopen = function (_) {
 		console.log("connection to ", url, "open");

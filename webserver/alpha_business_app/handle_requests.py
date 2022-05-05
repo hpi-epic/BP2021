@@ -54,7 +54,7 @@ def _default_request_parameter(wanted_action: str, params: dict) -> dict:
 
 
 def websocket_url():
-	return 'http://192.168.159.134:8001'
+	return 'wss://vm-midea03.eaalab.hpi.uni-potsdam.de:8001/ws'
 
 
 def send_get_request(wanted_action: str, container_id: str) -> APIResponse:

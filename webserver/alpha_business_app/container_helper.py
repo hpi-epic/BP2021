@@ -7,7 +7,7 @@ from .config_parser import ConfigModelParser
 from .models.container import Container, update_container
 
 
-def parse_response_to_database(api_response, config_dict: dict, given_name: str) -> None:
+def parse_response_to_database(api_response, config_dict: dict, given_name: str, user) -> None:
 	"""
 	Parses an API response containing multiple container to the database.
 
@@ -15,6 +15,7 @@ def parse_response_to_database(api_response, config_dict: dict, given_name: str)
 		api_response (APIResponse): The converted response from the docker API.
 		config_dict (dict): The dict the container have been started with.
 		given_name (str): the name the user put into the field
+		user (User): the user who did the request
 	"""
 	started_container = api_response.content
 	# check if the api response is correct
@@ -28,6 +29,7 @@ def parse_response_to_database(api_response, config_dict: dict, given_name: str)
 	# save the used config
 	config_object = ConfigModelParser().parse_config(copy.deepcopy(config_dict))
 	config_object.name = f'Config for {name}'
+	config_object.user = user
 	config_object.save()
 
 	command = config_object.environment.task
@@ -50,7 +52,8 @@ def parse_response_to_database(api_response, config_dict: dict, given_name: str)
 			command=command,
 			config=config_object,
 			health_status=container_info['status'],
-			name=current_container_name)
+			name=current_container_name,
+			user=user)
 	return True, [], name
 
 
