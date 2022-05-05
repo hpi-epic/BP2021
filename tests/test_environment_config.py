@@ -50,8 +50,8 @@ def test_str_representation():
 	config = env_config.TrainingEnvironmentConfig(test_dict)
 	assert str(config) == ("TrainingEnvironmentConfig: {'task': 'training', "
 		"'marketplace': <class 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopoly'>, "
-		"'agent': {'name': 'CE Rebuy Agent (QLearning)', "
-		"'agent_class': <class 'recommerce.rl.q_learning.q_learning_agent.QLearningAgent'>, 'argument': ''}}")
+		"'agent': [{'name': 'CE Rebuy Agent (QLearning)', "
+		"'agent_class': <class 'recommerce.rl.q_learning.q_learning_agent.QLearningAgent'>, 'argument': ''}]}")
 
 
 get_class_testcases = [
