@@ -21,7 +21,7 @@ class Configurator():
 	The Configurator is being used together with the `agent_monitoring.Monitor()` and is responsible for managing its configuration.
 	"""
 	def __init__(self) -> None:
-		# Do not change the values in here when setting up a session! They are assumed in tests. Instead use setup_monitoring()!
+		# Do not change the values in here when setting up a session! Instead use setup_monitoring()!
 		ut.ensure_results_folders_exist()
 		self.enable_live_draw = False
 		self.episodes = 500
@@ -138,8 +138,8 @@ class Configurator():
 						name=agent_name
 						)
 					self.agents.append(new_agent)
-				except RuntimeError:  # pragma: no cover
-					raise RuntimeError('The modelfile is not compatible with the agent you tried to instantiate')
+				except RuntimeError as error:  # pragma: no cover
+					raise RuntimeError('the modelfile is not compatible with the agent you tried to instantiate') from error
 			else:  # pragma: no cover
 				assert False, f'{current_agent[0]} is neither a RuleBased nor a QLearning agent nor a HumanPlayer'
 

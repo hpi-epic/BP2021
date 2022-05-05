@@ -184,13 +184,12 @@ class DiscreteActorCriticAgent(ActorCriticAgent, LinearAgent, CircularAgent):
 	def agent_output_to_market_form(self, action):
 		if self.actions_dimension == 1:
 			return action
-		else:
-			action_list = []
-			for _ in range(self.actions_dimension):
-				action_list.append(action % self.config.max_price)
-				action = action // self.config.max_price
-			action_list.reverse()
-			return tuple(action_list)
+		action_list = []
+		for _ in range(self.actions_dimension):
+			action_list.append(action % self.config.max_price)
+			action = action // self.config.max_price
+		action_list.reverse()
+		return tuple(action_list)
 
 
 class ContinuosActorCriticAgent(ActorCriticAgent, LinearAgent, CircularAgent):

@@ -24,9 +24,9 @@ class CircularAgent(Agent, ABC):
 		for competitor in range(2, observation.size, 4):
 			competitors_refurbished_prices.append(observation[competitor].item())
 			competitors_new_prices.append(observation[competitor + 1].item())
-			if is_rebuy_economy is True:
+			if is_rebuy_economy:
 				competitors_rebuy_prices.append(observation[competitor + 2].item())
-		if is_rebuy_economy is True:
+		if is_rebuy_economy:
 			return competitors_refurbished_prices, competitors_new_prices, competitors_rebuy_prices
 		else:
 			return competitors_refurbished_prices, competitors_new_prices

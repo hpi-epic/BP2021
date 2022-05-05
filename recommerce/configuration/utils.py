@@ -31,10 +31,10 @@ def softmax(preferences: np.array) -> np.array:
 
 def shuffle_from_probabilities(probabilities: np.array) -> int:
 	randomnumber = random.random()
-	sum = 0
+	probability_sum = 0
 	for i, p in enumerate(probabilities):
-		sum += p
-		if randomnumber <= sum:
+		probability_sum += p
+		if randomnumber <= probability_sum:
 			return i
 	return len(probabilities) - 1
 
@@ -97,7 +97,7 @@ def divide_content_of_dict(dict1: dict, divisor) -> dict:
 		if isinstance(dict1[key], dict):
 			newdict[key] = divide_content_of_dict(dict1[key], divisor)
 		else:
-			assert isinstance(dict1[key], (int, float)), 'the dictionary should only contain numbers (int or float)'
+			assert isinstance(dict1[key], (int, float, np.float32)), f'the dictionary should only contain numbers (int or float): {dict1}'
 			newdict[key] = dict1[key] / divisor
 	return newdict
 
@@ -119,8 +119,8 @@ def add_content_of_two_dicts(dict1, dict2) -> dict:
 		if isinstance(dict1[key], dict):
 			newdict[key] = add_content_of_two_dicts(dict1[key], dict2[key])
 		else:
-			assert isinstance(dict1[key], (int, float)), 'dict1 should only contain numbers (int or float)'
-			assert isinstance(dict2[key], (int, float)), 'dict2 should only contain numbers (int or float)'
+			assert isinstance(dict1[key], (int, float, np.float32)), f'dict1 should only contain numbers (int or float): {dict1}'
+			assert isinstance(dict2[key], (int, float, np.float32)), f'dict2 should only contain numbers (int or float): {dict2}'
 			newdict[key] = dict1[key] + dict2[key]
 	return newdict
 

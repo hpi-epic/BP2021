@@ -33,8 +33,8 @@ def setup_function(function):
 
 
 evaluate_session_testcases = [
-	([(RuleBasedCEAgent, [])], [[5, 10, 0, -5]]),
-	([(RuleBasedCEAgent, []), (FixedPriceCEAgent, [])], [[5, 10, 0, -5], [5, -10, 60, 5]])
+	([(RuleBasedCEAgent, [])], [{'profits/all/vendor_0': [5, 10, 0, -5], 'profits/testprofits': [10, 15, 25, -50]}]),
+	([(RuleBasedCEAgent, []), (FixedPriceCEAgent, [])], [{'profits/all/vendor_0': [5, 10, 0, -5]}, {'profits/all/vendor_0': [5, -10, 60, 5]}]),
 ]
 
 

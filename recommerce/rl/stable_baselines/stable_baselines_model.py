@@ -1,9 +1,11 @@
+import os
+
 import numpy as np
-import stable_baselines3.common.monitor
 from stable_baselines3 import A2C, DDPG, PPO, SAC, TD3
 from stable_baselines3.common.noise import NormalActionNoise
 
 from recommerce.configuration.hyperparameter_config import HyperparameterConfig
+from recommerce.configuration.path_manager import PathManager
 from recommerce.market.circular.circular_vendors import CircularAgent
 from recommerce.market.linear.linear_vendors import LinearAgent
 from recommerce.market.sim_market import SimMarket
@@ -19,6 +21,7 @@ class StableBaselinesAgent(ReinforcementLearningAgent, LinearAgent, CircularAgen
 		assert load_path is None or isinstance(load_path, str)
 		assert name is None or isinstance(name, str)
 		self.config = config
+		self.tensorboard_log = os.path.join(PathManager.results_path, 'runs')
 		self.marketplace = marketplace
 		if load_path is None:
 			self._initialize_model(marketplace)
@@ -47,7 +50,7 @@ class StableBaselinesAgent(ReinforcementLearningAgent, LinearAgent, CircularAgen
 			signature=self.name, analyze_after_training=analyze_after_training, config=self.config)
 		self.model.set_env(stable_baselines3.common.monitor.Monitor(self.marketplace, callback.save_path))
 		self.model.learn(training_steps, callback=callback)
-		return callback.all_dicts
+		return callback.watcher.all_dicts
 
 
 class StableBaselinesDDPG(StableBaselinesAgent):
@@ -56,10 +59,10 @@ class StableBaselinesDDPG(StableBaselinesAgent):
 	def _initialize_model(self, marketplace):
 		n_actions = marketplace.get_actions_dimension()
 		action_noise = NormalActionNoise(mean=np.zeros(n_actions), sigma=1 * np.ones(n_actions))
-		self.model = DDPG('MlpPolicy', marketplace, action_noise=action_noise, verbose=False)
+		self.model = DDPG('MlpPolicy', marketplace, action_noise=action_noise, verbose=False, tensorboard_log=self.tensorboard_log)
 
 	def _load(self, load_path):
-		self.model = DDPG.load(load_path)
+		self.model = DDPG.load(load_path, tensorboard_log=self.tensorboard_log)
 
 
 class StableBaselinesTD3(StableBaselinesAgent):
@@ -68,37 +71,37 @@ class StableBaselinesTD3(StableBaselinesAgent):
 	def _initialize_model(self, marketplace):
 		n_actions = marketplace.get_actions_dimension()
 		action_noise = NormalActionNoise(mean=np.zeros(n_actions), sigma=1 * np.ones(n_actions))
-		self.model = TD3('MlpPolicy', marketplace, action_noise=action_noise, verbose=False)
+		self.model = TD3('MlpPolicy', marketplace, action_noise=action_noise, verbose=False, tensorboard_log=self.tensorboard_log)
 
 	def _load(self, load_path):
-		self.model = TD3.load(load_path)
+		self.model = TD3.load(load_path, tensorboard_log=self.tensorboard_log)
 
 
 class StableBaselinesA2C(StableBaselinesAgent):
 	name = 'Stable_Baselines_A2C'
 
 	def _initialize_model(self, marketplace):
-		self.model = A2C('MlpPolicy', marketplace, verbose=False)
+		self.model = A2C('MlpPolicy', marketplace, verbose=False, tensorboard_log=self.tensorboard_log)
 
 	def _load(self, load_path):
-		self.model = A2C.load(load_path)
+		self.model = A2C.load(load_path, tensorboard_log=self.tensorboard_log)
 
 
 class StableBaselinesPPO(StableBaselinesAgent):
 	name = 'Stable_Baselines_PPO'
 
 	def _initialize_model(self, marketplace):
-		self.model = PPO('MlpPolicy', marketplace, verbose=False)
+		self.model = PPO('MlpPolicy', marketplace, verbose=False, tensorboard_log=self.tensorboard_log)
 
 	def _load(self, load_path):
-		self.model = PPO.load(load_path)
+		self.model = PPO.load(load_path, tensorboard_log=self.tensorboard_log)
 
 
 class StableBaselinesSAC(StableBaselinesAgent):
 	name = 'Stable_Baselines_SAC'
 
 	def _initialize_model(self, marketplace):
-		self.model = SAC('MlpPolicy', marketplace, verbose=False)
+		self.model = SAC('MlpPolicy', marketplace, verbose=False, tensorboard_log=self.tensorboard_log)
 
 	def _load(self, load_path):
-		self.model = SAC.load(load_path)
+		self.model = SAC.load(load_path, tensorboard_log=self.tensorboard_log)

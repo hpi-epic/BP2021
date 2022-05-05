@@ -10,7 +10,8 @@ class Agent(ABC):
 		self.name = name
 		self.config = config
 
-	def custom_init(class_name, args):
+	@classmethod
+	def custom_init(cls, class_name, args):
 		"""
 		Initialize an agent with a list of arguments.
 

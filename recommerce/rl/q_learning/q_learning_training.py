@@ -1,6 +1,7 @@
 import numpy as np
 
 import recommerce.configuration.utils as ut
+from recommerce.configuration.hyperparameter_config import config
 from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
 from recommerce.rl.training import RLTrainer
 
@@ -24,48 +25,36 @@ class QLearningTrainer(RLTrainer):
 		marketplace = self.marketplace_class(config=self.config)
 		state = marketplace.reset()
 
-		vendors_cumulated_info = None
-		all_dicts = []
-		losses = []
-		rmse_losses = []
-		selected_q_vals = []
+		last_loss = 0
+		last_q_val_selected_action = 0
 		finished_episodes = 0
-		mean_return = -np.inf
 
 		for frame_idx in range(number_of_training_steps):
 			epsilon = max(self.config.epsilon_final, self.config.epsilon_start - frame_idx / self.config.epsilon_decay_last_frame)
 
 			action = self.callback.model.policy(state, epsilon)
 			state, reward, is_done, info = marketplace.step(action)
+
+			# The following numbers are divided by the episode length because they will be summed up later in the watcher
+			info['Loss/MSE'] = last_loss / config.episode_length
+			info['Loss/RMSE'] = np.sqrt(last_loss) / config.episode_length
+			info['Loss/selected_q_vals'] = last_q_val_selected_action / config.episode_length
+			info['epsilon'] = epsilon / config.episode_length
+
 			self.callback.model.set_feedback(reward, is_done, state)
-			vendors_cumulated_info = info if vendors_cumulated_info is None else ut.add_content_of_two_dicts(vendors_cumulated_info, info)
 
 			if is_done:
-				all_dicts.append(vendors_cumulated_info)
-				finished_episodes = len(all_dicts)
-				averaged_info = self.calculate_dict_average(all_dicts)
+				finished_episodes += 1
 
-				if frame_idx > self.config.replay_start_size:
-					averaged_info['Loss/MSE'] = np.mean(losses[-1000:])
-					averaged_info['Loss/RMSE'] = np.mean(rmse_losses[-1000:])
-					averaged_info['Loss/selected_q_vals'] = np.mean(selected_q_vals[-1000:])
-					averaged_info['epsilon'] = epsilon
-					ut.write_dict_to_tensorboard(self.callback.writer, averaged_info, frame_idx / self.config.episode_length, is_cumulative=True)
-					mean_return = averaged_info['profits/all']['vendor_0']
-
-				vendors_cumulated_info = None
+			self.callback.num_timesteps = frame_idx
+			self.callback._on_step(finished_episodes, info)
+			if is_done:
 				marketplace.reset()
-
-			self.callback.num_timesteps = frame_idx + 1
-			self.callback._on_step(finished_episodes, mean_return)
 
 			if len(self.callback.model.buffer) < self.config.replay_start_size:
 				continue
 
-			loss, selected_q_val_mean = self.callback.model.train_batch()
-			losses.append(loss)
-			rmse_losses.append(np.sqrt(loss))
-			selected_q_vals.append(selected_q_val_mean)
+			last_loss, last_q_val_selected_action = self.callback.model.train_batch()
 
 			self.consider_sync_tgt_net(frame_idx)
 
