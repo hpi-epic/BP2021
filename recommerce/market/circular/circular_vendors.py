@@ -35,7 +35,7 @@ class CircularAgent(Agent, ABC):
 class HumanPlayerCE(CircularAgent, HumanPlayer):
 	def __init__(self, config: HyperparameterConfig=None, name='YOU - Circular'):
 		self.name = name
-		self.config = config
+
 		print('Welcome to this funny game! Now, you are the one playing the game!')
 
 	def policy(self, observation, *_) -> tuple:
@@ -61,7 +61,6 @@ class FixedPriceCEAgent(CircularAgent, FixedPriceAgent):
 		assert isinstance(fixed_price, tuple), f'fixed_price must be a tuple: {fixed_price} ({type(fixed_price)})'
 		assert len(fixed_price) == 2, f'fixed_price must contain two values: {fixed_price}'
 		assert all(isinstance(price, int) for price in fixed_price), f'the prices in fixed_price must be integers: {fixed_price}'
-		self.config = config
 		self.name = name
 		self.fixed_price = fixed_price
 
@@ -79,7 +78,6 @@ class FixedPriceCERebuyAgent(FixedPriceCEAgent):
 		assert all(isinstance(price, int) for price in fixed_price), f'the prices in fixed_price must be integers: {fixed_price}'
 		self.name = name
 		self.fixed_price = fixed_price
-		self.config = config
 
 	def policy(self, *_) -> tuple:
 		return self.fixed_price
