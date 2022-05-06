@@ -38,7 +38,7 @@ class PathManager():
 	data_path = os.path.join(user_path, 'data')
 
 	@classmethod
-	def manage_user_path(cls, new_path: str) -> None:
+	def manage_user_path(cls, new_path: str = None) -> None:
 		"""
 		Manage the data path.
 		Used by `main.py` with the `--datapath` argument.

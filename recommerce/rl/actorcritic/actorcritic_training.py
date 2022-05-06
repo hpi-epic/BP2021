@@ -3,7 +3,6 @@ import random
 import numpy as np
 import torch
 
-import recommerce.configuration.utils as ut
 import recommerce.rl.actorcritic.actorcritic_agent as actorcritic_agent
 from recommerce.configuration.hyperparameter_config import config
 from recommerce.rl.training import RLTrainer
@@ -42,18 +41,12 @@ class ActorCriticTrainer(RLTrainer):
 		"""
 		self.initialize_callback(training_steps=number_of_training_steps * config.batch_size)
 
-		all_dicts = []
-		if verbose:
-			all_network_outputs = []
-			all_v_estimates = []
-		all_value_losses = []
-		all_policy_losses = []
+		last_value_loss = 0
+		last_policy_loss = 0
 
 		finished_episodes = 0
-		mean_return = -np.inf
 		self.callback.num_timesteps = 0
 		environments = [self.marketplace_class() for _ in range(total_envs)]
-		info_accumulators = [None for _ in range(total_envs)]
 
 		for step_number in range(number_of_training_steps):
 			chosen_envs = self.choose_random_envs(total_envs)
@@ -69,49 +62,37 @@ class ActorCriticTrainer(RLTrainer):
 					action = self.callback.model.policy(state, verbose=False, raw_action=True)
 				else:
 					action, net_output, v_estimate = self.callback.model.policy(state, verbose=True, raw_action=True)
-					all_network_outputs.append(net_output.reshape(-1))
-					all_v_estimates.append(v_estimate)
 				next_state, reward, is_done, info = environments[env].step(self.callback.model.agent_output_to_market_form(action))
+
+				# The following numbers are divided by the episode length because they will be summed up later in the watcher
+				info['loss/value'] = last_value_loss / config.episode_length
+				info['loss/policy'] = last_policy_loss / config.episode_length
+				if verbose:
+					if isinstance(net_output, np.float32):
+						info['verbose/net_output'] = net_output
+					else:
+						for action_num, output in enumerate(net_output):
+							info[f'verbose/information_{str(action_num)}'] = output / config.episode_length
+					info['verbose/v_estimate'] = v_estimate / config.episode_length
 
 				states.append(state)
 				actions.append(action)
 				rewards.append(reward)
 				states_dash.append(next_state)
-				info_accumulators[env] = info if info_accumulators[env] is None else ut.add_content_of_two_dicts(info_accumulators[env], info)
 
 				if is_done:
 					finished_episodes += 1
-					all_dicts.append(info_accumulators[env])
 
-					averaged_info = self.calculate_dict_average(all_dicts)
-					averaged_info['loss/value'] = np.mean(all_value_losses[-1000:])
-					averaged_info['loss/policy'] = np.mean(all_policy_losses[-1000:])
-
-					if verbose:
-						averaged_info['verbose/v_estimate'] = np.mean(all_v_estimates[-1000:])
-						myactions = np.array(all_network_outputs[-1000:])
-						for action_num in range(len(all_network_outputs[0])):
-							averaged_info[f'verbose/mean/information_{str(action_num)}'] = np.mean(myactions[:, action_num])
-							averaged_info[f'verbose/min/information_{str(action_num)}'] = np.min(myactions[:, action_num])
-							averaged_info[f'verbose/max/information_{str(action_num)}'] = np.max(myactions[:, action_num])
-
-					ut.write_dict_to_tensorboard(self.callback.writer, averaged_info, finished_episodes, is_cumulative=True)
-
+				self.callback._on_step(finished_episodes, info, env)
+				if is_done:
 					environments[env].reset()
-					info_accumulators[env] = None
 
-					mean_return = averaged_info['profits/all']['vendor_0']
-
-				self.callback._on_step(finished_episodes, mean_return)
-
-			policy_loss, valueloss = self.callback.model.train_batch(
+			last_policy_loss, last_value_loss = self.callback.model.train_batch(
 				torch.Tensor(np.array(states)),
 				torch.from_numpy(np.array(actions, dtype=np.int64)),
 				torch.Tensor(np.array(rewards)),
 				torch.Tensor(np.array(next_state)),
 				finished_episodes <= 500)
-			all_value_losses.append(valueloss)
-			all_policy_losses.append(policy_loss)
 
 			self.consider_sync_tgt_net(step_number)
 

@@ -16,6 +16,7 @@ webserver/configurations
 webserver/data
 webserver/package-lock.json
 webserver/node_modules
+webserver/.env.txt
 
 # file where the users data path is saved
 recommerce/configuration/user_path.txt
