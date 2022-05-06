@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+
 from recommerce.configuration.hyperparameter_config import HyperparameterConfig
 from recommerce.market.sim_market import SimMarket
 from recommerce.rl.callback import RecommerceCallback

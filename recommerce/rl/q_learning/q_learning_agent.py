@@ -78,7 +78,6 @@ class QLearningAgent(ReinforcementLearningAgent, CircularAgent, LinearAgent):
 			action = action // self.config.max_price
 		action_list.reverse()
 		return tuple(action_list)
-  
 
 	def set_feedback(self, reward, is_done, new_observation):
 		exp = self.Experience(*self.buffer_for_feedback, reward, is_done, new_observation)

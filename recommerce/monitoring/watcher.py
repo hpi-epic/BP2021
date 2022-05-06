@@ -1,7 +1,6 @@
 import numpy as np
 
 import recommerce.configuration.utils as ut
-
 from recommerce.configuration.hyperparameter_config import HyperparameterConfig
 
 
