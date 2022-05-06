@@ -1,6 +1,6 @@
 import pytest
-
 import tests.utils_tests as ut_t
+
 from recommerce.configuration.hyperparameter_config import HyperparameterConfig
 from recommerce.rl.self_play import train_self_play
 from recommerce.rl.stable_baselines.stable_baselines_model import StableBaselinesPPO, StableBaselinesSAC

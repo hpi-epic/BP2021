@@ -12,6 +12,7 @@ from recommerce.configuration.environment_config import EnvironmentConfigLoader,
 from recommerce.configuration.hyperparameter_config import HyperparameterConfig, HyperparameterConfigLoader
 from recommerce.configuration.path_manager import PathManager
 from recommerce.market.circular.circular_vendors import CircularAgent
+from recommerce.market.linear.linear_vendors import LinearAgent
 from recommerce.rl.actorcritic.actorcritic_training import ActorCriticTrainer
 from recommerce.rl.q_learning.q_learning_training import QLearningTrainer
 
@@ -33,11 +34,19 @@ def run_training_session(
 		f'the type of the passed marketplace must be a subclass of SimMarket: {marketplace}'
 	assert issubclass(agent, (q_learning_agent.QLearningAgent, actorcritic_agent.ActorCriticAgent)), \
 		f'the RL_agent_class passed must be a subclass of either QLearningAgent or ActorCriticAgent: {agent}'
-	assert issubclass(agent, CircularAgent) == issubclass(marketplace, circular_market.CircularEconomy), \
-		f'the agent and marketplace must be of the same economy type (Linear/Circular): {agent} and {marketplace}'
+	if issubclass(marketplace, circular_market.CircularEconomy):
+		assert issubclass(agent, CircularAgent), \
+			f'The marketplace({marketplace}) is circular, so all agents need to be circular agehts {agent}'
+
+	elif issubclass(marketplace, linear_market.LinearEconomy):
+		assert issubclass(agent, LinearAgent), \
+			f'The marketplace({marketplace}) is circular, so all agents need to be circular agehts {agent}'
 
 	if issubclass(agent, q_learning_agent.QLearningAgent):
-		QLearningTrainer(marketplace_class=marketplace, agent_class=agent, config=config_hyperparameter).train_agent()
+		QLearningTrainer(
+			marketplace_class=marketplace,
+			agent_class=agent,
+			config=config_hyperparameter).train_agent()
 	else:
 		ActorCriticTrainer(
 			marketplace_class=marketplace,
@@ -79,12 +88,16 @@ def train_continuos_a2c_circular_economy_rebuy():
 
 def train_stable_baselines_ppo():
 	config_hyperparameter: HyperparameterConfig = HyperparameterConfigLoader.load('hyperparameter_config')
-	sbmodel.StableBaselinesPPO(circular_market.CircularEconomyRebuyPriceDuopoly(config_hyperparameter, True)).train_agent()
+	sbmodel.StableBaselinesPPO(
+		config=config_hyperparameter,
+		marketplace=circular_market.CircularEconomyRebuyPriceDuopoly(config_hyperparameter, True)).train_agent()
 
 
 def train_stable_baselines_sac():
 	config_hyperparameter: HyperparameterConfig = HyperparameterConfigLoader.load('hyperparameter_config')
-	sbmodel.StableBaselinesSAC(circular_market.CircularEconomyRebuyPriceDuopoly(config_hyperparameter, True)).train_agent()
+	sbmodel.StableBaselinesSAC(
+		config=config_hyperparameter,
+		marketplace=circular_market.CircularEconomyRebuyPriceDuopoly(config_hyperparameter, True)).train_agent()
 
 
 def train_rl_vs_rl():
@@ -117,4 +130,4 @@ if __name__ == '__main__':
 	# Make sure a valid datapath is set
 	PathManager.manage_user_path()
 
-	train_stable_baselines_ppo()
+	train_q_learning_classic_scenario()

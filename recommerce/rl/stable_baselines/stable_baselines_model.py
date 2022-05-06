@@ -15,7 +15,7 @@ from recommerce.rl.reinforcement_learning_agent import ReinforcementLearningAgen
 
 
 class StableBaselinesAgent(ReinforcementLearningAgent, LinearAgent, CircularAgent):
-	def __init__(self, config: HyperparameterConfig, marketplace=None, load_path=None, name=None):
+	def __init__(self, config: HyperparameterConfig, marketplace, load_path=None, name=None):
 		assert marketplace is not None
 		assert isinstance(marketplace, SimMarket), \
 			f'if marketplace is provided, marketplace must be a SimMarket, but is {type(marketplace)}'
