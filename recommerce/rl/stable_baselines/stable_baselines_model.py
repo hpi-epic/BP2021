@@ -13,7 +13,7 @@ from recommerce.rl.reinforcement_learning_agent import ReinforcementLearningAgen
 
 
 class StableBaselinesAgent(ReinforcementLearningAgent, LinearAgent, CircularAgent):
-	def __init__(self, marketplace=None, load_path=None, name=None):
+	def __init__(self, marketplace, load_path=None, name=None):
 		assert marketplace is not None
 		assert isinstance(marketplace, SimMarket), \
 			f'if marketplace is provided, marketplace must be a SimMarket, but is {type(marketplace)}'
@@ -22,11 +22,12 @@ class StableBaselinesAgent(ReinforcementLearningAgent, LinearAgent, CircularAgen
 
 		self.tensorboard_log = os.path.join(PathManager.results_path, 'runs')
 		self.marketplace = marketplace
+		print(self.marketplace)
 		if load_path is None:
 			self._initialize_model(marketplace)
 			print(f'I initiate {self.name}-agent using {self.model.device} device')
 		if load_path is not None:
-			self._load(load_path)
+			self._load(load_path, marketplace)
 			print(f'I load {self.name}-agent using {self.model.device} device from {load_path}')
 
 		if name is not None:
@@ -47,6 +48,7 @@ class StableBaselinesAgent(ReinforcementLearningAgent, LinearAgent, CircularAgen
 		callback = RecommerceCallback(
 			type(self), type(self.marketplace), training_steps=training_steps, iteration_length=iteration_length,
 			signature=self.name, analyze_after_training=analyze_after_training)
+		print(self.model)
 		self.model.learn(training_steps, callback=callback)
 		return callback.watcher.all_dicts
 
@@ -99,7 +101,7 @@ class StableBaselinesSAC(StableBaselinesAgent):
 	name = 'Stable_Baselines_SAC'
 
 	def _initialize_model(self, marketplace):
-		self.model = SAC('MlpPolicy', marketplace, verbose=False, tensorboard_log=self.tensorboard_log)
+		self.model = SAC(policy='MlpPolicy', env=marketplace, verbose=False, tensorboard_log=self.tensorboard_log)
 
-	def _load(self, load_path):
-		self.model = SAC.load(load_path, tensorboard_log=self.tensorboard_log)
+	def _load(self, load_path, marketplace=None):
+		self.model = SAC.load(env=marketplace, path=load_path, tensorboard_log=self.tensorboard_log)

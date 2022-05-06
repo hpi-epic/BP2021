@@ -17,17 +17,24 @@ class CircularEconomyDatagenerator(CircularEconomyRebuyPriceDuopoly):
 		super(CircularEconomyDatagenerator, self).__init__(support_continuous_action_space)
 		self.cumulated_states = np.array(np.zeros(25)).reshape(25, 1)
 		self.episode_counter = 0
+		self.is_tracking = False
 		# print(self.cumulated_states.shape)
 		# self.cumulated_states = self.cumulated_states
 
 	def step(self, action) -> Tuple[np.array, np.float32, bool, dict]:
 		step_output_tuple = super(CircularEconomyDatagenerator, self).step(action)
-		if self.episode_counter >= 1000:
+		self.is_tracking = False
+
+		if self.is_tracking and self.episode_counter < 6000:
 			self.output_dict_append(self._output_dict, self.step_counter)
-		self.episode_counter += 1
-		if self.episode_counter % 100 == 0:
-			print(f'{self.episode_counter}')
+		elif self.episode_counter >= 5000 and not self.is_tracking:
+			self.is_tracking = True
+			print('*** start tracking ***')
 			print()
+			self.output_dict_append(self._output_dict, self.step_counter)
+
+		self.episode_counter += 1
+
 		return step_output_tuple
 
 	def output_dict_append(self, output_dict: dict, i):

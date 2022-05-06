@@ -140,6 +140,7 @@ class SimMarketKalibrated(CircularEconomyRebuyPriceDuopoly):
 		cost_rebuy = xb[13] * xb[9]
 		# print(f'profit_new: {profit_new}, profit_used: {profit_used}, cost_rebuy: {cost_rebuy}')
 		xb[18] = -xb[10] + profit_new + profit_used - cost_rebuy  # agent	total rewards
+
 		xb[19] = -xb[14] + xb[15] * (xb[2] - self.cost_new_product) + xb[16] * xb[3] - xb[17] * xb[4]  # comp 	total rewards
 
 		# rewards cumulated
@@ -151,7 +152,9 @@ class SimMarketKalibrated(CircularEconomyRebuyPriceDuopoly):
 		# print(f'agent action: {agent_action}, agent reward: {float(xb[18])}')
 		assert xb[18] <= np.inf
 		is_done = self.step_counter >= 50
-		return agent_observation, float(xb[18]), is_done, {}  # xb[18], False, {}
+
+		return agent_observation, float(xb[18]), is_done, {'profits/all': {'vendor_0': float(xb[18]), 'vendor_1': float(xb[19])}}
+		# return agent_observation, xb[18], False, {}
 
 	def _clamp_price(self, price):
 		return max(0, min(price, 9))

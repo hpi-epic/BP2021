@@ -86,7 +86,7 @@ class SimMarketKalibrator:
 
 if __name__ == '__main__':
 	# training_scenario.train_to_calibrate_marketplace()
-	data_path = f'{PathManager.data_path}/kalibration_data/training_data.csv'
+	data_path = f'{PathManager.data_path}/kalibration_data/data_simulated_2.csv'
 	print(data_path)
 	data_frame = pd.read_csv(data_path)
 	data = torch.tensor(data_frame.values).transpose(0, 1)
