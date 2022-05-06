@@ -92,7 +92,7 @@ $(document).ready(function() {
 	var ws = new WebSocket(url);
 	ws.onopen = function (_) {
 		console.log("connection to ", url, "open");
-	}
+	};
 	ws.onmessage = function(event) {
 		const csrftoken = getCookie("csrftoken");
 		$.ajax({
@@ -108,9 +108,8 @@ $(document).ready(function() {
 			}
 		});
 		console.log(event.data);
-	}
-
+	};
 	ws.onclose = function(_) {
 		console.log("connection to ", url, "closed");
-	}
+	};
 });

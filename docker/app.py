@@ -1,4 +1,3 @@
-# app.py
 import hashlib
 import os
 import time
@@ -22,8 +21,8 @@ from fastapi.responses import JSONResponse, StreamingResponse
 # uvicorn --host 0.0.0.0 app:app --reload
 # instead to expose it to the local network
 manager = DockerManager()
-
 app = FastAPI()
+is_webserver = True
 
 
 def is_invalid_status(status: str) -> bool:
@@ -59,13 +58,27 @@ def verify_token(request: Request) -> bool:
 	except KeyError:
 		print('The request did not set an Authorization header')
 		return False
-	master_secret_as_int = sum(ord(c) for c in os.environ['AUTHORIZATION_TOKEN'])
-	current_time = int(time.time() / 3600)  # unix time in hours
-	# token, that is currently expected
-	expected_this_token = hashlib.sha256(str(master_secret_as_int + current_time).encode('utf-8')).hexdigest()
-	# token that was expected last hour
-	expected_last_token = hashlib.sha256(str(master_secret_as_int + (current_time - 3600)).encode('utf-8')). hexdigest()
-	return token == expected_this_token or token == expected_last_token
+
+	try:
+		with open('./env.txt', 'r') as file:
+			secrets = file.readlines()
+	except FileNotFoundError:
+		print('could not find suitable `.env.txt`. Trying to use env variables instead')
+		try:
+			secrets = [os.environ['AUTHORIZATION_TOKEN_WEB'], os.environ['AUTHORIZATION_TOKEN']]
+		except KeyError:
+			print('could not get environment variables.')
+			return False
+	last_webserver_token, this_webserver_token = _convert_secret_to_token(secrets[0])
+	last_other_token, this_other_token = _convert_secret_to_token(secrets[1])
+	global is_webserver
+	if token == last_webserver_token or this_webserver_token == token:
+		is_webserver = True
+		return True
+	if token == last_other_token or token == this_other_token:
+		is_webserver = False
+		return True
+	return False
 
 
 @app.post('/start')
@@ -83,7 +96,8 @@ async def start_container(num_experiments: int, config: Request, authorized: boo
 	"""
 	if not authorized:
 		return JSONResponse(status_code=401, content=vars(DockerInfo('', 'Not authorized')))
-	all_container_infos = manager.start(config=await config.json(), count=num_experiments)
+	all_container_infos = manager.start(config=await config.json(), count=num_experiments, is_webserver=is_webserver)
+
 	# check if all prerequisites were met
 	if type(all_container_infos) == DockerInfo:
 		return JSONResponse(status_code=404, content=vars(all_container_infos))
@@ -277,6 +291,16 @@ async def check_if_api_is_available(authorized: bool = Depends(verify_token)) ->
 	docker_status = manager.ping()
 	status_code = 200 if docker_status else 404
 	return JSONResponse({'status': docker_status}, status_code=status_code)
+
+
+def _convert_secret_to_token(secret: str) -> tuple:
+	master_secret_as_int = sum(ord(c) for c in secret)
+	current_time = int(time.time() / 3600)  # unix time in hours
+	# token, that is currently expected
+	expected_this_token = hashlib.sha256(str(master_secret_as_int + current_time).encode('utf-8')).hexdigest()
+	# token that was expected last hour
+	expected_last_token = hashlib.sha256(str(master_secret_as_int + (current_time - 3600)).encode('utf-8')). hexdigest()
+	return expected_last_token, expected_this_token
 
 
 if __name__ == '__main__':
