@@ -91,8 +91,6 @@ class Configurator():
 		agents_with_config = [(current_agent[0], [self.config] + current_agent[1]) for current_agent in agents]
 
 		for current_agent in agents_with_config:
-			# assert isinstance(current_agent[1][0], HyperparameterConfig), f'the first argument is type {type(current_agent[1][0])}'
-			print('current-agent:', current_agent)
 			if issubclass(current_agent[0], (RuleBasedAgent, HumanPlayer)):
 				# The custom_init takes two parameters: The class of the agent to be initialized and a list of arguments,
 				# e.g. for the fixed prices or names
@@ -139,7 +137,7 @@ class Configurator():
 						)
 					self.agents.append(new_agent)
 				except RuntimeError as error:  # pragma: no cover
-					raise RuntimeError('the modelfile is not compatible with the agent you tried to instantiate') from error
+					raise RuntimeError('The modelfile is not compatible with the agent you tried to instantiate') from error
 			else:  # pragma: no cover
 				assert False, f'{current_agent[0]} is neither a RuleBased nor a QLearning agent nor a HumanPlayer'
 

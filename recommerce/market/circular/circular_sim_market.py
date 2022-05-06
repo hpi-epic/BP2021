@@ -5,6 +5,7 @@ import numpy as np
 
 import recommerce.market.circular.circular_vendors as circular_vendors
 import recommerce.market.owner as owner
+from recommerce.configuration.hyperparameter_config import HyperparameterConfig
 from recommerce.market.circular.circular_customers import CustomerCircular
 from recommerce.market.customer import Customer
 from recommerce.market.owner import Owner
@@ -300,9 +301,9 @@ class CircularEconomyRebuyPriceVariableDuopoly(CircularEconomyRebuyPrice):
 	that is passed as a parameter to the constructor of the class.
 	"""
 
-	def __init__(self, constant_agent: circular_vendors.CircularAgent):
+	def __init__(self, config: HyperparameterConfig, constant_agent: circular_vendors.CircularAgent):
 		self.customized_competitor_list = [constant_agent]
-		super().__init__(True)
+		super().__init__(config=config, support_continuous_action_space=True)
 
 	def _get_competitor_list(self) -> list:
 		return self.customized_competitor_list

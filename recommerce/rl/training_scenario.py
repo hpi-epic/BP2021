@@ -51,33 +51,45 @@ def train_q_learning_classic_scenario():
 	"""
 	Train a Linear QLearningAgent on a Linear Market with one competitor.
 	"""
-	run_training_session(linear_market.LinearEconomyDuopoly, q_learning_agent.QLearningAgent)
+	run_training_session(
+		config_hyperparameter=HyperparameterConfigLoader.load('hyperparameter_config'),
+		marketplace=linear_market.LinearEconomyDuopoly,
+		agent=q_learning_agent.QLearningAgent)
 
 
 def train_q_learning_circular_economy_rebuy():
 	"""
 	Train a Circular Economy QLearningAgent on a Circular Economy Market with Rebuy Prices and one competitor.
 	"""
-	run_training_session(circular_market.CircularEconomyRebuyPriceDuopoly, q_learning_agent.QLearningAgent)
+	run_training_session(
+		config_hyperparameter=HyperparameterConfigLoader.load('hyperparameter_config'),
+		marketplace=circular_market.CircularEconomyRebuyPriceDuopoly,
+		agent=q_learning_agent.QLearningAgent)
 
 
 def train_continuos_a2c_circular_economy_rebuy():
 	"""
 	Train an ActorCriticAgent on a Circular Economy Market with Rebuy Prices and one competitor.
 	"""
-	run_training_session(circular_market.CircularEconomyRebuyPriceDuopoly, actorcritic_agent.ContinuosActorCriticAgentFixedOneStd)
+	run_training_session(
+		config_hyperparameter=HyperparameterConfigLoader.load('hyperparameter_config'),
+		marketplace=circular_market.CircularEconomyRebuyPriceDuopoly,
+		agent=actorcritic_agent.ContinuosActorCriticAgentFixedOneStd)
 
 
 def train_stable_baselines_ppo():
-	sbmodel.StableBaselinesPPO(circular_market.CircularEconomyRebuyPriceDuopoly(True)).train_agent()
+	config_hyperparameter: HyperparameterConfig = HyperparameterConfigLoader.load('hyperparameter_config')
+	sbmodel.StableBaselinesPPO(circular_market.CircularEconomyRebuyPriceDuopoly(config_hyperparameter, True)).train_agent()
 
 
 def train_stable_baselines_sac():
-	sbmodel.StableBaselinesSAC(circular_market.CircularEconomyRebuyPriceDuopoly(True)).train_agent()
+	config_hyperparameter: HyperparameterConfig = HyperparameterConfigLoader.load('hyperparameter_config')
+	sbmodel.StableBaselinesSAC(circular_market.CircularEconomyRebuyPriceDuopoly(config_hyperparameter, True)).train_agent()
 
 
 def train_rl_vs_rl():
-	rl_vs_rl_training.train_rl_vs_rl()
+	config_hyperparameter: HyperparameterConfig = HyperparameterConfigLoader.load('hyperparameter_config')
+	rl_vs_rl_training.train_rl_vs_rl(config_hyperparameter)
 
 
 def train_self_play():
@@ -91,7 +103,10 @@ def train_from_config():
 	config: TrainingEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_training')
 	config_hyperparameter: HyperparameterConfig = HyperparameterConfigLoader.load('hyperparameter_config')
 	# TODO: Theoretically, the name of the agent is saved in config['name'], but we don't use it yet.
-	run_training_session(config_hyperparameter, config.marketplace, config.agent['agent_class'])
+	run_training_session(
+		config_hyperparameter=config_hyperparameter,
+		marketplace=config.marketplace,
+		agent=config.agent['agent_class'])
 
 
 def main():
@@ -102,4 +117,4 @@ if __name__ == '__main__':
 	# Make sure a valid datapath is set
 	PathManager.manage_user_path()
 
-	main()
+	train_stable_baselines_ppo()
