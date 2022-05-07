@@ -116,6 +116,7 @@ class ContainerDB:
 			print(f'Could not create database table. {e}')
 
 	def _insert_into_database(self, container_row: ContainerDBRow):
+		print(f'inserting {container_row.container_id}')
 		cursor, db = self._create_connection()
 		try:
 			cursor.execute(
@@ -127,6 +128,7 @@ class ContainerDB:
 		except Exception as e:
 			print(f'Could not insert value into database: {e}')
 		self._tear_down_connection(db, cursor)
+		print(self.get_all_container())
 
 	def _select_value(self, key_to_select, container_id) -> str:
 		data = ''
