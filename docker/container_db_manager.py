@@ -47,11 +47,8 @@ class ContainerDB:
 	def __init__(self) -> None:
 		self.db_file = 'sqlite.db'
 		self.table_name = 'container'
-		cursor, db = self._create_connection()
-		cursor.execute('SELECT name FROM sqlite_master WHERE type="table" AND name=:name', {'name': self.table_name})
-		if not cursor.fetchone():
-			self._create_container_table(db, cursor)
-		self._tear_down_connection(db, cursor)
+		if not self._does_table_exist():
+			self._create_container_table()
 
 	def get_all_container(self):
 		data = None
@@ -110,7 +107,9 @@ class ContainerDB:
 			print(f'Could not connect to the database {e}')
 		return None, None
 
-	def _create_container_table(self, db, cursor):
+	def _create_container_table(self):
+		print('creating table')
+		cursor, db = self._create_connection()
 		try:
 			cursor.execute(
 				f"""
@@ -119,8 +118,17 @@ class ContainerDB:
 					config, started_at, started_by, stopped_at, force_stop, health, paused, resumed, tensorboard, logs, data)
 				"""
 			)
+			db.commit()
 		except Exception as e:
 			print(f'Could not create database table. {e}')
+		self._tear_down_connection(db, cursor)
+
+	def _does_table_exist(self) -> bool:
+		cursor, db = self._create_connection()
+		cursor.execute('SELECT name FROM sqlite_master WHERE type="table" AND name=:name', {'name': self.table_name})
+		data = cursor.fetchone()
+		self._tear_down_connection(db, cursor)
+		return bool(data)
 
 	def _insert_into_database(self, container_row: ContainerDBRow):
 		cursor, db = self._create_connection()
