@@ -195,7 +195,7 @@ class RecommerceCallback(BaseCallback):
 					else self.marketplace_class),
 				agent_list,
 				support_continuous_action_space=hasattr(self.model, 'env'),
-                config=self.config)
+				config=self.config)
 			rewards = monitor.run_marketplace()
 			episode_numbers = [int(parameter_path[-9:][:5]) for parameter_path in self.saved_parameter_paths]
 			Evaluator(monitor.configurator).evaluate_session(rewards, episode_numbers)

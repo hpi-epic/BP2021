@@ -1,6 +1,6 @@
+from recommerce.configuration.hyperparameter_config import HyperparameterConfig
 from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPriceDuopoly, CircularEconomyRebuyPriceVariableDuopoly
 from recommerce.rl.stable_baselines.stable_baselines_model import StableBaselinesAgent, StableBaselinesPPO
-from recommerce.configuration.hyperparameter_config import HyperparameterConfig
 
 
 def train_self_play(config: HyperparameterConfig, agent_class: StableBaselinesAgent=StableBaselinesPPO, training_steps=1000000):
