@@ -9,15 +9,20 @@ import recommerce.rl.rl_vs_rl_training as rl_vs_rl_training
 import recommerce.rl.self_play as self_play
 import recommerce.rl.stable_baselines.stable_baselines_model as sbmodel
 from recommerce.configuration.environment_config import EnvironmentConfigLoader, TrainingEnvironmentConfig
+from recommerce.configuration.hyperparameter_config import HyperparameterConfig, HyperparameterConfigLoader
 from recommerce.configuration.path_manager import PathManager
 from recommerce.market.circular.circular_vendors import CircularAgent
+from recommerce.market.linear.linear_vendors import LinearAgent
 from recommerce.rl.actorcritic.actorcritic_training import ActorCriticTrainer
 from recommerce.rl.q_learning.q_learning_training import QLearningTrainer
 
 print('successfully imported torch: cuda?', torch.cuda.is_available())
 
 
-def run_training_session(marketplace=circular_market.CircularEconomyRebuyPriceDuopoly, agent=q_learning_agent.QLearningAgent):
+def run_training_session(
+		config_hyperparameter: HyperparameterConfig,
+		marketplace=circular_market.CircularEconomyRebuyPriceDuopoly,
+		agent=q_learning_agent.QLearningAgent):
 	"""
 	Run a training session with the passed marketplace and QLearningAgent.
 	Args:
@@ -29,13 +34,25 @@ def run_training_session(marketplace=circular_market.CircularEconomyRebuyPriceDu
 		f'the type of the passed marketplace must be a subclass of SimMarket: {marketplace}'
 	assert issubclass(agent, (q_learning_agent.QLearningAgent, actorcritic_agent.ActorCriticAgent)), \
 		f'the RL_agent_class passed must be a subclass of either QLearningAgent or ActorCriticAgent: {agent}'
-	assert issubclass(agent, CircularAgent) == issubclass(marketplace, circular_market.CircularEconomy), \
-		f'the agent and marketplace must be of the same economy type (Linear/Circular): {agent} and {marketplace}'
+	if issubclass(marketplace, circular_market.CircularEconomy):
+		assert issubclass(agent, CircularAgent), \
+			f'The marketplace({marketplace}) is circular, so all agents need to be circular agehts {agent}'
+
+	elif issubclass(marketplace, linear_market.LinearEconomy):
+		assert issubclass(agent, LinearAgent), \
+			f'The marketplace({marketplace}) is circular, so all agents need to be circular agehts {agent}'
 
 	if issubclass(agent, q_learning_agent.QLearningAgent):
-		QLearningTrainer(marketplace, agent).train_agent()
+		QLearningTrainer(
+			marketplace_class=marketplace,
+			agent_class=agent,
+			config=config_hyperparameter).train_agent()
 	else:
-		ActorCriticTrainer(marketplace, agent).train_agent(number_of_training_steps=10000)
+		ActorCriticTrainer(
+			marketplace_class=marketplace,
+			agent_class=agent,
+			config=config_hyperparameter
+			).train_agent(number_of_training_steps=10000)
 
 
 # Just add some standard usecases.
@@ -43,33 +60,49 @@ def train_q_learning_classic_scenario():
 	"""
 	Train a Linear QLearningAgent on a Linear Market with one competitor.
 	"""
-	run_training_session(linear_market.LinearEconomyDuopoly, q_learning_agent.QLearningAgent)
+	run_training_session(
+		config_hyperparameter=HyperparameterConfigLoader.load('hyperparameter_config'),
+		marketplace=linear_market.LinearEconomyDuopoly,
+		agent=q_learning_agent.QLearningAgent)
 
 
 def train_q_learning_circular_economy_rebuy():
 	"""
 	Train a Circular Economy QLearningAgent on a Circular Economy Market with Rebuy Prices and one competitor.
 	"""
-	run_training_session(circular_market.CircularEconomyRebuyPriceDuopoly, q_learning_agent.QLearningAgent)
+	run_training_session(
+		config_hyperparameter=HyperparameterConfigLoader.load('hyperparameter_config'),
+		marketplace=circular_market.CircularEconomyRebuyPriceDuopoly,
+		agent=q_learning_agent.QLearningAgent)
 
 
 def train_continuos_a2c_circular_economy_rebuy():
 	"""
 	Train an ActorCriticAgent on a Circular Economy Market with Rebuy Prices and one competitor.
 	"""
-	run_training_session(circular_market.CircularEconomyRebuyPriceDuopoly, actorcritic_agent.ContinuosActorCriticAgentFixedOneStd)
+	run_training_session(
+		config_hyperparameter=HyperparameterConfigLoader.load('hyperparameter_config'),
+		marketplace=circular_market.CircularEconomyRebuyPriceDuopoly,
+		agent=actorcritic_agent.ContinuosActorCriticAgentFixedOneStd)
 
 
 def train_stable_baselines_ppo():
-	sbmodel.StableBaselinesPPO(circular_market.CircularEconomyRebuyPriceDuopoly(True)).train_agent()
+	config_hyperparameter: HyperparameterConfig = HyperparameterConfigLoader.load('hyperparameter_config')
+	sbmodel.StableBaselinesPPO(
+		config=config_hyperparameter,
+		marketplace=circular_market.CircularEconomyRebuyPriceDuopoly(config_hyperparameter, True)).train_agent()
 
 
 def train_stable_baselines_sac():
-	sbmodel.StableBaselinesSAC(circular_market.CircularEconomyRebuyPriceDuopoly(True)).train_agent()
+	config_hyperparameter: HyperparameterConfig = HyperparameterConfigLoader.load('hyperparameter_config')
+	sbmodel.StableBaselinesSAC(
+		config=config_hyperparameter,
+		marketplace=circular_market.CircularEconomyRebuyPriceDuopoly(config_hyperparameter, True)).train_agent()
 
 
 def train_rl_vs_rl():
-	rl_vs_rl_training.train_rl_vs_rl()
+	config_hyperparameter: HyperparameterConfig = HyperparameterConfigLoader.load('hyperparameter_config')
+	rl_vs_rl_training.train_rl_vs_rl(config_hyperparameter)
 
 
 def train_self_play():
@@ -81,8 +114,12 @@ def train_from_config():
 	Use the `environment_config_training.json` file to decide on the training parameters.
 	"""
 	config: TrainingEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_training')
+	config_hyperparameter: HyperparameterConfig = HyperparameterConfigLoader.load('hyperparameter_config')
 	# TODO: Theoretically, the name of the agent is saved in config['name'], but we don't use it yet.
-	run_training_session(config.marketplace, config.agent['agent_class'])
+	run_training_session(
+		config_hyperparameter=config_hyperparameter,
+		marketplace=config.marketplace,
+		agent=config.agent['agent_class'])
 
 
 def main():
@@ -93,4 +130,4 @@ if __name__ == '__main__':
 	# Make sure a valid datapath is set
 	PathManager.manage_user_path()
 
-	main()
+	train_q_learning_classic_scenario()

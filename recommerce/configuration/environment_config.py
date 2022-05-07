@@ -374,11 +374,11 @@ class EnvironmentConfigLoader():
 
 
 if __name__ == '__main__':  # pragma: no cover
-	config: ExampleprinterEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_exampleprinter')
-	print(config)
+	config_environment_exampleprinter: ExampleprinterEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_exampleprinter')
+	print(config_environment_exampleprinter)
 	print()
-	config: AgentMonitoringEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_agent_monitoring')
-	print(config)
+	config_environment_am: AgentMonitoringEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_agent_monitoring')
+	print(config_environment_am)
 	print()
-	config: TrainingEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_training')
-	print(config)
+	config_environment_training: TrainingEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_training')
+	print(config_environment_training)
