@@ -1,3 +1,4 @@
+import csv
 import json
 import tarfile
 import zipfile
@@ -119,7 +120,13 @@ def get_statistic_data(csv_string: str) -> HttpResponse:
 	final_lines = []
 	for line in lines:
 		final_lines += [line.split(';')]
-	print(final_lines)
+	response = HttpResponse(
+		content_type='text/csv',
+		headers={'Content-Disposition': 'attachment; filename="statistics.csv"'},
+	)
+	writer = csv.writer(response, delimiter=';', quotechar='"')
+	writer.writerows(final_lines)
+	return response
 
 
 def _add_files_to_zip(file_like_zip: BytesIO, string_to_add: str) -> BytesIO:

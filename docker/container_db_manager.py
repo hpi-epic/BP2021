@@ -85,6 +85,7 @@ class ContainerDB:
 		data = self.get_all_container()
 		final_data = ''
 		for line in [header] + data:
+			print(line)
 			final_data += ';'.join(line) + '\n'
 		return final_data.strip()
 
