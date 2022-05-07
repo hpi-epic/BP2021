@@ -60,7 +60,7 @@ def verify_token(request: Request) -> bool:
 		return False
 
 	try:
-		with open('./env.txt', 'r') as file:
+		with open('./.env.txt', 'r') as file:
 			secrets = file.readlines()
 	except FileNotFoundError:
 		print('could not find suitable `.env.txt`. Trying to use env variables instead')

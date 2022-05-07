@@ -91,7 +91,7 @@ class ContainerDB:
 	def has_been_stopped(self, container_id, status_before_checked):
 		self._update_value('stopped_at', datetime.now(), container_id)
 		has_been_forced_stopped = status_before_checked != 'exited'
-		self._update_value('force_stop', has_been_forced_stopped)
+		self._update_value('force_stop', has_been_forced_stopped, container_id)
 
 	def _create_connection(self):
 		db = None
@@ -137,11 +137,11 @@ class ContainerDB:
 				SELECT {key_to_select} FROM {self.table_name} WHERE container_id = :container_id OR container_id=1234
 				""", {'container_id': container_id}
 			)
-			data = cursor.fetchone()
+			data = cursor.fetchone()[0]
 		except Exception as e:
 			print(f'Could not select value: {e}')
 		self._tear_down_connection(db, cursor)
-		return data[0]
+		return data
 
 	def _tear_down_connection(self, db, cursor):
 		try:
