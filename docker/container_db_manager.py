@@ -1,5 +1,6 @@
 # import datetime
 import sqlite3
+from datetime import datetime
 
 
 class ContainerDBRow:
@@ -30,12 +31,11 @@ class ContainerDBRow:
 		self.logs = _logs if _logs else ''
 		self.data = _data if _data else ''
 
-	def to_tuple(self) -> tuple:
-		return tuple(vars(self).values())
+	def column_names(self) -> tuple:
+		return {a: a for a in vars(self).keys()}
 
-	@classmethod
-	def column_names(cls) -> tuple:
-		return tuple(vars(cls).keys())
+	def sql_column_names(self) -> str:
+		return str(tuple([':' + k for k in vars(self).keys()])).replace("'", '')
 
 
 class ContainerDB:
@@ -43,41 +43,55 @@ class ContainerDB:
 		self.db_file = 'sqlite.db'
 		self.table_name = 'container'
 		cursor, db = self._create_connection()
-		cursor.execute('SELECT name FROM sqlite_master WHERE type="table" AND name="?"', tuple(self.table_name))
+		cursor.execute('SELECT name FROM sqlite_master WHERE type="table" AND name=:name', {'name': self.table_name})
+		if not cursor.fetchone():
+			self._create_container_table(db, cursor)
 		self._tear_down_connection(db, cursor)
-		# self.db = sqlite3.connect(self.db_file)
 
 	def get_all_container(self):
-		pass
-
-	def insert(self, all_container_infos, current_time, is_webserver_user: bool, config: dict) -> None:
-		print(all_container_infos)
+		data = None
 		cursor, db = self._create_connection()
-		for container_info in all_container_infos:
-			pass
-		# self.container_table.insert({'bla': str(a)})
+		try:
+			cursor.execute(
+				"""
+				SELECT * FROM container
+				"""
+			)
+			data = cursor.fetchall()
+		except Exception as e:
+			print(f'Could not insert value into database: {e}')
+
 		self._tear_down_connection(db, cursor)
+		return data
+
+	def insert(self, all_container_infos, starting_time, is_webserver_user: bool, config: dict) -> None:
+		container_starter = 'websrv.eaalab' if is_webserver_user else 'dev'
+		for container_info in all_container_infos:
+			current_container = ContainerDBRow(container_info.id, config, starting_time, container_starter)
+			self._insert_into_database(current_container)
 
 	def has_been_paused(self, container_id):
-		pass
+		self._update_value('paused', datetime.now(), container_id)
 
 	def has_got_tensorboard(self, container_id):
-		pass
+		self._update_value('tensorboard', datetime.now(), container_id)
 
 	def has_got_data(self, container_id):
-		pass
+		self._update_value('data', datetime.now(), container_id)
 
 	def has_been_health_checked(self, container_id):
-		pass
+		self._update_value('health', datetime.now(), container_id)
 
 	def has_been_unpaused(self, container_id):
-		pass
+		self._update_value('resumed', datetime.now(), container_id)
 
 	def has_got_logs(self, container_id):
-		pass
+		self._update_value('logs', datetime.now(), container_id)
 
 	def has_been_stopped(self, container_id, status_before_checked):
-		pass
+		self._update_value('stopped_at', datetime.now(), container_id)
+		has_been_forced_stopped = status_before_checked != 'exited'
+		self._update_value('force_stop', has_been_forced_stopped)
 
 	def _create_connection(self):
 		db = None
@@ -92,22 +106,42 @@ class ContainerDB:
 	def _create_container_table(self, db, cursor):
 		try:
 			cursor.execute(
+				f"""
+				CREATE TABLE {self.table_name}
+					(container_id TEXT PRIMARY KEY,
+					config, started_at, started_by, stopped_at, force_stop, health, paused, resumed, tensorboard, logs, data)
 				"""
-				CREATE TABLE ? (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-				""", tuple(self.table_name) + ContainerDBRow.column_names())
-		except Exception:
-			print('Could not create database table.')
+			)
+		except Exception as e:
+			print(f'Could not create database table. {e}')
 
 	def _insert_into_database(self, container_row: ContainerDBRow):
 		cursor, db = self._create_connection()
 		try:
 			cursor.execute(
-				"""
-				INSERT INTO ? VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-				""", tuple(self.table_name) + container_row.to_tuple())
-		except Exception:
-			print('Could not insert value into database')
+				f"""
+				INSERT INTO container VALUES {ContainerDBRow().sql_column_names()}
+				""", vars(container_row)
+			)
+			db.commit()
+		except Exception as e:
+			print(f'Could not insert value into database: {e}')
 		self._tear_down_connection(db, cursor)
+
+	def _select_value(self, key_to_select, container_id) -> str:
+		data = ''
+		cursor, db = self._create_connection()
+		try:
+			cursor.execute(
+				f"""
+				SELECT {key_to_select} FROM {self.table_name} WHERE container_id = :container_id OR container_id=1234
+				""", {'container_id': container_id}
+			)
+			data = cursor.fetchone()
+		except Exception as e:
+			print(f'Could not select value: {e}')
+		self._tear_down_connection(db, cursor)
+		return data[0]
 
 	def _tear_down_connection(self, db, cursor):
 		try:
@@ -115,3 +149,19 @@ class ContainerDB:
 			db.close()
 		except Exception:
 			print('Could not disconnect from the database.')
+
+	def _update_value(self, key_to_update, value_to_update, container_id):
+		# figure out if value already exists
+		previous_value = self._select_value(key_to_update, container_id)
+		new_value = ';'.join([previous_value, value_to_update]) if previous_value else value_to_update
+		cursor, db = self._create_connection()
+		try:
+			cursor.execute(
+				f"""
+				UPDATE container SET {key_to_update} = :value WHERE container_id = :container_id
+				""", {'value': new_value, 'container_id': container_id}
+			)
+			db.commit()
+		except Exception as e:
+			print(f'Could not update value: {e}')
+		self._tear_down_connection(db, cursor)
