@@ -5,7 +5,7 @@ import numpy as np
 import torch
 
 import recommerce.rl.model as model
-from recommerce.configuration.hyperparameter_config import config
+from recommerce.configuration.hyperparameter_config import HyperparameterConfig
 from recommerce.market.circular.circular_vendors import CircularAgent
 from recommerce.market.linear.linear_vendors import LinearAgent
 from recommerce.market.sim_market import SimMarket
@@ -21,6 +21,7 @@ class QLearningAgent(ReinforcementLearningAgent, CircularAgent, LinearAgent):
 	# Give no optim if you don't want training.
 	def __init__(
 			self,
+			config: HyperparameterConfig,
 			marketplace: SimMarket,
 			device='cuda' if torch.cuda.is_available() else 'cpu',
 			load_path=None,
@@ -31,7 +32,7 @@ class QLearningAgent(ReinforcementLearningAgent, CircularAgent, LinearAgent):
 		n_observations = marketplace.get_observations_dimension()
 		self.n_actions = marketplace.get_n_actions()
 		self.actions_dimension = marketplace.get_actions_dimension()
-
+		self.config = config
 		self.device = device
 		self.buffer_for_feedback = None
 		self.name = name
@@ -43,9 +44,9 @@ class QLearningAgent(ReinforcementLearningAgent, CircularAgent, LinearAgent):
 
 		# Here is assumed that training happens if and only if no load_path is given.
 		if load_path is None:
-			self.optimizer = torch.optim.Adam(self.net.parameters(), lr=config.learning_rate)
+			self.optimizer = torch.optim.Adam(self.net.parameters(), lr=self.config.learning_rate)
 			self.tgt_net = network_architecture(n_observations, self.n_actions).to(self.device)
-			self.buffer = ExperienceBuffer(config.replay_size)
+			self.buffer = ExperienceBuffer(self.config.replay_size)
 
 	@torch.no_grad()
 	def policy(self, observation, epsilon=0):
@@ -71,11 +72,10 @@ class QLearningAgent(ReinforcementLearningAgent, CircularAgent, LinearAgent):
 		"""
 		if self.actions_dimension == 1:
 			return action
-
 		action_list = []
 		for _ in range(self.actions_dimension):
-			action_list.append(action % config.max_price)
-			action = action // config.max_price
+			action_list.append(action % self.config.max_price)
+			action = action // self.config.max_price
 		action_list.reverse()
 		return tuple(action_list)
 
@@ -86,7 +86,7 @@ class QLearningAgent(ReinforcementLearningAgent, CircularAgent, LinearAgent):
 
 	def train_batch(self):
 		self.optimizer.zero_grad()
-		batch = self.buffer.sample(config.batch_size)
+		batch = self.buffer.sample(self.config.batch_size)
 		loss_t, selected_q_val_mean = self.calc_loss(batch, self.device)
 		loss_t.backward()
 		self.optimizer.step()
@@ -111,7 +111,7 @@ class QLearningAgent(ReinforcementLearningAgent, CircularAgent, LinearAgent):
 			next_state_values[done_mask] = 0.0
 			next_state_values = next_state_values.detach()
 
-		expected_state_action_values = next_state_values * config.gamma + rewards_v
+		expected_state_action_values = next_state_values * self.config.gamma + rewards_v
 		return torch.nn.MSELoss()(state_action_values, expected_state_action_values), state_action_values.mean()
 
 	def save(self, model_path: str) -> None:

@@ -13,17 +13,6 @@ def teardown_module(module):
 	reload(hyperparameter_config)
 
 
-def import_config() -> hyperparameter_config.HyperparameterConfig:
-	"""
-	Reload the hyperparameter_config file to update the config variable with the mocked values.
-
-	Returns:
-		HyperparameterConfig: The config object.
-	"""
-	reload(hyperparameter_config)
-	return hyperparameter_config.config
-
-
 # mock format taken from:
 # https://stackoverflow.com/questions/1289894/how-do-i-mock-an-open-used-in-a-with-statement-using-the-mock-framework-in-pyth
 # Test that checks if the config.json is read correctly
@@ -32,15 +21,15 @@ def test_reading_file_values():
 	with patch('builtins.open', mock_open(read_data=mock_json)) as mock_file:
 		ut_t.check_mock_file(mock_file, mock_json)
 
-		config = import_config()
+		config = hyperparameter_config.HyperparameterConfigLoader.load('hyperparameter_config')
 
-		assert config.max_storage == 20
-		assert config.episode_length == 20
-		assert config.max_price == 15
-		assert config.max_quality == 100
-		assert config.number_of_customers == 30
-		assert config.production_price == 5
-		assert config.storage_cost_per_product == 0.3
+		assert config.max_storage == 100
+		assert config.episode_length == 25
+		assert config.max_price == 10
+		assert config.max_quality == 50
+		assert config.number_of_customers == 10
+		assert config.production_price == 3
+		assert config.storage_cost_per_product == 0.1
 
 	# Test a second time with other values to ensure, that the values are read correctly
 	mock_json = json.dumps(ut_t.create_hyperparameter_mock_dict(
@@ -48,7 +37,7 @@ def test_reading_file_values():
 	with patch('builtins.open', mock_open(read_data=mock_json)) as mock_file:
 		ut_t.check_mock_file(mock_file, mock_json)
 
-		config = import_config()
+		config = hyperparameter_config.HyperparameterConfigLoader.load('hyperparameter_config')
 
 		assert config.max_storage == 50
 		assert config.episode_length == 50
@@ -115,5 +104,5 @@ def test_invalid_values(sim_market_json, expected_message):
 	with patch('builtins.open', mock_open(read_data=mock_json)) as mock_file:
 		ut_t.check_mock_file(mock_file, mock_json)
 		with pytest.raises(AssertionError) as assertion_message:
-			import_config()
+			hyperparameter_config.HyperparameterConfigLoader.load('hyperparameter_config')
 		assert expected_message in str(assertion_message.value)

@@ -11,6 +11,7 @@ from tqdm import tqdm
 from tqdm.auto import trange
 
 import recommerce.configuration.utils as ut
+from recommerce.configuration.hyperparameter_config import HyperparameterConfig
 from recommerce.configuration.path_manager import PathManager
 from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPriceDuopoly, CircularEconomyRebuyPriceVariableDuopoly
 from recommerce.market.sim_market import SimMarket
@@ -29,25 +30,28 @@ class RecommerceCallback(BaseCallback):
 	After 'iteration_length' episodes, the best model in that time span is saved to disk.
 	"""
 	def __init__(
-			self,
-			agent_class,
-			marketplace_class,
-			training_steps=10000,
-			iteration_length=500,
-			file_ending='zip',
-			signature='train',
-			analyze_after_training=True):
+		self,
+		agent_class,
+		marketplace_class,
+		config: HyperparameterConfig,
+		training_steps=10000,
+		iteration_length=500,
+		file_ending='zip',
+		signature='train',
+		analyze_after_training=True):
+
 		assert issubclass(agent_class, ReinforcementLearningAgent)
 		assert issubclass(marketplace_class, SimMarket)
 		assert isinstance(training_steps, int) and training_steps > 0
 		assert isinstance(iteration_length, int) and iteration_length > 0
 		super(RecommerceCallback, self).__init__(True)
 		# Change the 128 to the right parameter as soon as #211 is implemented.
-		self.watcher = Watcher(128) if issubclass(agent_class, ActorCriticAgent) else Watcher()
+		self.config = config
+		self.watcher = Watcher(config=self.config, number_envs=128) if issubclass(agent_class, ActorCriticAgent) else Watcher(config=self.config)
 		self.best_mean_interim_reward = None
 		self.best_mean_overall_reward = None
-		self.marketplace_class = marketplace_class
 		self.agent_class = agent_class
+		self.marketplace_class = marketplace_class
 		self.iteration_length = iteration_length
 		self.file_ending = file_ending
 		self.signature = signature
@@ -105,7 +109,6 @@ class RecommerceCallback(BaseCallback):
 
 		self.watcher.add_info(info)
 		self.tqdm_instance.update()
-
 		assert isinstance(finished_episodes, int)
 
 		assert finished_episodes >= self.last_finished_episode
@@ -191,7 +194,8 @@ class RecommerceCallback(BaseCallback):
 				(CircularEconomyRebuyPriceDuopoly if issubclass(self.marketplace_class, CircularEconomyRebuyPriceVariableDuopoly)
 					else self.marketplace_class),
 				agent_list,
-				support_continuous_action_space=hasattr(self.model, 'env'))
+				support_continuous_action_space=hasattr(self.model, 'env'),
+                config=self.config)
 			rewards = monitor.run_marketplace()
 			episode_numbers = [int(parameter_path[-9:][:5]) for parameter_path in self.saved_parameter_paths]
 			Evaluator(monitor.configurator).evaluate_session(rewards, episode_numbers)
