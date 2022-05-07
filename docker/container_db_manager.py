@@ -8,38 +8,45 @@ from utils import bcolors
 
 class ContainerDBRow:
 	def __init__(self,
-		_container_id: str = None,
-		_config: str = None,
-		_started_at: str = None,
-		_started_by: str = None,
+		_container_id: str = '',
+		_config: str = '',
+		_started_at: str = '',
+		_started_by: str = '',
 		_group_id: str = uuid4(),
 		_group_member: int = 1,
-		_stopped_at: str = None,
-		_force_stop: str = None,
-		_health: str = None,
-		_paused: str = None,
-		_resumed: str = None,
-		_tensorboard: str = None,
-		_logs: str = None,
-		_data: str = None) -> None:
+		_stopped_at: str = '',
+		_force_stop: str = '',
+		_exited_at: str = '',
+		_exit_status: str = '',
+		_health: str = '',
+		_paused: str = '',
+		_resumed: str = '',
+		_tensorboard: str = '',
+		_logs: str = '',
+		_data: str = '') -> None:
 
-		self.container_id = str(_container_id) if _container_id else ''
-		self.config = str(_config) if _config else ''
-		self.started_at = str(_started_at) if _started_at else ''
-		self.started_by = str(_started_by) if _started_by else ''
+		self.container_id = str(_container_id)
+		self.config = str(_config)
+		self.started_at = str(_started_at)
+		self.started_by = str(_started_by)
 		self.group_id = str(_group_id)
 		self.group_member = str(_group_member)
-		self.stopped_at = str(_stopped_at) if _stopped_at else ''
-		self.force_stop = str(_force_stop) if _force_stop else ''
-		self.health = str(_health) if _health else ''
-		self.paused = str(_paused) if _paused else ''
-		self.resumed = str(_resumed) if _resumed else ''
-		self.tensorboard = str(_tensorboard) if _tensorboard else ''
-		self.logs = str(_logs) if _logs else ''
-		self.data = str(_data) if _data else ''
+		self.stopped_at = str(_stopped_at)
+		self.force_stop = str(_force_stop)
+		self.exited_at = str(_exited_at)
+		self.exit_status = str(_exit_status)
+		self.health = str(_health)
+		self.paused = str(_paused)
+		self.resumed = str(_resumed)
+		self.tensorboard = str(_tensorboard)
+		self.logs = str(_logs)
+		self.data = str(_data)
 
-	def column_names(self) -> tuple:
+	def column_names_as_dict(self) -> dict:
 		return {a: a for a in vars(self).keys()}
+
+	def header_row(self) -> list:
+		return list(vars(self).keys())
 
 	def sql_column_names(self) -> str:
 		return str(tuple([':' + k for k in vars(self).keys()])).replace("'", '')
@@ -71,7 +78,15 @@ class ContainerDB:
 			print(f'{bcolors.FAIL}Could not insert value into database: {error}{bcolors.ENDC}')
 
 		self._tear_down_connection(db, cursor)
-		return data
+		return [list(row) for row in data]
+
+	def get_csv_data(self):
+		header = ContainerDBRow().header_row()
+		data = self.get_all_container()
+		final_data = ''
+		for line in [header] + data:
+			final_data += ';'.join(line) + '\n'
+		return final_data.strip()
 
 	def insert(self, all_container_infos, starting_time, is_webserver_user: bool, config: dict) -> None:
 		container_starter = 'websrv.eaalab' if is_webserver_user else 'dev'
@@ -99,10 +114,17 @@ class ContainerDB:
 	def has_got_logs(self, container_id: str):
 		self._update_value('logs', datetime.now(), container_id)
 
-	def has_been_stopped(self, container_id: str, status_before_checked: str):
-		self._update_value('stopped_at', datetime.now(), container_id)
+	def has_been_stopped(self, container_id: str, status_before_checked: str, exit_status: str):
+		self._update_value('stopped_at', datetime.now(), container_id, should_append=False)
+		self._update_value('exit_status', exit_status, container_id, should_append=False)
 		has_been_forced_stopped = status_before_checked != 'exited'
-		self._update_value('force_stop', has_been_forced_stopped, container_id)
+		self._update_value('force_stop', has_been_forced_stopped, container_id, should_append=False)
+
+	def they_are_exited(self, exited_container: list):
+		for container_id, status in exited_container:
+			self._update_value('exited_at', datetime.now(), container_id, should_append=False)
+			self._update_value('exit_status', status, container_id, should_append=False)
+			self._update_value('force_stop', False, container_id, should_append=False)
 
 	def _create_connection(self):
 		db = None
@@ -171,10 +193,16 @@ class ContainerDB:
 		except Exception as error:
 			print(f'{bcolors.FAIL}Could not disconnect from the database: {error}{bcolors.ENDC}')
 
-	def _update_value(self, key_to_update: str, value_to_update, container_id: str):
+	def _update_value(self, key_to_update: str, value_to_update, container_id: str, should_append: bool = True):
 		# figure out if value already exists
 		previous_value = self._select_value(key_to_update, container_id)
-		new_value = ';'.join([previous_value, str(value_to_update)]) if previous_value else value_to_update
+		if should_append:
+			new_value = ';'.join([previous_value, str(value_to_update)]) if previous_value else value_to_update
+		elif previous_value:
+			# we are not supposed to append the new value and there is already an existing value
+			return
+		else:
+			new_value = value_to_update
 		cursor, db = self._create_connection()
 		try:
 			cursor.execute(

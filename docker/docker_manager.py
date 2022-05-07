@@ -91,6 +91,7 @@ class DockerManager():
 		exited_container = []
 		for container in exited_recommerce_containers:
 			exited_container += [(container.id, docker.APIClient().inspect_container(container.id)['State']['ExitCode'])]
+		self._container_db.they_are_exited(exited_container)
 		all_container_ids = ';'.join([str(container_id) for container_id, _ in exited_container])
 		all_container_status = ';'.join([str((container_id, exit_code)) for container_id, exit_code in exited_container])
 		return exited_recommerce_containers != [], DockerInfo(id=all_container_ids, status=all_container_status)
@@ -287,6 +288,9 @@ class DockerManager():
 		except docker.errors.NotFound:
 			return DockerInfo(container_id, status=f'The requested path does not exist on the container: {container_path}')
 
+	def get_statistic_data(self):
+		return DockerInfo(id='not given', status='success', data=self._container_db.get_csv_data())
+
 	def remove_container(self, container_id: str) -> DockerInfo:
 		"""
 		To be called by the REST API. Stop and remove a container.
@@ -312,6 +316,7 @@ class DockerManager():
 			container.remove()
 			# update the local port mapping
 			self._update_port_mapping()
+			self._container_db.has_been_stopped(container_id, container_info.status, exit_code)
 
 			return DockerInfo(id=container_id, status=f'removed ({exit_code})')
 		except docker.errors.APIError as error:
@@ -525,12 +530,10 @@ class DockerManager():
 			return DockerInfo(container_id, status='Container not found.')
 
 		print(f'Stopping container: {container_id}')
-		status_before_stop = container.status
 		try:
 			container.stop(timeout=10)
 			# Reload the attributes to get the correct status
 			container.reload()
-			self._container_db.has_been_stopped(container_id, status_before_stop)
 			return DockerInfo(id=container_id, status=container.status)
 		except docker.errors.APIError as error:
 			return DockerInfo(container_id, status=f'APIError encountered while stopping container.\n{error}')

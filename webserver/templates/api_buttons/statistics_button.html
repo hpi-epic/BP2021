@@ -1,0 +1,5 @@
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="hidden" name="action", value="statistic">
+    <button class="btn bc-outline-download btn-sm mt-3" title="statistics about all container" type="submit">statistics</button>
+</form>

@@ -114,6 +114,14 @@ def download_file(response, wants_zip: bool, wanted_container: Container) -> Htt
 	return file_response
 
 
+def get_statistic_data(csv_string: str) -> HttpResponse:
+	lines = csv_string.split('\n')
+	final_lines = []
+	for line in lines:
+		final_lines += [line.split(';')]
+	print(final_lines)
+
+
 def _add_files_to_zip(file_like_zip: BytesIO, string_to_add: str) -> BytesIO:
 	"""
 	Adds a string as `config.json` to the given zip archive.
