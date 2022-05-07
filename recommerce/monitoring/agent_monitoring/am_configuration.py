@@ -7,6 +7,7 @@ import recommerce.configuration.utils as ut
 import recommerce.market.circular.circular_sim_market as circular_market
 import recommerce.market.linear.linear_sim_market as linear_market
 import recommerce.market.sim_market as sim_market
+from recommerce.configuration.hyperparameter_config import HyperparameterConfig, HyperparameterConfigLoader
 from recommerce.configuration.path_manager import PathManager
 from recommerce.market.circular.circular_vendors import CircularAgent, FixedPriceCEAgent
 from recommerce.market.linear.linear_vendors import LinearAgent
@@ -27,7 +28,8 @@ class Configurator():
 		self.plot_interval = 50
 		self.marketplace = circular_market.CircularEconomyMonopoly
 		default_agent = FixedPriceCEAgent
-		self.agents = [default_agent()]
+		self.config: HyperparameterConfig = HyperparameterConfigLoader.load('hyperparameter_config')
+		self.agents = [default_agent(config=self.config)]
 		self.agent_colors = [(0.0, 0.0, 1.0, 1.0)]
 		self.folder_path = os.path.abspath(os.path.join(PathManager.results_path, 'monitoring', 'plots_' + time.strftime('%b%d_%H-%M-%S')))
 
@@ -86,45 +88,56 @@ class Configurator():
 		self.agents = []
 
 		# Instantiate all agents. If they are not rule-based, use the marketplace parameters accordingly
-		for current_agent in agents:
+		agents_with_config = [(current_agent[0], [self.config] + current_agent[1]) for current_agent in agents]
+
+		for current_agent in agents_with_config:
 			if issubclass(current_agent[0], (RuleBasedAgent, HumanPlayer)):
 				# The custom_init takes two parameters: The class of the agent to be initialized and a list of arguments,
 				# e.g. for the fixed prices or names
 				self.agents.append(Agent.custom_init(current_agent[0], current_agent[1]))
 			elif issubclass(current_agent[0], ReinforcementLearningAgent):
 				try:
-					assert (0 <= len(current_agent[1]) <= 2), 'the argument list for a RL-agent must have length between 0 and 2'
-					assert all(isinstance(argument, str) for argument in current_agent[1]), 'the arguments for a RL-agent must be of type str'
+					assert (1 <= len(current_agent[1]) <= 3), 'the argument list for a RL-agent must have length between 0 and 2'
+					assert all(isinstance(argument, str) for argument in current_agent[1][1:]), 'the arguments for a RL-agent must be of type str'
 
 					# Stablebaselines ends in .zip - we don't
 					agent_modelfile = f'{type(self.marketplace).__name__}_{current_agent[0].__name__}.dat'
 					agent_name = 'q_learning' if issubclass(current_agent[0], QLearningAgent) else 'actor_critic'
 					# no arguments
 					if len(current_agent[1]) == 0:
-						pass
-					# only modelfile argument
-					elif len(current_agent[1]) == 1 and \
-						(current_agent[1][0].endswith('.dat') or current_agent[1][0].endswith('.zip')):
-						agent_modelfile = current_agent[1][0]
-					# only name argument
+						assert False, 'There should always be at least a config'
+					# only configfile argument
 					elif len(current_agent[1]) == 1:
-						# get implicit modelfile name
-						agent_name = current_agent[1][0]
-					# both arguments, first must be the modelfile, second the name
+						pass
+					# configfile and modelfile argument
+					elif len(current_agent[1]) == 2 and \
+						(current_agent[1][1].endswith('.dat') or current_agent[1][1].endswith('.zip')):
+						agent_modelfile = current_agent[1][1]
+					# only name argument
 					elif len(current_agent[1]) == 2:
-						assert current_agent[1][0].endswith('.dat'), \
-							f'if two arguments are provided, the first one must be the modelfile. Arg1: {current_agent[1][0]}, Arg2: {current_agent[1][1]}'
-						agent_modelfile = current_agent[1][0]
+						# get implicit modelfile name
 						agent_name = current_agent[1][1]
+					# both arguments, first must be the modelfile, second the name
+					elif len(current_agent[1]) == 3:
+						assert current_agent[1][1].endswith('.dat'), \
+							'if two arguments as well as a config are provided, ' + \
+							f'the first extra one must be the modelfile. Arg1: {current_agent[1][1]}, Arg2: {current_agent[1][2]}'
+						agent_modelfile = current_agent[1][1]
+						agent_name = current_agent[1][2]
 					# this should never happen due to the asserts before, but you never know
 					else:  # pragma: no cover
 						raise RuntimeError('invalid arguments provided')
 
 					# create the agent
-					new_agent = current_agent[0](marketplace=self.marketplace, load_path=self._get_modelfile_path(agent_modelfile), name=agent_name)
+					new_agent = current_agent[0](
+						marketplace=self.marketplace,
+						config=self.config,
+						load_path=self._get_modelfile_path(agent_modelfile),
+						name=agent_name
+						)
 					self.agents.append(new_agent)
 				except RuntimeError as error:  # pragma: no cover
-					raise RuntimeError('the modelfile is not compatible with the agent you tried to instantiate') from error
+					raise RuntimeError('The modelfile is not compatible with the agent you tried to instantiate') from error
 			else:  # pragma: no cover
 				assert False, f'{current_agent[0]} is neither a RuleBased nor a QLearning agent nor a HumanPlayer'
 
@@ -139,6 +152,7 @@ class Configurator():
 		plot_interval: int = None,
 		marketplace: sim_market.SimMarket = None,
 		agents: list = None,
+		config: HyperparameterConfig = None,
 		subfolder_name: str = None,
 		support_continuous_action_space: bool = False) -> None:
 		"""
@@ -158,23 +172,24 @@ class Configurator():
 			Each agent will generate data points in the diagrams. Defaults to None.
 			subfolder_name (str, optional): The name of the folder to save the diagrams in. Defaults to None.
 		"""
-		if(enable_live_draw is not None):
+		if enable_live_draw is not None:
 			assert isinstance(enable_live_draw, bool), 'enable_live_draw must be a Boolean'
 			self.enable_live_draw = enable_live_draw
-		if(episodes is not None):
+		if episodes is not None:
 			assert isinstance(episodes, int), 'episodes must be of type int'
 			assert episodes > 0, 'episodes must not be 0'
 			self.episodes = episodes
-		if(plot_interval is not None):
+		if plot_interval is not None:
 			assert isinstance(plot_interval, int), 'plot_interval must be of type int'
 			assert plot_interval > 0, 'plot_interval must not be 0'
 			assert plot_interval <= self.episodes, \
 				f'plot_interval must be <= episodes, or no plots can be generated. Episodes: {self.episodes}. Plot_interval: {plot_interval}'
 			self.plot_interval = plot_interval
-
-		if(marketplace is not None):
+		if config is not None:
+			self.config = config
+		if marketplace is not None:
 			assert issubclass(marketplace, sim_market.SimMarket), 'the marketplace must be a subclass of SimMarket'
-			self.marketplace = marketplace(support_continuous_action_space)
+			self.marketplace = marketplace(config=self.config, support_continuous_action_space=support_continuous_action_space)
 			# If the agents have not been changed, we reuse the old agents
 			if(agents is None):
 				print('Warning: Your agents are being overwritten by new instances of themselves!')
@@ -182,10 +197,10 @@ class Configurator():
 			self._update_agents(agents)
 
 		# marketplace has not changed but agents have
-		elif(agents is not None):
+		elif agents is not None:
 			self._update_agents(agents)
 
-		if(subfolder_name is not None):
+		if subfolder_name is not None:
 			assert isinstance(subfolder_name, str), f'subfolder_name must be of type str: {type(subfolder_name)}, {subfolder_name}'
 			self.folder_path = os.path.join(PathManager.results_path, 'monitoring', subfolder_name)
 
