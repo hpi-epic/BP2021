@@ -1,7 +1,10 @@
+import os
+
 import matplotlib.pyplot as plt
 import numpy as np
 
 from recommerce.configuration.hyperparameter_config import HyperparameterConfig
+from recommerce.configuration.path_manager import PathManager
 from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPriceDuopoly, CircularEconomyRebuyPriceVariableDuopoly
 from recommerce.rl.stable_baselines.stable_baselines_model import StableBaselinesPPO, StableBaselinesSAC
 
@@ -20,15 +23,17 @@ def train_rl_vs_rl(config: HyperparameterConfig, num_switches: int = 30, num_ste
 
 	for i in range(num_switches):
 		print(f'\n\nTraining {i + 1}\nTraining generation {i // 2 + 1} of {agents[i % 2].name}.')
-		last_dicts = agents[i % 2].train_agent(training_steps=num_steps_per_switch, analyze_after_training=False)
+		last_dicts = agents[i % 2].train_agent(training_steps=num_steps_per_switch)
 		for mydict in last_dicts:
 			rewards[i % 2].append(mydict['profits/all']['vendor_0'])
 			rewards[(i + 1) % 2].append(mydict['profits/all']['vendor_1'])
 
-	# This is a bit hacky. It will be improved as soon as #446 is done
+	# This is a bit hacky. But it isn't used so often, so I will leave it for now.
+	# More heavy changes come with this.
 	smoothed_return_estimation = \
-		[[np.mean(rewards[idx][max(i-50, 0):i]) for i in range(len(rewards[idx]))] for idx in range(2)]
+		[[np.mean(rewards[idx][max(i-50, 0):(i + 1)]) for i in range(len(rewards[idx]))] for idx in range(2)]
+	plt.clf()
 	plt.plot(smoothed_return_estimation[0], label=agents[0].name)
 	plt.plot(smoothed_return_estimation[1], label=agents[1].name)
 	plt.legend()
-	# plt.show()  # Save the figure later in a nice folder.
+	plt.savefig(os.path.join(PathManager.results_path, 'monitoring', 'rl_vs_rl_all.svg'))  # Maybe save in a dedicated folder

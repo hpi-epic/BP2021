@@ -96,8 +96,7 @@ class Watcher:
 				continue  # skip these properties because they are not cumulative
 
 			if isinstance(self.all_dicts[0][key], dict):
-				for vendor in range(self._get_number_of_vendors()):
-					output_dict[f'{key}/vendor_{vendor}'] = self.get_all_samples_of_property(key, vendor)
+				output_dict[key] = [self.get_all_samples_of_property(key, vendor) for vendor in range(self.get_number_of_vendors())]
 			else:
 				output_dict[key] = self.get_all_samples_of_property(key, None)
 
@@ -121,7 +120,7 @@ class Watcher:
 			progress_values = [tmp_dict[property_name] for tmp_dict in self.all_dicts]
 		else:
 			progress_values = [tmp_dict[property_name][f'vendor_{vendor}'] for tmp_dict in self.all_dicts]
-		return [np.mean(progress_values[max(i-look_back, 0):i]) for i in range(len(progress_values))]
+		return [np.mean(progress_values[max(i-look_back, 0):(i + 1)]) for i in range(len(progress_values))]
 
-	def _get_number_of_vendors(self) -> int:
+	def get_number_of_vendors(self) -> int:
 		return len(self.all_dicts[0]['profits/all'])
