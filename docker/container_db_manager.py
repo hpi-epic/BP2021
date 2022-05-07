@@ -3,6 +3,8 @@ import sqlite3
 from datetime import datetime
 from uuid import uuid4
 
+from utils import bcolors
+
 
 class ContainerDBRow:
 	def __init__(self,
@@ -42,6 +44,11 @@ class ContainerDBRow:
 	def sql_column_names(self) -> str:
 		return str(tuple([':' + k for k in vars(self).keys()])).replace("'", '')
 
+	def schema(self) -> str:
+		all_keys = list(vars(self).keys())
+		all_keys[0] += ' TEXT PRIMARY KEY'
+		return ', '.join(all_keys)
+
 
 class ContainerDB:
 	def __init__(self) -> None:
@@ -60,8 +67,8 @@ class ContainerDB:
 				"""
 			)
 			data = cursor.fetchall()
-		except Exception as e:
-			print(f'Could not insert value into database: {e}')
+		except Exception as error:
+			print(f'{bcolors.FAIL}Could not insert value into database: {error}{bcolors.ENDC}')
 
 		self._tear_down_connection(db, cursor)
 		return data
@@ -103,24 +110,23 @@ class ContainerDB:
 			db = sqlite3.connect(self.db_file)
 			cursor = db.cursor()
 			return cursor, db
-		except Exception as e:
-			print(f'Could not connect to the database {e}')
+		except Exception as error:
+			print(f'{bcolors.FAIL}Could not connect to the database {error}{bcolors.ENDC}')
 		return None, None
 
 	def _create_container_table(self):
-		print('creating table')
 		cursor, db = self._create_connection()
 		try:
 			cursor.execute(
 				f"""
 				CREATE TABLE {self.table_name}
-					(container_id TEXT PRIMARY KEY,
-					config, started_at, started_by, stopped_at, force_stop, health, paused, resumed, tensorboard, logs, data)
+					({ContainerDBRow().schema()})
 				"""
 			)
 			db.commit()
-		except Exception as e:
-			print(f'Could not create database table. {e}')
+			print(f'{bcolors.OKGREEN} created table {self.table_name} {bcolors.ENDC}')
+		except Exception as error:
+			print(f'{bcolors.FAIL}Could not create database table. {error}{bcolors.ENDC}')
 		self._tear_down_connection(db, cursor)
 
 	def _does_table_exist(self) -> bool:
@@ -139,8 +145,8 @@ class ContainerDB:
 				""", vars(container_row)
 			)
 			db.commit()
-		except Exception as e:
-			print(f'Could not insert value into database: {e}')
+		except Exception as error:
+			print(f'{bcolors.FAIL}Could not insert value into database: {error}{bcolors.ENDC}')
 		self._tear_down_connection(db, cursor)
 
 	def _select_value(self, key_to_select: str, container_id: str) -> str:
@@ -153,8 +159,8 @@ class ContainerDB:
 				""", {'container_id': container_id}
 			)
 			data = cursor.fetchone()[0]
-		except Exception as e:
-			print(f'Could not select value: {e}')
+		except Exception as error:
+			print(f'{bcolors.FAIL}Could not select value: {error}{bcolors.ENDC}')
 		self._tear_down_connection(db, cursor)
 		return data
 
@@ -162,8 +168,8 @@ class ContainerDB:
 		try:
 			cursor.close()
 			db.close()
-		except Exception:
-			print('Could not disconnect from the database.')
+		except Exception as error:
+			print(f'{bcolors.FAIL}Could not disconnect from the database: {error}{bcolors.ENDC}')
 
 	def _update_value(self, key_to_update: str, value_to_update, container_id: str):
 		# figure out if value already exists
@@ -177,6 +183,6 @@ class ContainerDB:
 				""", {'value': new_value, 'container_id': container_id}
 			)
 			db.commit()
-		except Exception as e:
-			print(f'Could not update value: {e}')
+		except Exception as error:
+			print(f'{bcolors.FAIL}Could not update value: {error}{bcolors.ENDC}')
 		self._tear_down_connection(db, cursor)

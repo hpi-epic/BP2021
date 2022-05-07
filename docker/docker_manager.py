@@ -9,6 +9,7 @@ from types import GeneratorType
 
 from container_db_manager import ContainerDB
 from torch.cuda import is_available
+from utils import bcolors
 
 import docker
 from docker.models.containers import Container
@@ -71,7 +72,7 @@ class DockerManager():
 			DockerManager: The DockerManager instance.
 		"""
 		if cls._instance is None:
-			print('A new instance of DockerManager is being initialized')
+			print(f'{bcolors.OKCYAN}A new instance of DockerManager is being initialized{bcolors.ENDC}')
 			cls._instance = super(DockerManager, cls).__new__(cls)
 			cls._client = cls._get_client()
 
@@ -115,7 +116,7 @@ class DockerManager():
 		command_id = config['environment']['task']
 
 		if command_id not in self._allowed_commands:
-			print(f'Command with ID {command_id} not allowed')
+			print(f'{bcolors.WARNING}Command with ID {command_id} not allowed{bcolors.ENDC}')
 			return DockerInfo(id='No container was started', status=f'Command not allowed: {command_id}')
 
 		if not self._confirm_image_exists():
@@ -302,7 +303,7 @@ class DockerManager():
 
 		container_info = self._stop_container(container_id)
 		if container_info.status != 'exited':
-			print(f'Container not stopped successfully. Status: {container_info.status}')
+			print(f'{bcolors.WARNING}Container not stopped successfully. Status: {container_info.status}{bcolors.ENDC}')
 			return DockerInfo(id=container_id, status=f'Container not stopped successfully. Status: {container_info.status}')
 
 		print(f'Removing container: {container_id}')
@@ -327,7 +328,7 @@ class DockerManager():
 		try:
 			return self._get_client().ping()
 		except Exception:
-			print('Docker server is not responding!')
+			print(f'{bcolors.WARNING}Docker server is not responding!{bcolors.ENDC}')
 			return False
 
 	# PRIVATE METHODS
@@ -407,10 +408,10 @@ class DockerManager():
 					print(output_str)
 			img = self._get_client().images.get(IMAGE_NAME)
 		except docker.errors.BuildError or docker.errors.APIError as error:
-			print(f'An error occurred while building the {IMAGE_NAME} image\n{error}')
+			print(f'{bcolors.FAIL}An error occurred while building the {IMAGE_NAME} image\n{error}{bcolors.ENDC}')
 			return None
 		if old_img is not None and old_img.id != img.id:
-			print(f'\nA {IMAGE_NAME} image already exists, it will be overwritten')
+			print(f'{bcolors.WARNING}\nA {IMAGE_NAME} image already exists, it will be overwritten{bcolors.ENDC}')
 			self._get_client().images.remove(old_img.id[7:])
 		# return id without the 'sha256:'-prefix
 		return img.id[7:]
@@ -461,7 +462,7 @@ class DockerManager():
 
 		upload_info = self._upload_config(container.id, command_id, config)
 		if not upload_info.data:
-			print('Failed to upload configuration file!')
+			print(f'{bcolors.WARNING}Failed to upload configuration file!{bcolors.WARNING}')
 		return upload_info
 
 	def _start_container(self, container_id: str) -> DockerInfo:

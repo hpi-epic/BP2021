@@ -6,6 +6,7 @@ import uvicorn
 from docker_manager import DockerInfo, DockerManager
 from fastapi import Depends, FastAPI, Request
 from fastapi.responses import JSONResponse, StreamingResponse
+from utils import bcolors
 
 # This file should expose a RESTful api for using the docker container with the following routes:
 # POST /start/<command><config>
@@ -56,18 +57,18 @@ def verify_token(request: Request) -> bool:
 	try:
 		token = request.headers['Authorization']
 	except KeyError:
-		print('The request did not set an Authorization header')
+		print(f'{bcolors.FAIL}The request did not set an Authorization header{bcolors.FAIL}')
 		return False
 
 	try:
 		with open('./.env.txt', 'r') as file:
 			secrets = file.readlines()
 	except FileNotFoundError:
-		print('could not find suitable `.env.txt`. Trying to use env variables instead')
+		print(f'{bcolors.WARNING}could not find suitable `.env.txt`. Trying to use env variables instead{bcolors.ENDC}')
 		try:
 			secrets = [os.environ['AUTHORIZATION_TOKEN_WEB'], os.environ['AUTHORIZATION_TOKEN']]
 		except KeyError:
-			print('could not get environment variables.')
+			print(f'{bcolors.FAIL}could not get environment variables.{bcolors.FAIL}')
 			return False
 	last_webserver_token, this_webserver_token = _convert_secret_to_token(secrets[0])
 	last_other_token, this_other_token = _convert_secret_to_token(secrets[1])
@@ -107,7 +108,7 @@ async def start_container(num_experiments: int, config: Request, authorized: boo
 		if (is_invalid_status(all_container_infos[index].status) or all_container_infos[index].data is False):
 			return JSONResponse(status_code=404, content=vars(all_container_infos[index]))
 		return_dict[index] = vars(all_container_infos[index])
-	print(f'successfully started {num_experiments} container')
+	print(f'{bcolors.OKGREEN}successfully started {num_experiments} container{bcolors.ENDC}')
 	return JSONResponse(return_dict, status_code=200)
 
 
