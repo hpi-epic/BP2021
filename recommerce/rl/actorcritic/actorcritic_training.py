@@ -3,9 +3,7 @@ import random
 import numpy as np
 import torch
 
-import recommerce.configuration.utils as ut
 import recommerce.rl.actorcritic.actorcritic_agent as actorcritic_agent
-from recommerce.configuration.hyperparameter_config import config
 from recommerce.rl.training import RLTrainer
 
 
@@ -15,7 +13,7 @@ class ActorCriticTrainer(RLTrainer):
 
 	def choose_random_envs(self, total_envs) -> set:
 		"""
-		This method samples config.batch_size distinct numbers out of 0, ..., total_envs - 1
+		This method samples self.config.batch_size distinct numbers out of 0, ..., total_envs - 1
 
 		Args:
 			total_envs (int): The number of envs
@@ -24,7 +22,7 @@ class ActorCriticTrainer(RLTrainer):
 			set: the distinct shuffled numbers
 		"""
 		chosen_envs = set()
-		while len(chosen_envs) < config.batch_size:
+		while len(chosen_envs) < self.config.batch_size:
 			number = random.randint(0, total_envs - 1)
 			if number not in chosen_envs:
 				chosen_envs.add(number)
@@ -40,17 +38,14 @@ class ActorCriticTrainer(RLTrainer):
 			verbose (bool, optional): Should additional information about agent steps be written to the tensorboard? Defaults to False.
 			total_envs (int, optional): The number of environments you use in parallel to fulfill the iid assumption. Defaults to 128.
 		"""
-		self.initialize_callback(number_of_training_steps * config.batch_size)
+		self.initialize_callback(number_of_training_steps * self.config.batch_size)
 
-		if verbose:
-			all_network_outputs = []
-			all_v_estimates = []
-		all_value_losses = []
-		all_policy_losses = []
+		last_value_loss = 0
+		last_policy_loss = 0
 
 		finished_episodes = 0
 		self.callback.num_timesteps = 0
-		environments = [self.marketplace_class() for _ in range(total_envs)]
+		environments = [self.marketplace_class(config=self.config) for _ in range(total_envs)]
 
 		for step_number in range(number_of_training_steps):
 			chosen_envs = self.choose_random_envs(total_envs)
@@ -66,9 +61,18 @@ class ActorCriticTrainer(RLTrainer):
 					action = self.callback.model.policy(state, verbose=False, raw_action=True)
 				else:
 					action, net_output, v_estimate = self.callback.model.policy(state, verbose=True, raw_action=True)
-					all_network_outputs.append(net_output.reshape(-1))
-					all_v_estimates.append(v_estimate)
 				next_state, reward, is_done, info = environments[env].step(self.callback.model.agent_output_to_market_form(action))
+
+				# The following numbers are divided by the episode length because they will be summed up later in the watcher
+				info['loss/value'] = last_value_loss / self.config.episode_length
+				info['loss/policy'] = last_policy_loss / self.config.episode_length
+				if verbose:
+					if isinstance(net_output, np.float32):
+						info['verbose/net_output'] = net_output
+					else:
+						for action_num, output in enumerate(net_output):
+							info[f'verbose/information_{str(action_num)}'] = output / self.config.episode_length
+					info['verbose/v_estimate'] = v_estimate / self.config.episode_length
 
 				states.append(state)
 				actions.append(action)
@@ -80,30 +84,14 @@ class ActorCriticTrainer(RLTrainer):
 
 				self.callback._on_step(finished_episodes, info, env)
 				if is_done:
-					averaged_info = self.callback.watcher.get_average_dict()
-					averaged_info['loss/value'] = np.mean(all_value_losses[-1000:])
-					averaged_info['loss/policy'] = np.mean(all_policy_losses[-1000:])
-
-					if verbose:
-						averaged_info['verbose/v_estimate'] = np.mean(all_v_estimates[-1000:])
-						myactions = np.array(all_network_outputs[-1000:])
-						for action_num in range(len(all_network_outputs[0])):
-							averaged_info[f'verbose/mean/information_{str(action_num)}'] = np.mean(myactions[:, action_num])
-							averaged_info[f'verbose/min/information_{str(action_num)}'] = np.min(myactions[:, action_num])
-							averaged_info[f'verbose/max/information_{str(action_num)}'] = np.max(myactions[:, action_num])
-
-					ut.write_dict_to_tensorboard(self.callback.writer, averaged_info, finished_episodes, is_cumulative=True)
-
 					environments[env].reset()
 
-			policy_loss, valueloss = self.callback.model.train_batch(
+			last_policy_loss, last_value_loss = self.callback.model.train_batch(
 				torch.Tensor(np.array(states)),
 				torch.from_numpy(np.array(actions, dtype=np.int64)),
 				torch.Tensor(np.array(rewards)),
 				torch.Tensor(np.array(next_state)),
 				finished_episodes <= 500)
-			all_value_losses.append(valueloss)
-			all_policy_losses.append(policy_loss)
 
 			self.consider_sync_tgt_net(step_number)
 

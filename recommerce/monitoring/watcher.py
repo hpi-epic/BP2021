@@ -1,18 +1,19 @@
 import numpy as np
 
 import recommerce.configuration.utils as ut
-from recommerce.configuration.hyperparameter_config import config
+from recommerce.configuration.hyperparameter_config import HyperparameterConfig
 
 
 class Watcher:
 	"""
 	This class administrates all collectable information about the success and behaviour of the agent.
 	"""
-	def __init__(self, number_envs: int = 1):
+	def __init__(self, config: HyperparameterConfig, number_envs: int = 1):
 		self.number_envs = number_envs
 		self.all_dicts = []
 		self.step_counters = [0 for _ in range(number_envs)]
 		self.info_accumulators = [None for _ in range(number_envs)]
+		self.config = config
 
 	def add_info(self, info: dict, index: int = 0):
 		"""
@@ -27,8 +28,8 @@ class Watcher:
 		self.info_accumulators[index] = \
 			info if self.info_accumulators[index] is None else ut.add_content_of_two_dicts(self.info_accumulators[index], info)
 		self.step_counters[index] += 1
-		assert self.step_counters[index] <= config.episode_length
-		if self.step_counters[index] == config.episode_length:
+		assert self.step_counters[index] <= self.config.episode_length
+		if self.step_counters[index] == self.config.episode_length:
 			self._finish_episode(index)
 
 	def _finish_episode(self, index: int = 0):
@@ -36,7 +37,7 @@ class Watcher:
 		As soon as one episode is finished, the entries of this episode are added to the list of all dicts.
 		"""
 		assert index < self.number_envs and index >= 0
-		assert self.step_counters[index] == config.episode_length
+		assert self.step_counters[index] == self.config.episode_length
 		self.all_dicts.append(self.info_accumulators[index])
 		self.info_accumulators[index] = None
 		self.step_counters[index] = 0
@@ -95,8 +96,7 @@ class Watcher:
 				continue  # skip these properties because they are not cumulative
 
 			if isinstance(self.all_dicts[0][key], dict):
-				for vendor in range(self._get_number_of_vendors()):
-					output_dict[f'{key}/vendor_{vendor}'] = self.get_all_samples_of_property(key, vendor)
+				output_dict[key] = [self.get_all_samples_of_property(key, vendor) for vendor in range(self.get_number_of_vendors())]
 			else:
 				output_dict[key] = self.get_all_samples_of_property(key, None)
 
@@ -120,7 +120,7 @@ class Watcher:
 			progress_values = [tmp_dict[property_name] for tmp_dict in self.all_dicts]
 		else:
 			progress_values = [tmp_dict[property_name][f'vendor_{vendor}'] for tmp_dict in self.all_dicts]
-		return [np.mean(progress_values[max(i-look_back, 0):i]) for i in range(len(progress_values))]
+		return [np.mean(progress_values[max(i-look_back, 0):(i + 1)]) for i in range(len(progress_values))]
 
-	def _get_number_of_vendors(self) -> int:
+	def get_number_of_vendors(self) -> int:
 		return len(self.all_dicts[0]['profits/all'])
