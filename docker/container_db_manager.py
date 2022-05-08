@@ -116,10 +116,13 @@ class ContainerDB:
 	def has_got_logs(self, container_id: str):
 		self._update_value('logs', datetime.now(), container_id)
 
-	def has_been_stopped(self, container_id: str, status_before_checked: str, exit_status: str):
+	def has_been_stopped(self, container_id: str, status_before_stop: str, status_after_stop: str, exit_status: str):
+		print(status_before_stop)
+		print(status_after_stop)
+		print()
 		self._update_value('stopped_at', datetime.now(), container_id, should_append=False)
 		self._update_value('exit_status', exit_status, container_id, should_append=False)
-		has_been_forced_stopped = status_before_checked != 'exited'
+		has_been_forced_stopped = status_before_stop != 'exited'
 		self._update_value('force_stop', has_been_forced_stopped, container_id, should_append=False)
 
 	def they_are_exited(self, exited_container: list):

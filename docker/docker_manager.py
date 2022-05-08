@@ -316,7 +316,6 @@ class DockerManager():
 			container.remove()
 			# update the local port mapping
 			self._update_port_mapping()
-			self._container_db.has_been_stopped(container_id, container_info.status, exit_code)
 
 			return DockerInfo(id=container_id, status=f'removed ({exit_code})')
 		except docker.errors.APIError as error:
@@ -530,10 +529,13 @@ class DockerManager():
 			return DockerInfo(container_id, status='Container not found.')
 
 		print(f'Stopping container: {container_id}')
+		status_before_stop = container.status
 		try:
 			container.stop(timeout=10)
 			# Reload the attributes to get the correct status
 			container.reload()
+			status_after_stop = container.status
+			self._container_db.has_been_stopped(container_id, status_before_stop, status_after_stop, '123')
 			return DockerInfo(id=container_id, status=container.status)
 		except docker.errors.APIError as error:
 			return DockerInfo(container_id, status=f'APIError encountered while stopping container.\n{error}')
