@@ -86,7 +86,8 @@ class ContainerDB:
 		final_data = ''
 		for line in [header] + data:
 			print(line)
-			final_data += ';'.join(line) + '\n'
+			all_str = [str(item) for item in line]
+			final_data += ';'.join(all_str) + '\n'
 		return final_data.strip()
 
 	def insert(self, all_container_infos, starting_time, is_webserver_user: bool, config: dict) -> None:
