@@ -13,6 +13,7 @@ tests/test_results
 webserver/.env.txt
 docker/.env.txt
 docker/*.db
+docker/log_files/*
 
 # file where the users data path is saved
 recommerce/configuration/user_path.txt

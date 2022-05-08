@@ -3,6 +3,7 @@ import sqlite3
 from datetime import datetime
 from uuid import uuid4
 
+from notification_manager import NotificationManager
 from utils import bcolors
 
 
@@ -61,6 +62,7 @@ class ContainerDB:
 	def __init__(self) -> None:
 		self.db_file = 'sqlite.db'
 		self.table_name = 'container'
+		self.notification = NotificationManager('database')
 		if not self._does_table_exist():
 			self._create_container_table()
 
@@ -85,7 +87,6 @@ class ContainerDB:
 		data = self.get_all_container()
 		final_data = ''
 		for line in [header] + data:
-			print(line)
 			all_str = [str(item) for item in line]
 			final_data += ';'.join(all_str) + '\n'
 		return final_data.strip()
@@ -117,9 +118,8 @@ class ContainerDB:
 		self._update_value('logs', datetime.now(), container_id)
 
 	def has_been_stopped(self, container_id: str, status_before_stop: str, status_after_stop: str, exit_status: str):
-		print(status_before_stop)
-		print(status_after_stop)
-		print()
+		if status_after_stop != 'exited':
+			return
 		self._update_value('stopped_at', datetime.now(), container_id, should_append=False)
 		self._update_value('exit_status', exit_status, container_id, should_append=False)
 		has_been_forced_stopped = status_before_stop != 'exited'
@@ -138,6 +138,7 @@ class ContainerDB:
 			cursor = db.cursor()
 			return cursor, db
 		except Exception as error:
+
 			print(f'{bcolors.FAIL}Could not connect to the database {error}{bcolors.ENDC}')
 		return None, None
 

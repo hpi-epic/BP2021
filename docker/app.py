@@ -6,6 +6,7 @@ import uvicorn
 from docker_manager import DockerInfo, DockerManager
 from fastapi import Depends, FastAPI, Request
 from fastapi.responses import JSONResponse, StreamingResponse
+from notification_manager import NotificationManager
 from utils import bcolors
 
 # This file should expose a RESTful api for using the docker container with the following routes:
@@ -22,6 +23,7 @@ from utils import bcolors
 # uvicorn --host 0.0.0.0 app:app --reload
 # instead to expose it to the local network
 manager = DockerManager()
+notification = NotificationManager('api')
 app = FastAPI()
 is_webserver = True
 
@@ -57,6 +59,7 @@ def verify_token(request: Request) -> bool:
 	try:
 		token = request.headers['Authorization']
 	except KeyError:
+		notification.error('The request did not set an Authorization header')
 		print(f'{bcolors.FAIL}The request did not set an Authorization header{bcolors.FAIL}')
 		return False
 
@@ -68,6 +71,7 @@ def verify_token(request: Request) -> bool:
 		try:
 			secrets = [os.environ['AUTHORIZATION_TOKEN_WEB'], os.environ['AUTHORIZATION_TOKEN']]
 		except KeyError:
+			notification.error('Cannot get secrets')
 			print(f'{bcolors.FAIL}could not get environment variables.{bcolors.FAIL}')
 			return False
 	last_webserver_token, this_webserver_token = _convert_secret_to_token(secrets[0])

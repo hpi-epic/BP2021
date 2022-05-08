@@ -8,6 +8,7 @@ from itertools import count, filterfalse
 from types import GeneratorType
 
 from container_db_manager import ContainerDB
+from notification_manager import NotificationManager
 from torch.cuda import is_available
 from utils import bcolors
 
@@ -63,6 +64,7 @@ class DockerManager():
 	# dictionary of container_id:host-port pairs
 	_port_mapping = {}
 	_container_db = ContainerDB()
+	_notification = NotificationManager('docker_manager')
 
 	def __new__(cls):
 		"""
@@ -117,6 +119,7 @@ class DockerManager():
 		command_id = config['environment']['task']
 
 		if command_id not in self._allowed_commands:
+			self._notification.error(f'Command with ID {command_id} not allowed')
 			print(f'{bcolors.WARNING}Command with ID {command_id} not allowed{bcolors.ENDC}')
 			return DockerInfo(id='No container was started', status=f'Command not allowed: {command_id}')
 
@@ -307,12 +310,13 @@ class DockerManager():
 
 		container_info = self._stop_container(container_id)
 		if container_info.status != 'exited':
+			self._notification.error(f'Container not stopped successfully. Status: {container_info.status}')
 			print(f'{bcolors.WARNING}Container not stopped successfully. Status: {container_info.status}{bcolors.ENDC}')
 			return DockerInfo(id=container_id, status=f'Container not stopped successfully. Status: {container_info.status}')
 
 		print(f'Removing container: {container_id}')
 		try:
-			exit_code = container.wait()['StatusCode']
+			exit_code = self._get_container_exit_code(container)
 			container.remove()
 			# update the local port mapping
 			self._update_port_mapping()
@@ -332,6 +336,7 @@ class DockerManager():
 		try:
 			return self._get_client().ping()
 		except Exception:
+			self._notification.error('Docker server is not responding!')
 			print(f'{bcolors.WARNING}Docker server is not responding!{bcolors.ENDC}')
 			return False
 
@@ -412,6 +417,7 @@ class DockerManager():
 					print(output_str)
 			img = self._get_client().images.get(IMAGE_NAME)
 		except docker.errors.BuildError or docker.errors.APIError as error:
+			self._notification.error(f'An error occurred while building the {IMAGE_NAME} image\n{error}')
 			print(f'{bcolors.FAIL}An error occurred while building the {IMAGE_NAME} image\n{error}{bcolors.ENDC}')
 			return None
 		if old_img is not None and old_img.id != img.id:
@@ -466,6 +472,7 @@ class DockerManager():
 
 		upload_info = self._upload_config(container.id, command_id, config)
 		if not upload_info.data:
+			self._notification.error('Failed to upload configuration file!')
 			print(f'{bcolors.WARNING}Failed to upload configuration file!{bcolors.WARNING}')
 		return upload_info
 
@@ -512,6 +519,13 @@ class DockerManager():
 		except docker.errors.NotFound:
 			return None
 
+	def _get_container_exit_code(self, container: Container) -> str:
+		try:
+			exit_code = container.wait()['StatusCode']
+		except docker.errors.APIError as error:
+			exit_code = f'could not get, {error}'
+		return exit_code
+
 	def _stop_container(self, container_id: str) -> DockerInfo:
 		"""
 		Stop a running container.
@@ -529,13 +543,12 @@ class DockerManager():
 			return DockerInfo(container_id, status='Container not found.')
 
 		print(f'Stopping container: {container_id}')
-		status_before_stop = container.status
+		before_stop = container.status
 		try:
 			container.stop(timeout=10)
 			# Reload the attributes to get the correct status
 			container.reload()
-			status_after_stop = container.status
-			self._container_db.has_been_stopped(container_id, status_before_stop, status_after_stop, '123')
+			self._container_db.has_been_stopped(container_id, before_stop, container.status, self._get_container_exit_code(container))
 			return DockerInfo(id=container_id, status=container.status)
 		except docker.errors.APIError as error:
 			return DockerInfo(container_id, status=f'APIError encountered while stopping container.\n{error}')
