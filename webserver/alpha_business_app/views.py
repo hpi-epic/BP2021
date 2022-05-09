@@ -47,7 +47,8 @@ def index(request) -> HttpResponse:
 		return HttpResponse('Unauthorized', status=401)
 	if request.method == 'POST' and request.user.is_superuser and request.POST['action'] == 'statistic':
 		api_response = send_get_request('data/statistics', 'abc')
-		return get_statistic_data(api_response.content['data'])
+		if api_response.ok():
+			return get_statistic_data(api_response.content['data'])
 	return render(request, 'index.html')
 
 

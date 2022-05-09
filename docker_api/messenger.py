@@ -4,8 +4,7 @@ from datetime import datetime
 from time import sleep
 
 import requests
-
-from docker_api.utils import setup_logging
+from utils import setup_logging
 
 setup_logging('message')
 
@@ -60,9 +59,9 @@ log_file_dir = './log_files'
 last_log_files = read_files_in_logs_dir(log_file_dir)
 last_send = datetime.now()
 new_errors = []
-notification_interval = 10  # in seconds
+notification_interval = 600  # in seconds
 logging.info(f'{last_send}successfully started messenger')
-logging.info('waiting for logs in {log_file_dir} to change and notify you{bcolors.ENDC}')
+logging.info(f'waiting for logs in {log_file_dir} to change and notify you')
 while True:
 	current_log_files = read_files_in_logs_dir(log_file_dir)
 	for file_name in last_log_files.keys():
