@@ -60,7 +60,7 @@ class ContainerDBRow:
 
 class ContainerDB:
 	def __init__(self) -> None:
-		setup_logging('db')
+		setup_logging('db', level=logging.ERROR)
 		self.db_file = 'sqlite.db'
 		self.table_name = 'container'
 		if not self._does_table_exist():
