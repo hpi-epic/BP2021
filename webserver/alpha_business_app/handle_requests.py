@@ -8,7 +8,7 @@ import requests
 from .api_response import APIResponse
 from .models.container import update_container
 
-DOCKER_API = 'https://vm-midea03.eaalab.hpi.uni-potsdam.de:7990'  # remember to include the port and the protocol, i.e. http://
+DOCKER_API = 'https://vm-midea03.eaalab.hpi.uni-potsdam.de:8000'  # remember to include the port and the protocol, i.e. http://
 
 
 def _get_api_token() -> str:
@@ -21,7 +21,7 @@ def _get_api_token() -> str:
 	try:
 		with open('./.env.txt', 'r') as file:
 			lines = file.readlines()
-			master_secret = lines[1]
+			master_secret = lines[1].strip()
 	except FileNotFoundError:
 		print('No .env file found, using environment variable instead.')
 		try:

@@ -1,10 +1,15 @@
 # import datetime
+import logging
 import sqlite3
 from datetime import datetime
+from logging.handlers import RotatingFileHandler
 from uuid import uuid4
 
-from notification_manager import NotificationManager
-from utils import bcolors
+logging.basicConfig(
+	handlers=[RotatingFileHandler('./log_files/db.log', maxBytes=100000, backupCount=10)],
+	level=logging.DEBUG,
+	format='[%(asctime)s] %(levelname)s [%(name)s.%(funcName)s:%(lineno)d] %(message)s',
+	datefmt='%Y-%m-%dT%H:%M:%S')
 
 
 class ContainerDBRow:
@@ -62,7 +67,6 @@ class ContainerDB:
 	def __init__(self) -> None:
 		self.db_file = 'sqlite.db'
 		self.table_name = 'container'
-		self.notification = NotificationManager('database')
 		if not self._does_table_exist():
 			self._create_container_table()
 
@@ -77,7 +81,7 @@ class ContainerDB:
 			)
 			data = cursor.fetchall()
 		except Exception as error:
-			print(f'{bcolors.FAIL}Could not insert value into database: {error}{bcolors.ENDC}')
+			logging.error(f'Could not insert value into database: {error}')
 
 		self._tear_down_connection(db, cursor)
 		return [list(row) for row in data]
@@ -139,7 +143,7 @@ class ContainerDB:
 			return cursor, db
 		except Exception as error:
 
-			print(f'{bcolors.FAIL}Could not connect to the database {error}{bcolors.ENDC}')
+			logging.error(f'Could not connect to the database {error}')
 		return None, None
 
 	def _create_container_table(self):
@@ -152,9 +156,9 @@ class ContainerDB:
 				"""
 			)
 			db.commit()
-			print(f'{bcolors.OKGREEN} created table {self.table_name} {bcolors.ENDC}')
+			logging.info(f'created table {self.table_name} ')
 		except Exception as error:
-			print(f'{bcolors.FAIL}Could not create database table. {error}{bcolors.ENDC}')
+			logging.error(f'Could not create database table. {error}')
 		self._tear_down_connection(db, cursor)
 
 	def _does_table_exist(self) -> bool:
@@ -174,7 +178,7 @@ class ContainerDB:
 			)
 			db.commit()
 		except Exception as error:
-			print(f'{bcolors.FAIL}Could not insert value into database: {error}{bcolors.ENDC}')
+			logging.error(f'Could not insert value into database: {error}')
 		self._tear_down_connection(db, cursor)
 
 	def _select_value(self, key_to_select: str, container_id: str) -> str:
@@ -188,7 +192,7 @@ class ContainerDB:
 			)
 			data = cursor.fetchone()[0]
 		except Exception as error:
-			print(f'{bcolors.FAIL}Could not select value: {error}{bcolors.ENDC}')
+			logging.error(f'Could not select value: {error}')
 		self._tear_down_connection(db, cursor)
 		return data
 
@@ -197,7 +201,7 @@ class ContainerDB:
 			cursor.close()
 			db.close()
 		except Exception as error:
-			print(f'{bcolors.FAIL}Could not disconnect from the database: {error}{bcolors.ENDC}')
+			logging.error(f'Could not disconnect from the database: {error}')
 
 	def _update_value(self, key_to_update: str, value_to_update, container_id: str, should_append: bool = True):
 		# figure out if value already exists
@@ -218,5 +222,5 @@ class ContainerDB:
 			)
 			db.commit()
 		except Exception as error:
-			print(f'{bcolors.FAIL}Could not update value: {error}{bcolors.ENDC}')
+			logging.error(f'Could not update value: {error}')
 		self._tear_down_connection(db, cursor)
