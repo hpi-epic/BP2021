@@ -6,7 +6,7 @@ from docker_manager import DockerManager
 manager = DockerManager()
 container_db = ContainerDB()
 last_docker_info = None
-
+print('successfully started container health checker, waiting for container to die')
 while True:
 	is_exited, docker_info = manager.check_health_of_all_container()
 	if is_exited and last_docker_info != docker_info:
