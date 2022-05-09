@@ -1,16 +1,13 @@
 import logging
 import os
 from datetime import datetime
-from logging.handlers import RotatingFileHandler
 from time import sleep
 
 import requests
 
-logging.basicConfig(
-	handlers=[RotatingFileHandler('./log_files/messenger.log', maxBytes=100000, backupCount=10)],
-	level=logging.DEBUG,
-	format='[%(asctime)s] %(levelname)s [%(name)s.%(funcName)s:%(lineno)d] %(message)s',
-	datefmt='%Y-%m-%dT%H:%M:%S')
+from docker_api.utils import setup_logging
+
+setup_logging('message')
 
 
 def get_telegram_bot_credentials() -> tuple:
@@ -74,7 +71,6 @@ while True:
 		if last_log_files[file_name] != current_log_files[file_name]:
 			logging.info(f'[{datetime.now}]\t{file_name} has changed')
 			new_errors += [list(set(current_log_files[file_name]) - set(last_log_files[file_name]))]
-	last_log_files = current_log_files
 	if new_errors:
 		diff = (datetime.now() - last_send).total_seconds()
 		logging.info(f'New errors are here, sending them in {notification_interval - diff}')
@@ -85,4 +81,5 @@ while True:
 			if telegram_bot_sendtext(f'error log of {current_time}\n' + '\n'.join(errors_as_one_list)):
 				new_errors = []
 				last_send = current_time
+	last_log_files = read_files_in_logs_dir(log_file_dir)
 	sleep(5)

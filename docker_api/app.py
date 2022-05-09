@@ -2,12 +2,12 @@ import hashlib
 import logging
 import os
 import time
-from logging.handlers import RotatingFileHandler
 
 import uvicorn
 from docker_manager import DockerInfo, DockerManager
 from fastapi import Depends, FastAPI, Request
 from fastapi.responses import JSONResponse, StreamingResponse
+from utils import setup_logging
 
 # This file should expose a RESTful api for using the docker container with the following routes:
 # POST /start/<command><config>
@@ -25,11 +25,7 @@ from fastapi.responses import JSONResponse, StreamingResponse
 manager = DockerManager()
 app = FastAPI()
 is_webserver = True
-logging.basicConfig(
-	handlers=[RotatingFileHandler('./log_files/container_manager.log', maxBytes=100000, backupCount=10)],
-	level=logging.DEBUG,
-	format='[%(asctime)s] %(levelname)s [%(name)s.%(funcName)s:%(lineno)d] %(message)s',
-	datefmt='%Y-%m-%dT%H:%M:%S')
+setup_logging('api')
 
 
 def is_invalid_status(status: str) -> bool:

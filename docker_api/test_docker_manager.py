@@ -10,7 +10,7 @@ mock_port_mapping = {
 }
 with patch('docker_manager.docker'), \
 	patch('docker_manager.DockerManager._update_port_mapping'), \
-	patch('docker_manager.NotificationManager'):
+	patch('docker_manager.setup_logging'):
 	manager = docker_manager.DockerManager()
 
 # Remember to ALWAYS do:

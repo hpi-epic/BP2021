@@ -6,20 +6,15 @@ import tarfile
 import time
 from datetime import datetime
 from itertools import count, filterfalse
-from logging.handlers import RotatingFileHandler
 from types import GeneratorType
 
 import docker
 from container_db_manager import ContainerDB
 from docker.models.containers import Container
 from torch.cuda import is_available
+from utils import setup_logging
 
 IMAGE_NAME = 'recommerce'
-logging.basicConfig(
-	handlers=[RotatingFileHandler('./log_files/container_manager.log', maxBytes=100000, backupCount=10)],
-	level=logging.DEBUG,
-	format='[%(asctime)s] %(levelname)s [%(name)s.%(funcName)s:%(lineno)d] %(message)s',
-	datefmt='%Y-%m-%dT%H:%M:%S')
 
 
 class DockerInfo():
@@ -68,6 +63,7 @@ class DockerManager():
 	# dictionary of container_id:host-port pairs
 	_port_mapping = {}
 	_container_db = ContainerDB()
+	setup_logging('docker_manager')
 
 	def __new__(cls):
 		"""

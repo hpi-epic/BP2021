@@ -2,14 +2,9 @@
 import logging
 import sqlite3
 from datetime import datetime
-from logging.handlers import RotatingFileHandler
 from uuid import uuid4
 
-logging.basicConfig(
-	handlers=[RotatingFileHandler('./log_files/db.log', maxBytes=100000, backupCount=10)],
-	level=logging.DEBUG,
-	format='[%(asctime)s] %(levelname)s [%(name)s.%(funcName)s:%(lineno)d] %(message)s',
-	datefmt='%Y-%m-%dT%H:%M:%S')
+from utils import setup_logging
 
 
 class ContainerDBRow:
@@ -65,6 +60,7 @@ class ContainerDBRow:
 
 class ContainerDB:
 	def __init__(self) -> None:
+		setup_logging('db')
 		self.db_file = 'sqlite.db'
 		self.table_name = 'container'
 		if not self._does_table_exist():
