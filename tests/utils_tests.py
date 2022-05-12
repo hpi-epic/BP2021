@@ -241,5 +241,4 @@ def mock_config_hyperparameter() -> HyperparameterConfig:
 	mock_json = json.dumps(create_hyperparameter_mock_dict())
 	with patch('builtins.open', mock_open(read_data=mock_json)) as mock_file:
 		check_mock_file(mock_file, mock_json)
-		config_hyperparameter = HyperparameterConfigLoader.load('hyperparameter_config')
-		return config_hyperparameter
+		return HyperparameterConfigLoader.load('hyperparameter_config')
