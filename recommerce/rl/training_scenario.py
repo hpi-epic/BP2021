@@ -100,7 +100,7 @@ def train_with_calibrated_marketplace(marketplace):
 def train_with_pretrained_agent():
 	agent = sbmodel.StableBaselinesSAC(
 		marketplace=circular_market.CircularEconomyRebuyPriceDuopoly(True),
-		load_path='results/trainedModels/Stable_Baselines_SAC_May06_14-36-59/Stable_Baselines_SAC_00500')
+		load_path='results/trainedModels/Stable_Baselines_SAC_May08_15-02-28/Stable_Baselines_SAC_01999')
 	agent.train_agent()
 
 
@@ -111,4 +111,4 @@ def main():
 if __name__ == '__main__':
 	# Make sure a valid datapath is set
 	PathManager.manage_user_path()
-	train_to_calibrate_marketplace()
+	train_with_pretrained_agent()

@@ -2,7 +2,8 @@ import pandas as pd
 import torch
 from sim_market_kalibrated import SimMarketKalibrated
 
-import recommerce.rl.training_scenario as training_scenario
+import recommerce.monitoring.exampleprinter as exampleprinter
+import recommerce.rl.stable_baselines.stable_baselines_model as sbmodel
 from recommerce.configuration.path_manager import PathManager
 
 
@@ -86,7 +87,7 @@ class SimMarketKalibrator:
 
 if __name__ == '__main__':
 	# training_scenario.train_to_calibrate_marketplace()
-	data_path = f'{PathManager.data_path}/kalibration_data/data_simulated_2.csv'
+	data_path = f'{PathManager.data_path}/kalibration_data/training_data_1000.csv'
 	print(data_path)
 	data_frame = pd.read_csv(data_path)
 	data = torch.tensor(data_frame.values).transpose(0, 1)
@@ -106,4 +107,8 @@ if __name__ == '__main__':
 
 	kalibrator = SimMarketKalibrator(M123, M123, M123, M4, M5, M6, M4x, M5x, M6x)
 	kalibrated_market = kalibrator.kalibrate_market(data, y1_index, y2_index, y3_index, y4_index, y5_index, y6_index)
-	training_scenario.train_with_calibrated_marketplace(kalibrated_market)
+	# training_scenario.train_with_calibrated_marketplace(kalibrated_market)
+	agent = sbmodel.StableBaselinesSAC(
+		marketplace=kalibrated_market,
+		load_path='results/trainedModels/Stable_Baselines_SAC_May08_15-02-28/Stable_Baselines_SAC_01999')
+	exampleprinter.main_kalibrated_marketplace(kalibrated_market, agent)

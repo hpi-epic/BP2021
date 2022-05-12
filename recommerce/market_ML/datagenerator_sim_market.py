@@ -94,7 +94,7 @@ class CircularEconomyDatagenerator(CircularEconomyRebuyPriceDuopoly):
 
 		self.cumulated_states = np.hstack((self.cumulated_states, x))
 		print('episode_counter: ', self.episode_counter)
-		if self.episode_counter == 1100:
+		if self.episode_counter == 5999:
 
 			pd.DataFrame(self.cumulated_states).to_csv(f'{PathManager.data_path}/kalibration_data/training_data_1000.csv', index=False)
 			print('data saved')

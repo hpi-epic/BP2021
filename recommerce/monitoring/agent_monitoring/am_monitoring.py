@@ -106,6 +106,23 @@ def main():  # pragma: no cover
 	run_monitoring_session(monitor)
 
 
+def monitor_kalibrated_marketplace(marketplace):  # pragma: no cover
+	"""
+	Defines what is performed when the `agent_monitoring` command is chosen in `main.py`.
+	"""
+	monitor = Monitor()
+	config: AgentMonitoringEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_agent_monitoring')
+	monitor.configurator.setup_monitoring(
+		enable_live_draw=config.enable_live_draw,
+		episodes=config.episodes,
+		plot_interval=config.plot_interval,
+		marketplace=config.marketplace,
+		agents=config.agent
+	)
+	monitor.configurator.marketplace = marketplace
+	run_monitoring_session(monitor)
+
+
 if __name__ == '__main__':  # pragma: no cover
 	# Make sure a valid datapath is set
 	PathManager.manage_user_path()
