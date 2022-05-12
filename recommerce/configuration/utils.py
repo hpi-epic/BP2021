@@ -5,7 +5,7 @@ import re
 
 import numpy as np
 
-from recommerce.configuration.hyperparameter_config import config
+from recommerce.configuration.hyperparameter_config import HyperparameterConfig
 from recommerce.configuration.path_manager import PathManager
 from recommerce.monitoring.svg_manipulation import SVGManipulator
 
@@ -21,7 +21,7 @@ def ensure_results_folders_exist():
 		os.makedirs(os.path.join(PathManager.results_path, folder), exist_ok=True)
 
 
-def shuffle_quality() -> int:
+def shuffle_quality(config: HyperparameterConfig) -> int:
 	return min(max(int(np.random.normal(config.max_quality / 2, 2 * config.max_quality / 5)), 1), config.max_quality)
 
 
@@ -127,11 +127,32 @@ def add_content_of_two_dicts(dict1, dict2) -> dict:
 	return newdict
 
 
+def unroll_dict_with_list(input_dict: dict) -> dict:
+	"""
+	This function takes a dictionary containing numbers and lists and unrolls it into a flat dictionary.
+
+	Args:
+		input_dict (dict): the dictionary you would like to unroll
+
+	Returns:
+		dict: the unrolled dictionary
+	"""
+	newdict = {}
+	for key in input_dict:
+		if isinstance(input_dict[key], list) and isinstance(input_dict[key][0], list):
+			for i, element in enumerate(input_dict[key]):
+				newdict[f'{key}/vendor_{i}'] = element
+		else:
+			newdict[key] = input_dict[key]
+	return newdict
+
+
 def write_content_of_dict_to_overview_svg(
 		manipulator: SVGManipulator,
 		episode: int,
 		episode_dictionary: dict,
-		cumulated_dictionary: dict) -> None:
+		cumulated_dictionary: dict,
+		config: HyperparameterConfig) -> None:
 	"""
 	This function takes a SVGManipulator and two dictionaries and translates the svg placeholder to the values in the dictionary
 

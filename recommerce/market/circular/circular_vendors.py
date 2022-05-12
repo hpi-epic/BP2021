@@ -3,12 +3,14 @@ from statistics import median
 
 import numpy as np
 
-from recommerce.configuration.hyperparameter_config import config
+from recommerce.configuration.hyperparameter_config import HyperparameterConfig
 from recommerce.market.vendors import Agent, FixedPriceAgent, HumanPlayer, RuleBasedAgent
 
 
 class CircularAgent(Agent, ABC):
-	def _clamp_price(self, price, min_price=0, max_price=config.max_price - 1) -> int:
+	def _clamp_price(self, price) -> int:
+		min_price = 0
+		max_price = self.config.max_price - 1
 		price = int(price)
 		price = max(price, min_price)
 		price = min(price, max_price)
@@ -31,8 +33,9 @@ class CircularAgent(Agent, ABC):
 
 
 class HumanPlayerCE(CircularAgent, HumanPlayer):
-	def __init__(self, name='YOU - Circular'):
+	def __init__(self, config: HyperparameterConfig=None, name='YOU - Circular'):
 		self.name = name
+
 		print('Welcome to this funny game! Now, you are the one playing the game!')
 
 	def policy(self, observation, *_) -> tuple:
@@ -54,7 +57,7 @@ class FixedPriceCEAgent(CircularAgent, FixedPriceAgent):
 	"""
 	This vendor's policy is trying to succeed with setting constant prices.
 	"""
-	def __init__(self, fixed_price=(2, 4), name='fixed_price_ce'):
+	def __init__(self, config: HyperparameterConfig=None, fixed_price=(2, 4), name='fixed_price_ce'):
 		assert isinstance(fixed_price, tuple), f'fixed_price must be a tuple: {fixed_price} ({type(fixed_price)})'
 		assert len(fixed_price) == 2, f'fixed_price must contain two values: {fixed_price}'
 		assert all(isinstance(price, int) for price in fixed_price), f'the prices in fixed_price must be integers: {fixed_price}'
@@ -69,7 +72,7 @@ class FixedPriceCERebuyAgent(FixedPriceCEAgent):
 	"""
 	This vendor's policy is the a version of the FixedPriceCEAgent with rebuy price.
 	"""
-	def __init__(self, fixed_price=(3, 6, 2), name='fixed_price_ce_rebuy'):
+	def __init__(self, config: HyperparameterConfig=None, fixed_price=(3, 6, 2), name='fixed_price_ce_rebuy'):
 		assert isinstance(fixed_price, tuple), f'fixed_price must be a tuple: {fixed_price} ({type(fixed_price)})'
 		assert len(fixed_price) == 3, f'fixed_price must contain three values: {fixed_price}'
 		assert all(isinstance(price, int) for price in fixed_price), f'the prices in fixed_price must be integers: {fixed_price}'
@@ -85,8 +88,9 @@ class RuleBasedCEAgent(RuleBasedAgent, CircularAgent):
 	This vendor's policy does not consider the competitor's prices.
 	It tries to succeed by taking its own storage costs into account.
 	"""
-	def __init__(self, name='rule_based_ce'):
+	def __init__(self, config: HyperparameterConfig, name='rule_based_ce'):
 		self.name = name
+		self.config = config
 
 	def convert_price_format(self, price_refurbished, price_new, rebuy_price):
 		return (price_refurbished, price_new)
@@ -95,29 +99,29 @@ class RuleBasedCEAgent(RuleBasedAgent, CircularAgent):
 		# this policy sets the prices according to the amount of available storage
 		products_in_storage = observation[1]
 		price_refurbished = 0
-		price_new = config.production_price
+		price_new = self.config.production_price
 		rebuy_price = 0
-		if products_in_storage < config.max_storage / 15:
+		if products_in_storage < self.config.max_storage / 15:
 			# fill up the storage immediately
-			price_refurbished = int(config.max_price * 6 / 10)
-			price_new += int(config.max_price * 6 / 10)
+			price_refurbished = int(self.config.max_price * 6 / 10)
+			price_new += int(self.config.max_price * 6 / 10)
 			rebuy_price = price_refurbished - 1
 
-		elif products_in_storage < config.max_storage / 10:
+		elif products_in_storage < self.config.max_storage / 10:
 			# fill up the storage
-			price_refurbished = int(config.max_price * 5 / 10)
-			price_new += int(config.max_price * 5 / 10)
+			price_refurbished = int(self.config.max_price * 5 / 10)
+			price_new += int(self.config.max_price * 5 / 10)
 			rebuy_price = price_refurbished - 2
 
-		elif products_in_storage < config.max_storage / 8:
+		elif products_in_storage < self.config.max_storage / 8:
 			# storage content is ok
-			price_refurbished = int(config.max_price * 4 / 10)
-			price_new += int(config.max_price * 4 / 10)
+			price_refurbished = int(self.config.max_price * 4 / 10)
+			price_new += int(self.config.max_price * 4 / 10)
 			rebuy_price = price_refurbished // 2
 		else:
 			# storage too full, we need to get rid of some refurbished products
-			price_refurbished = int(config.max_price * 2 / 10)
-			price_new += int(config.max_price * 7 / 10)
+			price_refurbished = int(self.config.max_price * 2 / 10)
+			price_new += int(self.config.max_price * 7 / 10)
 			rebuy_price = 0
 
 		price_new = min(9, price_new)
@@ -137,8 +141,9 @@ class RuleBasedCERebuyAgentCompetitive(RuleBasedAgent, CircularAgent):
 	"""
 	This vendor's policy is aiming to succeed by undercutting the competitor's prices.
 	"""
-	def __init__(self, name='rule_based_ce_rebuy_competitive'):
+	def __init__(self, config: HyperparameterConfig, name='rule_based_ce_rebuy_competitive'):
 		self.name = name
+		self.config = config
 
 	def policy(self, observation, *_) -> tuple:
 		assert isinstance(observation, np.ndarray), 'observation must be a np.ndarray'
@@ -148,17 +153,17 @@ class RuleBasedCERebuyAgentCompetitive(RuleBasedAgent, CircularAgent):
 		own_storage = observation[1].item()
 		competitors_refurbished_prices, competitors_new_prices, competitors_rebuy_prices = self._get_competitor_prices(observation, True)
 
-		price_new = max(min(competitors_new_prices) - 1, config.production_price + 1)
+		price_new = max(min(competitors_new_prices) - 1, self.config.production_price + 1)
 		# competitor's storage is ignored
-		if own_storage < config.max_storage / 15:
+		if own_storage < self.config.max_storage / 15:
 			# fill up the storage immediately
 			price_refurbished = min(competitors_refurbished_prices) + 2
 			rebuy_price = max(min(competitors_rebuy_prices) + 1, 2)
-		elif own_storage < config.max_storage / 10:
+		elif own_storage < self.config.max_storage / 10:
 			# fill up the storage
 			price_refurbished = min(competitors_refurbished_prices) + 1
 			rebuy_price = min(competitors_rebuy_prices)
-		elif own_storage < config.max_storage / 8:
+		elif own_storage < self.config.max_storage / 8:
 			# storage content is ok
 			rebuy_price = max(min(competitors_rebuy_prices) - 1, 1)
 			price_refurbished = max(min(competitors_refurbished_prices) - 1, rebuy_price + 1)
@@ -174,8 +179,9 @@ class RuleBasedCERebuyAgentStorageMinimizer(RuleBasedAgent, CircularAgent):
 	"""
 	This vendor's policy reacts to the competitors' prices and minimizes the usage of storage.
 	"""
-	def __init__(self, name='rule_based_ce_rebuy_stockist'):
+	def __init__(self, config: HyperparameterConfig, name='rule_based_ce_rebuy_storage_minimizer'):
 		self.name = name
+		self.config = config
 
 	def policy(self, observation, *_) -> tuple:
 		assert isinstance(observation, np.ndarray), 'observation must be a np.ndarray'
@@ -185,15 +191,15 @@ class RuleBasedCERebuyAgentStorageMinimizer(RuleBasedAgent, CircularAgent):
 		own_storage = observation[1].item()
 		competitors_refurbished_prices, competitors_new_prices, competitors_rebuy_prices = self._get_competitor_prices(observation, True)
 
-		price_new = max(median(competitors_new_prices) - 1, config.production_price + 1)
+		price_new = max(median(competitors_new_prices) - 1, self.config.production_price + 1)
 		# competitor's storage is ignored
-		if own_storage < config.max_storage / 15:
+		if own_storage < self.config.max_storage / 15:
 			# fill up the storage immediately
 			price_refurbished = max(competitors_new_prices + competitors_refurbished_prices)
 			rebuy_price = price_new - 1
 		else:
 			# storage too full, we need to get rid of some refurbished products
-			rebuy_price = min(competitors_rebuy_prices) - config.max_price / 0.1
+			rebuy_price = min(competitors_rebuy_prices) - self.config.max_price / 0.1
 			# rebuy_price = min(competitors_rebuy_prices + competitors_new_prices + competitors_refurbished_prices)
 			price_refurbished = int(np.quantile(competitors_refurbished_prices, 0.25))
 

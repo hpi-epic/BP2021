@@ -1,16 +1,19 @@
+import json
 from typing import Tuple, Union
+from unittest.mock import mock_open, patch
 
 import recommerce.market.circular.circular_sim_market as circular_market
 import recommerce.market.linear.linear_sim_market as linear_market
+from recommerce.configuration.hyperparameter_config import HyperparameterConfig, HyperparameterConfigLoader
 
 
 def create_hyperparameter_mock_dict_rl(gamma: float = 0.99,
 	batch_size: int = 32,
-	replay_size: int = 100000,
+	replay_size: int = 500,
 	learning_rate: float = 1e-6,
-	sync_target_frames: int = 1000,
-	replay_start_size: int = 10000,
-	epsilon_decay_last_frame: int = 75000,
+	sync_target_frames: int = 10,
+	replay_start_size: int = 100,
+	epsilon_decay_last_frame: int = 400,
 	epsilon_start: float = 1.0,
 	epsilon_final: float = 0.1) -> dict:
 	"""
@@ -44,13 +47,13 @@ def create_hyperparameter_mock_dict_rl(gamma: float = 0.99,
 
 
 def create_hyperparameter_mock_dict_sim_market(
-	max_storage: int = 20,
-	episode_length: int = 20,
-	max_price: int = 15,
-	max_quality: int = 100,
-	number_of_customers: int = 30,
-	production_price: int = 5,
-	storage_cost_per_product: float = 0.3) -> dict:
+	max_storage: int = 100,
+	episode_length: int = 25,
+	max_price: int = 10,
+	max_quality: int = 50,
+	number_of_customers: int = 10,
+	production_price: int = 3,
+	storage_cost_per_product: float = 0.1) -> dict:
 	"""
 	Create dictionary that can be used to mock the sim_market part of the hyperparameter_config.json file by calling json.dumps() on it.
 
@@ -226,3 +229,17 @@ def create_mock_action(market_subclass) -> Union[int, Tuple]:
 		return (1, 2, 3)
 	elif issubclass(market_subclass, circular_market.CircularEconomy):
 		return (1, 2)
+
+
+def mock_config_hyperparameter() -> HyperparameterConfig:
+	"""
+	Reload the hyperparameter_config file to update the config variable with the mocked values.
+
+	Returns:
+		HyperparameterConfig: The mocked hyperparameter config object.
+	"""
+	mock_json = json.dumps(create_hyperparameter_mock_dict())
+	with patch('builtins.open', mock_open(read_data=mock_json)) as mock_file:
+		check_mock_file(mock_file, mock_json)
+		config_hyperparameter = HyperparameterConfigLoader.load('hyperparameter_config')
+		return config_hyperparameter

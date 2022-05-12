@@ -4,7 +4,6 @@ import gym
 import numpy as np
 
 import recommerce.configuration.utils as ut
-from recommerce.configuration.hyperparameter_config import config
 from recommerce.market.customer import Customer
 from recommerce.market.linear.linear_customers import CustomerLinear
 from recommerce.market.linear.linear_vendors import Just2PlayersLEAgent, LERandomAgent, LinearRatio1LEAgent
@@ -30,12 +29,12 @@ class LinearEconomy(SimMarket, ABC):
 		"""
 		self.observation_space = gym.spaces.Box(
 			np.array([0.0] * (len(self.competitors) * 2 + 1), dtype=np.float32),
-			np.array([config.max_quality] + [config.max_price, config.max_quality] * len(self.competitors), dtype=np.float32))
+			np.array([self.config.max_quality] + [self.config.max_price, self.config.max_quality] * len(self.competitors), dtype=np.float32))
 
 		if support_continuous_action_space:
-			self.action_space = gym.spaces.Box(np.float32(0), np.float32(config.max_price))
+			self.action_space = gym.spaces.Box(np.float32(0), np.float32(self.config.max_price))
 		else:
-			self.action_space = gym.spaces.Discrete(config.max_price)
+			self.action_space = gym.spaces.Discrete(self.config.max_price)
 
 	def _reset_vendor_specific_state(self) -> list:
 		"""
@@ -45,7 +44,7 @@ class LinearEconomy(SimMarket, ABC):
 		See also:
 			`configuration.utils.shuffle_quality`
 		"""
-		return [ut.shuffle_quality()]
+		return [ut.shuffle_quality(self.config)]
 
 	def _choose_customer(self) -> Customer:
 		return CustomerLinear()
@@ -56,10 +55,10 @@ class LinearEconomy(SimMarket, ABC):
 		Returns:
 			int: The new price.
 		"""
-		return config.production_price + 1
+		return self.config.production_price + 1
 
 	def _complete_purchase(self, profits, chosen_vendor, frequency) -> None:
-		profits[chosen_vendor] += frequency * (self.vendor_actions[chosen_vendor] - config.production_price)
+		profits[chosen_vendor] += frequency * (self.vendor_actions[chosen_vendor] - self.config.production_price)
 		self._output_dict['customer/purchases'][f'vendor_{chosen_vendor}'] += frequency
 
 	def _initialize_output_dict(self):
@@ -93,7 +92,7 @@ class LinearEconomyDuopoly(LinearEconomy):
 		return 1
 
 	def _get_competitor_list(self) -> list:
-		return [LinearRatio1LEAgent()]
+		return [LinearRatio1LEAgent(config=self.config)]
 
 
 class LinearEconomyOligopoly(LinearEconomy):
@@ -102,7 +101,7 @@ class LinearEconomyOligopoly(LinearEconomy):
 	"""
 	def _get_competitor_list(self) -> list:
 		return [
-			LinearRatio1LEAgent(),
-			LERandomAgent(),
-			Just2PlayersLEAgent(),
+			LinearRatio1LEAgent(config=self.config),
+			LERandomAgent(config=self.config),
+			Just2PlayersLEAgent(config=self.config),
 		]

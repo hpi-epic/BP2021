@@ -4,7 +4,7 @@ from typing import Tuple
 import gym
 import numpy as np
 
-from recommerce.configuration.hyperparameter_config import config
+from recommerce.configuration.hyperparameter_config import HyperparameterConfig
 from recommerce.configuration.utils import filtered_class_str_from_dir
 
 # An offer is a market state that contains all prices and qualities
@@ -41,7 +41,7 @@ class SimMarket(gym.Env, ABC):
 	def get_competitor_classes() -> list:
 		raise NotImplementedError
 
-	def __init__(self, support_continuous_action_space: bool = False, competitors: list = None) -> None:
+	def __init__(self, config: HyperparameterConfig, competitors: list = None, support_continuous_action_space: bool = False) -> None:
 		"""
 		Initialize a SimMarket instance.
 		Set up needed values such as competitors and action/observation-space and reset the environment.
@@ -56,6 +56,7 @@ class SimMarket(gym.Env, ABC):
 			competitors = []
 		self.competitors = self._get_competitor_list() if len(competitors) == 0 else competitors
 
+		self.config = config
 		# The agent's price does not belong to the observation_space any more because an agent should not depend on it
 		self._setup_action_observation_space(support_continuous_action_space)
 		self.support_continuous_action_space = support_continuous_action_space
@@ -152,7 +153,7 @@ class SimMarket(gym.Env, ABC):
 		self._output_dict = {'customer/buy_nothing': 0}
 		self._initialize_output_dict()
 
-		customers_per_vendor_iteration = config.number_of_customers // self._number_of_vendors
+		customers_per_vendor_iteration = self.config.number_of_customers // self._number_of_vendors
 		for i in range(self._number_of_vendors):
 			self._simulate_customers(profits, customers_per_vendor_iteration)
 			if self._owner is not None:
@@ -169,7 +170,7 @@ class SimMarket(gym.Env, ABC):
 		self._consider_storage_costs(profits)
 
 		self._ensure_output_dict_has('profits/all', profits)
-		is_done = self.step_counter >= config.episode_length
+		is_done = self.step_counter >= self.config.episode_length
 		return self._observation(), float(profits[0]), is_done, self._output_dict
 
 	def _observation(self, vendor_view=0) -> np.array:
