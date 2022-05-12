@@ -3,8 +3,7 @@
 # all files and subfolders that get created by executing `recommerce` should get ignored
 results
 data
-environment_config_*.json
-hyperparameter_config.json
+configuration_files
 
 # results from the tests
 tests/test_results
