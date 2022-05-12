@@ -128,7 +128,7 @@ def train_from_config():
 	run_training_session(
 		config_hyperparameter=config_hyperparameter,
 		marketplace=config.marketplace,
-		agent=config.agent['agent_class'],
+		agent=config.agent[0]['agent_class'],
 		competitors=competitor_list)
 
 
