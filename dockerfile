@@ -39,10 +39,7 @@ RUN pip install .[gpu] -f https://download.pytorch.org/whl/torch_stable.html
 # we only want the modelfiles and remove the config files to make sure we can only use the ones provided by the user
 # (i.e. if the upload fails, the program can't start and won't just use the default one from the recommerce package)
 RUN recommerce --datapath . --get-defaults-unpack
-RUN rm hyperparameter_config.json
-RUN rm environment_config_training.json
-RUN rm environment_config_exampleprinter.json
-RUN rm environment_config_agent_monitoring.json
+RUN rm -r configuration_files
 
 # This is a placeholder Entrypoint that will be overwritten when creating a container with a specified task
 ENTRYPOINT ["echo", "ENTRYPOINT not overwritten! The container does nothing and will be stopped now. Make sure to start the container using the API, not directly through Docker."]

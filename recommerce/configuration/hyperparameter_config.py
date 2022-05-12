@@ -269,17 +269,17 @@ class HyperparameterConfigLoader():
 	@classmethod
 	def load(cls, filename: str) -> HyperparameterConfig:
 		"""
-		Load the configuration json file from the specified path and instantiate a `HyperparameterConfig` object.
+		Load the configuration json file from the `configuration_files` folder and instantiate a `HyperparameterConfig` object.
 
 		Args:
 			filename (str): The name of the json file containing the configuration values.
-			Must be located in the user's datapath folder.
+				Must be located in the `configuration_files` directory in the user's datapath folder.
 
 		Returns:
 			HyperparameterConfig: An instance of `HyperparameterConfig`.
 		"""
 		filename += '.json'
-		path = os.path.join(PathManager.user_path, filename)
+		path = os.path.join(PathManager.user_path, 'configuration_files', filename)
 		with open(path) as config_file:
 			config = json.load(config_file)
 		return HyperparameterConfig(config)
