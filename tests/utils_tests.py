@@ -2,9 +2,11 @@ import json
 from typing import Tuple, Union
 from unittest.mock import mock_open, patch
 
+from attrdict import AttrDict
+
 import recommerce.market.circular.circular_sim_market as circular_market
 import recommerce.market.linear.linear_sim_market as linear_market
-from recommerce.configuration.hyperparameter_config import HyperparameterConfig, HyperparameterConfigLoader
+from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader
 
 
 def create_hyperparameter_mock_dict_rl(gamma: float = 0.99,
@@ -231,7 +233,7 @@ def create_mock_action(market_subclass) -> Union[int, Tuple]:
 		return (1, 2)
 
 
-def mock_config_hyperparameter() -> HyperparameterConfig:
+def mock_config_hyperparameter() -> AttrDict:
 	"""
 	Reload the hyperparameter_config file to update the config variable with the mocked values.
 

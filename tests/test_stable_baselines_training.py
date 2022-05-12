@@ -1,11 +1,11 @@
 import pytest
 import utils_tests as ut_t
+from attrdict import AttrDict
 
 import recommerce.market.circular.circular_sim_market as circular_market
 import recommerce.rl.stable_baselines.stable_baselines_model as sb_model
-from recommerce.configuration.hyperparameter_config import HyperparameterConfig
 
-config_hyperparameter: HyperparameterConfig = ut_t.mock_config_hyperparameter()
+config_hyperparameter: AttrDict = ut_t.mock_config_hyperparameter()
 
 
 @pytest.mark.training

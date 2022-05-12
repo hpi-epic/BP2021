@@ -2,12 +2,13 @@ import os
 import time
 
 import matplotlib.pyplot as plt
+from attrdict import AttrDict
 
 import recommerce.configuration.utils as ut
 import recommerce.market.circular.circular_sim_market as circular_market
 import recommerce.market.linear.linear_sim_market as linear_market
 import recommerce.market.sim_market as sim_market
-from recommerce.configuration.hyperparameter_config import HyperparameterConfig, HyperparameterConfigLoader
+from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader
 from recommerce.configuration.path_manager import PathManager
 from recommerce.market.circular.circular_vendors import CircularAgent, FixedPriceCEAgent
 from recommerce.market.linear.linear_vendors import LinearAgent
@@ -28,7 +29,7 @@ class Configurator():
 		self.plot_interval = 50
 		self.marketplace = circular_market.CircularEconomyMonopoly
 		default_agent = FixedPriceCEAgent
-		self.config: HyperparameterConfig = HyperparameterConfigLoader.load('hyperparameter_config')
+		self.config: AttrDict = HyperparameterConfigLoader.load('hyperparameter_config')
 		self.agents = [default_agent(config=self.config)]
 		self.agent_colors = [(0.0, 0.0, 1.0, 1.0)]
 		self.folder_path = os.path.abspath(os.path.join(PathManager.results_path, 'monitoring', 'plots_' + time.strftime('%b%d_%H-%M-%S')))
@@ -152,7 +153,7 @@ class Configurator():
 		plot_interval: int = None,
 		marketplace: sim_market.SimMarket = None,
 		agents: list = None,
-		config: HyperparameterConfig = None,
+		config: AttrDict = None,
 		subfolder_name: str = None,
 		support_continuous_action_space: bool = False) -> None:
 		"""

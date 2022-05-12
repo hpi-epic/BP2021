@@ -3,9 +3,9 @@ import random
 
 import numpy as np
 import torch
+from attrdict import AttrDict
 
 import recommerce.rl.model as model
-from recommerce.configuration.hyperparameter_config import HyperparameterConfig
 from recommerce.market.circular.circular_vendors import CircularAgent
 from recommerce.market.linear.linear_vendors import LinearAgent
 from recommerce.market.sim_market import SimMarket
@@ -21,7 +21,7 @@ class QLearningAgent(ReinforcementLearningAgent, CircularAgent, LinearAgent):
 	# Give no optim if you don't want training.
 	def __init__(
 			self,
-			config: HyperparameterConfig,
+			config: AttrDict,
 			marketplace: SimMarket,
 			device='cuda' if torch.cuda.is_available() else 'cpu',
 			load_path=None,
