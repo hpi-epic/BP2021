@@ -127,7 +127,11 @@ def train_to_calibrate_marketplace():
 	"""
 	Train an ActorCriticAgent on a Circular Economy Market with Rebuy Prices and one competitor.
 	"""
-	run_training_session(CircularEconomyDatagenerator, actorcritic_agent.ContinuosActorCriticAgentEstimatingStd)
+	config_hyperparameter: HyperparameterConfig = HyperparameterConfigLoader.load('hyperparameter_config')
+	run_training_session(
+		config_hyperparameter=config_hyperparameter,
+		marketplace=CircularEconomyDatagenerator,
+		agent=actorcritic_agent.ContinuosActorCriticAgentEstimatingStd)
 
 
 def train_with_calibrated_marketplace(marketplace):

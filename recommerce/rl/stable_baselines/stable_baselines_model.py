@@ -64,7 +64,7 @@ class StableBaselinesDDPG(StableBaselinesAgent):
 		action_noise = NormalActionNoise(mean=np.zeros(n_actions), sigma=1 * np.ones(n_actions))
 		self.model = DDPG('MlpPolicy', marketplace, action_noise=action_noise, verbose=False, tensorboard_log=self.tensorboard_log)
 
-	def _load(self, load_path):
+	def _load(self, load_path, marketplace=None):
 		self.model = DDPG.load(load_path, tensorboard_log=self.tensorboard_log)
 
 
@@ -76,7 +76,7 @@ class StableBaselinesTD3(StableBaselinesAgent):
 		action_noise = NormalActionNoise(mean=np.zeros(n_actions), sigma=1 * np.ones(n_actions))
 		self.model = TD3('MlpPolicy', marketplace, action_noise=action_noise, verbose=False, tensorboard_log=self.tensorboard_log)
 
-	def _load(self, load_path):
+	def _load(self, load_path, marketplace=None):
 		self.model = TD3.load(load_path, tensorboard_log=self.tensorboard_log)
 
 
@@ -86,7 +86,7 @@ class StableBaselinesA2C(StableBaselinesAgent):
 	def _initialize_model(self, marketplace):
 		self.model = A2C('MlpPolicy', marketplace, verbose=False, tensorboard_log=self.tensorboard_log)
 
-	def _load(self, load_path):
+	def _load(self, load_path, marketplace=None):
 		self.model = A2C.load(load_path, tensorboard_log=self.tensorboard_log)
 
 
@@ -96,7 +96,7 @@ class StableBaselinesPPO(StableBaselinesAgent):
 	def _initialize_model(self, marketplace):
 		self.model = PPO('MlpPolicy', marketplace, verbose=False, tensorboard_log=self.tensorboard_log)
 
-	def _load(self, load_path):
+	def _load(self, load_path, marketplace=None):
 		self.model = PPO.load(load_path, tensorboard_log=self.tensorboard_log)
 
 
