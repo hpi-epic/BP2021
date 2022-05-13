@@ -31,10 +31,6 @@ jobs:
         shell: bash -l {0}
         run: |
           pip install -e .[cpu]
-      - name: Configure Recommerce
-        shell: bash -l {0}
-        run: |
-          recommerce --get-defaults-unpack
 
   webserver-tests:
     needs: setup-recommerce
@@ -47,6 +43,10 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.8
+      - name: Configure Recommerce
+        shell: bash -l {0}
+        run: |
+          recommerce --datapath . --get-defaults-unpack
       - name: Run Webserver tests
         env:
           SECRET_KEY: 'fake_secret_key'
@@ -67,6 +67,10 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.8
+      - name: Configure Recommerce
+        shell: bash -l {0}
+        run: |
+          recommerce --datapath . --get-defaults-unpack
       - name: Run Recommerce tests
         shell: bash -l {0}
         run: |
