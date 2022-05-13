@@ -231,7 +231,8 @@ class HyperparameterConfigLoader():
 	@classmethod
 	def load(cls, filename: str) -> AttrDict:
 		"""
-		Load the configuration json file from the `configuration_files` folder and instantiate a `HyperparameterConfig` object without top level keys.
+		Load the configuration json file from the `configuration_files` folder, validate all keys and retruning an AttrDict instance
+		without top level keys.
 
 		Args:
 			filename (str): The name of the json file containing the configuration values.
