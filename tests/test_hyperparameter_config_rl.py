@@ -13,17 +13,6 @@ def teardown_module(module):
 	reload(hyperparameter_config)
 
 
-def import_config() -> hyperparameter_config.HyperparameterConfig:
-	"""
-	Reload the hyperparameter_config file to update the config variable with the mocked values.
-
-	Returns:
-		HyperparameterConfig: The config object.
-	"""
-	reload(hyperparameter_config)
-	return hyperparameter_config.config
-
-
 ######
 # General tests for the HyperParameter parent class
 #####
@@ -74,16 +63,15 @@ def test_reading_file_values():
 	mock_json = json.dumps(ut_t.create_hyperparameter_mock_dict())
 	with patch('builtins.open', mock_open(read_data=mock_json)) as mock_file:
 		ut_t.check_mock_file(mock_file, mock_json)
-
-		config = import_config()
+		config = hyperparameter_config.HyperparameterConfigLoader.load('hyperparameter_config')
 
 		assert config.gamma == 0.99
 		assert config.batch_size == 32
-		assert config.replay_size == 100000
+		assert config.replay_size == 500
 		assert config.learning_rate == 1e-6
-		assert config.sync_target_frames == 1000
-		assert config.replay_start_size == 10000
-		assert config.epsilon_decay_last_frame == 75000
+		assert config.sync_target_frames == 10
+		assert config.replay_start_size == 100
+		assert config.epsilon_decay_last_frame == 400
 		assert config.epsilon_start == 1.0
 		assert config.epsilon_final == 0.1
 
@@ -92,7 +80,7 @@ def test_reading_file_values():
 	with patch('builtins.open', mock_open(read_data=mock_json)) as mock_file:
 		ut_t.check_mock_file(mock_file, mock_json)
 
-		config = import_config()
+		config = hyperparameter_config.HyperparameterConfigLoader.load('hyperparameter_config')
 
 		assert config.learning_rate == 1e-4
 
@@ -161,5 +149,5 @@ def test_invalid_values(rl_json, expected_message):
 	with patch('builtins.open', mock_open(read_data=mock_json)) as mock_file:
 		ut_t.check_mock_file(mock_file, mock_json)
 		with pytest.raises(AssertionError) as assertion_message:
-			import_config()
+			hyperparameter_config.HyperparameterConfigLoader.load('hyperparameter_config')
 		assert expected_message in str(assertion_message.value)

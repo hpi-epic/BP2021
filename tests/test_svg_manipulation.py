@@ -7,9 +7,12 @@ import pytest
 import utils_tests as ut_t
 
 import recommerce.monitoring.svg_manipulation as svg_manipulation
+from recommerce.configuration.hyperparameter_config import HyperparameterConfig
 from recommerce.monitoring.exampleprinter import ExamplePrinter
 
 svg_manipulator = svg_manipulation.SVGManipulator()
+
+config_hyperparameter: HyperparameterConfig = ut_t.mock_config_hyperparameter()
 
 
 def setup_function(function):
@@ -48,7 +51,7 @@ def test_correct_template():
 			mock_mkdir.return_value = True
 			mock_list_dir.return_value = ['MarketOverview_001.svg', 'MarketOverview_002.svg', 'MarketOverview_003.svg']
 
-			ExamplePrinter().run_example()
+			ExamplePrinter(config=config_hyperparameter).run_example()
 		assert correct_template == svg_manipulator.template_svg
 
 
@@ -212,7 +215,7 @@ def test_one_exampleprinter_run():
 			mock_mkdir.return_value = True
 			mock_list_dir.return_value = ['MarketOverview_001.svg', 'MarketOverview_002.svg', 'MarketOverview_003.svg']
 
-			ExamplePrinter().run_example()
+			ExamplePrinter(config=config_hyperparameter).run_example()
 		# asserts that the html has been written
 		mock_file().write.assert_called_with(correct_html)
 

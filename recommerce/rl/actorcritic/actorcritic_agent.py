@@ -5,7 +5,7 @@ import torch
 
 import recommerce.configuration.utils as ut
 import recommerce.rl.model as model
-from recommerce.configuration.hyperparameter_config import config
+from recommerce.configuration.hyperparameter_config import HyperparameterConfig
 from recommerce.market.circular.circular_vendors import CircularAgent
 from recommerce.market.linear.linear_vendors import LinearAgent
 from recommerce.market.sim_market import SimMarket
@@ -19,6 +19,7 @@ class ActorCriticAgent(ReinforcementLearningAgent, ABC):
 	def __init__(
 			self,
 			marketplace: SimMarket,
+			config: HyperparameterConfig,
 			device='cuda' if torch.cuda.is_available() else 'cpu',
 			load_path=None,
 			critic_path=None,
@@ -30,7 +31,7 @@ class ActorCriticAgent(ReinforcementLearningAgent, ABC):
 		network_output_size = marketplace.get_actions_dimension() if isinstance(self, ContinuosActorCriticAgent) else marketplace.get_n_actions()
 		if isinstance(self, DiscreteActorCriticAgent):
 			self.actions_dimension = marketplace.get_actions_dimension()
-
+		self.config = config
 		self.device = device
 		self.name = name
 		print(f'I initiate an ActorCriticAgent using {self.device} device')
@@ -96,7 +97,7 @@ class ActorCriticAgent(ReinforcementLearningAgent, ABC):
 
 		v_estimates = self.critic_net(states)
 		with torch.no_grad():
-			v_expected = (rewards + config.gamma * self.critic_tgt_net(next_states).detach()).view(-1, 1)
+			v_expected = (rewards + self.config.gamma * self.critic_tgt_net(next_states).detach()).view(-1, 1)
 		critic_loss = torch.nn.MSELoss()(v_estimates, v_expected)
 		critic_loss.backward()
 
@@ -183,11 +184,10 @@ class DiscreteActorCriticAgent(ActorCriticAgent, LinearAgent, CircularAgent):
 	def agent_output_to_market_form(self, action):
 		if self.actions_dimension == 1:
 			return action
-
 		action_list = []
 		for _ in range(self.actions_dimension):
-			action_list.append(action % config.max_price)
-			action = action // config.max_price
+			action_list.append(action % self.config.max_price)
+			action = action // self.config.max_price
 		action_list.reverse()
 		return tuple(action_list)
 

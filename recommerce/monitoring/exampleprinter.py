@@ -10,6 +10,7 @@ from torch.utils.tensorboard import SummaryWriter
 import recommerce.configuration.utils as ut
 import recommerce.market.circular.circular_sim_market as circular_market
 from recommerce.configuration.environment_config import EnvironmentConfigLoader, ExampleprinterEnvironmentConfig
+from recommerce.configuration.hyperparameter_config import HyperparameterConfig, HyperparameterConfigLoader
 from recommerce.configuration.path_manager import PathManager
 from recommerce.market.circular.circular_vendors import RuleBasedCERebuyAgent
 from recommerce.market.sim_market import SimMarket
@@ -20,10 +21,11 @@ from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
 
 class ExamplePrinter():
 
-	def __init__(self):
+	def __init__(self, config: HyperparameterConfig):
 		ut.ensure_results_folders_exist()
-		self.marketplace = circular_market.CircularEconomyRebuyPriceDuopoly()
-		self.agent = RuleBasedCERebuyAgent()
+		self.config = config
+		self.marketplace = circular_market.CircularEconomyRebuyPriceDuopoly(config=self.config)
+		self.agent = RuleBasedCERebuyAgent(config=self.config)
 		# Signal handler for e.g. KeyboardInterrupt
 		signal.signal(signal.SIGINT, self._signal_handler)
 
@@ -79,7 +81,7 @@ class ExamplePrinter():
 				ut.write_dict_to_tensorboard(writer, logdict, counter)
 				ut.write_dict_to_tensorboard(writer, cumulative_dict, counter, is_cumulative=True)
 				if isinstance(self.marketplace, circular_market.CircularEconomyRebuyPriceDuopoly):
-					# ut.write_content_of_dict_to_overview_svg(svg_manipulator, counter, logdict, cumulative_dict)
+					# ut.write_content_of_dict_to_overview_svg(svg_manipulator, counter, logdict, cumulative_dict, self.config)
 					pass
 				our_profit += reward
 				counter += 1
@@ -96,20 +98,22 @@ def main():  # pragma: no cover
 	"""
 	Defines what is performed when the `agent_monitoring` command is chosen in `main.py`.
 	"""
-	printer = ExamplePrinter()
+	config_hyperparameter: HyperparameterConfig = HyperparameterConfigLoader.load('hyperparameter_config')
+	printer = ExamplePrinter(config=config_hyperparameter)
 
-	config: ExampleprinterEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_exampleprinter')
-	# TODO: Theoretically, the name of the agent is saved in config['name'], but we don't use it yet.
-	marketplace = config.marketplace()
+	config_environment: ExampleprinterEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_exampleprinter')
+	# TODO: Theoretically, the name of the agent is saved in config_environment['name'], but we don't use it yet.
+	marketplace = config_environment.marketplace(config=config_hyperparameter)
 
 	# QLearningAgents need more initialization
-	if issubclass(config.agent['agent_class'], QLearningAgent):
+	if issubclass(config_environment.agent['agent_class'], QLearningAgent):
 		printer.setup_exampleprinter(marketplace=marketplace,
-			agent=config.agent['agent_class'](
+			agent=config_environment.agent['agent_class'](
 				marketplace=marketplace,
-				load_path=os.path.abspath(os.path.join(PathManager.data_path, config.agent['argument']))))
+				config=config_hyperparameter,
+				load_path=os.path.abspath(os.path.join(PathManager.data_path, config_environment.agent['argument']))))
 	else:
-		printer.setup_exampleprinter(marketplace=marketplace, agent=config.agent['agent_class']())
+		printer.setup_exampleprinter(marketplace=marketplace, agent=config_environment.agent['agent_class']())
 
 	print(f'The final profit was: {printer.run_example()}')
 

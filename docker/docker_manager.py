@@ -527,38 +527,33 @@ class DockerManager():
 		os.makedirs('config_tmp', exist_ok=True)
 		os.chdir('config_tmp')
 
+		# this folder will contain all config files
+		os.makedirs('configuration_files', exist_ok=True)
+
 		# write dict to json
-		with open('hyperparameter_config.json', 'w') as config_json:
+		with open(os.path.join('configuration_files', 'hyperparameter_config.json'), 'w') as config_json:
 			config_json.write(json.dumps(config_dict['hyperparameter']))
-		with open(f'environment_config_{command_id}.json', 'w') as config_json:
+		with open(os.path.join('configuration_files', f'environment_config_{command_id}.json'), 'w') as config_json:
 			config_json.write(json.dumps(config_dict['environment']))
 
-		# put config.json in tar archive
-		with tarfile.open('hyperparameter_config.tar', 'w') as tar:
+		# put config files in tar archive
+		with tarfile.open('configuration_files.tar', 'w') as tar:
 			try:
-				tar.add('hyperparameter_config.json')
-			finally:
-				tar.close()
-		with tarfile.open(f'environment_config_{command_id}.tar', 'w') as tar:
-			try:
-				tar.add(f'environment_config_{command_id}.json')
+				tar.add('configuration_files')
 			finally:
 				tar.close()
 
 		# uploading the tar to the container
-		hyper_ok = False
-		env_ok = False
-		with open('hyperparameter_config.tar', 'rb') as tar_archive:
-			hyper_ok = container.put_archive(path='/app', data=tar_archive)
-		with open(f'environment_config_{command_id}.tar', 'rb') as tar_archive:
-			env_ok = container.put_archive(path='/app', data=tar_archive)
+		upload_ok = False
+		with open('configuration_files.tar', 'rb') as tar_archive:
+			upload_ok = container.put_archive(path='/app', data=tar_archive)
 
 		# remove obsolete files
-		if hyper_ok and env_ok:
+		if upload_ok:
 			os.chdir('..')
 			shutil.rmtree('config_tmp')
-		print('Copying config files complete')
-		return DockerInfo(id=container_id, status=container.status, data=hyper_ok and env_ok)
+		print('Copying config files complete.')
+		return DockerInfo(id=container_id, status=container.status, data=upload_ok)
 
 	@classmethod
 	def _update_port_mapping(cls):

@@ -25,7 +25,7 @@ def handle_unpack():  # pragma: no cover only library calls
 	"""
 	handle_get_defaults()
 	shutil.copytree(os.path.join(path_manager.PathManager.user_path, 'default_data', 'configuration_files'),
-		path_manager.PathManager.user_path, dirs_exist_ok=True)
+		os.path.join(path_manager.PathManager.user_path, 'configuration_files'), dirs_exist_ok=True)
 	shutil.copytree(os.path.join(path_manager.PathManager.user_path, 'default_data', 'modelfiles'),
 		os.path.join(path_manager.PathManager.user_path, 'data'), dirs_exist_ok=True)
 	shutil.rmtree(os.path.join(path_manager.PathManager.user_path, 'default_data'))

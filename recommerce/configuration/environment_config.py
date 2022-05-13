@@ -333,17 +333,17 @@ class EnvironmentConfigLoader():
 	@classmethod
 	def load(cls, filename: str) -> EnvironmentConfig:
 		"""
-		Load the configuration json file from the specified path and instantiate the correct configuration class.
+		Load the configuration json file from the `configuration_files` folder and instantiate the correct configuration class.
 
 		Args:
 			filename (str): The name of the json file containing the configuration values.
-				Must be located in the user's datapath folder.
+				Must be located in the `configuration_files` directory in the user's datapath folder.
 
 		Returns:
 			EnvironmentConfig: A subclass instance of EnvironmentConfig.
 		"""
 		filename += '.json'
-		path = os.path.join(PathManager.user_path, filename)
+		path = os.path.join(PathManager.user_path, 'configuration_files', filename)
 		with open(path) as config_file:
 			config = json.load(config_file)
 		return EnvironmentConfigLoader.validate(config)
@@ -374,11 +374,11 @@ class EnvironmentConfigLoader():
 
 
 if __name__ == '__main__':  # pragma: no cover
-	config: ExampleprinterEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_exampleprinter')
-	print(config)
+	config_environment_exampleprinter: ExampleprinterEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_exampleprinter')
+	print(config_environment_exampleprinter)
 	print()
-	config: AgentMonitoringEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_agent_monitoring')
-	print(config)
+	config_environment_am: AgentMonitoringEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_agent_monitoring')
+	print(config_environment_am)
 	print()
-	config: TrainingEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_training')
-	print(config)
+	config_environment_training: TrainingEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_training')
+	print(config_environment_training)

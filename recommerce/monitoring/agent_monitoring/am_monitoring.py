@@ -9,6 +9,7 @@ from tqdm import trange
 import recommerce.monitoring.agent_monitoring.am_configuration as am_configuration
 import recommerce.monitoring.agent_monitoring.am_evaluation as am_evaluation
 from recommerce.configuration.environment_config import AgentMonitoringEnvironmentConfig, EnvironmentConfigLoader
+from recommerce.configuration.hyperparameter_config import HyperparameterConfig, HyperparameterConfigLoader
 from recommerce.configuration.path_manager import PathManager
 from recommerce.monitoring.watcher import Watcher
 
@@ -45,9 +46,9 @@ class Monitor():
 		Returns:
 			list: A list with a list of rewards for each agent
 		"""
-
+		config = HyperparameterConfigLoader.load('hyperparameter_config')
 		# initialize the watcher list with a list for each agent
-		watchers = [Watcher() for _ in range(len(self.configurator.agents))]
+		watchers = [Watcher(config=config) for _ in range(len(self.configurator.agents))]
 
 		for episode in trange(1, self.configurator.episodes + 1, unit=' episodes', leave=False):
 			# reset the state & marketplace once to be used by all agents
@@ -95,13 +96,15 @@ def main():  # pragma: no cover
 	Defines what is performed when the `agent_monitoring` command is chosen in `main.py`.
 	"""
 	monitor = Monitor()
-	config: AgentMonitoringEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_agent_monitoring')
+	config_environment_am: AgentMonitoringEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_agent_monitoring')
+	config_hyperparameter: HyperparameterConfig = HyperparameterConfigLoader.load('hyperparameter_config')
 	monitor.configurator.setup_monitoring(
-		enable_live_draw=config.enable_live_draw,
-		episodes=config.episodes,
-		plot_interval=config.plot_interval,
-		marketplace=config.marketplace,
-		agents=config.agent
+		enable_live_draw=config_environment_am.enable_live_draw,
+		episodes=config_environment_am.episodes,
+		plot_interval=config_environment_am.plot_interval,
+		marketplace=config_environment_am.marketplace,
+		agents=config_environment_am.agent,
+		config=config_hyperparameter
 	)
 	run_monitoring_session(monitor)
 

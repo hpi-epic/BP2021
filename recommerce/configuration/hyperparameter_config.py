@@ -8,23 +8,9 @@ from recommerce.configuration.path_manager import PathManager
 
 
 class HyperparameterConfig():
-	_instance = None
 
-	def __new__(cls, config: dict = None):
-		"""
-		This function makes sure that the `HyperparameterConfig` is a singleton.
-
-		Returns:
-			HyperparameterConfig: The HyperparameterConfig instance.
-		"""
-		if cls._instance is None:
-			# print('A new instance of HyperparameterConfig is being initialized')
-			cls._instance = super(HyperparameterConfig, cls).__new__(cls)
-			cls._instance._validate_and_set_config(config)
-		else:
-			print('An instance of HyperparameterConfig already exists and it will not be overwritten')
-
-		return cls._instance
+	def __init__(self, config):
+		self._validate_and_set_config(config)
 
 	@classmethod
 	def get_required_fields(cls, dict_key) -> dict:
@@ -283,27 +269,17 @@ class HyperparameterConfigLoader():
 	@classmethod
 	def load(cls, filename: str) -> HyperparameterConfig:
 		"""
-		Load the configuration json file from the specified path and instantiate a `HyperparameterConfig` object.
+		Load the configuration json file from the `configuration_files` folder and instantiate a `HyperparameterConfig` object.
 
 		Args:
 			filename (str): The name of the json file containing the configuration values.
-			Must be located in the user's datapath folder.
+				Must be located in the `configuration_files` directory in the user's datapath folder.
 
 		Returns:
 			HyperparameterConfig: An instance of `HyperparameterConfig`.
 		"""
-		# in case there already is an instance of the config, we do not need to load the file again
-		if HyperparameterConfig._instance is not None:
-			return HyperparameterConfig()
-
 		filename += '.json'
-		path = os.path.join(PathManager.user_path, filename)
+		path = os.path.join(PathManager.user_path, 'configuration_files', filename)
 		with open(path) as config_file:
 			config = json.load(config_file)
 		return HyperparameterConfig(config)
-
-
-config: HyperparameterConfig = HyperparameterConfigLoader.load('hyperparameter_config')
-
-if __name__ == '__main__':  # pragma: no cover
-	print(config)

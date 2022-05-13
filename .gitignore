@@ -7,6 +7,7 @@ environment_config_*.json
 hyperparameter_config.json
 kalibration_data
 .env.txt
+/configuration_files
 
 # results from the tests
 tests/test_results
