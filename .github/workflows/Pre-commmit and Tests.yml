@@ -9,17 +9,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Set up Python 3.8
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.8
       - name: Pre-commit
         uses: pre-commit/action@v2.0.3
 
-  webserver-tests:
+  setup-recommerce:
     needs: pre-commit
     runs-on: [self-hosted, ubuntu-20.04]
-    name: Webserver tests
+    name: Setup Recommerce
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -31,10 +27,22 @@ jobs:
         shell: bash -l {0}
         run: |
           pip install -e .[cpu]
-      - name: Setup Recommerce
+      - name: Configure Recommerce
         shell: bash -l {0}
         run: |
-          recommerce --datapath . --get-defaults-unpack
+          recommerce --get-defaults-unpack
+
+  webserver-tests:
+    needs: setup-recommerce
+    runs-on: [self-hosted, ubuntu-20.04]
+    name: Webserver tests
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
       - name: Run Webserver tests
         env:
           SECRET_KEY: 'fake_secret_key'
@@ -44,7 +52,7 @@ jobs:
           (cd ./webserver && python ./manage.py test -v 2)
 
   recommerce-tests:
-    needs: [pre-commit, webserver-tests]
+    needs: webserver-tests
     runs-on: [self-hosted, ubuntu-20.04]
     name: Recommerce tests
     timeout-minutes: 30
@@ -55,14 +63,6 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.8
-      - name: Install Recommerce package
-        shell: bash -l {0}
-        run: |
-          pip install -e .[cpu]
-      - name: Setup Recommerce
-        shell: bash -l {0}
-        run: |
-          recommerce --datapath . --get-defaults-unpack
       - name: Run Recommerce tests
         shell: bash -l {0}
         run: |
