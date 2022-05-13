@@ -16,10 +16,10 @@ jobs:
       - name: Pre-commit
         uses: pre-commit/action@v2.0.3
 
-  setup-recommerce:
+  webserver-tests:
     needs: pre-commit
     runs-on: [self-hosted, ubuntu-20.04]
-    name: Setup Recommerce
+    name: Webserver tests
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -31,22 +31,10 @@ jobs:
         shell: bash -l {0}
         run: |
           pip install -e .[cpu]
-
-  webserver-tests:
-    needs: setup-recommerce
-    runs-on: [self-hosted, ubuntu-20.04]
-    name: Webserver tests
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Set up Python 3.8
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.8
-      - name: Configure Recommerce
+      - name: Setup Recommerce
         shell: bash -l {0}
         run: |
-          recommerce --datapath . --get-defaults-unpack
+          recommerce --get-defaults-unpack
       - name: Run Webserver tests
         env:
           SECRET_KEY: 'fake_secret_key'
@@ -67,10 +55,14 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.8
-      - name: Configure Recommerce
+      - name: Install Recommerce package
         shell: bash -l {0}
         run: |
-          recommerce --datapath . --get-defaults-unpack
+          pip install -e .[cpu]
+      - name: Setup Recommerce
+        shell: bash -l {0}
+        run: |
+          recommerce --get-defaults-unpack
       - name: Run Recommerce tests
         shell: bash -l {0}
         run: |
