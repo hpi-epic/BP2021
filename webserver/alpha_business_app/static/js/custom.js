@@ -40,12 +40,9 @@ $(document).ready(function() {
 	}).trigger('change');
 
 	$("select.marketplace-selection").change(function () {
-		// will be called when another marketplace has been added
-		console.log("marketplace changed")
+		// will be called when another marketplace has been selected
 		var self = $(this);
 		const csrftoken = getCookie("csrftoken");
-		console.log(self)
-		console.log(self.data("url"))
 		var all_agents = $("div.all-agents");
 		$.ajax({
 			type: "POST",

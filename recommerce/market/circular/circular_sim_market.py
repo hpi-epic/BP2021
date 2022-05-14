@@ -215,7 +215,7 @@ class CircularEconomy(SimMarket, ABC):
 
 class CircularEconomyMonopoly(CircularEconomy):
 	"""
-	This is a circular economy with only one vendor having the monopol.
+	This is a circular economy with only one vendor having the monopoly.
 	"""
 	@staticmethod
 	def get_num_competitors() -> list:
@@ -297,7 +297,7 @@ class CircularEconomyRebuyPrice(CircularEconomy, ABC):
 
 class CircularEconomyRebuyPriceMonopoly(CircularEconomyRebuyPrice):
 	"""
-	This is a circular economy with rebuy price, so the vendors buy their prdoducts from the customer.
+	This is a circular economy with rebuy price, so the vendors buy back their products from the customers.
 	There is only one vendor.
 	"""
 	@staticmethod
@@ -310,7 +310,7 @@ class CircularEconomyRebuyPriceMonopoly(CircularEconomyRebuyPrice):
 
 class CircularEconomyRebuyPriceDuopoly(CircularEconomyRebuyPrice):
 	"""
-	This is a circular economy with rebuy price, so the vendors buy their prdoducts from the customer.
+	This is a circular economy with rebuy price, so the vendors buy back their products from the customers.
 	There are two vendors.
 	"""
 	@staticmethod
@@ -323,7 +323,7 @@ class CircularEconomyRebuyPriceDuopoly(CircularEconomyRebuyPrice):
 
 class CircularEconomyRebuyPriceOligopoly(CircularEconomyRebuyPrice):
 	"""
-	This is a circular economy with rebuy price, so the vendors buy their prdoducts from the customer.
+	This is a circular economy with rebuy price, so the vendors buy back their products from the customers.
 	There are multiple vendors.
 	"""
 	def _get_competitor_list(self) -> list:

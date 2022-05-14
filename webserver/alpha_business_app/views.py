@@ -97,7 +97,6 @@ def delete_config(request, config_id) -> HttpResponse:
 def agent(request):
 	if not request.user.is_authenticated:
 		return HttpResponse('Unauthorized', status=401)
-	print(selection_manager.current_marketplace)
 	return render(request, 'configuration_items/agent.html',
 		{'id': str(uuid4()), 'name': 'Competitor', 'agent_selections': selection_manager.get_competitor_options_for_marketplace()})
 
@@ -130,7 +129,6 @@ def config_validation(request):
 				resulting_dict[current_name] = [current_value]
 
 		config_dict = ConfigFlatDictParser().flat_dict_to_hierarchical_config_dict(resulting_dict)
-		print(config_dict)
 
 		validate_status, validate_data = validate_config(config=config_dict, config_is_final=True)
 		if not validate_status:

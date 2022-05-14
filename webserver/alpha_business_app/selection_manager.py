@@ -31,15 +31,16 @@ class SelectionManager:
 			str: correct agent accordion
 		"""
 		# parse string to xml tree
+		html = lxml.html.fromstring(raw_agents_html)
+
+		# get necessary constants
 		self.current_marketplace = get_class(marketplace_class)
 		expected_num_competitors = self._get_number_of_competitors_for_marketplace()
-		html = lxml.html.fromstring(raw_agents_html)
 		collapse_agent_container = list(html)[1]
 		big_accordion_body = list(collapse_agent_container)[0]
 
-		# are we in an oligopoly scenario?
-		if expected_num_competitors > 5:
-			# add add-more-button
+		if 'Oligopoly' in marketplace_class:
+			# add the add-more-button
 			button = html.find_class('add-more')
 			if not button:
 				add_more_button_html = render(request, 'configuration_items/add_more_button.html').content.decode('utf-8')
@@ -47,14 +48,16 @@ class SelectionManager:
 				big_accordion_body.append(add_more_button)
 			html = self._update_comp_options(html, request)
 			return lxml.html.tostring(html)
-		# we are not in oligopoly, so we don't need to add more
+
+		# we are not in oligopoly, so we don't need the add-more-button
 		html = self._remove_add_more_button(html, big_accordion_body)
 		all_competitor_accordions = html.find_class('accordion-competitor')
+		# figure out if we have to remove or add competitor accordions
 		diff = expected_num_competitors - len(all_competitor_accordions)
 		if diff < 0:
-			# we need to delte the last competitors
+			# we need to remove the last competitors
 			for index in range(diff * -1):
-				big_accordion_body.remove(all_competitor_accordions[-(index+1)])
+				big_accordion_body.remove(all_competitor_accordions[-(index + 1)])
 		elif diff > 0:
 			# we need to add more competitors
 			competitor_html = render(request, 'configuration_items/agent.html', {'id': str(uuid4()), 'name': 'Competitor'}).content.decode('utf-8')
@@ -68,7 +71,7 @@ class SelectionManager:
 	def get_marketplace_options(self) -> list:
 		"""
 		Matches marketplaces of recommerce.market.circular.circular_sim_market and recommerce.market.linear.linear_sim_market,
-		who contain one of the Keywords: Oligopoly, Duopoly, Monopoly
+		which contain one of the Keywords: Oligopoly, Duopoly, Monopoly
 
 		Returns:
 			list: tuple list for selection
@@ -76,12 +79,12 @@ class SelectionManager:
 		import recommerce.market.circular.circular_sim_market as circular_market
 		import recommerce.market.linear.linear_sim_market as linear_market
 
-		# we accept any circular marketplace starting with CircularEconomy or LinearEconomy and at least one more character
 		keywords = ['Monopoly', 'Duopoly', 'Oligopoly']
+		# get all circular marketplaces
 		circular_marketplaces = list(set(filter(lambda class_name: any(keyword in class_name for keyword in keywords), dir(circular_market))))
 		circular_market_str = [f'recommerce.market.circular.circular_sim_market.{market}' for market in sorted(circular_marketplaces)]
 		circular_tuples = self._to_tuple_list(circular_market_str)
-
+		# get all linear marketplaces
 		visible_linear_names = list(set(filter(lambda class_name: any(keyword in class_name for keyword in keywords), dir(linear_market))))
 		linear_market_str = [f'recommerce.market.linear.linear_sim_market.{market}' for market in sorted(visible_linear_names)]
 		linear_tuples = self._to_tuple_list(linear_market_str)
