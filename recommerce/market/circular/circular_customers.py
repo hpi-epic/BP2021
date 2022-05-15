@@ -7,7 +7,7 @@ from recommerce.market.customer import Customer
 class CustomerCircular(Customer):
 	def generate_purchase_probabilities_from_offer(self, common_state, vendor_specific_state, vendor_actions) -> np.array:
 		"""
-		This method calculates the purchase probability for each vendor in a linear setup.
+		This method calculates the purchase probability for each vendor in a circular setup.
 		It is assumed that all vendors do have the same quality and same reputation.
 		The customer values a second-hand-product 55% compared to a new one.
 

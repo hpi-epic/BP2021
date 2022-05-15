@@ -25,7 +25,7 @@ def run_training_session(
 		marketplace=circular_market.CircularEconomyRebuyPriceDuopoly,
 		agent=q_learning_agent.QLearningAgent):
 	"""
-	Run a training session with the passed marketplace and QLearningAgent.
+	Run a training session with the passed marketplace and RL Agent.
 	Args:
 		marketplace (SimMarket subclass, optional): What marketplace to run the training session on.
 		Defaults to circular_market.CircularEconomyRebuyPriceDuopoly.
