@@ -58,13 +58,20 @@ class ContainerDBRow:
 		return ', '.join(all_keys)
 
 
+class SystemMonitorRow:
+	pass
+
+
 class ContainerDB:
 	def __init__(self) -> None:
 		setup_logging('db', level=logging.ERROR)
 		self.db_file = 'sqlite.db'
 		self.table_name = 'container'
-		if not self._does_table_exist():
+		self.system_table_name = 'system_information'
+		if not self._does_table_exist(self.table_name):
 			self._create_container_table()
+		# if not self._does_table_exist(self.system_table_name):
+		# 	self._create_system_table()
 
 	def get_all_container(self):
 		data = None
@@ -157,9 +164,9 @@ class ContainerDB:
 			logging.error(f'Could not create database table. {error}')
 		self._tear_down_connection(db, cursor)
 
-	def _does_table_exist(self) -> bool:
+	def _does_table_exist(self, table_name) -> bool:
 		cursor, db = self._create_connection()
-		cursor.execute('SELECT name FROM sqlite_master WHERE type="table" AND name=:name', {'name': self.table_name})
+		cursor.execute('SELECT name FROM sqlite_master WHERE type="table" AND name=:name', {'name': table_name})
 		data = cursor.fetchone()
 		self._tear_down_connection(db, cursor)
 		return bool(data)
