@@ -21,7 +21,8 @@ print('successfully imported torch: cuda?', torch.cuda.is_available())
 
 
 def run_training_session(
-		config_rl: AttrDict,
+		config_market: AttrDict = HyperparameterConfigLoader.load('market_config'),
+		config_rl: AttrDict = HyperparameterConfigLoader.load('rl_config'),
 		marketplace=circular_market.CircularEconomyRebuyPriceDuopoly,
 		agent=q_learning_agent.QLearningAgent):
 	"""
@@ -47,12 +48,14 @@ def run_training_session(
 		QLearningTrainer(
 			marketplace_class=marketplace,
 			agent_class=agent,
-			config=config_rl).train_agent()
+			config_market=config_market,
+			config_rl=config_rl).train_agent()
 	else:
 		ActorCriticTrainer(
 			marketplace_class=marketplace,
 			agent_class=agent,
-			config=config_rl
+			config_rl=config_rl,
+			config_market=config_market,
 			).train_agent(number_of_training_steps=10000)
 
 
@@ -62,7 +65,6 @@ def train_q_learning_classic_scenario():
 	Train a Linear QLearningAgent on a Linear Market with one competitor.
 	"""
 	run_training_session(
-		config_rl=HyperparameterConfigLoader.load('rl_config'),
 		marketplace=linear_market.LinearEconomyDuopoly,
 		agent=q_learning_agent.QLearningAgent)
 
@@ -72,7 +74,6 @@ def train_q_learning_circular_economy_rebuy():
 	Train a Circular Economy QLearningAgent on a Circular Economy Market with Rebuy Prices and one competitor.
 	"""
 	run_training_session(
-		config_rl=HyperparameterConfigLoader.load('rl_config'),
 		marketplace=circular_market.CircularEconomyRebuyPriceDuopoly,
 		agent=q_learning_agent.QLearningAgent)
 
@@ -82,28 +83,32 @@ def train_continuos_a2c_circular_economy_rebuy():
 	Train an ActorCriticAgent on a Circular Economy Market with Rebuy Prices and one competitor.
 	"""
 	run_training_session(
-		config_rl=HyperparameterConfigLoader.load('rl_config'),
 		marketplace=circular_market.CircularEconomyRebuyPriceDuopoly,
 		agent=actorcritic_agent.ContinuosActorCriticAgentFixedOneStd)
 
 
 def train_stable_baselines_ppo():
+	config_market: AttrDict = HyperparameterConfigLoader.load('market_config')
 	config_rl: AttrDict = HyperparameterConfigLoader.load('rl_config')
 	sbmodel.StableBaselinesPPO(
-		config=config_rl,
-		marketplace=circular_market.CircularEconomyRebuyPriceDuopoly(config_rl, True)).train_agent()
+		config_market=config_market,
+		config_rl=config_rl,
+		marketplace=circular_market.CircularEconomyRebuyPriceDuopoly(config_market, True)).train_agent()
 
 
 def train_stable_baselines_sac():
+	config_market: AttrDict = HyperparameterConfigLoader.load('market_config')
 	config_rl: AttrDict = HyperparameterConfigLoader.load('rl_config')
 	sbmodel.StableBaselinesSAC(
-		config=config_rl,
-		marketplace=circular_market.CircularEconomyRebuyPriceDuopoly(config_rl, True)).train_agent()
+		config_market=config_market,
+		config_rl=config_rl,
+		marketplace=circular_market.CircularEconomyRebuyPriceDuopoly(config_market, True)).train_agent()
 
 
 def train_rl_vs_rl():
+	config_market: AttrDict = HyperparameterConfigLoader.load('market_config')
 	config_rl: AttrDict = HyperparameterConfigLoader.load('rl_config')
-	rl_vs_rl_training.train_rl_vs_rl(config_rl)
+	rl_vs_rl_training.train_rl_vs_rl(config_market, config_rl)
 
 
 def train_self_play():
@@ -131,4 +136,4 @@ if __name__ == '__main__':
 	# Make sure a valid datapath is set
 	PathManager.manage_user_path()
 
-	train_q_learning_classic_scenario()
+	train_rl_vs_rl()

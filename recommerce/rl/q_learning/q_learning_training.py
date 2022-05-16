@@ -18,9 +18,9 @@ class QLearningTrainer(RLTrainer):
 			Defaults to 2*self.config.epsilon_decay_last_frame.
 		"""
 		if number_of_training_steps is None:
-			number_of_training_steps = 2 * self.config.epsilon_decay_last_frame
+			number_of_training_steps = 2 * self.config_rl.epsilon_decay_last_frame
 		self.initialize_callback(number_of_training_steps)
-		marketplace = self.marketplace_class(config=self.config)
+		marketplace = self.marketplace_class(config=self.config_market)
 		state = marketplace.reset()
 
 		last_loss = 0
@@ -28,16 +28,16 @@ class QLearningTrainer(RLTrainer):
 		finished_episodes = 0
 
 		for frame_idx in range(number_of_training_steps):
-			epsilon = max(self.config.epsilon_final, self.config.epsilon_start - frame_idx / self.config.epsilon_decay_last_frame)
+			epsilon = max(self.config_rl.epsilon_final, self.config_rl.epsilon_start - frame_idx / self.config_rl.epsilon_decay_last_frame)
 
 			action = self.callback.model.policy(state, epsilon)
 			state, reward, is_done, info = marketplace.step(action)
 
 			# The following numbers are divided by the episode length because they will be summed up later in the watcher
-			info['Loss/MSE'] = last_loss / self.config.episode_length
-			info['Loss/RMSE'] = np.sqrt(last_loss) / self.config.episode_length
-			info['Loss/selected_q_vals'] = last_q_val_selected_action / self.config.episode_length
-			info['epsilon'] = epsilon / self.config.episode_length
+			info['Loss/MSE'] = last_loss / self.config_market.episode_length
+			info['Loss/RMSE'] = np.sqrt(last_loss) / self.config_market.episode_length
+			info['Loss/selected_q_vals'] = last_q_val_selected_action / self.config_market.episode_length
+			info['epsilon'] = epsilon / self.config_market.episode_length
 
 			self.callback.model.set_feedback(reward, is_done, state)
 
@@ -49,7 +49,7 @@ class QLearningTrainer(RLTrainer):
 			if is_done:
 				marketplace.reset()
 
-			if len(self.callback.model.buffer) < self.config.replay_start_size:
+			if len(self.callback.model.buffer) < self.config_rl.replay_start_size:
 				continue
 
 			last_loss, last_q_val_selected_action = self.callback.model.train_batch()

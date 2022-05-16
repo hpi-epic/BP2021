@@ -22,7 +22,7 @@ from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
 
 class ExamplePrinter():
 
-	def __init__(self, config_market: AttrDict, config_rl: AttrDict=None):
+	def __init__(self, config_market: AttrDict):
 		ut.ensure_results_folders_exist()
 		self.config = config_market
 		self.marketplace = circular_market.CircularEconomyRebuyPriceDuopoly(config=self.config)

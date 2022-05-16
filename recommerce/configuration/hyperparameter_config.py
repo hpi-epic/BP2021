@@ -250,8 +250,12 @@ class HyperparameterConfigLoader():
 		with open(path) as config_file:
 			config = json.load(config_file)
 		HyperparameterConfigValidator.validate_config(config)
-		config_flatten = config['rl']
-		config_flatten.update(config['sim_market'])
+		config_flatten = {}
+		if 'rl' in config:
+			config_flatten.update(config['rl'])
+		if 'sim_market' in config:
+			config_flatten.update(config['sim_market'])
 		config_attr_dict = AttrDict(config_flatten)
 		print('flatten:', config_flatten)
+		assert config_flatten is not {}
 		return config_attr_dict

@@ -43,7 +43,7 @@ def test_handle_datapath_none():
 
 handle_command_testcases = [
 	None,
-	'training',
+	# 'training',
 	'exampleprinter',
 	'agent_monitoring'
 ]

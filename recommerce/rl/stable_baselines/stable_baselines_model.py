@@ -2,7 +2,6 @@ import os
 from abc import ABC
 
 import numpy as np
-import stable_baselines3.common.monitor
 from attrdict import AttrDict
 from stable_baselines3 import A2C, DDPG, PPO, SAC, TD3
 from stable_baselines3.common.noise import NormalActionNoise
@@ -16,13 +15,14 @@ from recommerce.rl.reinforcement_learning_agent import ReinforcementLearningAgen
 
 
 class StableBaselinesAgent(ReinforcementLearningAgent, LinearAgent, CircularAgent, ABC):
-	def __init__(self, config: AttrDict, marketplace, load_path=None, name=None):
+	def __init__(self, config_market: AttrDict, config_rl: AttrDict, marketplace, load_path=None, name=None):
 		assert marketplace is not None
 		assert isinstance(marketplace, SimMarket), \
 			f'if marketplace is provided, marketplace must be a SimMarket, but is {type(marketplace)}'
 		assert load_path is None or isinstance(load_path, str)
 		assert name is None or isinstance(name, str)
-		self.config = config
+		self.config_market = config_market
+		self.config_rl = config_rl
 		self.tensorboard_log = os.path.join(PathManager.results_path, 'runs')
 		self.marketplace = marketplace
 		if load_path is None:
@@ -48,9 +48,8 @@ class StableBaselinesAgent(ReinforcementLearningAgent, LinearAgent, CircularAgen
 
 	def train_agent(self, training_steps=100000, iteration_length=500, analyze_after_training=True):
 		callback = RecommerceCallback(
-			type(self), type(self.marketplace), training_steps=training_steps, iteration_length=iteration_length,
-			signature=self.name, analyze_after_training=analyze_after_training, config=self.config)
-		self.model.set_env(stable_baselines3.common.monitor.Monitor(self.marketplace, callback.save_path))
+			type(self), type(self.marketplace), self.config_market, self.config_rl, training_steps=training_steps, iteration_length=iteration_length,
+			signature=self.name, analyze_after_training=analyze_after_training)
 		self.model.learn(training_steps, callback=callback)
 		return callback.watcher.all_dicts
 
