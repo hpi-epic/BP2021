@@ -249,7 +249,6 @@ def test_validate_sub_keys_invalid_keys_hyperparameter(config):
 	with pytest.raises(AssertionError) as error_message:
 		top_level_keys = HyperparameterConfigValidator.get_required_fields('top-dict')
 		config_validation.validate_sub_keys(HyperparameterConfigValidator, config, top_level_keys)
-	print(error_message)
 	assert 'The key "invalid_key" should not exist within a HyperparameterConfigValidator config' in str(error_message.value)
 
 
