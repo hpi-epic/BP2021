@@ -1,13 +1,18 @@
+
+
 from recommerce.configuration.hyperparameter_config import HyperparameterConfig
-from recommerce.market.circular.circular_vendors import RuleBasedAgent
-from recommerce.market.vendors import Agent
+from recommerce.market.circular.circular_vendors import CircularAgent, RuleBasedAgent
+
+# from recommerce.market.vendors import Agent
 
 
-class PredictableAgent(RuleBasedAgent):
+class PredictableAgent(RuleBasedAgent, CircularAgent):
 	def __init__(self, config: HyperparameterConfig, name='Predicatable Agent'):
-		super(Agent, self).__init__(config, name)
+		super(CircularAgent, self).__init__(config=config, name=name)
 		self.step_counter = 0
 
 	def policy(self, observation, *_):
 		self.step_counter += 1
-		return self.step_counter % self.config.max_price
+		return [(self.step_counter + 1) % self.config.max_price,
+			(self.step_counter + 0) % self.config.max_price,
+			(self.step_counter + -2) % self.config.max_price]

@@ -72,6 +72,7 @@ class Configurator():
 		Raises:
 			RuntimeError: Raised if the modelfile provided does not match the Market/Agent-type provided.
 		"""
+		print(agents)
 		# All agents must be of the same type
 		assert all(isinstance(agent_tuple, tuple) for agent_tuple in agents), 'agents must be a list of tuples'
 		assert all(len(agent_tuple) == 2 for agent_tuple in agents), 'the list entries in agents must have size 2 ([agent_class, arguments])'

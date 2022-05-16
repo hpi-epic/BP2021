@@ -11,6 +11,8 @@ import recommerce.monitoring.agent_monitoring.am_evaluation as am_evaluation
 from recommerce.configuration.environment_config import AgentMonitoringEnvironmentConfig, EnvironmentConfigLoader
 from recommerce.configuration.hyperparameter_config import HyperparameterConfig, HyperparameterConfigLoader
 from recommerce.configuration.path_manager import PathManager
+from recommerce.market_ML.predictable_agent import PredictableAgent
+from recommerce.market_ML.predictable_market import PredictableMarketRebuyPriceDuopoly
 from recommerce.monitoring.watcher import Watcher
 
 print('successfully imported torch: cuda?', torch.cuda.is_available())
@@ -109,7 +111,23 @@ def main():  # pragma: no cover
 	run_monitoring_session(monitor)
 
 
-def monitor_kalibrated_marketplace(marketplace):  # pragma: no cover
+def monitor_kalibrated_marketplace(marketplace, agent):  # pragma: no cover
+	"""
+	Monitors a given Arketplace and agent.
+	"""
+	monitor = Monitor()
+	config: AgentMonitoringEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_agent_monitoring')
+	monitor.configurator.setup_monitoring(
+		enable_live_draw=config.enable_live_draw,
+		episodes=config.episodes,
+		plot_interval=config.plot_interval,
+		agents=agent
+	)
+	monitor.configurator.marketplace = marketplace
+	run_monitoring_session(monitor)
+
+
+def monitor_predictable():  # pragma: no cover
 	"""
 	Defines what is performed when the `agent_monitoring` command is chosen in `main.py`.
 	"""
@@ -119,10 +137,9 @@ def monitor_kalibrated_marketplace(marketplace):  # pragma: no cover
 		enable_live_draw=config.enable_live_draw,
 		episodes=config.episodes,
 		plot_interval=config.plot_interval,
-		marketplace=config.marketplace,
-		agents=config.agent
+		marketplace=PredictableMarketRebuyPriceDuopoly,
+		agents=PredictableAgent
 	)
-	monitor.configurator.marketplace = marketplace
 	run_monitoring_session(monitor)
 
 
@@ -130,4 +147,4 @@ if __name__ == '__main__':  # pragma: no cover
 	# Make sure a valid datapath is set
 	PathManager.manage_user_path()
 
-	main()
+	monitor_predictable()
