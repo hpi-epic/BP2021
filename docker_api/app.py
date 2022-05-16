@@ -220,10 +220,10 @@ async def get_tensorboard_link(id: str, authorized: bool = Depends(verify_token)
 
 
 @app.get('/data/statistics')
-async def get_statistical_csv_data(id: str, authorized: bool = Depends(verify_token)) -> JSONResponse:
+async def get_statistical_csv_data(id: str, system: bool, authorized: bool = Depends(verify_token)) -> JSONResponse:
 	if not authorized:
 		return JSONResponse(status_code=401, content=vars(DockerInfo('', 'Not authorized')))
-	return JSONResponse(status_code=200, content=vars(manager.get_statistic_data()))
+	return JSONResponse(status_code=200, content=vars(manager.get_statistic_data(wants_system_data=system)))
 
 
 @app.get('/pause/')

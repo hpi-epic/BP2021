@@ -29,7 +29,6 @@ while True:
 		polished_data = [item[1:-1].split(',') for item in docker_info.status.split(';')]
 		polished_data = [(container_id[1:-1].strip(), exit_code.strip()) for container_id, exit_code in polished_data]
 		container_db.they_are_exited(polished_data)
-		get_system_information()
 	# get memory, cpu and io information
 	current_time = datetime.now()
 	if current_time - last_time > diff:

@@ -72,19 +72,21 @@ class ContainerDB:
 		setup_logging('db', level=logging.ERROR)
 		self.db_file = 'sqlite.db'
 		self.data_table_name = 'container'
+		self.data_table_class = ContainerDBRow
 		self.system_table_name = 'system_information'
+		self.system_table_class = SystemMonitorRow
 		if not self._does_table_exist(self.data_table_name):
 			self._create_table(self.data_table_name, ContainerDBRow)
 		if not self._does_table_exist(self.system_table_name):
 			self._create_table(self.system_table_name, SystemMonitorRow)
 
-	def get_all_container(self):
+	def get_all_data(self, table_name):
 		data = None
 		cursor, db = self._create_connection()
 		try:
 			cursor.execute(
-				"""
-				SELECT * FROM container
+				f"""
+				SELECT * FROM {table_name}
 				"""
 			)
 			data = cursor.fetchall()
@@ -94,9 +96,11 @@ class ContainerDB:
 		self._tear_down_connection(db, cursor)
 		return [list(row) for row in data]
 
-	def get_csv_data(self):
-		header = ContainerDBRow().header_row()
-		data = self.get_all_container()
+	def get_csv_data(self, wants_system: bool):
+		wanted_table = self.system_table_name if wants_system else self.data_table_name
+		wanted_class = self.system_table_class if wants_system else self.data_table_class
+		header = wanted_class().header_row()
+		data = self.get_all_data(wanted_table)
 		final_data = ''
 		for line in [header] + data:
 			all_str = [str(item) for item in line]

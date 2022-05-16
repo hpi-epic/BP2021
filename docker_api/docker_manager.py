@@ -289,8 +289,8 @@ class DockerManager():
 		except docker.errors.NotFound:
 			return DockerInfo(container_id, status=f'The requested path does not exist on the container: {container_path}')
 
-	def get_statistic_data(self):
-		return DockerInfo(id='not given', status='success', data=self._container_db.get_csv_data())
+	def get_statistic_data(self, wants_system_data: bool):
+		return DockerInfo(id='not given', status='success', data=self._container_db.get_csv_data(wants_system_data))
 
 	def remove_container(self, container_id: str) -> DockerInfo:
 		"""
