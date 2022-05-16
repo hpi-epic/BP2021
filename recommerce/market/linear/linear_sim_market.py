@@ -79,6 +79,12 @@ class LinearEconomy(SimMarket, ABC):
 		return np.array([])
 
 
+class LinearEconomyMonopoly(LinearEconomy):
+
+	def _get_competitor_list(self) -> list:
+		return []
+
+
 class LinearEconomyDuopoly(LinearEconomy):
 
 	def _get_competitor_list(self) -> list:
