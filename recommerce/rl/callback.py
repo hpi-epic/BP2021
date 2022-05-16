@@ -47,7 +47,8 @@ class RecommerceCallback(BaseCallback):
 		super(RecommerceCallback, self).__init__(True)
 		# Change the 128 to the right parameter as soon as #211 is implemented.
 		self.config = config
-		self.watcher = Watcher(config_rl=self.config, number_envs=128) if issubclass(agent_class, ActorCriticAgent) else Watcher(config_rl=self.config)
+		self.watcher = Watcher(config_rl=self.config, number_envs=128) if issubclass(agent_class, ActorCriticAgent) \
+			else Watcher(config_rl=self.config)
 		self.best_mean_interim_reward = None
 		self.best_mean_overall_reward = None
 		self.agent_class = agent_class
