@@ -59,6 +59,7 @@ log_file_dir = './log_files'
 last_log_files = read_files_in_logs_dir(log_file_dir)
 last_send = datetime.now()
 new_errors = []
+file_names = []
 notification_interval = 600  # in seconds
 logging.info(f'{last_send}successfully started messenger')
 logging.info(f'waiting for logs in {log_file_dir} to change and notify you')
@@ -70,6 +71,7 @@ while True:
 		if last_log_files[file_name] != current_log_files[file_name]:
 			logging.info(f'[{datetime.now}]\t{file_name} has changed')
 			new_errors += [list(set(current_log_files[file_name]) - set(last_log_files[file_name]))]
+			file_names += [file_name]
 	if new_errors:
 		diff = (datetime.now() - last_send).total_seconds()
 		logging.info(f'New errors are here, sending them in {notification_interval - diff}')
@@ -77,7 +79,7 @@ while True:
 			logging.info(f'[{datetime.now}]\tsend telegram')
 			current_time = datetime.now()
 			errors_as_one_list = ['\n'.join(x) for x in new_errors]
-			if telegram_bot_sendtext(f'error log of {current_time}\n' + '\n'.join(errors_as_one_list)):
+			if telegram_bot_sendtext(f'error log of {current_time} | {file_names}\n' + '\n'.join(errors_as_one_list)):
 				new_errors = []
 				last_send = current_time
 	last_log_files = read_files_in_logs_dir(log_file_dir)

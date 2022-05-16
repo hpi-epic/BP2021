@@ -24,7 +24,7 @@ def parse_response_to_database(api_response, config_dict: dict, given_name: str,
 			return False, [], 'The API answer was wrong, please try'
 
 	num_experiments = len(started_container)
-	name = names.get_first_name() if not given_name else given_name
+	name = names.get_first_name() if not given_name else str(given_name)
 
 	# save the used config
 	config_object = ConfigModelParser().parse_config(copy.deepcopy(config_dict))
@@ -43,7 +43,7 @@ def parse_response_to_database(api_response, config_dict: dict, given_name: str,
 			return False, all_container_ids, 'The new container has the same id as an already existing container, please try again.'
 		# get name for container
 		if num_experiments != 1:
-			current_container_name = name + f' ({container_count})'
+			current_container_name = str(name) + f' ({str(container_count)})'
 		else:
 			current_container_name = name
 
