@@ -61,16 +61,17 @@ class ContainerDBRow(DBRow):
 
 
 class SystemMonitorRow(DBRow):
-	def __init__(self, _cpu=None, _ram=None, _io=None) -> None:
+	def __init__(self, _time=None, _cpu=None, _ram=None, _io=None) -> None:
+		self.current_time = _time
 		self.cpu = _cpu
 		self.ram = _ram
 		self.io = _io
 
 
 class ContainerDB:
-	def __init__(self) -> None:
+	def __init__(self, db_file_name: str = 'sqlite.db') -> None:
 		setup_logging('db', level=logging.ERROR)
-		self.db_file = 'sqlite.db'
+		self.db_file = db_file_name
 		self.data_table_name = 'container'
 		self.data_table_class = ContainerDBRow
 		self.system_table_name = 'system_information'
@@ -113,7 +114,7 @@ class ContainerDB:
 		group_id = uuid4()
 		for container_info in all_container_infos:
 			current_container = ContainerDBRow(container_info.id, config, starting_time, container_starter, group_id, group_size)
-			self._insert_into_database(current_container)
+			self._insert_into_database(current_container, self.data_table_name)
 
 	def has_been_paused(self, container_id: str):
 		self._update_value('paused', datetime.now(), container_id, self.data_table_name)
@@ -148,7 +149,7 @@ class ContainerDB:
 			self._update_value('force_stop', False, container_id, self.data_table_name, should_append=False)
 
 	def update_system(self, cpu: list, ram, io):
-		row = SystemMonitorRow(str(cpu), str(ram), str(io))
+		row = SystemMonitorRow(datetime.now(), str(cpu), str(ram), str(io))
 		self._insert_into_database(row, self.system_table_name)
 
 	def _create_connection(self):

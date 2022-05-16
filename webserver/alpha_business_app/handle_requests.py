@@ -77,6 +77,25 @@ def send_get_request(wanted_action: str, container_id: str) -> APIResponse:
 	return _error_handling_API(response)
 
 
+def send_statistic_request(wants_system_data: bool) -> APIResponse:
+	"""
+	Sends a get request to `data/statistics`. This request is special, because it does use different parameters
+
+	Args:
+		wants_system_data (bool): indecates if the user wants the information about the runnning system.
+
+	Returns:
+		APIResponse: Response from the API converted into our special format.
+	"""
+	try:
+		response = requests.get(**_default_request_parameter('data/statistics', {'system': wants_system_data}))
+	except requests.exceptions.RequestException:
+		return APIResponse('error', content='The API is unavailable')
+	if response.ok:
+		return APIResponse('success', content=response.json())
+	return _error_handling_API(response)
+
+
 def send_get_request_with_streaming(wanted_action: str, container_id: str) -> APIResponse:
 	"""
 	Sends a get request to the API and gets an HttpStreamingResponse as an answer.

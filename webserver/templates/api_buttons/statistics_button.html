@@ -1,5 +1,12 @@
-<form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    <input type="hidden" name="action", value="statistic">
-    <button class="btn bc-outline-download btn-sm mt-3" title="statistics about all container" type="submit">statistics</button>
-</form>
+<div class="d-flex">
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="hidden" name="action", value="statistic_data">
+        <button class="btn bc-outline-download btn-sm m-3" title="statistics about all container" type="submit">statistics data</button>
+    </form>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="hidden" name="action", value="statistic_system">
+        <button class="btn bc-outline-download btn-sm m-3" title="statistics about all container" type="submit">statistics system</button>
+    </form>
+</div>

@@ -11,7 +11,7 @@ from .config_parser import ConfigFlatDictParser
 from .container_helper import get_actually_stopped_container_from_api_notification
 from .forms import UploadFileForm
 from .handle_files import get_statistic_data, handle_uploaded_file
-from .handle_requests import get_api_status, send_get_request, websocket_url
+from .handle_requests import get_api_status, send_statistic_request, websocket_url
 from .models.config import Config
 from .models.container import Container
 
@@ -45,10 +45,11 @@ def download(request) -> HttpResponse:
 def index(request) -> HttpResponse:
 	if not request.user.is_authenticated:
 		return HttpResponse('Unauthorized', status=401)
-	if request.method == 'POST' and request.user.is_superuser and request.POST['action'] == 'statistic':
-		api_response = send_get_request('data/statistics', 'abc')
+	if request.method == 'POST' and request.user.is_superuser:
+		wants_system_statistic = request.POST['action'] == 'statistic_system'
+		api_response = send_statistic_request(wants_system_statistic)
 		if api_response.ok():
-			return get_statistic_data(api_response.content['data'])
+			return get_statistic_data(api_response.content['data'], request.POST['action'])
 	return render(request, 'index.html')
 
 
