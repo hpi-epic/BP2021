@@ -10,6 +10,17 @@ from recommerce.configuration.path_manager import PathManager
 from recommerce.market_ML.predictable_agent import PredictableAgent
 
 
+class LinearRegressionModel(torch.nn.Module):
+
+	def __init__(self, input_size, output_size):
+		super(LinearRegressionModel, self).__init__()
+		self.linear = torch.nn.Linear(input_size, output_size)  # One in and one out
+
+	def forward(self, x):
+		y_pred = self.linear(x)
+		return y_pred
+
+
 class SimMarketKalibrator:
 
 	def __init__(self, config, M1, M2, M3, M4, M5, M6, M4x, M5x, M6x):
@@ -63,7 +74,7 @@ class SimMarketKalibrator:
 		result_tuple_y3 = torch.linalg.lstsq(transposed_x_y3, y3, driver='gelsd')
 
 		b3 = result_tuple_y3[0]
-		new_regression(transposed_x_y3, y3)
+		self.new_regression(transposed_x_y3, y3)
 		return b3
 
 	def fourth_regression(self, data, x_rows, xx_rows, y_index: int, flag: str):
@@ -97,6 +108,36 @@ class SimMarketKalibrator:
 		b6x = b6_b6x[len(x_rows):]
 
 		return b6, b6x
+
+	def new_regression(self, x_tensor: torch.tensor, y_tensor: torch.tensor):
+		x_data = Variable(x_tensor)
+		y_data = Variable(y_tensor)
+		# our model
+		our_model = LinearRegressionModel(len(x_tensor), len(y_tensor))
+
+		criterion = torch.nn.MSELoss(size_average=False)
+		optimizer = torch.optim.SGD(our_model.parameters(), lr=0.01)
+
+		for epoch in range(500):
+
+			# Forward pass: Compute predicted y by passing
+			# x to the model
+			pred_y = our_model(x_data)
+
+			# Compute and print loss
+			loss = criterion(pred_y, y_data)
+
+			# Zero gradients, perform a backward pass,
+			# and update the weights.
+			optimizer.zero_grad()
+			loss.backward()
+			optimizer.step()
+			print('epoch {}, loss {}'.format(epoch, loss.item()))
+
+		new_var = Variable(torch.Tensor([x_tensor[0]]))
+		pred_y = our_model(new_var)
+		print('predict (after training)', 4, our_model(new_var).item())
+		exit()
 
 
 def stable_baselines_agent_kalibrator():
@@ -153,44 +194,3 @@ if __name__ == '__main__':
 	# training_scenario.train_with_calibrated_marketplace(kalibrated_market)
 	agent = PredictableAgent(config_hyperparameter)
 	exampleprinter.main_kalibrated_marketplace(kalibrated_market, agent, config_hyperparameter)
-
-
-def new_regression(x_tensor: torch.tensor, y_tensor: torch.tensor):
-	x_data = Variable(x_tensor)
-	y_data = Variable(y_tensor)
-	# our model
-	our_model = LinearRegressionModel()
-
-	criterion = torch.nn.MSELoss(size_average=False)
-	optimizer = torch.optim.SGD(our_model.parameters(), lr=0.01)
-
-	for epoch in range(500):
-
-		# Forward pass: Compute predicted y by passing
-		# x to the model
-		pred_y = our_model(x_data)
-
-		# Compute and print loss
-		loss = criterion(pred_y, y_data)
-
-		# Zero gradients, perform a backward pass,
-		# and update the weights.
-		optimizer.zero_grad()
-		loss.backward()
-		optimizer.step()
-		print('epoch {}, loss {}'.format(epoch, loss.item()))
-
-	new_var = Variable(torch.Tensor([x_tensor[0]]))
-	pred_y = our_model(new_var)
-	print('predict (after training)', 4, our_model(new_var).item())
-
-
-class LinearRegressionModel(torch.nn.Module):
-
-	def __init__(self, input_size, output_size):
-		super(LinearRegressionModel, self).__init__()
-		self.linear = torch.nn.Linear(input_size, output_size)  # One in and one out
-
-	def forward(self, x):
-		y_pred = self.linear(x)
-		return y_pred
