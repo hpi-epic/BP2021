@@ -1,7 +1,8 @@
 # This file contains logic used by the webserver to validate configuration files
 
+
 from recommerce.configuration.environment_config import EnvironmentConfig
-from recommerce.configuration.hyperparameter_config import HyperparameterConfig
+from recommerce.configuration.hyperparameter_config import HyperparameterConfigValidator
 
 
 def validate_config(config: dict, config_is_final: bool) -> tuple:
@@ -31,23 +32,23 @@ def validate_config(config: dict, config_is_final: bool) -> tuple:
 		check_config_types(hyperparameter_config, environment_config, config_is_final)
 
 		if 'rl' in hyperparameter_config:
-			HyperparameterConfig.check_rl_ranges(hyperparameter_config['rl'], config_is_final)
+			HyperparameterConfigValidator.check_rl_ranges(hyperparameter_config['rl'], config_is_final)
 		if 'sim_market' in hyperparameter_config:
-			HyperparameterConfig.check_sim_market_ranges(hyperparameter_config['sim_market'], config_is_final)
+			HyperparameterConfigValidator.check_sim_market_ranges(hyperparameter_config['sim_market'], config_is_final)
 
 		return True, (hyperparameter_config, environment_config)
 	except Exception as error:
 		return False, str(error)
 
 
-def validate_sub_keys(config_class: HyperparameterConfig or EnvironmentConfig, config: dict, top_level_keys: dict) -> None:
+def validate_sub_keys(config_class: HyperparameterConfigValidator or EnvironmentConfig, config: dict, top_level_keys: dict) -> None:
 	"""
 	Utility function that validates if a given config contains only allowed keys.
 	Can be used recursively for dictionaries within dictionaries.
-	"Unisex": Works for both HyperparameterConfig and EnvironmentConfig.
+	"Unisex": Works for both HyperparameterConfigValidator and EnvironmentConfig.
 
 	Args:
-		config_class (HyperparameterConfig or EnvironmentConfig): The config class from which to get the required fields.
+		config_class (HyperparameterConfigValidator or EnvironmentConfig): The config class from which to get the required fields.
 		config (dict): The config given by the user.
 		top_level_keys (dict): The keys of the current level. Their values indicate if there is another dictionary expected for that key.
 
@@ -90,7 +91,7 @@ def split_mixed_config(config: dict) -> tuple:
 	Raises:
 		AssertionError: If the user provides a key that should not exist.
 	"""
-	top_level_hyperparameter = HyperparameterConfig.get_required_fields('top-dict')
+	top_level_hyperparameter = HyperparameterConfigValidator.get_required_fields('top-dict')
 	top_level_environment = EnvironmentConfig.get_required_fields('top-dict')
 
 	hyperparameter_config = {}
@@ -104,7 +105,7 @@ def split_mixed_config(config: dict) -> tuple:
 		else:
 			raise AssertionError(f'Your config contains an invalid key: {key}')
 
-	validate_sub_keys(HyperparameterConfig, hyperparameter_config, top_level_hyperparameter)
+	validate_sub_keys(HyperparameterConfigValidator, hyperparameter_config, top_level_hyperparameter)
 	validate_sub_keys(EnvironmentConfig, environment_config, top_level_environment)
 
 	return hyperparameter_config, environment_config
@@ -123,11 +124,11 @@ def check_config_types(hyperparameter_config: dict, environment_config: dict, mu
 		AssertionError: If one of the values has the wrong type.
 	"""
 	# check types for hyperparameter_config
-	HyperparameterConfig.check_types(hyperparameter_config, 'top-dict', must_contain)
+	HyperparameterConfigValidator.check_types(hyperparameter_config, 'top-dict', must_contain)
 	if 'rl' in hyperparameter_config:
-		HyperparameterConfig.check_types(hyperparameter_config['rl'], 'rl', must_contain)
+		HyperparameterConfigValidator.check_types(hyperparameter_config['rl'], 'rl', must_contain)
 	if 'sim_market' in hyperparameter_config:
-		HyperparameterConfig.check_types(hyperparameter_config['sim_market'], 'sim_market', must_contain)
+		HyperparameterConfigValidator.check_types(hyperparameter_config['sim_market'], 'sim_market', must_contain)
 
 	# check types for environment_config
 	task = environment_config['task'] if must_contain else 'None'

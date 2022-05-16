@@ -1,11 +1,11 @@
 import pytest
+from attrdict import AttrDict
 
 import tests.utils_tests as ut_t
-from recommerce.configuration.hyperparameter_config import HyperparameterConfig
 from recommerce.rl.self_play import train_self_play
 from recommerce.rl.stable_baselines.stable_baselines_model import StableBaselinesPPO, StableBaselinesSAC
 
-config_hyperparameter: HyperparameterConfig = ut_t.mock_config_hyperparameter()
+config_hyperparameter: AttrDict = ut_t.mock_config_hyperparameter()
 agents = [StableBaselinesPPO, StableBaselinesSAC]
 
 
