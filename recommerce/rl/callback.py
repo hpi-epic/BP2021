@@ -5,13 +5,13 @@ import time
 
 import matplotlib.pyplot as plt
 import numpy as np
+from attrdict import AttrDict
 from stable_baselines3.common.callbacks import BaseCallback
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 from tqdm.auto import trange
 
 import recommerce.configuration.utils as ut
-from recommerce.configuration.hyperparameter_config import HyperparameterConfig
 from recommerce.configuration.path_manager import PathManager
 from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPriceDuopoly, CircularEconomyRebuyPriceVariableDuopoly
 from recommerce.market.sim_market import SimMarket
@@ -33,7 +33,7 @@ class RecommerceCallback(BaseCallback):
 		self,
 		agent_class,
 		marketplace_class,
-		config: HyperparameterConfig,
+		config: AttrDict,
 		training_steps=10000,
 		iteration_length=500,
 		file_ending='zip',

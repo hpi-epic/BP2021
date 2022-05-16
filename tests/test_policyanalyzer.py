@@ -4,8 +4,8 @@ import time
 import numpy as np
 import pytest
 import utils_tests as ut_t
+from attrdict import AttrDict
 
-from recommerce.configuration.hyperparameter_config import HyperparameterConfig
 from recommerce.configuration.path_manager import PathManager
 from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPriceDuopoly, CircularEconomyRebuyPriceMonopoly
 from recommerce.market.circular.circular_vendors import RuleBasedCERebuyAgent, RuleBasedCERebuyAgentCompetitive
@@ -16,7 +16,7 @@ from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
 
 write_to_path = os.path.join(PathManager.results_path, 'policyanalyzer')
 
-config_hyperparameter: HyperparameterConfig = ut_t.mock_config_hyperparameter()
+config_hyperparameter: AttrDict = ut_t.mock_config_hyperparameter()
 
 
 def test_rule_based_linear_competitor1():

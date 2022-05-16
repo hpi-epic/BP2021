@@ -1,14 +1,14 @@
 import numpy as np
+from attrdict import AttrDict
 
 import recommerce.configuration.utils as ut
-from recommerce.configuration.hyperparameter_config import HyperparameterConfig
 
 
 class Watcher:
 	"""
 	This class administrates all collectable information about the success and behaviour of the agent.
 	"""
-	def __init__(self, config: HyperparameterConfig, number_envs: int = 1):
+	def __init__(self, config: AttrDict, number_envs: int = 1):
 		self.number_envs = number_envs
 		self.all_dicts = []
 		self.step_counters = [0 for _ in range(number_envs)]

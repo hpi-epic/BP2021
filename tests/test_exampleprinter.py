@@ -3,11 +3,11 @@ from unittest.mock import patch
 
 import pytest
 import utils_tests as ut_t
+from attrdict import AttrDict
 
 import recommerce.market.circular.circular_sim_market as circular_market
 import recommerce.market.circular.circular_vendors as circular_vendors
 import recommerce.market.linear.linear_sim_market as linear_market
-from recommerce.configuration.hyperparameter_config import HyperparameterConfig
 from recommerce.market.linear.linear_vendors import FixedPriceLEAgent
 from recommerce.monitoring.exampleprinter import ExamplePrinter
 from recommerce.rl.actorcritic.actorcritic_agent import ContinuosActorCriticAgentFixedOneStd, DiscreteActorCriticAgent
@@ -16,7 +16,7 @@ from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
 # The load path for the agent modelfiles
 parameters_path = os.path.join('tests', 'test_data')
 
-config_hyperparameter: HyperparameterConfig = ut_t.mock_config_hyperparameter()
+config_hyperparameter: AttrDict = ut_t.mock_config_hyperparameter()
 
 
 def test_setup_exampleprinter():
