@@ -22,9 +22,9 @@ from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
 
 class ExamplePrinter():
 
-	def __init__(self, config: AttrDict):
+	def __init__(self, config_market: AttrDict, config_rl: AttrDict=None):
 		ut.ensure_results_folders_exist()
-		self.config = config
+		self.config = config_market
 		self.marketplace = circular_market.CircularEconomyRebuyPriceDuopoly(config=self.config)
 		self.agent = RuleBasedCERebuyAgent(config=self.config)
 		# Signal handler for e.g. KeyboardInterrupt
@@ -98,19 +98,20 @@ def main():  # pragma: no cover
 	"""
 	Defines what is performed when the `agent_monitoring` command is chosen in `main.py`.
 	"""
-	config_hyperparameter: AttrDict = HyperparameterConfigLoader.load('hyperparameter_config')
-	printer = ExamplePrinter(config=config_hyperparameter)
+	config_market: AttrDict = HyperparameterConfigLoader.load('market_config')
+	config_rl: AttrDict = HyperparameterConfigLoader.load('rl_config')
+	printer = ExamplePrinter(config_market=config_market)
 
 	config_environment: ExampleprinterEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_exampleprinter')
 	# TODO: Theoretically, the name of the agent is saved in config_environment['name'], but we don't use it yet.
-	marketplace = config_environment.marketplace(config=config_hyperparameter)
+	marketplace = config_environment.marketplace(config=config_market)
 
 	# QLearningAgents need more initialization
 	if issubclass(config_environment.agent['agent_class'], QLearningAgent):
 		printer.setup_exampleprinter(marketplace=marketplace,
 			agent=config_environment.agent['agent_class'](
 				marketplace=marketplace,
-				config=config_hyperparameter,
+				config=config_rl,
 				load_path=os.path.abspath(os.path.join(PathManager.data_path, config_environment.agent['argument']))))
 	else:
 		printer.setup_exampleprinter(marketplace=marketplace, agent=config_environment.agent['agent_class']())

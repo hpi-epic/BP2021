@@ -20,7 +20,7 @@ config_hyperparameter: AttrDict = ut_t.mock_config_hyperparameter()
 
 
 def test_setup_exampleprinter():
-	printer = ExamplePrinter(config=config_hyperparameter)
+	printer = ExamplePrinter(config_market=config_hyperparameter)
 	printer.setup_exampleprinter(
 		marketplace=linear_market.LinearEconomyDuopoly(config=config_hyperparameter),
 		agent=FixedPriceLEAgent(config=config_hyperparameter)
@@ -53,7 +53,7 @@ full_episode_testcases_rule_based = [
 def test_full_episode_rule_based(marketplace, agent):
 	with patch('recommerce.monitoring.exampleprinter.SVGManipulator'),\
 		patch('recommerce.monitoring.exampleprinter.SummaryWriter'):
-		printer = ExamplePrinter(config=config_hyperparameter)
+		printer = ExamplePrinter(config_market=config_hyperparameter)
 		printer.setup_exampleprinter(marketplace, agent)
 		assert printer.run_example() >= -5000
 
@@ -78,7 +78,7 @@ def test_full_episode_rl_agents(marketplace, agent_class, parameters_file):
 	agent = agent_class(marketplace=marketplace, config=config_hyperparameter, load_path=os.path.join(parameters_path, parameters_file))
 	with patch('recommerce.monitoring.exampleprinter.SVGManipulator'),\
 		patch('recommerce.monitoring.exampleprinter.SummaryWriter'):
-		printer = ExamplePrinter(config=config_hyperparameter)
+		printer = ExamplePrinter(config_market=config_hyperparameter)
 		printer.setup_exampleprinter(marketplace, agent)
 		assert printer.run_example() >= -5000
 
@@ -86,4 +86,4 @@ def test_full_episode_rl_agents(marketplace, agent_class, parameters_file):
 @pytest.mark.slow
 def test_exampleprinter_with_tensorboard():
 	with patch('recommerce.monitoring.exampleprinter.SVGManipulator'):
-		assert ExamplePrinter(config=config_hyperparameter).run_example() >= -5000
+		assert ExamplePrinter(config_market=config_hyperparameter).run_example() >= -5000

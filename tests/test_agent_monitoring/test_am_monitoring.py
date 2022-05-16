@@ -28,7 +28,7 @@ def setup_function(function):
 		marketplace=circular_market.CircularEconomyMonopoly,
 		agents=[(QLearningAgent, [os.path.join(os.path.dirname(__file__), os.pardir, 'test_data',
 			'CircularEconomyMonopoly_QLearningAgent.dat')])],
-		config=config_hyperparameter,
+		config_market=config_hyperparameter,
 		subfolder_name=f'test_plots_{function.__name__}')
 
 
@@ -48,7 +48,7 @@ def test_run_marketplace():
 
 
 def test_run_monitoring_session():
-	monitor.configurator.setup_monitoring(episodes=10, plot_interval=10, config=config_hyperparameter)
+	monitor.configurator.setup_monitoring(episodes=10, plot_interval=10, config_market=config_hyperparameter)
 	with patch('recommerce.monitoring.agent_monitoring.am_evaluation.plt'), \
 		patch('recommerce.monitoring.agent_monitoring.am_configuration.os.makedirs'), \
 		patch('recommerce.monitoring.agent_monitoring.am_configuration.os.path.exists') as exists_mock:
@@ -66,5 +66,5 @@ def test_run_monitoring_ratio():
 		patch('recommerce.monitoring.agent_monitoring.am_configuration.os.path.exists') as exists_mock:
 		mocked_input.side_effect = ['n']
 		exists_mock.return_value = True
-		monitor.configurator.setup_monitoring(episodes=51, plot_interval=1, config=config_hyperparameter)
+		monitor.configurator.setup_monitoring(episodes=51, plot_interval=1, config_market=config_hyperparameter)
 		monitoring.run_monitoring_session(monitor)

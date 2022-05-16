@@ -75,14 +75,14 @@ class HyperparameterConfigValidator():
 			config (dict): The config to validate and take the values from.
 		"""
 		if 'sim_market' in config:
-			self._check_config_sim_market_completeness(config)
-			self.check_types(config, 'sim_market')
-			self.check_sim_market_ranges(config)
+			self._check_config_sim_market_completeness(config['sim_market'])
+			self.check_types(config['sim_market'], 'sim_market')
+			self.check_sim_market_ranges(config['sim_market'])
 
 		elif 'rl' in config:
-			self._check_config_rl_completeness(config)
-			self.check_types(config, 'rl')
-			self.check_rl_ranges(config)
+			self._check_config_rl_completeness(config['rl'])
+			self.check_types(config['rl'], 'rl')
+			self.check_rl_ranges(config['rl'])
 
 		# TODO: replace 'rl' option with 7 different rl branches
 

@@ -8,12 +8,12 @@ class Watcher:
 	"""
 	This class administrates all collectable information about the success and behaviour of the agent.
 	"""
-	def __init__(self, config: AttrDict, number_envs: int = 1):
+	def __init__(self, config_rl: AttrDict, number_envs: int = 1):
 		self.number_envs = number_envs
 		self.all_dicts = []
 		self.step_counters = [0 for _ in range(number_envs)]
 		self.info_accumulators = [None for _ in range(number_envs)]
-		self.config = config
+		self.config = config_rl
 
 	def add_info(self, info: dict, index: int = 0):
 		"""

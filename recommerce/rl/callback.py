@@ -47,7 +47,7 @@ class RecommerceCallback(BaseCallback):
 		super(RecommerceCallback, self).__init__(True)
 		# Change the 128 to the right parameter as soon as #211 is implemented.
 		self.config = config
-		self.watcher = Watcher(config=self.config, number_envs=128) if issubclass(agent_class, ActorCriticAgent) else Watcher(config=self.config)
+		self.watcher = Watcher(config_rl=self.config, number_envs=128) if issubclass(agent_class, ActorCriticAgent) else Watcher(config_rl=self.config)
 		self.best_mean_interim_reward = None
 		self.best_mean_overall_reward = None
 		self.agent_class = agent_class
@@ -195,7 +195,7 @@ class RecommerceCallback(BaseCallback):
 					else self.marketplace_class),
 				agent_list,
 				support_continuous_action_space=hasattr(self.model, 'env'),
-				config=self.config)
+				config_market=self.config)
 			rewards = monitor.run_marketplace()
 			episode_numbers = [int(parameter_path[-9:][:5]) for parameter_path in self.saved_parameter_paths]
 			Evaluator(monitor.configurator).evaluate_session(rewards, episode_numbers)

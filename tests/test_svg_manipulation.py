@@ -51,7 +51,7 @@ def test_correct_template():
 			mock_mkdir.return_value = True
 			mock_list_dir.return_value = ['MarketOverview_001.svg', 'MarketOverview_002.svg', 'MarketOverview_003.svg']
 
-			ExamplePrinter(config=config_hyperparameter).run_example()
+			ExamplePrinter(config_market=config_hyperparameter).run_example()
 		assert correct_template == svg_manipulator.template_svg
 
 
@@ -215,7 +215,7 @@ def test_one_exampleprinter_run():
 			mock_mkdir.return_value = True
 			mock_list_dir.return_value = ['MarketOverview_001.svg', 'MarketOverview_002.svg', 'MarketOverview_003.svg']
 
-			ExamplePrinter(config=config_hyperparameter).run_example()
+			ExamplePrinter(config_market=config_hyperparameter).run_example()
 		# asserts that the html has been written
 		mock_file().write.assert_called_with(correct_html)
 
