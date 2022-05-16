@@ -74,16 +74,17 @@ class HyperparameterConfigValidator():
 		Args:
 			config (dict): The config to validate and take the values from.
 		"""
-		assert 'rl' in config, 'The config must contain an "rl" field.'
-		assert 'sim_market' in config, 'The config must contain a "sim_market" field.'
+		if 'sim_market' in config:
+			self._check_config_sim_market_completeness(config)
+			self.check_types(config, 'sim_market')
+			self.check_sim_market_ranges(config)
 
-		self._check_config_rl_completeness(config['rl'])
-		self._check_config_sim_market_completeness(config['sim_market'])
-		self.check_types(config, 'top-dict')
-		self.check_types(config['rl'], 'rl')
-		self.check_types(config['sim_market'], 'sim_market')
-		self.check_rl_ranges(config['rl'])
-		self.check_sim_market_ranges(config['sim_market'])
+		elif 'rl' in config:
+			self._check_config_rl_completeness(config)
+			self.check_types(config, 'rl')
+			self.check_rl_ranges(config)
+
+		# TODO: replace 'rl' option with 7 different rl branches
 
 	@classmethod
 	def _check_config_rl_completeness(cls, config: dict) -> None:
@@ -133,12 +134,15 @@ class HyperparameterConfigValidator():
 		Raises:
 			KeyError: If the dictionary is missing a key but should contain all keys.
 		"""
+		"""
+		deprecated
 		if key == 'top-dict':
 			types_dict = {
 				'rl': dict,
 				'sim_market': dict
 			}
-		elif key == 'rl':
+		"""
+		if key == 'rl':
 			types_dict = {
 				'gamma': (int, float),
 				'batch_size': int,
