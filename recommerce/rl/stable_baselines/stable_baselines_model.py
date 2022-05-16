@@ -1,7 +1,7 @@
 import os
 import numpy as np
 import stable_baselines3.common.monitor
-from abc import ABC,
+from abc import ABC
 from attrdict import AttrDict
 from stable_baselines3 import A2C, DDPG, PPO, SAC, TD3
 from stable_baselines3.common.noise import NormalActionNoise
