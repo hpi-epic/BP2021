@@ -1,7 +1,7 @@
 import os
-
 import numpy as np
 import stable_baselines3.common.monitor
+from abc import ABC,
 from attrdict import AttrDict
 from stable_baselines3 import A2C, DDPG, PPO, SAC, TD3
 from stable_baselines3.common.noise import NormalActionNoise
@@ -14,7 +14,7 @@ from recommerce.rl.callback import RecommerceCallback
 from recommerce.rl.reinforcement_learning_agent import ReinforcementLearningAgent
 
 
-class StableBaselinesAgent(ReinforcementLearningAgent, LinearAgent, CircularAgent):
+class StableBaselinesAgent(ReinforcementLearningAgent, LinearAgent, CircularAgent, ABC):
 	def __init__(self, config: AttrDict, marketplace, load_path=None, name=None):
 		assert marketplace is not None
 		assert isinstance(marketplace, SimMarket), \
