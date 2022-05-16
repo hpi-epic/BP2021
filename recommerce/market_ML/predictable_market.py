@@ -4,12 +4,13 @@ from typing import Tuple
 import numpy as np
 import pandas as pd
 
-import recommerce.market.circular.circular_vendors as circular_vendors
+# import recommerce.market.circular.circular_vendors as circular_vendors
 from recommerce.configuration import utils as ut
 from recommerce.configuration.path_manager import PathManager
 from recommerce.market.circular.circular_customers import CustomerCircular
 from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPrice
 from recommerce.market.owner import OwnerRebuy
+from recommerce.market_ML.predictable_agent import PredictableAgent
 
 # import pandas as pd
 # import torch
@@ -24,7 +25,7 @@ class PredictableMarketRebuyPriceDuopoly(CircularEconomyRebuyPrice):
 		return OwnerRebuy()
 
 	def _get_competitor_list(self):
-		return [circular_vendors.RuleBasedCERebuyAgentCompetitive(config=self.config)]
+		return [PredictableAgent(config=self.config)]
 
 
 class OwnerPredictable(OwnerRebuy):
@@ -60,6 +61,7 @@ class CustomerPredictable(CustomerCircular):
 		ratio_new_other = 0.5 * (1 if price_new_other >= price_new_latest_setter else 0)
 
 		preferences += [ratio_old_latest_setter, ratio_new_latest_setter, ratio_old_other, ratio_new_other]
+		# preferences += [1,0,0,0]
 		assert sum(preferences) == 1, f'preferences must sum to 1, but the are {preferences}'
 		return ut.softmax(np.array(preferences))
 
@@ -92,7 +94,7 @@ class PredictableDatagenerator(PredictableMarketRebuyPriceDuopoly):
 
 	def output_dict_append(self, output_dict: dict, i):
 		x = np.array(np.zeros(25)).reshape(25, 1)
-		print('i: ', i)
+		# print('i: ', i)
 		# print('cumulated_states: ', self.cumulated_states)
 		# agent period: 1st half: agent x[7]vs x[2]| 2nd half: agent x[7] vs x[2, i+1]
 		# comp period: 1st half: com x[2, i-1] vs x[7, i-1] | 2nd half: com x[2, i-1] vs x[7]
@@ -146,8 +148,8 @@ class PredictableDatagenerator(PredictableMarketRebuyPriceDuopoly):
 		# pd.DataFrame(x).to_csv(f'kalibration_data/training_data-{datetime.datetime.now()}.csv', index=False)
 
 		self.cumulated_states = np.hstack((self.cumulated_states, np.round(x, 3)))
-		print('episode_counter: ', self.episode_counter)
-		if self.episode_counter == 5999:
+		# print('episode_counter: ', self.episode_counter)
+		if self.episode_counter == 10000:
 			save_path = f'{PathManager.data_path}/kalibration_data/training_data_predictable.csv'
 			pd.DataFrame(self.cumulated_states).to_csv(save_path, index=False)
 			print(f'data saved to {save_path}')

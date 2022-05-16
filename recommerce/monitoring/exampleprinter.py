@@ -72,7 +72,7 @@ class ExamplePrinter():
 		with torch.no_grad():
 			while not is_done:
 				action = self.agent.policy(state)
-				print(state)
+				print('State:', state, 'actions of the agent:', action)
 				state, reward, is_done, logdict = self.marketplace.step(action)
 				if cumulative_dict is not None:
 					cumulative_dict = ut.add_content_of_two_dicts(cumulative_dict, logdict)
@@ -113,16 +113,16 @@ def main():  # pragma: no cover
 				config=config_hyperparameter,
 				load_path=os.path.abspath(os.path.join(PathManager.data_path, config_environment.agent['argument']))))
 	else:
-		printer.setup_exampleprinter(marketplace=marketplace, agent=config_environment.agent['agent_class']())
+		printer.setup_exampleprinter(marketplace=marketplace, agent=config_environment.agent['agent_class'](config=config_hyperparameter))
 
 	print(f'The final profit was: {printer.run_example()}')
 
 
-def main_kalibrated_marketplace(marketplace, agent):  # pragma: no cover
+def main_kalibrated_marketplace(marketplace, agent, config_hyperparameter):  # pragma: no cover
 	"""
 	Defines what is performed when the `agent_monitoring` command is chosen in `main.py`.
 	"""
-	printer = ExamplePrinter()
+	printer = ExamplePrinter(config_hyperparameter)
 
 	# config: ExampleprinterEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_exampleprinter')
 	# TODO: Theoretically, the name of the agent is saved in config['name'], but we don't use it yet.

@@ -13,7 +13,7 @@ class SimMarketKalibrated(CircularEconomyRebuyPriceDuopoly):
 	cost_new_product = 3
 	observable_state = (6, 1, 23, 22, 24, 5)  # (in_circulation, agent, storage, comp_used, comp_new, comp_rebuy, comp_storage)
 
-	def __init__(self, by1, by2, by3, by4, bxy4, by5, bxy5, by6, bxy6, M1, M2, M3, M4, M5, M6, M4x, M5x, M6x) -> None:
+	def __init__(self, config, by1, by2, by3, by4, bxy4, by5, bxy5, by6, bxy6, M1, M2, M3, M4, M5, M6, M4x, M5x, M6x) -> None:
 		self.by1 = by1
 		self.by2 = by2
 		self.by3 = by3
@@ -33,11 +33,11 @@ class SimMarketKalibrated(CircularEconomyRebuyPriceDuopoly):
 		self.M4x = M4x
 		self.M5x = M5x
 		self.M6x = M6x
-		self.previous_state = torch.tensor([-1.0000e+00,  2.3400e+02,  2.2745e+01,  1.3406e+01,  2.5241e+00,
-		2.7200e+02,  2.7000e+01,  1.8000e+01,  1.2000e+01,  2.4086e-02,
-		1.1700e+01,  2.0000e+00,  0.0000e+00,  0.0000e+00,  1.3600e+01,
-		3.0000e+00,  0.0000e+00,  3.0000e+00,  1.6300e+01, 0, 0, 0,  1.8651e+01,  1.2789e+01,  4.5772e+00])
-		super(CircularEconomyRebuyPriceDuopoly, self).__init__()
+		self.previous_state = torch.tensor([-1.0,  23.0,  22.745,  13.0,  2.5,
+		272.00, 27.0, 18.0, 12.0,  0.024,
+		11.7, 2.0, 0, 0.0, 13.6,
+		3.0, 0, 3.0, 16.3, 0, 0, 0, 18.65, 12.7,  4.57])
+		super(CircularEconomyRebuyPriceDuopoly, self).__init__(config)
 
 	def comp_prices(self, Mi, Mix, bi, bix, flag: str, xb, state_to_get_parameters_from):
 		xb_index = -1
@@ -108,26 +108,29 @@ class SimMarketKalibrated(CircularEconomyRebuyPriceDuopoly):
 
 		# xb[11,i]= np.round_(max(0, np.random.uniform(-5,5) + sum{k in self.Ma} self.b1[k]*xb[k,i]))
 
-		xb[11] = np.round_(max(np.random.uniform(-5, 5) + sum([self.by1[ki] * xb[k] for ki, k in enumerate(self.M1)]), 0))
+		xb[11] = np.round_(max(0,  # np.random.uniform(-5, 5)
+			+ sum([self.by1[ki] * xb[k] for ki, k in enumerate(self.M1)])))
 		# agent sales new
-		xb[12] = np.round_(min(xb[1], max(np.random.uniform(-5, 5) + sum([self.by2[ki] * xb[k] for ki, k in enumerate(self.M2)]), 0)))
+		xb[12] = np.round_(min(xb[1], max(0,  # np.random.uniform(-5, 5)
+			+ sum([self.by2[ki] * xb[k] for ki, k in enumerate(self.M2)]))))
 		# agent sales used
-		xb[13] = np.round_(min(xb[6] / 2, max(np.random.uniform(-5, 5) + sum([self.by3[ki] * xb[k] for ki, k in enumerate(self.M3)]), 0)))
+		xb[13] = np.round_(min(xb[6] / 2, max(0,  # np.random.uniform(-5, 5)
+			+ sum([self.by3[ki] * xb[k] for ki, k in enumerate(self.M3)]))))
 		# agent sales rebuy
 
 		xb[14] = xb[5]*0.05  # comp holding cost
 		# TODO: refactor these into loops or something more beautiful
-		xb[15] = np.round_(max(0, np.random.uniform(-5, 5)
+		xb[15] = np.round_(max(0,  # np.random.uniform(-5, 5)
 			+ self.by1[0] * xb[0] + self.by1[1] * xb[5] + self.by1[2] * prev[7]
 			+ self.by1[3] * prev[8] + self.by1[4] * prev[9] + self.by1[5] * xb[2] + self.by1[6] * xb[3]
 			+ self.by1[7] * xb[4] + self.by1[8] * xb[7] + self.by1[9] * xb[8] + self.by1[10] * xb[9]))  # cf self.Ma # competitor sales new
 
-		xb[16] = np.round_(min(xb[5],  max(0, np.random.uniform(-5, 5)
+		xb[16] = np.round_(min(xb[5],  max(0,  # np.random.uniform(-5, 5)
 			+ self.by2[0] * xb[0] + self.by2[1] * xb[5] + self.by2[2] * prev[7]
 			+ self.by2[3] * prev[8] + self.by2[4] * prev[9] + self.by2[5] * xb[2] + self.by2[6] * xb[3]
 			+ self.by2[7] * xb[4] + self.by2[8] * xb[7] + self.by2[9] * xb[8] + self.by2[10] * xb[9])))  # cf self.Ma # competitor sales used
 
-		xb[17] = np.round_(min(xb[6] / 2, max(0, np.random.uniform(-5, 5)
+		xb[17] = np.round_(min(xb[6] / 2, max(0,  # np.random.uniform(-5, 5)
 			+ self.by3[0] * xb[0] + self.by3[1] * xb[5] + self.by3[2] * prev[7]
 			+ self.by3[3] * prev[8] + self.by3[4] * prev[9] + self.by3[5] * xb[2] + self.by3[6] * xb[3]
 			+ self.by3[7] * xb[4] + self.by3[8] * xb[7]
@@ -141,7 +144,7 @@ class SimMarketKalibrated(CircularEconomyRebuyPriceDuopoly):
 		# print(f'profit_new: {profit_new}, profit_used: {profit_used}, cost_rebuy: {cost_rebuy}')
 		xb[18] = -xb[10] + profit_new + profit_used - cost_rebuy  # agent	total rewards
 
-		xb[19] = -xb[14] + xb[15] * (xb[2] - self.cost_new_product) + xb[16] * xb[3] - xb[17] * xb[4]  # comp 	total rewards
+		xb[19] = -xb[14] + xb[15] * (xb[2] - self.cost_new_product) + xb[16] * xb[3] - xb[17] * xb[4]  # comp total rewards
 
 		# rewards cumulated
 		xb[20] = xb[18] + (prev[20] if prev is not None else 0)  # agent total accumulated rewards
@@ -151,8 +154,9 @@ class SimMarketKalibrated(CircularEconomyRebuyPriceDuopoly):
 		agent_observation = np.array([int(xb[state_index]) for state_index in self.observable_state])
 		# print(f'agent action: {agent_action}, agent reward: {float(xb[18])}')
 		assert xb[18] <= np.inf
-		is_done = self.step_counter >= 50
-
+		is_done = (self.step_counter >= 50)
+		if is_done:
+			exit()
 		return agent_observation, float(xb[18]), is_done, {'profits/all': {'vendor_0': float(xb[18]), 'vendor_1': float(xb[19])}}
 		# return agent_observation, xb[18], False, {}
 
