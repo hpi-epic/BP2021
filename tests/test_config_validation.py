@@ -3,7 +3,7 @@ import utils_tests as ut_t
 
 import recommerce.configuration.config_validation as config_validation
 from recommerce.configuration.environment_config import EnvironmentConfig
-from recommerce.configuration.hyperparameter_config import HyperparameterConfig
+from recommerce.configuration.hyperparameter_config import HyperparameterConfigValidator
 
 ##########
 # Tests with already combined configs (== hyperparameter and/or environment key on the top-level)
@@ -247,9 +247,9 @@ validate_sub_keys_invalid_keys_hyperparameter_testcases = [
 @pytest.mark.parametrize('config', validate_sub_keys_invalid_keys_hyperparameter_testcases)
 def test_validate_sub_keys_invalid_keys_hyperparameter(config):
 	with pytest.raises(AssertionError) as error_message:
-		top_level_keys = HyperparameterConfig.get_required_fields('top-dict')
-		config_validation.validate_sub_keys(HyperparameterConfig, config, top_level_keys)
-	assert 'The key "invalid_key" should not exist within a HyperparameterConfig config' in str(error_message.value)
+		top_level_keys = HyperparameterConfigValidator.get_required_fields('top-dict')
+		config_validation.validate_sub_keys(HyperparameterConfigValidator, config, top_level_keys)
+	assert 'The key "invalid_key" should not exist within a HyperparameterConfigValidator config' in str(error_message.value)
 
 
 validate_sub_keys_agents_invalid_keys_testcases = [
@@ -382,6 +382,6 @@ validate_sub_keys_wrong_type_hyperparameter_testcases = [
 @pytest.mark.parametrize('config', validate_sub_keys_wrong_type_hyperparameter_testcases)
 def test_validate_sub_keys_wrong_type_hyperparameter(config):
 	with pytest.raises(AssertionError) as error_message:
-		top_level_keys = HyperparameterConfig.get_required_fields('top-dict')
-		config_validation.validate_sub_keys(HyperparameterConfig, config, top_level_keys)
+		top_level_keys = HyperparameterConfigValidator.get_required_fields('top-dict')
+		config_validation.validate_sub_keys(HyperparameterConfigValidator, config, top_level_keys)
 	assert 'The value of this key must be of type dict:' in str(error_message.value)

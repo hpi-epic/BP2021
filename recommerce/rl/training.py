@@ -1,13 +1,14 @@
 from abc import ABC, abstractmethod
 
-from recommerce.configuration.hyperparameter_config import HyperparameterConfig
+from attrdict import AttrDict
+
 from recommerce.market.sim_market import SimMarket
 from recommerce.rl.callback import RecommerceCallback
 from recommerce.rl.reinforcement_learning_agent import ReinforcementLearningAgent
 
 
 class RLTrainer(ABC):
-	def __init__(self, marketplace_class: SimMarket, agent_class: ReinforcementLearningAgent, config: HyperparameterConfig):
+	def __init__(self, marketplace_class: SimMarket, agent_class: ReinforcementLearningAgent, config: AttrDict):
 		"""
 		Initialize an RLTrainer to train one specific configuration.
 		Args:

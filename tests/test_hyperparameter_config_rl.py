@@ -43,13 +43,13 @@ get_required_fields_valid_testcases = [
 
 @pytest.mark.parametrize('level, expected_dict', get_required_fields_valid_testcases)
 def test_get_required_fields_valid(level, expected_dict):
-	fields = hyperparameter_config.HyperparameterConfig.get_required_fields(level)
+	fields = hyperparameter_config.HyperparameterConfigValidator.get_required_fields(level)
 	assert fields == expected_dict
 
 
 def test_get_required_fields_invalid():
 	with pytest.raises(AssertionError) as error_message:
-		hyperparameter_config.HyperparameterConfig.get_required_fields('wrong_key')
+		hyperparameter_config.HyperparameterConfigValidator.get_required_fields('wrong_key')
 	assert 'The given level does not exist in a hyperparameter-config: wrong_key' in str(error_message.value)
 ######
 # End general tests

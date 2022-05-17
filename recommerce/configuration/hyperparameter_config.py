@@ -4,13 +4,12 @@
 import json
 import os
 
+from attrdict import AttrDict
+
 from recommerce.configuration.path_manager import PathManager
 
 
-class HyperparameterConfig():
-
-	def __init__(self, config):
-		self._validate_and_set_config(config)
+class HyperparameterConfigValidator():
 
 	@classmethod
 	def get_required_fields(cls, dict_key) -> dict:
@@ -67,7 +66,8 @@ class HyperparameterConfig():
 		"""
 		return f'{self.__class__.__name__}: {self.__dict__}'
 
-	def _validate_and_set_config(self, config: dict) -> None:
+	@classmethod
+	def validate_config(self, config: AttrDict) -> None:
 		"""
 		Validate the given config dictionary and set the instance variables.
 
@@ -84,8 +84,6 @@ class HyperparameterConfig():
 		self.check_types(config['sim_market'], 'sim_market')
 		self.check_rl_ranges(config['rl'])
 		self.check_sim_market_ranges(config['sim_market'])
-		self._set_rl_variables(config['rl'])
-		self._set_sim_market_variables(config['sim_market'])
 
 	@classmethod
 	def _check_config_rl_completeness(cls, config: dict) -> None:
@@ -227,59 +225,30 @@ class HyperparameterConfig():
 		if must_contain or 'storage_cost_per_product' in config:
 			assert config['storage_cost_per_product'] >= 0, 'storage_cost_per_product should be non-negative'
 
-	def _set_rl_variables(self, config: dict) -> None:
-		"""
-		Update the global variables with new values provided by the config.
-
-		Args:
-			config (dict): The dictionary from which to read the new values.
-		"""
-		self.gamma = config['gamma']
-		self.learning_rate = config['learning_rate']
-		self.batch_size = config['batch_size']
-		self.replay_size = config['replay_size']
-		self.sync_target_frames = config['sync_target_frames']
-		self.replay_start_size = config['replay_start_size']
-
-		self.epsilon_decay_last_frame = config['epsilon_decay_last_frame']
-		self.epsilon_start = config['epsilon_start']
-		self.epsilon_final = config['epsilon_final']
-
-	def _set_sim_market_variables(self, config: dict) -> None:
-		"""
-		Update the global variables with new values provided by the config.
-
-		Args:
-			config (dict): The dictionary from which to read the new values.
-		"""
-
-		self.max_storage = config['max_storage']
-		self.episode_length = config['episode_length']
-		self.max_price = config['max_price']
-		self.max_quality = config['max_quality']
-		self.number_of_customers = config['number_of_customers']
-		self.production_price = config['production_price']
-		self.storage_cost_per_product = config['storage_cost_per_product']
-
-		self.mean_return_bound = self.episode_length * self.max_price * self.number_of_customers
-
 
 class HyperparameterConfigLoader():
 
 	@classmethod
-	def load(cls, filename: str) -> HyperparameterConfig:
+	def load(cls, filename: str) -> AttrDict:
 		"""
-		Load the configuration json file from the `configuration_files` folder and instantiate a `HyperparameterConfig` object.
+		Load the configuration json file from the `configuration_files` folder, validate all keys and retruning an AttrDict instance
+		without top level keys.
 
 		Args:
 			filename (str): The name of the json file containing the configuration values.
 				Must be located in the `configuration_files` directory in the user's datapath folder.
 
 		Returns:
-			HyperparameterConfig: An instance of `HyperparameterConfig`.
+			AttrDict: An Arribute Dict containing the hyperparameters.
 		"""
 		filename += '.json'
 		path = os.path.join(PathManager.user_path, 'configuration_files', filename)
 		with open(path) as config_file:
 			config = json.load(config_file)
-		return HyperparameterConfig(config)
+		HyperparameterConfigValidator.validate_config(config)
+
+		config_flatten = config['rl']
+		config_flatten.update(config['sim_market'])
+		config_attr_dict = AttrDict(config_flatten)
+
+		return config_attr_dict

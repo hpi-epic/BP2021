@@ -5,14 +5,14 @@ from unittest.mock import mock_open, patch
 
 import pytest
 import utils_tests as ut_t
+from attrdict import AttrDict
 
 import recommerce.monitoring.svg_manipulation as svg_manipulation
-from recommerce.configuration.hyperparameter_config import HyperparameterConfig
 from recommerce.monitoring.exampleprinter import ExamplePrinter
 
 svg_manipulator = svg_manipulation.SVGManipulator()
 
-config_hyperparameter: HyperparameterConfig = ut_t.mock_config_hyperparameter()
+config_hyperparameter: AttrDict = ut_t.mock_config_hyperparameter()
 
 
 def setup_function(function):

@@ -1,12 +1,12 @@
 from abc import ABC, abstractmethod
 
-from recommerce.configuration.hyperparameter_config import HyperparameterConfig
+from attrdict import AttrDict
 
 
 # This file contains all abstract vendors who are not made for a specific market situation (like circular and linear)
 class Agent(ABC):
 
-	def __init__(self, config: HyperparameterConfig, name='agent'):
+	def __init__(self, config: AttrDict, name='agent'):
 		self.name = name
 		self.config = config
 
