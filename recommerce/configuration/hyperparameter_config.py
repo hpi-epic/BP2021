@@ -79,7 +79,7 @@ class HyperparameterConfigValidator():
 			self.check_types(config['sim_market'], 'sim_market')
 			self.check_sim_market_ranges(config['sim_market'])
 
-		elif 'rl' in config:
+		if 'rl' in config:
 			self._check_config_rl_completeness(config['rl'])
 			self.check_types(config['rl'], 'rl')
 			self.check_rl_ranges(config['rl'])
