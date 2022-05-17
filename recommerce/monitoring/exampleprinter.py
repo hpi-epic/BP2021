@@ -5,12 +5,13 @@ import sys
 import time
 
 import torch
+from attrdict import AttrDict
 from torch.utils.tensorboard import SummaryWriter
 
 import recommerce.configuration.utils as ut
 import recommerce.market.circular.circular_sim_market as circular_market
 from recommerce.configuration.environment_config import EnvironmentConfigLoader, ExampleprinterEnvironmentConfig
-from recommerce.configuration.hyperparameter_config import HyperparameterConfig, HyperparameterConfigLoader
+from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader
 from recommerce.configuration.path_manager import PathManager
 from recommerce.market.circular.circular_vendors import RuleBasedCERebuyAgent
 from recommerce.market.sim_market import SimMarket
@@ -21,7 +22,7 @@ from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
 
 class ExamplePrinter():
 
-	def __init__(self, config: HyperparameterConfig):
+	def __init__(self, config: AttrDict):
 		ut.ensure_results_folders_exist()
 		self.config = config
 		self.marketplace = circular_market.CircularEconomyRebuyPriceDuopoly(config=self.config)
@@ -97,7 +98,7 @@ def main():  # pragma: no cover
 	"""
 	Defines what is performed when the `agent_monitoring` command is chosen in `main.py`.
 	"""
-	config_hyperparameter: HyperparameterConfig = HyperparameterConfigLoader.load('hyperparameter_config')
+	config_hyperparameter: AttrDict = HyperparameterConfigLoader.load('hyperparameter_config')
 	printer = ExamplePrinter(config=config_hyperparameter)
 
 	config_environment: ExampleprinterEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_exampleprinter')

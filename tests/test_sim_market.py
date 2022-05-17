@@ -1,11 +1,11 @@
 import pytest
 import utils_tests as ut_t
+from attrdict import AttrDict
 
 import recommerce.market.circular.circular_sim_market as circular_market
 import recommerce.market.linear.linear_sim_market as linear_market
-from recommerce.configuration.hyperparameter_config import HyperparameterConfig
 
-config_hyperparameter: HyperparameterConfig = ut_t.mock_config_hyperparameter()
+config_hyperparameter: AttrDict = ut_t.mock_config_hyperparameter()
 
 unique_output_dict_testcases = [
 	linear_market.LinearEconomyDuopoly,

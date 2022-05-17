@@ -1,14 +1,14 @@
 import pytest
 import torch
 import utils_tests as ut_t
+from attrdict import AttrDict
 
 import recommerce.configuration.utils as ut
 import recommerce.market.circular.circular_sim_market as circular_market
 import recommerce.market.linear.linear_sim_market as linear_market
 import recommerce.rl.actorcritic.actorcritic_agent as actorcritic_agent
-from recommerce.configuration.hyperparameter_config import HyperparameterConfig
 
-config_hyperparameter: HyperparameterConfig = ut_t.mock_config_hyperparameter()
+config_hyperparameter: AttrDict = ut_t.mock_config_hyperparameter()
 
 abstract_agent_classes_testcases = [
 	actorcritic_agent.ActorCriticAgent,

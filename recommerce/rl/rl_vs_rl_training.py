@@ -2,14 +2,14 @@ import os
 
 import matplotlib.pyplot as plt
 import numpy as np
+from attrdict import AttrDict
 
-from recommerce.configuration.hyperparameter_config import HyperparameterConfig
 from recommerce.configuration.path_manager import PathManager
 from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPriceDuopoly, CircularEconomyRebuyPriceVariableDuopoly
 from recommerce.rl.stable_baselines.stable_baselines_model import StableBaselinesPPO, StableBaselinesSAC
 
 
-def train_rl_vs_rl(config: HyperparameterConfig, num_switches: int = 30, num_steps_per_switch: int = 25000):
+def train_rl_vs_rl(config: AttrDict, num_switches: int = 30, num_steps_per_switch: int = 25000):
 	tmp_marketplace = CircularEconomyRebuyPriceDuopoly(config, True)
 	agent1 = StableBaselinesPPO(config=config, marketplace=tmp_marketplace)
 	marketplace_for_agent2 = CircularEconomyRebuyPriceVariableDuopoly(config=config, constant_agent=agent1)

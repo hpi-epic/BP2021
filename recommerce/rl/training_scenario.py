@@ -1,4 +1,5 @@
 import torch
+from attrdict import AttrDict
 
 import recommerce.market.circular.circular_sim_market as circular_market
 import recommerce.market.linear.linear_sim_market as linear_market
@@ -9,7 +10,7 @@ import recommerce.rl.rl_vs_rl_training as rl_vs_rl_training
 import recommerce.rl.self_play as self_play
 import recommerce.rl.stable_baselines.stable_baselines_model as sbmodel
 from recommerce.configuration.environment_config import EnvironmentConfigLoader, TrainingEnvironmentConfig
-from recommerce.configuration.hyperparameter_config import HyperparameterConfig, HyperparameterConfigLoader
+from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader
 from recommerce.configuration.path_manager import PathManager
 from recommerce.market.circular.circular_vendors import CircularAgent
 from recommerce.market.linear.linear_vendors import LinearAgent
@@ -21,7 +22,7 @@ print('successfully imported torch: cuda?', torch.cuda.is_available())
 
 
 def run_training_session(
-		config_hyperparameter: HyperparameterConfig,
+		config_hyperparameter: AttrDict,
 		marketplace=circular_market.CircularEconomyRebuyPriceDuopoly,
 		agent=q_learning_agent.QLearningAgent,
 		competitors: list = None) -> None:
@@ -63,8 +64,9 @@ def train_q_learning_classic_scenario():
 	"""
 	Train a Linear QLearningAgent on a Linear Market with one competitor.
 	"""
+	config = HyperparameterConfigLoader.load('hyperparameter_config')
 	run_training_session(
-		config_hyperparameter=HyperparameterConfigLoader.load('hyperparameter_config'),
+		config_hyperparameter=config,
 		marketplace=linear_market.LinearEconomyDuopoly,
 		agent=q_learning_agent.QLearningAgent)
 
@@ -90,21 +92,21 @@ def train_continuous_a2c_circular_economy_rebuy():
 
 
 def train_stable_baselines_ppo():
-	config_hyperparameter: HyperparameterConfig = HyperparameterConfigLoader.load('hyperparameter_config')
+	config_hyperparameter: AttrDict = HyperparameterConfigLoader.load('hyperparameter_config')
 	sbmodel.StableBaselinesPPO(
 		config=config_hyperparameter,
 		marketplace=circular_market.CircularEconomyRebuyPriceDuopoly(config_hyperparameter, True)).train_agent()
 
 
 def train_stable_baselines_sac():
-	config_hyperparameter: HyperparameterConfig = HyperparameterConfigLoader.load('hyperparameter_config')
+	config_hyperparameter: AttrDict = HyperparameterConfigLoader.load('hyperparameter_config')
 	sbmodel.StableBaselinesSAC(
 		config=config_hyperparameter,
 		marketplace=circular_market.CircularEconomyRebuyPriceDuopoly(config_hyperparameter, True)).train_agent()
 
 
 def train_rl_vs_rl():
-	config_hyperparameter: HyperparameterConfig = HyperparameterConfigLoader.load('hyperparameter_config')
+	config_hyperparameter: AttrDict = HyperparameterConfigLoader.load('hyperparameter_config')
 	rl_vs_rl_training.train_rl_vs_rl(config_hyperparameter)
 
 
@@ -117,7 +119,7 @@ def train_from_config():
 	Use the `environment_config_training.json` file to decide on the training parameters.
 	"""
 	config: TrainingEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_training')
-	config_hyperparameter: HyperparameterConfig = HyperparameterConfigLoader.load('hyperparameter_config')
+	config_hyperparameter: AttrDict = HyperparameterConfigLoader.load('hyperparameter_config')
 	# TODO: Theoretically, the name of the agent is saved in config['name'], but we don't use it yet.
 	competitor_list = []
 	for competitor in config.agent[1:]:

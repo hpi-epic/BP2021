@@ -3,8 +3,8 @@ from typing import Tuple
 
 import gym
 import numpy as np
+from attrdict import AttrDict
 
-from recommerce.configuration.hyperparameter_config import HyperparameterConfig
 from recommerce.configuration.utils import filtered_class_str_from_dir
 
 # An offer is a market state that contains all prices and qualities
@@ -41,7 +41,7 @@ class SimMarket(gym.Env, ABC):
 	def get_competitor_classes() -> list:
 		raise NotImplementedError
 
-	def __init__(self, config: HyperparameterConfig, support_continuous_action_space: bool = False, competitors: list = None) -> None:
+	def __init__(self, config: AttrDict, support_continuous_action_space: bool = False, competitors: list = None) -> None:
 		"""
 		Initialize a SimMarket instance.
 		Set up needed values such as competitors and action/observation-space and reset the environment.
