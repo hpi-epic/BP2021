@@ -2,11 +2,11 @@ from abc import ABC
 
 import gym
 import numpy as np
+from attrdict import AttrDict
 
 import recommerce.configuration.utils as ut
 import recommerce.market.circular.circular_vendors as circular_vendors
 import recommerce.market.owner as owner
-from recommerce.configuration.hyperparameter_config import HyperparameterConfig
 from recommerce.market.circular.circular_customers import CustomerCircular
 from recommerce.market.customer import Customer
 from recommerce.market.owner import Owner
@@ -344,7 +344,7 @@ class CircularEconomyRebuyPriceVariableDuopoly(CircularEconomyRebuyPrice):
 	def get_num_competitors() -> list:
 		return 1
 
-	def __init__(self, config: HyperparameterConfig, constant_agent: circular_vendors.CircularAgent):
+	def __init__(self, config: AttrDict, constant_agent: circular_vendors.CircularAgent):
 		self.customized_competitor_list = [constant_agent]
 		super().__init__(config=config, support_continuous_action_space=True)
 

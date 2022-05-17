@@ -1,13 +1,13 @@
 import pytest
 import utils_tests as ut_t
+from attrdict import AttrDict
 
 import recommerce.market.circular.circular_sim_market as circular_market
 import recommerce.market.linear.linear_sim_market as linear_market
 import recommerce.rl.q_learning.q_learning_training as q_learning_training
-from recommerce.configuration.hyperparameter_config import HyperparameterConfig
 from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
 
-config_hyperparameter: HyperparameterConfig = ut_t.mock_config_hyperparameter()
+config_hyperparameter: AttrDict = ut_t.mock_config_hyperparameter()
 
 
 test_scenarios = [

@@ -1,17 +1,17 @@
 import numpy as np
 import pytest
 import utils_tests as ut_t
+from attrdict import AttrDict
 from numpy import random
 
 import recommerce.market.circular.circular_vendors as circular_vendors
 import recommerce.market.linear.linear_vendors as linear_vendors
 import recommerce.market.vendors as vendors
-from recommerce.configuration.hyperparameter_config import HyperparameterConfig
 from recommerce.market.linear.linear_sim_market import LinearEconomyOligopoly
 from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
 from recommerce.rl.reinforcement_learning_agent import ReinforcementLearningAgent
 
-config_hyperparameter: HyperparameterConfig = ut_t.mock_config_hyperparameter()
+config_hyperparameter: AttrDict = ut_t.mock_config_hyperparameter()
 
 abstract_agent_classes_testcases = [
 	vendors.Agent,

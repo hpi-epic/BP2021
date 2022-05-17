@@ -4,12 +4,13 @@ import sys
 from copy import deepcopy
 
 import torch
+from attrdict import AttrDict
 from tqdm import trange
 
 import recommerce.monitoring.agent_monitoring.am_configuration as am_configuration
 import recommerce.monitoring.agent_monitoring.am_evaluation as am_evaluation
 from recommerce.configuration.environment_config import AgentMonitoringEnvironmentConfig, EnvironmentConfigLoader
-from recommerce.configuration.hyperparameter_config import HyperparameterConfig, HyperparameterConfigLoader
+from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader
 from recommerce.configuration.path_manager import PathManager
 from recommerce.monitoring.watcher import Watcher
 
@@ -97,7 +98,7 @@ def main():  # pragma: no cover
 	"""
 	monitor = Monitor()
 	config_environment_am: AgentMonitoringEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_agent_monitoring')
-	config_hyperparameter: HyperparameterConfig = HyperparameterConfigLoader.load('hyperparameter_config')
+	config_hyperparameter: AttrDict = HyperparameterConfigLoader.load('hyperparameter_config')
 	monitor.configurator.setup_monitoring(
 		enable_live_draw=config_environment_am.enable_live_draw,
 		episodes=config_environment_am.episodes,
