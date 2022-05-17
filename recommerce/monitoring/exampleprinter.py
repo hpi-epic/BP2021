@@ -110,8 +110,9 @@ def main():  # pragma: no cover
 	if issubclass(config_environment.agent['agent_class'], QLearningAgent):
 		printer.setup_exampleprinter(marketplace=marketplace,
 			agent=config_environment.agent['agent_class'](
+				config_market=config_market,
+				config_rl=config_rl,
 				marketplace=marketplace,
-				config=config_rl,
 				load_path=os.path.abspath(os.path.join(PathManager.data_path, config_environment.agent['argument']))))
 	else:
 		printer.setup_exampleprinter(marketplace=marketplace, agent=config_environment.agent['agent_class']())
