@@ -2,7 +2,6 @@ from abc import ABC
 
 import gym
 import numpy as np
-from attrdict import AttrDict
 
 import recommerce.configuration.utils as ut
 import recommerce.market.circular.circular_vendors as circular_vendors
@@ -341,20 +340,3 @@ class CircularEconomyRebuyPriceOligopoly(CircularEconomyRebuyPrice):
 			circular_vendors.FixedPriceCERebuyAgent(config=self.config, fixed_price=(3, 6, 2)),
 			circular_vendors.RuleBasedCERebuyAgentStorageMinimizer(config=self.config)
 			]
-
-
-class CircularEconomyRebuyPriceVariableDuopoly(CircularEconomyRebuyPrice):
-	"""
-	This Scenario allows the training of an RL-agent against a customizable agent
-	that is passed as a parameter to the constructor of the class.
-	"""
-	@staticmethod
-	def get_num_competitors() -> int:
-		return 1
-
-	def __init__(self, config: AttrDict, constant_agent: circular_vendors.CircularAgent):
-		self.customized_competitor_list = [constant_agent]
-		super().__init__(config=config, support_continuous_action_space=True)
-
-	def _get_competitor_list(self) -> list:
-		return self.customized_competitor_list

@@ -49,13 +49,11 @@ class SimMarket(gym.Env, ABC):
 		You can activate continuous actions using setting support_continuous_action_space.
 
 		Args:
-			support_continuous_action_space (bool, optional): If True, the action space will be continuous. Defaults to False
-			competitors (list, optional): If not None, this overwrites the default competitor list with a custome one
+			support_continuous_action_space (bool, optional): If True, the action space will be continuous. Defaults to False.
+			competitors (list, optional): If not None, this overwrites the default competitor list with a custom one.
 		"""
 		self.config = config
-		if competitors is None:
-			competitors = []
-		self.competitors = self._get_competitor_list() if len(competitors) == 0 else competitors
+		self.competitors = self._get_competitor_list() if not competitors else competitors
 		# The agent's price does not belong to the observation_space any more because an agent should not depend on it
 		self._setup_action_observation_space(support_continuous_action_space)
 		self.support_continuous_action_space = support_continuous_action_space

@@ -111,7 +111,8 @@ def train_rl_vs_rl():
 
 
 def train_self_play():
-	self_play.train_self_play()
+	config_hyperparameter: AttrDict = HyperparameterConfigLoader.load('hyperparameter_config')
+	self_play.train_self_play(config_hyperparameter)
 
 
 def train_from_config():
