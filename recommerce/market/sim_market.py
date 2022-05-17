@@ -22,8 +22,8 @@ class SimMarket(gym.Env, ABC):
 	Inherits from `gym.env`.
 	"""
 	@staticmethod
-	def get_num_competitors() -> list:
-		return np.inf
+	def get_num_competitors() -> int:
+		raise NotImplementedError
 
 	@staticmethod
 	def get_possible_rl_agents() -> list:

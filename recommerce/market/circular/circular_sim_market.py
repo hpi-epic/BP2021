@@ -218,7 +218,7 @@ class CircularEconomyMonopoly(CircularEconomy):
 	This is a circular economy with only one vendor having the monopoly.
 	"""
 	@staticmethod
-	def get_num_competitors() -> list:
+	def get_num_competitors() -> int:
 		return 0
 
 	def _get_competitor_list(self) -> list:
@@ -230,7 +230,7 @@ class CircularEconomyDuopoly(CircularEconomy):
 	This is a circular economy with two vendors (one agent and one competitor) playing against each other.
 	"""
 	@staticmethod
-	def get_num_competitors() -> list:
+	def get_num_competitors() -> int:
 		return 1
 
 	def _get_competitor_list(self) -> list:
@@ -241,6 +241,10 @@ class CircularEconomyOligopoly(CircularEconomy):
 	"""
 	This is a circular economy with multiple vendors.
 	"""
+	@staticmethod
+	def get_num_competitors() -> int:
+		return np.inf
+
 	def _get_competitor_list(self) -> list:
 		return [
 			circular_vendors.RuleBasedCEAgent(config=self.config),
@@ -301,7 +305,7 @@ class CircularEconomyRebuyPriceMonopoly(CircularEconomyRebuyPrice):
 	There is only one vendor.
 	"""
 	@staticmethod
-	def get_num_competitors() -> list:
+	def get_num_competitors() -> int:
 		return 0
 
 	def _get_competitor_list(self) -> list:
@@ -314,7 +318,7 @@ class CircularEconomyRebuyPriceDuopoly(CircularEconomyRebuyPrice):
 	There are two vendors.
 	"""
 	@staticmethod
-	def get_num_competitors() -> list:
+	def get_num_competitors() -> int:
 		return 1
 
 	def _get_competitor_list(self) -> list:
@@ -326,6 +330,10 @@ class CircularEconomyRebuyPriceOligopoly(CircularEconomyRebuyPrice):
 	This is a circular economy with rebuy price, so the vendors buy back their products from the customers.
 	There are multiple vendors.
 	"""
+	@staticmethod
+	def get_num_competitors() -> int:
+		return np.inf
+
 	def _get_competitor_list(self) -> list:
 		return [
 			circular_vendors.RuleBasedCERebuyAgentCompetitive(config=self.config),
@@ -341,7 +349,7 @@ class CircularEconomyRebuyPriceVariableDuopoly(CircularEconomyRebuyPrice):
 	that is passed as a parameter to the constructor of the class.
 	"""
 	@staticmethod
-	def get_num_competitors() -> list:
+	def get_num_competitors() -> int:
 		return 1
 
 	def __init__(self, config: HyperparameterConfig, constant_agent: circular_vendors.CircularAgent):

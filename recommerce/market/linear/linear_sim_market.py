@@ -88,7 +88,7 @@ class LinearEconomyDuopoly(LinearEconomy):
 	This is a linear economy, with two vendors.
 	"""
 	@staticmethod
-	def get_num_competitors() -> list:
+	def get_num_competitors() -> int:
 		return 1
 
 	def _get_competitor_list(self) -> list:
@@ -99,6 +99,10 @@ class LinearEconomyOligopoly(LinearEconomy):
 	"""
 	This is a linear economy, with multiple vendors.
 	"""
+	@staticmethod
+	def get_num_competitors() -> int:
+		return np.inf
+
 	def _get_competitor_list(self) -> list:
 		return [
 			LinearRatio1LEAgent(config=self.config),

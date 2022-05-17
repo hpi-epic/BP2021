@@ -4,6 +4,8 @@ from uuid import uuid4
 import lxml.html
 from django.shortcuts import render
 
+import recommerce.market.circular.circular_sim_market as circular_market
+import recommerce.market.linear.linear_sim_market as linear_market
 from recommerce.configuration.utils import get_class
 
 
@@ -76,9 +78,6 @@ class SelectionManager:
 		Returns:
 			list: tuple list for selection
 		"""
-		import recommerce.market.circular.circular_sim_market as circular_market
-		import recommerce.market.linear.linear_sim_market as linear_market
-
 		keywords = ['Monopoly', 'Duopoly', 'Oligopoly']
 		# get all circular marketplaces
 		circular_marketplaces = list(set(filter(lambda class_name: any(keyword in class_name for keyword in keywords), dir(circular_market))))
