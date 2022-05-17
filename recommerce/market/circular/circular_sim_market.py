@@ -300,7 +300,8 @@ class CircularEconomyRebuyPrice(CircularEconomy, ABC):
 
 class CircularEconomyRebuyPriceMonopoly(CircularEconomyRebuyPrice):
 	"""
-	This is a circular economy with rebuy price, so the vendors buy back their products from the customers.
+	This is a circular economy with rebuy price, so the vendor buys back its products from the customers.
+
 	There is only one vendor.
 	"""
 	@staticmethod
