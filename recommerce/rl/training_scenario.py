@@ -128,7 +128,8 @@ def train_from_config():
 			competitor_list.append(
 				competitor['agent_class'](config=config_hyperparameter, fixed_price=competitor['argument'], name=competitor['name']))
 		else:
-			competitor_list.append(competitor['agent_class'](config=config_hyperparameter,  name=competitor['name']))
+			competitor_list.append(competitor['agent_class'](config=config_hyperparameter, name=competitor['name']))
+
 	run_training_session(
 		config_hyperparameter=config_hyperparameter,
 		marketplace=config.marketplace,
