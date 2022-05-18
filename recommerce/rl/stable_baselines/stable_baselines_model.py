@@ -55,6 +55,9 @@ class StableBaselinesAgent(ReinforcementLearningAgent, LinearAgent, CircularAgen
 
 
 class StableBaselinesDDPG(StableBaselinesAgent):
+	"""
+	This a stable baseline agent using Deep Deterministic Policy Gradient (DDPG) algorithm.
+	"""
 	name = 'Stable_Baselines_DDPG'
 
 	def _initialize_model(self, marketplace):
@@ -67,6 +70,9 @@ class StableBaselinesDDPG(StableBaselinesAgent):
 
 
 class StableBaselinesTD3(StableBaselinesAgent):
+	"""
+	This a stable baseline agent using TD3 which is a direct successor of DDPG.
+	"""
 	name = 'Stable_Baselines_TD3'
 
 	def _initialize_model(self, marketplace):
@@ -79,6 +85,9 @@ class StableBaselinesTD3(StableBaselinesAgent):
 
 
 class StableBaselinesA2C(StableBaselinesAgent):
+	"""
+	This a stable baseline agent using A2C.
+	"""
 	name = 'Stable_Baselines_A2C'
 
 	def _initialize_model(self, marketplace):
@@ -89,6 +98,9 @@ class StableBaselinesA2C(StableBaselinesAgent):
 
 
 class StableBaselinesPPO(StableBaselinesAgent):
+	"""
+	This a stable baseline agent using Proximal Policy Optimization algorithm (PPO).
+	"""
 	name = 'Stable_Baselines_PPO'
 
 	def _initialize_model(self, marketplace):
@@ -99,6 +111,9 @@ class StableBaselinesPPO(StableBaselinesAgent):
 
 
 class StableBaselinesSAC(StableBaselinesAgent):
+	"""
+	This a stable baseline agent using Soft Actor Critic (SAC).
+	"""
 	name = 'Stable_Baselines_SAC'
 
 	def _initialize_model(self, marketplace):

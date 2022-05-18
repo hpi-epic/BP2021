@@ -55,7 +55,7 @@ class HumanPlayerCERebuy(HumanPlayerCE):
 
 class FixedPriceCEAgent(CircularAgent, FixedPriceAgent):
 	"""
-	This vendor's policy is trying to succeed with set constant prices.
+	This vendor's policy is trying to succeed by setting constant prices.
 	"""
 	def __init__(self, config: AttrDict=None, fixed_price=(2, 4), name='fixed_price_ce'):
 		assert isinstance(fixed_price, tuple), f'fixed_price must be a tuple: {fixed_price} ({type(fixed_price)})'

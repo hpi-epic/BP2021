@@ -45,7 +45,7 @@ class ActorCriticTrainer(RLTrainer):
 
 		finished_episodes = 0
 		self.callback.num_timesteps = 0
-		environments = [self.marketplace_class(config=self.config) for _ in range(total_envs)]
+		environments = [self.marketplace_class(config=self.config, competitors=self.competitors) for _ in range(total_envs)]
 
 		for step_number in range(number_of_training_steps):
 			chosen_envs = self.choose_random_envs(total_envs)

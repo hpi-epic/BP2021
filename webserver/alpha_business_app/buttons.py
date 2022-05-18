@@ -11,6 +11,7 @@ from .handle_files import download_file
 from .handle_requests import DOCKER_API, send_get_request, send_get_request_with_streaming, send_post_request, stop_container
 from .models.config import Config
 from .models.container import Container, update_container
+from .selection_manager import SelectionManager
 
 
 class ButtonHandler():
@@ -42,6 +43,7 @@ class ButtonHandler():
 		self.wanted_key = None
 		self.all_containers = Container.objects.all().filter(user=request.user)
 		self.wanted_config = wanted_config
+		self.selection_manager = SelectionManager()
 
 		if request.method == 'POST':
 			self.wanted_key = request.POST['action']
@@ -129,18 +131,14 @@ class ButtonHandler():
 			}
 
 	def _params_for_selection(self) -> dict:
-		# TODO: implement the selection parameters here
-		# import recommerce.market.circular.circular_sim_market as circular_market
-		# circular_market_places = list(set(filter(lambda class_name: class_name.startswith('CircularEconomy'), dir(circular_market))))
-		circular_market_places = ['CircularEconomyMonopoly',
-			'CircularEconomyRebuyPrice',
-			'CircularEconomyRebuyPriceMonopoly',
-			'CircularEconomyRebuyPriceDuopoly']
-		circular_market_places = [('recommerce.market.circular.circular_sim_market.' + market, market) for market in circular_market_places]
 		return {
 			'selections': {
-				'tasks': [('training', 'training'), ('agent_monitoring', 'agent_monitoring'), ('exampleprinter', 'exampleprinter')],
-				'marketplaces': circular_market_places}}
+				'tasks': self.selection_manager._get_task_options(),
+				'marketplaces': self.selection_manager.get_marketplace_options(),
+				'agents': self.selection_manager.get_agent_options_for_marketplace(),
+				'competitors': self.selection_manager.get_competitor_options_for_marketplace()
+				}
+			}
 
 	def _render_default(self) -> HttpResponse:
 		"""
@@ -284,6 +282,7 @@ class ButtonHandler():
 		final_dict, error_dict = merger.merge_config_objects(post_request['config_id'])
 		# set an id for each agent (necessary for view)
 		for agent_index in range(len(final_dict['environment']['agents'])):
+			final_dict['environment']['agents'][agent_index]['display_name'] = 'Agent' if agent_index == 0 else 'Competitor'
 			final_dict['environment']['agents'][agent_index]['id'] = agent_index
 		return self._render_prefill(final_dict, error_dict)
 

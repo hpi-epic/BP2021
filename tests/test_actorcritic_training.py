@@ -8,20 +8,20 @@ from recommerce.rl.actorcritic.actorcritic_training import ActorCriticTrainer
 
 test_scenarios = [
 	(linear_market.LinearEconomyDuopoly, actorcritic_agent.DiscreteActorCriticAgent, True),
-	(linear_market.LinearEconomyDuopoly, actorcritic_agent.ContinuosActorCriticAgentFixedOneStd, True),
-	(linear_market.LinearEconomyDuopoly, actorcritic_agent.ContinuosActorCriticAgentEstimatingStd, False),
+	(linear_market.LinearEconomyDuopoly, actorcritic_agent.ContinuousActorCriticAgentFixedOneStd, True),
+	(linear_market.LinearEconomyDuopoly, actorcritic_agent.ContinuousActorCriticAgentEstimatingStd, False),
 	(linear_market.LinearEconomyOligopoly, actorcritic_agent.DiscreteActorCriticAgent, False),
-	(linear_market.LinearEconomyOligopoly, actorcritic_agent.ContinuosActorCriticAgentFixedOneStd, False),
-	(linear_market.LinearEconomyOligopoly, actorcritic_agent.ContinuosActorCriticAgentEstimatingStd, True),
+	(linear_market.LinearEconomyOligopoly, actorcritic_agent.ContinuousActorCriticAgentFixedOneStd, False),
+	(linear_market.LinearEconomyOligopoly, actorcritic_agent.ContinuousActorCriticAgentEstimatingStd, True),
 	(circular_market.CircularEconomyMonopoly, actorcritic_agent.DiscreteActorCriticAgent, True),
-	(circular_market.CircularEconomyMonopoly, actorcritic_agent.ContinuosActorCriticAgentFixedOneStd, False),
-	(circular_market.CircularEconomyMonopoly, actorcritic_agent.ContinuosActorCriticAgentEstimatingStd, True),
+	(circular_market.CircularEconomyMonopoly, actorcritic_agent.ContinuousActorCriticAgentFixedOneStd, False),
+	(circular_market.CircularEconomyMonopoly, actorcritic_agent.ContinuousActorCriticAgentEstimatingStd, True),
 	(circular_market.CircularEconomyRebuyPriceMonopoly, actorcritic_agent.DiscreteActorCriticAgent, True),
-	(circular_market.CircularEconomyRebuyPriceMonopoly, actorcritic_agent.ContinuosActorCriticAgentFixedOneStd, False),
-	(circular_market.CircularEconomyRebuyPriceMonopoly, actorcritic_agent.ContinuosActorCriticAgentEstimatingStd, True),
+	(circular_market.CircularEconomyRebuyPriceMonopoly, actorcritic_agent.ContinuousActorCriticAgentFixedOneStd, False),
+	(circular_market.CircularEconomyRebuyPriceMonopoly, actorcritic_agent.ContinuousActorCriticAgentEstimatingStd, True),
 	(circular_market.CircularEconomyRebuyPriceDuopoly, actorcritic_agent.DiscreteActorCriticAgent, False),
-	(circular_market.CircularEconomyRebuyPriceDuopoly, actorcritic_agent.ContinuosActorCriticAgentFixedOneStd, True),
-	(circular_market.CircularEconomyRebuyPriceDuopoly, actorcritic_agent.ContinuosActorCriticAgentEstimatingStd, False)
+	(circular_market.CircularEconomyRebuyPriceDuopoly, actorcritic_agent.ContinuousActorCriticAgentFixedOneStd, True),
+	(circular_market.CircularEconomyRebuyPriceDuopoly, actorcritic_agent.ContinuousActorCriticAgentEstimatingStd, False)
 ]
 
 

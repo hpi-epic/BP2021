@@ -6,11 +6,15 @@ import numpy as np
 import recommerce.configuration.utils as ut
 from recommerce.market.customer import Customer
 from recommerce.market.linear.linear_customers import CustomerLinear
-from recommerce.market.linear.linear_vendors import CompetitorJust2Players, CompetitorLinearRatio1, CompetitorRandom
+from recommerce.market.linear.linear_vendors import Just2PlayersLEAgent, LERandomAgent, LinearRatio1LEAgent
 from recommerce.market.sim_market import SimMarket
 
 
 class LinearEconomy(SimMarket, ABC):
+	@staticmethod
+	def get_competitor_classes() -> list:
+		import recommerce.market.linear.linear_vendors as l_vendors
+		return sorted(ut.filtered_class_str_from_dir('recommerce.market.linear.linear_vendors', dir(l_vendors), '.*LE.*Agent.*'))
 
 	def _setup_action_observation_space(self, support_continuous_action_space: bool) -> None:
 		"""
@@ -80,16 +84,28 @@ class LinearEconomy(SimMarket, ABC):
 
 
 class LinearEconomyDuopoly(LinearEconomy):
+	"""
+	This is a linear economy, with two vendors.
+	"""
+	@staticmethod
+	def get_num_competitors() -> int:
+		return 1
 
 	def _get_competitor_list(self) -> list:
-		return [CompetitorLinearRatio1(config=self.config)]
+		return [LinearRatio1LEAgent(config=self.config)]
 
 
 class LinearEconomyOligopoly(LinearEconomy):
+	"""
+	This is a linear economy, with multiple vendors.
+	"""
+	@staticmethod
+	def get_num_competitors() -> int:
+		return np.inf
 
 	def _get_competitor_list(self) -> list:
 		return [
-			CompetitorLinearRatio1(config=self.config),
-			CompetitorRandom(config=self.config),
-			CompetitorJust2Players(config=self.config),
+			LinearRatio1LEAgent(config=self.config),
+			LERandomAgent(config=self.config),
+			Just2PlayersLEAgent(config=self.config),
 		]

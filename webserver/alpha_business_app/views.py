@@ -14,6 +14,9 @@ from .handle_files import get_statistic_data, handle_uploaded_file
 from .handle_requests import get_api_status, send_statistic_request, websocket_url
 from .models.config import Config
 from .models.container import Container
+from .selection_manager import SelectionManager
+
+selection_manager = SelectionManager()
 
 
 @login_required
@@ -76,7 +79,7 @@ def upload(request) -> HttpResponse:
 
 
 @login_required
-def configurator(request):
+def configurator(request) -> HttpResponse:
 	if not request.user.is_authenticated:
 		return HttpResponse('Unauthorized', status=401)
 	button_handler = ButtonHandler(request, view='configurator.html', rendering_method='config')
@@ -97,13 +100,14 @@ def delete_config(request, config_id) -> HttpResponse:
 
 # AJAX relevant views
 @login_required
-def agent(request):
+def agent(request) -> HttpResponse:
 	if not request.user.is_authenticated:
 		return HttpResponse('Unauthorized', status=401)
-	return render(request, 'configuration_items/agent.html', {'id': str(uuid4())})
+	return render(request, 'configuration_items/agent.html',
+		{'id': str(uuid4()), 'name': 'Competitor', 'agent_selections': selection_manager.get_competitor_options_for_marketplace()})
 
 
-def api_availability(request):
+def api_availability(request) -> HttpResponse:
 	if not request.user.is_authenticated:
 		return render(request, 'api_buttons/api_health_button.html')
 	parameter_dict = get_api_status()
@@ -111,7 +115,7 @@ def api_availability(request):
 
 
 @login_required
-def config_validation(request):
+def config_validation(request) -> HttpResponse:
 	if not request.user.is_authenticated:
 		return HttpResponse('Unauthorized', status=401)
 	if request.method == 'POST':
@@ -146,3 +150,15 @@ def container_notification(request):
 
 def get_api_url(request):
 	return JsonResponse({'url': websocket_url()}, status=200, content_type='application/json')
+
+
+def marketplace_changed(request) -> HttpResponse:
+	if not request.user.is_authenticated:
+		return HttpResponse('Unauthorized', status=401)
+	marketplace_class = None
+	if request.method == 'POST':
+		post_request = request.POST
+		# print(post_request)
+		marketplace_class = post_request['marketplace']
+		raw_html = post_request['agents_html']
+	return HttpResponse(content=selection_manager.get_correct_agents_html_on_marketplace_change(request, marketplace_class, raw_html))

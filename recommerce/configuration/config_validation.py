@@ -132,7 +132,7 @@ def check_config_types(hyperparameter_config: dict, environment_config: dict, mu
 
 	# check types for environment_config
 	task = environment_config['task'] if must_contain else 'None'
-	single_agent = task in ['training', 'exampleprinter']
+	single_agent = task in ['exampleprinter']
 	EnvironmentConfig.check_types(environment_config, task, single_agent, must_contain)
 
 
