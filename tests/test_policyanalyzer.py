@@ -9,9 +9,9 @@ from attrdict import AttrDict
 from recommerce.configuration.path_manager import PathManager
 from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPriceDuopoly, CircularEconomyRebuyPriceMonopoly
 from recommerce.market.circular.circular_vendors import RuleBasedCERebuyAgent, RuleBasedCERebuyAgentCompetitive
-from recommerce.market.linear.linear_vendors import CompetitorLinearRatio1
+from recommerce.market.linear.linear_vendors import LinearRatio1LEAgent
 from recommerce.monitoring.policyanalyzer import PolicyAnalyzer
-from recommerce.rl.actorcritic.actorcritic_agent import ContinuosActorCriticAgentFixedOneStd
+from recommerce.rl.actorcritic.actorcritic_agent import ContinuousActorCriticAgentFixedOneStd
 from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
 
 write_to_path = os.path.join(PathManager.results_path, 'policyanalyzer')
@@ -20,7 +20,7 @@ config_hyperparameter: AttrDict = ut_t.mock_config_hyperparameter()
 
 
 def test_rule_based_linear_competitor1():
-	pa = PolicyAnalyzer(CompetitorLinearRatio1(config=config_hyperparameter))
+	pa = PolicyAnalyzer(LinearRatio1LEAgent(config=config_hyperparameter))
 	given_path = pa.analyze_policy(np.array([15, -1, 10]), [(1, 'competitor price', range(1, 11))])
 	expected_path = os.path.join(write_to_path, 'add_a_title_here.png')
 	assert expected_path in given_path
@@ -29,7 +29,7 @@ def test_rule_based_linear_competitor1():
 
 
 def test_rule_based_linear_competitor2():
-	pa = PolicyAnalyzer(CompetitorLinearRatio1(config=config_hyperparameter))
+	pa = PolicyAnalyzer(LinearRatio1LEAgent(config=config_hyperparameter))
 	given_path = pa.analyze_policy(
 		np.array([-1, -1, 10]),
 		[(0, 'own quality', range(5, 20)), (1, 'competitor price', range(1, 11))],
@@ -123,12 +123,12 @@ one_competitor_test_cases = [
 
 
 @pytest.mark.parametrize('title, policyaccess, expected_filename', one_competitor_test_cases)
-def test_circular_duopol_continuos_actorcritic(title, policyaccess, expected_filename):
-	a2c_agent = ContinuosActorCriticAgentFixedOneStd(
+def test_circular_duopol_continuous_actorcritic(title, policyaccess, expected_filename):
+	a2c_agent = ContinuousActorCriticAgentFixedOneStd(
 		marketplace=CircularEconomyRebuyPriceDuopoly(config=config_hyperparameter),
 		config=config_hyperparameter,
 		load_path=os.path.join(PathManager.data_path,
-			'actor_parametersCircularEconomyRebuyPriceDuopoly_ContinuosActorCriticAgentFixedOneStd.dat')
+			'actor_parametersCircularEconomyRebuyPriceDuopoly_ContinuousActorCriticAgentFixedOneStd.dat')
 	)
 	pa = PolicyAnalyzer(a2c_agent)
 	given_path = pa.analyze_policy(

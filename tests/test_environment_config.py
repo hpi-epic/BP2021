@@ -5,6 +5,7 @@ import pytest
 import utils_tests as ut_t
 
 import recommerce.configuration.environment_config as env_config
+from recommerce.configuration.utils import get_class
 from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPriceMonopoly
 from recommerce.market.circular.circular_vendors import RuleBasedCERebuyAgent
 from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
@@ -49,8 +50,8 @@ def test_str_representation():
 	config = env_config.TrainingEnvironmentConfig(test_dict)
 	assert str(config) == ("TrainingEnvironmentConfig: {'task': 'training', "
 		"'marketplace': <class 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopoly'>, "
-		"'agent': {'name': 'CE Rebuy Agent (QLearning)', "
-		"'agent_class': <class 'recommerce.rl.q_learning.q_learning_agent.QLearningAgent'>, 'argument': ''}}")
+		"'agent': [{'name': 'CE Rebuy Agent (QLearning)', "
+		"'agent_class': <class 'recommerce.rl.q_learning.q_learning_agent.QLearningAgent'>, 'argument': ''}]}")
 
 
 get_class_testcases = [
@@ -63,12 +64,12 @@ get_class_testcases = [
 
 @pytest.mark.parametrize('expected_class, class_string', get_class_testcases)
 def test_get_class(expected_class, class_string):
-	assert expected_class == env_config.get_class(class_string)
+	assert expected_class == get_class(class_string)
 
 
 def test_get_class_invalid_class():
 	with pytest.raises(AttributeError) as error_message:
-		env_config.get_class('recommerce.market.circular.circular_vendors.NotAValidClass')
+		get_class('recommerce.market.circular.circular_vendors.NotAValidClass')
 	assert 'The string you passed could not be resolved to a class' in str(error_message.value)
 
 
@@ -83,13 +84,13 @@ instantiate_invalid_get_class_return_testcases = [
 @pytest.mark.parametrize('complete_class_string, splitted_class_string', instantiate_invalid_get_class_return_testcases)
 def test_instantiate_invalid_get_class_return(complete_class_string, splitted_class_string):
 	with pytest.raises(TypeError) as error_message:
-		env_config.get_class(complete_class_string)()
+		get_class(complete_class_string)()
 	assert str(error_message.value).startswith(f'Can\'t instantiate abstract class {splitted_class_string} with abstract methods')
 
 
 def test_get_class_invalid_module():
 	with pytest.raises(ModuleNotFoundError) as error_message:
-		env_config.get_class('notAModule.ValidClass')
+		get_class('notAModule.ValidClass')
 	assert 'The string you passed could not be resolved to a module' in str(error_message.value)
 
 

@@ -1,5 +1,7 @@
+import importlib
 import os
 import random
+import re
 
 import numpy as np
 from attrdict import AttrDict
@@ -193,3 +195,38 @@ def write_content_of_dict_to_overview_svg(
 	}
 
 	manipulator.write_dict_to_svg(target_dictionary=translated_dict)
+
+
+def get_class(import_string: str) -> object:
+	"""
+	Get the class from the given string.
+
+	Args:
+		import_string (str): A string containing the import path in the format 'module.submodule.class'.
+
+	Returns:
+		A class object: The imported class.
+	"""
+	module_name, class_name = import_string.rsplit('.', 1)
+	try:
+		return getattr(importlib.import_module(module_name), class_name)
+	except AttributeError as error:
+		raise AttributeError(f'The string you passed could not be resolved to a class: {import_string}') from error
+	except ModuleNotFoundError as error:
+		raise ModuleNotFoundError(f'The string you passed could not be resolved to a module: {import_string}') from error
+
+
+def filtered_class_str_from_dir(import_path: str, all_classes: list, regex_match: str) -> list:
+	"""
+	Filters all given class strings by regex and returns the classes concatinated with the import path as list.s
+
+	Args:
+		import_path (str): Path the class is imported from, i.e. 'recommerce...'
+		all_classes (list): all classes, that should be filtered
+		regex_match (str): The regex that should be used for filtering
+
+	Returns:
+		list: list of filtered class strings starting with the import path
+	"""
+	filtered_classes = list(set(filter(lambda class_name: re.match(regex_match, class_name), all_classes)))
+	return [import_path + '.' + f_class for f_class in sorted(filtered_classes)]

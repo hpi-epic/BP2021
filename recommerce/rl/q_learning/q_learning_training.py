@@ -19,8 +19,7 @@ class QLearningTrainer(RLTrainer):
 		"""
 		if number_of_training_steps is None:
 			number_of_training_steps = 2 * self.config.epsilon_decay_last_frame
-		self.initialize_callback(number_of_training_steps)
-		marketplace = self.marketplace_class(config=self.config)
+		marketplace = self.initialize_callback(number_of_training_steps)
 		state = marketplace.reset()
 
 		last_loss = 0
