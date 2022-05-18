@@ -63,7 +63,7 @@ class CircularEconomyDatagenerator(CircularEconomyRebuyPriceDuopoly):
 
 		x[7, 0] = output_dict['actions/price_refurbished']['vendor_0']  # agent price new
 		x[8, 0] = output_dict['actions/price_new']['vendor_0']  # agent price used
-		x[9, 0] = output_dict['actions/price_new']['vendor_0']  # agent price rebuy
+		x[9, 0] = output_dict['actions/price_rebuy']['vendor_0']  # agent price rebuy
 
 		x[10, 0] = output_dict['profits/storage_cost']['vendor_0']  # agent storage cost
 

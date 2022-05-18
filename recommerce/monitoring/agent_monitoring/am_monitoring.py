@@ -106,7 +106,8 @@ def main():  # pragma: no cover
 		plot_interval=config_environment_am.plot_interval,
 		marketplace=config_environment_am.marketplace,
 		agents=config_environment_am.agent,
-		config=config_hyperparameter
+		config=config_hyperparameter,
+		support_continuous_action_space=True
 	)
 	run_monitoring_session(monitor)
 

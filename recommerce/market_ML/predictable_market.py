@@ -10,7 +10,7 @@ from recommerce.configuration.path_manager import PathManager
 from recommerce.market.circular.circular_customers import CustomerCircular
 from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPrice
 from recommerce.market.owner import OwnerRebuy
-from recommerce.market_ML.predictable_agent import PredictableAgent
+from recommerce.market_ML.predictable_agent import PredictableCompetitor
 
 # import pandas as pd
 # import torch
@@ -25,7 +25,7 @@ class PredictableMarketRebuyPriceDuopoly(CircularEconomyRebuyPrice):
 		return OwnerRebuy()
 
 	def _get_competitor_list(self):
-		return [PredictableAgent(config=self.config)]
+		return [PredictableCompetitor(config=self.config)]
 
 
 class OwnerPredictable(OwnerRebuy):
@@ -108,8 +108,8 @@ class PredictableDatagenerator(PredictableMarketRebuyPriceDuopoly):
 			x[4, 0] = self.cumulated_states[24, 0]   # comp price rebuy (old)
 		else:
 
-			x[2, 0] = self.cumulated_states[22, i-1]  # comp price new (old)
-			x[3, 0] = self.cumulated_states[23, i-1]   # comp price used (old)
+			x[3, 0] = self.cumulated_states[22, i-1]   # comp price used (old)
+			x[2, 0] = self.cumulated_states[23, i-1]  # comp price new (old)
 			x[4, 0] = self.cumulated_states[24, i-1]   # comp price rebuy (old)
 
 		x[5, 0] = output_dict['state/in_storage']['vendor_1']  # comp inventory
@@ -118,7 +118,7 @@ class PredictableDatagenerator(PredictableMarketRebuyPriceDuopoly):
 
 		x[7, 0] = output_dict['actions/price_refurbished']['vendor_0']  # agent price new
 		x[8, 0] = output_dict['actions/price_new']['vendor_0']  # agent price used
-		x[9, 0] = output_dict['actions/price_new']['vendor_0']  # agent price rebuy
+		x[9, 0] = output_dict['actions/price_rebuy']['vendor_0']  # agent price rebuy
 
 		x[10, 0] = output_dict['profits/storage_cost']['vendor_0']  # agent storage cost
 
@@ -126,8 +126,8 @@ class PredictableDatagenerator(PredictableMarketRebuyPriceDuopoly):
 		assert float(output_dict['actions/price_refurbished']['vendor_1']).is_integer()
 		assert float(output_dict['actions/price_rebuy']['vendor_1']).is_integer()
 
-		x[22, 0] = int(output_dict['actions/price_new']['vendor_1'])  # comp price new (updated)
-		x[23, 0] = int(output_dict['actions/price_refurbished']['vendor_1'])  # comp price used (updated)
+		x[22, 0] = int(output_dict['actions/price_refurbished']['vendor_1'])  # comp price used (updated)
+		x[23, 0] = int(output_dict['actions/price_new']['vendor_1'])  # comp price new (updated)
 		x[24, 0] = int(output_dict['actions/price_rebuy']['vendor_1'])  # comp price rebuy (updated)
 
 		x[11, 0] = output_dict['customer/purchases_new']['vendor_0']  # agent sales new

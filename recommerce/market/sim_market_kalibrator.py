@@ -74,7 +74,7 @@ class SimMarketKalibrator:
 		result_tuple_y3 = torch.linalg.lstsq(transposed_x_y3, y3, driver='gelsd')
 
 		b3 = result_tuple_y3[0]
-		self.new_regression(transposed_x_y3, y3)
+		# self.new_regression(transposed_x_y3, y3)
 		return b3
 
 	def fourth_regression(self, data, x_rows, xx_rows, y_index: int, flag: str):
