@@ -125,9 +125,11 @@ def train_from_config():
 	competitor_list = []
 	for competitor in config.agent[1:]:
 		if issubclass(competitor['agent_class'], FixedPriceAgent):
-			competitor_list.append(competitor['agent_class'](fixed_price=competitor['argument'], name=competitor['name']))
+			competitor_list.append(
+				competitor['agent_class'](config=config_hyperparameter, fixed_price=competitor['argument'], name=competitor['name']))
 		else:
-			competitor_list.append(competitor['agent_class'](name=competitor['name']))
+			competitor_list.append(competitor['agent_class'](config=config_hyperparameter, name=competitor['name']))
+
 	run_training_session(
 		config_hyperparameter=config_hyperparameter,
 		marketplace=config.marketplace,
