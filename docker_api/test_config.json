@@ -1,6 +1,6 @@
 {
 	"environment": {
-		"task": "exampleprinter",
+		"task": "training",
 		"marketplace": "recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopoly",
 		"agents": [
 			{
