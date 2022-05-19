@@ -51,7 +51,7 @@ def _default_request_parameter(wanted_action: str, params: dict) -> dict:
 		'url': f'{DOCKER_API}/{wanted_action}',
 		'params': params,
 		'headers': {'Authorization': _get_api_token()},
-		'verify': os.path.join('.', 'ssl_certificates', 'api.crt')
+		'verify': os.path.join('..', 'webserver', 'ssl_certificates', 'api.crt')
 	}
 
 
@@ -124,7 +124,7 @@ def is_time_between(begin_time, end_time, check_time=None):
 		return check_time >= begin_time or check_time <= end_time
 
 
-num_container = [2]
+num_container = [1, 2, 3, 4, 5, 6, 7, 8, 9]
 
 with open('./test_config.json', 'r') as file:
 	config_dict = json.load(file)
