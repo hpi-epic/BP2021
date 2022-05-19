@@ -170,5 +170,7 @@ while True:
 			logging.info('done working')
 		print(f'Not working, it is {datetime.datetime.now().time()}')
 		first_time = True
-	print(send_get_request('logs', running_container[0]))
+	print('*', running_container)
+	if running_container:
+		print(send_get_request('logs', running_container[0]))
 	time.sleep(305)
