@@ -139,13 +139,18 @@ while True:
 			logging.info('started working')
 			first_time = False
 		if last_container_are_stopped:
+			print(f'sending post request for {index % len(num_container)} container.')
 			response = send_post_request('start', config_dict, {'num_experiments': num_container[index % len(num_container)]})
+			print(f'got response, and response is: {response is not None}')
 			if response:
 				for _, c in response.items():
+					print(c['id'])
 					running_container += [c['id']]
 			last_container_are_stopped = False
+			print('------------------')
 		else:
 			stati = []
+			print('checking status for container')
 			for c in running_container:
 				response = send_get_request('health', c)
 				stati += [response['status']]
@@ -153,6 +158,7 @@ while True:
 				print('some container are still running')
 			else:
 				# all are exited, we can start over
+				print('stopping container')
 				for c in running_container:
 					response = stop_container(c)
 					if not response:
@@ -160,5 +166,8 @@ while True:
 				last_container_are_stopped = True
 				index += 1
 	else:
+		if not first_time:
+			logging.info('done working')
+		print(f'Not working, it is {datetime.datetime.now().time()}')
 		first_time = True
 	time.sleep(305)
