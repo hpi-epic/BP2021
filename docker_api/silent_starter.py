@@ -74,7 +74,7 @@ def send_post_request(route: str, body: dict, params: dict):
 		return None
 	if response.ok:
 		return response.json()
-	logging.info('API response not okay')
+	logging.info(f'API response not okay {response}')
 	return None
 
 
@@ -89,7 +89,7 @@ def stop_container(container_id: str):
 		APIResponse: Response from the API converted into our special format.
 	"""
 	response = send_get_request('remove', container_id)
-	if response.ok() or response.not_found():
+	if response:
 		return True
 	return False
 
@@ -112,7 +112,7 @@ def send_get_request(wanted_action: str, container_id: str):
 		return None
 	if response.ok:
 		return response.json()
-	logging.info('The api response was not okay')
+	logging.info(f'The api response was not okay {response}')
 	return None
 
 
@@ -153,7 +153,8 @@ while True:
 			print('checking status for container')
 			for c in running_container:
 				response = send_get_request('health', c)
-				stati += [response['status']]
+				if response:
+					stati += [response['status']]
 			if any('running' in status for status in stati):
 				print('some container are still running')
 			else:
