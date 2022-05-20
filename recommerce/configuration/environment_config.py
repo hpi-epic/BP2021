@@ -311,7 +311,7 @@ class ExampleprinterEnvironmentConfig(EnvironmentConfig):
 		agent (Agent subclass): A subclass of Agent, the agent for which the exampleprinter should be run.
 	"""
 	def _validate_config(self, config: dict) -> None:
-		super(ExampleprinterEnvironmentConfig, self)._validate_config(config, single_agent=True, needs_modelfile=True)
+		super(ExampleprinterEnvironmentConfig, self)._validate_config(config, single_agent=False, needs_modelfile=True)
 		# Since we only have one agent, we extract it from the provided list
 		self.agent = self.agent[0]
 
