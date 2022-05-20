@@ -169,6 +169,24 @@ while True:
 	else:
 		if not first_time:
 			logging.info('done working')
+		if not last_container_are_stopped:
+			stati = []
+			print('checking status for container')
+			for c in running_container:
+				response = send_get_request('health', c)
+				if response:
+					stati += [response['status']]
+			if any('running' in status for status in stati):
+				print('some container are still running')
+			else:
+				# all are exited, we can start over
+				print('stopping container')
+				for c in running_container:
+					response = stop_container(c)
+					if not response:
+						logging.warn(f'Could not stop container {c}')
+				last_container_are_stopped = True
+				index += 1
 		print(f'Not working, it is {datetime.datetime.now().time()}')
 		first_time = True
 	time.sleep(305)
