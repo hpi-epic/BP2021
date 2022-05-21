@@ -224,7 +224,7 @@ class ContainerDB:
 		# figure out if value already exists
 		previous_value = self._select_value(key_to_update, container_id, table_name)
 		if should_append:
-			new_value = ';'.join([previous_value, str(value_to_update)]) if previous_value else value_to_update
+			new_value = ','.join([previous_value, str(value_to_update)]) if previous_value else value_to_update
 		elif previous_value:
 			# we are not supposed to append the new value and there is already an existing value
 			return

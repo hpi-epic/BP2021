@@ -10,7 +10,7 @@ from utils import setup_logging
 
 DOCKER_API = 'https://vm-midea03.eaalab.hpi.uni-potsdam.de:8000'  # remember to include the port and the protocol, i.e. http://
 
-setup_logging('silent_starter')
+setup_logging('silent_starter', logging.INFO)
 
 
 def _get_api_token() -> str:
@@ -124,7 +124,7 @@ def is_time_between(begin_time, end_time, check_time=None):
 		return check_time >= begin_time or check_time <= end_time
 
 
-num_container = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+num_container = list(range(1, 31))
 
 with open('./test_config.json', 'r') as file:
 	config_dict = json.load(file)
@@ -134,7 +134,7 @@ last_container_are_stopped = True
 running_container = []
 first_time = True
 while True:
-	if is_time_between(datetime.time(8, 0), datetime.time(14, 0)):
+	if is_time_between(datetime.time(18, 0), datetime.time(9, 0)):
 		if first_time:
 			logging.info('started working')
 			first_time = False
@@ -163,7 +163,7 @@ while True:
 				for c in running_container:
 					response = stop_container(c)
 					if not response:
-						logging.warn(f'Could not stop container {c}')
+						logging.info(f'Could not stop container {c}')
 				last_container_are_stopped = True
 				index += 1
 	else:
@@ -184,7 +184,7 @@ while True:
 				for c in running_container:
 					response = stop_container(c)
 					if not response:
-						logging.warn(f'Could not stop container {c}')
+						logging.info(f'Could not stop container {c}')
 				last_container_are_stopped = True
 				index += 1
 		print(f'Not working, it is {datetime.datetime.now().time()}')
