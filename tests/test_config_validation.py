@@ -155,6 +155,9 @@ mixed_configs = [
 @pytest.mark.parametrize('config', mixed_configs)
 def test_validate_config_valid_not_final(config):
 	validate_status, validate_data = config_validation.validate_config(config, False)
+	print(validate_status)
+	print(validate_data)
+	print(config)
 	assert validate_status, f'Test failed with error: {validate_data} on config: {config}'
 
 

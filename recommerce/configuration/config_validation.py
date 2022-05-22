@@ -124,7 +124,8 @@ def check_config_types(hyperparameter_config: dict, environment_config: dict, mu
 		AssertionError: If one of the values has the wrong type.
 	"""
 	# check types for hyperparameter_config
-	HyperparameterConfigValidator.check_types(hyperparameter_config, 'top-dict', must_contain)
+	# @NikkelM Why was this here?
+	# HyperparameterConfigValidator.check_types(hyperparameter_config, 'top-dict', must_contain)
 	if 'rl' in hyperparameter_config:
 		HyperparameterConfigValidator.check_types(hyperparameter_config['rl'], 'rl', must_contain)
 	if 'sim_market' in hyperparameter_config:
