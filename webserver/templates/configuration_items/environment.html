@@ -67,12 +67,12 @@
                     marketplace
                 </div>
                 <div class="col-6">
-                    <select class="form-select {% if error_dict.task %} bc-error-field {% endif %}" name="environment-marketplace">
+                    <select class="form-select marketplace-selection {% if error_dict.task %} bc-error-field {% endif %}" name="environment-marketplace" data-url="/marketplace_changed">
                         {% include "configuration_items/selection_list.html" with prefill_value=prefill.marketplace selections=selections.marketplaces %}
                     </select>
                 </div>
             </div>
-            {% include "configuration_items/agents.html" with prefill=prefill.agents error_dict=error_dict.agents%}
+            {% include "configuration_items/agents.html" with prefill=prefill.agents error_dict=error_dict.agents agent_selections=selections.agents%}
         </div>
     </div>
 </div>

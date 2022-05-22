@@ -5,16 +5,16 @@ import numpy as np
 from attrdict import AttrDict
 
 from recommerce.configuration.path_manager import PathManager
-from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPriceDuopoly, CircularEconomyRebuyPriceVariableDuopoly
+from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPriceDuopoly
 from recommerce.rl.stable_baselines.stable_baselines_model import StableBaselinesPPO, StableBaselinesSAC
 
 
 def train_rl_vs_rl(config_market: AttrDict, config_rl: AttrDict, num_switches: int = 30, num_steps_per_switch: int = 25000):
 	tmp_marketplace = CircularEconomyRebuyPriceDuopoly(config_market, True)
 	agent1 = StableBaselinesPPO(config_market=config_market, config_rl=config_rl, marketplace=tmp_marketplace)
-	marketplace_for_agent2 = CircularEconomyRebuyPriceVariableDuopoly(config=config_market, constant_agent=agent1)
+	marketplace_for_agent2 = CircularEconomyRebuyPriceDuopoly(config=config_market, constant_agent=agent1, competitors=[agent1])
 	agent2 = StableBaselinesSAC(config_market=config_market, config_rl=config_rl, marketplace=marketplace_for_agent2)
-	marketplace_for_agent1 = CircularEconomyRebuyPriceVariableDuopoly(config=config_market, constant_agent=agent2)
+	marketplace_for_agent1 = CircularEconomyRebuyPriceDuopoly(config=config_market, constant_agent=agent2, competitors=[agent2])
 	agent1.set_marketplace(marketplace_for_agent1)
 	agents = [agent1, agent2]
 	assert len(agents) == 2, 'This scenario is only for exactly two agents.'

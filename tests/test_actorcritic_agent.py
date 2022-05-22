@@ -13,7 +13,7 @@ config_rl: AttrDict = HyperparameterConfigLoader.load('rl_config')
 
 abstract_agent_classes_testcases = [
 	actorcritic_agent.ActorCriticAgent,
-	actorcritic_agent.ContinuosActorCriticAgent
+	actorcritic_agent.ContinuousActorCriticAgent
 ]
 
 
@@ -77,8 +77,8 @@ def test_std_estimating_agents_initializes_networks_correct(market_class):
 
 agent_initialization_testcases = [
 	actorcritic_agent.DiscreteActorCriticAgent,
-	actorcritic_agent.ContinuosActorCriticAgentFixedOneStd,
-	actorcritic_agent.ContinuosActorCriticAgentFixedOneStd
+	actorcritic_agent.ContinuousActorCriticAgentFixedOneStd,
+	actorcritic_agent.ContinuousActorCriticAgentFixedOneStd
 ]
 
 

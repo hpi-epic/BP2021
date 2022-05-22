@@ -77,7 +77,7 @@ class Monitor():
 		return [watcher.get_cumulative_properties() for watcher in watchers]
 
 
-def run_monitoring_session(monitor: Monitor = Monitor()) -> None:
+def run_monitoring_session(monitor: Monitor) -> None:
 	"""
 	Run a monitoring session with a configured Monitor() and display and save metrics.
 

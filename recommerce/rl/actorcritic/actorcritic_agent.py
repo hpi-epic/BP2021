@@ -29,7 +29,7 @@ class ActorCriticAgent(ReinforcementLearningAgent, ABC):
 		assert isinstance(marketplace, SimMarket), f'marketplace must be a SimMarket, but is {type(marketplace)}'
 
 		n_observations = marketplace.get_observations_dimension()
-		network_output_size = marketplace.get_actions_dimension() if isinstance(self, ContinuosActorCriticAgent) else marketplace.get_n_actions()
+		network_output_size = marketplace.get_actions_dimension() if isinstance(self, ContinuousActorCriticAgent) else marketplace.get_n_actions()
 		if isinstance(self, DiscreteActorCriticAgent):
 			self.actions_dimension = marketplace.get_actions_dimension()
 		self.config_market = config_market
@@ -194,16 +194,16 @@ class DiscreteActorCriticAgent(ActorCriticAgent, LinearAgent, CircularAgent):
 		return tuple(action_list)
 
 
-class ContinuosActorCriticAgent(ActorCriticAgent, LinearAgent, CircularAgent):
+class ContinuousActorCriticAgent(ActorCriticAgent, LinearAgent, CircularAgent):
 	"""
-	This is an actor critic agent with continuos action space.
+	This is an actor critic agent with continuous action space.
 	It's distribution is a normal distribution parameterized by mean and standard deviation.
 	It works on any sort of market we have so far, just the number of action values must be given.
 	Note that this class is abstract.
 	You must use one of its subclasses.
 	"""
 	softplus = torch.nn.Softplus()
-	name = 'ContinuosActorCriticAgent'
+	name = 'ContinuousActorCriticAgent'
 
 	def initialize_models_and_optimizer(self, n_observations, network_output_size, network_architecture):
 		self.actor_net = network_architecture(n_observations, network_output_size).to(self.device)
@@ -273,7 +273,7 @@ class ContinuosActorCriticAgent(ActorCriticAgent, LinearAgent, CircularAgent):
 		return action.tolist()
 
 
-class ContinuosActorCriticAgentFixedOneStd(ContinuosActorCriticAgent):
+class ContinuousActorCriticAgentFixedOneStd(ContinuousActorCriticAgent):
 	def transform_network_output(self, number_outputs, network_result):
 		"""
 		This implementation of transform_network_output uses the full output as mean.
@@ -292,7 +292,7 @@ class ContinuosActorCriticAgentFixedOneStd(ContinuosActorCriticAgent):
 		return network_result, torch.ones(network_result.shape).to(self.device)
 
 
-class ContinuosActorCriticAgentEstimatingStd(ContinuosActorCriticAgent):
+class ContinuousActorCriticAgentEstimatingStd(ContinuousActorCriticAgent):
 	def initialize_models_and_optimizer(self, n_observations, n_actions, network_architecture):
 		super().initialize_models_and_optimizer(n_observations, 2 * n_actions, network_architecture)
 

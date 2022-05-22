@@ -10,7 +10,7 @@ import recommerce.market.linear.linear_sim_market as linear_market
 from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader
 from recommerce.market.linear.linear_vendors import FixedPriceLEAgent
 from recommerce.monitoring.exampleprinter import ExamplePrinter
-from recommerce.rl.actorcritic.actorcritic_agent import ContinuosActorCriticAgentFixedOneStd, DiscreteActorCriticAgent
+from recommerce.rl.actorcritic.actorcritic_agent import ContinuousActorCriticAgentFixedOneStd, DiscreteActorCriticAgent
 from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
 
 # The load path for the agent modelfiles
@@ -67,8 +67,8 @@ full_episode_testcases_rl_agent = [
 		'CircularEconomyRebuyPriceMonopoly_QLearningAgent.dat'),
 	(circular_market.CircularEconomyRebuyPriceDuopoly(config=config_market), QLearningAgent,
 		'CircularEconomyRebuyPriceDuopoly_QLearningAgent.dat'),
-	(circular_market.CircularEconomyRebuyPriceDuopoly(config=config_market), ContinuosActorCriticAgentFixedOneStd,
-		'actor_parametersCircularEconomyRebuyPriceDuopoly_ContinuosActorCriticAgentFixedOneStd.dat'),
+	(circular_market.CircularEconomyRebuyPriceDuopoly(config=config_market), ContinuousActorCriticAgentFixedOneStd,
+		'actor_parametersCircularEconomyRebuyPriceDuopoly_ContinuousActorCriticAgentFixedOneStd.dat'),
 	(circular_market.CircularEconomyRebuyPriceDuopoly(config=config_market), DiscreteActorCriticAgent,
 		'actor_parametersCircularEconomyRebuyPriceDuopoly_DiscreteACACircularEconomyRebuy.dat')
 ]

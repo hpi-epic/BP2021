@@ -159,9 +159,9 @@ def random_offer_circular_oligopoly(is_rebuy_economy: bool):
 
 
 policy_plus_one_testcases = [
-	(linear_vendors.CompetitorLinearRatio1, random_offer_linear_duopoly()),
-	(linear_vendors.CompetitorRandom, random_offer_linear_duopoly()),
-	(linear_vendors.CompetitorJust2Players, random_offer_linear_duopoly())
+	(linear_vendors.LinearRatio1LEAgent, random_offer_linear_duopoly()),
+	(linear_vendors.LERandomAgent, random_offer_linear_duopoly()),
+	(linear_vendors.Just2PlayersLEAgent, random_offer_linear_duopoly())
 ]
 
 

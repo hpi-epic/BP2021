@@ -13,7 +13,6 @@ from tqdm.auto import trange
 
 import recommerce.configuration.utils as ut
 from recommerce.configuration.path_manager import PathManager
-from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPriceDuopoly, CircularEconomyRebuyPriceVariableDuopoly
 from recommerce.market.sim_market import SimMarket
 from recommerce.monitoring.agent_monitoring.am_evaluation import Evaluator
 from recommerce.monitoring.agent_monitoring.am_monitoring import Monitor
@@ -189,13 +188,12 @@ class RecommerceCallback(BaseCallback):
 
 		if self.analyze_after_training:
 			agent_list = [(self.agent_class, [parameter_path]) for parameter_path in self.saved_parameter_paths]
-			# The next line is a bit hacky. We have to provide if the marketplace is continuos or not.
+			# The next line is a bit hacky. We have to provide if the marketplace is continuous or not.
 			# Only Stable Baselines agents use continuous actions at the moment. And only Stable Baselines agents have the attribute env.
 			# The correct way of doing this would be by checking for `isinstance(StableBaselinesAgent)`, but that would result in a circular import.
 			monitor.configurator.setup_monitoring(
 				False, 250, 250,
-				(CircularEconomyRebuyPriceDuopoly if issubclass(self.marketplace_class, CircularEconomyRebuyPriceVariableDuopoly)
-					else self.marketplace_class),
+				self.marketplace_class,
 				agent_list,
 				support_continuous_action_space=hasattr(self.model, 'env'),
 				config_market=self.config_market)
