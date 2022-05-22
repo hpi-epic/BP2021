@@ -531,7 +531,6 @@ class DockerManager():
 		os.makedirs('configuration_files', exist_ok=True)
 
 		# write dict to json
-		# test
 		with open(os.path.join('configuration_files', 'market_config.json'), 'w') as config_json:
 			config_json.write(json.dumps(config_dict['market']))
 		with open(os.path.join('configuration_files', 'rl_config.json'), 'w') as config_json:
