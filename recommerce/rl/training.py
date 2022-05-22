@@ -29,14 +29,22 @@ class RLTrainer(ABC):
 		self.agent_class = agent_class
 		self.competitors = competitors
 		self.config_market = config_market
-		self.config_r = config_rl
+		self.config_rl = config_rl
 		assert self.trainer_agent_fit()
 
 	def initialize_callback(self, training_steps):
 		# This marketplace gets returned
-		marketplace = self.marketplace_class(config_market=self.config_market, competitors=self.competitors)
-		agent = self.agent_class(marketplace=marketplace, config_market=self.config_market, config_rl=self.config_r)
-		self.callback = RecommerceCallback(self.agent_class, self.marketplace_class, self.config, training_steps, 500, 'dat', agent.name)
+		marketplace = self.marketplace_class(config=self.config_market, competitors=self.competitors)
+		agent = self.agent_class(marketplace=marketplace, config_market=self.config_market, config_rl=self.config_rl)
+		self.callback = RecommerceCallback(
+			self.agent_class,
+			self.marketplace_class,
+			self.config_market,
+			self.config_rl,
+			training_steps,
+			500,
+			'dat',
+			agent.name)
 		self.callback.model = agent
 		return marketplace
 
