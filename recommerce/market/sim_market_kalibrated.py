@@ -81,8 +81,8 @@ class SimMarketKalibrated(CircularEconomyRebuyPriceDuopoly):
 		xb = torch.zeros(25)
 		xb[1] = prv[1] - prv[12] + prv[13]  # agent inventory (after the previous step)
 
-		xb[2] = self.comp_prices(self.M4, self.M4x, self.by4, self.bxy4, 'used', xb, prv)  # comp price new 		(old)
-		xb[3] = self.comp_prices(self.M5, self.M5x, self.by5, self.bxy5, 'new', xb, prv)  # comp price used 	(old)
+		xb[2] = self.comp_prices(self.M4, self.M4x, self.by4, self.bxy4, 'used', xb, prv)  # comp price used 	(old)
+		xb[3] = self.comp_prices(self.M5, self.M5x, self.by5, self.bxy5, 'new', xb, prv)  # comp price new 	(old)
 		xb[4] = self.comp_prices(self.M6, self.M6x, self.by6, self.bxy6, 'rebuy', xb, prv)  # comp price rebuy 	(old)
 
 		xb[5] = prv[5] - prv[16] + prv[17]  # comp inventory (after the previous step)
@@ -102,9 +102,9 @@ class SimMarketKalibrated(CircularEconomyRebuyPriceDuopoly):
 		xb[9] = float(agent_action[2])  # agent price rebuy
 
 		xb[10] = xb[1] * 0.05  # agent holding cost
-		xb[22] = self.comp_prices(self.M4, self.M4x, self.by4, self.bxy4, 'used', xb, xb)  # comp price new 		(updated)
-		xb[23] = self.comp_prices(self.M5, self.M5x, self.by5, self.bxy5, 'new', xb, xb)  # comp price used 	(updated)
-		xb[24] = self.comp_prices(self.M6, self.M6x, self.by6, self.bxy6, 'rebuy', xb, xb)  # comp price rebuy 	(updated)
+		xb[22] = self.comp_prices(self.M4, self.M4x, self.by4, self.bxy4, 'used', xb, xb)  # comp price used (updated)
+		xb[23] = self.comp_prices(self.M5, self.M5x, self.by5, self.bxy5, 'new', xb, xb)  # comp price new (updated)
+		xb[24] = self.comp_prices(self.M6, self.M6x, self.by6, self.bxy6, 'rebuy', xb, xb)  # comp price rebuy (updated)
 
 		# xb[11,i]= np.round_(max(0, np.random.uniform(-5,5) + sum{k in self.Ma} self.b1[k]*xb[k,i]))
 
@@ -133,7 +133,7 @@ class SimMarketKalibrated(CircularEconomyRebuyPriceDuopoly):
 			+ self.by1[9] * xb[9]
 		))  # cf self.Ma # competitor sales used
 
-		xb[16] = np.round_(min(xb[5],  max(0,  # np.random.uniform(-5, 5)
+		xb[16] = np.round_(min(xb[5], max(0,  # np.random.uniform(-5, 5)
 			+ self.by2[0] * xb[5]
 			+ self.by2[1] * prv[7]
 			+ self.by2[2] * prv[8]

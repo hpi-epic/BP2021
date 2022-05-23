@@ -149,7 +149,7 @@ class PredictableDatagenerator(PredictableMarketRebuyPriceDuopoly):
 
 		self.cumulated_states = np.hstack((self.cumulated_states, np.round(x, 3)))
 		# print('episode_counter: ', self.episode_counter)
-		if self.episode_counter == 100:
+		if self.episode_counter == 10000:
 			save_path = f'{PathManager.data_path}/kalibration_data/training_data_predictable.csv'
 			df = pd.DataFrame(self.cumulated_states)
 			print(df.head())
