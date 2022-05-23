@@ -103,21 +103,21 @@ class PredictableDatagenerator(PredictableMarketRebuyPriceDuopoly):
 		assert float(output_dict['state/in_storage']['vendor_0']).is_integer()
 		x[1, 0] = int(output_dict['state/in_storage']['vendor_0'])  # agent inventory
 		if i == 1:
-			x[2, 0] = self.cumulated_states[22, 0]  # comp price new (old)
-			x[3, 0] = self.cumulated_states[23, 0]   # comp price used (old)
+			x[2, 0] = self.cumulated_states[22, 0]  # comp price used (old)
+			x[3, 0] = self.cumulated_states[23, 0]   # comp price new (old)
 			x[4, 0] = self.cumulated_states[24, 0]   # comp price rebuy (old)
 		else:
 
-			x[3, 0] = self.cumulated_states[22, i-1]   # comp price used (old)
-			x[2, 0] = self.cumulated_states[23, i-1]  # comp price new (old)
+			x[2, 0] = self.cumulated_states[22, i-1]   # comp price used (old)
+			x[3, 0] = self.cumulated_states[23, i-1]  # comp price new (old)
 			x[4, 0] = self.cumulated_states[24, i-1]   # comp price rebuy (old)
 
 		x[5, 0] = output_dict['state/in_storage']['vendor_1']  # comp inventory
 		assert float(output_dict['state/in_circulation']).is_integer()
 		x[6, 0] = int(output_dict['state/in_circulation'])  # resource in use
 
-		x[7, 0] = output_dict['actions/price_refurbished']['vendor_0']  # agent price new
-		x[8, 0] = output_dict['actions/price_new']['vendor_0']  # agent price used
+		x[7, 0] = output_dict['actions/price_refurbished']['vendor_0']  # agent price used
+		x[8, 0] = output_dict['actions/price_new']['vendor_0']  # agent price new
 		x[9, 0] = output_dict['actions/price_rebuy']['vendor_0']  # agent price rebuy
 
 		x[10, 0] = output_dict['profits/storage_cost']['vendor_0']  # agent storage cost
@@ -149,8 +149,10 @@ class PredictableDatagenerator(PredictableMarketRebuyPriceDuopoly):
 
 		self.cumulated_states = np.hstack((self.cumulated_states, np.round(x, 3)))
 		# print('episode_counter: ', self.episode_counter)
-		if self.episode_counter == 10000:
+		if self.episode_counter == 100:
 			save_path = f'{PathManager.data_path}/kalibration_data/training_data_predictable.csv'
-			pd.DataFrame(self.cumulated_states).to_csv(save_path, index=False)
+			df = pd.DataFrame(self.cumulated_states)
+			print(df.head())
+			df.to_csv(save_path, index=False)
 			print(f'data saved to {save_path}')
 			exit(0)

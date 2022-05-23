@@ -41,9 +41,9 @@ class SimMarketKalibrated(CircularEconomyRebuyPriceDuopoly):
 
 	def comp_prices(self, Mi, Mix, bi, bix, flag: str, xb, state_to_get_parameters_from):
 		xb_index = -1
-		if flag == 'new':
+		if flag == 'used':
 			xb_index = 7
-		elif flag == 'used':
+		elif flag == 'new':
 			xb_index = 8
 		elif flag == 'rebuy':
 			xb_index = 9
@@ -71,7 +71,7 @@ class SimMarketKalibrated(CircularEconomyRebuyPriceDuopoly):
 		return np.array([30, 20, 5, 5, 5, 20])
 
 	def step(self, agent_action) -> Tuple[np.array, np.float32, bool, dict]:
-		prev = self.previous_state
+		prv = self.previous_state
 		if isinstance(agent_action, np.ndarray):
 			agent_action = np.array(agent_action, dtype=np.float32)
 
@@ -79,16 +79,16 @@ class SimMarketKalibrated(CircularEconomyRebuyPriceDuopoly):
 
 		# xb = torch.tensor([[(1. if k-1 == 0 else 5. if i == 0 else -1.) for k in range(0, 25)] for i in range(0, NB)]).transpose(0, 1)
 		xb = torch.zeros(25)
-		xb[1] = prev[1] - prev[12] + prev[13]  # agent inventory (after the previous step)
+		xb[1] = prv[1] - prv[12] + prv[13]  # agent inventory (after the previous step)
 
-		xb[2] = self.comp_prices(self.M4, self.M4x, self.by4, self.bxy4, 'new', xb, prev)  # comp price new 		(old)
-		xb[3] = self.comp_prices(self.M5, self.M5x, self.by5, self.bxy5, 'used', xb, prev)  # comp price used 	(old)
-		xb[4] = self.comp_prices(self.M6, self.M6x, self.by6, self.bxy6, 'rebuy', xb, prev)  # comp price rebuy 	(old)
+		xb[2] = self.comp_prices(self.M4, self.M4x, self.by4, self.bxy4, 'used', xb, prv)  # comp price new 		(old)
+		xb[3] = self.comp_prices(self.M5, self.M5x, self.by5, self.bxy5, 'new', xb, prv)  # comp price used 	(old)
+		xb[4] = self.comp_prices(self.M6, self.M6x, self.by6, self.bxy6, 'rebuy', xb, prv)  # comp price rebuy 	(old)
 
-		xb[5] = prev[5] - prev[16] + prev[17]  # comp inventory (after the previous step)
+		xb[5] = prv[5] - prv[16] + prv[17]  # comp inventory (after the previous step)
 
-		xb[6] = max(0, np.round_(0.8*prev[6]) + prev[11] + prev[12] - prev[13]
-			+ prev[15] + prev[16] - prev[17])  # resources in use (after the previous step)
+		xb[6] = max(0, np.round_(0.8*prv[6]) + prv[11] + prv[12] - prv[13]
+			+ prv[15] + prv[16] - prv[17])  # resources in use (after the previous step)
 
 		# TODO: check if there is a logic behind this
 		# let xb[7,i] := if 9<xb[2,i]<=18 then xb[2,i]-1  +round(x[1,i]/200) else 18;
@@ -97,13 +97,13 @@ class SimMarketKalibrated(CircularEconomyRebuyPriceDuopoly):
 		# xb[7] = xb[2] - 1 + np.round_(x[1]/200) if 9 < xb[2] <= 18 else 18  # agent price new
 		# xb[8] = xb[3] - 1 + np.round_(x[1]/200) if 5 < xb[3] <= 12 else 12  # agent price used
 		# xb[9] = xb[4] - 0.5 - np.round_(x[1]/200) if 1 < xb[4] <= 5 else 5    # agent price rebuy
-		xb[7] = float(agent_action[1])  # agent price new
-		xb[8] = float(agent_action[0])  # agent price used
+		xb[7] = float(agent_action[0])  # agent price refurbushed
+		xb[8] = float(agent_action[1])  # agent price new
 		xb[9] = float(agent_action[2])  # agent price rebuy
 
 		xb[10] = xb[1] * 0.05  # agent holding cost
-		xb[22] = self.comp_prices(self.M4, self.M4x, self.by4, self.bxy4, 'new', xb, xb)  # comp price new 		(updated)
-		xb[23] = self.comp_prices(self.M5, self.M5x, self.by5, self.bxy5, 'used', xb, xb)  # comp price used 	(updated)
+		xb[22] = self.comp_prices(self.M4, self.M4x, self.by4, self.bxy4, 'used', xb, xb)  # comp price new 		(updated)
+		xb[23] = self.comp_prices(self.M5, self.M5x, self.by5, self.bxy5, 'new', xb, xb)  # comp price used 	(updated)
 		xb[24] = self.comp_prices(self.M6, self.M6x, self.by6, self.bxy6, 'rebuy', xb, xb)  # comp price rebuy 	(updated)
 
 		# xb[11,i]= np.round_(max(0, np.random.uniform(-5,5) + sum{k in self.Ma} self.b1[k]*xb[k,i]))
@@ -121,20 +121,41 @@ class SimMarketKalibrated(CircularEconomyRebuyPriceDuopoly):
 		xb[14] = xb[5]*0.05  # comp holding cost
 		# TODO: refactor these into loops or something more beautiful
 		xb[15] = np.round_(max(0,  # np.random.uniform(-5, 5)
-			+ self.by1[0] * xb[0] + self.by1[1] * xb[5] + self.by1[2] * prev[7]
-			+ self.by1[3] * prev[8] + self.by1[4] * prev[9] + self.by1[5] * xb[2] + self.by1[6] * xb[3]
-			+ self.by1[7] * xb[4] + self.by1[8] * xb[7] + self.by1[9] * xb[8] + self.by1[10] * xb[9]))  # cf self.Ma # competitor sales new
+			+ self.by1[0] * xb[5]
+			+ self.by1[1] * prv[7]
+			+ self.by1[2] * prv[8]
+			+ self.by1[3] * prv[9]
+			+ self.by1[4] * xb[2]
+			+ self.by1[5] * xb[3]
+			+ self.by1[6] * xb[4]
+			+ self.by1[7] * xb[7]
+			+ self.by1[8] * xb[8]
+			+ self.by1[9] * xb[9]
+		))  # cf self.Ma # competitor sales used
 
 		xb[16] = np.round_(min(xb[5],  max(0,  # np.random.uniform(-5, 5)
-			+ self.by2[0] * xb[0] + self.by2[1] * xb[5] + self.by2[2] * prev[7]
-			+ self.by2[3] * prev[8] + self.by2[4] * prev[9] + self.by2[5] * xb[2] + self.by2[6] * xb[3]
-			+ self.by2[7] * xb[4] + self.by2[8] * xb[7] + self.by2[9] * xb[8] + self.by2[10] * xb[9])))  # cf self.Ma # competitor sales used
+			+ self.by2[0] * xb[5]
+			+ self.by2[1] * prv[7]
+			+ self.by2[2] * prv[8]
+			+ self.by2[3] * prv[9]
+			+ self.by2[4] * xb[2]
+			+ self.by2[5] * xb[3]
+			+ self.by2[6] * xb[4]
+			+ self.by2[7] * xb[7]
+			+ self.by2[8] * xb[8]
+			+ self.by2[9] * xb[9])))  # cf self.Ma # competitor sales new
 
 		xb[17] = np.round_(min(xb[6] / 2, max(0,  # np.random.uniform(-5, 5)
-			+ self.by3[0] * xb[0] + self.by3[1] * xb[5] + self.by3[2] * prev[7]
-			+ self.by3[3] * prev[8] + self.by3[4] * prev[9] + self.by3[5] * xb[2] + self.by3[6] * xb[3]
-			+ self.by3[7] * xb[4] + self.by3[8] * xb[7]
-			+ self.by3[9] * xb[8] + self.by3[10] * xb[9])))  # cf self.Ma # competitor sales rebuy
+			+ self.by3[0] * xb[5]
+			+ self.by3[1] * prv[7]
+			+ self.by3[2] * prv[8]
+			+ self.by3[3] * prv[9]
+			+ self.by3[4] * xb[2]
+			+ self.by3[5] * xb[3]
+			+ self.by3[6] * xb[4]
+			+ self.by3[7] * xb[7]
+			+ self.by3[8] * xb[8]
+			+ self.by3[9] * xb[9])))  # cf self.Ma # competitor sales rebuy
 
 		# rewards
 
@@ -144,11 +165,11 @@ class SimMarketKalibrated(CircularEconomyRebuyPriceDuopoly):
 		# print(f'profit_new: {profit_new}, profit_used: {profit_used}, cost_rebuy: {cost_rebuy}')
 		xb[18] = -xb[10] + profit_new + profit_used - cost_rebuy  # agent	total rewards
 
-		xb[19] = -xb[14] + xb[15] * (xb[2] - self.cost_new_product) + xb[16] * xb[3] - xb[17] * xb[4]  # comp total rewards
+		xb[19] = -xb[14] + xb[15] * (xb[3] - self.cost_new_product) + xb[16] * xb[3] - xb[17] * xb[4]  # comp total rewards
 
 		# rewards cumulated
-		xb[20] = xb[18] + (prev[20] if prev is not None else 0)  # agent total accumulated rewards
-		xb[21] = xb[19] + (prev[21] if prev is not None else 0)  # comp total accumulated rewards
+		xb[20] = xb[18] + (prv[20] if prv is not None else 0)  # agent total accumulated rewards
+		xb[21] = xb[19] + (prv[21] if prv is not None else 0)  # comp total accumulated rewards
 		self.previous_state = xb
 		# (in_circulation, agent, storage, comp_used, comp_new, comp_rebuy, comp_storage)
 		agent_observation = np.array([int(xb[state_index]) for state_index in self.observable_state])
