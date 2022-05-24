@@ -61,11 +61,12 @@ class ContainerDBRow(DBRow):
 
 
 class SystemMonitorRow(DBRow):
-	def __init__(self, _time=None, _cpu=None, _ram=None, _io=None) -> None:
+	def __init__(self, _time=None, _cpu=None, _ram=None, _io=None, _gpu=None) -> None:
 		self.current_time = _time
 		self.cpu = _cpu
 		self.ram = _ram
 		self.io = _io
+		self.gpu = _gpu
 
 
 class ContainerDB:
@@ -148,8 +149,8 @@ class ContainerDB:
 			self._update_value('exit_status', status, container_id, self.data_table_name, should_append=False)
 			self._update_value('force_stop', False, container_id, self.data_table_name, should_append=False)
 
-	def update_system(self, cpu: list, ram, io):
-		row = SystemMonitorRow(datetime.now(), str(cpu), str(ram), str(io))
+	def update_system(self, cpu: list, ram, io, gpu):
+		row = SystemMonitorRow(datetime.now(), str(cpu), str(ram), str(io), str(gpu))
 		self._insert_into_database(row, self.system_table_name)
 
 	def _create_connection(self):
