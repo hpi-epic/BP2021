@@ -37,19 +37,22 @@ class SimMarketKalibrator:
 
 	def kalibrate_market(self, data, y1_index, y2_index, y3_index, y4_index, y5_index, y6_index):
 		self.N = len(data[0])
-		by1 = self.first_regression(data, self.M1, y1_index)
-		by2 = self.first_regression(data, self.M2, y2_index)
-		by3 = self.first_regression(data, self.M3, y3_index)
-		by4, bxy4 = self.fourth_regression(data, self.M4, self.M4x, y4_index, 'used')
-		by5, bxy5 = self.fourth_regression(data, self.M5, self.M5x, y5_index, 'new')
-		by6, bxy6 = self.fourth_regression(data, self.M6, self.M6x, y6_index, 'rebuy')
+		by1 = self.first_regression(data, self.M1, y1_index)  # used sales
+		by2 = self.first_regression(data, self.M2, y2_index)  # new sales
+		by3 = self.first_regression(data, self.M3, y3_index)  # rebuy sales
+		by4, bxy4 = self.fourth_regression(data, self.M4, self.M4x, y4_index, 'used')  # used price comp
+		by5, bxy5 = self.fourth_regression(data, self.M5, self.M5x, y5_index, 'new')  # new price comp
+		by6, bxy6 = self.fourth_regression(data, self.M6, self.M6x, y6_index, 'rebuy')  # rebuy price comp
 		print('b1:', by1)
 		print('b2:', by2)
 		print('b3:', by3)
+
 		print('b4:', by4)
 		print('bx4:', bxy4)
+
 		print('b5:', by5)
 		print('bx5:', bxy5)
+
 		print('b6:', by6)
 		print('bx6:', bxy6)
 		# exit()
@@ -79,13 +82,14 @@ class SimMarketKalibrator:
 		return b3
 
 	def fourth_regression(self, data, x_rows, xx_rows, y_index: int, flag: str):
+		# self.fourth_regression(data, self.M4, self.M4x, y4_index, 'used')
 		xb_first_index = -1
 		if flag == 'used':
-			xb_first_index = 7
+			xb_first_index = 22
 		elif flag == 'new':
-			xb_first_index = 8
+			xb_first_index = 23
 		elif flag == 'rebuy':
-			xb_first_index = 9
+			xb_first_index = 24
 		else:
 			assert False
 		x = data
@@ -179,18 +183,18 @@ if __name__ == '__main__':
 	data_frame = pd.read_csv(data_path)
 	data = torch.tensor(data_frame.values).transpose(0, 1)
 	M123 = (1, 2, 3, 4, 7, 8, 9, 22, 23, 24)
-	y1_index = 11
-	y2_index = 12
-	y3_index = 13
+	y1_index = 11  # sales used agent
+	y2_index = 12  # sales new agent
+	y3_index = 13  # sales rebuy agent #TODO:improve the data by adding  competitor sales as well, now competitor sells just like the agent
 	M4 = (2, 3, 4, 7, 8, 9)
 	M4x = (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20)
-	y4_index = 2
+	y4_index = 22
 	M5 = (2, 3, 4, 7, 8, 9)
 	M5x = (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20)
-	y5_index = 3
+	y5_index = 23
 	M6 = (2, 3, 4, 7, 8, 9)
 	M6x = (1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10)
-	y6_index = 4
+	y6_index = 24
 	config_hyperparameter = HyperparameterConfigLoader.load('hyperparameter_config')
 	kalibrator = SimMarketKalibrator(config_hyperparameter, M123, M123, M123, M4, M5, M6, M4x, M5x, M6x)
 	kalibrated_market: SimMarketKalibrated = kalibrator.kalibrate_market(data, y1_index, y2_index, y3_index, y4_index, y5_index, y6_index)

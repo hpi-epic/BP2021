@@ -72,8 +72,9 @@ class ExamplePrinter():
 		with torch.no_grad():
 			while not is_done:
 				action = self.agent.policy(state)
-				print('State:', state, 'actions of the agent:', action)
+				# print('State the agent bases its action on:', state, 'actions of the agent:', action)
 				state, reward, is_done, logdict = self.marketplace.step(action)
+				print('state after comp action:', state, 'action agent:', action)
 				if cumulative_dict is not None:
 					cumulative_dict = ut.add_content_of_two_dicts(cumulative_dict, logdict)
 				else:

@@ -87,8 +87,7 @@ class SimMarketKalibrated(CircularEconomyRebuyPriceDuopoly):
 
 		xb[5] = prv[5] - prv[16] + prv[17]  # comp inventory (after the previous step)
 
-		xb[6] = max(0, np.round_(0.8*prv[6]) + prv[11] + prv[12] - prv[13]
-			+ prv[15] + prv[16] - prv[17])  # resources in use (after the previous step)
+		xb[6] = max(0, np.round_(0.8 * prv[6]) + prv[12] - prv[13] + prv[16] - prv[17])  # resources in use (after the previous step)
 
 		# TODO: check if there is a logic behind this
 		# let xb[7,i] := if 9<xb[2,i]<=18 then xb[2,i]-1  +round(x[1,i]/200) else 18;
@@ -102,20 +101,21 @@ class SimMarketKalibrated(CircularEconomyRebuyPriceDuopoly):
 		xb[9] = float(agent_action[2])  # agent price rebuy
 
 		xb[10] = xb[1] * 0.05  # agent holding cost
+
 		xb[22] = self.comp_prices(self.M4, self.M4x, self.by4, self.bxy4, 'used', xb, xb)  # comp price used (updated)
 		xb[23] = self.comp_prices(self.M5, self.M5x, self.by5, self.bxy5, 'new', xb, xb)  # comp price new (updated)
 		xb[24] = self.comp_prices(self.M6, self.M6x, self.by6, self.bxy6, 'rebuy', xb, xb)  # comp price rebuy (updated)
 
 		# xb[11,i]= np.round_(max(0, np.random.uniform(-5,5) + sum{k in self.Ma} self.b1[k]*xb[k,i]))
 
-		xb[11] = np.round_(max(0,  # np.random.uniform(-5, 5)
-			+ sum([self.by1[ki] * xb[k] for ki, k in enumerate(self.M1)])))
-		# agent sales new
-		xb[12] = np.round_(min(xb[1], max(0,  # np.random.uniform(-5, 5)
-			+ sum([self.by2[ki] * xb[k] for ki, k in enumerate(self.M2)]))))
+		xb[11] = np.round_(max(0,  # np.random.uniform(-5, 5) +
+			sum([self.by1[ki] * xb[k] for ki, k in enumerate(self.M1)])))
 		# agent sales used
-		xb[13] = np.round_(min(xb[6] / 2, max(0,  # np.random.uniform(-5, 5)
-			+ sum([self.by3[ki] * xb[k] for ki, k in enumerate(self.M3)]))))
+		xb[12] = np.round_(min(xb[1], max(0,  # np.random.uniform(-5, 5) +
+			sum([self.by2[ki] * xb[k] for ki, k in enumerate(self.M2)]))))
+		# agent sales new
+		xb[13] = np.round_(min(xb[6] / 2, max(0,  # np.random.uniform(-5, 5) +
+			sum([self.by3[ki] * xb[k] for ki, k in enumerate(self.M3)]))))
 		# agent sales rebuy
 
 		xb[14] = xb[5]*0.05  # comp holding cost
@@ -131,7 +131,7 @@ class SimMarketKalibrated(CircularEconomyRebuyPriceDuopoly):
 			+ self.by1[7] * xb[7]
 			+ self.by1[8] * xb[8]
 			+ self.by1[9] * xb[9]
-		))  # cf self.Ma # competitor sales used
+		))  # cf self.Ma # competitor sales used ________________________________________________________________________________________
 
 		xb[16] = np.round_(min(xb[5], max(0,  # np.random.uniform(-5, 5)
 			+ self.by2[0] * xb[5]

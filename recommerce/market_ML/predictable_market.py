@@ -130,14 +130,14 @@ class PredictableDatagenerator(PredictableMarketRebuyPriceDuopoly):
 		x[23, 0] = int(output_dict['actions/price_new']['vendor_1'])  # comp price new (updated)
 		x[24, 0] = int(output_dict['actions/price_rebuy']['vendor_1'])  # comp price rebuy (updated)
 
-		x[11, 0] = output_dict['customer/purchases_new']['vendor_0']  # agent sales new
-		x[12, 0] = output_dict['customer/purchases_refurbished']['vendor_0']  # agent sales used
+		x[11, 0] = output_dict['customer/purchases_refurbished']['vendor_0']  # agent sales new
+		x[12, 0] = output_dict['customer/purchases_new']['vendor_0']  # agent sales used
 		x[13, 0] = output_dict['owner/rebuys']['vendor_0']  # agent sales rebuy
 
 		x[14, 0] = output_dict['profits/storage_cost']['vendor_1']  # comp holding cost
 
-		x[15, 0] = output_dict['customer/purchases_new']['vendor_1']  # comp sales new
-		x[16, 0] = output_dict['customer/purchases_refurbished']['vendor_1']  # comp sales used
+		x[15, 0] = output_dict['customer/purchases_refurbished']['vendor_1']  # comp sales new
+		x[16, 0] = output_dict['customer/purchases_new']['vendor_1']  # comp sales used
 		x[17, 0] = output_dict['owner/rebuys']['vendor_1']  # comp sales rebuy
 
 		x[18, 0] = output_dict['profits/all']['vendor_0']  # agent total reward
@@ -149,7 +149,7 @@ class PredictableDatagenerator(PredictableMarketRebuyPriceDuopoly):
 
 		self.cumulated_states = np.hstack((self.cumulated_states, np.round(x, 3)))
 		# print('episode_counter: ', self.episode_counter)
-		if self.episode_counter == 10000:
+		if self.episode_counter == 80000:
 			save_path = f'{PathManager.data_path}/kalibration_data/training_data_predictable.csv'
 			df = pd.DataFrame(self.cumulated_states)
 			print(df.head())
