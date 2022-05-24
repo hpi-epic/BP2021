@@ -1,12 +1,12 @@
 import logging
+import os
 import time
 from datetime import datetime, timedelta
 
 import psutil
 from container_db_manager import ContainerDB
 from docker_manager import DockerManager
-
-from docker_api.utils import setup_logging
+from utils import setup_logging
 
 manager = DockerManager()
 container_db = ContainerDB()
@@ -22,15 +22,7 @@ def get_system_information():
 	cpu = psutil.cpu_percent(percpu=True)
 	ram = psutil.virtual_memory()
 	io = psutil.disk_io_counters()
-	import nvidia_smi
-	nvidia_smi.nvmlInit()
-	deviceCount = nvidia_smi.nvmlDeviceGetCount()
-	for i in range(deviceCount):
-		handle = nvidia_smi.nvmlDeviceGetHandleByIndex(i)
-		info = nvidia_smi.nvmlDeviceGetMemoryInfo(handle)
-		print('Device {}: {}, Memory : ({:.2f}% free): {}(total), {} (free), {} (used)'.format(i, nvidia_smi.nvmlDeviceGetName(handle),
-			100*info.free/info.total, info.total, info.free, info.used))
-	nvidia_smi.nvmlShutdown()
+	print(os.system('nvidia-smi'))
 	gpu = ''
 	container_db.update_system(cpu, ram, io, gpu)
 	last_time = datetime.now()
