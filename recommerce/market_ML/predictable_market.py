@@ -6,6 +6,7 @@ import pandas as pd
 
 # import recommerce.market.circular.circular_vendors as circular_vendors
 from recommerce.configuration import utils as ut
+from recommerce.configuration.hyperparameter_config import HyperparameterConfig
 from recommerce.configuration.path_manager import PathManager
 from recommerce.market.circular.circular_customers import CustomerCircular
 from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPrice
@@ -17,6 +18,9 @@ from recommerce.market_ML.predictable_agent import PredictableCompetitor
 
 
 class PredictableMarketRebuyPriceDuopoly(CircularEconomyRebuyPrice):
+
+	def __init__(self, config: HyperparameterConfig, support_continuous_action_space: bool = True):
+		super(CircularEconomyRebuyPrice, self).__init__(config, True)
 
 	def _choose_customer(self):
 		return CustomerPredictable()
@@ -68,7 +72,7 @@ class CustomerPredictable(CustomerCircular):
 
 class PredictableDatagenerator(PredictableMarketRebuyPriceDuopoly):
 
-	def __init__(self, config, support_continuous_action_space: bool = False) -> None:
+	def __init__(self, config, support_continuous_action_space: bool = True) -> None:
 		super(PredictableMarketRebuyPriceDuopoly, self).__init__(config, support_continuous_action_space)
 		self.cumulated_states = np.array(np.zeros(25)).reshape(25, 1)
 		self.episode_counter = 0

@@ -12,7 +12,7 @@ import recommerce.market.circular.circular_sim_market as circular_market
 from recommerce.configuration.environment_config import EnvironmentConfigLoader, ExampleprinterEnvironmentConfig
 from recommerce.configuration.hyperparameter_config import HyperparameterConfig, HyperparameterConfigLoader
 from recommerce.configuration.path_manager import PathManager
-from recommerce.market.circular.circular_vendors import RuleBasedCERebuyAgent
+# from recommerce.market.circular.circular_vendors import RuleBasedCERebuyAgent
 from recommerce.market.sim_market import SimMarket
 from recommerce.market.vendors import Agent
 from recommerce.monitoring.svg_manipulation import SVGManipulator
@@ -24,8 +24,8 @@ class ExamplePrinter():
 	def __init__(self, config: HyperparameterConfig):
 		ut.ensure_results_folders_exist()
 		self.config = config
-		self.marketplace = circular_market.CircularEconomyRebuyPriceDuopoly(config=self.config)
-		self.agent = RuleBasedCERebuyAgent(config=self.config)
+		# self.marketplace = circular_market.CircularEconomyRebuyPriceDuopoly(config=self.config)
+		# self.agent = RuleBasedCERebuyAgent(config=self.config)
 		# Signal handler for e.g. KeyboardInterrupt
 		signal.signal(signal.SIGINT, self._signal_handler)
 

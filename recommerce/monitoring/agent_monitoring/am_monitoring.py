@@ -148,4 +148,4 @@ if __name__ == '__main__':  # pragma: no cover
 	# Make sure a valid datapath is set
 	PathManager.manage_user_path()
 
-	monitor_predictable()
+	main()

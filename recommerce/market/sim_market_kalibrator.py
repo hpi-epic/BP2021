@@ -186,13 +186,13 @@ if __name__ == '__main__':
 	y1_index = 11  # sales used agent
 	y2_index = 12  # sales new agent
 	y3_index = 13  # sales rebuy agent #TODO:improve the data by adding  competitor sales as well, now competitor sells just like the agent
-	M4 = (2, 3, 4, 7, 8, 9)
+	M4 = (1, 2, 3, 4, 7, 8, 9)
 	M4x = (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20)
 	y4_index = 22
-	M5 = (2, 3, 4, 7, 8, 9)
+	M5 = (1, 2, 3, 4, 7, 8, 9)
 	M5x = (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20)
 	y5_index = 23
-	M6 = (2, 3, 4, 7, 8, 9)
+	M6 = (1, 2, 3, 4, 7, 8, 9)
 	M6x = (1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10)
 	y6_index = 24
 	config_hyperparameter = HyperparameterConfigLoader.load('hyperparameter_config')
