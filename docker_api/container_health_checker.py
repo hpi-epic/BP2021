@@ -1,5 +1,5 @@
 import logging
-import os
+import subprocess
 import time
 from datetime import datetime, timedelta
 
@@ -22,8 +22,7 @@ def get_system_information():
 	cpu = psutil.cpu_percent(percpu=True)
 	ram = psutil.virtual_memory()
 	io = psutil.disk_io_counters()
-	print(os.system('nvidia-smi'))
-	gpu = ''
+	gpu = subprocess.check_output('nvidia-smi', shell=True)
 	container_db.update_system(cpu, ram, io, gpu)
 	last_time = datetime.now()
 
