@@ -24,7 +24,7 @@ def test_setup_exampleprinter():
 	printer = ExamplePrinter(config_market=config_market)
 	printer.setup_exampleprinter(
 		marketplace=linear_market.LinearEconomyDuopoly(config=config_market),
-		agent=FixedPriceLEAgent(config=config_market)
+		agent=FixedPriceLEAgent(config_market=config_market)
 		)
 	assert isinstance(printer.marketplace, linear_market.LinearEconomyDuopoly)
 	assert isinstance(printer.agent, FixedPriceLEAgent)
@@ -32,21 +32,21 @@ def test_setup_exampleprinter():
 
 full_episode_testcases_rule_based = [
 	(linear_market.LinearEconomyDuopoly(config=config_market),
-		FixedPriceLEAgent(config=config_market)),
+		FixedPriceLEAgent(config_market=config_market)),
 	(linear_market.LinearEconomyOligopoly(config=config_market),
-		FixedPriceLEAgent(config=config_market)),
+		FixedPriceLEAgent(config_market=config_market)),
 	(circular_market.CircularEconomyMonopoly(config=config_market),
-		circular_vendors.FixedPriceCEAgent(config=config_market)),
+		circular_vendors.FixedPriceCEAgent(config_market=config_market)),
 	(circular_market.CircularEconomyMonopoly(config=config_market),
-		circular_vendors.RuleBasedCEAgent(config=config_market)),
+		circular_vendors.RuleBasedCEAgent(config_market=config_market)),
 	(circular_market.CircularEconomyRebuyPriceMonopoly(config=config_market),
-		circular_vendors.FixedPriceCERebuyAgent(config=config_market)),
+		circular_vendors.FixedPriceCERebuyAgent(config_market=config_market)),
 	(circular_market.CircularEconomyRebuyPriceMonopoly(config=config_market),
-		circular_vendors.RuleBasedCERebuyAgent(config=config_market)),
+		circular_vendors.RuleBasedCERebuyAgent(config_market=config_market)),
 	(circular_market.CircularEconomyRebuyPriceDuopoly(config=config_market),
-		circular_vendors.FixedPriceCERebuyAgent(config=config_market)),
+		circular_vendors.FixedPriceCERebuyAgent(config_market=config_market)),
 	(circular_market.CircularEconomyRebuyPriceDuopoly(config=config_market),
-		circular_vendors.RuleBasedCERebuyAgent(config=config_market))
+		circular_vendors.RuleBasedCERebuyAgent(config_market=config_market))
 ]
 
 

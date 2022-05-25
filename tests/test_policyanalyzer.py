@@ -21,7 +21,7 @@ config_rl: AttrDict = HyperparameterConfigLoader.load('rl_config')
 
 
 def test_rule_based_linear_competitor1():
-	pa = PolicyAnalyzer(LinearRatio1LEAgent(config=config_market))
+	pa = PolicyAnalyzer(LinearRatio1LEAgent(config_market=config_market))
 	given_path = pa.analyze_policy(np.array([15, -1, 10]), [(1, 'competitor price', range(1, 11))])
 	expected_path = os.path.join(write_to_path, 'add_a_title_here.png')
 	assert expected_path in given_path
@@ -31,7 +31,7 @@ def test_rule_based_linear_competitor1():
 
 @pytest.mark.slow
 def test_rule_based_linear_competitor2():
-	pa = PolicyAnalyzer(LinearRatio1LEAgent(config=config_market))
+	pa = PolicyAnalyzer(LinearRatio1LEAgent(config_market=config_market))
 	given_path = pa.analyze_policy(
 		np.array([-1, -1, 10]),
 		[(0, 'own quality', range(5, 20)), (1, 'competitor price', range(1, 11))],
@@ -45,7 +45,7 @@ def test_rule_based_linear_competitor2():
 
 @pytest.mark.slow
 def test_rule_based_circular_competitor1():
-	pa = PolicyAnalyzer(RuleBasedCERebuyAgent(config=config_market))
+	pa = PolicyAnalyzer(RuleBasedCERebuyAgent(config_market=config_market))
 	given_path = pa.analyze_policy(np.array([50, -1]), [(1, 'self storage stock', range(30))], 'refurbished price only on storage', 0)
 	expected_path = os.path.join(write_to_path, 'refurbished_price_only_on_storage.png')
 	assert expected_path in given_path
@@ -55,7 +55,7 @@ def test_rule_based_circular_competitor1():
 
 @pytest.mark.slow
 def test_rule_based_circular_competitor2():
-	pa = PolicyAnalyzer(RuleBasedCERebuyAgent(config=config_market))
+	pa = PolicyAnalyzer(RuleBasedCERebuyAgent(config_market=config_market))
 	given_path = pa.analyze_policy(
 		np.array([-1, -1]),
 		[(1, 'self storage stock', range(30)), (0, 'in circulation', range(200))],
@@ -162,7 +162,7 @@ one_competitor_test_cases = [
 @pytest.mark.slow
 @pytest.mark.parametrize('title, policyaccess, expected_filename', one_competitor_test_cases)
 def test_circular_duopol_rule_based_agent(title, policyaccess, expected_filename):
-	pa = PolicyAnalyzer(RuleBasedCERebuyAgentCompetitive(config=config_market), 'rule_based_competitive_policy')
+	pa = PolicyAnalyzer(RuleBasedCERebuyAgentCompetitive(config_market=config_market), 'rule_based_competitive_policy')
 	given_path = pa.analyze_policy(
 		np.array([75, 10, -1, -1, 2, 12]),
 		[(2, "competitor's refurbished price", range(10)), (3, "competitor's new price", range(10))],

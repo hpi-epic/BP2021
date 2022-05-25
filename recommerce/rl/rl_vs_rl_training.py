@@ -10,7 +10,7 @@ from recommerce.rl.stable_baselines.stable_baselines_model import StableBaseline
 
 
 def train_rl_vs_rl(config_market: AttrDict, config_rl: AttrDict, num_switches: int = 30, num_steps_per_switch: int = 25000):
-	tmp_marketplace = CircularEconomyRebuyPriceDuopoly(config_market, True)
+	tmp_marketplace = CircularEconomyRebuyPriceDuopoly(config=config_market, support_continuous_action_space=True)
 	agent1 = StableBaselinesPPO(config_market=config_market, config_rl=config_rl, marketplace=tmp_marketplace)
 	marketplace_for_agent2 = CircularEconomyRebuyPriceDuopoly(config=config_market, support_continuous_action_space=True, competitors=[agent1])
 	agent2 = StableBaselinesSAC(config_market=config_market, config_rl=config_rl, marketplace=marketplace_for_agent2)

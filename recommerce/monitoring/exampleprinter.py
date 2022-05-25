@@ -26,7 +26,7 @@ class ExamplePrinter():
 		ut.ensure_results_folders_exist()
 		self.config = config_market
 		self.marketplace = circular_market.CircularEconomyRebuyPriceDuopoly(config=self.config)
-		self.agent = RuleBasedCERebuyAgent(config=self.config)
+		self.agent = RuleBasedCERebuyAgent(config_market=self.config)
 		# Signal handler for e.g. KeyboardInterrupt
 		signal.signal(signal.SIGINT, self._signal_handler)
 

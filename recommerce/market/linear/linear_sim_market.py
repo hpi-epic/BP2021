@@ -84,6 +84,9 @@ class LinearEconomy(SimMarket, ABC):
 
 
 class LinearEconomyMonopoly(LinearEconomy):
+	@staticmethod
+	def get_num_competitors() -> int:
+		return 0
 
 	def _get_competitor_list(self) -> list:
 		return []
@@ -98,7 +101,7 @@ class LinearEconomyDuopoly(LinearEconomy):
 		return 1
 
 	def _get_competitor_list(self) -> list:
-		return [LinearRatio1LEAgent(config=self.config)]
+		return [LinearRatio1LEAgent(config_market=self.config)]
 
 
 class LinearEconomyOligopoly(LinearEconomy):
@@ -111,7 +114,7 @@ class LinearEconomyOligopoly(LinearEconomy):
 
 	def _get_competitor_list(self) -> list:
 		return [
-			LinearRatio1LEAgent(config=self.config),
-			LERandomAgent(config=self.config),
-			Just2PlayersLEAgent(config=self.config),
+			LinearRatio1LEAgent(config_market=self.config),
+			LERandomAgent(config_market=self.config),
+			Just2PlayersLEAgent(config_market=self.config),
 		]

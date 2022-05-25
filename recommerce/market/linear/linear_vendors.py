@@ -22,10 +22,10 @@ class HumanPlayerLE(LinearAgent, HumanPlayer):
 
 
 class FixedPriceLEAgent(LinearAgent, FixedPriceAgent):
-	def __init__(self, config: AttrDict, fixed_price: int=None, name='fixed_price_le'):
+	def __init__(self, config_market: AttrDict, fixed_price: int=None, name='fixed_price_le'):
 
 		if fixed_price is None:
-			fixed_price = config.production_price + 3
+			fixed_price = config_market.production_price + 3
 
 		assert isinstance(fixed_price, int), f'the fixed_price must be an integer: {fixed_price} ({type(fixed_price)})'
 		self.name = name

@@ -57,12 +57,12 @@ def test_non_abstract_qlearning_agent():
 
 
 fixed_price_agent_observation_policy_pairs_testcases = [
-	(linear_vendors.FixedPriceLEAgent(config=config_market), config_market.production_price + 3),
-	(linear_vendors.FixedPriceLEAgent(config=config_market, fixed_price=7), 7),
-	(circular_vendors.FixedPriceCEAgent(config=config_market), (2, 4)),
-	(circular_vendors.FixedPriceCEAgent(config=config_market, fixed_price=(3, 5)), (3, 5)),
-	(circular_vendors.FixedPriceCERebuyAgent(config=config_market), (3, 6, 2)),
-	(circular_vendors.FixedPriceCERebuyAgent(config=config_market, fixed_price=(4, 7, 3)), (4, 7, 3))
+	(linear_vendors.FixedPriceLEAgent(config_market=config_market), config_market.production_price + 3),
+	(linear_vendors.FixedPriceLEAgent(config_market=config_market, fixed_price=7), 7),
+	(circular_vendors.FixedPriceCEAgent(config_market=config_market), (2, 4)),
+	(circular_vendors.FixedPriceCEAgent(config_market=config_market, fixed_price=(3, 5)), (3, 5)),
+	(circular_vendors.FixedPriceCERebuyAgent(config_market=config_market), (3, 6, 2)),
+	(circular_vendors.FixedPriceCERebuyAgent(config_market=config_market, fixed_price=(4, 7, 3)), (4, 7, 3))
 ]
 
 
@@ -82,7 +82,7 @@ storage_evaluation_testcases = [
 
 @pytest.mark.parametrize('state, expected_prices', storage_evaluation_testcases)
 def test_storage_evaluation(state, expected_prices):
-	agent = circular_vendors.RuleBasedCEAgent(config=config_market)
+	agent = circular_vendors.RuleBasedCEAgent(config_market=config_market)
 	assert expected_prices == agent.policy(state)
 
 
@@ -99,7 +99,7 @@ def test_storage_evaluation_with_rebuy_price(state, expected_prices):
 	changed_config = ut_t.mock_config_hyperparameter()
 	changed_config.max_price = 10
 	changed_config.production_price = 2
-	agent = circular_vendors.RuleBasedCERebuyAgent(config=changed_config)
+	agent = circular_vendors.RuleBasedCERebuyAgent(config_market=changed_config)
 	print('*********************************')
 	assert expected_prices == agent.policy(state)
 
@@ -108,7 +108,7 @@ def test_prices_are_not_higher_than_allowed():
 	changed_config = ut_t.mock_config_hyperparameter()
 	changed_config.max_price = 10
 	changed_config.production_price = 9
-	test_agent = circular_vendors.RuleBasedCEAgent(config=changed_config)
+	test_agent = circular_vendors.RuleBasedCEAgent(config_market=changed_config)
 	assert (9, 9) >= test_agent.policy([50, 60])
 
 
@@ -174,7 +174,7 @@ def test_policy_plus_one(competitor_class, state):
 	changed_config.max_price = 10
 	changed_config.production_price = 2
 
-	competitor = competitor_class(config=changed_config)
+	competitor = competitor_class(config_market=changed_config)
 	assert changed_config.production_price + 1 <= competitor.policy(state) < changed_config.max_price
 
 
@@ -189,13 +189,13 @@ clamp_price_testcases = [
 def test_clamp_price(price):
 	changed_config = ut_t.mock_config_hyperparameter()
 	changed_config.max_price = 9
-	assert 0 <= circular_vendors.RuleBasedCEAgent(config=changed_config)._clamp_price(price) <= 9
+	assert 0 <= circular_vendors.RuleBasedCEAgent(config_market=changed_config)._clamp_price(price) <= 9
 
 
 def test_get_competitors_prices_with_rebuy():
 	observation = random_offer_circular_oligopoly(is_rebuy_economy=True)
 	competitors_refurbished_prices, competitors_new_prices, competitors_rebuy_prices = \
-		circular_vendors.RuleBasedCERebuyAgentCompetitive(config=config_market)._get_competitor_prices(
+		circular_vendors.RuleBasedCERebuyAgentCompetitive(config_market=config_market)._get_competitor_prices(
 			observation=observation,
 			is_rebuy_economy=True)
 	assert len(competitors_new_prices) == len(competitors_rebuy_prices) == len(competitors_refurbished_prices)
@@ -208,7 +208,7 @@ def test_get_competitors_prices_with_rebuy():
 def test_get_competitors_prices():
 	observation = random_offer_circular_oligopoly(is_rebuy_economy=False)
 	competitors_refurbished_prices, competitors_new_prices = \
-		circular_vendors.RuleBasedCEAgent(config=config_market)._get_competitor_prices(observation=observation, is_rebuy_economy=False)
+		circular_vendors.RuleBasedCEAgent(config_market=config_market)._get_competitor_prices(observation=observation, is_rebuy_economy=False)
 	assert len(competitors_new_prices) == len(competitors_refurbished_prices)
 	for competitor in range(len(competitors_new_prices)):
 		assert competitors_refurbished_prices[competitor] == observation[(competitor * 4) + 2]

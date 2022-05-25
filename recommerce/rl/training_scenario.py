@@ -116,8 +116,9 @@ def train_rl_vs_rl():
 
 
 def train_self_play():
-	config_hyperparameter: AttrDict = HyperparameterConfigLoader.load('hyperparameter_config')
-	self_play.train_self_play(config_hyperparameter)
+	config_market: AttrDict = HyperparameterConfigLoader.load('market_config')
+	config_rl: AttrDict = HyperparameterConfigLoader.load('rl_config')
+	self_play.train_self_play(config_market, config_rl)
 
 
 def train_from_config():
@@ -131,9 +132,9 @@ def train_from_config():
 	for competitor in config.agent[1:]:
 		if issubclass(competitor['agent_class'], FixedPriceAgent):
 			competitor_list.append(
-				competitor['agent_class'](config=config, fixed_price=competitor['argument'], name=competitor['name']))
+				competitor['agent_class'](config_market=config, fixed_price=competitor['argument'], name=competitor['name']))
 		else:
-			competitor_list.append(competitor['agent_class'](config=config, name=competitor['name']))
+			competitor_list.append(competitor['agent_class'](config_market=config, name=competitor['name']))
 
 	run_training_session(
 		config_rl=config_rl,

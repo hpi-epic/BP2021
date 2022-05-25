@@ -1,5 +1,5 @@
 import os
-from abc import ABC
+from abc import ABC, abstractmethod
 
 import numpy as np
 from attrdict import AttrDict
@@ -34,6 +34,16 @@ class StableBaselinesAgent(ReinforcementLearningAgent, LinearAgent, CircularAgen
 
 		if name is not None:
 			self.name = name
+
+	@abstractmethod
+	def _initialize_model(self, marketplace):
+		pass
+		raise NotImplementedError('This method is abstract. Use a subclass')
+
+	@abstractmethod
+	def _load(self, load_path):
+		pass
+		raise NotImplementedError('This method is abstract. Use a subclass')
 
 	def policy(self, observation: np.array) -> np.array:
 		assert isinstance(observation, np.ndarray), f'{observation}: this is a {type(observation)}, not a np ndarray'

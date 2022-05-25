@@ -250,7 +250,7 @@ def test_incorrect_setup_monitoring(parameters, expected_message):
 incorrect_setup_monitoring_type_errors_testcases = [
 	{'marketplace': linear_market.LinearEconomyDuopoly(config=config_hyperparameter)},
 	{'agents': [(linear_market.LinearEconomyDuopoly(config=config_hyperparameter), [])]},
-	{'agents': [(RuleBasedCEAgent(config=config_hyperparameter), [])]}
+	{'agents': [(RuleBasedCEAgent(config_market=config_hyperparameter), [])]}
 ]
 
 
