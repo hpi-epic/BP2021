@@ -8,7 +8,7 @@ class Agent(ABC):
 
 	def __init__(self, config_market: AttrDict, name='agent'):
 		self.name = name
-		self.config = config_market
+		self.config_market = config_market
 
 	@classmethod
 	def custom_init(cls, class_name, args):

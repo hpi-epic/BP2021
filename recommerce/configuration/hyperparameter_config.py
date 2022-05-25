@@ -239,7 +239,7 @@ class HyperparameterConfigLoader():
 		if 'sim_market' in config:
 			config_flatten.update(config['sim_market'])
 		assert config_flatten is not {}
-		return config_flatten
+		return AttrDict(config_flatten)
 
 	@classmethod
 	def load(cls, filename: str) -> AttrDict:
@@ -259,6 +259,5 @@ class HyperparameterConfigLoader():
 		with open(path) as config_file:
 			config = json.load(config_file)
 		HyperparameterConfigValidator.validate_config(config)
-		config_flatten = cls.flat_and_convert_to_attrdict(config)
-		config_attr_dict = AttrDict(config_flatten)
+		config_attr_dict = cls.flat_and_convert_to_attrdict(config)
 		return config_attr_dict

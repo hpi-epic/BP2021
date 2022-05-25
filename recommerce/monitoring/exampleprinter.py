@@ -24,9 +24,9 @@ class ExamplePrinter():
 
 	def __init__(self, config_market: AttrDict):
 		ut.ensure_results_folders_exist()
-		self.config = config_market
-		self.marketplace = circular_market.CircularEconomyRebuyPriceDuopoly(config=self.config)
-		self.agent = RuleBasedCERebuyAgent(config_market=self.config)
+		self.config_market = config_market
+		self.marketplace = circular_market.CircularEconomyRebuyPriceDuopoly(config=self.config_market)
+		self.agent = RuleBasedCERebuyAgent(config_market=self.config_market)
 		# Signal handler for e.g. KeyboardInterrupt
 		signal.signal(signal.SIGINT, self._signal_handler)
 
@@ -82,7 +82,7 @@ class ExamplePrinter():
 				ut.write_dict_to_tensorboard(writer, logdict, counter)
 				ut.write_dict_to_tensorboard(writer, cumulative_dict, counter, is_cumulative=True)
 				if isinstance(self.marketplace, circular_market.CircularEconomyRebuyPriceDuopoly):
-					ut.write_content_of_dict_to_overview_svg(svg_manipulator, counter, logdict, cumulative_dict, self.config)
+					ut.write_content_of_dict_to_overview_svg(svg_manipulator, counter, logdict, cumulative_dict, self.config_market)
 				our_profit += reward
 				counter += 1
 				if isinstance(self.marketplace, circular_market.CircularEconomyRebuyPriceDuopoly):

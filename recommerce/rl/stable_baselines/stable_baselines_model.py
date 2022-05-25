@@ -37,12 +37,10 @@ class StableBaselinesAgent(ReinforcementLearningAgent, LinearAgent, CircularAgen
 
 	@abstractmethod
 	def _initialize_model(self, marketplace):
-		pass
 		raise NotImplementedError('This method is abstract. Use a subclass')
 
 	@abstractmethod
 	def _load(self, load_path):
-		pass
 		raise NotImplementedError('This method is abstract. Use a subclass')
 
 	def policy(self, observation: np.array) -> np.array:
