@@ -233,7 +233,7 @@ class CircularEconomyDuopoly(CircularEconomy):
 		return 1
 
 	def _get_competitor_list(self) -> list:
-		return [circular_vendors.RuleBasedCEAgent(config=self.config)]
+		return [circular_vendors.RuleBasedCEAgent(config_market=self.config)]
 
 
 class CircularEconomyOligopoly(CircularEconomy):
@@ -246,10 +246,10 @@ class CircularEconomyOligopoly(CircularEconomy):
 
 	def _get_competitor_list(self) -> list:
 		return [
-			circular_vendors.RuleBasedCEAgent(config=self.config),
-			circular_vendors.RuleBasedCEAgent(config=self.config),
-			circular_vendors.FixedPriceCEAgent(config=self.config, fixed_price=(3, 5)),
-			circular_vendors.FixedPriceCEAgent(config=self.config, fixed_price=(2, 6))
+			circular_vendors.RuleBasedCEAgent(config_market=self.config),
+			circular_vendors.RuleBasedCEAgent(config_market=self.config),
+			circular_vendors.FixedPriceCEAgent(config_market=self.config, fixed_price=(3, 5)),
+			circular_vendors.FixedPriceCEAgent(config_market=self.config, fixed_price=(2, 6))
 			]
 
 
@@ -322,7 +322,7 @@ class CircularEconomyRebuyPriceDuopoly(CircularEconomyRebuyPrice):
 		return 1
 
 	def _get_competitor_list(self) -> list:
-		return [circular_vendors.RuleBasedCERebuyAgentCompetitive(config=self.config)]
+		return [circular_vendors.RuleBasedCERebuyAgentCompetitive(config_market=self.config)]
 
 
 class CircularEconomyRebuyPriceOligopoly(CircularEconomyRebuyPrice):
@@ -336,8 +336,8 @@ class CircularEconomyRebuyPriceOligopoly(CircularEconomyRebuyPrice):
 
 	def _get_competitor_list(self) -> list:
 		return [
-			circular_vendors.RuleBasedCERebuyAgentCompetitive(config=self.config),
-			circular_vendors.RuleBasedCERebuyAgent(config=self.config),
-			circular_vendors.FixedPriceCERebuyAgent(config=self.config, fixed_price=(3, 6, 2)),
-			circular_vendors.RuleBasedCERebuyAgentStorageMinimizer(config=self.config)
+			circular_vendors.RuleBasedCERebuyAgentCompetitive(config_market=self.config),
+			circular_vendors.RuleBasedCERebuyAgent(config_market=self.config),
+			circular_vendors.FixedPriceCERebuyAgent(config_market=self.config, fixed_price=(3, 6, 2)),
+			circular_vendors.RuleBasedCERebuyAgentStorageMinimizer(config_market=self.config)
 			]

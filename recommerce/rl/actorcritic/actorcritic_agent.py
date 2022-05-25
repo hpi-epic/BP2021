@@ -19,7 +19,8 @@ class ActorCriticAgent(ReinforcementLearningAgent, ABC):
 	def __init__(
 			self,
 			marketplace: SimMarket,
-			config: AttrDict,
+			config_market: AttrDict,
+			config_rl: AttrDict,
 			device='cuda' if torch.cuda.is_available() else 'cpu',
 			load_path=None,
 			critic_path=None,
@@ -31,7 +32,8 @@ class ActorCriticAgent(ReinforcementLearningAgent, ABC):
 		network_output_size = marketplace.get_actions_dimension() if isinstance(self, ContinuousActorCriticAgent) else marketplace.get_n_actions()
 		if isinstance(self, DiscreteActorCriticAgent):
 			self.actions_dimension = marketplace.get_actions_dimension()
-		self.config = config
+		self.config_market = config_market
+		self.config_rl = config_rl
 		self.device = device
 		self.name = name
 		print(f'I initiate an ActorCriticAgent using {self.device} device')
@@ -97,7 +99,7 @@ class ActorCriticAgent(ReinforcementLearningAgent, ABC):
 
 		v_estimates = self.critic_net(states)
 		with torch.no_grad():
-			v_expected = (rewards + self.config.gamma * self.critic_tgt_net(next_states).detach()).view(-1, 1)
+			v_expected = (rewards + self.config_rl.gamma * self.critic_tgt_net(next_states).detach()).view(-1, 1)
 		critic_loss = torch.nn.MSELoss()(v_estimates, v_expected)
 		critic_loss.backward()
 
@@ -186,8 +188,8 @@ class DiscreteActorCriticAgent(ActorCriticAgent, LinearAgent, CircularAgent):
 			return action
 		action_list = []
 		for _ in range(self.actions_dimension):
-			action_list.append(action % self.config.max_price)
-			action = action // self.config.max_price
+			action_list.append(action % self.config_market.max_price)
+			action = action // self.config_market.max_price
 		action_list.reverse()
 		return tuple(action_list)
 

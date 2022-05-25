@@ -1,14 +1,15 @@
 import pytest
 import torch
-import utils_tests as ut_t
 from attrdict import AttrDict
 
 import recommerce.configuration.utils as ut
 import recommerce.market.circular.circular_sim_market as circular_market
 import recommerce.market.linear.linear_sim_market as linear_market
 import recommerce.rl.actorcritic.actorcritic_agent as actorcritic_agent
+from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader
 
-config_hyperparameter: AttrDict = ut_t.mock_config_hyperparameter()
+config_market: AttrDict = HyperparameterConfigLoader.load('market_config')
+config_rl: AttrDict = HyperparameterConfigLoader.load('rl_config')
 
 abstract_agent_classes_testcases = [
 	actorcritic_agent.ActorCriticAgent,
@@ -34,8 +35,8 @@ marketplace_classes = [
 
 @pytest.mark.parametrize('market_class', marketplace_classes)
 def test_discrete_agents_initializes_networks_correct(market_class):
-	marketplace = market_class(config=config_hyperparameter)
-	agent = actorcritic_agent.DiscreteActorCriticAgent(marketplace=marketplace, config=config_hyperparameter)
+	marketplace = market_class(config=config_market)
+	agent = actorcritic_agent.DiscreteActorCriticAgent(marketplace=marketplace, config_market=config_market, config_rl=config_rl)
 	assert agent.actor_net is not None
 	assert agent.critic_net is not None
 	assert agent.critic_tgt_net is not None
@@ -48,8 +49,8 @@ def test_discrete_agents_initializes_networks_correct(market_class):
 
 @pytest.mark.parametrize('market_class', marketplace_classes)
 def test_continous_agents_initializes_networks_correct(market_class):
-	marketplace = market_class(config=config_hyperparameter)
-	agent = actorcritic_agent.ContinuousActorCriticAgentFixedOneStd(marketplace=marketplace, config=config_hyperparameter)
+	marketplace = market_class(config=config_market)
+	agent = actorcritic_agent.ContinuousActorCriticAgentFixedOneStd(marketplace=marketplace, config_market=config_market, config_rl=config_rl)
 	assert agent.actor_net is not None
 	assert agent.critic_net is not None
 	assert agent.critic_tgt_net is not None
@@ -62,8 +63,9 @@ def test_continous_agents_initializes_networks_correct(market_class):
 
 @pytest.mark.parametrize('market_class', marketplace_classes)
 def test_std_estimating_agents_initializes_networks_correct(market_class):
-	marketplace = market_class(config=config_hyperparameter)
-	agent = actorcritic_agent.ContinuousActorCriticAgentEstimatingStd(marketplace=marketplace, config=config_hyperparameter)
+	marketplace = market_class(config=config_market)
+	agent = actorcritic_agent.ContinuousActorCriticAgentEstimatingStd(
+		marketplace=marketplace, config_market=config_market, config_rl=config_rl)
 	assert agent.actor_net is not None
 	assert agent.critic_net is not None
 	assert agent.critic_tgt_net is not None
@@ -86,8 +88,8 @@ agent_initialization_testcases = [
 	ut.cartesian_product(agent_initialization_testcases, marketplace_classes)
 )
 def test_agents_generate_valid_actions(agent_class, market_class):
-	marketplace = market_class(config=config_hyperparameter)
-	agent = agent_class(marketplace=marketplace, config=config_hyperparameter)
+	marketplace = market_class(config=config_market)
+	agent = agent_class(marketplace=marketplace, config_market=config_market, config_rl=config_rl)
 	test_input = marketplace.observation_space.sample()
 	action = agent.policy(test_input)
 	next_state, reward, done, info = marketplace.step(action)

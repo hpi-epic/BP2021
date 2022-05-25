@@ -74,16 +74,17 @@ class HyperparameterConfigValidator():
 		Args:
 			config (dict): The config to validate and take the values from.
 		"""
-		assert 'rl' in config, 'The config must contain an "rl" field.'
-		assert 'sim_market' in config, 'The config must contain a "sim_market" field.'
+		if 'sim_market' in config:
+			self._check_config_sim_market_completeness(config['sim_market'])
+			self.check_types(config['sim_market'], 'sim_market')
+			self.check_sim_market_ranges(config['sim_market'])
 
-		self._check_config_rl_completeness(config['rl'])
-		self._check_config_sim_market_completeness(config['sim_market'])
-		self.check_types(config, 'top-dict')
-		self.check_types(config['rl'], 'rl')
-		self.check_types(config['sim_market'], 'sim_market')
-		self.check_rl_ranges(config['rl'])
-		self.check_sim_market_ranges(config['sim_market'])
+		if 'rl' in config:
+			self._check_config_rl_completeness(config['rl'])
+			self.check_types(config['rl'], 'rl')
+			self.check_rl_ranges(config['rl'])
+
+		# TODO: replace 'rl' option with 7 different rl branches
 
 	@classmethod
 	def _check_config_rl_completeness(cls, config: dict) -> None:
@@ -133,12 +134,15 @@ class HyperparameterConfigValidator():
 		Raises:
 			KeyError: If the dictionary is missing a key but should contain all keys.
 		"""
+		"""
+		deprecated
 		if key == 'top-dict':
 			types_dict = {
 				'rl': dict,
 				'sim_market': dict
 			}
-		elif key == 'rl':
+		"""
+		if key == 'rl':
 			types_dict = {
 				'gamma': (int, float),
 				'batch_size': int,
@@ -227,6 +231,15 @@ class HyperparameterConfigValidator():
 
 
 class HyperparameterConfigLoader():
+	@classmethod
+	def flat_and_convert_to_attrdict(cls, config):
+		config_flatten = {}
+		if 'rl' in config:
+			config_flatten.update(config['rl'])
+		if 'sim_market' in config:
+			config_flatten.update(config['sim_market'])
+		assert config_flatten is not {}
+		return AttrDict(config_flatten)
 
 	@classmethod
 	def load(cls, filename: str) -> AttrDict:
@@ -246,9 +259,5 @@ class HyperparameterConfigLoader():
 		with open(path) as config_file:
 			config = json.load(config_file)
 		HyperparameterConfigValidator.validate_config(config)
-
-		config_flatten = config['rl']
-		config_flatten.update(config['sim_market'])
-		config_attr_dict = AttrDict(config_flatten)
-
+		config_attr_dict = cls.flat_and_convert_to_attrdict(config)
 		return config_attr_dict

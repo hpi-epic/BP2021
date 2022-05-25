@@ -1,18 +1,15 @@
-import json
 import os
 import pathlib
 from unittest.mock import mock_open, patch
 
 import pytest
-import utils_tests as ut_t
 from attrdict import AttrDict
 
 import recommerce.monitoring.svg_manipulation as svg_manipulation
+from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader
 from recommerce.monitoring.exampleprinter import ExamplePrinter
 
 svg_manipulator = svg_manipulation.SVGManipulator()
-
-config_hyperparameter: AttrDict = ut_t.mock_config_hyperparameter()
 
 
 def setup_function(function):
@@ -33,26 +30,24 @@ def test_correct_template():
 	assert correct_template == svg_manipulator.template_svg
 
 	# run one exampleprinter and to make sure the template does not get changed
-	mock_json = json.dumps(ut_t.create_hyperparameter_mock_dict_sim_market(episode_length=3))
-	with patch('builtins.open', mock_open(read_data=mock_json)) as utils_mock_file:
-		ut_t.check_mock_file(utils_mock_file, mock_json)
-		# initialize all functions to be mocked
-		with patch('recommerce.monitoring.exampleprinter.ut.write_dict_to_tensorboard'), \
-			patch('recommerce.monitoring.svg_manipulation.os.path.isfile') as mock_isfile, \
-			patch('recommerce.monitoring.svg_manipulation.os.path.isdir') as mock_isdir, \
-			patch('recommerce.monitoring.svg_manipulation.os.listdir') as mock_list_dir, \
-			patch('recommerce.monitoring.svg_manipulation.os.path.exists') as mock_exists, \
-			patch('recommerce.monitoring.svg_manipulation.os.mkdir') as mock_mkdir, \
-			patch('recommerce.monitoring.exampleprinter.SummaryWriter'), \
-			patch('builtins.open', mock_open()):
-			mock_isfile.return_value = True
-			mock_isdir.return_value = True
-			mock_exists.return_value = False
-			mock_mkdir.return_value = True
-			mock_list_dir.return_value = ['MarketOverview_001.svg', 'MarketOverview_002.svg', 'MarketOverview_003.svg']
+	config_market: AttrDict = HyperparameterConfigLoader.load('market_config')
+	# initialize all functions to be mocked
+	with patch('recommerce.monitoring.exampleprinter.ut.write_dict_to_tensorboard'), \
+		patch('recommerce.monitoring.svg_manipulation.os.path.isfile') as mock_isfile, \
+		patch('recommerce.monitoring.svg_manipulation.os.path.isdir') as mock_isdir, \
+		patch('recommerce.monitoring.svg_manipulation.os.listdir') as mock_list_dir, \
+		patch('recommerce.monitoring.svg_manipulation.os.path.exists') as mock_exists, \
+		patch('recommerce.monitoring.svg_manipulation.os.mkdir') as mock_mkdir, \
+		patch('recommerce.monitoring.exampleprinter.SummaryWriter'), \
+		patch('builtins.open', mock_open()):
+		mock_isfile.return_value = True
+		mock_isdir.return_value = True
+		mock_exists.return_value = False
+		mock_mkdir.return_value = True
+		mock_list_dir.return_value = ['MarketOverview_001.svg', 'MarketOverview_002.svg', 'MarketOverview_003.svg']
 
-			ExamplePrinter(config=config_hyperparameter).run_example()
-		assert correct_template == svg_manipulator.template_svg
+		ExamplePrinter(config_market=config_market).run_example()
+	assert correct_template == svg_manipulator.template_svg
 
 
 def test_replace_one_value():
@@ -197,27 +192,25 @@ def test_time_not_int():
 
 def test_one_exampleprinter_run():
 	# run only three episodes to be able to reuse the correct_html
-	mock_json = json.dumps(ut_t.create_hyperparameter_mock_dict_sim_market(episode_length=3))
-	with patch('builtins.open', mock_open(read_data=mock_json)) as utils_mock_file:
-		ut_t.check_mock_file(utils_mock_file, mock_json)
-		# initialize all functions to be mocked
-		with patch('recommerce.monitoring.exampleprinter.ut.write_dict_to_tensorboard'), \
-			patch('recommerce.monitoring.svg_manipulation.os.path.isfile') as mock_isfile, \
-			patch('recommerce.monitoring.svg_manipulation.os.path.isdir') as mock_isdir, \
-			patch('recommerce.monitoring.svg_manipulation.os.listdir') as mock_list_dir, \
-			patch('recommerce.monitoring.svg_manipulation.os.path.exists') as mock_exists, \
-			patch('recommerce.monitoring.svg_manipulation.os.mkdir') as mock_mkdir, \
-			patch('recommerce.monitoring.exampleprinter.SummaryWriter'), \
-			patch('builtins.open', mock_open()) as mock_file:
-			mock_isfile.return_value = True
-			mock_isdir.return_value = True
-			mock_exists.return_value = False
-			mock_mkdir.return_value = True
-			mock_list_dir.return_value = ['MarketOverview_001.svg', 'MarketOverview_002.svg', 'MarketOverview_003.svg']
+	config_market: AttrDict = HyperparameterConfigLoader.load('market_config')
+	# initialize all functions to be mocked
+	with patch('recommerce.monitoring.exampleprinter.ut.write_dict_to_tensorboard'), \
+		patch('recommerce.monitoring.svg_manipulation.os.path.isfile') as mock_isfile, \
+		patch('recommerce.monitoring.svg_manipulation.os.path.isdir') as mock_isdir, \
+		patch('recommerce.monitoring.svg_manipulation.os.listdir') as mock_list_dir, \
+		patch('recommerce.monitoring.svg_manipulation.os.path.exists') as mock_exists, \
+		patch('recommerce.monitoring.svg_manipulation.os.mkdir') as mock_mkdir, \
+		patch('recommerce.monitoring.exampleprinter.SummaryWriter'), \
+		patch('builtins.open', mock_open()) as mock_file:
+		mock_isfile.return_value = True
+		mock_isdir.return_value = True
+		mock_exists.return_value = False
+		mock_mkdir.return_value = True
+		mock_list_dir.return_value = ['MarketOverview_001.svg', 'MarketOverview_002.svg', 'MarketOverview_003.svg']
 
-			ExamplePrinter(config=config_hyperparameter).run_example()
-		# asserts that the html has been written
-		mock_file().write.assert_called_with(correct_html)
+		ExamplePrinter(config_market=config_market).run_example()
+	# asserts that the html has been written
+	mock_file().write.assert_called_with(correct_html)
 
 # tests above test save_overview_svg()
 ###################

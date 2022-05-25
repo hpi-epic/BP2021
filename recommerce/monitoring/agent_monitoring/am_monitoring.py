@@ -47,9 +47,9 @@ class Monitor():
 		Returns:
 			list: A list with a list of rewards for each agent
 		"""
-		config = HyperparameterConfigLoader.load('hyperparameter_config')
+		config_market = HyperparameterConfigLoader.load('market_config')
 		# initialize the watcher list with a list for each agent
-		watchers = [Watcher(config=config) for _ in range(len(self.configurator.agents))]
+		watchers = [Watcher(config_market=config_market) for _ in range(len(self.configurator.agents))]
 
 		for episode in trange(1, self.configurator.episodes + 1, unit=' episodes', leave=False):
 			# reset the state & marketplace once to be used by all agents
@@ -98,14 +98,14 @@ def main():  # pragma: no cover
 	"""
 	monitor = Monitor()
 	config_environment_am: AgentMonitoringEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_agent_monitoring')
-	config_hyperparameter: AttrDict = HyperparameterConfigLoader.load('hyperparameter_config')
+	config_market: AttrDict = HyperparameterConfigLoader.load('market_config')
 	monitor.configurator.setup_monitoring(
 		enable_live_draw=config_environment_am.enable_live_draw,
 		episodes=config_environment_am.episodes,
 		plot_interval=config_environment_am.plot_interval,
 		marketplace=config_environment_am.marketplace,
 		agents=config_environment_am.agent,
-		config=config_hyperparameter
+		config_market=config_market
 	)
 	run_monitoring_session(monitor)
 
