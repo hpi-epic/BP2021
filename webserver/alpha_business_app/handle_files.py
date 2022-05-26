@@ -48,6 +48,7 @@ def handle_uploaded_file(request, uploaded_config) -> HttpResponse:
 	for chunk in uploaded_config.chunks():
 		file_content += chunk
 
+	print('Here 1')
 	# try to convert the file content to dict
 	try:
 		content_as_dict = json.loads(file_content, object_pairs_hook=_dict_raise_on_duplicates)
@@ -61,18 +62,23 @@ def handle_uploaded_file(request, uploaded_config) -> HttpResponse:
 		return render(request, 'upload.html', {'error': validate_data})
 	hyperparameter_config, environment_config = validate_data
 
+	print('Here 2')
 	parser = ConfigModelParser()
 	web_hyperparameter_config = None
 	web_environment_config = None
 	try:
+		print('I try this')
 		web_hyperparameter_config = parser.parse_config_dict_to_datastructure('hyperparameter', hyperparameter_config)
 		web_environment_config = parser.parse_config_dict_to_datastructure('environment', environment_config)
 	except ValueError:
+		print('I fail here')
 		return render(request, 'upload.html', {'error': 'Your config is wrong'})
 
+	print('Here 3')
 	given_name = request.POST['config_name']
 	config_name = given_name if given_name else uploaded_config.name
 	Config.objects.create(environment=web_environment_config, hyperparameter=web_hyperparameter_config, name=config_name, user=request.user)
+	print('Here 4')
 	return redirect('/configurator', {'success': 'You successfully uploaded a config file'})
 
 
