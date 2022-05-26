@@ -20,27 +20,19 @@ def validate_config(config: dict, config_is_final: bool) -> tuple:
 				failure: A status (False) and the errormessage as a string.
 	"""
 	try:
-		print(config)
 		# first check if the environment and hyperparameter parts are already split up
 		if 'environment' in config and 'hyperparameter' in config:
 			assert len(config) == 2, 'Your config should not contain keys other than "environment" and "hyperparameter"'
 			hyperparameter_config = config['hyperparameter']
 			environment_config = config['environment']
 		elif 'environment' in config or 'hyperparameter' in config:
-			print('Das ist doof')
 			raise AssertionError('If your config contains one of "environment" or "hyperparameter" it must also contain the other')
 		else:
 			# try to split the config. If any keys are unknown, an AssertionError will be thrown
-			print(f'Hier bin ich  {config}')
-			if 'test' in config:
-				hyperparameter_config = config
-				environment_config = config
-			else:
-				hyperparameter_config, environment_config = split_mixed_config(config)
+			hyperparameter_config, environment_config = split_mixed_config(config)
 		# then validate that all given values have the correct types
 		# check_config_types(hyperparameter_config, environment_config, config_is_final)
 
-		print(f'Hello 1 {config}')
 		if 'rl' in hyperparameter_config:
 			hyperparameter_config['rl']['class'] = QLearningAgent  # This is a dirty fix
 			HyperparameterConfigValidator.validate_config(hyperparameter_config['rl'])
@@ -49,11 +41,9 @@ def validate_config(config: dict, config_is_final: bool) -> tuple:
 			hyperparameter_config['sim_market']['class'] = CircularEconomyRebuyPriceDuopoly  # This is a dirty fix
 			HyperparameterConfigValidator.validate_config(hyperparameter_config['sim_market'])
 			hyperparameter_config['sim_market'].pop('class')
-		print('Hello 2')
 
 		return True, (hyperparameter_config, environment_config)
 	except Exception as error:
-		print('belastend')
 		return False, str(error)
 
 
