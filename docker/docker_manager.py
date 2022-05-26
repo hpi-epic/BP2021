@@ -530,11 +530,13 @@ class DockerManager():
 		# this folder will contain all config files
 		os.makedirs('configuration_files', exist_ok=True)
 
+		print(config_dict)
+		assert False
 		# write dict to json
 		with open(os.path.join('configuration_files', 'market_config.json'), 'w') as config_json:
-			config_json.write(json.dumps(config_dict['market']['sim_market']))
+			config_json.write(json.dumps(config_dict['market']))
 		with open(os.path.join('configuration_files', 'rl_config.json'), 'w') as config_json:
-			config_json.write(json.dumps(config_dict['rl']['rl']))
+			config_json.write(json.dumps(config_dict['rl']))
 		with open(os.path.join('configuration_files', f'environment_config_{command_id}.json'), 'w') as config_json:
 			config_json.write(json.dumps(config_dict['environment']))
 
