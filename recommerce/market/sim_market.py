@@ -1,10 +1,11 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import Tuple
 
 import gym
 import numpy as np
 from attrdict import AttrDict
 
+from recommerce.configuration.json_configurable import JSONConfigurable
 from recommerce.configuration.utils import filtered_class_str_from_dir
 
 # An offer is a market state that contains all prices and qualities
@@ -15,7 +16,7 @@ from recommerce.configuration.utils import filtered_class_str_from_dir
 # Third: vendor's actions from the former round which needs to be saved and influence the other's decision e.g. prices
 
 
-class SimMarket(gym.Env, ABC):
+class SimMarket(gym.Env, JSONConfigurable):
 	"""
 	The superclass to all market environments.
 	Abstract class that cannot be instantiated.

@@ -18,6 +18,10 @@ class CircularEconomy(SimMarket, ABC):
 		import recommerce.market.circular.circular_vendors as c_vendors
 		return sorted(ut.filtered_class_str_from_dir('recommerce.market.circular.circular_vendors', dir(c_vendors), '.*CE.*Agent.*'))
 
+	@staticmethod
+	def get_configurable_fields() -> list:
+		return ['max_price', 'max_quality', 'production_price', 'number_of_customers']
+
 	def _setup_action_observation_space(self, support_continuous_action_space: bool) -> None:
 		# cell 0: number of products in the used storage, cell 1: number of products in circulation
 		self.max_storage = self.config.max_storage

@@ -16,6 +16,10 @@ class LinearEconomy(SimMarket, ABC):
 		import recommerce.market.linear.linear_vendors as l_vendors
 		return sorted(ut.filtered_class_str_from_dir('recommerce.market.linear.linear_vendors', dir(l_vendors), '.*LE.*Agent.*'))
 
+	@staticmethod
+	def get_configurable_fields() -> list:
+		return ['max_price', 'max_quality', 'production_price', 'number_of_customers']
+
 	def _setup_action_observation_space(self, support_continuous_action_space: bool) -> None:
 		"""
 		The observation array has the following format:

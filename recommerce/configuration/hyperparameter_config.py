@@ -260,5 +260,6 @@ class HyperparameterConfigLoader():
 			config = json.load(config_file)
 		# HyperparameterConfigValidator.validate_config(config)
 		# config_attr_dict = cls.flat_and_convert_to_attrdict(config)
+		assert 'class' in config, "Every config file must contain a 'class' key"
 		print(config)
 		return AttrDict(config)
