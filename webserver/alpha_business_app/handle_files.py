@@ -61,6 +61,7 @@ def handle_uploaded_file(request, uploaded_config) -> HttpResponse:
 
 	validate_status, validate_data = validate_config(content_as_dict, False)
 	if not validate_status:
+		print('wrong 3')
 		return render(request, 'upload.html', {'error': validate_data})
 	hyperparameter_config, environment_config = validate_data
 

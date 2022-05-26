@@ -33,6 +33,7 @@ def validate_config(config: dict, config_is_final: bool) -> tuple:
 		# then validate that all given values have the correct types
 		# check_config_types(hyperparameter_config, environment_config, config_is_final)
 
+		print('Hello 1')
 		if 'rl' in hyperparameter_config:
 			hyperparameter_config['rl']['class'] = QLearningAgent  # This is a dirty fix
 			HyperparameterConfigValidator.validate_config(hyperparameter_config['rl'])
@@ -41,9 +42,11 @@ def validate_config(config: dict, config_is_final: bool) -> tuple:
 			hyperparameter_config['sim_market']['class'] = CircularEconomyRebuyPriceDuopoly  # This is a dirty fix
 			HyperparameterConfigValidator.validate_config(hyperparameter_config['sim_market'])
 			hyperparameter_config['sim_market'].pop('class')
+		print('Hello 2')
 
 		return True, (hyperparameter_config, environment_config)
 	except Exception as error:
+		print('belastend')
 		return False, str(error)
 
 
