@@ -1,4 +1,6 @@
 # import json
+# from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader
+import json
 from typing import Tuple, Union
 
 import recommerce.market.circular.circular_sim_market as circular_market
@@ -8,8 +10,6 @@ import recommerce.market.linear.linear_sim_market as linear_market
 
 
 # from attrdict import AttrDict
-
-# from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader
 
 
 def create_hyperparameter_mock_dict_rl(gamma: float = 0.99,
@@ -83,6 +83,36 @@ def create_hyperparameter_mock_dict_sim_market(
 		'production_price': production_price,
 		'storage_cost_per_product': storage_cost_per_product,
 	}
+
+
+def load_json(path: str):
+	"""
+	Load a json file.
+
+	Args:
+		path (str): The path to the json file.
+
+	Returns:
+		dict: The json file as a dictionary.
+	"""
+	with open(path) as file:
+		return json.load(file)
+
+
+def replace_field_in_dict(initial_dict: dict, key: str, value: Union[str, int, float]) -> dict:
+	"""
+	Replace a field in a dictionary with a new value.
+
+	Args:
+		initial_dict (dict): The dictionary in which to replace the field.
+		key (str): The key of the field to be replaced.
+		value (Union[str, int, float]): The new value of the field.
+
+	Returns:
+		dict: The dictionary with the field replaced.
+	"""
+	initial_dict[key] = value
+	return initial_dict
 
 
 # def create_hyperparameter_mock_dict(rl: dict = create_hyperparameter_mock_dict_rl(),

@@ -84,5 +84,5 @@ class HyperparameterConfigLoader():
 		assert issubclass(config['class'], JSONConfigurable), f"The class {config['class']} must be a subclass of JSONConfigurable."
 		print(config)
 		HyperparameterConfigValidator.validate_config(config)
-		config.pop_key('class')
+		config.pop('class')
 		return AttrDict(config)
