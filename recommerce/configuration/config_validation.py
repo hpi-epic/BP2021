@@ -117,64 +117,64 @@ def split_mixed_config(config: dict) -> tuple:
 	return hyperparameter_config, environment_config
 
 
-def check_config_types(hyperparameter_config: dict, environment_config: dict, must_contain: bool = False) -> None:
-	"""
-	Utility function that checks (incomplete) config dictionaries for their correct types.
+# def check_config_types(hyperparameter_config: dict, environment_config: dict, must_contain: bool = False) -> None:
+# 	"""
+# 	Utility function that checks (incomplete) config dictionaries for their correct types.
 
-	Args:
-		hyperparameter_config (dict): The config containing hyperparameter_config-keys.
-		environment_config (dict): The config containing environment_config-keys.
-		must_contain (bool): Whether or not the configuration should contain all required keys.
+# 	Args:
+# 		hyperparameter_config (dict): The config containing hyperparameter_config-keys.
+# 		environment_config (dict): The config containing environment_config-keys.
+# 		must_contain (bool): Whether or not the configuration should contain all required keys.
 
-	Raises:
-		AssertionError: If one of the values has the wrong type.
-	"""
-	# check types for hyperparameter_config
-	# @NikkelM Why was this here?
-	# HyperparameterConfigValidator.check_types(hyperparameter_config, 'top-dict', must_contain)
-	if 'rl' in hyperparameter_config:
-		HyperparameterConfigValidator.check_types(hyperparameter_config['rl'], 'rl', must_contain)
-	if 'sim_market' in hyperparameter_config:
-		HyperparameterConfigValidator.check_types(hyperparameter_config['sim_market'], 'sim_market', must_contain)
+# 	Raises:
+# 		AssertionError: If one of the values has the wrong type.
+# 	"""
+# 	# check types for hyperparameter_config
+# 	# @NikkelM Why was this here?
+# 	# HyperparameterConfigValidator.check_types(hyperparameter_config, 'top-dict', must_contain)
+# 	if 'rl' in hyperparameter_config:
+# 		HyperparameterConfigValidator.check_types(hyperparameter_config['rl'], 'rl', must_contain)
+# 	if 'sim_market' in hyperparameter_config:
+# 		HyperparameterConfigValidator.check_types(hyperparameter_config['sim_market'], 'sim_market', must_contain)
 
-	# check types for environment_config
-	task = environment_config['task'] if must_contain else 'None'
-	EnvironmentConfig.check_types(environment_config, task, False, must_contain)
+# 	# check types for environment_config
+# 	task = environment_config['task'] if must_contain else 'None'
+# 	EnvironmentConfig.check_types(environment_config, task, False, must_contain)
 
 
-if __name__ == '__main__':  # pragma: no cover
-	test_config = {
-		'rl': {
-			'batch_size': 32,
-			'replay_size': 100000,
-			'learning_rate': 1e-6,
-			'sync_target_frames': 1000,
-			'replay_start_size': 10000,
-			'epsilon_decay_last_frame': 75000,
-			'epsilon_start': 1.0,
-			'epsilon_final': 0.1
-		},
-		'sim_market': {
-			'max_storage': 100,
-			'episode_length': 50,
-			'max_price': 10,
-			'max_quality': 50,
-			'production_price': 3,
-			'storage_cost_per_product': 0.1
-		},
-		'episodes': 5,
-		'agents': [
-			{
-				'name': 'CE Rebuy Agent (QLearning)',
-				'agent_class': 'recommerce.rl.q_learning.q_learning_agent.QLearningAgent',
-				'argument': ''
-			},
-			{
-				'name': 'CE Rebuy Agent (QLearaning)',
-				'agent_class': 'recommerce.rl.q_learning.q_learning_agent.QLearningAgent',
-				'argument': ''
-			}
-		]
-	}
-	hyper, env = split_mixed_config(test_config)
-	check_config_types(hyper, env)
+# if __name__ == '__main__':  # pragma: no cover
+# 	test_config = {
+# 		'rl': {
+# 			'batch_size': 32,
+# 			'replay_size': 100000,
+# 			'learning_rate': 1e-6,
+# 			'sync_target_frames': 1000,
+# 			'replay_start_size': 10000,
+# 			'epsilon_decay_last_frame': 75000,
+# 			'epsilon_start': 1.0,
+# 			'epsilon_final': 0.1
+# 		},
+# 		'sim_market': {
+# 			'max_storage': 100,
+# 			'episode_length': 50,
+# 			'max_price': 10,
+# 			'max_quality': 50,
+# 			'production_price': 3,
+# 			'storage_cost_per_product': 0.1
+# 		},
+# 		'episodes': 5,
+# 		'agents': [
+# 			{
+# 				'name': 'CE Rebuy Agent (QLearning)',
+# 				'agent_class': 'recommerce.rl.q_learning.q_learning_agent.QLearningAgent',
+# 				'argument': ''
+# 			},
+# 			{
+# 				'name': 'CE Rebuy Agent (QLearaning)',
+# 				'agent_class': 'recommerce.rl.q_learning.q_learning_agent.QLearningAgent',
+# 				'argument': ''
+# 			}
+# 		]
+# 	}
+# 	hyper, env = split_mixed_config(test_config)
+# 	check_config_types(hyper, env)
