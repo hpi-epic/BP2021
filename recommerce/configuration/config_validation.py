@@ -3,6 +3,8 @@
 
 from recommerce.configuration.environment_config import EnvironmentConfig
 from recommerce.configuration.hyperparameter_config import HyperparameterConfigValidator
+from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPriceDuopoly
+from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
 
 
 def validate_config(config: dict, config_is_final: bool) -> tuple:
@@ -29,12 +31,16 @@ def validate_config(config: dict, config_is_final: bool) -> tuple:
 			# try to split the config. If any keys are unknown, an AssertionError will be thrown
 			hyperparameter_config, environment_config = split_mixed_config(config)
 		# then validate that all given values have the correct types
-		check_config_types(hyperparameter_config, environment_config, config_is_final)
+		# check_config_types(hyperparameter_config, environment_config, config_is_final)
 
 		if 'rl' in hyperparameter_config:
-			HyperparameterConfigValidator.check_rl_ranges(hyperparameter_config['rl'], config_is_final)
+			hyperparameter_config['rl']['class'] = QLearningAgent  # This is a dirty fix
+			HyperparameterConfigValidator.validate_config(hyperparameter_config['rl'])
+			hyperparameter_config['rl'].pop('class')
 		if 'sim_market' in hyperparameter_config:
-			HyperparameterConfigValidator.check_sim_market_ranges(hyperparameter_config['sim_market'], config_is_final)
+			hyperparameter_config['sim_market']['class'] = CircularEconomyRebuyPriceDuopoly  # This is a dirty fix
+			HyperparameterConfigValidator.validate_config(hyperparameter_config['sim_market'])
+			hyperparameter_config['sim_market'].pop('class')
 
 		return True, (hyperparameter_config, environment_config)
 	except Exception as error:

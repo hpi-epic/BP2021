@@ -9,6 +9,38 @@ from recommerce.configuration.utils import get_class
 
 
 class HyperparameterConfigValidator():
+	@classmethod
+	def get_required_fields(cls, dict_key) -> dict:
+		"""
+		THIS SHOULD BE REPLACED URGENTLY. USE THE INFORMATION PROVIDED BY CONFIGURABLE AGENTS TO GET THE REQUIRED FIELDS.
+		"""
+		if dict_key == 'top-dict':
+			return {'rl': True, 'sim_market': True}
+		elif dict_key == 'rl':
+			return {
+				'gamma': False,
+				'batch_size': False,
+				'replay_size': False,
+				'learning_rate': False,
+				'sync_target_frames': False,
+				'replay_start_size': False,
+				'epsilon_decay_last_frame': False,
+				'epsilon_start': False,
+				'epsilon_final': False
+			}
+		elif dict_key == 'sim_market':
+			return {
+				'max_storage': False,
+				'episode_length': False,
+				'max_price': False,
+				'max_quality': False,
+				'number_of_customers': False,
+				'production_price': False,
+				'storage_cost_per_product': False
+			}
+		else:
+			raise AssertionError(f'The given level does not exist in a hyperparameter-config: {dict_key}')
+
 	def __str__(self) -> str:
 		"""
 		This overwrites the internal function that get called when you call `print(class_instance)`.
