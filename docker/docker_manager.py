@@ -532,9 +532,9 @@ class DockerManager():
 
 		# write dict to json
 		with open(os.path.join('configuration_files', 'market_config.json'), 'w') as config_json:
-			config_json.write(json.dumps(config_dict['market']))
+			config_json.write(json.dumps(config_dict['market']['sim_market']))
 		with open(os.path.join('configuration_files', 'rl_config.json'), 'w') as config_json:
-			config_json.write(json.dumps(config_dict['rl']))
+			config_json.write(json.dumps(config_dict['rl']['rl']))
 		with open(os.path.join('configuration_files', f'environment_config_{command_id}.json'), 'w') as config_json:
 			config_json.write(json.dumps(config_dict['environment']))
 
