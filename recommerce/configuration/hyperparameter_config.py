@@ -3,10 +3,9 @@ import os
 
 from attrdict import AttrDict
 
-# from recommerce.configuration.json_configurable import JSONConfigurable
+from recommerce.configuration.json_configurable import JSONConfigurable
 from recommerce.configuration.path_manager import PathManager
-
-# from recommerce.configuration.utils import get_class
+from recommerce.configuration.utils import get_class
 
 
 class HyperparameterConfigValidator():
@@ -112,10 +111,10 @@ class HyperparameterConfigLoader():
 		path = os.path.join(PathManager.user_path, 'configuration_files', filename)
 		with open(path) as config_file:
 			config = json.load(config_file)
-		# assert 'class' in config, f"Every config json must contain a 'class' key, but {filename} does not."
-		# config['class'] = get_class(config['class'])
-		# assert issubclass(config['class'], JSONConfigurable), f"The class {config['class']} must be a subclass of JSONConfigurable."
-		# print(config)
-		# HyperparameterConfigValidator.validate_config(config)
-		# config.pop('class')
+		assert 'class' in config, f"Every config json must contain a 'class' key, but {filename} does not."
+		config['class'] = get_class(config['class'])
+		assert issubclass(config['class'], JSONConfigurable), f"The class {config['class']} must be a subclass of JSONConfigurable."
+		print(config)
+		HyperparameterConfigValidator.validate_config(config)
+		config.pop('class')
 		return AttrDict(config)
