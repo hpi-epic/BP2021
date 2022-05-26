@@ -36,9 +36,11 @@ def validate_config(config: dict, config_is_final: bool) -> tuple:
 		if 'rl' in hyperparameter_config:
 			hyperparameter_config['rl']['class'] = QLearningAgent  # This is a dirty fix
 			HyperparameterConfigValidator.validate_config(hyperparameter_config['rl'])
+			hyperparameter_config['rl'].pop('class')
 		if 'sim_market' in hyperparameter_config:
 			hyperparameter_config['sim_market']['class'] = CircularEconomyRebuyPriceDuopoly  # This is a dirty fix
 			HyperparameterConfigValidator.validate_config(hyperparameter_config['sim_market'])
+			hyperparameter_config['sim_market'].pop('class')
 
 		return True, (hyperparameter_config, environment_config)
 	except Exception as error:
