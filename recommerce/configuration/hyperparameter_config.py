@@ -1,60 +1,14 @@
-#!/usr/bin/env python3
-
-# helper
 import json
 import os
 
 from attrdict import AttrDict
 
+from recommerce.configuration.json_configurable import JSONConfigurable
 from recommerce.configuration.path_manager import PathManager
+from recommerce.configuration.utils import get_class
 
 
 class HyperparameterConfigValidator():
-
-	@classmethod
-	def get_required_fields(cls, dict_key) -> dict:
-		"""
-		Utility function that returns all of the keys required for a hyperparameter_config.json at the given level.
-		The value of any given key indicates whether or not it is the key of a dictionary within the config (i.e. they are a level themselves).
-
-		Args:
-			dict_key (str): The key for which the required fields are needed. 'top-dict' for getting the keys of the first level.
-				'top-dict', 'rl' or 'sim_market'.
-
-		Returns:
-			dict: The required keys for the config at the given level, together with a boolean indicating of they are the key
-				of another level.
-
-		Raises:
-			AssertionError: If the given level is invalid.
-		"""
-		if dict_key == 'top-dict':
-			return {'rl': True, 'sim_market': True}
-		elif dict_key == 'rl':
-			return {
-				'gamma': False,
-				'batch_size': False,
-				'replay_size': False,
-				'learning_rate': False,
-				'sync_target_frames': False,
-				'replay_start_size': False,
-				'epsilon_decay_last_frame': False,
-				'epsilon_start': False,
-				'epsilon_final': False
-			}
-		elif dict_key == 'sim_market':
-			return {
-				'max_storage': False,
-				'episode_length': False,
-				'max_price': False,
-				'max_quality': False,
-				'number_of_customers': False,
-				'production_price': False,
-				'storage_cost_per_product': False
-			}
-		else:
-			raise AssertionError(f'The given level does not exist in a hyperparameter-config: {dict_key}')
-
 	def __str__(self) -> str:
 		"""
 		This overwrites the internal function that get called when you call `print(class_instance)`.
@@ -67,180 +21,47 @@ class HyperparameterConfigValidator():
 		return f'{self.__class__.__name__}: {self.__dict__}'
 
 	@classmethod
-	def validate_config(self, config: AttrDict) -> None:
+	def validate_config(cls, config: dict) -> None:
 		"""
-		Validate the given config dictionary and set the instance variables.
+		Validate the given config dictionary.
 
 		Args:
 			config (dict): The config to validate and take the values from.
 		"""
-		if 'sim_market' in config:
-			self._check_config_sim_market_completeness(config['sim_market'])
-			self.check_types(config['sim_market'], 'sim_market')
-			self.check_sim_market_ranges(config['sim_market'])
-
-		if 'rl' in config:
-			self._check_config_rl_completeness(config['rl'])
-			self.check_types(config['rl'], 'rl')
-			self.check_rl_ranges(config['rl'])
-
-		# TODO: replace 'rl' option with 7 different rl branches
+		demanded_fields = [field for field, _, _ in config['class'].get_configurable_fields()]
+		cls._check_given_config_is_subset_of_demanded(config, demanded_fields)
+		cls._check_demanded_config_is_subset_of_given(config, demanded_fields)
+		cls._check_types(config, config['class'].get_configurable_fields())
+		cls._check_rules(config, config['class'].get_configurable_fields())
 
 	@classmethod
-	def _check_config_rl_completeness(cls, config: dict) -> None:
-		"""
-		Check if the passed config dictionary contains all rl values.
-
-		Args:
-			config (dict): The dictionary to be checked.
-		"""
-		assert 'gamma' in config, 'your config_rl is missing gamma'
-		assert 'batch_size' in config, 'your config_rl is missing batch_size'
-		assert 'replay_size' in config, 'your config_rl is missing replay_size'
-		assert 'learning_rate' in config, 'your config_rl is missing learning_rate'
-		assert 'sync_target_frames' in config, 'your config_rl is missing sync_target_frames'
-		assert 'replay_start_size' in config, 'your config_rl is missing replay_start_size'
-		assert 'epsilon_decay_last_frame' in config, 'your config_rl is missing epsilon_decay_last_frame'
-		assert 'epsilon_start' in config, 'your config_rl is missing epsilon_start'
-		assert 'epsilon_final' in config, 'your config_rl is missing epsilon_final'
+	def _check_given_config_is_subset_of_demanded(cls, config: dict, demanded_fields: list) -> None:
+		for key in config:
+			assert key == 'class' or key in demanded_fields, f'your config provides {key} which was not demanded'
 
 	@classmethod
-	def _check_config_sim_market_completeness(cls, config: dict) -> None:
-		"""
-		Check if the passed config dictionary contains all sim_market values.
-
-		Args:
-			config (dict): The dictionary to be checked.
-		"""
-		assert 'max_storage' in config, 'your config is missing max_storage'
-		assert 'episode_length' in config, 'your config is missing episode_length'
-		assert 'max_price' in config, 'your config is missing max_price'
-		assert 'max_quality' in config, 'your config is missing max_quality'
-		assert 'number_of_customers' in config, 'your config is missing number_of_customers'
-		assert 'production_price' in config, 'your config is missing production_price'
-		assert 'storage_cost_per_product' in config, 'your config is missing storage_cost_per_product'
+	def _check_demanded_config_is_subset_of_given(cls, config: dict, demanded_fields: list) -> None:
+		for key in demanded_fields:
+			assert key in config, f'your config is missing {key}'
 
 	@classmethod
-	def check_types(cls, config: dict, key: str, must_contain: bool = True) -> None:
-		"""
-		Check if all given variables have the correct types.
-		If must_contain is True, all keys must exist, else non-existing keys will be skipped.
-
-		Args:
-			config (dict): The config to check.
-			key (str): The key for which to check the values. 'top-dict', 'rl' or 'sim_market'.
-			must_contain (bool, optional): Whether or not all variables must be present in the config. Defaults to True.
-
-		Raises:
-			KeyError: If the dictionary is missing a key but should contain all keys.
-		"""
-		"""
-		deprecated
-		if key == 'top-dict':
-			types_dict = {
-				'rl': dict,
-				'sim_market': dict
-			}
-		"""
-		if key == 'rl':
-			types_dict = {
-				'gamma': (int, float),
-				'batch_size': int,
-				'replay_size': int,
-				'learning_rate': (int, float),
-				'sync_target_frames': int,
-				'replay_start_size': int,
-				'epsilon_decay_last_frame': int,
-				'epsilon_start': (int, float),
-				'epsilon_final': (int, float)
-			}
-		elif key == 'sim_market':
-			types_dict = {
-				'max_storage': int,
-				'episode_length': int,
-				'max_price': int,
-				'max_quality': int,
-				'number_of_customers': int,
-				'production_price': int,
-				'storage_cost_per_product': float
-			}
-		else:
-			raise AssertionError(f'Your config contains an invalid key: {key}')
-
-		for key, value in types_dict.items():
-			try:
-				assert isinstance(config[key], value), f'{key} must be a {value} but was {type(config[key])}'
-			except KeyError as error:
-				if must_contain:
-					raise KeyError(f'Your config is missing the following required key: {key}') from error
+	def _check_types(cls, config: dict, configurable_fields: list) -> None:
+		for field_name, type, _ in configurable_fields:
+			assert isinstance(config[field_name], type), f'{field_name} must be a {type} but was {type(config[field_name])}'
 
 	@classmethod
-	def check_rl_ranges(cls, config: dict, must_contain: bool = True) -> None:
-		"""
-		Check if all rl variables are within their (pre-defined) ranges.
-
-		Args:
-			config (dict): The config for which to check the variables.
-			must_contain (bool, optional): Whether or not all variables must be present in the config. Defaults to True.
-		"""
-		if must_contain or 'gamma' in config:
-			assert config['gamma'] >= 0 and config['gamma'] < 1, 'gamma should be between 0 (included) and 1 (excluded)'
-		if must_contain or 'batch_size' in config:
-			assert config['batch_size'] > 0, 'batch_size should be greater than 0'
-		if must_contain or 'replay_size' in config:
-			assert config['replay_size'] > 0, 'replay_size should be greater than 0'
-		if must_contain or 'learning_rate' in config:
-			assert config['learning_rate'] > 0 and config['learning_rate'] < 1, 'learning_rate should be between 0 and 1 (excluded)'
-		if must_contain or 'sync_target_frames' in config:
-			assert config['sync_target_frames'] > 0, 'sync_target_frames should be greater than 0'
-		if must_contain or 'replay_start_size' in config:
-			assert config['replay_start_size'] > 0, 'replay_start_size should be greater than 0'
-		if must_contain or 'epsilon_decay_last_frame' in config:
-			assert config['epsilon_decay_last_frame'] >= 0, 'epsilon_decay_last_frame should not be negative'
-		if must_contain or 'epsilon_start' in config:
-			assert config['epsilon_start'] > 0 and config['epsilon_start'] <= 1, 'epsilon_start should be between 0 and 1 (excluded)'
-		if must_contain or 'epsilon_final' in config:
-			assert config['epsilon_final'] > 0 and config['epsilon_final'] <= 1, 'epsilon_final should be between 0 and 1 (excluded)'
-		if must_contain or ('epsilon_start' in config and 'epsilon_final' in config):
-			assert config['epsilon_start'] > config['epsilon_final'], 'epsilon_start should be greater than epsilon_final'
-
-	@classmethod
-	def check_sim_market_ranges(cls, config: dict, must_contain: bool = True) -> None:
-		"""
-		Check if all sim_market variables are within their (pre-defined) ranges.
-
-		Args:
-			config (dict): The config for which to check the variables.
-			must_contain (bool, optional): Whether or not all variables must be present in the config. Defaults to True.
-		"""
-		if must_contain or 'max_storage' in config:
-			assert config['max_storage'] >= 0, 'max_storage must be positive'
-		if must_contain or 'number_of_customers' in config:
-			assert config['number_of_customers'] > 0 and config['number_of_customers'] % 2 == 0, 'number_of_customers should be even and positive'
-		if must_contain or 'production_price' in config:
-			assert config['production_price'] <= config['max_price'] and config['production_price'] >= 0, \
-				'production_price needs to be smaller than max_price and >=0'
-		if must_contain or 'max_quality' in config:
-			assert config['max_quality'] > 0, 'max_quality should be positive'
-		if must_contain or 'max_price' in config:
-			assert config['max_price'] > 0, 'max_price should be positive'
-		if must_contain or 'episode_length' in config:
-			assert config['episode_length'] > 0, 'episode_length should be positive'
-		if must_contain or 'storage_cost_per_product' in config:
-			assert config['storage_cost_per_product'] >= 0, 'storage_cost_per_product should be non-negative'
+	def _check_rules(cls, config: dict, configurable_fields: list) -> None:
+		for field_name, _, rule in configurable_fields:
+			if rule is not None:
+				if not isinstance(rule, tuple):
+					assert callable(rule)
+					check_method, error_string = rule(field_name)
+				else:
+					check_method, error_string = rule
+				assert check_method(config[field_name]), error_string
 
 
 class HyperparameterConfigLoader():
-	@classmethod
-	def flat_and_convert_to_attrdict(cls, config):
-		config_flatten = {}
-		if 'rl' in config:
-			config_flatten.update(config['rl'])
-		if 'sim_market' in config:
-			config_flatten.update(config['sim_market'])
-		assert config_flatten is not {}
-		return AttrDict(config_flatten)
-
 	@classmethod
 	def load(cls, filename: str) -> AttrDict:
 		"""
@@ -258,8 +79,10 @@ class HyperparameterConfigLoader():
 		path = os.path.join(PathManager.user_path, 'configuration_files', filename)
 		with open(path) as config_file:
 			config = json.load(config_file)
-		# HyperparameterConfigValidator.validate_config(config)
-		# config_attr_dict = cls.flat_and_convert_to_attrdict(config)
-		assert 'class' in config, "Every config file must contain a 'class' key"
+		assert 'class' in config, f"Every config json must contain a 'class' key, but {filename} does not."
+		config['class'] = get_class(config['class'])
+		assert issubclass(config['class'], JSONConfigurable), f"The class {config['class']} must be a subclass of JSONConfigurable."
 		print(config)
+		HyperparameterConfigValidator.validate_config(config)
+		config.pop_key('class')
 		return AttrDict(config)

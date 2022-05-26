@@ -1,4 +1,5 @@
 {
+	"class": "recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopoly",
 	"max_storage": 100,
 	"episode_length": 50,
 	"max_price": 10,

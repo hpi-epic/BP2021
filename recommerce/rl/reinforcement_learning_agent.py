@@ -1,13 +1,15 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 
 import torch
 from attrdict import AttrDict
 
+from recommerce.configuration.common_rules import between_zero_one_rule, greater_zero_rule
+from recommerce.configuration.json_configurable import JSONConfigurable
 from recommerce.market.sim_market import SimMarket
 from recommerce.market.vendors import Agent
 
 
-class ReinforcementLearningAgent(Agent, ABC):
+class ReinforcementLearningAgent(Agent, JSONConfigurable):
 	@abstractmethod
 	def __init__(
 			self,
@@ -41,3 +43,18 @@ class ReinforcementLearningAgent(Agent, ABC):
 		Having a target net solves problems occuring due to oscillation.
 		"""
 		raise NotImplementedError('This method is abstract. Use a subclass')
+
+	@staticmethod
+	def get_configurable_fields() -> list:
+		# Must be moved to a subclass later
+		return [
+			('gamma', float, between_zero_one_rule),
+			('batch_size', int, greater_zero_rule),
+			('replay_size', int, greater_zero_rule),
+			('learning_rate', float, greater_zero_rule),
+			('sync_target_frames', int, greater_zero_rule),
+			('replay_start_size', int, greater_zero_rule),
+			('epsilon_decay_last_frame', int, greater_zero_rule),
+			('epsilon_start', float, between_zero_one_rule),
+			('epsilon_final', float, between_zero_one_rule),
+		]
