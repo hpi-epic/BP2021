@@ -20,12 +20,14 @@ def validate_config(config: dict, config_is_final: bool) -> tuple:
 				failure: A status (False) and the errormessage as a string.
 	"""
 	try:
+		print(config)
 		# first check if the environment and hyperparameter parts are already split up
 		if 'environment' in config and 'hyperparameter' in config:
 			assert len(config) == 2, 'Your config should not contain keys other than "environment" and "hyperparameter"'
 			hyperparameter_config = config['hyperparameter']
 			environment_config = config['environment']
 		elif 'environment' in config or 'hyperparameter' in config:
+			print('Das ist doof')
 			raise AssertionError('If your config contains one of "environment" or "hyperparameter" it must also contain the other')
 		else:
 			# try to split the config. If any keys are unknown, an AssertionError will be thrown
