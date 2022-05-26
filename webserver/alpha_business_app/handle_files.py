@@ -53,8 +53,10 @@ def handle_uploaded_file(request, uploaded_config) -> HttpResponse:
 	try:
 		content_as_dict = json.loads(file_content, object_pairs_hook=_dict_raise_on_duplicates)
 	except json.JSONDecodeError:
+		print('wrong 1')
 		return render(request, 'upload.html', {'error': 'Your JSON is not valid'})
 	except ValueError as value:
+		print('wrong 2')
 		return render(request, 'upload.html', {'error': str(value)})
 
 	validate_status, validate_data = validate_config(content_as_dict, False)
