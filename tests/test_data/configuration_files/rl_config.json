@@ -1,13 +1,11 @@
 {
-	"rl": {
-		"gamma" : 0.99,
-		"batch_size" : 8,
-		"replay_size" : 350,
-		"learning_rate" : 1e-6,
-		"sync_target_frames" : 35,
-		"replay_start_size" : 20,
-		"epsilon_decay_last_frame" : 400,
-		"epsilon_start" : 1.0,
-		"epsilon_final" : 0.1
-	}
+	"gamma": 0.99,
+	"batch_size": 8,
+	"replay_size": 350,
+	"learning_rate": 1e-6,
+	"sync_target_frames": 35,
+	"replay_start_size": 20,
+	"epsilon_decay_last_frame": 400,
+	"epsilon_start": 1.0,
+	"epsilon_final": 0.1
 }

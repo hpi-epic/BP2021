@@ -258,6 +258,7 @@ class HyperparameterConfigLoader():
 		path = os.path.join(PathManager.user_path, 'configuration_files', filename)
 		with open(path) as config_file:
 			config = json.load(config_file)
-		HyperparameterConfigValidator.validate_config(config)
-		config_attr_dict = cls.flat_and_convert_to_attrdict(config)
-		return config_attr_dict
+		# HyperparameterConfigValidator.validate_config(config)
+		# config_attr_dict = cls.flat_and_convert_to_attrdict(config)
+		print(config)
+		return AttrDict(config)

@@ -1,6 +1,5 @@
 import numpy as np
 import pytest
-import utils_tests as ut_t
 from attrdict import AttrDict
 from numpy import random
 
@@ -96,7 +95,7 @@ storage_evaluation_with_rebuy_price_testcases = [
 
 @pytest.mark.parametrize('state, expected_prices', storage_evaluation_with_rebuy_price_testcases)
 def test_storage_evaluation_with_rebuy_price(state, expected_prices):
-	changed_config = ut_t.mock_config_hyperparameter()
+	changed_config = HyperparameterConfigLoader.load('market_config')
 	changed_config.max_price = 10
 	changed_config.production_price = 2
 	agent = circular_vendors.RuleBasedCERebuyAgent(config_market=changed_config)
@@ -105,7 +104,7 @@ def test_storage_evaluation_with_rebuy_price(state, expected_prices):
 
 
 def test_prices_are_not_higher_than_allowed():
-	changed_config = ut_t.mock_config_hyperparameter()
+	changed_config = HyperparameterConfigLoader.load('market_config')
 	changed_config.max_price = 10
 	changed_config.production_price = 9
 	test_agent = circular_vendors.RuleBasedCEAgent(config_market=changed_config)
@@ -170,7 +169,7 @@ policy_plus_one_testcases = [
 # TODO: Update this test for all current competitors
 @pytest.mark.parametrize('competitor_class, state', policy_plus_one_testcases)
 def test_policy_plus_one(competitor_class, state):
-	changed_config = ut_t.mock_config_hyperparameter()
+	changed_config = HyperparameterConfigLoader.load('market_config')
 	changed_config.max_price = 10
 	changed_config.production_price = 2
 
@@ -187,7 +186,7 @@ clamp_price_testcases = [
 
 @pytest.mark.parametrize('price', clamp_price_testcases)
 def test_clamp_price(price):
-	changed_config = ut_t.mock_config_hyperparameter()
+	changed_config = HyperparameterConfigLoader.load('market_config')
 	changed_config.max_price = 9
 	assert 0 <= circular_vendors.RuleBasedCEAgent(config_market=changed_config)._clamp_price(price) <= 9
 

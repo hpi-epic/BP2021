@@ -3,14 +3,12 @@ from unittest.mock import Mock, patch
 
 import numpy as np
 import pytest
-import utils_tests as ut_t
 from attrdict import AttrDict
 
 import recommerce.configuration.hyperparameter_config as hyperparameter_config
 import recommerce.configuration.utils as ut
+from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader
 from recommerce.monitoring.svg_manipulation import SVGManipulator
-
-config_hyperparameter: AttrDict = ut_t.mock_config_hyperparameter()
 
 
 def teardown_module(module):
@@ -23,7 +21,7 @@ testcases_shuffle_quality = [1, 10, 100, 1000]
 
 @pytest.mark.parametrize('max_quality', testcases_shuffle_quality)
 def test_shuffle_quality(max_quality: int):
-	edited_config = ut_t.mock_config_hyperparameter()
+	edited_config: AttrDict = HyperparameterConfigLoader.load('market_config')
 	edited_config.max_quality = max_quality
 	quality = ut.shuffle_quality(edited_config)
 	assert quality <= max_quality and quality >= 1
@@ -266,11 +264,7 @@ def test_write_content_of_dict_to_overview_svg(
 		episode_dictionary: dict,
 		cumulated_dictionary: dict,
 		expected: dict):
-	mock_json = ut_t.create_hyperparameter_mock_dict(
-		sim_market=ut_t.create_hyperparameter_mock_dict_sim_market(episode_length=50, number_of_customers=20, production_price=3))
-	mock_json_flatten = mock_json['sim_market']
-	mock_json_flatten.update(mock_json['rl'])
-	mock_attr_dict = AttrDict(mock_json_flatten)
+	config_market: AttrDict = HyperparameterConfigLoader.load('market_config')
 	with patch('recommerce.monitoring.svg_manipulation.SVGManipulator.write_dict_to_svg') as mock_write_dict_to_svg:
-		ut.write_content_of_dict_to_overview_svg(SVGManipulator(), episode, episode_dictionary, cumulated_dictionary, mock_attr_dict)
+		ut.write_content_of_dict_to_overview_svg(SVGManipulator(), episode, episode_dictionary, cumulated_dictionary, config_market)
 	mock_write_dict_to_svg.assert_called_once_with(target_dictionary=expected)
