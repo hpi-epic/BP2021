@@ -36,7 +36,7 @@ def validate_config(config: dict, config_is_final: bool) -> tuple:
 		# then validate that all given values have the correct types
 		# check_config_types(hyperparameter_config, environment_config, config_is_final)
 
-		print('Hello 1')
+		print(f'Hello 1 {config}')
 		if 'rl' in hyperparameter_config:
 			hyperparameter_config['rl']['class'] = QLearningAgent  # This is a dirty fix
 			HyperparameterConfigValidator.validate_config(hyperparameter_config['rl'])
