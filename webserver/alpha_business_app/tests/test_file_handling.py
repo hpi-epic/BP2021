@@ -98,6 +98,7 @@ class FileHandling(TestCase):
 		with open(os.path.join(path_to_test_data, 'test_hyperparameter_config.json'), 'r') as file:
 			content = file.read()
 		# mock uploaded file with test config
+		print(content)
 		test_uploaded_file = MockedUploadedFile('config.json', content.encode())
 		# test method
 		with patch('alpha_business_app.handle_files.redirect') as redirect_mock:
