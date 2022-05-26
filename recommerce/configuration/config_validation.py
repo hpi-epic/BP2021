@@ -33,6 +33,8 @@ def validate_config(config: dict, config_is_final: bool) -> tuple:
 			# try to split the config. If any keys are unknown, an AssertionError will be thrown
 			print('Hier bin ich')
 			# hyperparameter_config, environment_config = split_mixed_config(config)
+			hyperparameter_config = config
+			environment_config = config
 		# then validate that all given values have the correct types
 		# check_config_types(hyperparameter_config, environment_config, config_is_final)
 
