@@ -30,7 +30,7 @@ class Configurator():
 		self.marketplace = circular_market.CircularEconomyMonopoly
 		default_agent = FixedPriceCEAgent
 		self.config_market: AttrDict = HyperparameterConfigLoader.load('market_config')
-		self.config_rl: AttrDict = HyperparameterConfigLoader.load('rl_config')
+		self.config_rl: AttrDict = HyperparameterConfigLoader.load('q_learning_config')
 		self.agents = [default_agent(config_market=self.config_market)]
 		self.agent_colors = [(0.0, 0.0, 1.0, 1.0)]
 		self.folder_path = os.path.abspath(os.path.join(PathManager.results_path, 'monitoring', 'plots_' + time.strftime('%b%d_%H-%M-%S')))

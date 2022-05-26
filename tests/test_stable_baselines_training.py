@@ -2,19 +2,22 @@ import pytest
 from attrdict import AttrDict
 
 import recommerce.market.circular.circular_sim_market as circular_market
-import recommerce.rl.stable_baselines.stable_baselines_model as sb_model
 from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader
+from recommerce.rl.stable_baselines.sb_a2c import StableBaselinesA2C
+from recommerce.rl.stable_baselines.sb_ddpg import StableBaselinesDDPG
+from recommerce.rl.stable_baselines.sb_ppo import StableBaselinesPPO
+from recommerce.rl.stable_baselines.sb_sac import StableBaselinesSAC
+from recommerce.rl.stable_baselines.sb_td3 import StableBaselinesTD3
 
 config_market: AttrDict = HyperparameterConfigLoader.load('market_config')
-config_rl: AttrDict = HyperparameterConfigLoader.load('rl_config')
 
 
 @pytest.mark.training
 @pytest.mark.slow
 def test_ddpg_training():
-	sb_model.StableBaselinesDDPG(
+	StableBaselinesDDPG(
 		config_market,
-		config_rl,
+		HyperparameterConfigLoader.load('sb_ddpg_config'),
 		circular_market.CircularEconomyRebuyPriceDuopoly(
 			config=config_market,
 			support_continuous_action_space=True)
@@ -24,9 +27,9 @@ def test_ddpg_training():
 @pytest.mark.training
 @pytest.mark.slow
 def test_td3_training():
-	sb_model.StableBaselinesTD3(
+	StableBaselinesTD3(
 		config_market,
-		config_rl,
+		HyperparameterConfigLoader.load('sb_td3_config'),
 		circular_market.CircularEconomyRebuyPriceDuopoly(config=config_market,
 		support_continuous_action_space=True)
 	).train_agent(1500, 30)
@@ -35,9 +38,9 @@ def test_td3_training():
 @pytest.mark.training
 @pytest.mark.slow
 def test_a2c_training():
-	sb_model.StableBaselinesA2C(
+	StableBaselinesA2C(
 		config_market,
-		config_rl,
+		HyperparameterConfigLoader.load('sb_a2c_config'),
 		circular_market.CircularEconomyRebuyPriceDuopoly(
 			config=config_market,
 			support_continuous_action_space=True)
@@ -47,9 +50,9 @@ def test_a2c_training():
 @pytest.mark.training
 @pytest.mark.slow
 def test_ppo_training():
-	sb_model.StableBaselinesPPO(
+	StableBaselinesPPO(
 		config_market,
-		config_rl,
+		HyperparameterConfigLoader.load('sb_ppo_config'),
 		marketplace=circular_market.CircularEconomyRebuyPriceDuopoly(
 			config=config_market,
 			support_continuous_action_space=True)
@@ -59,9 +62,9 @@ def test_ppo_training():
 @pytest.mark.training
 @pytest.mark.slow
 def test_sac_training():
-	sb_model.StableBaselinesSAC(
+	StableBaselinesSAC(
 		config_market,
-		config_rl,
+		HyperparameterConfigLoader.load('sb_sac_config'),
 		marketplace=circular_market.CircularEconomyRebuyPriceDuopoly(
 			config=config_market,
 			support_continuous_action_space=True)

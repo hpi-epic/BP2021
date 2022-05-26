@@ -6,6 +6,7 @@ from attrdict import AttrDict
 
 import recommerce.configuration.utils as ut
 import recommerce.rl.model as model
+from recommerce.configuration.common_rules import between_zero_one_rule, greater_zero_rule
 from recommerce.market.circular.circular_vendors import CircularAgent
 from recommerce.market.linear.linear_vendors import LinearAgent
 from recommerce.market.sim_market import SimMarket
@@ -149,6 +150,14 @@ class ActorCriticAgent(ReinforcementLearningAgent, ABC):
 			tuple or int: the action accepted by the market.
 		"""
 		raise NotImplementedError('This method is abstract. Use a subclass')
+
+	@staticmethod
+	def get_configurable_fields() -> list:
+		return [
+			('gamma', float, between_zero_one_rule),
+			('sync_target_frames', int, greater_zero_rule),
+			('testvalue2', float, greater_zero_rule)
+		]
 
 
 class DiscreteActorCriticAgent(ActorCriticAgent, LinearAgent, CircularAgent):

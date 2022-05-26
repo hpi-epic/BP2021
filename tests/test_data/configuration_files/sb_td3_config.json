@@ -1,0 +1,5 @@
+{
+	"class": "recommerce.rl.stable_baselines.sb_td3.StableBaselinesTD3",
+	"testvalue1": 0.99,
+	"td3value": 15.0
+}

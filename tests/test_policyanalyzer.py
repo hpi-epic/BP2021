@@ -17,7 +17,6 @@ from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
 write_to_path = os.path.join(PathManager.results_path, 'policyanalyzer')
 
 config_market: AttrDict = HyperparameterConfigLoader.load('market_config')
-config_rl: AttrDict = HyperparameterConfigLoader.load('rl_config')
 
 
 def test_rule_based_linear_competitor1():
@@ -80,7 +79,7 @@ def test_circular_monopoly_q_learning(title, policyaccess, expected_filename):
 	q_learing_agent = QLearningAgent(
 		marketplace=CircularEconomyRebuyPriceMonopoly(config=config_market),
 		config_market=config_market,
-		config_rl=config_rl,
+		config_rl=HyperparameterConfigLoader.load('q_learning_config'),
 		load_path=os.path.join(PathManager.data_path, 'CircularEconomyRebuyPriceMonopoly_QLearningAgent.dat')
 	)
 	pa = PolicyAnalyzer(q_learing_agent)
@@ -108,7 +107,7 @@ def test_circular_duopol_q_learning(title, policyaccess, expected_filename):
 	q_learing_agent = QLearningAgent(
 		marketplace=CircularEconomyRebuyPriceDuopoly(config=config_market),
 		config_market=config_market,
-		config_rl=config_rl,
+		config_rl=HyperparameterConfigLoader.load('actor_critic_config'),
 		load_path=os.path.join(PathManager.data_path, 'CircularEconomyRebuyPriceDuopoly_QLearningAgent.dat')
 	)
 	pa = PolicyAnalyzer(q_learing_agent)
@@ -136,7 +135,7 @@ def test_circular_duopol_continuos_actorcritic(title, policyaccess, expected_fil
 	a2c_agent = ContinuousActorCriticAgentFixedOneStd(
 		marketplace=CircularEconomyRebuyPriceDuopoly(config=config_market),
 		config_market=config_market,
-		config_rl=config_rl,
+		config_rl=HyperparameterConfigLoader.load('actor_critic_config'),
 		load_path=os.path.join(PathManager.data_path,
 			'actor_parametersCircularEconomyRebuyPriceDuopoly_ContinuousActorCriticAgentFixedOneStd.dat')
 	)

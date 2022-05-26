@@ -9,12 +9,12 @@ import utils_tests as ut_t
 import recommerce.configuration.hyperparameter_config as hyperparameter_config
 from recommerce.configuration.path_manager import PathManager
 
-rl_config_file = os.path.join(PathManager.user_path, 'configuration_files', 'rl_config.json')
+q_learning_config_file = os.path.join(PathManager.user_path, 'configuration_files', 'q_learning_config.json')
 
 
 # Test that checks if the config.json is read correctly
 def test_reading_file_values():
-	config = hyperparameter_config.HyperparameterConfigLoader.load('rl_config')
+	config = hyperparameter_config.HyperparameterConfigLoader.load('q_learning_config')
 
 	assert config.gamma == 0.99
 	assert config.batch_size == 8
@@ -29,39 +29,39 @@ def test_reading_file_values():
 
 # The following variables are input mock-json strings for the test_invalid_values test
 # These tests have invalid values in their input file, the import should throw a specific error message
-negative_learning_rate = (ut_t.replace_field_in_dict(ut_t.load_json(rl_config_file), 'learning_rate', 0.0),
+negative_learning_rate = (ut_t.replace_field_in_dict(ut_t.load_json(q_learning_config_file), 'learning_rate', 0.0),
 	'learning_rate should be positive')
-large_gamma = (ut_t.replace_field_in_dict(ut_t.load_json(rl_config_file), 'gamma', 1.1),
+large_gamma = (ut_t.replace_field_in_dict(ut_t.load_json(q_learning_config_file), 'gamma', 1.1),
 	'gamma should be between 0 (included) and 1 (included)')
-negative_gamma = ((ut_t.replace_field_in_dict(ut_t.load_json(rl_config_file), 'gamma', -1.0),
+negative_gamma = ((ut_t.replace_field_in_dict(ut_t.load_json(q_learning_config_file), 'gamma', -1.0),
 	'gamma should be between 0 (included) and 1 (included)'))
-negative_batch_size = (ut_t.replace_field_in_dict(ut_t.load_json(rl_config_file), 'batch_size', -5),
+negative_batch_size = (ut_t.replace_field_in_dict(ut_t.load_json(q_learning_config_file), 'batch_size', -5),
 	'batch_size should be positive')
-negative_replay_size = (ut_t.replace_field_in_dict(ut_t.load_json(rl_config_file), 'replay_size', -5),
+negative_replay_size = (ut_t.replace_field_in_dict(ut_t.load_json(q_learning_config_file), 'replay_size', -5),
 	'replay_size should be positive')
-negative_sync_target_frames = (ut_t.replace_field_in_dict(ut_t.load_json(rl_config_file), 'sync_target_frames', -5),
+negative_sync_target_frames = (ut_t.replace_field_in_dict(ut_t.load_json(q_learning_config_file), 'sync_target_frames', -5),
 	'sync_target_frames should be positive')
-negative_replay_start_size = (ut_t.replace_field_in_dict(ut_t.load_json(rl_config_file), 'replay_start_size', -5),
+negative_replay_start_size = (ut_t.replace_field_in_dict(ut_t.load_json(q_learning_config_file), 'replay_start_size', -5),
 	'replay_start_size should be positive')
-negative_epsilon_decay_last_frame = (ut_t.replace_field_in_dict(ut_t.load_json(rl_config_file), 'epsilon_decay_last_frame', -5),
+negative_epsilon_decay_last_frame = (ut_t.replace_field_in_dict(ut_t.load_json(q_learning_config_file), 'epsilon_decay_last_frame', -5),
 	'epsilon_decay_last_frame should be positive')
 
 
 # These tests are missing a line in the config file, the import should throw a specific error message
-missing_gamma = (ut_t.remove_key('gamma', ut_t.load_json(rl_config_file)), 'your config is missing gamma')
-missing_batch_size = (ut_t.remove_key('batch_size', ut_t.load_json(rl_config_file)), 'your config is missing batch_size')
-missing_replay_size = (ut_t.remove_key('replay_size', ut_t.load_json(rl_config_file)), 'your config is missing replay_size')
-missing_learning_rate = (ut_t.remove_key('learning_rate', ut_t.load_json(rl_config_file)),
+missing_gamma = (ut_t.remove_key('gamma', ut_t.load_json(q_learning_config_file)), 'your config is missing gamma')
+missing_batch_size = (ut_t.remove_key('batch_size', ut_t.load_json(q_learning_config_file)), 'your config is missing batch_size')
+missing_replay_size = (ut_t.remove_key('replay_size', ut_t.load_json(q_learning_config_file)), 'your config is missing replay_size')
+missing_learning_rate = (ut_t.remove_key('learning_rate', ut_t.load_json(q_learning_config_file)),
 	'your config is missing learning_rate')
-missing_sync_target_frames = (ut_t.remove_key('sync_target_frames', ut_t.load_json(rl_config_file)),
+missing_sync_target_frames = (ut_t.remove_key('sync_target_frames', ut_t.load_json(q_learning_config_file)),
 	'your config is missing sync_target_frames')
-missing_replay_start_size = (ut_t.remove_key('replay_start_size', ut_t.load_json(rl_config_file)),
+missing_replay_start_size = (ut_t.remove_key('replay_start_size', ut_t.load_json(q_learning_config_file)),
 	'your config is missing replay_start_size')
-missing_epsilon_decay_last_frame = (ut_t.remove_key('epsilon_decay_last_frame', ut_t.load_json(rl_config_file)),
+missing_epsilon_decay_last_frame = (ut_t.remove_key('epsilon_decay_last_frame', ut_t.load_json(q_learning_config_file)),
 	'your config is missing epsilon_decay_last_frame')
-missing_epsilon_start = (ut_t.remove_key('epsilon_start', ut_t.load_json(rl_config_file)),
+missing_epsilon_start = (ut_t.remove_key('epsilon_start', ut_t.load_json(q_learning_config_file)),
 	'your config is missing epsilon_start')
-missing_epsilon_final = (ut_t.remove_key('epsilon_final', ut_t.load_json(rl_config_file)),
+missing_epsilon_final = (ut_t.remove_key('epsilon_final', ut_t.load_json(q_learning_config_file)),
 	'your config is missing epsilon_final')
 
 

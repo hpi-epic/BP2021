@@ -9,7 +9,7 @@ import recommerce.rl.actorcritic.actorcritic_agent as actorcritic_agent
 from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader
 
 config_market: AttrDict = HyperparameterConfigLoader.load('market_config')
-config_rl: AttrDict = HyperparameterConfigLoader.load('rl_config')
+config_rl: AttrDict = HyperparameterConfigLoader.load('actor_critic_config')
 
 abstract_agent_classes_testcases = [
 	actorcritic_agent.ActorCriticAgent,

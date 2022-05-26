@@ -3,8 +3,6 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 from attrdict import AttrDict
-from stable_baselines3 import A2C, DDPG, PPO, SAC, TD3
-from stable_baselines3.common.noise import NormalActionNoise
 
 from recommerce.configuration.path_manager import PathManager
 from recommerce.market.circular.circular_vendors import CircularAgent
@@ -60,72 +58,3 @@ class StableBaselinesAgent(ReinforcementLearningAgent, LinearAgent, CircularAgen
 			signature=self.name, analyze_after_training=analyze_after_training)
 		self.model.learn(training_steps, callback=callback)
 		return callback.watcher.all_dicts
-
-
-class StableBaselinesDDPG(StableBaselinesAgent):
-	"""
-	This a stable baseline agent using Deep Deterministic Policy Gradient (DDPG) algorithm.
-	"""
-	name = 'Stable_Baselines_DDPG'
-
-	def _initialize_model(self, marketplace):
-		n_actions = marketplace.get_actions_dimension()
-		action_noise = NormalActionNoise(mean=np.zeros(n_actions), sigma=1 * np.ones(n_actions))
-		self.model = DDPG('MlpPolicy', marketplace, action_noise=action_noise, verbose=False, tensorboard_log=self.tensorboard_log)
-
-	def _load(self, load_path):
-		self.model = DDPG.load(load_path, tensorboard_log=self.tensorboard_log)
-
-
-class StableBaselinesTD3(StableBaselinesAgent):
-	"""
-	This a stable baseline agent using TD3 which is a direct successor of DDPG.
-	"""
-	name = 'Stable_Baselines_TD3'
-
-	def _initialize_model(self, marketplace):
-		n_actions = marketplace.get_actions_dimension()
-		action_noise = NormalActionNoise(mean=np.zeros(n_actions), sigma=1 * np.ones(n_actions))
-		self.model = TD3('MlpPolicy', marketplace, action_noise=action_noise, verbose=False, tensorboard_log=self.tensorboard_log)
-
-	def _load(self, load_path):
-		self.model = TD3.load(load_path, tensorboard_log=self.tensorboard_log)
-
-
-class StableBaselinesA2C(StableBaselinesAgent):
-	"""
-	This a stable baseline agent using A2C.
-	"""
-	name = 'Stable_Baselines_A2C'
-
-	def _initialize_model(self, marketplace):
-		self.model = A2C('MlpPolicy', marketplace, verbose=False, tensorboard_log=self.tensorboard_log)
-
-	def _load(self, load_path):
-		self.model = A2C.load(load_path, tensorboard_log=self.tensorboard_log)
-
-
-class StableBaselinesPPO(StableBaselinesAgent):
-	"""
-	This a stable baseline agent using Proximal Policy Optimization algorithm (PPO).
-	"""
-	name = 'Stable_Baselines_PPO'
-
-	def _initialize_model(self, marketplace):
-		self.model = PPO('MlpPolicy', marketplace, verbose=False, tensorboard_log=self.tensorboard_log)
-
-	def _load(self, load_path):
-		self.model = PPO.load(load_path, tensorboard_log=self.tensorboard_log)
-
-
-class StableBaselinesSAC(StableBaselinesAgent):
-	"""
-	This a stable baseline agent using Soft Actor Critic (SAC).
-	"""
-	name = 'Stable_Baselines_SAC'
-
-	def _initialize_model(self, marketplace):
-		self.model = SAC('MlpPolicy', marketplace, verbose=False, tensorboard_log=self.tensorboard_log)
-
-	def _load(self, load_path):
-		self.model = SAC.load(load_path, tensorboard_log=self.tensorboard_log)

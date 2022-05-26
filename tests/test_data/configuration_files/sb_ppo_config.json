@@ -1,0 +1,5 @@
+{
+	"class": "recommerce.rl.stable_baselines.sb_ppo.StableBaselinesPPO",
+	"testvalue1": 0.99,
+	"ppovalue": 15.0
+}

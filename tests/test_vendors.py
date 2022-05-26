@@ -12,7 +12,6 @@ from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
 from recommerce.rl.reinforcement_learning_agent import ReinforcementLearningAgent
 
 config_market: AttrDict = HyperparameterConfigLoader.load('market_config')
-config_rl: AttrDict = HyperparameterConfigLoader.load('rl_config')
 
 abstract_agent_classes_testcases = [
 	vendors.Agent,
@@ -52,7 +51,11 @@ def test_non_abstract_agent_classes(agent):
 
 
 def test_non_abstract_qlearning_agent():
-	QLearningAgent(marketplace=LinearEconomyOligopoly(config=config_market), config_market=config_market, config_rl=config_rl)
+	QLearningAgent(
+		marketplace=LinearEconomyOligopoly(config=config_market),
+		config_market=config_market,
+		config_rl=HyperparameterConfigLoader.load('q_learning_config')
+	)
 
 
 fixed_price_agent_observation_policy_pairs_testcases = [

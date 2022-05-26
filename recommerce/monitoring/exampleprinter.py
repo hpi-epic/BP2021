@@ -99,7 +99,7 @@ def main():  # pragma: no cover
 	Defines what is performed when the `agent_monitoring` command is chosen in `main.py`.
 	"""
 	config_market: AttrDict = HyperparameterConfigLoader.load('market_config')
-	config_rl: AttrDict = HyperparameterConfigLoader.load('rl_config')
+	config_rl: AttrDict = HyperparameterConfigLoader.load('q_learning_config')
 	printer = ExamplePrinter(config_market=config_market)
 
 	config_environment: ExampleprinterEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_exampleprinter')
