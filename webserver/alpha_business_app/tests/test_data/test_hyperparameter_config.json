@@ -1,5 +1,6 @@
 {
 	"rl": {
+		"class" : "recommerce.rl.q_learning.q_learning_agent.QLearningAgent",
 		"gamma" : 0.99,
 		"batch_size" : 32,
 		"replay_size" : 100000,
@@ -11,6 +12,7 @@
 		"epsilon_final" : 0.1
 	},
 	"sim_market": {
+		"class": "recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopoly",
 		"max_storage": 100,
 		"episode_length": 50,
 		"max_price": 10,

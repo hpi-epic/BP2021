@@ -30,16 +30,32 @@ def validate_config(config: dict, config_is_final: bool) -> tuple:
 		else:
 			# try to split the config. If any keys are unknown, an AssertionError will be thrown
 			hyperparameter_config, environment_config = split_mixed_config(config)
+
+		# Following PR #485, all hyperparameter-configs need a class attribute from which we get the required/allowed fields
+		if 'rl' in hyperparameter_config:
+			assert 'class' in hyperparameter_config['rl'], 'You need to specify a class in the rl_config'
+			hyperparameter_config['rl']['class'] = QLearningAgent  # This is a dirty fix
+
+		if 'sim_market' in hyperparameter_config:
+			assert 'class' in hyperparameter_config['sim_market'], 'You need to specify a class in the market_config'
+			hyperparameter_config['sim_market']['class'] = CircularEconomyRebuyPriceDuopoly  # This is a dirty fix
+
 		# then validate that all given values have the correct types
-		# check_config_types(hyperparameter_config, environment_config, config_is_final)
+		check_config_types(hyperparameter_config, environment_config, config_is_final)
+
+		# if 'rl' in hyperparameter_config:
+		# 	hyperparameter_config['rl']['class'] = QLearningAgent  # This is a dirty fix
+		# 	HyperparameterConfigValidator.validate_config(hyperparameter_config['rl'])
+		# 	hyperparameter_config['rl'].pop('class')
+		# if 'sim_market' in hyperparameter_config:
+		# 	hyperparameter_config['sim_market']['class'] = CircularEconomyRebuyPriceDuopoly  # This is a dirty fix
+		# 	HyperparameterConfigValidator.validate_config(hyperparameter_config['sim_market'])
+		# 	hyperparameter_config['sim_market'].pop('class')
 
 		if 'rl' in hyperparameter_config:
-			hyperparameter_config['rl']['class'] = QLearningAgent  # This is a dirty fix
-			HyperparameterConfigValidator.validate_config(hyperparameter_config['rl'])
 			hyperparameter_config['rl'].pop('class')
+
 		if 'sim_market' in hyperparameter_config:
-			hyperparameter_config['sim_market']['class'] = CircularEconomyRebuyPriceDuopoly  # This is a dirty fix
-			HyperparameterConfigValidator.validate_config(hyperparameter_config['sim_market'])
 			hyperparameter_config['sim_market'].pop('class')
 
 		return True, (hyperparameter_config, environment_config)
@@ -117,29 +133,28 @@ def split_mixed_config(config: dict) -> tuple:
 	return hyperparameter_config, environment_config
 
 
-# def check_config_types(hyperparameter_config: dict, environment_config: dict, must_contain: bool = False) -> None:
-# 	"""
-# 	Utility function that checks (incomplete) config dictionaries for their correct types.
+def check_config_types(hyperparameter_config: dict, environment_config: dict, must_contain: bool = False) -> None:
+	"""
+	Utility function that checks (incomplete) config dictionaries for their correct types.
 
-# 	Args:
-# 		hyperparameter_config (dict): The config containing hyperparameter_config-keys.
-# 		environment_config (dict): The config containing environment_config-keys.
-# 		must_contain (bool): Whether or not the configuration should contain all required keys.
+	Args:
+		hyperparameter_config (dict): The config containing hyperparameter_config-keys.
+		environment_config (dict): The config containing environment_config-keys.
+		must_contain (bool): Whether or not the configuration should contain all required keys.
 
-# 	Raises:
-# 		AssertionError: If one of the values has the wrong type.
-# 	"""
-# 	# check types for hyperparameter_config
-# 	# @NikkelM Why was this here?
-# 	# HyperparameterConfigValidator.check_types(hyperparameter_config, 'top-dict', must_contain)
-# 	if 'rl' in hyperparameter_config:
-# 		HyperparameterConfigValidator.check_types(hyperparameter_config['rl'], 'rl', must_contain)
-# 	if 'sim_market' in hyperparameter_config:
-# 		HyperparameterConfigValidator.check_types(hyperparameter_config['sim_market'], 'sim_market', must_contain)
+	Raises:
+		AssertionError: If one of the values has the wrong type.
+	"""
+	if 'rl' in hyperparameter_config:
+		HyperparameterConfigValidator._check_types(hyperparameter_config['rl'],
+			hyperparameter_config['rl']['class'].get_configurable_fields(), must_contain)
+	if 'sim_market' in hyperparameter_config:
+		HyperparameterConfigValidator._check_types(hyperparameter_config['sim_market'],
+			hyperparameter_config['sim_market']['class'].get_configurable_fields(), must_contain)
 
-# 	# check types for environment_config
-# 	task = environment_config['task'] if must_contain else 'None'
-# 	EnvironmentConfig.check_types(environment_config, task, False, must_contain)
+	# check types for environment_config
+	task = environment_config['task'] if must_contain else 'None'
+	EnvironmentConfig.check_types(environment_config, task, False, must_contain)
 
 
 # if __name__ == '__main__':  # pragma: no cover

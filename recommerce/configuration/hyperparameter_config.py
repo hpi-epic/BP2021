@@ -18,6 +18,7 @@ class HyperparameterConfigValidator():
 			return {'rl': True, 'sim_market': True}
 		elif dict_key == 'rl':
 			return {
+				'class': False,
 				'gamma': False,
 				'batch_size': False,
 				'replay_size': False,
@@ -30,6 +31,7 @@ class HyperparameterConfigValidator():
 			}
 		elif dict_key == 'sim_market':
 			return {
+				'class': False,
 				'max_storage': False,
 				'episode_length': False,
 				'max_price': False,
@@ -77,12 +79,16 @@ class HyperparameterConfigValidator():
 			assert key in config, f'your config is missing {key}'
 
 	@classmethod
-	def _check_types(cls, config: dict, configurable_fields: list) -> None:
+	def _check_types(cls, config: dict, configurable_fields: list, must_contain: bool = True) -> None:
 		for field_name, type, _ in configurable_fields:
-			assert isinstance(config[field_name], type), f'{field_name} must be a {type} but was {type(config[field_name])}'
+			try:
+				assert isinstance(config[field_name], type), f'{field_name} must be a {type} but was {type(config[field_name])}'
+			except KeyError as error:
+				if must_contain:
+					raise KeyError(f'Your config is missing the following required key: {field_name}') from error
 
 	@classmethod
-	def _check_rules(cls, config: dict, configurable_fields: list) -> None:
+	def _check_rules(cls, config: dict, configurable_fields: list, must_contain: bool = True) -> None:
 		for field_name, _, rule in configurable_fields:
 			if rule is not None:
 				if not isinstance(rule, tuple):
@@ -90,7 +96,11 @@ class HyperparameterConfigValidator():
 					check_method, error_string = rule(field_name)
 				else:
 					check_method, error_string = rule
-				assert check_method(config[field_name]), error_string
+				try:
+					assert check_method(config[field_name]), error_string
+				except KeyError as error:
+					if must_contain:
+						raise KeyError(f'Your config is missing the following required key: {field_name}') from error
 
 
 class HyperparameterConfigLoader():

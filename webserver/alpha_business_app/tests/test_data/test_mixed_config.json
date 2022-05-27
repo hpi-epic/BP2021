@@ -1,11 +1,13 @@
 {
 	"task": "training",
 	"sim_market": {
+		"class": "recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopoly",
 		"max_storage": 100,
 		"episode_length": 50
 	},
 	"enable_live_draw": false,
 	"rl": {
+		"class" : "recommerce.rl.q_learning.q_learning_agent.QLearningAgent",
 		"gamma" : 0.99,
 		"batch_size" : 32
 	},
