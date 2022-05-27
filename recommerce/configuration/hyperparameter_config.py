@@ -124,7 +124,7 @@ class HyperparameterConfigLoader():
 		assert 'class' in config, f"Every config json must contain a 'class' key, but {filename} does not."
 		config['class'] = get_class(config['class'])
 		assert issubclass(config['class'], JSONConfigurable), f"The class {config['class']} must be a subclass of JSONConfigurable."
-		print(config)
+
 		HyperparameterConfigValidator.validate_config(config)
 		config.pop('class')
 		return AttrDict(config)

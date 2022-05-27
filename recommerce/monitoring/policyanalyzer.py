@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 import recommerce.configuration.utils as ut
+from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader
 from recommerce.configuration.path_manager import PathManager
 from recommerce.market.circular.circular_vendors import RuleBasedCERebuyAgentCompetitive
 from recommerce.rl.actorcritic.actorcritic_agent import ContinuousActorCriticAgent
@@ -117,7 +118,8 @@ class PolicyAnalyzer():
 
 
 if __name__ == '__main__':
-	pa = PolicyAnalyzer(RuleBasedCERebuyAgentCompetitive(), 'default_configuration')
+	config_market = HyperparameterConfigLoader.load('market_config')
+	pa = PolicyAnalyzer(RuleBasedCERebuyAgentCompetitive(config_market=config_market), 'default_configuration')
 	one_competitor_examples = [
 		('rule based own refurbished price', 0),
 		('rule based own new price', 1),
