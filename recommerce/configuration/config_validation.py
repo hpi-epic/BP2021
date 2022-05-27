@@ -157,39 +157,41 @@ def check_config_types(hyperparameter_config: dict, environment_config: dict, mu
 	EnvironmentConfig.check_types(environment_config, task, False, must_contain)
 
 
-# if __name__ == '__main__':  # pragma: no cover
-# 	test_config = {
-# 		'rl': {
-# 			'batch_size': 32,
-# 			'replay_size': 100000,
-# 			'learning_rate': 1e-6,
-# 			'sync_target_frames': 1000,
-# 			'replay_start_size': 10000,
-# 			'epsilon_decay_last_frame': 75000,
-# 			'epsilon_start': 1.0,
-# 			'epsilon_final': 0.1
-# 		},
-# 		'sim_market': {
-# 			'max_storage': 100,
-# 			'episode_length': 50,
-# 			'max_price': 10,
-# 			'max_quality': 50,
-# 			'production_price': 3,
-# 			'storage_cost_per_product': 0.1
-# 		},
-# 		'episodes': 5,
-# 		'agents': [
-# 			{
-# 				'name': 'CE Rebuy Agent (QLearning)',
-# 				'agent_class': 'recommerce.rl.q_learning.q_learning_agent.QLearningAgent',
-# 				'argument': ''
-# 			},
-# 			{
-# 				'name': 'CE Rebuy Agent (QLearaning)',
-# 				'agent_class': 'recommerce.rl.q_learning.q_learning_agent.QLearningAgent',
-# 				'argument': ''
-# 			}
-# 		]
-# 	}
-# 	hyper, env = split_mixed_config(test_config)
-# 	check_config_types(hyper, env)
+if __name__ == '__main__':  # pragma: no cover
+	test_config = {
+		'rl': {
+			'class': 'recommerce.rl.q_learning.q_learning_agent.QLearningAgent',
+			'batch_size': 32,
+			'replay_size': 100000,
+			'learning_rate': 1e-6,
+			'sync_target_frames': 1000,
+			'replay_start_size': 10000,
+			'epsilon_decay_last_frame': 75000,
+			'epsilon_start': 1.0,
+			'epsilon_final': 0.1
+		},
+		'sim_market': {
+			'class': 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopoly',
+			'max_storage': 100,
+			'episode_length': 50,
+			'max_price': 10,
+			'max_quality': 50,
+			'production_price': 3,
+			'storage_cost_per_product': 0.1
+		},
+		'episodes': 5,
+		'agents': [
+			{
+				'name': 'CE Rebuy Agent (QLearning)',
+				'agent_class': 'recommerce.rl.q_learning.q_learning_agent.QLearningAgent',
+				'argument': ''
+			},
+			{
+				'name': 'CE Rebuy Agent (QLearaning)',
+				'agent_class': 'recommerce.rl.q_learning.q_learning_agent.QLearningAgent',
+				'argument': ''
+			}
+		]
+	}
+	print('Testing config validation...')
+	print(validate_config(test_config, False))
