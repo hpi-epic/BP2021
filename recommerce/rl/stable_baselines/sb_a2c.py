@@ -19,6 +19,7 @@ class StableBaselinesA2C(StableBaselinesAgent):
 	@staticmethod
 	def get_configurable_fields() -> list:
 		return [
-			('testvalue1', float, between_zero_one_rule),
-			('a2cvalue', float, greater_zero_rule)
+			('learning_rate', float, between_zero_one_rule),
+			('n_steps', int, greater_zero_rule),
+			('gamma', float, between_zero_one_rule)
 		]

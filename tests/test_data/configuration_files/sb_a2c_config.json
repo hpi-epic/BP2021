@@ -1,5 +1,6 @@
 {
 	"class": "recommerce.rl.stable_baselines.sb_a2c.StableBaselinesA2C",
-	"testvalue1": 0.99,
-	"a2cvalue": 15.0
+	"learning_rate": 7e-4,
+	"n_steps": 5,
+	"gamma": 0.99
 }

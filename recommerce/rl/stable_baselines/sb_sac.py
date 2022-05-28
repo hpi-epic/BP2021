@@ -19,6 +19,11 @@ class StableBaselinesSAC(StableBaselinesAgent):
 	@staticmethod
 	def get_configurable_fields() -> list:
 		return [
-			('testvalue1', float, between_zero_one_rule),
-			('sacvalue', float, greater_zero_rule)
+			('learning_rate', float, between_zero_one_rule),
+			('buffer_size', int, greater_zero_rule),
+			('learning_starts', int, greater_zero_rule),
+			('batch_size', int, greater_zero_rule),
+			('tau', float, between_zero_one_rule),
+			('gamma', float, between_zero_one_rule),
+			('ent_coef', (str, float), None)
 		]

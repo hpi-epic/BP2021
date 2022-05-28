@@ -1,5 +1,10 @@
 {
 	"class": "recommerce.rl.stable_baselines.sb_sac.StableBaselinesSAC",
-	"testvalue1": 0.99,
-	"sacvalue": 15.0
+	"learning_rate": 3e-4,
+	"buffer_size": 1000000,
+	"learning_starts": 100,
+	"batch_size": 256,
+	"tau": 0.005,
+	"gamma": 0.99,
+	"ent_coef": "auto"
 }

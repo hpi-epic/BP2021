@@ -8,7 +8,6 @@ import recommerce.configuration.utils as ut
 import recommerce.market.circular.circular_sim_market as circular_market
 import recommerce.market.linear.linear_sim_market as linear_market
 import recommerce.market.sim_market as sim_market
-from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader
 from recommerce.configuration.path_manager import PathManager
 from recommerce.market.circular.circular_vendors import CircularAgent, FixedPriceCEAgent
 from recommerce.market.linear.linear_vendors import LinearAgent
@@ -21,7 +20,7 @@ class Configurator():
 	"""
 	The Configurator is being used together with the `agent_monitoring.Monitor()` and is responsible for managing its configuration.
 	"""
-	def __init__(self) -> None:
+	def __init__(self, config_market: AttrDict, config_rl: AttrDict) -> None:
 		# Do not change the values in here when setting up a session! Instead use setup_monitoring()!
 		ut.ensure_results_folders_exist()
 		self.enable_live_draw = False
@@ -29,8 +28,8 @@ class Configurator():
 		self.plot_interval = 50
 		self.marketplace = circular_market.CircularEconomyMonopoly
 		default_agent = FixedPriceCEAgent
-		self.config_market: AttrDict = HyperparameterConfigLoader.load('market_config')
-		self.config_rl: AttrDict = HyperparameterConfigLoader.load('q_learning_config')
+		self.config_market: AttrDict = config_market
+		self.config_rl: AttrDict = config_rl
 		self.agents = [default_agent(config_market=self.config_market)]
 		self.agent_colors = [(0.0, 0.0, 1.0, 1.0)]
 		self.folder_path = os.path.abspath(os.path.join(PathManager.results_path, 'monitoring', 'plots_' + time.strftime('%b%d_%H-%M-%S')))

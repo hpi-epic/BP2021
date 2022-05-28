@@ -80,8 +80,8 @@ class RecommerceCallback(BaseCallback):
 		"""
 		ut.ensure_results_folders_exist()
 		self.curr_time = time.strftime('%b%d_%H-%M-%S')
-		self.writer = SummaryWriter(log_dir=os.path.join(PathManager.results_path, 'runs', f'training_{self.curr_time}'))
 		path_name = f'{self.signature}_{self.curr_time}'
+		self.writer = SummaryWriter(log_dir=os.path.join(PathManager.results_path, 'runs', path_name))
 		self.save_path = os.path.join(PathManager.results_path, 'trainedModels', path_name)
 		os.makedirs(os.path.abspath(self.save_path), exist_ok=True)
 		self.tmp_parameters = os.path.join(self.save_path, f'tmp_model.{self.file_ending}')
@@ -152,7 +152,7 @@ class RecommerceCallback(BaseCallback):
 			print('No agents saved! Nothing to monitor.')
 			return
 
-		monitor = Monitor()
+		monitor = Monitor(self.config_market, self.config_rl)
 		monitor.configurator.get_folder()
 
 		print('Creating scatterplots...')
