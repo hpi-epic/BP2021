@@ -24,18 +24,21 @@ class Evaluator():
 			episode_numbers (list of int): The training stages the empirical distributions belong to.
 			If it is None, a prior functionality is used.
 		"""
+		analysis_string = ''
 		# Print the statistics
 		for index, analysis in enumerate(analyses):
 			if episode_numbers is None:
-				print(f'\nStatistics for agent: {self.configurator.agents[index].name}')
+				analysis_string += f'\nStatistics for agent: {self.configurator.agents[index].name}\n'
 			else:
-				print(f'\nStatistics for episode {episode_numbers[index]}')
+				analysis_string += f'\nStatistics for episode {episode_numbers[index]}\n'
 
 			for property, samples in ut.unroll_dict_with_list(analysis).items():
-				print('%40s: %7.2f (mean), %7.2f (median), %7.2f (std), %7.2f (min), %7.2f (max)' % (
+				analysis_string += ('%40s: %7.2f (mean), %7.2f (median), %7.2f (std), %7.2f (min), %7.2f (max)\n' % (
 					property, np.mean(samples), np.median(samples), np.std(samples), np.min(samples), np.max(samples)))
 
-		print()
+		print(analysis_string)
+		with open(os.path.join(self.configurator.get_folder(), 'written_analyses.txt'), 'w') as file:
+			file.write(analysis_string)
 		# Create density plots
 		print('Creating density plots...')
 		for index, analysis in enumerate(analyses):

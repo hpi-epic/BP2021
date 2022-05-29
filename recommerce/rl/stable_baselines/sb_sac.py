@@ -11,7 +11,7 @@ class StableBaselinesSAC(StableBaselinesAgent):
 	name = 'Stable_Baselines_SAC'
 
 	def _initialize_model(self, marketplace):
-		self.model = SAC('MlpPolicy', marketplace, verbose=False, tensorboard_log=self.tensorboard_log)
+		self.model = SAC('MlpPolicy', marketplace, verbose=False, tensorboard_log=self.tensorboard_log, **self.config_rl)
 
 	def _load(self, load_path):
 		self.model = SAC.load(load_path, tensorboard_log=self.tensorboard_log)

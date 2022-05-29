@@ -20,7 +20,7 @@ class Configurator():
 	"""
 	The Configurator is being used together with the `agent_monitoring.Monitor()` and is responsible for managing its configuration.
 	"""
-	def __init__(self, config_market: AttrDict, config_rl: AttrDict) -> None:
+	def __init__(self, config_market: AttrDict, config_rl: AttrDict, name='plots') -> None:
 		# Do not change the values in here when setting up a session! Instead use setup_monitoring()!
 		ut.ensure_results_folders_exist()
 		self.enable_live_draw = False
@@ -32,7 +32,7 @@ class Configurator():
 		self.config_rl: AttrDict = config_rl
 		self.agents = [default_agent(config_market=self.config_market)]
 		self.agent_colors = [(0.0, 0.0, 1.0, 1.0)]
-		self.folder_path = os.path.abspath(os.path.join(PathManager.results_path, 'monitoring', 'plots_' + time.strftime('%b%d_%H-%M-%S')))
+		self.folder_path = os.path.abspath(os.path.join(PathManager.results_path, 'monitoring', f"{name}_{time.strftime('%b%d_%H-%M-%S')}"))
 
 	def get_folder(self) -> str:
 		"""

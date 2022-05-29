@@ -27,8 +27,9 @@ class Monitor():
 	def __init__(
 			self,
 			config_market: AttrDict = HyperparameterConfigLoader.load('market_config'),
-			config_rl: AttrDict = HyperparameterConfigLoader.load('q_learning_config')):
-		self.configurator = am_configuration.Configurator(config_market, config_rl)
+			config_rl: AttrDict = HyperparameterConfigLoader.load('q_learning_config'),
+			name: str = 'plots'):
+		self.configurator = am_configuration.Configurator(config_market, config_rl, name)
 		self.evaluator = am_evaluation.Evaluator(self.configurator)
 		# Signal handler for e.g. KeyboardInterrupt
 		signal.signal(signal.SIGINT, self._signal_handler)

@@ -127,6 +127,27 @@ def add_content_of_two_dicts(dict1, dict2) -> dict:
 	return newdict
 
 
+def convert_dict_to_float(dict1: dict) -> dict:
+	"""
+	This function takes a dict and recursively converts all entries to float.
+
+	Args:
+		dict1 (dict): the dict you want to convert
+
+	Returns:
+		dict: same structure as dict1, but all entries are floats
+	"""
+	newdict = {}
+	for key in dict1:
+		if isinstance(dict1[key], dict):
+			newdict[key] = convert_dict_to_float(dict1[key])
+		elif isinstance(dict1[key], np.float32):
+			newdict[key] = float(dict1[key])
+		else:
+			newdict[key] = dict1[key]
+	return newdict
+
+
 def unroll_dict_with_list(input_dict: dict) -> dict:
 	"""
 	This function takes a dictionary containing numbers and lists and unrolls it into a flat dictionary.

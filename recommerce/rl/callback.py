@@ -1,3 +1,4 @@
+import json
 import os
 import signal
 import sys
@@ -152,11 +153,17 @@ class RecommerceCallback(BaseCallback):
 			print('No agents saved! Nothing to monitor.')
 			return
 
-		monitor = Monitor(self.config_market, self.config_rl)
+		print('Saving watchers...')
+		# write self watchers as json to save path
+		float_dicts = [ut.convert_dict_to_float(d) for d in self.watcher.all_dicts]
+		with open(os.path.join(self.save_path, 'watchers.json'), 'w') as f:
+			json.dump(float_dicts, f)
+
+		monitor = Monitor(self.config_market, self.config_rl, self.signature)
 		monitor.configurator.get_folder()
 
 		print('Creating scatterplots...')
-		ignore_first_samples = 15  # the number of samples you want to skip because they can be severe outliers
+		ignore_first_samples = 100  # the number of samples you want to skip because they can be severe outliers
 		cumulative_properties = self.watcher.get_cumulative_properties()
 		for property, samples in ut.unroll_dict_with_list(cumulative_properties).items():
 			x_values = np.array(range(len(samples[ignore_first_samples:]))) + ignore_first_samples
