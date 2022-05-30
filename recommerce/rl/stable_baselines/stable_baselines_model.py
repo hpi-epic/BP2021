@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 import numpy as np
 from attrdict import AttrDict
 
+from recommerce.configuration.common_rules import greater_zero_rule
 from recommerce.configuration.path_manager import PathManager
 from recommerce.market.circular.circular_vendors import CircularAgent
 from recommerce.market.linear.linear_vendors import LinearAgent
@@ -58,3 +59,9 @@ class StableBaselinesAgent(ReinforcementLearningAgent, LinearAgent, CircularAgen
 			signature=self.name, analyze_after_training=analyze_after_training)
 		self.model.learn(training_steps, callback=callback)
 		return callback.watcher.all_dicts
+
+	@staticmethod
+	def get_configurable_fields() -> list:
+		return [
+			('stable_baseline_test', float, greater_zero_rule)
+		]

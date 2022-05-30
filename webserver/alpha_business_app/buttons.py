@@ -74,7 +74,7 @@ class ButtonHandler():
 		if self.wanted_key == 'start':
 			return self._start()
 		if self.wanted_key == 'pre-fill':
-			return self._pre_fill()
+			return self._prefill()
 		if self.wanted_key == 'logs':
 			return self._logs()
 		if self.wanted_key == 'manage_config':
@@ -266,7 +266,7 @@ class ButtonHandler():
 			self.wanted_config.delete()
 		return redirect('/configurator')
 
-	def _pre_fill(self) -> HttpResponse:
+	def _prefill(self) -> HttpResponse:
 		"""
 		This function will be called when the config form should be prefilled with values from the config.
 		It converts a list of given config objects to dicts and merges these dicts.

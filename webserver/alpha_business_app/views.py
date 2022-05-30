@@ -14,6 +14,7 @@ from .handle_requests import get_api_status
 from .models.config import Config
 from .models.container import Container
 from .selection_manager import SelectionManager
+from .utils import get_agent_hyperparameter
 
 selection_manager = SelectionManager()
 
@@ -94,11 +95,20 @@ def delete_config(request, config_id) -> HttpResponse:
 
 # AJAX relevant views
 @login_required
-def agent(request) -> HttpResponse:
+def new_agent(request) -> HttpResponse:
 	if not request.user.is_authenticated:
 		return HttpResponse('Unauthorized', status=401)
 	return render(request, 'configuration_items/agent.html',
 		{'id': str(uuid4()), 'name': 'Competitor', 'agent_selections': selection_manager.get_competitor_options_for_marketplace()})
+
+
+@login_required
+def agent_changed(request) -> HttpResponse:
+	if not request.user.is_authenticated:
+		return HttpResponse('Unauthorized', status=401)
+	print(get_agent_hyperparameter(request.POST['agent']))
+	return render(request, 'configuration_items/rl_parameter.html',
+		{'parameters': get_agent_hyperparameter(request.POST['agent'])})
 
 
 def api_availability(request) -> HttpResponse:

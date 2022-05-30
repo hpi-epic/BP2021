@@ -55,10 +55,33 @@ $(document).ready(function() {
 			success: function (data) {
 				all_agents.empty().append(data);
 				addEventToAddMoreButton();
+				addChangeToAgent();
 			}
 		});
-	}).trigger('change');
-	
+	}).trigger("change");
+
+
+	function addChangeToAgent () {
+		$("select.agent-agent-class").change(function () {
+			// will be called when another marketplace has been selected
+			var self = $(this);
+			console.log('here')
+			const csrftoken = getCookie("csrftoken");
+			$.ajax({
+				type: "POST",
+				url: self.data("url"),
+				data: {
+					csrfmiddlewaretoken: csrftoken,
+					"agent": self.val()
+				},
+				success: function (data) {
+					console.log(data)
+					$("div.rl-parameter").empty().append(data)
+				}
+			});
+		}).trigger("change");
+	}
+	addChangeToAgent()
 
 	function getCookie(name) {
 		let cookieValue = null;
