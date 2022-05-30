@@ -112,8 +112,9 @@ def train_stable_baselines_sac():
 
 def train_rl_vs_rl():
 	config_market: AttrDict = HyperparameterConfigLoader.load('market_config')
-	config_rl: AttrDict = HyperparameterConfigLoader.load('sb_ppo_config')
-	rl_vs_rl_training.train_rl_vs_rl(config_market, config_rl)
+	config_rl1: AttrDict = HyperparameterConfigLoader.load('sb_ppo_config')
+	config_rl2: AttrDict = HyperparameterConfigLoader.load('sb_sac_config')
+	rl_vs_rl_training.train_rl_vs_rl(config_market, config_rl1, config_rl2)
 
 
 def train_self_play():

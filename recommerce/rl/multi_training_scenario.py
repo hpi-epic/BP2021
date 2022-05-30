@@ -1,16 +1,17 @@
 import time
-from multiprocessing import Process
+from multiprocessing import Pipe, Process
 
 from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader
 from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPriceDuopoly
 from recommerce.rl.stable_baselines.sb_sac import StableBaselinesSAC
 
 
-def run_training_session(agent_class, config_rl, number):
+def run_training_session(agent_class, config_rl, number, pipe_to_parent):
     config_market = HyperparameterConfigLoader.load('market_config')
     agent = agent_class(config_market, config_rl, CircularEconomyRebuyPriceDuopoly(config_market,
         support_continuous_action_space=True), name=f'SAC_{number}')
-    agent.train_agent(200000)  # (400000)
+    agent.train_agent(2000)  # (400000)
+    pipe_to_parent.send(f'{number} is done')
 
 
 def experiment_best_learning_rate_ppo():
@@ -72,8 +73,11 @@ if __name__ == '__main__':
     # run_training_session(StableBaselinesSAC, HyperparameterConfigLoader.load('sb_sac_config'), 0)
     configs, descriptions = experiment_temperature_sac()
     print(configs)
-    processes = [Process(target=run_training_session, args=(StableBaselinesSAC, config, description))
-        for config, description in zip(configs, descriptions)]
+    pipes = []
+    for _ in configs:
+        pipes.append(Pipe(False))
+    processes = [Process(target=run_training_session, args=(StableBaselinesSAC, config, description, pipe_entry))
+        for config, description, (_, pipe_entry) in zip(configs, descriptions, pipes)]
     print('Now I start the processes')
     for p in processes:
         time.sleep(5)
@@ -81,4 +85,6 @@ if __name__ == '__main__':
     print('Now I wait for the results')
     for p in processes:
         p.join()
-    print('Here you are')
+    print('All threads joined')
+    for output, _ in pipes:
+        print(output.recv())

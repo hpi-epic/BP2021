@@ -35,10 +35,8 @@ class Evaluator():
 			for property, samples in ut.unroll_dict_with_list(analysis).items():
 				analysis_string += ('%40s: %7.2f (mean), %7.2f (median), %7.2f (std), %7.2f (min), %7.2f (max)\n' % (
 					property, np.mean(samples), np.median(samples), np.std(samples), np.min(samples), np.max(samples)))
-
 		print(analysis_string)
-		with open(os.path.join(self.configurator.get_folder(), 'written_analyses.txt'), 'w') as file:
-			file.write(analysis_string)
+
 		# Create density plots
 		print('Creating density plots...')
 		for index, analysis in enumerate(analyses):
@@ -48,6 +46,8 @@ class Evaluator():
 
 		# self._create_statistics_plots(rewards)
 		if episode_numbers is not None:
+			with open(os.path.join(self.configurator.get_folder(), 'written_analyses.txt'), 'w') as file:
+				file.write(analysis_string)
 			for property_name in ut.unroll_dict_with_list(analyses[0]).keys():
 				samples = [ut.unroll_dict_with_list(analysis)[property_name] for analysis in analyses]
 				self._create_violin_plot(samples, episode_numbers, f'Violinplot showing progress of {property_name}')
