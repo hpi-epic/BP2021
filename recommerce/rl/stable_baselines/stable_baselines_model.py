@@ -57,4 +57,4 @@ class StableBaselinesAgent(ReinforcementLearningAgent, LinearAgent, CircularAgen
 			type(self), type(self.marketplace), self.config_market, self.config_rl, training_steps=training_steps, iteration_length=iteration_length,
 			signature=self.name, analyze_after_training=analyze_after_training)
 		self.model.learn(training_steps, callback=callback)
-		return callback.watcher.all_dicts
+		return callback.watcher

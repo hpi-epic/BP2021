@@ -1,8 +1,11 @@
 import time
 from multiprocessing import Pipe, Process
 
+import matplotlib.pyplot as plt
+
 from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader
 from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPriceDuopoly
+from recommerce.rl.stable_baselines.sb_ppo import StableBaselinesPPO
 from recommerce.rl.stable_baselines.sb_sac import StableBaselinesSAC
 
 
@@ -10,8 +13,8 @@ def run_training_session(agent_class, config_rl, number, pipe_to_parent):
     config_market = HyperparameterConfigLoader.load('market_config')
     agent = agent_class(config_market, config_rl, CircularEconomyRebuyPriceDuopoly(config_market,
         support_continuous_action_space=True), name=f'SAC_{number}')
-    agent.train_agent(2000)  # (400000)
-    pipe_to_parent.send(f'{number} is done')
+    watcher = agent.train_agent(2000)  # (400000)
+    pipe_to_parent.send(watcher)
 
 
 def experiment_best_learning_rate_ppo():
@@ -35,7 +38,7 @@ def experiment_clipping_ppo():
     for _ in range(8):
         configs.append(HyperparameterConfigLoader.load('sb_ppo_config'))
     for i, config in enumerate(configs):
-        config.clip_range = i * 0.025 + 0.1
+        config.clip_range = i * 0.025 + 0.15
         descriptions.append(f'clip_{config["clip_range"]}')
 
     return configs, descriptions
@@ -61,7 +64,7 @@ def experiment_temperature_sac():
     descriptions = []
     for _ in range(8):
         configs.append(HyperparameterConfigLoader.load('sb_sac_config'))
-    entropy_coefficient_values = [0.1, 0.2, 0.5, 1, 1.75, 2.5, 4, 7]
+    entropy_coefficient_values = [0.2, 0.5, 1, 1.75, 2.5, 4, 'auto', 'auto']
     for config, entropy_coefficient in zip(configs, entropy_coefficient_values):
         config.ent_coef = entropy_coefficient
         descriptions.append(f'ent_coef_{entropy_coefficient}')
@@ -69,22 +72,38 @@ def experiment_temperature_sac():
     return configs, descriptions
 
 
-if __name__ == '__main__':
-    # run_training_session(StableBaselinesSAC, HyperparameterConfigLoader.load('sb_sac_config'), 0)
-    configs, descriptions = experiment_temperature_sac()
+def run_group(agent, experiment):
+    configs, descriptions = experiment()
     print(configs)
     pipes = []
     for _ in configs:
         pipes.append(Pipe(False))
-    processes = [Process(target=run_training_session, args=(StableBaselinesSAC, config, description, pipe_entry))
+    processes = [Process(target=run_training_session, args=(agent, config, description, pipe_entry))
         for config, description, (_, pipe_entry) in zip(configs, descriptions, pipes)]
     print('Now I start the processes')
     for p in processes:
-        time.sleep(5)
+        time.sleep(2)
         p.start()
     print('Now I wait for the results')
+    watchers = [output.recv() for output, _ in pipes]
+    print('Now I have the results')
     for p in processes:
         p.join()
     print('All threads joined')
-    for output, _ in pipes:
-        print(output.recv())
+    return descriptions, [watcher.get_progress_values_of_property('profits/all', 0) for watcher in watchers]
+
+
+if __name__ == '__main__':
+    # run_training_session(StableBaselinesSAC, HyperparameterConfigLoader.load('sb_sac_config'), 0)
+
+    groups = [run_group(StableBaselinesSAC, experiment_temperature_sac), run_group(StableBaselinesPPO, experiment_clipping_ppo)]
+    for descriptions, profits_vendor_0 in groups:
+        for descrition, profits in zip(descriptions, profits_vendor_0):
+            plt.plot(profits, label=descrition)
+    plt.legend()
+    # plt.ylim(0, 1000)
+    plt.title('Comparison of the learning curves')
+    plt.xlabel('Episodes')
+    plt.ylabel('Profit')
+    plt.savefig('multi_training_results.svg')
+    plt.show()

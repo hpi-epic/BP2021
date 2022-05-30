@@ -31,7 +31,7 @@ def train_rl_vs_rl(
 
 	for i in range(num_switches):
 		print(f'\n\nTraining {i + 1}\nTraining generation {i // 2 + 1} of {agents[i % 2].name}.')
-		last_dicts = agents[i % 2].train_agent(training_steps=num_steps_per_switch)
+		last_dicts = agents[i % 2].train_agent(training_steps=num_steps_per_switch).all_dicts
 		for mydict in last_dicts:
 			rewards[i % 2].append(mydict['profits/all']['vendor_0'])
 			rewards[(i + 1) % 2].append(mydict['profits/all']['vendor_1'])
