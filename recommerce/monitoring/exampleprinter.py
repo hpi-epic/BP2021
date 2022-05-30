@@ -80,7 +80,8 @@ class ExamplePrinter():
 				else:
 					cumulative_dict = copy.deepcopy(logdict)
 				ut.write_dict_to_tensorboard(writer, logdict, counter)
-				ut.write_dict_to_tensorboard(writer, cumulative_dict, counter, is_cumulative=True)
+				ut.write_dict_to_tensorboard(writer, cumulative_dict, counter, is_cumulative=True,
+					episode_length=self.marketplace.config.episode_length)
 				if isinstance(self.marketplace, circular_market.CircularEconomyRebuyPriceDuopoly):
 					ut.write_content_of_dict_to_overview_svg(svg_manipulator, counter, logdict, cumulative_dict, self.config_market)
 				our_profit += reward

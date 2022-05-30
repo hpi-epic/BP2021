@@ -79,7 +79,7 @@ def test_write_dict_to_tensorboard(dictionary: dict, counter: int, is_cumulative
 
 	mock_writer = Mock()
 
-	ut.write_dict_to_tensorboard(mock_writer, dictionary, counter, is_cumulative)
+	ut.write_dict_to_tensorboard(mock_writer, dictionary, counter, is_cumulative, 35 if is_cumulative else None)
 
 	for name, content in dictionary.items():
 		if is_cumulative:
