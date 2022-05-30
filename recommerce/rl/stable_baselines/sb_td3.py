@@ -15,7 +15,8 @@ class StableBaselinesTD3(StableBaselinesAgent):
 	def _initialize_model(self, marketplace):
 		n_actions = marketplace.get_actions_dimension()
 		action_noise = NormalActionNoise(mean=np.zeros(n_actions), sigma=1 * np.ones(n_actions))
-		self.model = TD3('MlpPolicy', marketplace, action_noise=action_noise, verbose=False, tensorboard_log=self.tensorboard_log)
+		self.model = TD3('MlpPolicy', marketplace, action_noise=action_noise, verbose=False,
+			tensorboard_log=self.tensorboard_log, **self.config_rl)
 
 	def _load(self, load_path):
 		self.model = TD3.load(load_path, tensorboard_log=self.tensorboard_log)

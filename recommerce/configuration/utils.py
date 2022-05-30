@@ -59,7 +59,7 @@ def cartesian_product(list_a, list_b):
 	return output_list
 
 
-def write_dict_to_tensorboard(writer, dictionary: dict, counter: int, is_cumulative: bool = False) -> None:
+def write_dict_to_tensorboard(writer, dictionary: dict, counter: int, is_cumulative: bool = False, episode_length: int = None) -> None:
 	"""
 	This function takes a dictionary of data with data from one step and adds it at the specified time to the tensorboard.
 
@@ -69,12 +69,16 @@ def write_dict_to_tensorboard(writer, dictionary: dict, counter: int, is_cumulat
 		counter (int): Specifies the timestamp/step at which the data should be added to the tensorboard.
 		is_cumulative (bool, optional): . Defaults to False.
 	"""
+	assert is_cumulative == (episode_length is not None), 'Episode length must be exactly specified if is_cumulative is True'
 	for name, content in dictionary.items():
-
 		if is_cumulative:
 			# do not print cumulative actions or states because it has no meaning
 			if (name.startswith('actions') or name.startswith('state')):
-				continue
+				name = f'average_{name}'
+				if isinstance(content, dict):
+					content = divide_content_of_dict(content, episode_length)
+				else:
+					content = content / episode_length
 			else:
 				name = f'cumulated_{name}'
 		if isinstance(content, dict):

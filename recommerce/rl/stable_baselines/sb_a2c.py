@@ -11,7 +11,7 @@ class StableBaselinesA2C(StableBaselinesAgent):
 	name = 'Stable_Baselines_A2C'
 
 	def _initialize_model(self, marketplace):
-		self.model = A2C('MlpPolicy', marketplace, verbose=False, tensorboard_log=self.tensorboard_log)
+		self.model = A2C('MlpPolicy', marketplace, verbose=False, tensorboard_log=self.tensorboard_log, **self.config_rl)
 
 	def _load(self, load_path):
 		self.model = A2C.load(load_path, tensorboard_log=self.tensorboard_log)

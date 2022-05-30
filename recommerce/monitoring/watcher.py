@@ -92,13 +92,17 @@ class Watcher:
 		"""
 		output_dict = {}
 		for key in sorted(list(self.all_dicts[0].keys())):
-			if key.startswith('state') or key.startswith('actions'):
-				continue  # skip these properties because they are not cumulative
-
 			if isinstance(self.all_dicts[0][key], dict):
 				output_dict[key] = [self.get_all_samples_of_property(key, vendor) for vendor in range(self.get_number_of_vendors())]
 			else:
 				output_dict[key] = self.get_all_samples_of_property(key, None)
+
+			if key.startswith('state') or key.startswith('actions'):
+				# Average these values because cumulating has no meaning for them.
+				if isinstance(output_dict[key][0], list):
+					output_dict[key] = [[value / self.config_market.episode_length for value in value_list] for value_list in output_dict[key]]
+				else:
+					output_dict[key] = [value / self.config_market.episode_length for value in output_dict[key]]
 
 		return output_dict
 
@@ -120,6 +124,9 @@ class Watcher:
 			progress_values = [tmp_dict[property_name] for tmp_dict in self.all_dicts]
 		else:
 			progress_values = [tmp_dict[property_name][f'vendor_{vendor}'] for tmp_dict in self.all_dicts]
+
+		if property_name.startswith('state') or property_name.startswith('actions'):
+			progress_values = np.array(progress_values) / self.config_market.episode_length
 		return [np.mean(progress_values[max(i-look_back, 0):(i + 1)]) for i in range(len(progress_values))]
 
 	def get_number_of_vendors(self) -> int:

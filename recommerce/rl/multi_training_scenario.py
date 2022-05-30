@@ -2,6 +2,7 @@ import time
 from multiprocessing import Pipe, Process
 
 import matplotlib.pyplot as plt
+import numpy as np
 
 from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader
 from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPriceDuopoly
@@ -12,8 +13,8 @@ from recommerce.rl.stable_baselines.sb_sac import StableBaselinesSAC
 def run_training_session(agent_class, config_rl, number, pipe_to_parent):
     config_market = HyperparameterConfigLoader.load('market_config')
     agent = agent_class(config_market, config_rl, CircularEconomyRebuyPriceDuopoly(config_market,
-        support_continuous_action_space=True), name=f'SAC_{number}')
-    watcher = agent.train_agent(2000)  # (400000)
+        support_continuous_action_space=True), name=f'Training_{number}')
+    watcher = agent.train_agent(500000)
     pipe_to_parent.send(watcher)
 
 
@@ -96,12 +97,14 @@ def run_group(agent, experiment):
 if __name__ == '__main__':
     # run_training_session(StableBaselinesSAC, HyperparameterConfigLoader.load('sb_sac_config'), 0)
 
-    groups = [run_group(StableBaselinesSAC, experiment_temperature_sac), run_group(StableBaselinesPPO, experiment_clipping_ppo)]
+    groups = [run_group(StableBaselinesPPO, experiment_clipping_ppo), run_group(StableBaselinesSAC, experiment_temperature_sac)]
     for descriptions, profits_vendor_0 in groups:
+        print('Next group:')
         for descrition, profits in zip(descriptions, profits_vendor_0):
+            print(f'{descrition} has max of learning curve: {np.max(profits)}')
             plt.plot(profits, label=descrition)
     plt.legend()
-    # plt.ylim(0, 1000)
+    plt.ylim(0, 1000)
     plt.title('Comparison of the learning curves')
     plt.xlabel('Episodes')
     plt.ylabel('Profit')

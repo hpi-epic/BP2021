@@ -119,7 +119,9 @@ class RecommerceCallback(BaseCallback):
 		if finished_episodes == self.last_finished_episode or finished_episodes < 5:
 			return True
 
-		ut.write_dict_to_tensorboard(self.writer, self.watcher.get_average_dict(), finished_episodes, is_cumulative=True)
+		ut.write_dict_to_tensorboard(
+			self.writer, self.watcher.get_average_dict(), finished_episodes,
+			is_cumulative=True, episode_length=self.config_market.episode_length)
 		self.last_finished_episode = finished_episodes
 		mean_return = self.watcher.get_average_dict()['profits/all']['vendor_0']
 		assert isinstance(mean_return, float)

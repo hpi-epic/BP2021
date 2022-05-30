@@ -95,10 +95,11 @@ def train_continuous_a2c_circular_economy_rebuy():
 def train_stable_baselines_ppo():
 	config_market: AttrDict = HyperparameterConfigLoader.load('market_config')
 	config_rl: AttrDict = HyperparameterConfigLoader.load('sb_ppo_config')
+	config_rl.clip_range = 0.3
 	StableBaselinesPPO(
 		config_market=config_market,
 		config_rl=config_rl,
-		marketplace=circular_market.CircularEconomyRebuyPriceDuopoly(config_market, True)).train_agent()
+		marketplace=circular_market.CircularEconomyRebuyPriceDuopoly(config_market, True)).train_agent(1000000)
 
 
 def train_stable_baselines_sac():
@@ -153,4 +154,4 @@ if __name__ == '__main__':
 	# Make sure a valid datapath is set
 	PathManager.manage_user_path()
 
-	main()
+	train_stable_baselines_ppo()
