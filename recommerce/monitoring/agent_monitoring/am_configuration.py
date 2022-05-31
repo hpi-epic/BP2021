@@ -114,14 +114,14 @@ class Configurator():
 					# configfile and modelfile argument
 					elif len(current_agent[1]) == 2 and \
 						(current_agent[1][1].endswith('.dat') or current_agent[1][1].endswith('.zip')):
-						agent_modelfile = current_agent[1][1]
+						print(agent_modelfile)
 					# only name argument
 					elif len(current_agent[1]) == 2:
 						# get implicit modelfile name
 						agent_name = current_agent[1][1]
 					# both arguments, first must be the modelfile, second the name
 					elif len(current_agent[1]) == 3:
-						assert current_agent[1][1].endswith('.dat'), \
+						assert current_agent[1][1].endswith('.dat') or current_agent[1][1].endswith('zip'), \
 							'if two arguments as well as a config are provided, ' + \
 							f'the first extra one must be the modelfile. Arg1: {current_agent[1][1]}, Arg2: {current_agent[1][2]}'
 						agent_modelfile = current_agent[1][1]
