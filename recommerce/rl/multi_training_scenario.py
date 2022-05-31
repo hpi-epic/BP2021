@@ -8,13 +8,14 @@ from recommerce.configuration.hyperparameter_config import HyperparameterConfigL
 from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPriceDuopoly
 from recommerce.rl.stable_baselines.sb_ppo import StableBaselinesPPO
 from recommerce.rl.stable_baselines.sb_sac import StableBaselinesSAC
+from recommerce.rl.stable_baselines.sb_td3 import StableBaselinesTD3
 
 
 def run_training_session(agent_class, config_rl, number, pipe_to_parent):
     config_market = HyperparameterConfigLoader.load('market_config')
     agent = agent_class(config_market, config_rl, CircularEconomyRebuyPriceDuopoly(config_market,
         support_continuous_action_space=True), name=f'Training_{number}')
-    watcher = agent.train_agent(500000)
+    watcher = agent.train_agent(200000)
     pipe_to_parent.send(watcher)
 
 
@@ -72,6 +73,18 @@ def experiment_temperature_sac():
 
     return configs, descriptions
 
+def experiment_learning_rate_td3():
+    configs = []
+    descriptions = []
+    for _ in range(8):
+        configs.append(HyperparameterConfigLoader.load('sb_td3_config'))
+    learning_rates = [1e-5, 5e-5, 1e-4, 5e-4, 1e-3, 2e-3, 5e-3, 1e-2]
+    for config, learning_rate in zip(configs, learning_rates):
+        config.learning_rate = learning_rate
+        descriptions.append(f'lr_{learning_rate}')
+
+    return configs, descriptions
+
 
 def run_group(agent, experiment):
     configs, descriptions = experiment()
@@ -97,7 +110,8 @@ def run_group(agent, experiment):
 if __name__ == '__main__':
     # run_training_session(StableBaselinesSAC, HyperparameterConfigLoader.load('sb_sac_config'), 0)
 
-    groups = [run_group(StableBaselinesPPO, experiment_clipping_ppo), run_group(StableBaselinesSAC, experiment_temperature_sac)]
+    # groups = [run_group(StableBaselinesPPO, experiment_clipping_ppo), run_group(StableBaselinesSAC, experiment_temperature_sac)]
+    groups = [run_group(StableBaselinesTD3, experiment_learning_rate_td3)]
     for descriptions, profits_vendor_0 in groups:
         print('Next group:')
         for descrition, profits in zip(descriptions, profits_vendor_0):
