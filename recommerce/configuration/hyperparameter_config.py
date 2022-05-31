@@ -63,20 +63,28 @@ class HyperparameterConfigValidator():
 			config (dict): The config to validate and take the values from.
 		"""
 		demanded_fields = [field for field, _, _ in config['class'].get_configurable_fields()]
-		cls._check_given_config_is_subset_of_demanded(config, demanded_fields)
-		cls._check_demanded_config_is_subset_of_given(config, demanded_fields)
+		cls._check_only_valid_keys(config, demanded_fields)
 		cls._check_types(config, config['class'].get_configurable_fields())
 		cls._check_rules(config, config['class'].get_configurable_fields())
 
 	@classmethod
-	def _check_given_config_is_subset_of_demanded(cls, config: dict, demanded_fields: list) -> None:
-		for key in config:
-			assert key == 'class' or key in demanded_fields, f'your config provides {key} which was not demanded'
+	def _check_only_valid_keys(cls, config: dict, demanded_fields: list) -> None:
+		"""
+		Checks if only valid keys were provided.
 
-	@classmethod
-	def _check_demanded_config_is_subset_of_given(cls, config: dict, demanded_fields: list) -> None:
-		for key in demanded_fields:
-			assert key in config, f'your config is missing {key}'
+		Args:
+			config (dict): The config which should contain all values in demanded_fields.
+			demanded_fields (list): The lit containing all values that should be contained in config.
+		"""
+		if set(config.keys()) != set(demanded_fields):
+			missing_keys = set(demanded_fields).difference(set(config.keys()))
+			redundant_keys = set(config.keys()).difference(set(demanded_fields))
+			# next line: current hacky solution
+			redundant_keys.remove('class')
+			if missing_keys:
+				assert False, f'your config is missing {missing_keys}'
+			if redundant_keys:
+				assert False, f'your config provides {redundant_keys} which was not demanded'
 
 	@classmethod
 	def _check_types(cls, config: dict, configurable_fields: list, must_contain: bool = True) -> None:
