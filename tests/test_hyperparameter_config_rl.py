@@ -48,21 +48,23 @@ negative_epsilon_decay_last_frame = (ut_t.replace_field_in_dict(ut_t.load_json(q
 
 
 # These tests are missing a line in the config file, the import should throw a specific error message
-missing_gamma = (ut_t.remove_key('gamma', ut_t.load_json(q_learning_config_file)), 'your config is missing gamma')
-missing_batch_size = (ut_t.remove_key('batch_size', ut_t.load_json(q_learning_config_file)), 'your config is missing batch_size')
-missing_replay_size = (ut_t.remove_key('replay_size', ut_t.load_json(q_learning_config_file)), 'your config is missing replay_size')
+missing_two_items = (ut_t.remove_key('batch_size', ut_t.remove_key('gamma', ut_t.load_json(q_learning_config_file))),
+	"your config is missing {'batch_size', 'gamma'}")
+missing_gamma = (ut_t.remove_key('gamma', ut_t.load_json(q_learning_config_file)), "your config is missing {'gamma'}")
+missing_batch_size = (ut_t.remove_key('batch_size', ut_t.load_json(q_learning_config_file)), "your config is missing {'batch_size'}")
+missing_replay_size = (ut_t.remove_key('replay_size', ut_t.load_json(q_learning_config_file)), "your config is missing {'replay_size'}")
 missing_learning_rate = (ut_t.remove_key('learning_rate', ut_t.load_json(q_learning_config_file)),
-	'your config is missing learning_rate')
+	"your config is missing {'learning_rate'}")
 missing_sync_target_frames = (ut_t.remove_key('sync_target_frames', ut_t.load_json(q_learning_config_file)),
-	'your config is missing sync_target_frames')
+	"your config is missing {'sync_target_frames'}")
 missing_replay_start_size = (ut_t.remove_key('replay_start_size', ut_t.load_json(q_learning_config_file)),
-	'your config is missing replay_start_size')
+	"your config is missing {'replay_start_size'}")
 missing_epsilon_decay_last_frame = (ut_t.remove_key('epsilon_decay_last_frame', ut_t.load_json(q_learning_config_file)),
-	'your config is missing epsilon_decay_last_frame')
+	"your config is missing {'epsilon_decay_last_frame'}")
 missing_epsilon_start = (ut_t.remove_key('epsilon_start', ut_t.load_json(q_learning_config_file)),
-	'your config is missing epsilon_start')
+	"your config is missing {'epsilon_start'}")
 missing_epsilon_final = (ut_t.remove_key('epsilon_final', ut_t.load_json(q_learning_config_file)),
-	'your config is missing epsilon_final')
+	"your config is missing {'epsilon_final'}")
 
 
 invalid_values_testcases = [
