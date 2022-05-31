@@ -1,9 +1,14 @@
 from django.test import TestCase
 
-from ..models.config import *
-from ..models.config import remove_none_values_from_dict
+from ..models.agent_config import AgentConfig
+from ..models.agents_config import AgentsConfig
+from ..models.config import Config
 from ..models.container import Container
-from .constant_tests import EMPTY_STRUCTURE_CONFIG
+from ..models.environment_config import EnvironmentConfig
+from ..models.rl_config import RlConfig
+from ..utils import capitalize, remove_none_values_from_dict, to_config_class_name
+
+# from .constant_tests import EMPTY_STRUCTURE_CONFIG
 
 
 class ConfigTest(TestCase):
@@ -45,81 +50,90 @@ class ConfigTest(TestCase):
 		assert test_config_not_referenced.is_referenced() is False
 		assert test_config_referenced.is_referenced() is True
 
-	def test_config_to_dict(self):
-		# create a small valid config for this test
-		agents_config = AgentsConfig.objects.create()
+	# def test_config_to_dict(self):
+	# 	# create a small valid config for this test
+	# 	agents_config = AgentsConfig.objects.create()
 
-		AgentConfig.objects.create(agent_class='recommerce.market.circular.circular_vendors.RuleBasedCERebuyAgent',
-			argument='', agents_config=agents_config, name='Rule_Based Agent')
+	# 	AgentConfig.objects.create(agent_class='recommerce.market.circular.circular_vendors.RuleBasedCERebuyAgent',
+	# 		argument='', agents_config=agents_config, name='Rule_Based Agent')
 
-		env_config = EnvironmentConfig.objects.create(agents=agents_config,
-			marketplace='recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopoly',
-			task='training')
+	# 	env_config = EnvironmentConfig.objects.create(agents=agents_config,
+	# 		marketplace='recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopoly',
+	# 		task='training')
 
-		rl_config = RlConfig.objects.create(gamma=0.99,
-			batch_size=32,
-			replay_size=100000,
-			learning_rate=1e-6,
-			sync_target_frames=1000,
-			replay_start_size=10000,
-			epsilon_decay_last_frame=75000,
-			epsilon_start=1.0,
-			epsilon_final=0.1)
+	# 	rl_config = RlConfig.objects.create(gamma=0.99,
+	# 		batch_size=32,
+	# 		replay_size=100000,
+	# 		learning_rate=1e-6,
+	# 		sync_target_frames=1000,
+	# 		replay_start_size=10000,
+	# 		epsilon_decay_last_frame=75000,
+	# 		epsilon_start=1.0,
+	# 		epsilon_final=0.1)
 
-		sim_market_config = SimMarketConfig.objects.create(max_storage=100,
-			episode_length=50,
-			max_price=10,
-			max_quality=50,
-			number_of_customers=20,
-			production_price=3,
-			storage_cost_per_product=0.1)
+	# 	sim_market_config = SimMarketConfig.objects.create(max_storage=100,
+	# 		episode_length=50,
+	# 		max_price=10,
+	# 		max_quality=50,
+	# 		number_of_customers=20,
+	# 		production_price=3,
+	# 		storage_cost_per_product=0.1)
 
-		hyperparameter_config = HyperparameterConfig.objects.create(sim_market=sim_market_config,
-			rl=rl_config)
+	# 	hyperparameter_config = HyperparameterConfig.objects.create(sim_market=sim_market_config,
+	# 		rl=rl_config)
 
-		final_config = Config.objects.create(environment=env_config,
-			hyperparameter=hyperparameter_config)
-		expected_dict = {
-				'hyperparameter': {
-					'rl': {
-						'gamma': 0.99,
-						'batch_size': 32,
-						'replay_size': 100000,
-						'learning_rate': 1e-6,
-						'sync_target_frames': 1000,
-						'replay_start_size': 10000,
-						'epsilon_decay_last_frame': 75000,
-						'epsilon_start': 1.0,
-						'epsilon_final': 0.1
-					},
-					'sim_market': {
-						'max_storage': 100,
-						'episode_length': 50,
-						'max_price': 10,
-						'max_quality': 50,
-						'number_of_customers': 20,
-						'production_price': 3,
-						'storage_cost_per_product': 0.1
-					}
-				},
-				'environment': {
-					'task': 'training',
-					'marketplace': 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopoly',
-					'agents': [
-						{
-							'name': 'Rule_Based Agent',
-							'agent_class': 'recommerce.market.circular.circular_vendors.RuleBasedCERebuyAgent',
-							'argument': ''
-						}
-					]
-				}
-			}
-		assert expected_dict == final_config.as_dict()
+	# 	final_config = Config.objects.create(environment=env_config,
+	# 		hyperparameter=hyperparameter_config)
+	# 	expected_dict = {
+	# 			'hyperparameter': {
+	# 				'rl': {
+	# 					'gamma': 0.99,
+	# 					'batch_size': 32,
+	# 					'replay_size': 100000,
+	# 					'learning_rate': 1e-6,
+	# 					'sync_target_frames': 1000,
+	# 					'replay_start_size': 10000,
+	# 					'epsilon_decay_last_frame': 75000,
+	# 					'epsilon_start': 1.0,
+	# 					'epsilon_final': 0.1
+	# 				},
+	# 				'sim_market': {
+	# 					'max_storage': 100,
+	# 					'episode_length': 50,
+	# 					'max_price': 10,
+	# 					'max_quality': 50,
+	# 					'number_of_customers': 20,
+	# 					'production_price': 3,
+	# 					'storage_cost_per_product': 0.1
+	# 				}
+	# 			},
+	# 			'environment': {
+	# 				'task': 'training',
+	# 				'marketplace': 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopoly',
+	# 				'agents': [
+	# 					{
+	# 						'name': 'Rule_Based Agent',
+	# 						'agent_class': 'recommerce.market.circular.circular_vendors.RuleBasedCERebuyAgent',
+	# 						'argument': ''
+	# 					}
+	# 				]
+	# 			}
+	# 		}
+	# 	assert expected_dict == final_config.as_dict()
 
 	def test_dict_representation_of_agent(self):
 		test_agent = AgentConfig.objects.create(name='test_agent', agent_class='test_class', argument='1234')
 		expected_dict = {'name': 'test_agent', 'agent_class': 'test_class', 'argument': '1234'}
-		assert expected_dict == test_agent.as_dict(), (expected_dict, test_agent.as_dict())
+		assert expected_dict == test_agent.as_dict()
+
+	def test_dict_representation_of_environment_config(self):
+		test_environment = EnvironmentConfig.objects.create(enable_live_draw=True, episodes=50, plot_interval=12, marketplace='test')
+		expected_dict = {'enable_live_draw': True, 'episodes': 50, 'plot_interval': 12, 'marketplace': 'test'}
+		assert expected_dict == test_environment.as_dict()
+
+	def test_dict_representation_of_empty_config(self):
+		test_config = Config.objects.create()
+		assert {} == test_config.as_dict()
 
 	def test_list_representation_of_agents(self):
 		test_agents = AgentsConfig.objects.create()
@@ -140,13 +154,13 @@ class ConfigTest(TestCase):
 			]
 		assert expected_list == test_agents.as_list()
 
-	def test_dict_representation_of_empty_config(self):
-		test_config = Config.objects.create()
-		assert {} == test_config.as_dict()
+	# def test_get_empty_structure_dict(self):
+	# 	actual_dict = Config.get_empty_structure_dict()
+	# 	assert EMPTY_STRUCTURE_CONFIG == actual_dict
 
-	def test_get_empty_structure_dict(self):
-		actual_dict = Config.get_empty_structure_dict()
-		assert EMPTY_STRUCTURE_CONFIG == actual_dict
+	def test_get_empty_structure_dict_for_rl(self):
+		expected_dict = {}
+		assert expected_dict == RlConfig.get_empty_structure_dict()
 
 	def test_remove_none_values_from_dict(self):
 		test_dict = {'test': 'test', 'test2': None}

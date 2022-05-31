@@ -1,4 +1,11 @@
-from .models.config import *
+from .models.agent_config import AgentConfig
+from .models.agents_config import AgentsConfig
+from .models.config import Config
+from .models.environment_config import EnvironmentConfig
+from .models.hyperparameter_config import HyperparameterConfig
+from .models.rl_config import RlConfig
+from .models.sim_market_config import SimMarketConfig
+from .utils import remove_none_values_from_dict, to_config_class_name
 
 
 class ConfigFlatDictParser():
@@ -232,4 +239,5 @@ class ConfigModelParser():
 		Returns:
 			an instance of the `class_name` with the parameters given.
 		"""
+		assert class_name in globals(), f'The provided name: {class_name} not in {globals()}'
 		return globals()[class_name].objects.create(**parameters)

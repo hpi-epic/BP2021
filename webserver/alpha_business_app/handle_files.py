@@ -9,7 +9,7 @@ from django.shortcuts import redirect, render
 from recommerce.configuration.config_validation import validate_config
 
 from .config_parser import ConfigModelParser
-from .models.config import *
+from .models.config import Config
 from .models.container import Container
 
 
