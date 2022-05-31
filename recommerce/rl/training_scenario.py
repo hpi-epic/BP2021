@@ -97,7 +97,7 @@ def train_stable_baselines_ppo():
 	sbmodel.StableBaselinesPPO(
 		config_market=config_market,
 		config_rl=config_rl,
-		marketplace=circular_market.CircularEconomyRebuyPriceDuopoly(config_market, True)).train_agent()
+		marketplace=circular_market.CircularEconomyRebuyPriceDuopoly(config_market, True)).train_agent(training_steps=100, iteration_length=500, analyze_after_training=True)
 
 
 def train_stable_baselines_sac():
@@ -144,7 +144,7 @@ def train_from_config():
 
 
 def main():
-	train_from_config()
+	train_stable_baselines_ppo()
 
 
 if __name__ == '__main__':
