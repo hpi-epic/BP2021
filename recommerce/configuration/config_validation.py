@@ -1,10 +1,10 @@
 # This file contains logic used by the webserver to validate configuration files
 
-
 from recommerce.configuration.environment_config import EnvironmentConfig
 from recommerce.configuration.hyperparameter_config import HyperparameterConfigValidator
-from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPriceDuopoly
-from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
+from recommerce.configuration.utils import get_class
+from recommerce.market.sim_market import SimMarket
+from recommerce.market.vendors import Agent
 
 
 def validate_config(config: dict, config_is_final: bool) -> tuple:
@@ -31,32 +31,14 @@ def validate_config(config: dict, config_is_final: bool) -> tuple:
 			# try to split the config. If any keys are unknown, an AssertionError will be thrown
 			hyperparameter_config, environment_config = split_mixed_config(config)
 
-		# Following PR #485, all hyperparameter-configs need a class attribute from which we get the required/allowed fields
-		if 'rl' in hyperparameter_config:
-			assert 'class' in hyperparameter_config['rl'], 'You need to specify a class in the rl_config'
-			hyperparameter_config['rl']['class'] = QLearningAgent  # This is a dirty fix
+		if 'marketplace' in environment_config:
+			market_class = get_class(environment_config['marketplace'])
+		# the first agent is always the relevant one
+		if 'agents' in environment_config and len(environment_config['agents'] >= 1):
+			agent_class = get_class(environment_config['agents'][0]['agent_class'])
 
-		if 'sim_market' in hyperparameter_config:
-			assert 'class' in hyperparameter_config['sim_market'], 'You need to specify a class in the market_config'
-			hyperparameter_config['sim_market']['class'] = CircularEconomyRebuyPriceDuopoly  # This is a dirty fix
-
-		# then validate that all given values have the correct types
-		check_config_types(hyperparameter_config, environment_config, config_is_final)
-
-		# if 'rl' in hyperparameter_config:
-		# 	hyperparameter_config['rl']['class'] = QLearningAgent  # This is a dirty fix
-		# 	HyperparameterConfigValidator.validate_config(hyperparameter_config['rl'])
-		# 	hyperparameter_config['rl'].pop('class')
-		# if 'sim_market' in hyperparameter_config:
-		# 	hyperparameter_config['sim_market']['class'] = CircularEconomyRebuyPriceDuopoly  # This is a dirty fix
-		# 	HyperparameterConfigValidator.validate_config(hyperparameter_config['sim_market'])
-		# 	hyperparameter_config['sim_market'].pop('class')
-
-		if 'rl' in hyperparameter_config:
-			hyperparameter_config['rl'].pop('class')
-
-		if 'sim_market' in hyperparameter_config:
-			hyperparameter_config['sim_market'].pop('class')
+		# validate that all given values have the correct types
+		check_config_types(hyperparameter_config, environment_config, agent_class, market_class, config_is_final)
 
 		return True, (hyperparameter_config, environment_config)
 	except Exception as error:
@@ -133,24 +115,30 @@ def split_mixed_config(config: dict) -> tuple:
 	return hyperparameter_config, environment_config
 
 
-def check_config_types(hyperparameter_config: dict, environment_config: dict, must_contain: bool = False) -> None:
+def check_config_types(hyperparameter_config: dict,
+	environment_config: dict,
+	agent_class: Agent = None,
+	market_class: SimMarket = None,
+	must_contain: bool = False) -> None:
 	"""
 	Utility function that checks (incomplete) config dictionaries for their correct types.
+	If either agent_class or market_class is None, we cannot check the fields for correctness.
 
 	Args:
 		hyperparameter_config (dict): The config containing hyperparameter_config-keys.
 		environment_config (dict): The config containing environment_config-keys.
-		must_contain (bool): Whether or not the configuration should contain all required keys.
+		agent_class (Agent, optional): The relevant class for which the fields are to be checked. Defaults to None.
+		market_class (SimMarket, optional): The relevant class for which the fields are to be checked. Defaults to None.
+		must_contain (bool, optional): Whether or not the configuration should contain all required keys. Defaults to False.
 
 	Raises:
 		AssertionError: If one of the values has the wrong type.
 	"""
-	if 'rl' in hyperparameter_config:
-		HyperparameterConfigValidator._check_types(hyperparameter_config['rl'],
-			hyperparameter_config['rl']['class'].get_configurable_fields(), must_contain)
-	if 'sim_market' in hyperparameter_config:
-		HyperparameterConfigValidator._check_types(hyperparameter_config['sim_market'],
-			hyperparameter_config['sim_market']['class'].get_configurable_fields(), must_contain)
+
+	if 'rl' in hyperparameter_config and agent_class:
+		HyperparameterConfigValidator._check_types(hyperparameter_config['rl'],	agent_class.get_configurable_fields(), must_contain)
+	if 'sim_market' in hyperparameter_config and market_class:
+		HyperparameterConfigValidator._check_types(hyperparameter_config['sim_market'],	market_class.get_configurable_fields(), must_contain)
 
 	# check types for environment_config
 	task = environment_config['task'] if must_contain else 'None'
@@ -160,7 +148,6 @@ def check_config_types(hyperparameter_config: dict, environment_config: dict, mu
 if __name__ == '__main__':  # pragma: no cover
 	test_config = {
 		'rl': {
-			'class': 'recommerce.rl.q_learning.q_learning_agent.QLearningAgent',
 			'batch_size': 32,
 			'replay_size': 100000,
 			'learning_rate': 1e-6,
@@ -171,7 +158,6 @@ if __name__ == '__main__':  # pragma: no cover
 			'epsilon_final': 0.1
 		},
 		'sim_market': {
-			'class': 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopoly',
 			'max_storage': 100,
 			'episode_length': 50,
 			'max_price': 10,

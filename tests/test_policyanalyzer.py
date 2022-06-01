@@ -5,6 +5,7 @@ import numpy as np
 import pytest
 from attrdict import AttrDict
 
+import recommerce.market.circular.circular_sim_market as circular_market
 from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader
 from recommerce.configuration.path_manager import PathManager
 from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPriceDuopoly, CircularEconomyRebuyPriceMonopoly
@@ -16,7 +17,7 @@ from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
 
 write_to_path = os.path.join(PathManager.results_path, 'policyanalyzer')
 
-config_market: AttrDict = HyperparameterConfigLoader.load('market_config')
+config_market: AttrDict = HyperparameterConfigLoader.load('market_config', circular_market.CircularEconomyRebuyPriceMonopoly)
 
 
 def test_rule_based_linear_competitor1():

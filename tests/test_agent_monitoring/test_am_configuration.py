@@ -17,7 +17,7 @@ from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
 
 monitor = monitoring.Monitor()
 
-config_market: AttrDict = HyperparameterConfigLoader.load('market_config')
+config_market: AttrDict = HyperparameterConfigLoader.load('market_config', circular_market.CircularEconomyRebuyPriceMonopoly)
 
 
 # setup before each test

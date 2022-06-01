@@ -3,6 +3,7 @@ import pytest
 from attrdict import AttrDict
 from numpy import random
 
+import recommerce.market.circular.circular_sim_market as circular_market
 import recommerce.market.circular.circular_vendors as circular_vendors
 import recommerce.market.linear.linear_vendors as linear_vendors
 import recommerce.market.vendors as vendors
@@ -11,7 +12,7 @@ from recommerce.market.linear.linear_sim_market import LinearEconomyOligopoly
 from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
 from recommerce.rl.reinforcement_learning_agent import ReinforcementLearningAgent
 
-config_market: AttrDict = HyperparameterConfigLoader.load('market_config')
+config_market: AttrDict = HyperparameterConfigLoader.load('market_config', circular_market.CircularEconomyRebuyPriceMonopoly)
 
 abstract_agent_classes_testcases = [
 	vendors.Agent,

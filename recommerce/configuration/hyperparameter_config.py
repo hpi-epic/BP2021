@@ -6,6 +6,8 @@ from attrdict import AttrDict
 from recommerce.configuration.json_configurable import JSONConfigurable
 from recommerce.configuration.path_manager import PathManager
 from recommerce.configuration.utils import get_class
+from recommerce.market.sim_market import SimMarket
+from recommerce.market.vendors import Agent
 
 
 class HyperparameterConfigValidator():
@@ -18,7 +20,6 @@ class HyperparameterConfigValidator():
 			return {'rl': True, 'sim_market': True}
 		elif dict_key == 'rl':
 			return {
-				'class': False,
 				'gamma': False,
 				'batch_size': False,
 				'replay_size': False,
@@ -31,7 +32,6 @@ class HyperparameterConfigValidator():
 			}
 		elif dict_key == 'sim_market':
 			return {
-				'class': False,
 				'max_storage': False,
 				'episode_length': False,
 				'max_price': False,
@@ -55,17 +55,18 @@ class HyperparameterConfigValidator():
 		return f'{self.__class__.__name__}: {self.__dict__}'
 
 	@classmethod
-	def validate_config(cls, config: dict) -> None:
+	def validate_config(cls, config: dict, checked_class: SimMarket or Agent) -> None:
 		"""
 		Validate the given config dictionary.
 
 		Args:
 			config (dict): The config to validate and take the values from.
+			checked_class (SimMarket or Agent): The relevant class for which the fields are to be checked.
 		"""
-		demanded_fields = [field for field, _, _ in config['class'].get_configurable_fields()]
+		demanded_fields = [field for field, _, _ in checked_class.get_configurable_fields()]
 		cls._check_only_valid_keys(config, demanded_fields)
-		cls._check_types(config, config['class'].get_configurable_fields())
-		cls._check_rules(config, config['class'].get_configurable_fields())
+		cls._check_types(config, checked_class.get_configurable_fields())
+		cls._check_rules(config, checked_class.get_configurable_fields())
 
 	@classmethod
 	def _check_only_valid_keys(cls, config: dict, demanded_fields: list) -> None:
@@ -79,8 +80,6 @@ class HyperparameterConfigValidator():
 		if set(config.keys()) != set(demanded_fields):
 			missing_keys = set(demanded_fields).difference(set(config.keys()))
 			redundant_keys = set(config.keys()).difference(set(demanded_fields))
-			# next line: current hacky solution
-			redundant_keys.remove('class')
 			if missing_keys:
 				assert False, f'your config is missing {missing_keys}'
 			if redundant_keys:
@@ -112,27 +111,34 @@ class HyperparameterConfigValidator():
 
 
 class HyperparameterConfigLoader():
+
 	@classmethod
-	def load(cls, filename: str) -> AttrDict:
+	def load(cls, filename: str, checked_class: SimMarket or Agent) -> AttrDict:
 		"""
-		Load the configuration json file from the `configuration_files` folder, validate all keys and retruning an AttrDict instance
-		without top level keys.
+		Load the market configuration json file from the `configuration_files` folder, validate all keys and return an AttrDict instance.
+		This can only be done after the relevant `environment_config` has been loaded, if both are needed, as the checked_class needs to be known.
 
 		Args:
 			filename (str): The name of the json file containing the configuration values.
 				Must be located in the `configuration_files` directory in the user's datapath folder.
+			checked_class (SimMarket or Agent): The relevant class for which the fields are to be checked.
 
 		Returns:
 			AttrDict: An Arribute Dict containing the hyperparameters.
 		"""
-		filename += '.json'
+		# In case the class is still in string format, extract it
+		if issubclass(checked_class, str):
+			checked_class = get_class(checked_class)
+
+		assert issubclass(checked_class, (SimMarket, Agent)), f'the provided checked_class must be a subclass of SimMarket \
+			if the config is a market_config or of Agent if it is an rl_config: {checked_class}'
+		assert issubclass(checked_class, JSONConfigurable), f'the provided checked_class must be a subclass of JSONConfigurable: {checked_class}'
+
+		if not filename.endswith('.json'):
+			filename += '.json'
 		path = os.path.join(PathManager.user_path, 'configuration_files', filename)
 		with open(path) as config_file:
-			config = json.load(config_file)
-		assert 'class' in config, f"Every config json must contain a 'class' key, but {filename} does not."
-		config['class'] = get_class(config['class'])
-		assert issubclass(config['class'], JSONConfigurable), f"The class {config['class']} must be a subclass of JSONConfigurable."
+			market_config = json.load(config_file)
 
-		HyperparameterConfigValidator.validate_config(config)
-		config.pop('class')
-		return AttrDict(config)
+		HyperparameterConfigValidator.validate_config(config=market_config, checked_class=checked_class)
+		return AttrDict(market_config)

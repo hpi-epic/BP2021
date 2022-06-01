@@ -16,9 +16,9 @@ from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
 # The load path for the agent modelfiles
 parameters_path = os.path.join('tests', 'test_data')
 
-config_market: AttrDict = HyperparameterConfigLoader.load('market_config')
-config_q_learning: AttrDict = HyperparameterConfigLoader.load('q_learning_config')
-config_actor_critic: AttrDict = HyperparameterConfigLoader.load('actor_critic_config')
+config_market: AttrDict = HyperparameterConfigLoader.load('market_config', circular_market.CircularEconomyRebuyPriceMonopoly)
+config_q_learning: AttrDict = HyperparameterConfigLoader.load('q_learning_config', QLearningAgent)
+config_actor_critic: AttrDict = HyperparameterConfigLoader.load('actor_critic_config', ContinuousActorCriticAgentFixedOneStd)
 
 
 def test_setup_exampleprinter():

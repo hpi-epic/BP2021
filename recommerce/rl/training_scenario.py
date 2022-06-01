@@ -23,18 +23,26 @@ print('successfully imported torch: cuda?', torch.cuda.is_available())
 
 
 def run_training_session(
-		config_market: AttrDict = HyperparameterConfigLoader.load('market_config'),
-		config_rl: AttrDict = HyperparameterConfigLoader.load('q_learning_config'),
 		marketplace=circular_market.CircularEconomyRebuyPriceDuopoly,
 		agent=q_learning_agent.QLearningAgent,
+		config_market: AttrDict = None,
+		config_rl: AttrDict = None,
 		competitors: list = None) -> None:
 	"""
-	Run a training session with the passed marketplace and QLearningAgent.
+	Run a training session with the passed marketplace and Agent.
+
 	Args:
 		marketplace (SimMarket subclass): What marketplace to run the training session on.
 		agent (QLearningAgent subclass): What kind of QLearningAgent to train.
+		config_market (AttrDict, optional): The config to be used for the marketplace. Defaults to loading the `market_config`.
+		config_rl (AttrDict, optional): The config to be used for the agent. Defaults to loading the `q_learning_config`.
 		competitors (list | None, optional): If set, which competitors should be used instead of the default ones.
 	"""
+	if config_market is None:
+		config_market = HyperparameterConfigLoader.load('market_config', marketplace)
+	if config_rl is None:
+		config_rl = HyperparameterConfigLoader.load('q_learning_config', agent)
+
 	assert issubclass(marketplace, sim_market.SimMarket), \
 		f'the type of the passed marketplace must be a subclass of SimMarket: {marketplace}'
 	assert issubclass(agent, (q_learning_agent.QLearningAgent, actorcritic_agent.ActorCriticAgent)), \
@@ -93,32 +101,36 @@ def train_continuous_a2c_circular_economy_rebuy():
 
 
 def train_stable_baselines_ppo():
-	config_market: AttrDict = HyperparameterConfigLoader.load('market_config')
-	config_rl: AttrDict = HyperparameterConfigLoader.load('sb_ppo_config')
+	used_marketplace = circular_market.CircularEconomyRebuyPriceDuopoly
+	config_market: AttrDict = HyperparameterConfigLoader.load('market_config', used_marketplace)
+	config_rl: AttrDict = HyperparameterConfigLoader.load('sb_ppo_config', StableBaselinesPPO)
 	StableBaselinesPPO(
 		config_market=config_market,
 		config_rl=config_rl,
-		marketplace=circular_market.CircularEconomyRebuyPriceDuopoly(config_market, True)).train_agent()
+		marketplace=used_marketplace(config_market, True)).train_agent()
 
 
 def train_stable_baselines_sac():
-	config_market: AttrDict = HyperparameterConfigLoader.load('market_config')
-	config_rl: AttrDict = HyperparameterConfigLoader.load('sb_sac_config')
+	used_marketplace = circular_market.CircularEconomyRebuyPriceDuopoly
+	config_market: AttrDict = HyperparameterConfigLoader.load('market_config', used_marketplace)
+	config_rl: AttrDict = HyperparameterConfigLoader.load('sb_sac_config', StableBaselinesSAC)
 	StableBaselinesSAC(
 		config_market=config_market,
 		config_rl=config_rl,
-		marketplace=circular_market.CircularEconomyRebuyPriceDuopoly(config_market, True)).train_agent()
+		marketplace=used_marketplace(config_market, True)).train_agent()
 
 
 def train_rl_vs_rl():
-	config_market: AttrDict = HyperparameterConfigLoader.load('market_config')
-	config_rl: AttrDict = HyperparameterConfigLoader.load('sb_ppo_config')
+	# marketplace is currently hardcoded in train_rl_vs_rl
+	config_market: AttrDict = HyperparameterConfigLoader.load('market_config', circular_market.CircularEconomyRebuyPriceDuopoly)
+	config_rl: AttrDict = HyperparameterConfigLoader.load('sb_ppo_config', StableBaselinesPPO)
 	rl_vs_rl_training.train_rl_vs_rl(config_market, config_rl)
 
 
 def train_self_play():
-	config_market: AttrDict = HyperparameterConfigLoader.load('market_config')
-	config_rl: AttrDict = HyperparameterConfigLoader.load('sb_ppo_config')
+	# marketplace is currently hardcoded in train_self_play
+	config_market: AttrDict = HyperparameterConfigLoader.load('market_config', circular_market.CircularEconomyRebuyPriceDuopoly)
+	config_rl: AttrDict = HyperparameterConfigLoader.load('sb_ppo_config', StableBaselinesPPO)
 	self_play.train_self_play(config_market, config_rl)
 
 
@@ -126,21 +138,21 @@ def train_from_config():
 	"""
 	Use the `environment_config_training.json` file to decide on the training parameters.
 	"""
-	config: TrainingEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_training')
-	config_rl: AttrDict = HyperparameterConfigLoader.load('q_learning_config')
+	config_environment: TrainingEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_training')
+	config_rl: AttrDict = HyperparameterConfigLoader.load('q_learning_config', config_environment.agent[0]['agent_class'])
 	# TODO: Theoretically, the name of the agent is saved in config['name'], but we don't use it yet.
 	competitor_list = []
-	for competitor in config.agent[1:]:
+	for competitor in config_environment.agent[1:]:
 		if issubclass(competitor['agent_class'], FixedPriceAgent):
 			competitor_list.append(
-				competitor['agent_class'](config_market=config, fixed_price=competitor['argument'], name=competitor['name']))
+				competitor['agent_class'](config_market=config_environment, fixed_price=competitor['argument'], name=competitor['name']))
 		else:
-			competitor_list.append(competitor['agent_class'](config_market=config, name=competitor['name']))
+			competitor_list.append(competitor['agent_class'](config_market=config_environment, name=competitor['name']))
 
 	run_training_session(
 		config_rl=config_rl,
-		marketplace=config.marketplace,
-		agent=config.agent[0]['agent_class'],
+		marketplace=config_environment.marketplace,
+		agent=config_environment.agent[0]['agent_class'],
 		competitors=competitor_list)
 
 

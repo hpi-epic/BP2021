@@ -9,7 +9,7 @@ from recommerce.rl.stable_baselines.sb_ppo import StableBaselinesPPO
 from recommerce.rl.stable_baselines.sb_sac import StableBaselinesSAC
 from recommerce.rl.stable_baselines.sb_td3 import StableBaselinesTD3
 
-config_market: AttrDict = HyperparameterConfigLoader.load('market_config')
+config_market: AttrDict = HyperparameterConfigLoader.load('market_config', circular_market.CircularEconomyRebuyPriceMonopoly)
 
 
 @pytest.mark.training

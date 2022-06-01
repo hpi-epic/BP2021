@@ -294,7 +294,6 @@ class AgentMonitoringEnvironmentConfig(EnvironmentConfig):
 			# without modelfile
 			else:
 				self.agent.append((current_agent['agent_class'], [current_agent['name']]))
-		print(self.agent)
 
 	def _get_task(self) -> str:
 		return 'agent_monitoring'
@@ -311,8 +310,6 @@ class ExampleprinterEnvironmentConfig(EnvironmentConfig):
 	"""
 	def _validate_config(self, config: dict) -> None:
 		super(ExampleprinterEnvironmentConfig, self)._validate_config(config, single_agent=False, needs_modelfile=True)
-		# Since we only have one agent, we extract it from the provided list
-		self.agent = self.agent[0]
 
 	def _get_task(self) -> str:
 		return 'exampleprinter'

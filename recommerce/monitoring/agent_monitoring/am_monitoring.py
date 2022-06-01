@@ -98,7 +98,7 @@ def main():  # pragma: no cover
 	"""
 	monitor = Monitor()
 	config_environment_am: AgentMonitoringEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_agent_monitoring')
-	config_market: AttrDict = HyperparameterConfigLoader.load('market_config')
+	config_market: AttrDict = HyperparameterConfigLoader.load('market_config', config_environment_am.marketplace)
 	monitor.configurator.setup_monitoring(
 		enable_live_draw=config_environment_am.enable_live_draw,
 		episodes=config_environment_am.episodes,

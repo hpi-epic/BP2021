@@ -98,11 +98,12 @@ def main():  # pragma: no cover
 	"""
 	Defines what is performed when the `agent_monitoring` command is chosen in `main.py`.
 	"""
-	config_market: AttrDict = HyperparameterConfigLoader.load('market_config')
-	config_rl: AttrDict = HyperparameterConfigLoader.load('q_learning_config')
+	config_environment: ExampleprinterEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_exampleprinter')
+
+	config_market: AttrDict = HyperparameterConfigLoader.load('market_config', config_environment.marketplace)
+	config_rl: AttrDict = HyperparameterConfigLoader.load('q_learning_config', config_environment.agent[0]['agent_class'])
 	printer = ExamplePrinter(config_market=config_market)
 
-	config_environment: ExampleprinterEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_exampleprinter')
 	# TODO: Theoretically, the name of the agent is saved in config_environment['name'], but we don't use it yet.
 	marketplace = config_environment.marketplace(config=config_market)
 
