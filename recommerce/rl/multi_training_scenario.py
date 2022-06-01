@@ -6,8 +6,8 @@ import numpy as np
 
 from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader
 from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPriceDuopoly
-from recommerce.rl.stable_baselines.sb_ppo import StableBaselinesPPO
-from recommerce.rl.stable_baselines.sb_sac import StableBaselinesSAC
+# from recommerce.rl.stable_baselines.sb_ppo import StableBaselinesPPO
+# from recommerce.rl.stable_baselines.sb_sac import StableBaselinesSAC
 from recommerce.rl.stable_baselines.sb_td3 import StableBaselinesTD3
 
 
@@ -15,7 +15,7 @@ def run_training_session(agent_class, config_rl, number, pipe_to_parent):
     config_market = HyperparameterConfigLoader.load('market_config')
     agent = agent_class(config_market, config_rl, CircularEconomyRebuyPriceDuopoly(config_market,
         support_continuous_action_space=True), name=f'Training_{number}')
-    watcher = agent.train_agent(200000)
+    watcher = agent.train_agent(100000)
     pipe_to_parent.send(watcher)
 
 
@@ -73,6 +73,20 @@ def experiment_temperature_sac():
 
     return configs, descriptions
 
+
+def experiment_learning_rate_ddpg():
+    configs = []
+    descriptions = []
+    for _ in range(8):
+        configs.append(HyperparameterConfigLoader.load('sb_ddpg_config'))
+    learning_rates = [1e-5, 5e-5, 1e-4, 5e-4, 1e-3, 2e-3, 5e-3, 1e-2]
+    for config, learning_rate in zip(configs, learning_rates):
+        config.learning_rate = learning_rate
+        descriptions.append(f'ddpg_lr_{learning_rate}')
+
+    return configs, descriptions
+
+
 def experiment_learning_rate_td3():
     configs = []
     descriptions = []
@@ -81,7 +95,7 @@ def experiment_learning_rate_td3():
     learning_rates = [1e-5, 5e-5, 1e-4, 5e-4, 1e-3, 2e-3, 5e-3, 1e-2]
     for config, learning_rate in zip(configs, learning_rates):
         config.learning_rate = learning_rate
-        descriptions.append(f'lr_{learning_rate}')
+        descriptions.append(f'td3_lr_{learning_rate}')
 
     return configs, descriptions
 
@@ -111,14 +125,14 @@ if __name__ == '__main__':
     # run_training_session(StableBaselinesSAC, HyperparameterConfigLoader.load('sb_sac_config'), 0)
 
     # groups = [run_group(StableBaselinesPPO, experiment_clipping_ppo), run_group(StableBaselinesSAC, experiment_temperature_sac)]
-    groups = [run_group(StableBaselinesTD3, experiment_learning_rate_td3)]
+    groups = [run_group(StableBaselinesTD3, experiment_learning_rate_ddpg), run_group(StableBaselinesTD3, experiment_learning_rate_td3)]
     for descriptions, profits_vendor_0 in groups:
         print('Next group:')
         for descrition, profits in zip(descriptions, profits_vendor_0):
             print(f'{descrition} has max of learning curve: {np.max(profits)}')
             plt.plot(profits, label=descrition)
     plt.legend()
-    plt.ylim(0, 1000)
+    # plt.ylim(0, 1000)
     plt.title('Comparison of the learning curves')
     plt.xlabel('Episodes')
     plt.ylabel('Profit')
