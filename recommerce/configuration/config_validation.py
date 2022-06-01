@@ -34,7 +34,7 @@ def validate_config(config: dict, config_is_final: bool) -> tuple:
 		if 'marketplace' in environment_config:
 			market_class = get_class(environment_config['marketplace'])
 		# the first agent is always the relevant one
-		if 'agents' in environment_config and len(environment_config['agents'] >= 1):
+		if 'agents' in environment_config and len(environment_config['agents']) >= 1:
 			agent_class = get_class(environment_config['agents'][0]['agent_class'])
 
 		# validate that all given values have the correct types

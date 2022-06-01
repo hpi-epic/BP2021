@@ -103,7 +103,6 @@ def test_storage_evaluation_with_rebuy_price(state, expected_prices):
 	changed_config.max_price = 10
 	changed_config.production_price = 2
 	agent = circular_vendors.RuleBasedCERebuyAgent(config_market=changed_config)
-	print('*********************************')
 	assert expected_prices == agent.policy(state)
 
 

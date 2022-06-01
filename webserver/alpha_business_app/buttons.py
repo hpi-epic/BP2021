@@ -280,7 +280,7 @@ class ButtonHandler():
 		if 'config_id' not in post_request:
 			return self._decide_rendering()
 		merger = ConfigMerger()
-		final_dict, error_dict = merger.merge_config_objects(post_request['config_id'])
+		final_dict, error_dict = merger.merge_config_objects(post_request['config_id'], post_request)
 		final_dict['hyperparameter']['rl'] = get_rl_parameter_prefill(final_dict['hyperparameter']['rl'], error_dict['hyperparameter']['rl'])
 		# set an id for each agent (necessary for view)
 		for agent_index in range(len(final_dict['environment']['agents'])):
