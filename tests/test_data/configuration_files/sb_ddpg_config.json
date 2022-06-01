@@ -1,5 +1,4 @@
 {
-	"class": "recommerce.rl.stable_baselines.sb_ddpg.StableBaselinesDDPG",
 	"testvalue1": 0.99,
 	"ddpgvalue": 15.0
 }
