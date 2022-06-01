@@ -4,6 +4,7 @@ from ..config_parser import ConfigModelParser
 from ..models.agents_config import AgentsConfig
 from ..models.config import Config
 from ..models.environment_config import EnvironmentConfig
+from ..models.hyperparameter_config import HyperparameterConfig
 from ..models.rl_config import RlConfig
 from ..models.sim_market_config import SimMarketConfig
 from .constant_tests import EXAMPLE_HIERARCHY_DICT, EXAMPLE_RL_DICT
@@ -128,13 +129,23 @@ class ConfigModelParserTest(TestCase):
 	def test_parse_rl(self):
 		test_dict = EXAMPLE_RL_DICT.copy()
 
-		final_config = self.parser.parse_config(test_dict)
+		final_config = self.parser.parse_config_dict_to_datastructure('hyperparameter', test_dict)
 
-		assert Config == type(final_config)
+		assert HyperparameterConfig == type(final_config)
 
 		# assert all hyperparameters
-		hyperparameter_rl_config: RlConfig = final_config.hyperparameter.rl
-		hyperparameter_sim_market_config: SimMarketConfig = final_config.hyperparameter.sim_market
-
+		hyperparameter_rl_config: RlConfig = final_config.rl
+		hyperparameter_sim_market_config: SimMarketConfig = final_config.sim_market
 		assert hyperparameter_rl_config is not None
 		assert hyperparameter_sim_market_config is None
+
+		assert 0.99 == hyperparameter_rl_config.gamma
+		assert 32 == hyperparameter_rl_config.batch_size
+		assert 100000 == hyperparameter_rl_config.replay_size
+		assert 1e-6 == hyperparameter_rl_config.learning_rate
+		assert 1000 == hyperparameter_rl_config.sync_target_frames
+		assert 10000 == hyperparameter_rl_config.replay_start_size
+		assert 75000 == hyperparameter_rl_config.epsilon_decay_last_frame
+		assert 1.0 == hyperparameter_rl_config.epsilon_start
+		assert 0.1 == hyperparameter_rl_config.epsilon_final
+		assert hyperparameter_rl_config.stable_baseline_test is None

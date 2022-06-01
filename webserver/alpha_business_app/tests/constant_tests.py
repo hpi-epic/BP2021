@@ -142,7 +142,6 @@ EMPTY_STRUCTURE_CONFIG = {
 
 EXAMPLE_RL_DICT = {
 	'rl': {
-		'class': 'recommerce.rl.q_learning.q_learning_agent.QLearningAgent',
 		'gamma': 0.99,
 		'batch_size': 32,
 		'replay_size': 100000,

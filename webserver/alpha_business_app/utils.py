@@ -28,20 +28,7 @@ def get_recommerce_agents_for_marketplace(marketplace) -> list:
 	return marketplace.get_possible_rl_agents()
 
 
-def get_agent_hyperparameter(agent: str) -> list:
-	agent_class = get_class(agent)
-	agent_specs = agent_class.get_configurable_fields()
-	# name, input_type, error
-	all_parameter = []
-	for spec in agent_specs:
-		this_parameter = {}
-		this_parameter['name'] = spec[0]
-		this_parameter['input_type'] = _convert_python_type_to_input_type(spec[1])
-		all_parameter += [this_parameter]
-	return all_parameter
-
-
-def _convert_python_type_to_input_type(to_convert) -> str:
+def convert_python_type_to_input_type(to_convert) -> str:
 	return 'number' if to_convert == float or to_convert == int else 'text'
 
 

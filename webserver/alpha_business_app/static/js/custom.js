@@ -63,19 +63,20 @@ $(document).ready(function() {
 
 	function addChangeToAgent () {
 		$("select.agent-agent-class").change(function () {
-			// will be called when another marketplace has been selected
+			// will be called when agent dropdown has changed, we need to change rl hyperparameter for that
 			var self = $(this);
-			console.log('here')
+			var form = $("form.config-form");
+			var formdata = form.serializeArray();
 			const csrftoken = getCookie("csrftoken");
 			$.ajax({
 				type: "POST",
 				url: self.data("url"),
 				data: {
 					csrfmiddlewaretoken: csrftoken,
-					"agent": self.val()
+					"agent": self.val(),
+					formdata
 				},
 				success: function (data) {
-					console.log(data)
 					$("div.rl-parameter").empty().append(data)
 				}
 			});
