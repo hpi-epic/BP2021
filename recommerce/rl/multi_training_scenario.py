@@ -6,16 +6,17 @@ import numpy as np
 
 from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader
 from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPriceDuopoly
-# from recommerce.rl.stable_baselines.sb_ppo import StableBaselinesPPO
 # from recommerce.rl.stable_baselines.sb_sac import StableBaselinesSAC
-from recommerce.rl.stable_baselines.sb_td3 import StableBaselinesTD3
+# from recommerce.rl.stable_baselines.sb_td3 import StableBaselinesTD3
+from recommerce.rl.stable_baselines.sb_a2c import StableBaselinesA2C
+from recommerce.rl.stable_baselines.sb_ppo import StableBaselinesPPO
 
 
 def run_training_session(agent_class, config_rl, number, pipe_to_parent):
     config_market = HyperparameterConfigLoader.load('market_config')
     agent = agent_class(config_market, config_rl, CircularEconomyRebuyPriceDuopoly(config_market,
         support_continuous_action_space=True), name=f'Training_{number}')
-    watcher = agent.train_agent(100000)
+    watcher = agent.train_agent(1000000)
     pipe_to_parent.send(watcher)
 
 
@@ -100,6 +101,38 @@ def experiment_learning_rate_td3():
     return configs, descriptions
 
 
+def experiment_ppo_standard_all_same():
+    configs = []
+    descriptions = []
+    for i in range(8):
+        configs.append(HyperparameterConfigLoader.load('sb_ppo_config'))
+        descriptions.append(f'ppo_standard_{i}')
+
+    return configs, descriptions
+
+
+def experiment_ppo_clip_0_3_all_same():
+    configs = []
+    descriptions = []
+    for i in range(8):
+        configs.append(HyperparameterConfigLoader.load('sb_ppo_config'))
+        configs[-1].clip_range = 0.3
+        descriptions.append(f'ppo_clip_range_{0.3}_{i}')
+
+    return configs, descriptions
+
+
+def experiment_a2c_all_same():
+    configs = []
+    descriptions = []
+    for i in range(8):
+        configs.append(HyperparameterConfigLoader.load('sb_a2c_config'))
+        # configs[-1].learning_rate = learning_rate
+        descriptions.append(f'a2c_standard_{i}')
+
+    return configs, descriptions
+
+
 def run_group(agent, experiment):
     configs, descriptions = experiment()
     print(configs)
@@ -125,14 +158,26 @@ if __name__ == '__main__':
     # run_training_session(StableBaselinesSAC, HyperparameterConfigLoader.load('sb_sac_config'), 0)
 
     # groups = [run_group(StableBaselinesPPO, experiment_clipping_ppo), run_group(StableBaselinesSAC, experiment_temperature_sac)]
-    groups = [run_group(StableBaselinesTD3, experiment_learning_rate_ddpg), run_group(StableBaselinesTD3, experiment_learning_rate_td3)]
+    # groups = [run_group(StableBaselinesTD3, experiment_learning_rate_ddpg), run_group(StableBaselinesTD3, experiment_learning_rate_td3)]
+    groups = [
+        run_group(StableBaselinesA2C, experiment_a2c_all_same),
+        run_group(StableBaselinesPPO, experiment_ppo_standard_all_same),
+        run_group(StableBaselinesPPO, experiment_ppo_clip_0_3_all_same)
+    ]
+    # for descriptions, profits_vendor_0 in groups:
+    #     print('Next group:')
+    #     for descrition, profits in zip(descriptions, profits_vendor_0):
+    #         print(f'{descrition} has max of learning curve: {np.max(profits)}')
+    #         plt.plot(profits, label=descrition)
     for descriptions, profits_vendor_0 in groups:
-        print('Next group:')
-        for descrition, profits in zip(descriptions, profits_vendor_0):
-            print(f'{descrition} has max of learning curve: {np.max(profits)}')
-            plt.plot(profits, label=descrition)
+        profits_vendor_0 = np.array(profits_vendor_0)
+        mins = np.min(profits_vendor_0, axis=0)
+        maxs = np.max(profits_vendor_0, axis=0)
+        means = np.mean(profits_vendor_0, axis=0)
+        plt.fill_between(range(len(mins)), mins, maxs, alpha=0.5)
+        plt.plot(means, label=f'mean_{descriptions[0][:-2]}')
     plt.legend()
-    # plt.ylim(0, 1000)
+    plt.ylim(0, 1000)
     plt.title('Comparison of the learning curves')
     plt.xlabel('Episodes')
     plt.ylabel('Profit')
