@@ -88,10 +88,8 @@ class Configurator():
 			'If the market is linear, the agent must be linear too!'
 
 		self.agents = []
-		print(agents)
 		# Instantiate all agents. If they are not rule-based, use the marketplace parameters accordingly
 		agents_with_config = [(current_agent[0], [self.config_market] + current_agent[1]) for current_agent in agents]
-		print(agents_with_config)
 
 		for current_agent in agents_with_config:
 			if issubclass(current_agent[0], (RuleBasedAgent, HumanPlayer)):
@@ -116,7 +114,7 @@ class Configurator():
 					# configfile and modelfile argument
 					elif len(current_agent[1]) == 2 and \
 						(current_agent[1][1].endswith('.dat') or current_agent[1][1].endswith('.zip')):
-						print(agent_modelfile)
+						agent_modelfile = current_agent[1][1]
 					# only name argument
 					elif len(current_agent[1]) == 2:
 						# get implicit modelfile name

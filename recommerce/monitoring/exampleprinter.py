@@ -108,15 +108,15 @@ def main():  # pragma: no cover
 	marketplace = config_environment.marketplace(config=config_market)
 
 	# QLearningAgents need more initialization
-	if issubclass(config_environment.agent['agent_class'], QLearningAgent):
+	if issubclass(config_environment.agent[0]['agent_class'], QLearningAgent):
 		printer.setup_exampleprinter(marketplace=marketplace,
-			agent=config_environment.agent['agent_class'](
+			agent=config_environment.agent[0]['agent_class'](
 				config_market=config_market,
 				config_rl=config_rl,
 				marketplace=marketplace,
-				load_path=os.path.abspath(os.path.join(PathManager.data_path, config_environment.agent['argument']))))
+				load_path=os.path.abspath(os.path.join(PathManager.data_path, config_environment.agent[0]['argument']))))
 	else:
-		printer.setup_exampleprinter(marketplace=marketplace, agent=config_environment.agent['agent_class']())
+		printer.setup_exampleprinter(marketplace=marketplace, agent=config_environment.agent[0]['agent_class']())
 
 	print(f'The final profit was: {printer.run_example()}')
 
