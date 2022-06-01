@@ -12,6 +12,7 @@ import recommerce.monitoring.agent_monitoring.am_evaluation as am_evaluation
 from recommerce.configuration.environment_config import AgentMonitoringEnvironmentConfig, EnvironmentConfigLoader
 from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader
 from recommerce.configuration.path_manager import PathManager
+from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPriceMonopoly
 from recommerce.monitoring.watcher import Watcher
 
 print('successfully imported torch: cuda?', torch.cuda.is_available())
@@ -47,7 +48,7 @@ class Monitor():
 		Returns:
 			list: A list with a list of rewards for each agent
 		"""
-		config_market = HyperparameterConfigLoader.load('market_config')
+		config_market = HyperparameterConfigLoader.load('market_config', CircularEconomyRebuyPriceMonopoly)
 		# initialize the watcher list with a list for each agent
 		watchers = [Watcher(config_market=config_market) for _ in range(len(self.configurator.agents))]
 

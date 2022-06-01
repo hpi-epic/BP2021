@@ -80,7 +80,7 @@ def test_circular_monopoly_q_learning(title, policyaccess, expected_filename):
 	q_learing_agent = QLearningAgent(
 		marketplace=CircularEconomyRebuyPriceMonopoly(config=config_market),
 		config_market=config_market,
-		config_rl=HyperparameterConfigLoader.load('q_learning_config'),
+		config_rl=HyperparameterConfigLoader.load('q_learning_config', QLearningAgent),
 		load_path=os.path.join(PathManager.data_path, 'CircularEconomyRebuyPriceMonopoly_QLearningAgent.dat')
 	)
 	pa = PolicyAnalyzer(q_learing_agent)
@@ -108,7 +108,7 @@ def test_circular_duopol_q_learning(title, policyaccess, expected_filename):
 	q_learing_agent = QLearningAgent(
 		marketplace=CircularEconomyRebuyPriceDuopoly(config=config_market),
 		config_market=config_market,
-		config_rl=HyperparameterConfigLoader.load('actor_critic_config'),
+		config_rl=HyperparameterConfigLoader.load('actor_critic_config', ContinuousActorCriticAgentFixedOneStd),
 		load_path=os.path.join(PathManager.data_path, 'CircularEconomyRebuyPriceDuopoly_QLearningAgent.dat')
 	)
 	pa = PolicyAnalyzer(q_learing_agent)
@@ -136,7 +136,7 @@ def test_circular_duopol_continuos_actorcritic(title, policyaccess, expected_fil
 	a2c_agent = ContinuousActorCriticAgentFixedOneStd(
 		marketplace=CircularEconomyRebuyPriceDuopoly(config=config_market),
 		config_market=config_market,
-		config_rl=HyperparameterConfigLoader.load('actor_critic_config'),
+		config_rl=HyperparameterConfigLoader.load('actor_critic_config', ContinuousActorCriticAgentFixedOneStd),
 		load_path=os.path.join(PathManager.data_path,
 			'actor_parametersCircularEconomyRebuyPriceDuopoly_ContinuousActorCriticAgentFixedOneStd.dat')
 	)

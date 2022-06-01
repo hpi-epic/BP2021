@@ -88,7 +88,7 @@ def train_q_learning_circular_economy_rebuy():
 	"""
 	run_training_session(
 		marketplace=circular_market.CircularEconomyRebuyPriceDuopoly,
-		agent=q_learning_agent.QLearningAgent)
+		agent=q_learning_agent.QLearningAgent,)
 
 
 def train_continuous_a2c_circular_economy_rebuy():
@@ -97,7 +97,8 @@ def train_continuous_a2c_circular_economy_rebuy():
 	"""
 	run_training_session(
 		marketplace=circular_market.CircularEconomyRebuyPriceDuopoly,
-		agent=actorcritic_agent.ContinuousActorCriticAgentFixedOneStd)
+		agent=actorcritic_agent.ContinuousActorCriticAgentFixedOneStd,
+		config_rl=HyperparameterConfigLoader.load('actor_critic_config', actorcritic_agent.ContinuousActorCriticAgentFixedOneStd))
 
 
 def train_stable_baselines_ppo():

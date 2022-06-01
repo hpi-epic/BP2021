@@ -7,13 +7,14 @@ import utils_tests as ut_t
 
 from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader
 from recommerce.configuration.path_manager import PathManager
+from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPriceMonopoly
 
 market_config_file = os.path.join(PathManager.user_path, 'configuration_files', 'market_config.json')
 
 
 # Test that checks if the config.json is read correctly
 def test_reading_file_values():
-	config = HyperparameterConfigLoader.load('market_config')
+	config = HyperparameterConfigLoader.load('market_config', CircularEconomyRebuyPriceMonopoly)
 
 	assert config.max_storage == 100
 	assert config.episode_length == 50
@@ -79,5 +80,5 @@ def test_invalid_values(market_json, expected_message):
 	with patch('builtins.open', mock_open(read_data=mock_json)) as mock_file:
 		ut_t.check_mock_file(mock_file, mock_json)
 		with pytest.raises(AssertionError) as assertion_message:
-			HyperparameterConfigLoader.load('hyperparameter_config')
+			HyperparameterConfigLoader.load('market_config', CircularEconomyRebuyPriceMonopoly)
 		assert expected_message in str(assertion_message.value)

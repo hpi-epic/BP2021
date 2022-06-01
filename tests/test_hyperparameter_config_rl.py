@@ -8,13 +8,14 @@ import utils_tests as ut_t
 
 import recommerce.configuration.hyperparameter_config as hyperparameter_config
 from recommerce.configuration.path_manager import PathManager
+from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
 
 q_learning_config_file = os.path.join(PathManager.user_path, 'configuration_files', 'q_learning_config.json')
 
 
 # Test that checks if the config.json is read correctly
 def test_reading_file_values():
-	config = hyperparameter_config.HyperparameterConfigLoader.load('q_learning_config')
+	config = hyperparameter_config.HyperparameterConfigLoader.load('q_learning_config', QLearningAgent)
 
 	assert config.gamma == 0.99
 	assert config.batch_size == 8
@@ -95,5 +96,5 @@ def test_invalid_values(rl_json, expected_message):
 	with patch('builtins.open', mock_open(read_data=mock_json)) as mock_file:
 		ut_t.check_mock_file(mock_file, mock_json)
 		with pytest.raises(AssertionError) as assertion_message:
-			hyperparameter_config.HyperparameterConfigLoader.load('hyperparameter_config')
+			hyperparameter_config.HyperparameterConfigLoader.load('q_learning_config', QLearningAgent)
 		assert expected_message in str(assertion_message.value)

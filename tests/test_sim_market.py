@@ -17,7 +17,7 @@ unique_output_dict_testcases = [
 
 @pytest.mark.parametrize('marketclass', unique_output_dict_testcases)
 def test_unique_output_dict(marketclass):
-	config_market: AttrDict = HyperparameterConfigLoader.load('market_config')
+	config_market: AttrDict = HyperparameterConfigLoader.load('market_config', circular_market.CircularEconomyRebuyPriceMonopoly)
 	market = marketclass(config=config_market)
 	_, _, _, info_dict_1 = market.step(ut_t.create_mock_action(marketclass))
 	_, _, _, info_dict_2 = market.step(ut_t.create_mock_action(marketclass))

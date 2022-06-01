@@ -8,6 +8,7 @@ from attrdict import AttrDict
 import recommerce.configuration.hyperparameter_config as hyperparameter_config
 import recommerce.configuration.utils as ut
 from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader
+from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPriceMonopoly
 from recommerce.monitoring.svg_manipulation import SVGManipulator
 
 
@@ -21,7 +22,7 @@ testcases_shuffle_quality = [1, 10, 100, 1000]
 
 @pytest.mark.parametrize('max_quality', testcases_shuffle_quality)
 def test_shuffle_quality(max_quality: int):
-	edited_config: AttrDict = HyperparameterConfigLoader.load('market_config')
+	edited_config: AttrDict = HyperparameterConfigLoader.load('market_config', CircularEconomyRebuyPriceMonopoly)
 	edited_config.max_quality = max_quality
 	quality = ut.shuffle_quality(edited_config)
 	assert quality <= max_quality and quality >= 1
@@ -264,7 +265,7 @@ def test_write_content_of_dict_to_overview_svg(
 		episode_dictionary: dict,
 		cumulated_dictionary: dict,
 		expected: dict):
-	config_market: AttrDict = HyperparameterConfigLoader.load('market_config')
+	config_market: AttrDict = HyperparameterConfigLoader.load('market_config', CircularEconomyRebuyPriceMonopoly)
 	with patch('recommerce.monitoring.svg_manipulation.SVGManipulator.write_dict_to_svg') as mock_write_dict_to_svg:
 		ut.write_content_of_dict_to_overview_svg(SVGManipulator(), episode, episode_dictionary, cumulated_dictionary, config_market)
 	mock_write_dict_to_svg.assert_called_once_with(target_dictionary=expected)
