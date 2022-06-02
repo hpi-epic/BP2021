@@ -2,6 +2,7 @@
 
 from recommerce.configuration.environment_config import EnvironmentConfig
 from recommerce.configuration.hyperparameter_config import HyperparameterConfigValidator
+from recommerce.configuration.utils import get_class
 
 
 def validate_config(config: dict, config_is_final: bool) -> tuple:
@@ -25,8 +26,8 @@ def validate_config(config: dict, config_is_final: bool) -> tuple:
 			hyperparameter_config = config['hyperparameter']
 			environment_config = config['environment']
 
-			market_class = environment_config['marketplace']
-			agent_class = environment_config['agents'][0]['agent_class']
+			market_class = get_class(environment_config['marketplace'])
+			agent_class = get_class(environment_config['agents'][0]['agent_class'])
 
 			HyperparameterConfigValidator.validate_config(hyperparameter_config['sim_market'], market_class)
 			HyperparameterConfigValidator.validate_config(hyperparameter_config['rl'], agent_class)
