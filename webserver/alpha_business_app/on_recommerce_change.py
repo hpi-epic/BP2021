@@ -33,3 +33,4 @@ class ConfigModelWriter:
 
 
 ConfigModelWriter(top_level='hyperparameter', second_level='rl').write_file()
+ConfigModelWriter(top_level='hyperparameter', second_level='sim_market').write_file()

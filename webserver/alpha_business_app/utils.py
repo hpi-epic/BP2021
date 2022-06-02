@@ -114,9 +114,11 @@ def get_structure_dict_for(keyword) -> dict:
 
 
 def get_structure_with_types_of(top_level: str, second_level: str = None) -> dict:
-	assert top_level == 'hyperparameter' and second_level == 'rl', \
-		f'It is only implemented for "hyperparameter" and "rl" not {top_level}, {second_level}'
-	possible_attributes = get_all_possible_rl_hyperparameter()
+	assert top_level == 'hyperparameter' and second_level == 'rl' \
+		or top_level == 'hyperparameter' and second_level == 'sim_market', \
+		f'It is only implemented for "hyperparameter" and "rl, sim_market" not {top_level}, {second_level}'
+	if second_level == 'rl':
+		possible_attributes = get_all_possible_rl_hyperparameter()
 	final_attributes = []
 	for attr in possible_attributes:
 		final_attributes += [(attr[0], convert_python_type_to_django_type(attr[1])(default=None))]

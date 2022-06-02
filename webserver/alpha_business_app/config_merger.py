@@ -5,7 +5,7 @@ class ConfigMerger():
 	def __init__(self) -> None:
 		self.error_dict = Config.get_empty_structure_dict()
 
-	def merge_config_objects(self, config_object_ids: list) -> tuple:
+	def merge_config_objects(self, config_object_ids: list, base_config: dict) -> tuple:
 		"""
 		merge a list of config objects given by their id.
 
@@ -17,10 +17,8 @@ class ConfigMerger():
 		"""
 		configuration_objects = [Config.objects.get(id=config_id) for config_id in config_object_ids]
 		configuration_dicts = [config.as_dict() for config in configuration_objects]
-		# for c in configuration_dicts:
-		# 	print(c)
-		# print('--------------------------------------')
-		# get initial empty dict to merge into
+
+		# initial empty dict to merge into
 		final_config = Config.get_empty_structure_dict()
 		for config in configuration_dicts:
 			final_config = self._merge_config_into_base_config(final_config, config)

@@ -56,7 +56,7 @@ class ConfigMergerTest(TestCase):
 		test_config2 = Config.objects.create(hyperparameter=test_hyper_parameter_config)
 
 		merger = ConfigMerger()
-		final_dict, error_dict = merger.merge_config_objects([test_config1.id, test_config2.id])
+		final_dict, error_dict = merger.merge_config_objects([test_config1.id, test_config2.id], Config.get_empty_structure_dict())
 
 		expected_dict = copy.deepcopy(EMPTY_STRUCTURE_CONFIG)
 		expected_dict['hyperparameter']['rl']['gamma'] = 0.99
@@ -73,7 +73,7 @@ class ConfigMergerTest(TestCase):
 		test_config2 = Config.objects.create(environment=test_environment_config2)
 
 		merger = ConfigMerger()
-		final_dict, error_dict = merger.merge_config_objects([test_config1.id, test_config2.id])
+		final_dict, error_dict = merger.merge_config_objects([test_config1.id, test_config2.id], Config.get_empty_structure_dict())
 
 		expected_dict = copy.deepcopy(EMPTY_STRUCTURE_CONFIG)
 		expected_dict['environment']['task'] = 'monitoring'
@@ -93,7 +93,7 @@ class ConfigMergerTest(TestCase):
 		config_object2 = parser.parse_config(test_config2)
 
 		merger = ConfigMerger()
-		final_config, error_dict = merger.merge_config_objects([config_object1.id, config_object2.id])
+		final_config, error_dict = merger.merge_config_objects([config_object1.id, config_object2.id], Config.get_empty_structure_dict())
 
 		expected_final_config = {
 			'environment': {

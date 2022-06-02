@@ -11,6 +11,10 @@ $(document).ready(function() {
 		});
 	};
 	addEventToAddMoreButton()
+
+	function getFormData () {
+		return $("form.config-form");
+	};
 	
 	function updateAPIHealth() {
 		// replaces the element by the element returned by ajax (html) and adds this click event to it
@@ -65,8 +69,7 @@ $(document).ready(function() {
 		$("select.agent-agent-class").change(function () {
 			// will be called when agent dropdown has changed, we need to change rl hyperparameter for that
 			var self = $(this);
-			var form = $("form.config-form");
-			var formdata = form.serializeArray();
+			var formdata = getFormData()
 			const csrftoken = getCookie("csrftoken");
 			$.ajax({
 				type: "POST",
@@ -104,8 +107,7 @@ $(document).ready(function() {
 		$("table.config-status-display").remove();
 		
 		var self = $(this);
-		var form = $("form.config-form");
-		var formdata = form.serializeArray();
+		var formdata = getFormData();
 
 		const csrftoken = getCookie('csrftoken');
 		$.ajax({
