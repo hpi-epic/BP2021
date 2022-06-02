@@ -31,6 +31,8 @@ def validate_config(config: dict, config_is_final: bool) -> tuple:
 			# try to split the config. If any keys are unknown, an AssertionError will be thrown
 			hyperparameter_config, environment_config = split_mixed_config(config)
 
+		agent_class = None
+		market_class = None
 		if 'marketplace' in environment_config:
 			market_class = get_class(environment_config['marketplace'])
 		# the first agent is always the relevant one

@@ -56,23 +56,37 @@ def handle_uploaded_file(request, uploaded_config) -> HttpResponse:
 	except ValueError as value:
 		return render(request, 'upload.html', {'error': str(value)})
 
+	# Validate the config file using the recommerce validation functionality
 	validate_status, validate_data = validate_config(content_as_dict, False)
 	if not validate_status:
 		return render(request, 'upload.html', {'error': validate_data})
-	hyperparameter_config, environment_config = validate_data
+	config = validate_data
+	assert len(config.keys()) == 1, f'This config ({config} as multiple keys, should only be one ("environment", "rl" or "sim_market"))'
 
+	# recommerce returns either {'environment': {}}, {'rl': {}} or {'sim_markte': {}}}
+	# for parsing we need to know what the toplevel key is
+	top_level = config.keys()[0]
+	if top_level != 'environment':
+		top_level = 'hyperparameter'
+
+	# parse config model to datastructure
 	parser = ConfigModelParser()
-	web_hyperparameter_config = None
-	web_environment_config = None
 	try:
-		web_hyperparameter_config = parser.parse_config_dict_to_datastructure('hyperparameter', hyperparameter_config)
-		web_environment_config = parser.parse_config_dict_to_datastructure('environment', environment_config)
-	except ValueError:
-		return render(request, 'upload.html', {'error': 'Your config is wrong'})
+		resulting_config_part = parser.parse_config_dict_to_datastructure(top_level, config)
+	except ValueError as e:
+		return render(request, 'upload.html', {'error': f'Your config is wrong {e}'})
+
+	# Make it a real config object
+	environment_config = None
+	hyperparameter_config = None
+	if top_level == 'environment':
+		environment_config = resulting_config_part
+	else:
+		hyperparameter_config = resulting_config_part
 
 	given_name = request.POST['config_name']
 	config_name = given_name if given_name else uploaded_config.name
-	Config.objects.create(environment=web_environment_config, hyperparameter=web_hyperparameter_config, name=config_name, user=request.user)
+	Config.objects.create(environment=environment_config, hyperparameter=hyperparameter_config, name=config_name, user=request.user)
 	return redirect('/configurator', {'success': 'You successfully uploaded a config file'})
 
 

@@ -8,7 +8,11 @@ from django.test.client import RequestFactory
 
 from ..config_parser import ConfigModelParser
 from ..handle_files import handle_uploaded_file
-from ..models.config import *
+from ..models.agents_config import AgentsConfig
+from ..models.config import Config
+from ..models.environment_config import EnvironmentConfig
+from ..models.rl_config import RlConfig
+from ..models.sim_market_config import SimMarketConfig
 
 
 class MockedResponse():
@@ -92,10 +96,10 @@ class FileHandling(TestCase):
 			else:
 				assert 32 == getattr(resulting_config.rl, name)
 
-	def test_parsing_with_only_hyperparameter(self):
+	def test_parsing_with_rl_hyperparameter(self):
 		# get a test config to be parsed
 		path_to_test_data = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'test_data')
-		with open(os.path.join(path_to_test_data, 'test_hyperparameter_config.json'), 'r') as file:
+		with open(os.path.join(path_to_test_data, 'test_rl_config.json'), 'r') as file:
 			content = file.read()
 		# mock uploaded file with test config
 		test_uploaded_file = MockedUploadedFile('config.json', content.encode())
@@ -108,9 +112,9 @@ class FileHandling(TestCase):
 		assert Config == type(final_config)
 		assert final_config.environment is None
 		assert final_config.hyperparameter is not None
+		assert final_config.hyperparameter.sim_market is None
 
 		hyperparameter_rl_config: RlConfig = final_config.hyperparameter.rl
-		hyperparameter_sim_market_config: SimMarketConfig = final_config.hyperparameter.sim_market
 
 		assert hyperparameter_rl_config is not None
 		assert final_config.hyperparameter.sim_market is not None
@@ -124,6 +128,28 @@ class FileHandling(TestCase):
 		assert 75000 == hyperparameter_rl_config.epsilon_decay_last_frame
 		assert 1.0 == hyperparameter_rl_config.epsilon_start
 		assert 0.1 == hyperparameter_rl_config.epsilon_final
+
+	def test_parsing_with_sim_market_hyperparameter(self):
+		# get a test config to be parsed
+		path_to_test_data = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'test_data')
+		with open(os.path.join(path_to_test_data, 'test_sim_market_config.json'), 'r') as file:
+			content = file.read()
+		# mock uploaded file with test config
+		test_uploaded_file = MockedUploadedFile('config.json', content.encode())
+		# test method
+		with patch('alpha_business_app.handle_files.redirect') as redirect_mock:
+			handle_uploaded_file(self._setup_request(), test_uploaded_file)
+			redirect_mock.assert_called_once()
+		# assert the datastructure, that should be present afterwards
+		final_config: Config = Config.objects.all().first()
+		assert Config == type(final_config)
+		assert final_config.environment is None
+		assert final_config.hyperparameter is not None
+		assert final_config.hyperparameter.rl is None
+
+		hyperparameter_sim_market_config: SimMarketConfig = final_config.hyperparameter.sim_market
+
+		assert final_config.hyperparameter.sim_market is not None
 
 		assert 100 == hyperparameter_sim_market_config.max_storage
 		assert 50 == hyperparameter_sim_market_config.episode_length
@@ -167,38 +193,6 @@ class FileHandling(TestCase):
 		assert '' == all_agents[0].argument
 		assert 'recommerce.rl.q_learning.q_learning_agent.QLearningAgent' == all_agents[1].agent_class
 		assert 'CircularEconomyRebuyPriceMonopoly_QLearningAgent.dat' == all_agents[1].argument
-
-	def test_parsing_mixed_config(self):
-		# get a test config to be parsed
-		path_to_test_data = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'test_data')
-		with open(os.path.join(path_to_test_data, 'test_mixed_config.json'), 'r') as file:
-			content = file.read()
-		# mock uploaded file with test config
-		test_uploaded_file = MockedUploadedFile('config.json', content.encode())
-		# test method
-		with patch('alpha_business_app.handle_files.redirect') as redirect_mock:
-			handle_uploaded_file(self._setup_request(), test_uploaded_file)
-			redirect_mock.assert_called_once()
-		# assert the datastructure, that should be present afterwards
-		final_config: Config = Config.objects.all().first()
-		assert Config == type(final_config)
-		assert final_config.environment is not None
-		assert final_config.hyperparameter is not None
-
-		environment_config: EnvironmentConfig = final_config.environment
-		hyperparameter_config: HyperparameterConfig = final_config.hyperparameter
-
-		assert 'training' == environment_config.task
-		assert environment_config.enable_live_draw is False
-		assert 50 == environment_config.episodes
-
-		assert hyperparameter_config.sim_market is not None
-		assert hyperparameter_config.rl is not None
-
-		assert 100 == hyperparameter_config.sim_market.max_storage
-		assert 50 == hyperparameter_config.sim_market.episode_length
-		assert 0.99 == hyperparameter_config.rl.gamma
-		assert 32 == hyperparameter_config.rl.batch_size
 
 	def test_parsing_invalid_rl_parameters(self):
 		test_uploaded_file = MockedUploadedFile('config.json', b'{"rl": {"test":"bla"}}')

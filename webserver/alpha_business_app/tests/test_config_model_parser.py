@@ -98,8 +98,8 @@ class ConfigModelParserTest(TestCase):
 
 		all_agents = environment_agents.agentconfig_set.all()
 		assert 1 == len(all_agents)
-		assert 'recommerce.market.circular.circular_vendors.RuleBasedCERebuyAgent' == all_agents[0].agent_class
-		assert 'Rule_Based Agent' == all_agents[0].name
+		assert 'recommerce.rl.q_learning.q_learning_agent.QLearningAgent' == all_agents[0].agent_class
+		assert 'QLearning Agent' == all_agents[0].name
 		assert '' == all_agents[0].argument
 
 	def test_parsing_agents(self):

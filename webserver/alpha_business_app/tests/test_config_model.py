@@ -164,7 +164,6 @@ class ConfigTest(TestCase):
 			'epsilon_start': None,
 			'replay_size': None,
 			'stable_baseline_test': None,
-			'threshold': None,
 			'epsilon_decay_last_frame': None,
 			'batch_size': None,
 			'epsilon_final': None,
