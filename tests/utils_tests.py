@@ -1,15 +1,8 @@
-# import json
-# from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader
 import json
 from typing import Tuple, Union
 
 import recommerce.market.circular.circular_sim_market as circular_market
 import recommerce.market.linear.linear_sim_market as linear_market
-
-# from unittest.mock import mock_open, patch
-
-
-# from attrdict import AttrDict
 
 
 def create_hyperparameter_mock_dict_rl(gamma: float = 0.99,
@@ -115,26 +108,6 @@ def replace_field_in_dict(initial_dict: dict, key: str, value: Union[str, int, f
 	return initial_dict
 
 
-# def create_hyperparameter_mock_dict(rl: dict = create_hyperparameter_mock_dict_rl(),
-# 	sim_market: dict = create_hyperparameter_mock_dict_sim_market()) -> dict:
-# 	"""
-# 	Create a dictionary in the format of the hyperparameter_config.json.
-# 	Call json.dumps() on the return value of this to mock the json file.
-
-# 	Args:
-# 		rl (dict, optional): The dictionary that should be used for the rl-part. Defaults to create_hyperparameter_mock_dict_rl().
-# 		sim_market (dict, optional): The dictionary that should be used for the sim_market-part.
-# 			Defaults to create_hyperparameter_mock_dict_sim_market().
-
-# 	Returns:
-# 		dict: The mock dictionary.
-# 	"""
-# 	return {
-# 		'rl': rl,
-# 		'sim_market': sim_market
-# 	}
-
-
 def create_environment_mock_dict(task: str = 'agent_monitoring',
 	enable_live_draw: bool = False,
 	episodes: int = 10,
@@ -174,35 +147,6 @@ def create_environment_mock_dict(task: str = 'agent_monitoring',
 		'marketplace': marketplace,
 		'agents': agents
 	}
-
-
-# def create_combined_mock_dict(hyperparameter: dict or None = create_hyperparameter_mock_dict(),
-# 	environment: dict or None = create_environment_mock_dict()) -> dict:
-# 	"""
-# 	Create a mock dictionary in the format of a configuration file with both a hyperparameter and environment part.
-# 	If any of the two parameters is `None`, leave that key out of the resulting dictionary.
-
-# 	Args:
-# 		hyperparameter (dict | None, optional): The hyperparameter part of the combined config. Defaults to create_hyperparameter_mock_dict().
-# 		environment (dict | None, optional): The environment part of the combined config. Defaults to create_environment_mock_dict().
-
-# 	Returns:
-# 		dict: The mock dictionary.
-# 	"""
-# 	if hyperparameter is None and environment is None:
-# 		return {}
-# 	elif hyperparameter is None:
-# 		return {
-# 			'environment': environment
-# 		}
-# 	elif environment is None:
-# 		return {
-# 			'hyperparameter': hyperparameter
-# 		}
-# 	return {
-# 		'hyperparameter': hyperparameter,
-# 		'environment': environment
-# 	}
 
 
 def check_mock_file(mock_file, mocked_file_content) -> None:
@@ -264,16 +208,3 @@ def create_mock_action(market_subclass) -> Union[int, Tuple]:
 		return (1, 2, 3)
 	elif issubclass(market_subclass, circular_market.CircularEconomy):
 		return (1, 2)
-
-
-# def mock_config_hyperparameter() -> AttrDict:
-# 	"""
-# 	Reload the hyperparameter_config file to update the config variable with the mocked values.
-
-# 	Returns:
-# 		HyperparameterConfig: The mocked hyperparameter config object.
-# 	"""
-# 	mock_json = json.dumps(create_hyperparameter_mock_dict())
-# 	with patch('builtins.open', mock_open(read_data=mock_json)) as mock_file:
-# 		check_mock_file(mock_file, mock_json)
-# 		return HyperparameterConfigLoader.load('hyperparameter_config')
