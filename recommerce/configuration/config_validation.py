@@ -2,9 +2,6 @@
 
 from recommerce.configuration.environment_config import EnvironmentConfig
 from recommerce.configuration.hyperparameter_config import HyperparameterConfigValidator
-from recommerce.configuration.utils import get_class
-from recommerce.market.sim_market import SimMarket
-from recommerce.market.vendors import Agent
 
 
 def validate_config(config: dict, config_is_final: bool) -> tuple:
@@ -20,27 +17,24 @@ def validate_config(config: dict, config_is_final: bool) -> tuple:
 				failure: A status (False) and the errormessage as a string.
 	"""
 	try:
-		# first check if the environment and hyperparameter parts are already split up
-		if 'environment' in config and 'hyperparameter' in config:
-			assert len(config) == 2, 'Your config should not contain keys other than "environment" and "hyperparameter"'
-			hyperparameter_config = config['hyperparameter']
-			environment_config = config['environment']
-		elif 'environment' in config or 'hyperparameter' in config:
-			raise AssertionError('If your config contains one of "environment" or "hyperparameter" it must also contain the other')
+		# we only allow users to upload either a hyperparameter_config (rl or market) or an environment_config, not combined!
+		config_type = find_config_type(config)
+
+		# we can only validate types for the environment_config, as we do not know the agent/market class for the rl/market configs
+		if config_type == 'environment':
+			# validate that all given values have the correct types
+			task = config['task'] if config_is_final else 'None'
+			EnvironmentConfig.check_types(config, task, False, config_is_final)
+
+		# the webserver needs another format of the config
+		config.pop('config_type')
+		if config_type == 'rl':
+			return True, {'rl': config}
+		elif config_type == 'sim_market':
+			return True, {'sim_market': config}
 		else:
-			# try to split the config. If any keys are unknown, an AssertionError will be thrown
-			hyperparameter_config, environment_config = split_mixed_config(config)
+			return True, {'environment': config}
 
-		if 'marketplace' in environment_config:
-			market_class = get_class(environment_config['marketplace'])
-		# the first agent is always the relevant one
-		if 'agents' in environment_config and len(environment_config['agents'] >= 1):
-			agent_class = get_class(environment_config['agents'][0]['agent_class'])
-
-		# validate that all given values have the correct types
-		check_config_types(hyperparameter_config, environment_config, agent_class, market_class, config_is_final)
-
-		return True, (hyperparameter_config, environment_config)
 	except Exception as error:
 		return False, str(error)
 
@@ -80,6 +74,28 @@ def validate_sub_keys(config_class: HyperparameterConfigValidator or Environment
 			validate_sub_keys(config_class, config[key], key_fields)
 
 
+def find_config_type(config: dict) -> str:
+	"""
+	Extract the config type from the config dictionary. Config type is defined by the "config_type" key, which must always be present.
+
+	Args:
+		config (dict): The config to check.
+
+	Raises:
+		AssertionError: If the config_type key has an invalid value or is missing.
+
+	Returns:
+		str: The config type.
+	"""
+	try:
+		if config['config_type'] in ['rl', 'market', 'environment']:
+			return config['config_type']
+		else:
+			raise AssertionError(f'the "config_type" key must be one of "rl", "market", "environment" but was {config["config_type"]}')
+	except KeyError as e:
+		raise AssertionError(f"your config is missing the 'config_type' key, which must be one of 'rl', 'market', 'environment': {config}") from e
+
+
 def split_mixed_config(config: dict) -> tuple:
 	"""
 	Utility function that splits a potentially mixed config of hyperparameters and environment-variables
@@ -115,56 +131,29 @@ def split_mixed_config(config: dict) -> tuple:
 	return hyperparameter_config, environment_config
 
 
-def check_config_types(hyperparameter_config: dict,
-	environment_config: dict,
-	agent_class: Agent = None,
-	market_class: SimMarket = None,
-	must_contain: bool = False) -> None:
-	"""
-	Utility function that checks (incomplete) config dictionaries for their correct types.
-	If either agent_class or market_class is None, we cannot check the fields for correctness.
-
-	Args:
-		hyperparameter_config (dict): The config containing hyperparameter_config-keys.
-		environment_config (dict): The config containing environment_config-keys.
-		agent_class (Agent, optional): The relevant class for which the fields are to be checked. Defaults to None.
-		market_class (SimMarket, optional): The relevant class for which the fields are to be checked. Defaults to None.
-		must_contain (bool, optional): Whether or not the configuration should contain all required keys. Defaults to False.
-
-	Raises:
-		AssertionError: If one of the values has the wrong type.
-	"""
-
-	if 'rl' in hyperparameter_config and agent_class:
-		HyperparameterConfigValidator._check_types(hyperparameter_config['rl'],	agent_class.get_configurable_fields(), must_contain)
-	if 'sim_market' in hyperparameter_config and market_class:
-		HyperparameterConfigValidator._check_types(hyperparameter_config['sim_market'],	market_class.get_configurable_fields(), must_contain)
-
-	# check types for environment_config
-	task = environment_config['task'] if must_contain else 'None'
-	EnvironmentConfig.check_types(environment_config, task, False, must_contain)
-
-
 if __name__ == '__main__':  # pragma: no cover
-	test_config = {
-		'rl': {
-			'batch_size': 32,
-			'replay_size': 100000,
-			'learning_rate': 1e-6,
-			'sync_target_frames': 1000,
-			'replay_start_size': 10000,
-			'epsilon_decay_last_frame': 75000,
-			'epsilon_start': 1.0,
-			'epsilon_final': 0.1
-		},
-		'sim_market': {
-			'max_storage': 100,
-			'episode_length': 50,
-			'max_price': 10,
-			'max_quality': 50,
-			'production_price': 3,
-			'storage_cost_per_product': 0.1
-		},
+	test_config_rl = {
+		'config_type': 'rl',
+		'batch_size': 32,
+		'replay_size': 100000,
+		'learning_rate': 1e-6,
+		'sync_target_frames': 1000,
+		'replay_start_size': 10000,
+		'epsilon_decay_last_frame': 75000,
+		'epsilon_start': 1.0,
+		'epsilon_final': 0.1
+	}
+	test_config_market = {
+		'config_type': 'market',
+		'max_storage': 100,
+		'episode_length': 50,
+		'max_price': 10,
+		'max_quality': 50,
+		'production_price': 3,
+		'storage_cost_per_product': 0.1
+		}
+	test_config_environment = {
+		'config_type': 'environment',
 		'episodes': 5,
 		'agents': [
 			{
@@ -180,4 +169,6 @@ if __name__ == '__main__':  # pragma: no cover
 		]
 	}
 	print('Testing config validation...')
-	print(validate_config(test_config, False))
+	print(validate_config(test_config_rl, False))
+	print(validate_config(test_config_market, False))
+	print(validate_config(test_config_environment, False))

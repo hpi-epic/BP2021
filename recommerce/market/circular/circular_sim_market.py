@@ -21,7 +21,7 @@ class CircularEconomy(SimMarket, ABC):
 
 	@staticmethod
 	def get_configurable_fields() -> list:
-		# TODO: reduce this list to only the required fields (remove max_quantity)
+		# TODO: reduce this list to only the required fields (remove max_quality)
 		return [
 			('max_storage', int, greater_zero_rule),
 			('episode_length', int, greater_zero_rule),
