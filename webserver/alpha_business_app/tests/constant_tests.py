@@ -7,8 +7,8 @@ EXAMPLE_POST_REQUEST_ARGUMENTS = {
 		'environment-episodes': [''],
 		'environment-plot_interval': [''],
 		'environment-marketplace': ['recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopoly'],
-		'environment-agents-name': ['Rule_Based Agent'],
-		'environment-agents-agent_class': ['recommerce.market.circular.circular_vendors.RuleBasedCERebuyAgent'],
+		'environment-agents-name': ['QLearning Agent'],
+		'environment-agents-agent_class': ['recommerce.rl.q_learning.q_learning_agent.QLearningAgent'],
 		'environment-agents-argument': [''],
 		'hyperparameter-rl-gamma': ['0.99'],
 		'hyperparameter-rl-batch_size': ['32'],
@@ -35,8 +35,8 @@ EXAMPLE_HIERARCHY_DICT = {
 			'enable_live_draw': False,
 			'agents': [
 				{
-					'name': 'Rule_Based Agent',
-					'agent_class': 'recommerce.market.circular.circular_vendors.RuleBasedCERebuyAgent',
+					'name': 'QLearning Agent',
+					'agent_class': 'recommerce.rl.q_learning.q_learning_agent.QLearningAgent',
 					'argument': ''
 				}
 			]
@@ -126,7 +126,9 @@ EMPTY_STRUCTURE_CONFIG = {
 					'replay_start_size': None,
 					'epsilon_decay_last_frame': None,
 					'epsilon_start': None,
-					'epsilon_final': None
+					'epsilon_final': None,
+					'testvalue2': None,
+					'stable_baseline_test': None
 				},
 				'sim_market': {
 					'max_storage': None,
@@ -142,7 +144,6 @@ EMPTY_STRUCTURE_CONFIG = {
 
 EXAMPLE_RL_DICT = {
 	'rl': {
-		'class': 'recommerce.rl.q_learning.q_learning_agent.QLearningAgent',
 		'gamma': 0.99,
 		'batch_size': 32,
 		'replay_size': 100000,

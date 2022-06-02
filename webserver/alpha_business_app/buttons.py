@@ -4,6 +4,7 @@ from django.utils import timezone
 
 from recommerce.configuration.config_validation import validate_config
 
+from .adjustable_fields import get_rl_parameter_prefill
 from .config_merger import ConfigMerger
 from .config_parser import ConfigFlatDictParser
 from .container_parser import parse_response_to_database
@@ -279,7 +280,8 @@ class ButtonHandler():
 		if 'config_id' not in post_request:
 			return self._decide_rendering()
 		merger = ConfigMerger()
-		final_dict, error_dict = merger.merge_config_objects(post_request['config_id'])
+		final_dict, error_dict = merger.merge_config_objects(post_request['config_id'], post_request)
+		final_dict['hyperparameter']['rl'] = get_rl_parameter_prefill(final_dict['hyperparameter']['rl'], error_dict['hyperparameter']['rl'])
 		# set an id for each agent (necessary for view)
 		for agent_index in range(len(final_dict['environment']['agents'])):
 			final_dict['environment']['agents'][agent_index]['display_name'] = 'Agent' if agent_index == 0 else 'Competitor'

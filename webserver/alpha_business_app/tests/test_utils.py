@@ -4,7 +4,7 @@ from ..utils import get_structure_dict_for, to_config_keyword
 
 
 class UtilsTest(TestCase):
-	def test_get_structure_dict_for(self):
+	def test_get_structure_dict_for_config(self):
 		expected_dict = {
 			'environment': {
 				'task': None,
@@ -16,7 +16,6 @@ class UtilsTest(TestCase):
 			},
 			'hyperparameter': {
 				'sim_market': {
-					'class': None,
 					'max_storage': None,
 					'episode_length': None,
 					'max_price': None,
@@ -33,7 +32,6 @@ class UtilsTest(TestCase):
 					'testvalue2': None,
 					'sync_target_frames': None,
 					'batch_size': None,
-					'threshold': None,
 					'epsilon_final': None,
 					'stable_baseline_test': None,
 					'gamma': None,
@@ -52,7 +50,6 @@ class UtilsTest(TestCase):
 			'testvalue2': None,
 			'sync_target_frames': None,
 			'batch_size': None,
-			'threshold': None,
 			'epsilon_final': None,
 			'stable_baseline_test': None,
 			'gamma': None,
@@ -62,7 +59,6 @@ class UtilsTest(TestCase):
 
 	def test_get_structure_dict_for_sim_market(self):
 		expected_dict = {
-			'class': None,
 			'max_storage': None,
 			'episode_length': None,
 			'max_price': None,
