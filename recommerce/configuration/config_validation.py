@@ -1,6 +1,7 @@
 # This file contains logic used by the webserver to validate configuration files
 
 from recommerce.configuration.environment_config import EnvironmentConfig
+from recommerce.configuration.hyperparameter_config import HyperparameterConfigValidator
 
 
 def validate_config(config: dict, config_is_final: bool) -> tuple:
@@ -16,23 +17,41 @@ def validate_config(config: dict, config_is_final: bool) -> tuple:
 				failure: A status (False) and the errormessage as a string.
 	"""
 	try:
-		# we only allow users to upload either a hyperparameter_config (rl or market) or an environment_config, not combined!
-		config_type = find_config_type(config)
+		# first check if we got a complete config from the webserver
+		# in which case we will have two keys on the top-level
+		# this can either be an uploaded complete config, or a config sent when pressing the launch/check button
+		if 'environment' in config and 'hyperparameter' in config:
+			assert len(config) == 2, 'Your config should not contain keys other than "environment" and "hyperparameter"'
+			hyperparameter_config = config['hyperparameter']
+			environment_config = config['environment']
 
-		# we can only validate types for the environment_config, as we do not know the agent/market class for the rl/market configs
-		if config_type == 'environment':
-			# validate that all given values have the correct types
-			task = config['task'] if config_is_final else 'None'
-			EnvironmentConfig.check_types(config, task, False, config_is_final)
+			market_class = environment_config['marketplace']
+			agent_class = environment_config['agents'][0]['agent_class']
 
-		# the webserver needs another format of the config
-		config.pop('config_type')
-		if config_type == 'rl':
-			return True, {'rl': config}
-		elif config_type == 'sim_market':
-			return True, {'sim_market': config}
+			HyperparameterConfigValidator.validate_config(hyperparameter_config['sim_market'], market_class)
+			HyperparameterConfigValidator.validate_config(hyperparameter_config['rl'], agent_class)
+			EnvironmentConfig.check_types(environment_config, environment_config['task'], False, True)
+
+			return True, (hyperparameter_config, environment_config)
+		# if the two keys are not present, the config MUST be one of environment, rl, or market
+		# this is only the case when uploading a config
 		else:
-			return True, {'environment': config}
+			config_type = find_config_type(config)
+
+			# we can only validate types for the environment_config, as we do not know the agent/market class for the rl/market configs
+			if config_type == 'environment':
+				# validate that all given values have the correct types
+				task = config['task'] if config_is_final else 'None'
+				EnvironmentConfig.check_types(config, task, False, config_is_final)
+
+			# the webserver needs another format for the config
+			config.pop('config_type')
+			if config_type == 'rl':
+				return True, ({'rl': config}, None)
+			elif config_type == 'sim_market':
+				return True, ({'sim_market': config}, None)
+			else:
+				return True, ({'environment': config}, None)
 
 	except Exception as error:
 		return False, str(error)

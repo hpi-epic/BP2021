@@ -41,9 +41,9 @@ test_valid_config_validation_complete_testcases = [
 @pytest.mark.parametrize('config', test_valid_config_validation_complete_testcases)
 def test_valid_config_validation_complete(config):
 	config_type = config['config_type']
-	success, result_config = config_validation.validate_config(config, True)
-	assert success
-	assert result_config == {config_type: config}
+	success, result = config_validation.validate_config(config, True)
+	assert success, result
+	assert result == ({config_type: config}, None)
 
 
 test_valid_config_validation_incomplete_testcases = [
@@ -56,9 +56,9 @@ test_valid_config_validation_incomplete_testcases = [
 @pytest.mark.parametrize('config, removed_key', test_valid_config_validation_incomplete_testcases)
 def test_valid_config_validation_incomplete(config, removed_key):
 	# Hacky, thx pytest!
-	tested_config = config
+	tested_config = config.copy()
 	tested_config = ut_t.remove_key(removed_key, tested_config)
 	config_type = tested_config['config_type']
-	success, result_config = config_validation.validate_config(tested_config, False)
+	success, result = config_validation.validate_config(tested_config, False)
 	assert success
-	assert result_config == {config_type: tested_config}
+	assert result == ({config_type: tested_config}, None)
