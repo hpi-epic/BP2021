@@ -46,12 +46,30 @@ class Evaluator():
 
 		# self._create_statistics_plots(rewards)
 		if episode_numbers is not None:
+			print('Writing written results to disk...')
 			with open(os.path.join(self.configurator.get_folder(), 'written_analyses.txt'), 'w') as file:
 				file.write(analysis_string)
+			print('Creating monitoring-based line plots...')
+			self.create_monitoring_based_line_plots(analyses, episode_numbers)
+			print('Creating violin plots...')
 			for property_name in ut.unroll_dict_with_list(analyses[0]).keys():
 				samples = [ut.unroll_dict_with_list(analysis)[property_name] for analysis in analyses]
 				self._create_violin_plot(samples, episode_numbers, f'Violinplot showing progress of {property_name}')
 		print(f'All plots were saved to {os.path.abspath(self.configurator.folder_path)}')
+
+	def create_monitoring_based_line_plots(self, analyses, episode_numbers: 'list[int]'):
+		for property_name in analyses[0].keys():
+			plt.clf()
+			if not isinstance(analyses[0][property_name][0], list):
+				plt.plot(episode_numbers, [np.mean(analysis[property_name]) for analysis in analyses])
+			else:
+				number_of_vendors = len(analyses[0][property_name])
+				for i in range(number_of_vendors):
+					plt.plot(episode_numbers, [np.mean(analysis[property_name][i]) for analysis in analyses], label=f'Vendor {i}')
+				plt.legend()
+			plt.xlabel('Episode')
+			plt.ylabel(property_name)
+			plt.savefig(fname=os.path.join(self.configurator.get_folder(), f'lineplot_monitoring_based_{property_name.replace("/", "_")}.svg'))
 
 	# visualize metrics
 	def create_density_plot(self, samples: list, property: str):
