@@ -175,7 +175,7 @@ class Evaluator():
 		assert len(y_values) == len(self.configurator.agents), 'y_values must have one entry per agent'
 		assert all(len(agent_y_value) == int(self.configurator.episodes / self.configurator.plot_interval) for agent_y_value in y_values), \
 			'y_values must have self.episodes / self.plot_interval many items'
-		print(f'Creating line plot for {metric_name} rewards...')
+		# print(f'Creating line plot for {metric_name} rewards...')
 
 		plt.clf()
 		filename = f'{metric_name}_rewards.svg'
