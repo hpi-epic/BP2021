@@ -33,7 +33,8 @@ def validate_config(config: dict, config_is_final: bool) -> tuple:
 			HyperparameterConfigValidator.validate_config(hyperparameter_config['rl'], agent_class)
 			EnvironmentConfig.check_types(environment_config, environment_config['task'], False, True)
 
-			return True, (hyperparameter_config, environment_config)
+			return True, ({'rl': hyperparameter_config['rl']}, {'sim_market': hyperparameter_config['sim_market']},
+				{'environment': environment_config})
 		# if the two keys are not present, the config MUST be one of environment, rl, or market
 		# this is only the case when uploading a config
 		else:
@@ -48,11 +49,11 @@ def validate_config(config: dict, config_is_final: bool) -> tuple:
 			# the webserver needs another format for the config
 			config.pop('config_type')
 			if config_type == 'rl':
-				return True, ({'rl': config}, None)
+				return True, ({'rl': config}, None, None)
 			elif config_type == 'sim_market':
-				return True, ({'sim_market': config}, None)
+				return True, ({'sim_market': config}, None, None)
 			else:
-				return True, ({'environment': config}, None)
+				return True, ({'environment': config}, None, None)
 
 	except Exception as error:
 		return False, str(error)
