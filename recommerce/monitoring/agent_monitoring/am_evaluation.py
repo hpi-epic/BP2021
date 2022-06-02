@@ -43,7 +43,10 @@ class Evaluator():
 				prefix = f'episode_{episode_numbers[index]}_' if episode_numbers is not None else f'{self.configurator.agents[index].name}'
 				self.create_density_plot(samples if isinstance(samples[0], list) else [samples], f'{prefix}_{property}')
 
-		# self._create_statistics_plots(rewards)
+		print('Creating statistics plots...')
+		rewards = [agent['profits/all'][0] for agent in analyses]
+		self._create_statistics_plots(rewards)
+
 		if episode_numbers is not None:
 			for property_name in ut.unroll_dict_with_list(analyses[0]).keys():
 				samples = [ut.unroll_dict_with_list(analysis)[property_name] for analysis in analyses]
@@ -86,7 +89,7 @@ class Evaluator():
 		plt.ylabel('Probability density')
 		plt.title(f'Density plot of {property}')
 		plt.legend()
-		plt.savefig(fname=os.path.join(self.configurator.get_folder(), f'density_plot_{property.replace("/", "_")}.svg'))
+		plt.savefig(fname=os.path.join(self.configurator.get_folder(), 'density_plots', f'density_plot_{property.replace("/", "_")}.svg'))
 
 	def create_histogram(self, rewards: list, is_last_histogram: bool, filename: str = 'default_histogram.svg') -> None:
 		"""
@@ -192,7 +195,7 @@ class Evaluator():
 
 		plt.legend([a.name for a in self.configurator.agents])
 		plt.grid(True)
-		plt.savefig(fname=os.path.join(self.configurator.get_folder(), filename))
+		plt.savefig(fname=os.path.join(self.configurator.get_folder(), 'statistics_plots', filename))
 
 	def _create_violin_plot(self, all_rewards: 'list[list]', episode_numbers: 'list[int]', title: str = 'plot_title'):
 		"""
@@ -220,7 +223,7 @@ class Evaluator():
 		plt.title(title)
 		plt.xlabel('Learned Episodes')
 		plt.ylabel('Reward Density')
-		savepath = os.path.join(self.configurator.get_folder(), title.replace(' ', '_').replace('/', '_') + '.svg')
+		savepath = os.path.join(self.configurator.get_folder(), 'violinplots', title.replace(' ', '_').replace('/', '_') + '.svg')
 		plt.savefig(fname=savepath)
 
 
