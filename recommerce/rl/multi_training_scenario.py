@@ -6,17 +6,17 @@ import numpy as np
 
 from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader
 from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPriceDuopoly
-# from recommerce.rl.stable_baselines.sb_sac import StableBaselinesSAC
 # from recommerce.rl.stable_baselines.sb_td3 import StableBaselinesTD3
 from recommerce.rl.stable_baselines.sb_a2c import StableBaselinesA2C
-from recommerce.rl.stable_baselines.sb_ppo import StableBaselinesPPO
+# from recommerce.rl.stable_baselines.sb_ppo import StableBaselinesPPO
+from recommerce.rl.stable_baselines.sb_sac import StableBaselinesSAC
 
 
 def run_training_session(agent_class, config_rl, number, pipe_to_parent):
     config_market = HyperparameterConfigLoader.load('market_config')
     agent = agent_class(config_market, config_rl, CircularEconomyRebuyPriceDuopoly(config_market,
         support_continuous_action_space=True), name=f'Training_{number}')
-    watcher = agent.train_agent(1000000)
+    watcher = agent.train_agent(200000)
     pipe_to_parent.send(watcher)
 
 
@@ -133,6 +133,17 @@ def experiment_a2c_all_same():
     return configs, descriptions
 
 
+def experiment_sac_all_same():
+    configs = []
+    descriptions = []
+    for i in range(8):
+        configs.append(HyperparameterConfigLoader.load('sb_sac_config'))
+        # configs[-1].learning_rate = learning_rate
+        descriptions.append(f'sac_standard_{i}')
+
+    return configs, descriptions
+
+
 def run_group(agent, experiment):
     configs, descriptions = experiment()
     print(configs)
@@ -159,11 +170,12 @@ if __name__ == '__main__':
 
     # groups = [run_group(StableBaselinesPPO, experiment_clipping_ppo), run_group(StableBaselinesSAC, experiment_temperature_sac)]
     # groups = [run_group(StableBaselinesTD3, experiment_learning_rate_ddpg), run_group(StableBaselinesTD3, experiment_learning_rate_td3)]
-    groups = [
-        run_group(StableBaselinesA2C, experiment_a2c_all_same),
-        run_group(StableBaselinesPPO, experiment_ppo_standard_all_same),
-        run_group(StableBaselinesPPO, experiment_ppo_clip_0_3_all_same)
-    ]
+    # groups = [
+    #     run_group(StableBaselinesA2C, experiment_a2c_all_same),
+    #     run_group(StableBaselinesPPO, experiment_ppo_standard_all_same),
+    #     run_group(StableBaselinesPPO, experiment_ppo_clip_0_3_all_same)
+    # ]
+    groups = [run_group(StableBaselinesA2C, experiment_a2c_all_same), run_group(StableBaselinesSAC, experiment_sac_all_same)]
     # for descriptions, profits_vendor_0 in groups:
     #     print('Next group:')
     #     for descrition, profits in zip(descriptions, profits_vendor_0):
@@ -171,6 +183,7 @@ if __name__ == '__main__':
     #         plt.plot(profits, label=descrition)
     for descriptions, profits_vendor_0 in groups:
         profits_vendor_0 = np.array(profits_vendor_0)
+        print(f'The individual maximums were: {profits_vendor_0.max(axis=1)}')
         mins = np.min(profits_vendor_0, axis=0)
         maxs = np.max(profits_vendor_0, axis=0)
         means = np.mean(profits_vendor_0, axis=0)
