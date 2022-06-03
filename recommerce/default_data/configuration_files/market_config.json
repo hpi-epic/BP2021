@@ -1,4 +1,5 @@
 {
+	"config_type": "sim_market",
 	"max_storage": 100,
 	"episode_length": 50,
 	"max_price": 10,
