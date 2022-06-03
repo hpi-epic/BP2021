@@ -13,7 +13,9 @@ $(document).ready(function() {
 	addEventToAddMoreButton()
 
 	function getFormData () {
-		return $("form.config-form");
+		var form = $("form.config-form");
+		var formdata = form.serializeArray();
+		return formdata;
 	};
 	
 	function updateAPIHealth() {
@@ -69,15 +71,14 @@ $(document).ready(function() {
 		$("select.agent-agent-class").change(function () {
 			// will be called when agent dropdown has changed, we need to change rl hyperparameter for that
 			var self = $(this);
-			var formdata = getFormData()
+			// var formdata = getFormData();
 			const csrftoken = getCookie("csrftoken");
 			$.ajax({
 				type: "POST",
 				url: self.data("url"),
 				data: {
 					csrfmiddlewaretoken: csrftoken,
-					"agent": self.val(),
-					formdata
+					"agent": self.val()
 				},
 				success: function (data) {
 					$("div.rl-parameter").empty().append(data)

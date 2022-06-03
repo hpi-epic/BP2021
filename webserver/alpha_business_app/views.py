@@ -106,7 +106,6 @@ def new_agent(request) -> HttpResponse:
 def agent_changed(request) -> HttpResponse:
 	if not request.user.is_authenticated:
 		return HttpResponse('Unauthorized', status=401)
-	# print(request.POST)
 	return render(request, 'configuration_items/rl_parameter.html',
 		{'parameters': get_agent_hyperparameter(request.POST['agent'], request.POST.dict())})
 
@@ -146,13 +145,13 @@ def config_validation(request) -> HttpResponse:
 	return render(request, 'notice_field.html', {'success': 'This config is valid'})
 
 
+@login_required
 def marketplace_changed(request) -> HttpResponse:
 	if not request.user.is_authenticated:
 		return HttpResponse('Unauthorized', status=401)
 	marketplace_class = None
 	if request.method == 'POST':
 		post_request = request.POST
-		# print(post_request)
 		marketplace_class = post_request['marketplace']
 		raw_html = post_request['agents_html']
 	return HttpResponse(content=selection_manager.get_correct_agents_html_on_marketplace_change(request, marketplace_class, raw_html))

@@ -8,7 +8,7 @@ from ..models.environment_config import EnvironmentConfig
 from ..models.hyperparameter_config import HyperparameterConfig
 from ..models.rl_config import RlConfig
 from ..models.sim_market_config import SimMarketConfig
-from ..utils import capitalize, remove_none_values_from_dict, to_config_class_name
+from ..utils import remove_none_values_from_dict, to_config_class_name
 
 # from .constant_tests import EMPTY_STRUCTURE_CONFIG
 
@@ -31,15 +31,6 @@ class ConfigTest(TestCase):
 
 	def test_class_name_sim_market_config(self):
 		assert 'SimMarketConfig' == to_config_class_name('sim_market')
-
-	def test_capitalize(self):
-		assert 'TestTesTTest' == capitalize('testTesTTest')
-
-	def test_capitalize_empty_strings(self):
-		assert '' == capitalize('')
-
-	def test_capitalize_one_letter_strings(self):
-		assert 'A' == capitalize('a')
 
 	def test_is_referenced(self):
 		test_config_not_referenced = Config.objects.create()
