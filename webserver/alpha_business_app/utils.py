@@ -34,29 +34,39 @@ def convert_python_type_to_input_type(to_convert) -> str:
 
 def convert_python_type_to_django_type(to_convert) -> str:
 	from django.db import models
-	if to_convert == float:
-		return models.FloatField
+	if to_convert == float or (type(to_convert) == tuple and float in to_convert):
+		return str(models.FloatField)
 	elif to_convert == int:
-		return models.IntegerField
+		return str(models.IntegerField)
 	else:
-		return models.CharField
+		return str(models.CharField)
 
 
-def get_all_possible_rl_hyperparameter():
+def get_attributes(all_classes: list) -> set:
+	all_attributes = []
+	for class_str in all_classes:
+		current_class = get_class(class_str)
+		try:
+			# we do not necessarily need to include the rule, as it is currently not used in the webserver
+			all_attributes += [attribute[:2] for attribute in current_class.get_configurable_fields()]
+		except NotImplementedError:
+			print(f'please check the installation of the recommerce package!{current_class} does not implement "get_configurable_fields"')
+	return set(all_attributes)
+
+
+def get_all_possible_rl_hyperparameter() -> set:
 	all_marketplaces = get_recommerce_marketplaces()
 	all_agents = []
 	for marketplace_str in all_marketplaces:
 		marketplace = get_class(marketplace_str)
 		all_agents += get_recommerce_agents_for_marketplace(marketplace)
 
-	all_attributes = []
-	for agent_str in all_agents:
-		agent = get_class(agent_str)
-		try:
-			all_attributes += agent.get_configurable_fields()
-		except NotImplementedError:
-			print(f'please check the installation of the recommerce package! Agent: {agent} does not implement get_configurable_fields')
-	return set(all_attributes)
+	return get_attributes(all_agents)
+
+
+def get_all_possible_sim_market_hyperparameter() -> set:
+	all_marketplaces = get_recommerce_marketplaces()
+	return get_attributes(all_marketplaces)
 
 
 def capitalize(word: str) -> str:
@@ -114,10 +124,14 @@ def get_structure_dict_for(keyword) -> dict:
 
 
 def get_structure_with_types_of(top_level: str, second_level: str = None) -> dict:
-	assert top_level == 'hyperparameter' and second_level == 'rl', \
-		f'It is only implemented for "hyperparameter" and "rl" not {top_level}, {second_level}'
-	possible_attributes = get_all_possible_rl_hyperparameter()
+	assert top_level == 'hyperparameter' and second_level == 'rl' \
+		or top_level == 'hyperparameter' and second_level == 'sim_market', \
+		f'It is only implemented for "hyperparameter" and "rl, sim_market" not {top_level}, {second_level}'
+	if second_level == 'rl':
+		possible_attributes = get_all_possible_rl_hyperparameter()
+	if second_level == 'sim_market':
+		possible_attributes = get_all_possible_sim_market_hyperparameter()
 	final_attributes = []
 	for attr in possible_attributes:
-		final_attributes += [(attr[0], convert_python_type_to_django_type(attr[1])(default=None))]
+		final_attributes += [(attr[0], convert_python_type_to_django_type(attr[1]))]
 	return final_attributes
