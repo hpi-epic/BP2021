@@ -7,7 +7,7 @@ from attrdict import AttrDict
 class Agent(ABC):
 
 	def __init__(self, config_market: AttrDict, name='agent'):
-		self.name = name
+		self.name = name if name != '' else 'agent'
 		self.config_market = config_market
 
 	@classmethod

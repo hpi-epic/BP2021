@@ -24,7 +24,7 @@ class ActorCriticAgent(ReinforcementLearningAgent, ABC):
 			device='cuda' if torch.cuda.is_available() else 'cpu',
 			load_path=None,
 			critic_path=None,
-			name='actor_critic',
+			name='ActorCriticAgent',
 			network_architecture=model.simple_network):
 		assert isinstance(marketplace, SimMarket), f'marketplace must be a SimMarket, but is {type(marketplace)}'
 
@@ -35,7 +35,7 @@ class ActorCriticAgent(ReinforcementLearningAgent, ABC):
 		self.config_market = config_market
 		self.config_rl = config_rl
 		self.device = device
-		self.name = name
+		self.name = name if name != '' else 'ActorCriticAgent'
 		print(f'I initiate an ActorCriticAgent using {self.device} device')
 		self.initialize_models_and_optimizer(n_observations, network_output_size, network_architecture)
 		if load_path is not None:

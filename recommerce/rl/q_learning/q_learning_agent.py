@@ -37,7 +37,7 @@ class QLearningAgent(ReinforcementLearningAgent, CircularAgent, LinearAgent):
 		self.config_rl = config_rl
 		self.device = device
 		self.buffer_for_feedback = None
-		self.name = name
+		self.name = name if name != '' else 'QLearningAgent'
 		print(f'I initiate a QLearningAgent using {self.device} device')
 		self.net = network_architecture(n_observations, self.n_actions).to(self.device)
 		if load_path:
