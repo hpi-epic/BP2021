@@ -77,6 +77,7 @@ class EnvironmentConfig(ABC):
 				'enable_live_draw': bool,
 				'episodes': int,
 				'plot_interval': int,
+				'separate_markets': bool,
 				'marketplace': str,
 				'agents': list
 			}
@@ -284,6 +285,12 @@ class AgentMonitoringEnvironmentConfig(EnvironmentConfig):
 		self.enable_live_draw = config['enable_live_draw']
 		self.episodes = config['episodes']
 		self.plot_interval = config['plot_interval']
+		self.separate_markets = config['separate_markets']
+
+		# If we get more than one agent and all agents play on the same market, make sure that we have the right amount
+		if not self.separate_markets and len(self.agent) > 1:
+			assert self.marketplace.get_num_competitors() == np.inf or len(self.agent)-1 == self.marketplace.get_num_competitors(), \
+				f'The number of competitors given is invalid: was {len(self.agent)-1} but should be {self.marketplace.get_num_competitors()}'
 
 		# Since the agent_monitoring does not accept the dictionary but instead wants a list of tuples, we need to adapt the dictionary
 		passed_agents = self.agent

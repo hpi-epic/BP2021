@@ -239,6 +239,7 @@ class Configurator():
 		print(str.ljust('Live Drawing enabled:', 25) + str(self.enable_live_draw))
 		print(str.ljust('Episodes:', 25) + str(self.episodes))
 		print(str.ljust('Plot interval:', 25) + str(self.plot_interval))
+		print(str.ljust('Separate markets:', 25) + str(self.separate_markets))
 		print(str.ljust('Marketplace:', 25) + type(self.marketplace).__name__)
 		print('Monitoring these agents:')
 		for current_agent in self.agents:
