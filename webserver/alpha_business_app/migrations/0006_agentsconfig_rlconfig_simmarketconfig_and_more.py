@@ -65,7 +65,7 @@ class Migration(migrations.Migration):
             name='EnvironmentConfig',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('separate_markets', models.BooleanField(null=True)),
+                ('enable_live_draw', models.BooleanField(null=True)),
                 ('episodes', models.IntegerField(null=True)),
                 ('plot_interval', models.IntegerField(null=True)),
                 ('marketplace', models.CharField(max_length=100, null=True)),
