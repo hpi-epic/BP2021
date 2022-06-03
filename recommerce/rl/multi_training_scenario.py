@@ -6,9 +6,10 @@ import numpy as np
 
 from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader
 from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPriceDuopoly
+from recommerce.rl.self_play import train_self_play
 # from recommerce.rl.stable_baselines.sb_td3 import StableBaselinesTD3
 from recommerce.rl.stable_baselines.sb_a2c import StableBaselinesA2C
-# from recommerce.rl.stable_baselines.sb_ppo import StableBaselinesPPO
+from recommerce.rl.stable_baselines.sb_ppo import StableBaselinesPPO
 from recommerce.rl.stable_baselines.sb_sac import StableBaselinesSAC
 
 
@@ -18,6 +19,13 @@ def run_training_session(agent_class, config_rl, number, pipe_to_parent):
         support_continuous_action_space=True), name=f'Training_{number}')
     watcher = agent.train_agent(200000)
     pipe_to_parent.send(watcher)
+
+
+def run_self_play_session(agent_class, config_rl, number, pipe_to_parent):
+    watcher = train_self_play(HyperparameterConfigLoader.load('market_config'), config_rl, agent_class, 400000 if issubclass(agent_class, StableBaselinesPPO) else 100000, name=f'SelfPlay_{number}')
+    pipe_to_parent.send(watcher)
+    # 1000000 if issubclass(agent_class, StableBaselinesPPO) else 200000
+    # 400000 if issubclass(agent_class, StableBaselinesPPO) else 100000
 
 
 def experiment_best_learning_rate_ppo():
@@ -150,7 +158,7 @@ def run_group(agent, experiment):
     pipes = []
     for _ in configs:
         pipes.append(Pipe(False))
-    processes = [Process(target=run_training_session, args=(agent, config, description, pipe_entry))
+    processes = [Process(target=run_self_play_session, args=(agent, config, description, pipe_entry))
         for config, description, (_, pipe_entry) in zip(configs, descriptions, pipes)]
     print('Now I start the processes')
     for p in processes:
@@ -175,7 +183,7 @@ if __name__ == '__main__':
     #     run_group(StableBaselinesPPO, experiment_ppo_standard_all_same),
     #     run_group(StableBaselinesPPO, experiment_ppo_clip_0_3_all_same)
     # ]
-    groups = [run_group(StableBaselinesA2C, experiment_a2c_all_same), run_group(StableBaselinesSAC, experiment_sac_all_same)]
+    groups = [run_group(StableBaselinesA2C, experiment_a2c_all_same), run_group(StableBaselinesSAC, experiment_sac_all_same), run_group(StableBaselinesPPO, experiment_ppo_clip_0_3_all_same)]
     # for descriptions, profits_vendor_0 in groups:
     #     print('Next group:')
     #     for descrition, profits in zip(descriptions, profits_vendor_0):
