@@ -27,7 +27,7 @@ class Config(models.Model):
 
 class EnvironmentConfig(models.Model):
 	agents = models.ForeignKey('AgentsConfig', on_delete=models.CASCADE, null=True)
-	enable_live_draw = models.BooleanField(null=True)
+	separate_markets = models.BooleanField(null=True)
 	episodes = models.IntegerField(null=True)
 	plot_interval = models.IntegerField(null=True)
 	marketplace = models.CharField(max_length=150, null=True)
@@ -36,7 +36,7 @@ class EnvironmentConfig(models.Model):
 	def as_dict(self) -> dict:
 		agents_list = self.agents.as_list() if self.agents is not None else None
 		return remove_none_values_from_dict({
-			'enable_live_draw': self.enable_live_draw,
+			'separate_markets': self.separate_markets,
 			'episodes': self.episodes,
 			'plot_interval': self.plot_interval,
 			'marketplace': self.marketplace,
@@ -47,7 +47,7 @@ class EnvironmentConfig(models.Model):
 	@staticmethod
 	def get_empty_structure_dict():
 		return {
-			'enable_live_draw': None,
+			'separate_markets': None,
 			'episodes': None,
 			'plot_interval': None,
 			'marketplace': None,

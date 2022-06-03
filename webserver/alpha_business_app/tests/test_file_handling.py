@@ -153,7 +153,7 @@ class FileHandling(TestCase):
 		environment_config: EnvironmentConfig = final_config.environment
 
 		assert 'agent_monitoring' == environment_config.task
-		assert environment_config.enable_live_draw is False
+		assert environment_config.separate_markets is False
 		assert 50 == environment_config.episodes
 		assert 25 == environment_config.plot_interval
 		assert 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopoly' == environment_config.marketplace
@@ -189,7 +189,7 @@ class FileHandling(TestCase):
 		hyperparameter_config: HyperparameterConfig = final_config.hyperparameter
 
 		assert 'training' == environment_config.task
-		assert environment_config.enable_live_draw is False
+		assert environment_config.separate_markets is False
 		assert 50 == environment_config.episodes
 
 		assert hyperparameter_config.sim_market is not None

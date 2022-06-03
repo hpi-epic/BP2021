@@ -32,7 +32,7 @@ EXAMPLE_HIERARCHY_DICT = {
 		'environment': {
 			'task': 'training',
 			'marketplace': 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopoly',
-			'enable_live_draw': False,
+			'separate_markets': False,
 			'agents': [
 				{
 					'name': 'Rule_Based Agent',
@@ -68,7 +68,7 @@ EXAMPLE_HIERARCHY_DICT = {
 EXAMPLE_HIERARCHY_DICT2 = {
 		'environment': {
 			'task': 'monitoring',
-			'enable_live_draw': True,
+			'separate_markets': True,
 			'marketplace': 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopoly',
 			'agents': [
 				{
@@ -109,7 +109,7 @@ EXAMPLE_HIERARCHY_DICT2 = {
 
 EMPTY_STRUCTURE_CONFIG = {
 			'environment': {
-				'enable_live_draw': None,
+				'separate_markets': None,
 				'episodes': None,
 				'plot_interval': None,
 				'marketplace': None,

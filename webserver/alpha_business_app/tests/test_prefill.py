@@ -91,7 +91,7 @@ class ConfigMergerTest(TestCase):
 
 		expected_final_config = {
 			'environment': {
-				'enable_live_draw': True,
+				'separate_markets': True,
 				'episodes': None,
 				'plot_interval': None,
 				'marketplace': 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopoly',
@@ -136,7 +136,7 @@ class ConfigMergerTest(TestCase):
 		}
 		expected_error_dict = {
 			'environment': {
-				'enable_live_draw': 'changed environment enable_live_draw from False to True',
+				'separate_markets': 'changed environment separate_markets from False to True',
 				'episodes': None,
 				'plot_interval': None,
 				'marketplace': None,

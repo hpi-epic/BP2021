@@ -51,8 +51,8 @@ class ConfigFlatDictParser():
 		environment_dict = self._first_list_element_without_empty(environment_dict)
 		# add parsed agents
 		environment_dict['agents'] = self._flat_agents_to_hierarchical(raw_agents_dict)
-		# add enable_live_draw if exists
-		environment_dict['enable_live_draw'] = 'enable_live_draw' in flat_dict
+		# add separate_markets if exists
+		environment_dict['separate_markets'] = 'separate_markets' in flat_dict
 		return environment_dict
 
 	def _flat_agents_to_hierarchical(self, flat_dict: dict) -> dict:
