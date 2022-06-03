@@ -131,7 +131,6 @@ def config_validation(request) -> HttpResponse:
 		config_dict = ConfigFlatDictParser().flat_dict_to_hierarchical_config_dict(resulting_dict)
 
 		validate_status, validate_data = validate_config(config=config_dict, config_is_final=True)
-		print('!!!', validate_data)
 		if not validate_status:
 			return render(request, 'notice_field.html', {'error': validate_data})
 	return render(request, 'notice_field.html', {'success': 'This config is valid'})
