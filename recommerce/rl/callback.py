@@ -192,9 +192,12 @@ class RecommerceCallback(BaseCallback):
 			# Only Stable Baselines agents use continuous actions at the moment. And only Stable Baselines agents have the attribute env.
 			# The correct way of doing this would be by checking for `isinstance(StableBaselinesAgent)`, but that would result in a circular import.
 			monitor.configurator.setup_monitoring(
-				False, 250, 250,
-				self.marketplace_class,
-				agent_list,
+				enable_live_draw=False,
+				episodes=250,
+				plot_interval=250,
+				marketplace=self.marketplace_class,
+				agents=agent_list,
+				separate_markets=True,
 				support_continuous_action_space=hasattr(self.model, 'env'),
 				config_market=self.config_market)
 			rewards = monitor.run_marketplace()

@@ -23,7 +23,7 @@ print('successfully imported torch: cuda?', torch.cuda.is_available())
 
 def run_training_session(
 		config_market: AttrDict = HyperparameterConfigLoader.load('market_config'),
-		config_rl: AttrDict = HyperparameterConfigLoader.load('rl_config'),
+		config_rl: AttrDict = HyperparameterConfigLoader.load('q_learning_config'),
 		marketplace=circular_market.CircularEconomyRebuyPriceDuopoly,
 		agent=q_learning_agent.QLearningAgent,
 		competitors: list = None) -> None:
@@ -126,7 +126,7 @@ def train_from_config():
 	Use the `environment_config_training.json` file to decide on the training parameters.
 	"""
 	config: TrainingEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_training')
-	config_rl: AttrDict = HyperparameterConfigLoader.load('rl_config')
+	config_rl: AttrDict = HyperparameterConfigLoader.load('q_learning_config')
 	# TODO: Theoretically, the name of the agent is saved in config['name'], but we don't use it yet.
 	competitor_list = []
 	for competitor in config.agent[1:]:

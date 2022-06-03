@@ -28,8 +28,7 @@ def setup_function(function):
 		plot_interval=10,
 		marketplace=circular_market.CircularEconomyMonopoly,
 		agents=[(QLearningAgent, [os.path.join(PathManager.data_path, 'CircularEconomyMonopoly_QLearningAgent.dat')])],
-		config_market=config_hyperparameter,
-		subfolder_name=f'test_plots_{function.__name__}')
+		config_market=config_hyperparameter)
 
 
 evaluate_session_testcases = [

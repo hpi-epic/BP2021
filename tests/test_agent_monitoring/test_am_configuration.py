@@ -31,8 +31,7 @@ def setup_function(function):
 		plot_interval=10,
 		marketplace=circular_market.CircularEconomyMonopoly,
 		agents=[(FixedPriceCERebuyAgent, [])],
-		config_market=config_hyperparameter,
-		subfolder_name=f'test_plots_{function.__name__}')
+		config_market=config_hyperparameter)
 
 
 def test_get_folder():
@@ -92,8 +91,7 @@ def test_correct_setup_monitoring():
 		marketplace=circular_market.CircularEconomyMonopoly,
 		agents=[(HumanPlayerCERebuy, ['reptiloid']),
 			(QLearningAgent, ['CircularEconomyMonopoly_QLearningAgent.dat', 'q_learner'])],
-		config_market=config_hyperparameter,
-		subfolder_name='subfoldername')
+		config_market=config_hyperparameter)
 	assert monitor.configurator.enable_live_draw is False
 	assert 10 == monitor.configurator.episodes
 	assert 2 == monitor.configurator.plot_interval
@@ -103,8 +101,6 @@ def test_correct_setup_monitoring():
 	assert isinstance(monitor.configurator.agents[1], QLearningAgent)
 	assert 'reptiloid' == monitor.configurator.agents[0].name
 	assert 'q_learner' == monitor.configurator.agents[1].name
-	assert (os.path.normcase(os.path.abspath(os.path.join(PathManager.results_path, 'monitoring', 'subfoldername')))
-		== os.path.normcase(os.path.abspath(monitor.configurator.folder_path)))
 	assert 2 == len(monitor.configurator.agent_colors)
 
 
@@ -151,8 +147,7 @@ def test_correct_setup_monitoring_parametrized(parameters):
 		'episodes': None,
 		'plot_interval': None,
 		'marketplace': None,
-		'agents': None,
-		'subfolder_name': None
+		'agents': None
 	}
 	# replace the given parameters
 	for key, val in parameters.items():
@@ -164,8 +159,7 @@ def test_correct_setup_monitoring_parametrized(parameters):
 		plot_interval=dict['plot_interval'],
 		marketplace=dict['marketplace'],
 		agents=dict['agents'],
-		config_market=config_hyperparameter,
-		subfolder_name=dict['subfolder_name']
+		config_market=config_hyperparameter
 	)
 
 
@@ -196,7 +190,6 @@ incorrect_setup_monitoring_testcases = [
 		'If the market is circular, the agent must be circular too!'),
 	({'marketplace': linear_market.LinearEconomyDuopoly, 'agents': [(FixedPriceCEAgent, [])]},
 		'If the market is linear, the agent must be linear too!'),
-	({'subfolder_name': 1}, 'subfolder_name must be of type str'),
 	({'marketplace': linear_market.LinearEconomyOligopoly,
 		'agents': [(QLearningAgent,
 		['CircularEconomyRebuyPriceMonopoly_QLearningAgent.dat'])]},
@@ -227,8 +220,7 @@ def test_incorrect_setup_monitoring(parameters, expected_message):
 		'episodes': None,
 		'plot_interval': None,
 		'marketplace': None,
-		'agents': None,
-		'subfolder_name': None
+		'agents': None
 	}
 	# replace the given parameters
 	for key, val in parameters.items():
@@ -241,8 +233,7 @@ def test_incorrect_setup_monitoring(parameters, expected_message):
 			plot_interval=dict['plot_interval'],
 			marketplace=dict['marketplace'],
 			agents=dict['agents'],
-			config_market=config_hyperparameter,
-			subfolder_name=dict['subfolder_name']
+			config_market=config_hyperparameter
 		)
 	assert expected_message in str(assertion_message.value)
 
@@ -261,8 +252,7 @@ def test_incorrect_setup_monitoring_type_errors(parameters):
 		'episodes': None,
 		'plot_interval': None,
 		'marketplace': None,
-		'agents': None,
-		'subfolder_name': None
+		'agents': None
 	}
 	# replace the given parameters
 	for key, val in parameters.items():
@@ -275,8 +265,7 @@ def test_incorrect_setup_monitoring_type_errors(parameters):
 			plot_interval=dict['plot_interval'],
 			marketplace=dict['marketplace'],
 			agents=dict['agents'],
-			config_market=config_hyperparameter,
-			subfolder_name=dict['subfolder_name']
+			config_market=config_hyperparameter
 		)
 
 

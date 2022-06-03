@@ -278,7 +278,6 @@ class AgentMonitoringEnvironmentConfig(EnvironmentConfig):
 			If the agent needs a modelfile, this will be the first entry in the list, the other entry is always an informal name for the agent.
 	"""
 	def _validate_config(self, config: dict) -> None:
-		# TODO: subfolder_name variable
 
 		super(AgentMonitoringEnvironmentConfig, self)._validate_config(config, single_agent=False, needs_modelfile=True)
 

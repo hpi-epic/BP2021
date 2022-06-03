@@ -28,8 +28,7 @@ def setup_function(function):
 		marketplace=circular_market.CircularEconomyMonopoly,
 		agents=[(QLearningAgent, [os.path.join(os.path.dirname(__file__), os.pardir, 'test_data',
 			'CircularEconomyMonopoly_QLearningAgent.dat')])],
-		config_market=config_market,
-		subfolder_name=f'test_plots_{function.__name__}')
+		config_market=config_market)
 
 
 def test_run_marketplace():

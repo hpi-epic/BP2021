@@ -15,14 +15,29 @@ class Evaluator():
 	def __init__(self, configuration: am_configuration.Configurator):
 		self.configurator = configuration
 
-	def evaluate_session(self, analyses: dict, episode_numbers: list = None):
+	def evaluate_session(self, analyses: dict, episode_numbers: list = None) -> None:
+		"""
+		Wrapper around the two actual evaluate_session methods.
+		Decides which one to use based on the self.configurator.separate_markets flag.
+
+		Args:
+			analyses (list): A list for every analyzed vendor. Contains a dict with the properties as keys and all samples of this property.
+			episode_numbers (list of int): The training stages the empirical distributions belong to.
+				If it is None, a prior functionality is used.
+		"""
+		if self.configurator.separate_markets:
+			self.evaluate_separate_session(analyses, episode_numbers)
+		else:
+			self.evaluate_joined_session(analyses)
+
+	def evaluate_separate_session(self, analyses, episode_numbers) -> None:
 		"""
 		Print statistics for monitored agents and create statistics-plots.
 
 		Args:
 			analyses (list): A list for every analyzed vendor. Contains a dict with the properties as keys and all samples of this property.
 			episode_numbers (list of int): The training stages the empirical distributions belong to.
-			If it is None, a prior functionality is used.
+				If it is None, a prior functionality is used.
 		"""
 		# Print the statistics
 		for index, analysis in enumerate(analyses):
@@ -40,7 +55,7 @@ class Evaluator():
 		print('Creating density plots...')
 		for index, analysis in enumerate(analyses):
 			for property, samples in analysis.items():
-				prefix = f'episode_{episode_numbers[index]}_' if episode_numbers is not None else f'{self.configurator.agents[index].name}'
+				prefix = f'episode_{episode_numbers[index]}' if episode_numbers is not None else f'{self.configurator.agents[index].name}'
 				self.create_density_plot(samples if isinstance(samples[0], list) else [samples], f'{prefix}_{property}')
 
 		print('Creating statistics plots...')
@@ -51,6 +66,42 @@ class Evaluator():
 			for property_name in ut.unroll_dict_with_list(analyses[0]).keys():
 				samples = [ut.unroll_dict_with_list(analysis)[property_name] for analysis in analyses]
 				self._create_violin_plot(samples, episode_numbers, f'Violinplot showing progress of {property_name}')
+		print(f'All plots were saved to {os.path.abspath(self.configurator.folder_path)}')
+
+	def evaluate_joined_session(self, analyses: dict) -> None:
+		"""
+		Print statistics for monitored agents and create statistics-plots.
+		Only usable if self.configurator.separate_markets is False
+
+		Args:
+			analyses (list): A list for every analyzed vendor. Contains a dict with the properties as keys and all samples of this property.
+		"""
+		assert self.configurator.separate_markets is False, 'This functionality can only be used if self.configurator.separate_markets is False'
+		# Print the statistics
+		print('Marketplace statistics:')
+		for property, samples in analyses.items():
+			if(type(samples[0]) != list):
+				print('%40s: %7.2f (mean), %7.2f (median), %7.2f (std), %7.2f (min), %7.2f (max)' % (
+					property, np.mean(samples), np.median(samples), np.std(samples), np.min(samples), np.max(samples)))
+
+		for agent_index in range(len(self.configurator.agents)):
+			print(f'\nStatistics for agent: {self.configurator.agents[agent_index].name}')
+
+			for property, samples in analyses.items():
+				if(type(samples[0]) == list):
+					agent_sample = samples[agent_index]
+					print('%40s: %7.2f (mean), %7.2f (median), %7.2f (std), %7.2f (min), %7.2f (max)' % (
+						property, np.mean(agent_sample), np.median(agent_sample), np.std(agent_sample), np.min(agent_sample), np.max(agent_sample)))
+
+		print()
+		# Create density plots
+		print('Creating density plots...')
+		for property, samples in analyses.items():
+			self.create_density_plot(samples if isinstance(samples[0], list) else [samples], f'{property}')
+
+		print('Creating statistics plots...')
+		rewards = analyses['profits/all']
+		self._create_statistics_plots(rewards)
 		print(f'All plots were saved to {os.path.abspath(self.configurator.folder_path)}')
 
 	# visualize metrics
@@ -83,7 +134,7 @@ class Evaluator():
 			ys.append(density(x))
 
 		for i, y in enumerate(ys):
-			plt.plot(x, y, label=f'vendor_{i}')
+			plt.plot(x, y, label=f'{self.configurator.agents[i].name}')
 
 		plt.xlabel(property)
 		plt.ylabel('Probability density')
