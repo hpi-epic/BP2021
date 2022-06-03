@@ -22,7 +22,7 @@ def setup_function(function):
 	global monitor
 	monitor = monitoring.Monitor()
 	monitor.configurator.setup_monitoring(
-		enable_live_draw=False,
+		separate_markets=False,
 		episodes=50,
 		plot_interval=10,
 		marketplace=circular_market.CircularEconomyMonopoly,

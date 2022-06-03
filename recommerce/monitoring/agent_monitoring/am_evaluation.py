@@ -151,7 +151,7 @@ class Evaluator():
 			is_last_histogram (bool): States that only the last histogram should be plotted.
 			filename (str): The name of the output file, format will be .svg. Defaults to 'default'.
 		"""
-		if (self.configurator.enable_live_draw or is_last_histogram) is False:
+		if not is_last_histogram:
 			return
 		assert all(len(curr_reward) == len(rewards[0]) for curr_reward in rewards), 'all rewards-arrays must be of the same size'
 
@@ -171,11 +171,7 @@ class Evaluator():
 		plt.xticks(x_ticks)
 		plt.legend([a.name for a in self.configurator.agents])
 
-		if self.configurator.enable_live_draw:
-			plt.draw()
-			plt.pause(0.001)
-		if is_last_histogram:
-			plt.savefig(fname=os.path.join(self.configurator.get_folder(), filename))
+		plt.savefig(fname=os.path.join(self.configurator.get_folder(), filename))
 
 	def _create_statistics_plots(self, rewards: list) -> None:
 		"""

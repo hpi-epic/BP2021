@@ -46,7 +46,7 @@ class EnvironmentConfig(ABC):
 		if dict_key == 'top-dict':
 			return {
 				'task': False,
-				'enable_live_draw': False,
+				'separate_markets': False,
 				'episodes': False,
 				'plot_interval': False,
 				'marketplace': False,
@@ -74,7 +74,6 @@ class EnvironmentConfig(ABC):
 		if task in {'None', 'agent_monitoring'}:
 			types_dict = {
 				'task': str,
-				'enable_live_draw': bool,
 				'episodes': int,
 				'plot_interval': int,
 				'separate_markets': bool,
@@ -270,9 +269,9 @@ class AgentMonitoringEnvironmentConfig(EnvironmentConfig):
 
 	Instance variables:
 		task (str): The task this config can be used for. Always "agent_monitoring".
-		enable_live_draw (bool): Whether or not live drawing should be enabled.
 		episodes (int): The number of episodes to run the monitoring for.
 		plot_interval (int): The interval between plot creation.
+		separate_markets (bool): If agents should be playing on separate marketplaces.
 		marketplace (SimMarket subclass): A subclass of SimMarket, what marketplace the monitoring session should be run on.
 		agent (list of tuples): A list containing the agents that should be trained.
 			Each entry in the list is a tuple with the first item being the agent class, the second being a list.
@@ -282,7 +281,6 @@ class AgentMonitoringEnvironmentConfig(EnvironmentConfig):
 
 		super(AgentMonitoringEnvironmentConfig, self)._validate_config(config, single_agent=False, needs_modelfile=True)
 
-		self.enable_live_draw = config['enable_live_draw']
 		self.episodes = config['episodes']
 		self.plot_interval = config['plot_interval']
 		self.separate_markets = config['separate_markets']

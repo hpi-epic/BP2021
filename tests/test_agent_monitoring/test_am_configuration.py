@@ -26,7 +26,7 @@ def setup_function(function):
 	global monitor
 	monitor = monitoring.Monitor()
 	monitor.configurator.setup_monitoring(
-		enable_live_draw=False,
+		separate_markets=False,
 		episodes=50,
 		plot_interval=10,
 		marketplace=circular_market.CircularEconomyMonopoly,
@@ -85,14 +85,14 @@ def test_correct_update_agents_RL(agents):
 
 def test_correct_setup_monitoring():
 	monitor.configurator.setup_monitoring(
-		enable_live_draw=False,
+		separate_markets=False,
 		episodes=10,
 		plot_interval=2,
 		marketplace=circular_market.CircularEconomyMonopoly,
 		agents=[(HumanPlayerCERebuy, ['reptiloid']),
 			(QLearningAgent, ['CircularEconomyMonopoly_QLearningAgent.dat', 'q_learner'])],
 		config_market=config_hyperparameter)
-	assert monitor.configurator.enable_live_draw is False
+	assert monitor.configurator.separate_markets is False
 	assert 10 == monitor.configurator.episodes
 	assert 2 == monitor.configurator.plot_interval
 	assert isinstance(monitor.configurator.marketplace, circular_market.CircularEconomyMonopoly)
@@ -143,7 +143,7 @@ correct_setup_monitoring_testcases = [
 @pytest.mark.parametrize('parameters', correct_setup_monitoring_testcases)
 def test_correct_setup_monitoring_parametrized(parameters):
 	dict = {
-		'enable_live_draw': None,
+		'separate_markets': None,
 		'episodes': None,
 		'plot_interval': None,
 		'marketplace': None,
@@ -154,7 +154,7 @@ def test_correct_setup_monitoring_parametrized(parameters):
 		dict[key] = val
 
 	monitor.configurator.setup_monitoring(
-		enable_live_draw=dict['enable_live_draw'],
+		separate_markets=dict['separate_markets'],
 		episodes=dict['episodes'],
 		plot_interval=dict['plot_interval'],
 		marketplace=dict['marketplace'],
@@ -164,7 +164,7 @@ def test_correct_setup_monitoring_parametrized(parameters):
 
 
 incorrect_setup_monitoring_testcases = [
-	({'enable_live_draw': 1}, 'enable_live_draw must be a Boolean'),
+	({'separate_markets': 1}, 'separate_markets must be a Boolean'),
 	({'episodes': 'Hello World'}, 'episodes must be of type int'),
 	({'episodes': 0}, 'episodes must not be 0'),
 	({'plot_interval': '1'}, 'plot_interval must be of type int'),
@@ -216,7 +216,7 @@ incorrect_setup_monitoring_testcases = [
 @pytest.mark.parametrize('parameters, expected_message', incorrect_setup_monitoring_testcases)
 def test_incorrect_setup_monitoring(parameters, expected_message):
 	dict = {
-		'enable_live_draw': None,
+		'separate_markets': None,
 		'episodes': None,
 		'plot_interval': None,
 		'marketplace': None,
@@ -228,7 +228,7 @@ def test_incorrect_setup_monitoring(parameters, expected_message):
 
 	with pytest.raises(Exception) as assertion_message:
 		monitor.configurator.setup_monitoring(
-			enable_live_draw=dict['enable_live_draw'],
+			separate_markets=dict['separate_markets'],
 			episodes=dict['episodes'],
 			plot_interval=dict['plot_interval'],
 			marketplace=dict['marketplace'],
@@ -248,7 +248,7 @@ incorrect_setup_monitoring_type_errors_testcases = [
 @pytest.mark.parametrize('parameters', incorrect_setup_monitoring_type_errors_testcases)
 def test_incorrect_setup_monitoring_type_errors(parameters):
 	dict = {
-		'enable_live_draw': None,
+		'separate_markets': None,
 		'episodes': None,
 		'plot_interval': None,
 		'marketplace': None,
@@ -260,7 +260,7 @@ def test_incorrect_setup_monitoring_type_errors(parameters):
 
 	with pytest.raises(TypeError):
 		monitor.configurator.setup_monitoring(
-			enable_live_draw=dict['enable_live_draw'],
+			separate_markets=dict['separate_markets'],
 			episodes=dict['episodes'],
 			plot_interval=dict['plot_interval'],
 			marketplace=dict['marketplace'],

@@ -24,7 +24,6 @@ class Configurator():
 	def __init__(self) -> None:
 		# Do not change the values in here when setting up a session! Instead use setup_monitoring()!
 		ut.ensure_results_folders_exist()
-		self.enable_live_draw = False
 		self.episodes = 500
 		self.plot_interval = 50
 		self.marketplace = circular_market.CircularEconomyMonopoly
@@ -161,7 +160,6 @@ class Configurator():
 
 	def setup_monitoring(
 		self,
-		enable_live_draw: bool = None,
 		episodes: int = None,
 		plot_interval: int = None,
 		marketplace: sim_market.SimMarket = None,
@@ -173,7 +171,6 @@ class Configurator():
 		Configure the current monitoring session.
 
 		Args:
-			enable_live_draw (bool, optional): Whether or not diagrams should be displayed on screen when drawn. Defaults to None.
 			episodes (int, optional): The number of episodes to run. Defaults to None.
 			plot_interval (int, optional): After how many episodes a new data point/plot should be generated. Defaults to None.
 			marketplace (sim_market class, optional): What marketplace to run the monitoring on. Defaults to None.
@@ -189,9 +186,6 @@ class Configurator():
 			config_market (AttrDict, optional): THe config file for the marketplace. Defaults to None.
 			support_continuous_action_space(bool, optional): Needed when setting StableBaselinesAgents. Defaults to False.
 		"""
-		if enable_live_draw is not None:
-			assert isinstance(enable_live_draw, bool), 'enable_live_draw must be a Boolean'
-			self.enable_live_draw = enable_live_draw
 		if episodes is not None:
 			assert isinstance(episodes, int), 'episodes must be of type int'
 			assert episodes > 0, 'episodes must not be 0'
@@ -236,7 +230,6 @@ class Configurator():
 				return
 
 		print('Running a monitoring session with the following configuration:')
-		print(str.ljust('Live Drawing enabled:', 25) + str(self.enable_live_draw))
 		print(str.ljust('Episodes:', 25) + str(self.episodes))
 		print(str.ljust('Plot interval:', 25) + str(self.plot_interval))
 		print(str.ljust('Separate markets:', 25) + str(self.separate_markets))

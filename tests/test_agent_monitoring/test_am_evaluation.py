@@ -23,7 +23,7 @@ def setup_function(function):
 	global monitor
 	monitor = monitoring.Monitor()
 	monitor.configurator.setup_monitoring(
-		enable_live_draw=False,
+		separate_markets=False,
 		episodes=50,
 		plot_interval=10,
 		marketplace=circular_market.CircularEconomyMonopoly,
@@ -78,7 +78,7 @@ create_histogram_statistics_plots_testcases = [
 
 @pytest.mark.parametrize('agents, rewards, plot_bins, agent_color, lower_upper_range', create_histogram_statistics_plots_testcases)
 def test_create_histogram(agents, rewards, plot_bins, agent_color, lower_upper_range):
-	monitor.configurator.setup_monitoring(enable_live_draw=True, agents=agents, config_market=config_hyperparameter)
+	monitor.configurator.setup_monitoring(separate_markets=True, agents=agents, config_market=config_hyperparameter)
 	name_list = [agent.name for agent in monitor.configurator.agents]
 	with patch('recommerce.monitoring.agent_monitoring.am_evaluation.plt.clf'), \
 		patch('recommerce.monitoring.agent_monitoring.am_evaluation.plt.xlabel'), \
@@ -100,7 +100,7 @@ def test_create_histogram(agents, rewards, plot_bins, agent_color, lower_upper_r
 
 
 def test_create_histogram_without_saving_to_directory():
-	monitor.configurator.setup_monitoring(enable_live_draw=False, agents=[(RuleBasedCEAgent, [])], config_market=config_hyperparameter)
+	monitor.configurator.setup_monitoring(separate_markets=False, agents=[(RuleBasedCEAgent, [])], config_market=config_hyperparameter)
 	with patch('recommerce.monitoring.agent_monitoring.am_evaluation.plt.clf'), \
 		patch('recommerce.monitoring.agent_monitoring.am_evaluation.plt.xlabel'), \
 		patch('recommerce.monitoring.agent_monitoring.am_evaluation.plt.title'), \
