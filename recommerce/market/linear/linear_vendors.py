@@ -22,10 +22,10 @@ class HumanPlayerLE(LinearAgent, HumanPlayer):
 
 
 class FixedPriceLEAgent(LinearAgent, FixedPriceAgent):
-	def __init__(self, config: AttrDict, fixed_price: int=None, name='fixed_price_le'):
+	def __init__(self, config_market: AttrDict, fixed_price: int=None, name='fixed_price_le'):
 
 		if fixed_price is None:
-			fixed_price = config.production_price + 3
+			fixed_price = config_market.production_price + 3
 
 		assert isinstance(fixed_price, int), f'the fixed_price must be an integer: {fixed_price} ({type(fixed_price)})'
 		self.name = name
@@ -50,12 +50,12 @@ class LinearRatio1LEAgent(LinearAgent, RuleBasedAgent):
 				max_competing_ratio = ratio
 
 		intended = math.floor(1 / max_competing_ratio * state[0]) - 1
-		return min(max(self.config.production_price + 1, intended), self.config.max_price - 1)  # actual price
+		return min(max(self.config_market.production_price + 1, intended), self.config_market.max_price - 1)  # actual price
 
 
 class LERandomAgent(LinearAgent, RuleBasedAgent):
 	def policy(self, state, epsilon=0):
-		return random.randint(self.config.production_price + 1, self.config.max_price - 1)
+		return random.randint(self.config_market.production_price + 1, self.config_market.max_price - 1)
 
 
 class Just2PlayersLEAgent(LinearAgent, RuleBasedAgent):
@@ -94,10 +94,10 @@ class Just2PlayersLEAgent(LinearAgent, RuleBasedAgent):
 		elif comp_quality == agent_quality:
 			# same quality
 			new_price = agent_price
-		if new_price <= self.config.production_price:
-			new_price = self.config.production_price + 1
-		elif new_price >= self.config.max_price:
-			new_price = self.config.max_price - 1
+		if new_price <= self.config_market.production_price:
+			new_price = self.config_market.production_price + 1
+		elif new_price >= self.config_market.max_price:
+			new_price = self.config_market.max_price - 1
 		new_price = int(new_price)
 		assert isinstance(new_price, int), 'new_price must be an int'
 		return new_price

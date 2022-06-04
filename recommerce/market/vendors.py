@@ -6,9 +6,9 @@ from attrdict import AttrDict
 # This file contains all abstract vendors who are not made for a specific market situation (like circular and linear)
 class Agent(ABC):
 
-	def __init__(self, config: AttrDict, name='agent'):
+	def __init__(self, config_market: AttrDict, name='agent'):
 		self.name = name
-		self.config = config
+		self.config_market = config_market
 
 	@classmethod
 	def custom_init(cls, class_name, args):
