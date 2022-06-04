@@ -77,9 +77,15 @@ class HyperparameterConfigValidator():
 			config (dict): The config which should contain all values in demanded_fields.
 			demanded_fields (list): The lit containing all values that should be contained in config.
 		"""
-		if set(config.keys()) != set(demanded_fields):
-			missing_keys = set(demanded_fields).difference(set(config.keys()))
-			redundant_keys = set(config.keys()).difference(set(demanded_fields))
+		config_keys = set(config.keys())
+		# the config_type key is completely optional as it is only used for webserver validation, so we don't prevent people from adding it
+		if 'config_type' in config_keys:
+			config_keys.remove('config_type')
+		demanded_keys = set(demanded_fields)
+
+		if config_keys != demanded_keys:
+			missing_keys = demanded_keys.difference(config_keys)
+			redundant_keys = config_keys.difference(demanded_keys)
 			if missing_keys:
 				assert False, f'your config is missing {missing_keys}'
 			if redundant_keys:
