@@ -26,7 +26,7 @@ class PredictableMarketRebuyPriceDuopoly(CircularEconomyRebuyPrice):
 		return CustomerPredictable()
 
 	def _choose_owner(self):
-		return OwnerRebuy()
+		return OwnerPredictable()
 
 	def _get_competitor_list(self):
 		return [PredictableCompetitor(config=self.config)]
@@ -40,6 +40,15 @@ class OwnerPredictable(OwnerRebuy):
 		assert len(vendor_specific_state) == len(vendor_actions), \
 			'Both the vendor_specific_state and vendor_actions contain one element per vendor. So they must have the same length.'
 		assert len(vendor_specific_state) > 0, 'there must be at least one vendor.'
+		price_rebuy_vendor_0 = vendor_actions[0][2] + 1
+		price_rebuy_vendor_1 = vendor_actions[1][2] + 1
+
+		if price_rebuy_vendor_0 == price_rebuy_vendor_1:
+			return np.array([0.25, 0.25, 0.25, 0.25])
+		elif price_rebuy_vendor_0 < price_rebuy_vendor_1:
+			return np.array([0.25, 0.25, 0.0, 0.5])
+		else:
+			return np.array([0.25, 0.25, 0.5, 0.0])
 
 
 class CustomerPredictable(CustomerCircular):
@@ -75,6 +84,7 @@ class PredictableDatagenerator(PredictableMarketRebuyPriceDuopoly):
 	def __init__(self, config, support_continuous_action_space: bool = True) -> None:
 		super(PredictableMarketRebuyPriceDuopoly, self).__init__(config, support_continuous_action_space)
 		self.cumulated_states = np.array(np.zeros(25)).reshape(25, 1)
+		self.rainer_states = np.array(np.zeros(25)).reshape(25, 1)
 		self.episode_counter = 0
 		self.is_tracking = False
 		# print(self.cumulated_states.shape)
@@ -103,7 +113,7 @@ class PredictableDatagenerator(PredictableMarketRebuyPriceDuopoly):
 		# agent period: 1st half: agent x[7]vs x[2]| 2nd half: agent x[7] vs x[2, i+1]
 		# comp period: 1st half: com x[2, i-1] vs x[7, i-1] | 2nd half: com x[2, i-1] vs x[7]
 
-		x[0, 0] = i
+		x[0, 0] = 1
 		assert float(output_dict['state/in_storage']['vendor_0']).is_integer()
 		x[1, 0] = int(output_dict['state/in_storage']['vendor_0'])  # agent inventory
 		if i == 1:
@@ -124,7 +134,7 @@ class PredictableDatagenerator(PredictableMarketRebuyPriceDuopoly):
 		x[8, 0] = output_dict['actions/price_new']['vendor_0']  # agent price new
 		x[9, 0] = output_dict['actions/price_rebuy']['vendor_0']  # agent price rebuy
 
-		x[10, 0] = output_dict['profits/storage_cost']['vendor_0']  # agent storage cost
+		x[10, 0] = output_dict['profits/storage_cost']['vendor_0'] * -1  # agent storage cost
 
 		assert float(output_dict['actions/price_new']['vendor_1']).is_integer()
 		assert float(output_dict['actions/price_refurbished']['vendor_1']).is_integer()
@@ -140,8 +150,8 @@ class PredictableDatagenerator(PredictableMarketRebuyPriceDuopoly):
 
 		x[14, 0] = output_dict['profits/storage_cost']['vendor_1']  # comp holding cost
 
-		x[15, 0] = output_dict['customer/purchases_refurbished']['vendor_1']  # comp sales new
-		x[16, 0] = output_dict['customer/purchases_new']['vendor_1']  # comp sales used
+		x[15, 0] = output_dict['customer/purchases_refurbished']['vendor_1']  # comp sales used
+		x[16, 0] = output_dict['customer/purchases_new']['vendor_1']  # comp sales new
 		x[17, 0] = output_dict['owner/rebuys']['vendor_1']  # comp sales rebuy
 
 		x[18, 0] = output_dict['profits/all']['vendor_0']  # agent total reward
@@ -149,13 +159,40 @@ class PredictableDatagenerator(PredictableMarketRebuyPriceDuopoly):
 
 		x[20, 0] = self.cumulated_states[20, i-1] + x[18, 0]  # agent culmulated reward
 		x[21, 0] = self.cumulated_states[21, i-1] + x[19, 0]  # comp culmulated reward
+
 		# pd.DataFrame(x).to_csv(f'kalibration_data/training_data-{datetime.datetime.now()}.csv', index=False)
+		# sales_agent = [self._output_dict['customer/purchases_refurbished']['vendor_0'],  # agent sales new
+		# self._output_dict['customer/purchases_new']['vendor_0'],  # agent sales used
+		# self._output_dict['owner/rebuys']['vendor_0']]  # agent sales rebuy
+
+		# sales_comp = [self._output_dict['customer/purchases_refurbished']['vendor_1'],   # comp sales new
+		# self._output_dict['customer/purchases_new']['vendor_1'],   # comp sales used
+		# self._output_dict['owner/rebuys']['vendor_1']]   # comp sales rebuy
+
+		# print(f'sales: agent:{sales_agent} comp:{sales_comp}', end='\t')
+		x[2, 0], x[3, 0] = x[3, 0], x[2, 0]  # swap comp price used and new (old)
+		x[7, 0], x[8, 0] = x[8, 0], x[7, 0]  # swap agent price used and new
+		x[22, 0], x[23, 0] = x[23, 0], x[22, 0]  # swap comp price used and new (updated)
+		x[11, 0], x[12, 0] = x[12, 0], x[11, 0]  # swap agent sales used and new
+		x[15, 0], x[16, 0] = x[16, 0], x[15, 0]  # swap comp sales used and new
 
 		self.cumulated_states = np.hstack((self.cumulated_states, np.round(x, 3)))
+
+		x[0, 0] = self.episode_counter
+		self.rainer_states = np.hstack((self.rainer_states, np.round(x, 3)))
+
 		# print('episode_counter: ', self.episode_counter)
-		if self.episode_counter == 80000:
-			save_path = f'{PathManager.data_path}/kalibration_data/training_data_predictable.csv'
-			df = pd.DataFrame(self.cumulated_states)
+		if self.episode_counter == 500:
+			saving_array = self.cumulated_states.transpose()
+			saving_array_rainer = self.rainer_states.transpose()
+			print(saving_array)
+			# Saving the array in a text file
+
+			np.savetxt(f'{PathManager.data_path}/kalibration_data/training_data-txtfile_int1dot.txt',
+				saving_array_rainer, delimiter=' ', fmt='%1.3f', newline='\n')
+
+			save_path = f'{PathManager.data_path}/kalibration_data/training_data_predictable_int_new.csv'
+			df = pd.DataFrame(saving_array)
 			print(df.head())
 			df.to_csv(save_path, index=False)
 			print(f'data saved to {save_path}')

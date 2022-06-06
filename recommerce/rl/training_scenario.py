@@ -135,13 +135,19 @@ def train_to_calibrate_marketplace():
 
 
 def train_with_calibrated_marketplace(marketplace):
-	sbmodel.StableBaselinesSAC(marketplace).train_agent()
+	config_hyperparameter: HyperparameterConfig = HyperparameterConfigLoader.load('hyperparameter_config')
+	sbmodel.StableBaselinesSAC(config=config_hyperparameter, marketplace=marketplace).train_agent()
 
 
-def train_with_pretrained_agent():
+def train_with_pretrained_agent(load_path=None):
+	if load_path is None:
+		load_path = \
+			'/Users/Johann/Documents/GitHub/BP2021/results/trainedModels/Stable_Baselines_SAC_May25_12-36-10/Stable_Baselines_SAC_00500.zip'
+	config_hyperparameter: HyperparameterConfig = HyperparameterConfigLoader.load('hyperparameter_config')
 	agent = sbmodel.StableBaselinesSAC(
-		marketplace=circular_market.CircularEconomyRebuyPriceDuopoly(True),
-		load_path='results/trainedModels/Stable_Baselines_SAC_May08_15-02-28/Stable_Baselines_SAC_01999')
+		config=config_hyperparameter,
+		marketplace=circular_market.CircularEconomyRebuyPriceDuopoly(config=config_hyperparameter, support_continuous_action_space=True),
+		load_path=load_path)
 	agent.train_agent()
 
 

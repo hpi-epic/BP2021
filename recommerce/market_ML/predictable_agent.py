@@ -16,6 +16,7 @@ class PredictableAgent(RuleBasedAgent, CircularAgent):
 		return [(self.step_counter + 0) % self.config.max_price,
 			(self.step_counter + 1) % self.config.max_price,
 			(self.step_counter + -2) % self.config.max_price]
+		# return [6, 7, 3]
 
 
 class PredictableCompetitor(RuleBasedAgent, CircularAgent):
@@ -23,6 +24,6 @@ class PredictableCompetitor(RuleBasedAgent, CircularAgent):
 		super(CircularAgent, self).__init__(config=config, name=name)
 
 	def policy(self, observation, *_):
-		result = (observation[2], observation[3], observation[4])
+		result = [int(max(0, observation[2] - 1)), int(max(0, observation[3] - 1)), int(max(0, observation[4] - 1))]
 		# print(result)
 		return result

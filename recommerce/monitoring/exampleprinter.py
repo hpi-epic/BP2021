@@ -130,7 +130,7 @@ def main_kalibrated_marketplace(marketplace, agent, config_hyperparameter):  # p
 
 	printer.setup_exampleprinter(marketplace=marketplace, agent=agent)
 
-	print(f'The final profit was: {printer.run_example()}')
+	print(f'The final profit with a calibrated marketplace was: {printer.run_example()}')
 
 
 if __name__ == '__main__':  # pragma: no cover
