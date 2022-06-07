@@ -5,79 +5,6 @@ import recommerce.market.circular.circular_sim_market as circular_market
 import recommerce.market.linear.linear_sim_market as linear_market
 
 
-def create_hyperparameter_mock_dict_rl(gamma: float = 0.99,
-	batch_size: int = 32,
-	replay_size: int = 500,
-	learning_rate: float = 1e-6,
-	sync_target_frames: int = 10,
-	replay_start_size: int = 100,
-	epsilon_decay_last_frame: int = 400,
-	epsilon_start: float = 1.0,
-	epsilon_final: float = 0.1) -> dict:
-	"""
-	Create dictionary that can be used to mock the rl part of the hyperparameter_config.json file by calling json.dumps() on it.
-
-	Args:
-		gamma (float, optional): Defaults to 0.99.
-		batch_size (int, optional): Defaults to 32.
-		replay_size (int, optional): Defaults to 100000.
-		learning_rate (float, optional): Defaults to 1e-6.
-		sync_target_frames (int, optional): Defaults to 1000.
-		replay_start_size (int, optional): Defaults to 10000.
-		epsilon_decay_last_frame (int, optional): Defaults to 75000.
-		epsilon_start (float, optional): Defaults to 1.0.
-		epsilon_final (float, optional): Defaults to 0.1.
-
-	Returns:
-		dict: The mock dictionary.
-	"""
-	return {
-		'gamma': gamma,
-		'batch_size': batch_size,
-		'replay_size': replay_size,
-		'learning_rate': learning_rate,
-		'sync_target_frames': sync_target_frames,
-		'replay_start_size': replay_start_size,
-		'epsilon_decay_last_frame': epsilon_decay_last_frame,
-		'epsilon_start': epsilon_start,
-		'epsilon_final': epsilon_final,
-	}
-
-
-def create_hyperparameter_mock_dict_sim_market(
-	max_storage: int = 100,
-	episode_length: int = 25,
-	max_price: int = 10,
-	max_quality: int = 50,
-	number_of_customers: int = 10,
-	production_price: int = 3,
-	storage_cost_per_product: float = 0.1) -> dict:
-	"""
-	Create dictionary that can be used to mock the sim_market part of the hyperparameter_config.json file by calling json.dumps() on it.
-
-	Args:
-		max_storage (int, optional): Defaults to 20.
-		episode_length (int, optional): Defaults to 20.
-		max_price (int, optional): Defaults to 15.
-		max_quality (int, optional): Defaults to 100.
-		number_of_customers (int, optional): Defaults to 30.
-		production_price (int, optional): Defaults to 5.
-		storage_cost_per_product (float, optional): Defaults to 0.3.
-
-	Returns:
-		dict: The mock dictionary.
-	"""
-	return {
-		'max_storage': max_storage,
-		'episode_length': episode_length,
-		'max_price': max_price,
-		'max_quality': max_quality,
-		'number_of_customers': number_of_customers,
-		'production_price': production_price,
-		'storage_cost_per_product': storage_cost_per_product,
-	}
-
-
 def load_json(path: str):
 	"""
 	Load a json file.
@@ -177,19 +104,6 @@ def remove_key(key: str, original_dict: dict) -> dict:
 	"""
 	original_dict.pop(key)
 	return original_dict
-
-
-def create_mock_rewards(num_entries) -> list:
-	"""
-	Create a list of ints to be used as e.g. mock rewards.
-
-	Args:
-		num_entries (int): How many numbers should be in the list going from 1 to num_entries.
-
-	Returns:
-		list: The list of rewards.
-	"""
-	return list(range(1, num_entries))
 
 
 def create_mock_action(market_subclass) -> Union[int, Tuple]:
