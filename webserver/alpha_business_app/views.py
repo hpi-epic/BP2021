@@ -106,6 +106,7 @@ def new_agent(request) -> HttpResponse:
 def agent_changed(request) -> HttpResponse:
 	if not request.user.is_authenticated:
 		return HttpResponse('Unauthorized', status=401)
+	print('agnt chg', request.POST)
 	return render(request, 'configuration_items/rl_parameter.html',
 		{'parameters': get_agent_hyperparameter(request.POST['agent'], request.POST.dict())})
 
@@ -123,6 +124,7 @@ def config_validation(request) -> HttpResponse:
 		return HttpResponse('Unauthorized', status=401)
 	if request.method == 'POST':
 		post_request = request.POST
+		print('validate', post_request)
 		# convert formdata dict to normal form dict
 		resulting_dict = {
 			'environment-agents-name': [],

@@ -5,7 +5,7 @@ class ConfigMerger():
 	def __init__(self) -> None:
 		self.error_dict = Config.get_empty_structure_dict()
 
-	def merge_config_objects(self, config_object_ids: list, base_config: dict) -> tuple:
+	def merge_config_objects(self, config_object_ids: list, base_config: dict = Config.get_empty_structure_dict()) -> tuple:
 		"""
 		merge a list of config objects given by their id.
 
@@ -17,14 +17,14 @@ class ConfigMerger():
 		"""
 		configuration_objects = [Config.objects.get(id=config_id) for config_id in config_object_ids]
 		configuration_dicts = [config.as_dict() for config in configuration_objects]
-
+		# print(configuration_dicts)
 		# initial empty dict to merge into
-		final_config = Config.get_empty_structure_dict()
+		final_config = base_config
 		for config in configuration_dicts:
-			final_config = self._merge_config_into_base_config(final_config, config)
+			final_config = self.merge_config_into_base_config(final_config, config)
 		return final_config, self.error_dict
 
-	def _merge_config_into_base_config(self, base_config: dict, merging_config: dict, current_config_path: str = '') -> dict:
+	def merge_config_into_base_config(self, base_config: dict, merging_config: dict, current_config_path: str = '') -> dict:
 		"""
 		merges one config dict recursively into a base_config dict.
 
@@ -52,7 +52,7 @@ class ConfigMerger():
 				# base_config[key] = self._merge_agents_into_base_agents(base_config[key], sub_dict)
 				continue
 			new_config_path = f'{current_config_path}-{key}' if current_config_path else key
-			base_config[key] = self._merge_config_into_base_config(base_config[key], sub_dict, new_config_path)
+			base_config[key] = self.merge_config_into_base_config(base_config[key], sub_dict, new_config_path)
 
 		# update values
 		for key, value in contained_values_merge:
@@ -63,27 +63,6 @@ class ConfigMerger():
 			base_config[key] = value
 
 		return base_config
-
-	# working version of comparing the agent lists for agents with the same names.
-	# Currently not used since we simply concatenate the agent lists
-	# def _merge_agents_into_base_agents(self, base_agent_config: list, merge_agent_config: list) -> list:
-	# 	"""
-	# 	Merges an agents config part into a base agents config part. It will be checked if two of the merged agents have the same name.
-
-	# 	Args:
-	# 		base_agent_config (list): the config that will be merged into
-	# 		merge_agent_config (list): the config that should be merged
-
-	# 	Returns:
-	# 		list: a final merged agents config
-	# 	"""
-	# 	base_names = [agent['name'] for agent in base_agent_config]
-	# 	for agent in merge_agent_config:
-	# 		if agent['name'] in base_names:
-	# 			self._update_error_dict(['environment', 'agents'], f'multiple agents named {agent["name"]}')
-	# 		else:
-	# 			base_agent_config.append(agent)
-	# 	return base_agent_config
 
 	def _update_error_dict(self, key_words: list, update_message: str) -> None:
 		"""

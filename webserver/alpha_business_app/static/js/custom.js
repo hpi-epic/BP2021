@@ -71,13 +71,15 @@ $(document).ready(function() {
 		$("select.agent-agent-class").change(function () {
 			// will be called when agent dropdown has changed, we need to change rl hyperparameter for that
 			var self = $(this);
-			// var formdata = getFormData();
+			var formdata = getFormData();
 			const csrftoken = getCookie("csrftoken");
+			console.log("agent changed", formdata)
 			$.ajax({
 				type: "POST",
 				url: self.data("url"),
 				data: {
 					csrfmiddlewaretoken: csrftoken,
+					formdata,
 					"agent": self.val()
 				},
 				success: function (data) {
@@ -105,10 +107,11 @@ $(document).ready(function() {
 	}
 	
 	$("button.form-check").click(function () {
-		$("table.config-status-display").remove();
+		// $("table.config-status-display").remove();
 		
 		var self = $(this);
-		var formdata = getFormData();
+		var form = $("form.config-form");
+		var formdata = form.serializeArray();
 
 		const csrftoken = getCookie('csrftoken');
 		$.ajax({

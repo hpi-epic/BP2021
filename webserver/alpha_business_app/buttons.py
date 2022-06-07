@@ -47,7 +47,7 @@ class ButtonHandler():
 		self.selection_manager = SelectionManager()
 
 		if request.method == 'POST':
-			self.wanted_key = request.POST['action']
+			self.wanted_key = request.POST['action'].strip()
 			if 'container_id' in request.POST:
 				wanted_container_id = request.POST['container_id'].strip()
 				self.wanted_container = Container.objects.get(id=wanted_container_id)
@@ -60,6 +60,7 @@ class ButtonHandler():
 		Returns:
 			HttpResponse: response including the rendering for an appropriate view.
 		"""
+		print('**', self.wanted_key)
 		if self.wanted_key == 'data':
 			return self._download_data()
 		if self.wanted_key == 'delete':
@@ -74,7 +75,7 @@ class ButtonHandler():
 			return self._remove()
 		if self.wanted_key == 'start':
 			return self._start()
-		if self.wanted_key == 'pre-fill':
+		if self.wanted_key == 'prefill':
 			return self._prefill()
 		if self.wanted_key == 'logs':
 			return self._logs()
@@ -170,7 +171,7 @@ class ButtonHandler():
 		"""
 		return render(self.request, self.view_to_render, {**self._params_for_config(), **self._message_for_view()})
 
-	def _render_prefill(self, pre_fill_dict: dict, error_dict: dict) -> HttpResponse:
+	def _render_prefill(self, prefill_dict: dict, error_dict: dict) -> HttpResponse:
 		"""
 		This will return a rendering for `self.view` with params for selection a prefill dict and the error dict
 
@@ -182,7 +183,7 @@ class ButtonHandler():
 			HttpResponse: _description_
 		"""
 		return render(self.request, self.view_to_render,
-			{'prefill': pre_fill_dict,
+			{'prefill': prefill_dict,
 			'error_dict': error_dict,
 			'all_configurations': Config.objects.all().filter(user=self.request.user),
 			**self._params_for_selection()})
@@ -279,13 +280,15 @@ class ButtonHandler():
 		post_request = dict(self.request.POST.lists())
 		if 'config_id' not in post_request:
 			return self._decide_rendering()
+		config_dict = ConfigFlatDictParser().flat_dict_to_complete_hierarchical_config_dict(post_request)
 		merger = ConfigMerger()
-		final_dict, error_dict = merger.merge_config_objects(post_request['config_id'], post_request)
+		final_dict, error_dict = merger.merge_config_objects(post_request['config_id'], config_dict)
 		final_dict['hyperparameter']['rl'] = get_rl_parameter_prefill(final_dict['hyperparameter']['rl'], error_dict['hyperparameter']['rl'])
 		# set an id for each agent (necessary for view)
 		for agent_index in range(len(final_dict['environment']['agents'])):
 			final_dict['environment']['agents'][agent_index]['display_name'] = 'Agent' if agent_index == 0 else 'Competitor'
 			final_dict['environment']['agents'][agent_index]['id'] = agent_index
+		print('final:', final_dict)
 		return self._render_prefill(final_dict, error_dict)
 
 	def _remove(self) -> HttpResponse:

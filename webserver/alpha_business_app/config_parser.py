@@ -1,3 +1,4 @@
+from .config_merger import ConfigMerger
 from .models.agent_config import AgentConfig
 from .models.agents_config import AgentsConfig
 from .models.config import Config
@@ -39,6 +40,10 @@ class ConfigFlatDictParser():
 			'environment': self._flat_environment_to_hierarchical(environment_parameter),
 			'hyperparameter': self._flat_hyperparameter_to_hierarchical(hyperparameter)
 			}
+
+	def flat_dict_to_complete_hierarchical_config_dict(self, flat_dict: dict) -> dict:
+		not_complete_config_dict = self.flat_dict_to_hierarchical_config_dict(flat_dict)
+		return ConfigMerger().merge_config_into_base_config(Config.get_empty_structure_dict(), not_complete_config_dict)
 
 	def _flat_environment_to_hierarchical(self, flat_dict: dict) -> dict:
 		"""

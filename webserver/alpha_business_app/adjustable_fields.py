@@ -17,6 +17,7 @@ def get_agent_hyperparameter(agent: str, formdata: dict) -> list:
 			input_type: html type for the input field e.g. number
 			prefill: 	value that is already stored for this hyperparameter
 	"""
+	print('*', formdata)
 	# get all fields that are possible for this agent
 	agent_class = get_class(agent)
 	agent_specs = agent_class.get_configurable_fields()
