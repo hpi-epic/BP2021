@@ -43,7 +43,7 @@ class ConfigMergerTest(TestCase):
 
 		empty_config = Config.get_empty_structure_dict()
 		merger = ConfigMerger()
-		actual_config = merger._merge_config_into_base_config(empty_config, config_dict)
+		actual_config = merger.merge_config_into_base_config(empty_config, config_dict)
 
 		assert expected_dict == actual_config
 
