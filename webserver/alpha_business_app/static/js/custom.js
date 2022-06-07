@@ -73,7 +73,6 @@ $(document).ready(function() {
 			var self = $(this);
 			var formdata = getFormData();
 			const csrftoken = getCookie("csrftoken");
-			console.log("agent changed", formdata)
 			$.ajax({
 				type: "POST",
 				url: self.data("url"),
@@ -106,12 +105,9 @@ $(document).ready(function() {
 		return cookieValue;
 	}
 	
-	$("button.form-check").click(function () {
-		// $("table.config-status-display").remove();
-		
+	$("button.form-check").click(function () {		
 		var self = $(this);
-		var form = $("form.config-form");
-		var formdata = form.serializeArray();
+		var formdata = getFormData();
 
 		const csrftoken = getCookie('csrftoken');
 		$.ajax({

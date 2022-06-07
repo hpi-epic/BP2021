@@ -60,7 +60,6 @@ class ButtonHandler():
 		Returns:
 			HttpResponse: response including the rendering for an appropriate view.
 		"""
-		print('**', self.wanted_key)
 		if self.wanted_key == 'data':
 			return self._download_data()
 		if self.wanted_key == 'delete':

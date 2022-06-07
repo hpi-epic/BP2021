@@ -11,14 +11,15 @@ class ConfigMerger():
 
 		Args:
 			config_object_ids (list): The id's of the config objects that should be merged.
+			base_config (dict): The config all other Configs should be merged into. Defaults to an empty config
 
 		Returns:
 			tuple (dict, dict): the final merged dict and the error dict with the latest error
 		"""
 		configuration_objects = [Config.objects.get(id=config_id) for config_id in config_object_ids]
 		configuration_dicts = [config.as_dict() for config in configuration_objects]
-		# print(configuration_dicts)
-		# initial empty dict to merge into
+
+		# merge configs
 		final_config = base_config
 		for config in configuration_dicts:
 			final_config = self.merge_config_into_base_config(final_config, config)
