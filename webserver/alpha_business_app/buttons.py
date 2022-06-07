@@ -287,7 +287,6 @@ class ButtonHandler():
 		for agent_index in range(len(final_dict['environment']['agents'])):
 			final_dict['environment']['agents'][agent_index]['display_name'] = 'Agent' if agent_index == 0 else 'Competitor'
 			final_dict['environment']['agents'][agent_index]['id'] = agent_index
-		print('final:', final_dict)
 		return self._render_prefill(final_dict, error_dict)
 
 	def _remove(self) -> HttpResponse:
