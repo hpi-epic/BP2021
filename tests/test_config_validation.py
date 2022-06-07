@@ -41,7 +41,7 @@ test_valid_config_validation_complete_testcases = [
 @pytest.mark.parametrize('config', test_valid_config_validation_complete_testcases)
 def test_valid_config_validation_complete(config):
 	config_type = config['config_type']
-	success, result = config_validation.validate_config(config, True)
+	success, result = config_validation.validate_config(config)
 	assert success, result
 	assert result == ({config_type: config}, None, None)
 
@@ -59,6 +59,6 @@ def test_valid_config_validation_incomplete(config, removed_key):
 	tested_config = config.copy()
 	tested_config = ut_t.remove_key(removed_key, tested_config)
 	config_type = tested_config['config_type']
-	success, result = config_validation.validate_config(tested_config, False)
+	success, result = config_validation.validate_config(tested_config)
 	assert success
 	assert result == ({config_type: tested_config}, None, None)
