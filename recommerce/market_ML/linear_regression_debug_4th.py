@@ -55,23 +55,6 @@ b6x = b6_b6x[len(x_rows):]
 print('b6:', b6)
 print('b6x:', b6x)
 
-# olsy4 = 0
-# for i in range(1, N):
-# 	y1 = x[y_index, i]
-# 	predicted_y1 = (b6[0] * 1
-# 		+ b6[1] * x[1, i]
-# 		+ b6[2] * x[2, i]
-# 		+ b6[3] * x[3, i]
-# 		+ b6[4] * x[4, i]
-# 		+ b6[5] * x[7, i]
-# 		+ b6[6] * x[8, i]
-# 		+ b6[7] * x[9, i])
-
-# 	olsy4 += (predicted_y1 - y1) ** 2
-# print('olsy4:', olsy4)
-# print('loss per value:', olsy4 / (N - 1))
-
-
 # sum{i in 1..N-1} (
 # 	sum{k in M6}  beta6[k] *x[k,i]
 # 	+ sum{k in M6x} beta6x[k]*x6[k,i]

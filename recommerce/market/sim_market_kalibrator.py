@@ -3,6 +3,7 @@ import torch
 from sim_market_kalibrated import SimMarketKalibrated
 from torch.autograd import Variable
 
+import recommerce.monitoring.exampleprinter as exampleprinter
 import recommerce.rl.training_scenario as training_scenario
 # import recommerce.rl.stable_baselines.stable_baselines_model as sbmodel
 from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader
@@ -274,7 +275,7 @@ def stable_baselines_agent_kalibrator():
 def predictable_agent_market_kalibrator():
 	# training_scenario.train_to_calibrate_marketplace()
 	# data_path = 'data/kalibration_data/training_data_predictable_int.csv'
-	data_path = 'data/kalibration_data/training_data_predictable_int.csv'
+	data_path = 'data/kalibration_data/training_data_predictable_int_standard.csv'
 	print('Loading data from:', data_path)
 	data_frame = pd.read_csv(data_path)
 	data = torch.tensor(data_frame.values).transpose(0, 1)
@@ -304,13 +305,13 @@ def predictable_agent_market_kalibrator():
 
 	# training_scenario.train_with_calibrated_marketplace(kalibrated_market)
 	agent = PredictableAgent(config_hyperparameter)
-	state = kalibrated_market.reset()
-	for i in range(50):
-		action = agent.policy(state)
-		# print(action)
-		state, reward, is_done, _ = kalibrated_market.step(action)
-		print(i, action, state, reward, is_done)
-	# exampleprinter.main_kalibrated_marketplace(kalibrated_market, agent, config_hyperparameter)
+	# state = kalibrated_market.reset()
+	# for i in range(50):
+	# 	action = agent.policy(state)
+	# 	# print(action)
+	# 	state, reward, is_done, _ = kalibrated_market.step(action)
+	# 	print(i, action, state, reward, is_done)
+	exampleprinter.main_kalibrated_marketplace(kalibrated_market, agent, config_hyperparameter)
 
 
 if __name__ == '__main__':

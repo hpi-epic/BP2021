@@ -53,11 +53,16 @@ class SimMarketKalibrated(CircularEconomyRebuyPriceDuopoly):
 		# print(state_to_get_parameters_from)
 		# xb[4,i] = sum{k in M6}  b6[k] *xb[k,i-1] + sum{k in M6x} b6x[k]*(if xb[9,i-1]<k then 1 else 0)  # comp price rebuy (old)
 		# xb[24,i]= sum{k in M6}  b6[k] *xb[k,i] + sum{k in M6x} b6x[k]*(if xb[9,i]<k then 1 else 0)  # comp price rebuy (updated)
+		# tmp = sum([bi[ki] * state_to_get_parameters_from[k] for ki, k in enumerate(Mi)])
 		tmp = sum([bi[ki] * state_to_get_parameters_from[k] for ki, k in enumerate(Mi)])
-		for ki, k in enumerate(Mix):
-			# print(state_to_get_parameters_from[xb_index])
-			if state_to_get_parameters_from[xb_index] < k:
-				tmp += bix[ki]
+		+ sum([bix[ki] * (1 if state_to_get_parameters_from[xb_index] < k else 0) for ki, k in enumerate(self.M6x)])
+
+		# for ki, k in enumerate(Mix):
+		# 	# print(state_to_get_parameters_from[xb_index])
+		# 	if state_to_get_parameters_from[xb_index] < k:
+		# 		tmp += bix[ki] * 1
+		# 	else:
+		# 		tmp += bix[ki] * 0
 
 		# tmp += sum([bix[ki] * (1 if (state_to_get_parameters_from[xb_index] < k) else 0) for ki, k in enumerate(Mix)])
 		return tmp
@@ -82,6 +87,7 @@ class SimMarketKalibrated(CircularEconomyRebuyPriceDuopoly):
 
 		# xb = torch.tensor([[(1. if k-1 == 0 else 5. if i == 0 else -1.) for k in range(0, 25)] for i in range(0, NB)]).transpose(0, 1)
 		xb = torch.zeros(25)
+		xb[0] = 1
 		xb[1] = prev[1] - prev[12] + prev[13]  # agent inventory (after the previous step)
 
 		xb[2] = self.comp_prices(self.M4, self.M4x, self.by4, self.bxy4, 'used', xb, prev)  # comp price used 	(old)
@@ -109,6 +115,10 @@ class SimMarketKalibrated(CircularEconomyRebuyPriceDuopoly):
 		xb[23] = self.comp_prices(self.M5, self.M5x, self.by5, self.bxy5, 'new', xb, xb)  # comp price new (updated)
 		xb[24] = self.comp_prices(self.M6, self.M6x, self.by6, self.bxy6, 'rebuy', xb, xb)  # comp price rebuy (updated)
 
+		# examplevalue = sum([self.by4[ki] * xb[k] for ki, k in enumerate(self.M4)])
+		# + sum([self.bxy4[ki] * (1 if xb[7] < k else 0) for ki, k in enumerate(self.M4x)])
+
+		# assert float(xb[22]) == float(examplevalue), f'{xb[22]} != {examplevalue}'
 		# xb[11,i]= np.round_(max(0, np.random.uniform(-5,5) + sum{k in self.Ma} self.b1[k]*xb[k,i]))
 
 		xb[11] = np.round_(max(0,  # np.random.uniform(-5, 5) +

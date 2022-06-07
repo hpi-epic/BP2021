@@ -170,11 +170,11 @@ class PredictableDatagenerator(PredictableMarketRebuyPriceDuopoly):
 		# self._output_dict['owner/rebuys']['vendor_1']]   # comp sales rebuy
 
 		# print(f'sales: agent:{sales_agent} comp:{sales_comp}', end='\t')
-		x[2, 0], x[3, 0] = x[3, 0], x[2, 0]  # swap comp price used and new (old)
-		x[7, 0], x[8, 0] = x[8, 0], x[7, 0]  # swap agent price used and new
-		x[22, 0], x[23, 0] = x[23, 0], x[22, 0]  # swap comp price used and new (updated)
-		x[11, 0], x[12, 0] = x[12, 0], x[11, 0]  # swap agent sales used and new
-		x[15, 0], x[16, 0] = x[16, 0], x[15, 0]  # swap comp sales used and new
+		# x[2, 0], x[3, 0] = x[3, 0], x[2, 0]  # swap comp price used and new (old)
+		# x[7, 0], x[8, 0] = x[8, 0], x[7, 0]  # swap agent price used and new
+		# x[22, 0], x[23, 0] = x[23, 0], x[22, 0]  # swap comp price used and new (updated)
+		# x[11, 0], x[12, 0] = x[12, 0], x[11, 0]  # swap agent sales used and new
+		# x[15, 0], x[16, 0] = x[16, 0], x[15, 0]  # swap comp sales used and new
 
 		self.cumulated_states = np.hstack((self.cumulated_states, np.round(x, 3)))
 
@@ -182,16 +182,16 @@ class PredictableDatagenerator(PredictableMarketRebuyPriceDuopoly):
 		self.rainer_states = np.hstack((self.rainer_states, np.round(x, 3)))
 
 		# print('episode_counter: ', self.episode_counter)
-		if self.episode_counter == 500:
+		if self.episode_counter == 50000:
 			saving_array = self.cumulated_states.transpose()
-			saving_array_rainer = self.rainer_states.transpose()
+			# saving_array_rainer = self.rainer_states.transpose()
 			print(saving_array)
 			# Saving the array in a text file
 
-			np.savetxt(f'{PathManager.data_path}/kalibration_data/training_data-txtfile_int1dot.txt',
-				saving_array_rainer, delimiter=' ', fmt='%1.3f', newline='\n')
+			# np.savetxt(f'{PathManager.data_path}/kalibration_data/training_data-txtfile_int1dot.txt',
+			# 	saving_array_rainer, delimiter=' ', fmt='%1.3f', newline='\n')
 
-			save_path = f'{PathManager.data_path}/kalibration_data/training_data_predictable_int_new.csv'
+			save_path = f'{PathManager.data_path}/kalibration_data/training_data_predictable_int_standard.csv'
 			df = pd.DataFrame(saving_array)
 			print(df.head())
 			df.to_csv(save_path, index=False)
