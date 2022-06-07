@@ -11,38 +11,6 @@ from recommerce.market.vendors import Agent
 
 
 class HyperparameterConfigValidator():
-	@classmethod
-	def get_required_fields(cls, dict_key) -> dict:
-		"""
-		THIS SHOULD BE REPLACED URGENTLY. USE THE INFORMATION PROVIDED BY CONFIGURABLE AGENTS TO GET THE REQUIRED FIELDS.
-		"""
-		if dict_key == 'top-dict':
-			return {'rl': True, 'sim_market': True}
-		elif dict_key == 'rl':
-			return {
-				'gamma': False,
-				'batch_size': False,
-				'replay_size': False,
-				'learning_rate': False,
-				'sync_target_frames': False,
-				'replay_start_size': False,
-				'epsilon_decay_last_frame': False,
-				'epsilon_start': False,
-				'epsilon_final': False
-			}
-		elif dict_key == 'sim_market':
-			return {
-				'max_storage': False,
-				'episode_length': False,
-				'max_price': False,
-				'max_quality': False,
-				'number_of_customers': False,
-				'production_price': False,
-				'storage_cost_per_product': False
-			}
-		else:
-			raise AssertionError(f'The given level does not exist in a hyperparameter-config: {dict_key}')
-
 	def __str__(self) -> str:
 		"""
 		This overwrites the internal function that get called when you call `print(class_instance)`.
@@ -75,7 +43,7 @@ class HyperparameterConfigValidator():
 
 		Args:
 			config (dict): The config which should contain all values in demanded_fields.
-			demanded_fields (list): The lit containing all values that should be contained in config.
+			demanded_fields (list): The list containing all values that should be contained in config.
 		"""
 		config_keys = set(config.keys())
 		# the config_type key is completely optional as it is only used for webserver validation, so we don't prevent people from adding it
@@ -144,7 +112,7 @@ class HyperparameterConfigLoader():
 			filename += '.json'
 		path = os.path.join(PathManager.user_path, 'configuration_files', filename)
 		with open(path) as config_file:
-			market_config = json.load(config_file)
+			hyperparameter_config = json.load(config_file)
 
-		HyperparameterConfigValidator.validate_config(config=market_config, checked_class=checked_class)
-		return AttrDict(market_config)
+		HyperparameterConfigValidator.validate_config(config=hyperparameter_config, checked_class=checked_class)
+		return AttrDict(hyperparameter_config)

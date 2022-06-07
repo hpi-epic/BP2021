@@ -9,7 +9,7 @@ import recommerce.market.circular.circular_sim_market as circular_market
 import recommerce.market.linear.linear_sim_market as linear_market
 import recommerce.monitoring.agent_monitoring.am_monitoring as monitoring
 import recommerce.rl.actorcritic.actorcritic_agent as actorcritic_agent
-from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader  # , HyperparameterConfigValidator
+from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader
 from recommerce.configuration.path_manager import PathManager
 from recommerce.market.circular.circular_vendors import FixedPriceCEAgent, FixedPriceCERebuyAgent, HumanPlayerCERebuy, RuleBasedCEAgent
 from recommerce.market.linear.linear_vendors import FixedPriceLEAgent

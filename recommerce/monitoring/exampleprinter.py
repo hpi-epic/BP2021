@@ -105,7 +105,7 @@ def main():  # pragma: no cover
 	printer = ExamplePrinter(config_market=config_market)
 
 	# TODO: Theoretically, the name of the agent is saved in config_environment['name'], but we don't use it yet.
-	marketplace = config_environment.marketplace(config=config_market)
+	marketplace = config_environment.marketplace(config=config_market, competitors=config_environment.agent[1:])
 
 	# QLearningAgents need more initialization
 	if issubclass(config_environment.agent[0]['agent_class'], QLearningAgent):

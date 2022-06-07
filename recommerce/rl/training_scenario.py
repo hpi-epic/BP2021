@@ -95,10 +95,11 @@ def train_continuous_a2c_circular_economy_rebuy():
 	"""
 	Train an ActorCriticAgent on a Circular Economy Market with Rebuy Prices and one competitor.
 	"""
+	used_agent = actorcritic_agent.ContinuousActorCriticAgentFixedOneStd
 	run_training_session(
 		marketplace=circular_market.CircularEconomyRebuyPriceDuopoly,
-		agent=actorcritic_agent.ContinuousActorCriticAgentFixedOneStd,
-		config_rl=HyperparameterConfigLoader.load('actor_critic_config', actorcritic_agent.ContinuousActorCriticAgentFixedOneStd))
+		agent=used_agent,
+		config_rl=HyperparameterConfigLoader.load('actor_critic_config', used_agent))
 
 
 def train_stable_baselines_ppo():
@@ -141,14 +142,15 @@ def train_from_config():
 	"""
 	config_environment: TrainingEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_training')
 	config_rl: AttrDict = HyperparameterConfigLoader.load('q_learning_config', config_environment.agent[0]['agent_class'])
-	# TODO: Theoretically, the name of the agent is saved in config['name'], but we don't use it yet.
+	config_market: AttrDict = HyperparameterConfigLoader.load('market_config', config_environment.marketplace)
+
 	competitor_list = []
 	for competitor in config_environment.agent[1:]:
 		if issubclass(competitor['agent_class'], FixedPriceAgent):
 			competitor_list.append(
-				competitor['agent_class'](config_market=config_environment, fixed_price=competitor['argument'], name=competitor['name']))
+				competitor['agent_class'](config_market=config_market, fixed_price=competitor['argument'], name=competitor['name']))
 		else:
-			competitor_list.append(competitor['agent_class'](config_market=config_environment, name=competitor['name']))
+			competitor_list.append(competitor['agent_class'](config_market=config_market, name=competitor['name']))
 
 	run_training_session(
 		config_rl=config_rl,
