@@ -312,7 +312,7 @@ class ButtonHandler():
 
 		config_dict = ConfigFlatDictParser().flat_dict_to_hierarchical_config_dict(post_request)
 
-		validate_status, validate_data = validate_config(config=config_dict.copy(), config_is_final=True)
+		validate_status, validate_data = validate_config(config=config_dict.copy())
 		if not validate_status:
 			self.message = ['error', validate_data]
 			return self._decide_rendering()

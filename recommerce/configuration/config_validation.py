@@ -5,13 +5,12 @@ from recommerce.configuration.hyperparameter_config import HyperparameterConfigV
 from recommerce.configuration.utils import get_class
 
 
-def validate_config(config: dict, config_is_final: bool) -> tuple:
+def validate_config(config: dict) -> tuple:
 	"""
 	Validates a given config dictionary either uploaded by the user or entered into the form before starting a container.
 
 	Args:
 		config (dict): The config to validate.
-		config_is_final (bool): Whether or not the config must contain all required keys.
 
 	Returns:
 		tuple: success: A status (True) and the split hyperparameter_config and environment_config dictionaries as a tuple.
@@ -43,8 +42,8 @@ def validate_config(config: dict, config_is_final: bool) -> tuple:
 			# we can only validate types for the environment_config, as we do not know the agent/market class for the rl/market configs
 			if config_type == 'environment':
 				# validate that all given values have the correct types
-				task = config['task'] if config_is_final else 'None'
-				EnvironmentConfig.check_types(config, task, False, config_is_final)
+				task = config['task'] if 'task' in config else 'None'
+				EnvironmentConfig.check_types(config, task, False, False)
 
 			# the webserver needs another format for the config
 			config.pop('config_type')
@@ -119,6 +118,6 @@ if __name__ == '__main__':  # pragma: no cover
 		]
 	}
 	print('Testing config validation...')
-	print(validate_config(test_config_rl, False))
-	print(validate_config(test_config_market, False))
-	print(validate_config(test_config_environment, False))
+	print(validate_config(test_config_rl))
+	print(validate_config(test_config_market))
+	print(validate_config(test_config_environment))

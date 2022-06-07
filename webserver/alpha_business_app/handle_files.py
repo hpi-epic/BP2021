@@ -58,7 +58,7 @@ def handle_uploaded_file(request, uploaded_config) -> HttpResponse:
 		return render(request, 'upload.html', {'error': str(value)})
 
 	# Validate the config file using the recommerce validation functionality
-	validate_status, validate_data = validate_config(content_as_dict, False)
+	validate_status, validate_data = validate_config(content_as_dict)
 	if not validate_status:
 		return render(request, 'upload.html', {'error': validate_data})
 
