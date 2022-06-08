@@ -6,7 +6,8 @@ from attrdict import AttrDict
 
 from recommerce.configuration.path_manager import PathManager
 from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPriceDuopoly
-from recommerce.rl.stable_baselines.stable_baselines_model import StableBaselinesPPO, StableBaselinesSAC
+from recommerce.rl.stable_baselines.sb_ppo import StableBaselinesPPO
+from recommerce.rl.stable_baselines.sb_sac import StableBaselinesSAC
 
 
 def train_rl_vs_rl(config_market: AttrDict, config_rl: AttrDict, num_switches: int = 30, num_steps_per_switch: int = 25000):

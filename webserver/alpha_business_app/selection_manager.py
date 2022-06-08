@@ -4,9 +4,9 @@ from uuid import uuid4
 import lxml.html
 from django.shortcuts import render
 
-import recommerce.market.circular.circular_sim_market as circular_market
-import recommerce.market.linear.linear_sim_market as linear_market
 from recommerce.configuration.utils import get_class
+
+from .utils import get_recommerce_agents_for_marketplace, get_recommerce_marketplaces
 
 
 class SelectionManager:
@@ -14,7 +14,7 @@ class SelectionManager:
 		self.current_marketplace = None
 
 	def get_agent_options_for_marketplace(self) -> list:
-		return self._to_tuple_list(self.current_marketplace.get_possible_rl_agents())
+		return self._to_tuple_list(get_recommerce_agents_for_marketplace(self.current_marketplace))
 
 	def get_competitor_options_for_marketplace(self) -> list:
 		return self._to_tuple_list(self.current_marketplace.get_competitor_classes())
@@ -71,25 +71,9 @@ class SelectionManager:
 		return lxml.html.tostring(html)
 
 	def get_marketplace_options(self) -> list:
-		"""
-		Matches marketplaces of recommerce.market.circular.circular_sim_market and recommerce.market.linear.linear_sim_market,
-		which contain one of the Keywords: Oligopoly, Duopoly, Monopoly
-
-		Returns:
-			list: tuple list for selection
-		"""
-		keywords = ['Monopoly', 'Duopoly', 'Oligopoly']
-		# get all circular marketplaces
-		circular_marketplaces = list(set(filter(lambda class_name: any(keyword in class_name for keyword in keywords), dir(circular_market))))
-		circular_market_str = [f'recommerce.market.circular.circular_sim_market.{market}' for market in sorted(circular_marketplaces)]
-		circular_tuples = self._to_tuple_list(circular_market_str)
-		# get all linear marketplaces
-		visible_linear_names = list(set(filter(lambda class_name: any(keyword in class_name for keyword in keywords), dir(linear_market))))
-		linear_market_str = [f'recommerce.market.linear.linear_sim_market.{market}' for market in sorted(visible_linear_names)]
-		linear_tuples = self._to_tuple_list(linear_market_str)
-
-		self.current_marketplace = get_class(circular_tuples[0][0])
-		return circular_tuples + linear_tuples
+		recommerce_marketplaces = get_recommerce_marketplaces()
+		self.current_marketplace = get_class(recommerce_marketplaces[0])
+		return self._to_tuple_list(recommerce_marketplaces)
 
 	def _get_task_options(self) -> list:
 		return [

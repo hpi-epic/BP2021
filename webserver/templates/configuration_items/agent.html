@@ -19,7 +19,7 @@
                     class
                 </div>
                 <div class="col-6">
-                    <select class="form-select {% if error_dict.task %} bc-error-field {% endif %} {{name.lower}}-agent-class" name="environment-agents-agent_class">
+                    <select class="form-select {% if error_dict.task %} bc-error-field {% endif %} {{name.lower}}-agent-class" name="environment-agents-agent_class" data-url="/agent_changed">
                         {% include "configuration_items/selection_list.html" with prefill_value=prefill.agent_class selections=agent_selections %}
                     </select>
                 </div>

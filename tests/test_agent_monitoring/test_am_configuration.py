@@ -3,13 +3,13 @@ import shutil
 from unittest.mock import patch
 
 import pytest
-import utils_tests as ut_t
+from attrdict import AttrDict
 
 import recommerce.market.circular.circular_sim_market as circular_market
 import recommerce.market.linear.linear_sim_market as linear_market
 import recommerce.monitoring.agent_monitoring.am_monitoring as monitoring
 import recommerce.rl.actorcritic.actorcritic_agent as actorcritic_agent
-from recommerce.configuration.hyperparameter_config import HyperparameterConfigValidator
+from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader
 from recommerce.configuration.path_manager import PathManager
 from recommerce.market.circular.circular_vendors import FixedPriceCEAgent, FixedPriceCERebuyAgent, HumanPlayerCERebuy, RuleBasedCEAgent
 from recommerce.market.linear.linear_vendors import FixedPriceLEAgent
@@ -17,7 +17,7 @@ from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
 
 monitor = monitoring.Monitor()
 
-config_hyperparameter: HyperparameterConfigValidator = ut_t.mock_config_hyperparameter()
+config_market: AttrDict = HyperparameterConfigLoader.load('market_config', circular_market.CircularEconomyRebuyPriceMonopoly)
 
 
 # setup before each test
@@ -31,7 +31,7 @@ def setup_function(function):
 		plot_interval=10,
 		marketplace=circular_market.CircularEconomyMonopoly,
 		agents=[(FixedPriceCERebuyAgent, [])],
-		config_market=config_hyperparameter,
+		config_market=config_market,
 		subfolder_name=f'test_plots_{function.__name__}')
 
 
@@ -66,7 +66,7 @@ incorrect_update_agents_RL_testcases = [
 @pytest.mark.parametrize('agents, expected_message', incorrect_update_agents_RL_testcases)
 def test_incorrect_update_agents_RL(agents, expected_message):
 	with pytest.raises(AssertionError) as assertion_message:
-		monitor.configurator.setup_monitoring(agents=agents, config_market=config_hyperparameter)
+		monitor.configurator.setup_monitoring(agents=agents, config_market=config_market)
 	assert expected_message in str(assertion_message.value)
 
 
@@ -81,7 +81,7 @@ correct_update_agents_RL_testcases = [
 
 @pytest.mark.parametrize('agents', correct_update_agents_RL_testcases)
 def test_correct_update_agents_RL(agents):
-	monitor.configurator.setup_monitoring(agents=agents, config_market=config_hyperparameter)
+	monitor.configurator.setup_monitoring(agents=agents, config_market=config_market)
 
 
 def test_correct_setup_monitoring():
@@ -92,7 +92,7 @@ def test_correct_setup_monitoring():
 		marketplace=circular_market.CircularEconomyMonopoly,
 		agents=[(HumanPlayerCERebuy, ['reptiloid']),
 			(QLearningAgent, ['CircularEconomyMonopoly_QLearningAgent.dat', 'q_learner'])],
-		config_market=config_hyperparameter,
+		config_market=config_market,
 		subfolder_name='subfoldername')
 	assert monitor.configurator.enable_live_draw is False
 	assert 10 == monitor.configurator.episodes
@@ -116,11 +116,11 @@ setting_multiple_agents_testcases = [
 
 @pytest.mark.parametrize('agents', setting_multiple_agents_testcases)
 def test_setting_multiple_agents(agents):
-	monitor.configurator.setup_monitoring(agents=agents, config_market=config_hyperparameter)
+	monitor.configurator.setup_monitoring(agents=agents, config_market=config_market)
 
 
 def test_setting_market_not_agents():
-	monitor.configurator.setup_monitoring(marketplace=circular_market.CircularEconomyMonopoly, config_market=config_hyperparameter)
+	monitor.configurator.setup_monitoring(marketplace=circular_market.CircularEconomyMonopoly, config_market=config_market)
 
 
 correct_setup_monitoring_testcases = [
@@ -164,7 +164,7 @@ def test_correct_setup_monitoring_parametrized(parameters):
 		plot_interval=dict['plot_interval'],
 		marketplace=dict['marketplace'],
 		agents=dict['agents'],
-		config_market=config_hyperparameter,
+		config_market=config_market,
 		subfolder_name=dict['subfolder_name']
 	)
 
@@ -241,16 +241,16 @@ def test_incorrect_setup_monitoring(parameters, expected_message):
 			plot_interval=dict['plot_interval'],
 			marketplace=dict['marketplace'],
 			agents=dict['agents'],
-			config_market=config_hyperparameter,
+			config_market=config_market,
 			subfolder_name=dict['subfolder_name']
 		)
 	assert expected_message in str(assertion_message.value)
 
 
 incorrect_setup_monitoring_type_errors_testcases = [
-	{'marketplace': linear_market.LinearEconomyDuopoly(config=config_hyperparameter)},
-	{'agents': [(linear_market.LinearEconomyDuopoly(config=config_hyperparameter), [])]},
-	{'agents': [(RuleBasedCEAgent(config_market=config_hyperparameter), [])]}
+	{'marketplace': linear_market.LinearEconomyDuopoly(config=config_market)},
+	{'agents': [(linear_market.LinearEconomyDuopoly(config=config_market), [])]},
+	{'agents': [(RuleBasedCEAgent(config_market=config_market), [])]}
 ]
 
 
@@ -275,7 +275,7 @@ def test_incorrect_setup_monitoring_type_errors(parameters):
 			plot_interval=dict['plot_interval'],
 			marketplace=dict['marketplace'],
 			agents=dict['agents'],
-			config_market=config_hyperparameter,
+			config_market=config_market,
 			subfolder_name=dict['subfolder_name']
 		)
 
@@ -288,14 +288,14 @@ print_configuration_testcases = [
 
 @pytest.mark.parametrize('agents', print_configuration_testcases)
 def test_print_configuration(agents):
-	monitor.configurator.setup_monitoring(agents=agents, config_market=config_hyperparameter)
+	monitor.configurator.setup_monitoring(agents=agents, config_market=config_market)
 
 	monitor.configurator.print_configuration()
 
 
 @pytest.mark.parametrize('agents', print_configuration_testcases)
 def test_print_configuration_ratio(agents):
-	monitor.configurator.setup_monitoring(config_market=config_hyperparameter, episodes=51, plot_interval=1, agents=agents)
+	monitor.configurator.setup_monitoring(config_market=config_market, episodes=51, plot_interval=1, agents=agents)
 
 	with patch('recommerce.monitoring.agent_monitoring.am_configuration.input', create=True) as mocked_input:
 		mocked_input.side_effect = ['n']

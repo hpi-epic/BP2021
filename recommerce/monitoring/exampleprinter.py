@@ -98,24 +98,25 @@ def main():  # pragma: no cover
 	"""
 	Defines what is performed when the `agent_monitoring` command is chosen in `main.py`.
 	"""
-	config_market: AttrDict = HyperparameterConfigLoader.load('market_config')
-	config_rl: AttrDict = HyperparameterConfigLoader.load('rl_config')
+	config_environment: ExampleprinterEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_exampleprinter')
+
+	config_market: AttrDict = HyperparameterConfigLoader.load('market_config', config_environment.marketplace)
+	config_rl: AttrDict = HyperparameterConfigLoader.load('q_learning_config', config_environment.agent[0]['agent_class'])
 	printer = ExamplePrinter(config_market=config_market)
 
-	config_environment: ExampleprinterEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_exampleprinter')
 	# TODO: Theoretically, the name of the agent is saved in config_environment['name'], but we don't use it yet.
-	marketplace = config_environment.marketplace(config=config_market)
+	marketplace = config_environment.marketplace(config=config_market, competitors=config_environment.agent[1:])
 
 	# QLearningAgents need more initialization
-	if issubclass(config_environment.agent['agent_class'], QLearningAgent):
+	if issubclass(config_environment.agent[0]['agent_class'], QLearningAgent):
 		printer.setup_exampleprinter(marketplace=marketplace,
-			agent=config_environment.agent['agent_class'](
+			agent=config_environment.agent[0]['agent_class'](
 				config_market=config_market,
 				config_rl=config_rl,
 				marketplace=marketplace,
-				load_path=os.path.abspath(os.path.join(PathManager.data_path, config_environment.agent['argument']))))
+				load_path=os.path.abspath(os.path.join(PathManager.data_path, config_environment.agent[0]['argument']))))
 	else:
-		printer.setup_exampleprinter(marketplace=marketplace, agent=config_environment.agent['agent_class']())
+		printer.setup_exampleprinter(marketplace=marketplace, agent=config_environment.agent[0]['agent_class']())
 
 	print(f'The final profit was: {printer.run_example()}')
 
