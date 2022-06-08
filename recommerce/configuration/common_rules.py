@@ -8,3 +8,7 @@ def non_negative_rule(field_name: str):
 
 def between_zero_one_rule(field_name: str):
     return (lambda x: x >= 0 and x <= 1, f'{field_name} should be between 0 (included) and 1 (included)')
+
+
+def greater_zero_even_rule(field_name: str):
+    return (lambda x: x > 0 and x % 2 == 0, f'{field_name} should be even and positive')
