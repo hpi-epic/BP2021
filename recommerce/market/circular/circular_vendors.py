@@ -21,7 +21,9 @@ class CircularAgent(Agent, ABC):
 		competitors_refurbished_prices = []
 		competitors_new_prices = []
 		competitors_rebuy_prices = []
-		for competitor in range(2, observation.size, 4):
+		for competitor in range(
+			2 if self.config_market.common_state_visibility else 1, observation.size,
+			4 if self.config_market.opposite_own_state_visibility else 3):
 			competitors_refurbished_prices.append(observation[competitor].item())
 			competitors_new_prices.append(observation[competitor + 1].item())
 			if is_rebuy_economy:

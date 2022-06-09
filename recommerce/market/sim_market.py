@@ -64,6 +64,8 @@ class SimMarket(gym.Env, JSONConfigurable):
 		# TODO: Better testing for the observation and action space
 		assert (self.observation_space and self.action_space), 'Your observation or action space is not defined'
 		# Make sure that variables such as state, customer are known
+		assert not self.config.reward_mixed_profit_and_difference or self._number_of_vendors > 1, \
+			'You cannot use the mixed profit and difference reward in a monopoly market'
 		self.reset()
 
 	def _get_number_of_vendors(self) -> int:
@@ -138,8 +140,12 @@ class SimMarket(gym.Env, JSONConfigurable):
 			the reward he made between these actions,
 			a flag indicating if the market closes and information about the market for logging purposes.
 		"""
-		if isinstance(action, np.ndarray):
+		if isinstance(action, np.ndarray) and len(action) == 1:
+			action = action.item()
+		elif isinstance(action, np.ndarray):
 			action = np.array(action, dtype=np.float32)
+		# elif isinstance(action, int) and self.support_continuous_action_space:
+		# 	action = np.float32(action)
 		assert self.action_space.contains(action), f'{action} ({type(action)}) invalid'
 
 		self.vendor_actions[0] = action
@@ -169,7 +175,8 @@ class SimMarket(gym.Env, JSONConfigurable):
 
 		self._ensure_output_dict_has('profits/all', profits)
 		is_done = self.step_counter >= self.config.episode_length
-		return self._observation(), float(profits[0]), is_done, self._output_dict
+		reward = profits[0] if not self.config.reward_mixed_profit_and_difference else 2 * profits[0] - np.max(profits[1:])
+		return self._observation(), float(reward), is_done, self._output_dict
 
 	def _observation(self, vendor_view=0) -> np.array:
 		"""
@@ -184,8 +191,9 @@ class SimMarket(gym.Env, JSONConfigurable):
 			np.array: the view for the vendor with index vendor_view
 		"""
 		# observatons is the array containing the global states. We add everything relevant to it, then return a concatenated version.
-		observations = [self._get_common_state_array()]
-		assert isinstance(observations[0], np.ndarray), '_get_common_state_array must return an np.ndarray'
+		observations = [self._get_common_state_array()] if self.config.common_state_visibility else []
+		if self.config.common_state_visibility:
+			assert isinstance(observations[0], np.ndarray), '_get_common_state_array must return an np.ndarray'
 
 		# first the state of the vendor whose view we create will be added
 		if self.vendor_specific_state[vendor_view] is not None:
@@ -196,7 +204,7 @@ class SimMarket(gym.Env, JSONConfigurable):
 			if vendor_index == vendor_view:
 				continue
 			observations.append(np.array(self.vendor_actions[vendor_index], ndmin=1, dtype=np.float32))
-			if self.vendor_specific_state[vendor_index] is not None:
+			if self.vendor_specific_state[vendor_index] is not None and self.config.opposite_own_state_visibility:
 				observations.append(np.array(self.vendor_specific_state[vendor_index], ndmin=1, dtype=np.float32))
 
 		# The observation has to be part of the observation_space defined by the market

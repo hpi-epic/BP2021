@@ -17,23 +17,18 @@ from recommerce.rl.stable_baselines.sb_sac import StableBaselinesSAC
 from recommerce.rl.stable_baselines.sb_td3 import StableBaselinesTD3
 
 
-def run_training_session(agent_class, config_rl, number, pipe_to_parent):
-    config_market = HyperparameterConfigLoader.load('market_config', CircularEconomyRebuyPriceDuopoly)
-    agent = agent_class(config_market, config_rl, CircularEconomyRebuyPriceDuopoly(config_market,
-        support_continuous_action_space=True), name=f'Training_{number}')
-    watcher = agent.train_agent(20000)
+def run_training_session(market_class, config_market_path, agent_class, config_rl, training_steps, number, pipe_to_parent):
+    config_market = HyperparameterConfigLoader.load(config_market_path, market_class)
+    agent = agent_class(config_market, config_rl, market_class(config_market, support_continuous_action_space=True), name=f'Train{number}')
+    watcher = agent.train_agent(training_steps)
     pipe_to_parent.send(watcher)
 
 
-def run_self_play_session(agent_class, config_rl, number, pipe_to_parent):
-    watcher = train_self_play(
-        HyperparameterConfigLoader.load('market_config', CircularEconomyRebuyPriceDuopoly),
-        config_rl, agent_class,
-        400000 if issubclass(agent_class, StableBaselinesPPO) else 100000, name=f'SelfPlay_{number}'
-    )
+def run_self_play_session(market_class, config_market_path, agent_class, config_rl, training_steps, number, pipe_to_parent):
+    assert issubclass(market_class, CircularEconomyRebuyPriceDuopoly)
+    config_market = HyperparameterConfigLoader.load(config_market_path, market_class)
+    watcher = train_self_play(config_market, config_rl, agent_class, training_steps, name=f'SelfPlay_{number}')
     pipe_to_parent.send(watcher)
-    # 1000000 if issubclass(agent_class, StableBaselinesPPO) else 200000
-    # 400000 if issubclass(agent_class, StableBaselinesPPO) else 100000
 
 
 def configuration_best_learning_rate_ppo():
@@ -57,7 +52,7 @@ def configuration_clipping_ppo():
     for _ in range(8):
         configs.append(HyperparameterConfigLoader.load('sb_ppo_config', StableBaselinesPPO))
     for i, config in enumerate(configs):
-        config.clip_range = i * 0.025 + 0.15
+        config.clip_range = i * 0.1 / 3 + 0.2
         descriptions.append(f'clip_{config["clip_range"]}')
 
     return configs, descriptions
@@ -160,13 +155,13 @@ def configuration_sac_all_same():
     return configs, descriptions
 
 
-def run_group(agent, configuration):
+def run_group(market_class, config_market, agent, configuration, training_steps, target_function=run_training_session):
     configs, descriptions = configuration()
     print(configs)
     pipes = []
     for _ in configs:
         pipes.append(Pipe(False))
-    processes = [Process(target=run_training_session, args=(agent, config, description, pipe_entry))
+    processes = [Process(target=target_function, args=(market_class, config_market, agent, config, training_steps, description, pipe_entry))
         for config, description, (_, pipe_entry) in zip(configs, descriptions, pipes)]
     print('Now I start the processes')
     for p in processes:
@@ -208,14 +203,59 @@ def print_diagrams(groups, name, reduce_plot_to_tenthousand=False, individual_li
     plt.savefig(os.path.join(PathManager.results_path, 'monitoring', f'{name}.svg'))
 
 
+# These experiments are all done on a CERebuy market
+standardtraining = 10000  # 1000000
+shorttraining = 10000
+market_class = CircularEconomyRebuyPriceDuopoly
+mconfig = 'market_config'
+
+
 def experiment_a2c_vs_ppo():
     tasks = [
         (StableBaselinesA2C, configuration_a2c_all_same),
         (StableBaselinesPPO, configuration_ppo_standard_all_same),
         (StableBaselinesPPO, configuration_ppo_clip_0_3_all_same)
     ]
-    groups = [run_group(agent, configuration) for agent, configuration in tasks]
+    groups = [run_group(market_class, mconfig, agent, configuration, standardtraining) for agent, configuration in tasks]
     print_diagrams(groups, 'a2c_ppo', True)
+
+
+def experiment_a2c_vs_sac():
+    tasks = [
+        (StableBaselinesA2C, configuration_a2c_all_same),
+        (StableBaselinesSAC, configuration_sac_all_same)
+    ]
+    groups = [run_group(market_class, mconfig, agent, configuration, shorttraining) for agent, configuration in tasks]
+    print_diagrams(groups, 'a2c_sac', True)
+
+
+def experiment_self_play():
+    tasks = [
+        (StableBaselinesPPO, configuration_ppo_clip_0_3_all_same),
+        (StableBaselinesA2C, configuration_a2c_all_same),
+        (StableBaselinesSAC, configuration_sac_all_same)
+    ]
+    groups = [run_group(market_class, mconfig, agent, configuration, standardtraining, target_function=run_self_play_session)
+        for agent, configuration in tasks]
+    print_diagrams(groups, 'self_play', True)
+
+
+def experiment_several_ddpg_td3():
+    tasks = [(StableBaselinesDDPG, configuration_learning_rate_ddpg), (StableBaselinesTD3, configuration_learning_rate_td3)]
+    groups = [run_group(market_class, mconfig, agent, configuration, standardtraining) for agent, configuration in tasks]
+    print_diagrams(groups, 'ddpg_td3', False, True)
+
+
+def experiment_higher_clip_ranges_ppo():
+    tasks = [(StableBaselinesPPO, configuration_clipping_ppo)]
+    groups = [run_group(market_class, mconfig, agent, configuration, standardtraining) for agent, configuration in tasks]
+    print_diagrams(groups, 'ppo_clipping', True, True)
+
+
+def experiment_temperature_sac():
+    tasks = [(StableBaselinesSAC, configuration_temperature_sac)]
+    groups = [run_group(market_class, mconfig, agent, configuration, shorttraining) for agent, configuration in tasks]
+    print_diagrams(groups, 'sac_temperature', True, True)
 
 
 # move the Path manager results folder to documents
@@ -226,9 +266,15 @@ def move_results_to_documents(dest_folder_name):
 
 
 if __name__ == '__main__':
-    # groups = [(StableBaselinesPPO, configuration_clipping_ppo), (StableBaselinesSAC, configuration_temperature_sac)]
-    # groups = [(StableBaselinesDDPG, configuration_learning_rate_ddpg), (StableBaselinesTD3, configuration_learning_rate_td3)]
-    # groups = [(StableBaselinesA2C, configuration_a2c_all_same), (StableBaselinesSAC, configuration_sac_all_same),
-    #     (StableBaselinesPPO, configuration_ppo_clip_0_3_all_same)]
     experiment_a2c_vs_ppo()
-    move_results_to_documents('ppo_vs_a2c')
+    move_results_to_documents('a2c_vs_ppo')
+    experiment_a2c_vs_sac()
+    move_results_to_documents('a2c_vs_sac')
+    experiment_self_play()
+    move_results_to_documents('self_play')
+    experiment_several_ddpg_td3()
+    move_results_to_documents('ddpg_td3')
+    experiment_higher_clip_ranges_ppo()
+    move_results_to_documents('ppo_clipping')
+    experiment_temperature_sac()
+    move_results_to_documents('sac_temperature')
