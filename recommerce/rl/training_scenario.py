@@ -106,8 +106,9 @@ def train_continuous_a2c_circular_economy_rebuy():
 
 
 def train_stable_baselines_ddpg():
-	config_market: AttrDict = HyperparameterConfigLoader.load('market_config')
-	config_rl: AttrDict = HyperparameterConfigLoader.load('sb_ddpg_config')
+	used_marketplace = circular_market.CircularEconomyRebuyPriceDuopoly
+	config_market: AttrDict = HyperparameterConfigLoader.load('market_config', used_marketplace)
+	config_rl: AttrDict = HyperparameterConfigLoader.load('sb_ddpg_config', StableBaselinesDDPG)
 	StableBaselinesDDPG(
 		config_market=config_market,
 		config_rl=config_rl,
@@ -115,8 +116,9 @@ def train_stable_baselines_ddpg():
 
 
 def train_stable_baselines_td3():
-	config_market: AttrDict = HyperparameterConfigLoader.load('market_config')
-	config_rl: AttrDict = HyperparameterConfigLoader.load('sb_td3_config')
+	used_marketplace = circular_market.CircularEconomyRebuyPriceDuopoly
+	config_market: AttrDict = HyperparameterConfigLoader.load('market_config', used_marketplace)
+	config_rl: AttrDict = HyperparameterConfigLoader.load('sb_td3_config', StableBaselinesTD3)
 	StableBaselinesTD3(
 		config_market=config_market,
 		config_rl=config_rl,
@@ -124,8 +126,9 @@ def train_stable_baselines_td3():
 
 
 def train_stable_baselines_a2c():
-	config_market: AttrDict = HyperparameterConfigLoader.load('market_config')
-	config_rl: AttrDict = HyperparameterConfigLoader.load('sb_a2c_config')
+	used_marketplace = circular_market.CircularEconomyRebuyPriceDuopoly
+	config_market: AttrDict = HyperparameterConfigLoader.load('market_config', used_marketplace)
+	config_rl: AttrDict = HyperparameterConfigLoader.load('sb_a2c_config', StableBaselinesA2C)
 	StableBaselinesA2C(
 		config_market=config_market,
 		config_rl=config_rl,
@@ -155,15 +158,16 @@ def train_stable_baselines_sac():
 def train_rl_vs_rl():
 	# marketplace is currently hardcoded in train_rl_vs_rl
 	config_market: AttrDict = HyperparameterConfigLoader.load('market_config', circular_market.CircularEconomyRebuyPriceDuopoly)
-	config_rl: AttrDict = HyperparameterConfigLoader.load('sb_ppo_config', StableBaselinesPPO)
-	rl_vs_rl_training.train_rl_vs_rl(config_market, config_rl)
+	config_rl1: AttrDict = HyperparameterConfigLoader.load('sb_ppo_config', StableBaselinesPPO)
+	config_rl2: AttrDict = HyperparameterConfigLoader.load('sb_sac_config', StableBaselinesSAC)
+	rl_vs_rl_training.train_rl_vs_rl(config_market, config_rl1, config_rl2)
 
 
 def train_self_play():
 	# marketplace is currently hardcoded in train_self_play
 	config_market: AttrDict = HyperparameterConfigLoader.load('market_config', circular_market.CircularEconomyRebuyPriceDuopoly)
 	config_rl: AttrDict = HyperparameterConfigLoader.load('sb_ppo_config', StableBaselinesPPO)
-	self_play.train_self_play(config_market, config_rl)
+	self_play.train_self_play(config_market, config_rl, StableBaselinesPPO)
 
 
 def train_from_config():

@@ -12,7 +12,9 @@ import recommerce.monitoring.agent_monitoring.am_evaluation as am_evaluation
 from recommerce.configuration.environment_config import AgentMonitoringEnvironmentConfig, EnvironmentConfigLoader
 from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader
 from recommerce.configuration.path_manager import PathManager
+from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPriceDuopoly
 from recommerce.monitoring.watcher import Watcher
+from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
 
 print('successfully imported torch: cuda?', torch.cuda.is_available())
 
@@ -26,8 +28,8 @@ class Monitor():
 	"""
 	def __init__(
 			self,
-			config_market: AttrDict = HyperparameterConfigLoader.load('market_config'),
-			config_rl: AttrDict = HyperparameterConfigLoader.load('q_learning_config'),
+			config_market: AttrDict = HyperparameterConfigLoader.load('market_config', CircularEconomyRebuyPriceDuopoly),
+			config_rl: AttrDict = HyperparameterConfigLoader.load('q_learning_config', QLearningAgent),
 			name: str = 'plots'):
 		self.configurator = am_configuration.Configurator(config_market, config_rl, name)
 		self.evaluator = am_evaluation.Evaluator(self.configurator)
