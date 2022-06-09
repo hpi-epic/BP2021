@@ -123,6 +123,25 @@ valid_ConfigLoader_validate_testcases = [
 		'separate_markets': False,
 		'episodes': 10,
 		'plot_interval': 5,
+		'marketplace': 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceDuopoly',
+		'agents': [
+			{
+				'name': 'Rule_Based Agent',
+				'agent_class': 'recommerce.market.circular.circular_vendors.RuleBasedCERebuyAgent',
+				'argument': ''
+			},
+			{
+				'name': 'CE Rebuy Agent (QLearning)',
+				'agent_class': 'recommerce.rl.q_learning.q_learning_agent.QLearningAgent',
+				'argument': 'CircularEconomyRebuyPriceMonopoly_QLearningAgent.dat'
+			}
+		]
+	},
+	{
+		'task': 'agent_monitoring',
+		'separate_markets': True,
+		'episodes': 10,
+		'plot_interval': 5,
 		'marketplace': 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopoly',
 		'agents': [
 			{

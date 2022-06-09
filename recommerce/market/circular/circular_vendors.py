@@ -34,7 +34,7 @@ class CircularAgent(Agent, ABC):
 
 class HumanPlayerCE(CircularAgent, HumanPlayer):
 	def __init__(self, config_market: AttrDict=None, name=''):
-		self.name = name if name != '' else self.__name__
+		self.name = name if name != '' else type(self).__name__
 
 		print('Welcome to this funny game! Now, you are the one playing the game!')
 

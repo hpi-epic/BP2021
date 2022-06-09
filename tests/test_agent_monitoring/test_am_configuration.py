@@ -1,5 +1,3 @@
-import os
-import shutil
 from unittest.mock import patch
 
 import pytest
@@ -10,7 +8,6 @@ import recommerce.market.linear.linear_sim_market as linear_market
 import recommerce.monitoring.agent_monitoring.am_monitoring as monitoring
 import recommerce.rl.actorcritic.actorcritic_agent as actorcritic_agent
 from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader
-from recommerce.configuration.path_manager import PathManager
 from recommerce.market.circular.circular_vendors import FixedPriceCEAgent, FixedPriceCERebuyAgent, HumanPlayerCERebuy, RuleBasedCEAgent
 from recommerce.market.linear.linear_vendors import FixedPriceLEAgent
 from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
@@ -32,14 +29,6 @@ def setup_function(function):
 		marketplace=circular_market.CircularEconomyMonopoly,
 		agents=[(FixedPriceCERebuyAgent, [])],
 		config_market=config_market)
-
-
-def test_get_folder():
-	# if you change the name of this function, change it here as well!
-	foldername = 'test_plots_test_get_folder'
-	monitor.configurator.get_folder()
-	assert os.path.exists(os.path.abspath(os.path.join(PathManager.results_path, 'monitoring', foldername)))
-	shutil.rmtree(os.path.join(PathManager.results_path, 'monitoring', foldername))
 
 
 def test_get_modelfile_path():
@@ -88,14 +77,14 @@ def test_correct_setup_monitoring():
 		separate_markets=False,
 		episodes=10,
 		plot_interval=2,
-		marketplace=circular_market.CircularEconomyMonopoly,
+		marketplace=circular_market.CircularEconomyRebuyPriceDuopoly,
 		agents=[(HumanPlayerCERebuy, ['reptiloid']),
-			(QLearningAgent, ['CircularEconomyMonopoly_QLearningAgent.dat', 'q_learner'])],
+			(QLearningAgent, ['CircularEconomyRebuyPriceDuopoly_QLearningAgent.dat', 'q_learner'])],
 		config_market=config_market)
 	assert monitor.configurator.separate_markets is False
 	assert 10 == monitor.configurator.episodes
 	assert 2 == monitor.configurator.plot_interval
-	assert isinstance(monitor.configurator.marketplace, circular_market.CircularEconomyMonopoly)
+	assert isinstance(monitor.configurator.marketplace, circular_market.CircularEconomyRebuyPriceDuopoly)
 	assert 2 == len(monitor.configurator.agents)
 	assert isinstance(monitor.configurator.agents[0], HumanPlayerCERebuy)
 	assert isinstance(monitor.configurator.agents[1], QLearningAgent)
@@ -112,7 +101,7 @@ setting_multiple_agents_testcases = [
 
 @pytest.mark.parametrize('agents', setting_multiple_agents_testcases)
 def test_setting_multiple_agents(agents):
-	monitor.configurator.setup_monitoring(agents=agents, config_market=config_market)
+	monitor.configurator.setup_monitoring(separate_markets=True, agents=agents, config_market=config_market)
 
 
 def test_setting_market_not_agents():
@@ -277,14 +266,14 @@ print_configuration_testcases = [
 
 @pytest.mark.parametrize('agents', print_configuration_testcases)
 def test_print_configuration(agents):
-	monitor.configurator.setup_monitoring(agents=agents, config_market=config_market)
+	monitor.configurator.setup_monitoring(separate_markets=True, agents=agents, config_market=config_market)
 
 	monitor.configurator.print_configuration()
 
 
 @pytest.mark.parametrize('agents', print_configuration_testcases)
 def test_print_configuration_ratio(agents):
-	monitor.configurator.setup_monitoring(config_market=config_market, episodes=51, plot_interval=1, agents=agents)
+	monitor.configurator.setup_monitoring(separate_markets=True, config_market=config_market, episodes=51, plot_interval=1, agents=agents)
 
 	with patch('recommerce.monitoring.agent_monitoring.am_configuration.input', create=True) as mocked_input:
 		mocked_input.side_effect = ['n']

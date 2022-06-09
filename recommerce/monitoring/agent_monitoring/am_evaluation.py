@@ -39,6 +39,7 @@ class Evaluator():
 			episode_numbers (list of int): The training stages the empirical distributions belong to.
 				If it is None, a prior functionality is used.
 		"""
+		assert self.configurator.separate_markets, 'This functionality can only be used if self.configurator.separate_markets is True'
 		# Print the statistics
 		for index, analysis in enumerate(analyses):
 			if episode_numbers is None:
