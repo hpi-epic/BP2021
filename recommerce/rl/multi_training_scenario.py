@@ -1,3 +1,5 @@
+import os
+import shutil
 import time
 from multiprocessing import Pipe, Process
 
@@ -5,30 +7,36 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader
+from recommerce.configuration.path_manager import PathManager
 from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPriceDuopoly
 from recommerce.rl.self_play import train_self_play
-# from recommerce.rl.stable_baselines.sb_td3 import StableBaselinesTD3
 from recommerce.rl.stable_baselines.sb_a2c import StableBaselinesA2C
+from recommerce.rl.stable_baselines.sb_ddpg import StableBaselinesDDPG
 from recommerce.rl.stable_baselines.sb_ppo import StableBaselinesPPO
 from recommerce.rl.stable_baselines.sb_sac import StableBaselinesSAC
+from recommerce.rl.stable_baselines.sb_td3 import StableBaselinesTD3
 
 
 def run_training_session(agent_class, config_rl, number, pipe_to_parent):
     config_market = HyperparameterConfigLoader.load('market_config')
     agent = agent_class(config_market, config_rl, CircularEconomyRebuyPriceDuopoly(config_market,
         support_continuous_action_space=True), name=f'Training_{number}')
-    watcher = agent.train_agent(200000)
+    watcher = agent.train_agent(20000)
     pipe_to_parent.send(watcher)
 
 
 def run_self_play_session(agent_class, config_rl, number, pipe_to_parent):
-    watcher = train_self_play(HyperparameterConfigLoader.load('market_config'), config_rl, agent_class, 400000 if issubclass(agent_class, StableBaselinesPPO) else 100000, name=f'SelfPlay_{number}')
+    watcher = train_self_play(
+        HyperparameterConfigLoader.load('market_config'),
+        config_rl, agent_class,
+        400000 if issubclass(agent_class, StableBaselinesPPO) else 100000, name=f'SelfPlay_{number}'
+    )
     pipe_to_parent.send(watcher)
     # 1000000 if issubclass(agent_class, StableBaselinesPPO) else 200000
     # 400000 if issubclass(agent_class, StableBaselinesPPO) else 100000
 
 
-def experiment_best_learning_rate_ppo():
+def configuration_best_learning_rate_ppo():
     # Use default parametrisation at all other points
     configs = []
     descriptions = []
@@ -42,7 +50,7 @@ def experiment_best_learning_rate_ppo():
     return configs, descriptions
 
 
-def experiment_clipping_ppo():
+def configuration_clipping_ppo():
     # Use default parametrisation at all other points
     configs = []
     descriptions = []
@@ -55,7 +63,7 @@ def experiment_clipping_ppo():
     return configs, descriptions
 
 
-def experiment_replay_size_sac():
+def configuration_replay_size_sac():
     # Use default parametrisation at all other points
     configs = []
     descriptions = []
@@ -69,7 +77,7 @@ def experiment_replay_size_sac():
     return configs, descriptions
 
 
-def experiment_temperature_sac():
+def configuration_temperature_sac():
     # Use default parametrisation at all other points
     configs = []
     descriptions = []
@@ -83,7 +91,7 @@ def experiment_temperature_sac():
     return configs, descriptions
 
 
-def experiment_learning_rate_ddpg():
+def configuration_learning_rate_ddpg():
     configs = []
     descriptions = []
     for _ in range(8):
@@ -96,7 +104,7 @@ def experiment_learning_rate_ddpg():
     return configs, descriptions
 
 
-def experiment_learning_rate_td3():
+def configuration_learning_rate_td3():
     configs = []
     descriptions = []
     for _ in range(8):
@@ -109,7 +117,7 @@ def experiment_learning_rate_td3():
     return configs, descriptions
 
 
-def experiment_ppo_standard_all_same():
+def configuration_ppo_standard_all_same():
     configs = []
     descriptions = []
     for i in range(8):
@@ -119,7 +127,7 @@ def experiment_ppo_standard_all_same():
     return configs, descriptions
 
 
-def experiment_ppo_clip_0_3_all_same():
+def configuration_ppo_clip_0_3_all_same():
     configs = []
     descriptions = []
     for i in range(8):
@@ -130,7 +138,7 @@ def experiment_ppo_clip_0_3_all_same():
     return configs, descriptions
 
 
-def experiment_a2c_all_same():
+def configuration_a2c_all_same():
     configs = []
     descriptions = []
     for i in range(8):
@@ -141,7 +149,7 @@ def experiment_a2c_all_same():
     return configs, descriptions
 
 
-def experiment_sac_all_same():
+def configuration_sac_all_same():
     configs = []
     descriptions = []
     for i in range(8):
@@ -152,13 +160,13 @@ def experiment_sac_all_same():
     return configs, descriptions
 
 
-def run_group(agent, experiment):
-    configs, descriptions = experiment()
+def run_group(agent, configuration):
+    configs, descriptions = configuration()
     print(configs)
     pipes = []
     for _ in configs:
         pipes.append(Pipe(False))
-    processes = [Process(target=run_self_play_session, args=(agent, config, description, pipe_entry))
+    processes = [Process(target=run_training_session, args=(agent, config, description, pipe_entry))
         for config, description, (_, pipe_entry) in zip(configs, descriptions, pipes)]
     print('Now I start the processes')
     for p in processes:
@@ -173,34 +181,53 @@ def run_group(agent, experiment):
     return descriptions, [watcher.get_progress_values_of_property('profits/all', 0) for watcher in watchers]
 
 
-if __name__ == '__main__':
-    # run_training_session(StableBaselinesSAC, HyperparameterConfigLoader.load('sb_sac_config'), 0)
-
-    # groups = [run_group(StableBaselinesPPO, experiment_clipping_ppo), run_group(StableBaselinesSAC, experiment_temperature_sac)]
-    # groups = [run_group(StableBaselinesTD3, experiment_learning_rate_ddpg), run_group(StableBaselinesTD3, experiment_learning_rate_td3)]
-    # groups = [
-    #     run_group(StableBaselinesA2C, experiment_a2c_all_same),
-    #     run_group(StableBaselinesPPO, experiment_ppo_standard_all_same),
-    #     run_group(StableBaselinesPPO, experiment_ppo_clip_0_3_all_same)
-    # ]
-    groups = [run_group(StableBaselinesA2C, experiment_a2c_all_same), run_group(StableBaselinesSAC, experiment_sac_all_same), run_group(StableBaselinesPPO, experiment_ppo_clip_0_3_all_same)]
-    # for descriptions, profits_vendor_0 in groups:
-    #     print('Next group:')
-    #     for descrition, profits in zip(descriptions, profits_vendor_0):
-    #         print(f'{descrition} has max of learning curve: {np.max(profits)}')
-    #         plt.plot(profits, label=descrition)
-    for descriptions, profits_vendor_0 in groups:
-        profits_vendor_0 = np.array(profits_vendor_0)
-        print(f'The individual maximums were: {profits_vendor_0.max(axis=1)}')
-        mins = np.min(profits_vendor_0, axis=0)
-        maxs = np.max(profits_vendor_0, axis=0)
-        means = np.mean(profits_vendor_0, axis=0)
-        plt.fill_between(range(len(mins)), mins, maxs, alpha=0.5)
-        plt.plot(means, label=f'mean_{descriptions[0][:-2]}')
+def print_diagrams(groups, name, individual_lines=False):
+    plt.clf()
+    plt.figure(figsize=(10, 5))
+    if individual_lines:
+        for descriptions, profits_vendor_0 in groups:
+            print('Next group:')
+            for descrition, profits in zip(descriptions, profits_vendor_0):
+                print(f'{descrition} has max of learning curve: {np.max(profits)}')
+                plt.plot(profits, label=descrition)
+    else:
+        for descriptions, profits_vendor_0 in groups:
+            profits_vendor_0 = np.array(profits_vendor_0)
+            print(f'The individual maximums were: {profits_vendor_0.max(axis=1)}')
+            mins = np.min(profits_vendor_0, axis=0)
+            maxs = np.max(profits_vendor_0, axis=0)
+            means = np.mean(profits_vendor_0, axis=0)
+            plt.fill_between(range(len(mins)), mins, maxs, alpha=0.5)
+            plt.plot(means, label=f'mean_{descriptions[0][:-2]}')
     plt.legend()
     plt.ylim(0, 1000)
-    plt.title('Comparison of the learning curves')
     plt.xlabel('Episodes')
     plt.ylabel('Profit')
-    plt.savefig('multi_training_results.svg')
-    plt.show()
+    plt.savefig(os.path.join(PathManager.results_path, 'monitoring', f'{name}.svg'))
+
+
+def experiment_a2c_vs_ppo():
+    tasks = [
+        (StableBaselinesA2C, configuration_a2c_all_same),
+        (StableBaselinesPPO, configuration_ppo_standard_all_same),
+        (StableBaselinesPPO, configuration_ppo_clip_0_3_all_same)
+    ]
+    groups = [run_group(agent, configuration) for agent, configuration in tasks]
+    print_diagrams(groups, 'a2c_ppo')
+
+
+# move the Path manager results folder to documents
+def move_results_to_documents(dest_folder_name):
+    folder = shutil.move(
+        PathManager.results_path, f'C:\\Users\\jangr\\OneDrive\\Dokumente\\Bachelorarbeit_Experimente\\{dest_folder_name}')
+    print(f'Moved results to {folder}')
+
+
+if __name__ == '__main__':
+    groups = [(StableBaselinesPPO, configuration_clipping_ppo), (StableBaselinesSAC, configuration_temperature_sac)]
+    groups = [(StableBaselinesDDPG, configuration_learning_rate_ddpg), (StableBaselinesTD3, configuration_learning_rate_td3)]
+    groups = [(StableBaselinesA2C, configuration_a2c_all_same), (StableBaselinesSAC, configuration_sac_all_same),
+        (StableBaselinesPPO, configuration_ppo_clip_0_3_all_same)]
+    print(groups)
+    experiment_a2c_vs_ppo()
+    move_results_to_documents('ppo_vs_a2c')
