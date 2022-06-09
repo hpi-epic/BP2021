@@ -18,7 +18,7 @@ from recommerce.rl.stable_baselines.sb_td3 import StableBaselinesTD3
 
 
 def run_training_session(agent_class, config_rl, number, pipe_to_parent):
-    config_market = HyperparameterConfigLoader.load('market_config')
+    config_market = HyperparameterConfigLoader.load('market_config', CircularEconomyRebuyPriceDuopoly)
     agent = agent_class(config_market, config_rl, CircularEconomyRebuyPriceDuopoly(config_market,
         support_continuous_action_space=True), name=f'Training_{number}')
     watcher = agent.train_agent(20000)
@@ -27,7 +27,7 @@ def run_training_session(agent_class, config_rl, number, pipe_to_parent):
 
 def run_self_play_session(agent_class, config_rl, number, pipe_to_parent):
     watcher = train_self_play(
-        HyperparameterConfigLoader.load('market_config'),
+        HyperparameterConfigLoader.load('market_config', CircularEconomyRebuyPriceDuopoly),
         config_rl, agent_class,
         400000 if issubclass(agent_class, StableBaselinesPPO) else 100000, name=f'SelfPlay_{number}'
     )
@@ -41,7 +41,7 @@ def configuration_best_learning_rate_ppo():
     configs = []
     descriptions = []
     for _ in range(8):
-        configs.append(HyperparameterConfigLoader.load('sb_ppo_config'))
+        configs.append(HyperparameterConfigLoader.load('sb_ppo_config', StableBaselinesPPO))
     for i, config in enumerate(configs):
         config.learning_rate = (i + 1) * 1.5e-5 + 2e-5
         descriptions.append(f'lr_{config["learning_rate"]}')
@@ -55,7 +55,7 @@ def configuration_clipping_ppo():
     configs = []
     descriptions = []
     for _ in range(8):
-        configs.append(HyperparameterConfigLoader.load('sb_ppo_config'))
+        configs.append(HyperparameterConfigLoader.load('sb_ppo_config', StableBaselinesPPO))
     for i, config in enumerate(configs):
         config.clip_range = i * 0.025 + 0.15
         descriptions.append(f'clip_{config["clip_range"]}')
@@ -68,7 +68,7 @@ def configuration_replay_size_sac():
     configs = []
     descriptions = []
     for _ in range(8):
-        configs.append(HyperparameterConfigLoader.load('sb_sac_config'))
+        configs.append(HyperparameterConfigLoader.load('sb_sac_config', StableBaselinesSAC))
     sizes = [500, 1000, 5000, 10000, 50000, 100000, 500000, 1000000]
     for config, size in zip(configs, sizes):
         config.buffer_size = size
@@ -82,7 +82,7 @@ def configuration_temperature_sac():
     configs = []
     descriptions = []
     for _ in range(8):
-        configs.append(HyperparameterConfigLoader.load('sb_sac_config'))
+        configs.append(HyperparameterConfigLoader.load('sb_sac_config', StableBaselinesSAC))
     entropy_coefficient_values = [0.2, 0.5, 1, 1.75, 2.5, 4, 'auto', 'auto']
     for config, entropy_coefficient in zip(configs, entropy_coefficient_values):
         config.ent_coef = entropy_coefficient
@@ -95,7 +95,7 @@ def configuration_learning_rate_ddpg():
     configs = []
     descriptions = []
     for _ in range(8):
-        configs.append(HyperparameterConfigLoader.load('sb_ddpg_config'))
+        configs.append(HyperparameterConfigLoader.load('sb_ddpg_config', StableBaselinesDDPG))
     learning_rates = [1e-5, 5e-5, 1e-4, 5e-4, 1e-3, 2e-3, 5e-3, 1e-2]
     for config, learning_rate in zip(configs, learning_rates):
         config.learning_rate = learning_rate
@@ -108,7 +108,7 @@ def configuration_learning_rate_td3():
     configs = []
     descriptions = []
     for _ in range(8):
-        configs.append(HyperparameterConfigLoader.load('sb_td3_config'))
+        configs.append(HyperparameterConfigLoader.load('sb_td3_config', StableBaselinesTD3))
     learning_rates = [1e-5, 5e-5, 1e-4, 5e-4, 1e-3, 2e-3, 5e-3, 1e-2]
     for config, learning_rate in zip(configs, learning_rates):
         config.learning_rate = learning_rate
@@ -121,7 +121,7 @@ def configuration_ppo_standard_all_same():
     configs = []
     descriptions = []
     for i in range(8):
-        configs.append(HyperparameterConfigLoader.load('sb_ppo_config'))
+        configs.append(HyperparameterConfigLoader.load('sb_ppo_config', StableBaselinesPPO))
         descriptions.append(f'ppo_standard_{i}')
 
     return configs, descriptions
@@ -131,7 +131,7 @@ def configuration_ppo_clip_0_3_all_same():
     configs = []
     descriptions = []
     for i in range(8):
-        configs.append(HyperparameterConfigLoader.load('sb_ppo_config'))
+        configs.append(HyperparameterConfigLoader.load('sb_ppo_config', StableBaselinesPPO))
         configs[-1].clip_range = 0.3
         descriptions.append(f'ppo_clip_range_{0.3}_{i}')
 
@@ -142,7 +142,7 @@ def configuration_a2c_all_same():
     configs = []
     descriptions = []
     for i in range(8):
-        configs.append(HyperparameterConfigLoader.load('sb_a2c_config'))
+        configs.append(HyperparameterConfigLoader.load('sb_a2c_config', StableBaselinesA2C))
         # configs[-1].learning_rate = learning_rate
         descriptions.append(f'a2c_standard_{i}')
 
@@ -153,7 +153,7 @@ def configuration_sac_all_same():
     configs = []
     descriptions = []
     for i in range(8):
-        configs.append(HyperparameterConfigLoader.load('sb_sac_config'))
+        configs.append(HyperparameterConfigLoader.load('sb_sac_config', StableBaselinesSAC))
         # configs[-1].learning_rate = learning_rate
         descriptions.append(f'sac_standard_{i}')
 
@@ -181,7 +181,7 @@ def run_group(agent, configuration):
     return descriptions, [watcher.get_progress_values_of_property('profits/all', 0) for watcher in watchers]
 
 
-def print_diagrams(groups, name, individual_lines=False):
+def print_diagrams(groups, name, reduce_plot_to_tenthousand=False, individual_lines=False):
     plt.clf()
     plt.figure(figsize=(10, 5))
     if individual_lines:
@@ -200,7 +200,9 @@ def print_diagrams(groups, name, individual_lines=False):
             plt.fill_between(range(len(mins)), mins, maxs, alpha=0.5)
             plt.plot(means, label=f'mean_{descriptions[0][:-2]}')
     plt.legend()
-    plt.ylim(0, 1000)
+    if reduce_plot_to_tenthousand:
+        plt.ylim(0, 10000)
+    plt.grid(True, linestyle='--')
     plt.xlabel('Episodes')
     plt.ylabel('Profit')
     plt.savefig(os.path.join(PathManager.results_path, 'monitoring', f'{name}.svg'))
@@ -213,7 +215,7 @@ def experiment_a2c_vs_ppo():
         (StableBaselinesPPO, configuration_ppo_clip_0_3_all_same)
     ]
     groups = [run_group(agent, configuration) for agent, configuration in tasks]
-    print_diagrams(groups, 'a2c_ppo')
+    print_diagrams(groups, 'a2c_ppo', True)
 
 
 # move the Path manager results folder to documents
@@ -224,10 +226,9 @@ def move_results_to_documents(dest_folder_name):
 
 
 if __name__ == '__main__':
-    groups = [(StableBaselinesPPO, configuration_clipping_ppo), (StableBaselinesSAC, configuration_temperature_sac)]
-    groups = [(StableBaselinesDDPG, configuration_learning_rate_ddpg), (StableBaselinesTD3, configuration_learning_rate_td3)]
-    groups = [(StableBaselinesA2C, configuration_a2c_all_same), (StableBaselinesSAC, configuration_sac_all_same),
-        (StableBaselinesPPO, configuration_ppo_clip_0_3_all_same)]
-    print(groups)
+    # groups = [(StableBaselinesPPO, configuration_clipping_ppo), (StableBaselinesSAC, configuration_temperature_sac)]
+    # groups = [(StableBaselinesDDPG, configuration_learning_rate_ddpg), (StableBaselinesTD3, configuration_learning_rate_td3)]
+    # groups = [(StableBaselinesA2C, configuration_a2c_all_same), (StableBaselinesSAC, configuration_sac_all_same),
+    #     (StableBaselinesPPO, configuration_ppo_clip_0_3_all_same)]
     experiment_a2c_vs_ppo()
     move_results_to_documents('ppo_vs_a2c')

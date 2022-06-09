@@ -132,7 +132,7 @@ def train_stable_baselines_a2c():
 	StableBaselinesA2C(
 		config_market=config_market,
 		config_rl=config_rl,
-		marketplace=circular_market.CircularEconomyRebuyPriceDuopoly(config_market, True)).train_agent()
+		marketplace=circular_market.CircularEconomyRebuyPriceDuopoly(config_market, True)).train_agent(100000)
 
 
 def train_stable_baselines_ppo():
@@ -201,4 +201,4 @@ if __name__ == '__main__':
 	# Make sure a valid datapath is set
 	PathManager.manage_user_path()
 
-	train_stable_baselines_td3()
+	train_stable_baselines_a2c()

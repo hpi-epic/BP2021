@@ -24,6 +24,8 @@ class Evaluator():
 			episode_numbers (list of int): The training stages the empirical distributions belong to.
 			If it is None, a prior functionality is used.
 		"""
+		max_mean = -np.inf
+		max_mean_index = 0
 		analysis_string = ''
 		# Print the statistics
 		for index, analysis in enumerate(analyses):
@@ -32,9 +34,18 @@ class Evaluator():
 			else:
 				analysis_string += f'\nStatistics for episode {episode_numbers[index]}\n'
 
+			reward_mean = np.mean(analysis['a/reward'])
+			if reward_mean > max_mean:
+				max_mean = reward_mean
+				max_mean_index = index
+
 			for property, samples in ut.unroll_dict_with_list(analysis).items():
 				analysis_string += ('%40s: %7.2f (mean), %7.2f (median), %7.2f (std), %7.2f (min), %7.2f (max)\n' % (
 					property, np.mean(samples), np.median(samples), np.std(samples), np.min(samples), np.max(samples)))
+
+		pre_string = f'The best mean reward is {max_mean} after episode {episode_numbers[max_mean_index]}'if episode_numbers is not None \
+			else f'The best mean reward is {max_mean} for agent {self.configurator.agents[max_mean_index].name}'
+		analysis_string = f'\n\nThis is the final analysis:\n{pre_string}\n{analysis_string}'
 		print(analysis_string)
 
 		# Create density plots
@@ -69,6 +80,7 @@ class Evaluator():
 				plt.legend()
 			plt.xlabel('Episode')
 			plt.ylabel(property_name)
+			plt.grid(True, linestyle='--')
 			plt.savefig(fname=os.path.join(self.configurator.get_folder(), f'lineplot_monitoring_based_{property_name.replace("/", "_")}.svg'))
 
 	# visualize metrics
@@ -236,12 +248,13 @@ class Evaluator():
 			'episode_numbers must contain ints only'
 
 		plt.clf()
-		plt.violinplot(all_rewards, episode_numbers, showmeans=True, widths=450)
+		plt.violinplot(all_rewards, episode_numbers, showmeans=True, widths=4 * (episode_numbers[1] - episode_numbers[0]) / 5),
 		plt.plot(episode_numbers, [np.mean(rewards_on_training_stage) for rewards_on_training_stage in all_rewards], color='steelblue')
 		plt.title(title)
 		plt.xlabel('Learned Episodes')
 		plt.ylabel('Reward Density')
 		savepath = os.path.join(self.configurator.get_folder(), title.replace(' ', '_').replace('/', '_') + '.svg')
+		plt.grid(True, linestyle='--')
 		plt.savefig(fname=savepath)
 
 

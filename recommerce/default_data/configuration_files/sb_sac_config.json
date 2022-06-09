@@ -1,5 +1,4 @@
 {
-	"class": "recommerce.rl.stable_baselines.sb_sac.StableBaselinesSAC",
 	"learning_rate": 3e-4,
 	"buffer_size": 1000000,
 	"learning_starts": 100,

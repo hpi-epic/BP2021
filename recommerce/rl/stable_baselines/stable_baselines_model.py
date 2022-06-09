@@ -53,7 +53,7 @@ class StableBaselinesAgent(ReinforcementLearningAgent, LinearAgent, CircularAgen
 		self.marketplace = new_marketplace
 		self.model.set_env(new_marketplace)
 
-	def train_agent(self, training_steps=100000, iteration_length=500, analyze_after_training=True):
+	def train_agent(self, training_steps=100000, iteration_length=50, analyze_after_training=True):
 		callback = RecommerceCallback(
 			type(self), type(self.marketplace), self.config_market, self.config_rl, training_steps=training_steps, iteration_length=iteration_length,
 			signature=self.name, analyze_after_training=analyze_after_training)

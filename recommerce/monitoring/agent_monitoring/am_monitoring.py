@@ -72,7 +72,8 @@ class Monitor():
 				# run marketplace for this agent
 				while not is_done:
 					action = self.configurator.agents[current_agent_index].policy(state)
-					state, _, is_done, info = self.configurator.marketplace.step(action)
+					state, reward, is_done, info = self.configurator.marketplace.step(action)
+					info['a/reward'] = reward
 					watchers[current_agent_index].add_info(info)
 
 		# only one histogram after the whole monitoring process

@@ -174,6 +174,7 @@ class RecommerceCallback(BaseCallback):
 			plt.title(f'All samples of {property} for each episode')
 			plt.xlabel('Episode')
 			plt.ylabel(property)
+			plt.grid(True, linestyle='--')
 			plt.savefig(os.path.join(monitor.configurator.folder_path, f'scatterplot_samples_{property.replace("/", "_")}.svg'))
 
 		print('Creating lineplots...')
@@ -193,6 +194,7 @@ class RecommerceCallback(BaseCallback):
 			plt.title(f'Rolling average training progress of {property}')
 			plt.xlabel('Episode')
 			plt.ylabel(property)
+			plt.grid(True, linestyle='--')
 			plt.savefig(os.path.join(monitor.configurator.folder_path, f'lineplot_progress_{property.replace("/", "_")}.svg'))
 
 		if self.analyze_after_training:
@@ -201,7 +203,7 @@ class RecommerceCallback(BaseCallback):
 			# Only Stable Baselines agents use continuous actions at the moment. And only Stable Baselines agents have the attribute env.
 			# The correct way of doing this would be by checking for `isinstance(StableBaselinesAgent)`, but that would result in a circular import.
 			monitor.configurator.setup_monitoring(
-				False, 250, 250,
+				False, 100, 100,
 				self.marketplace_class,
 				agent_list,
 				support_continuous_action_space=hasattr(self.model, 'env'),
