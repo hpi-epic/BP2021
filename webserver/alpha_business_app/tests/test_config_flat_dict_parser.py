@@ -1,7 +1,11 @@
 from django.test import TestCase
 
 from ..config_parser import ConfigFlatDictParser, ConfigModelParser
-from ..models.config import AgentsConfig, Config, EnvironmentConfig, RlConfig, SimMarketConfig
+from ..models.agents_config import AgentsConfig
+from ..models.config import Config
+from ..models.environment_config import EnvironmentConfig
+from ..models.rl_config import RlConfig
+from ..models.sim_market_config import SimMarketConfig
 from .constant_tests import EXAMPLE_HIERARCHY_DICT
 
 
@@ -114,8 +118,8 @@ class ConfigParserTest(TestCase):
 			'plot_interval': [''],
 			'enable_live_draw': [''],
 			'marketplace': ['recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopoly'],
-			'agents-name': ['Rule_Based Agent'],
-			'agents-agent_class': ['recommerce.market.circular.circular_vendors.RuleBasedCERebuyAgent'],
+			'agents-name': ['QLearning Agent'],
+			'agents-agent_class': ['recommerce.rl.q_learning.q_learning_agent.QLearningAgent'],
 			'agents-argument': [''],
 		}
 		expected_environment_dict = EXAMPLE_HIERARCHY_DICT['environment'].copy()
@@ -124,8 +128,8 @@ class ConfigParserTest(TestCase):
 
 	def test_flat_agents(self):
 		test_dict = {
-			'name': ['Rule_Based Agent'],
-			'agent_class': ['recommerce.market.circular.circular_vendors.RuleBasedCERebuyAgent'],
+			'name': ['QLearning Agent'],
+			'agent_class': ['recommerce.rl.q_learning.q_learning_agent.QLearningAgent'],
 			'argument': [''],
 		}
 		assert EXAMPLE_HIERARCHY_DICT['environment']['agents'] == self.flat_parser._flat_agents_to_hierarchical(test_dict)
@@ -205,8 +209,8 @@ class ConfigParserTest(TestCase):
 
 		all_agents = environment_agents.agentconfig_set.all()
 		assert 1 == len(all_agents)
-		assert 'recommerce.market.circular.circular_vendors.RuleBasedCERebuyAgent' == all_agents[0].agent_class
-		assert 'Rule_Based Agent' == all_agents[0].name
+		assert 'recommerce.rl.q_learning.q_learning_agent.QLearningAgent' == all_agents[0].agent_class
+		assert 'QLearning Agent' == all_agents[0].name
 		assert '' == all_agents[0].argument
 
 	def test_parsing_agents(self):

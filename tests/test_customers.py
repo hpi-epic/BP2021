@@ -10,7 +10,7 @@ from recommerce.market.circular.circular_customers import CustomerCircular
 from recommerce.market.linear.linear_customers import CustomerLinear
 from recommerce.market.sim_market import SimMarket
 
-config_market: AttrDict = HyperparameterConfigLoader.load('market_config')
+config_market: AttrDict = HyperparameterConfigLoader.load('market_config', circular_market.CircularEconomyRebuyPriceMonopoly)
 
 
 # Test the Customer parent class, i.e. make sure it cannot be used

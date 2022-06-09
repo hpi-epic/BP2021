@@ -20,8 +20,8 @@ test_scenarios = [
 @pytest.mark.slow
 @pytest.mark.parametrize('marketplace_class', test_scenarios)
 def test_market_scenario(marketplace_class):
-	config_market: AttrDict = HyperparameterConfigLoader.load('market_config')
-	config_rl: AttrDict = HyperparameterConfigLoader.load('q_learning_config')
+	config_market: AttrDict = HyperparameterConfigLoader.load('market_config', circular_market.CircularEconomyRebuyPriceMonopoly)
+	config_rl: AttrDict = HyperparameterConfigLoader.load('q_learning_config', QLearningAgent)
 	config_rl.replay_start_size = 500
 	config_rl.sync_target_frames = 100
 	q_learning_training.QLearningTrainer(

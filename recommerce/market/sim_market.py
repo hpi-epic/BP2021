@@ -342,3 +342,14 @@ class SimMarket(gym.Env, JSONConfigurable):
 				self._output_dict[name] = 0
 			else:
 				self._output_dict[name] = dict(zip([f'vendor_{i}' for i in range(self._number_of_vendors)], init_for_all_vendors))
+
+	@abstractmethod
+	def get_configurable_fields() -> list:
+		"""
+		Return a list of keys that can be used to configure this marketplace using a `market_config.json`.
+		Also contains key types and validation logic.
+
+		Returns:
+			list: The list of (key, type, validation).
+		"""
+		raise NotImplementedError

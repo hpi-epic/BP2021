@@ -30,8 +30,8 @@ test_scenarios = [
 @pytest.mark.slow
 @pytest.mark.parametrize('market_class, agent_class, verbose', test_scenarios)
 def test_training_configurations(market_class, agent_class, verbose):
-	config_market: AttrDict = HyperparameterConfigLoader.load('market_config')
-	config_rl: AttrDict = HyperparameterConfigLoader.load('actor_critic_config')
+	config_market: AttrDict = HyperparameterConfigLoader.load('market_config', circular_market.CircularEconomyRebuyPriceMonopoly)
+	config_rl: AttrDict = HyperparameterConfigLoader.load('actor_critic_config', actorcritic_agent.ContinuousActorCriticAgentFixedOneStd)
 	config_rl.batch_size = 8
 	ActorCriticTrainer(market_class, agent_class, config_market, config_rl).train_agent(
 		verbose=verbose,

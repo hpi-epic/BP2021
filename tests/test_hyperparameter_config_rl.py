@@ -1,6 +1,5 @@
 import json
 import os
-# from importlib import reload
 from unittest.mock import mock_open, patch
 
 import pytest
@@ -8,13 +7,14 @@ import utils_tests as ut_t
 
 import recommerce.configuration.hyperparameter_config as hyperparameter_config
 from recommerce.configuration.path_manager import PathManager
+from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
 
 q_learning_config_file = os.path.join(PathManager.user_path, 'configuration_files', 'q_learning_config.json')
 
 
 # Test that checks if the config.json is read correctly
 def test_reading_file_values():
-	config = hyperparameter_config.HyperparameterConfigLoader.load('q_learning_config')
+	config = hyperparameter_config.HyperparameterConfigLoader.load('q_learning_config', QLearningAgent)
 
 	assert config.gamma == 0.99
 	assert config.batch_size == 8
@@ -48,21 +48,23 @@ negative_epsilon_decay_last_frame = (ut_t.replace_field_in_dict(ut_t.load_json(q
 
 
 # These tests are missing a line in the config file, the import should throw a specific error message
-missing_gamma = (ut_t.remove_key('gamma', ut_t.load_json(q_learning_config_file)), 'your config is missing gamma')
-missing_batch_size = (ut_t.remove_key('batch_size', ut_t.load_json(q_learning_config_file)), 'your config is missing batch_size')
-missing_replay_size = (ut_t.remove_key('replay_size', ut_t.load_json(q_learning_config_file)), 'your config is missing replay_size')
+missing_two_items = (ut_t.remove_key('batch_size', ut_t.remove_key('gamma', ut_t.load_json(q_learning_config_file))),
+	"your config is missing {'batch_size', 'gamma'}")
+missing_gamma = (ut_t.remove_key('gamma', ut_t.load_json(q_learning_config_file)), "your config is missing {'gamma'}")
+missing_batch_size = (ut_t.remove_key('batch_size', ut_t.load_json(q_learning_config_file)), "your config is missing {'batch_size'}")
+missing_replay_size = (ut_t.remove_key('replay_size', ut_t.load_json(q_learning_config_file)), "your config is missing {'replay_size'}")
 missing_learning_rate = (ut_t.remove_key('learning_rate', ut_t.load_json(q_learning_config_file)),
-	'your config is missing learning_rate')
+	"your config is missing {'learning_rate'}")
 missing_sync_target_frames = (ut_t.remove_key('sync_target_frames', ut_t.load_json(q_learning_config_file)),
-	'your config is missing sync_target_frames')
+	"your config is missing {'sync_target_frames'}")
 missing_replay_start_size = (ut_t.remove_key('replay_start_size', ut_t.load_json(q_learning_config_file)),
-	'your config is missing replay_start_size')
+	"your config is missing {'replay_start_size'}")
 missing_epsilon_decay_last_frame = (ut_t.remove_key('epsilon_decay_last_frame', ut_t.load_json(q_learning_config_file)),
-	'your config is missing epsilon_decay_last_frame')
+	"your config is missing {'epsilon_decay_last_frame'}")
 missing_epsilon_start = (ut_t.remove_key('epsilon_start', ut_t.load_json(q_learning_config_file)),
-	'your config is missing epsilon_start')
+	"your config is missing {'epsilon_start'}")
 missing_epsilon_final = (ut_t.remove_key('epsilon_final', ut_t.load_json(q_learning_config_file)),
-	'your config is missing epsilon_final')
+	"your config is missing {'epsilon_final'}")
 
 
 invalid_values_testcases = [
@@ -93,5 +95,5 @@ def test_invalid_values(rl_json, expected_message):
 	with patch('builtins.open', mock_open(read_data=mock_json)) as mock_file:
 		ut_t.check_mock_file(mock_file, mock_json)
 		with pytest.raises(AssertionError) as assertion_message:
-			hyperparameter_config.HyperparameterConfigLoader.load('hyperparameter_config')
+			hyperparameter_config.HyperparameterConfigLoader.load('q_learning_config', QLearningAgent)
 		assert expected_message in str(assertion_message.value)

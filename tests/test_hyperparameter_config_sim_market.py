@@ -7,13 +7,14 @@ import utils_tests as ut_t
 
 from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader
 from recommerce.configuration.path_manager import PathManager
+from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPriceMonopoly
 
 market_config_file = os.path.join(PathManager.user_path, 'configuration_files', 'market_config.json')
 
 
 # Test that checks if the config.json is read correctly
 def test_reading_file_values():
-	config = HyperparameterConfigLoader.load('market_config')
+	config = HyperparameterConfigLoader.load('market_config', CircularEconomyRebuyPriceMonopoly)
 
 	assert config.max_storage == 100
 	assert config.episode_length == 50
@@ -38,20 +39,22 @@ non_negative_storage_cost = (ut_t.replace_field_in_dict(ut_t.load_json(market_co
 	'storage_cost_per_product should be non-negative')
 
 # These tests are missing a line in the config file, the import should throw a specific error message
+missing_two_items = (ut_t.remove_key('episode_length', ut_t.remove_key('max_storage', ut_t.load_json(market_config_file))),
+	"your config is missing {'episode_length', 'max_storage'}")
 missing_max_storage = (ut_t.remove_key('max_storage', ut_t.load_json(market_config_file)),
-	'your config is missing max_storage')
+	"your config is missing {'max_storage'}")
 missing_episode_length = (ut_t.remove_key('episode_length', ut_t.load_json(market_config_file)),
-	'your config is missing episode_length')
+	"your config is missing {'episode_length'}")
 missing_max_price = (ut_t.remove_key('max_price', ut_t.load_json(market_config_file)),
-	'your config is missing max_price')
+	"your config is missing {'max_price'}")
 missing_max_quality = (ut_t.remove_key('max_quality', ut_t.load_json(market_config_file)),
-	'your config is missing max_quality')
+	"your config is missing {'max_quality'}")
 missing_number_of_customers = (ut_t.remove_key('number_of_customers', ut_t.load_json(market_config_file)),
-	'your config is missing number_of_customers')
+	"your config is missing {'number_of_customers'}")
 missing_production_price = (ut_t.remove_key('production_price', ut_t.load_json(market_config_file)),
-	'your config is missing production_price')
+	"your config is missing {'production_price'}")
 missing_storage_cost = (ut_t.remove_key('storage_cost_per_product', ut_t.load_json(market_config_file)),
-	'your config is missing storage_cost_per_product')
+	"your config is missing {'storage_cost_per_product'}")
 
 # All pairs concerning themselves with invalid config.json values should be added to this array to get tested in test_invalid_values
 invalid_values_testcases = [
@@ -77,5 +80,5 @@ def test_invalid_values(market_json, expected_message):
 	with patch('builtins.open', mock_open(read_data=mock_json)) as mock_file:
 		ut_t.check_mock_file(mock_file, mock_json)
 		with pytest.raises(AssertionError) as assertion_message:
-			HyperparameterConfigLoader.load('hyperparameter_config')
+			HyperparameterConfigLoader.load('market_config', CircularEconomyRebuyPriceMonopoly)
 		assert expected_message in str(assertion_message.value)

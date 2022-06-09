@@ -1,4 +1,5 @@
 {
+	"config_type": "environment",
 	"task": "agent_monitoring",
 	"enable_live_draw": false,
 	"episodes": 500,

@@ -1,5 +1,4 @@
 {
-	"class": "recommerce.rl.stable_baselines.sb_ppo.StableBaselinesPPO",
 	"learning_rate": 3e-4,
 	"n_steps": 2048,
 	"batch_size": 64,

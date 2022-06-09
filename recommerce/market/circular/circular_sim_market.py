@@ -6,7 +6,7 @@ import numpy as np
 import recommerce.configuration.utils as ut
 import recommerce.market.circular.circular_vendors as circular_vendors
 import recommerce.market.owner as owner
-from recommerce.configuration.common_rules import greater_zero_rule, non_negative_rule
+from recommerce.configuration.common_rules import greater_zero_even_rule, greater_zero_rule, non_negative_rule
 from recommerce.market.circular.circular_customers import CustomerCircular
 from recommerce.market.customer import Customer
 from recommerce.market.owner import Owner
@@ -21,14 +21,13 @@ class CircularEconomy(SimMarket, ABC):
 
 	@staticmethod
 	def get_configurable_fields() -> list:
-		# TODO: reduce this list to only the required fields (remove max_quantity)
+		# TODO: reduce this list to only the required fields (remove max_quality)
 		return [
 			('max_storage', int, greater_zero_rule),
 			('episode_length', int, greater_zero_rule),
 			('max_price', int, greater_zero_rule),
 			('max_quality', int, greater_zero_rule),
-			('number_of_customers', int, (lambda number_of_customers: number_of_customers > 0 and number_of_customers % 2 == 0,
-				'number_of_customers should be even and positive')),
+			('number_of_customers', int, greater_zero_even_rule),
 			('production_price', int, non_negative_rule),
 			('storage_cost_per_product', (int, float), non_negative_rule),
 		]

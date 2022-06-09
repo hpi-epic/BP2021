@@ -1,5 +1,4 @@
 {
-	"class": "recommerce.rl.stable_baselines.sb_td3.StableBaselinesTD3",
 	"learning_rate": 1e-3,
 	"buffer_size": 1000000,
 	"learning_starts": 100,
