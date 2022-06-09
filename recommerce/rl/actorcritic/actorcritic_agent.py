@@ -37,7 +37,7 @@ class ActorCriticAgent(ReinforcementLearningAgent, ABC):
 		self.config_rl = config_rl
 		self.device = device
 		self.name = name if name != '' else type(self).__name__
-		print(f'I initiate an ActorCriticAgent using {self.device} device')
+		print(f'Initializing an ActorCriticAgent using {self.device} device')
 		self.initialize_models_and_optimizer(n_observations, network_output_size, network_architecture)
 		if load_path is not None:
 			self.actor_net.load_state_dict(torch.load(load_path, map_location=self.device))

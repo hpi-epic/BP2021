@@ -39,7 +39,7 @@ class QLearningAgent(ReinforcementLearningAgent, CircularAgent, LinearAgent):
 		self.device = device
 		self.buffer_for_feedback = None
 		self.name = name if name != '' else type(self).__name__
-		print(f'I initiate a {type(self).__name__} using {self.device} device')
+		print(f'Initializing a {type(self).__name__} using {self.device} device')
 		self.net = network_architecture(n_observations, self.n_actions).to(self.device)
 		if load_path:
 			self.optimizer = None

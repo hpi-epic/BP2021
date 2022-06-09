@@ -26,10 +26,10 @@ class StableBaselinesAgent(ReinforcementLearningAgent, LinearAgent, CircularAgen
 		self.marketplace = marketplace
 		if load_path is None:
 			self._initialize_model(marketplace)
-			print(f'I initiate {self.name}-agent using {self.model.device} device')
+			print(f'Initializing {self.name}-agent using {self.model.device} device')
 		if load_path is not None:
 			self._load(load_path)
-			print(f'I load {self.name}-agent using {self.model.device} device from {load_path}')
+			print(f'Loading {self.name}-agent using {self.model.device} device from {load_path}')
 
 		self.name = name if name != '' else type(self).__name__
 
@@ -52,7 +52,7 @@ class StableBaselinesAgent(ReinforcementLearningAgent, LinearAgent, CircularAgen
 		self.marketplace = new_marketplace
 		self.model.set_env(new_marketplace)
 
-	def train_agent(self, training_steps=100000, iteration_length=500, analyze_after_training=True):
+	def train_agent(self, training_steps=1000, iteration_length=50, analyze_after_training=True):
 		callback = RecommerceCallback(
 			type(self), type(self.marketplace), self.config_market, self.config_rl, training_steps=training_steps, iteration_length=iteration_length,
 			signature=self.name, analyze_after_training=analyze_after_training)

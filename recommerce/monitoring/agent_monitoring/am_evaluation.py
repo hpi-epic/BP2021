@@ -30,7 +30,7 @@ class Evaluator():
 		else:
 			self.evaluate_joined_session(analyses)
 
-	def evaluate_separate_session(self, analyses, episode_numbers) -> None:
+	def evaluate_separate_session(self, analyses: list, episode_numbers: list) -> None:
 		"""
 		Print statistics for monitored agents and create statistics-plots.
 
@@ -57,11 +57,11 @@ class Evaluator():
 		for index, analysis in enumerate(analyses):
 			for property, samples in analysis.items():
 				prefix = f'episode_{episode_numbers[index]}' if episode_numbers is not None else f'{self.configurator.agents[index].name}'
-				self.create_density_plot(samples if isinstance(samples[0], list) else [samples], f'{prefix}_{property}')
+				self.create_density_plot(samples if isinstance(samples[0], list) else [samples], f'{prefix}_{property}', episode_numbers[index])
 
 		print('Creating statistics plots...')
 		rewards = [agent['profits/all'][0] for agent in analyses]
-		self._create_statistics_plots(rewards)
+		self._create_statistics_plots(rewards, episode_numbers)
 
 		if episode_numbers is not None:
 			for property_name in ut.unroll_dict_with_list(analyses[0]).keys():
@@ -106,7 +106,7 @@ class Evaluator():
 		print(f'All plots were saved to {os.path.abspath(self.configurator.folder_path)}')
 
 	# visualize metrics
-	def create_density_plot(self, samples: list, property: str):
+	def create_density_plot(self, samples: list, property_name: str, current_episode_number: int = None):
 		"""
 		Give a list of list of samples and a property name, it will create a density plot.
 		The density plot is like a histogram, but with a gaussian kernel.
@@ -114,7 +114,9 @@ class Evaluator():
 
 		Args:
 			samples (list of lists): a list of list of numbers. Each list represents an empirical distribution to be plotted.
-			property (str): the name of the property in natural language.
+			property_name (str): the name of the property in natural language.
+			current_episode_number (int, optional): The training stage the empirical distribution belongs to.
+				If it is None, a prior functionality is used.
 		"""
 		plt.clf()
 		min_value = min(min(s) for s in samples)
@@ -135,13 +137,18 @@ class Evaluator():
 			ys.append(density(x))
 
 		for i, y in enumerate(ys):
-			plt.plot(x, y, label=f'{self.configurator.agents[i].name}')
+			if self.configurator.separate_markets and i > 0:
+				label = f'{self.configurator.marketplace.competitors[i-1].name}'
+			else:
+				label = f'{self.configurator.agents[i].name}_episode_{current_episode_number}' if current_episode_number is not None \
+					else f'{self.configurator.agents[i].name}'
+			plt.plot(x, y, label=label)
 
-		plt.xlabel(property)
+		plt.xlabel(property_name)
 		plt.ylabel('Probability density')
-		plt.title(f'Density plot of {property}')
+		plt.title(f'Density plot of {property_name}')
 		plt.legend()
-		plt.savefig(fname=os.path.join(self.configurator.get_folder(), 'density_plots', f'density_plot_{property.replace("/", "_")}.svg'))
+		plt.savefig(fname=os.path.join(self.configurator.get_folder(), 'density_plots', f'density_plot_{property_name.replace("/", "_")}.svg'))
 
 	def create_histogram(self, rewards: list, is_last_histogram: bool, filename: str = 'default_histogram.svg') -> None:
 		"""
@@ -150,7 +157,7 @@ class Evaluator():
 		Args:
 			rewards (array of arrays of int): An array containing an array of ints for each monitored agent.
 			is_last_histogram (bool): States that only the last histogram should be plotted.
-			filename (str): The name of the output file, format will be .svg. Defaults to 'default'.
+			filename (str): The name of the output file, format will be .svg. Defaults to 'default_histogram.svg'.
 		"""
 		if not is_last_histogram:
 			return
@@ -174,7 +181,7 @@ class Evaluator():
 
 		plt.savefig(fname=os.path.join(self.configurator.get_folder(), filename))
 
-	def _create_statistics_plots(self, rewards: list) -> None:
+	def _create_statistics_plots(self, rewards: list, episode_numbers: list = None) -> None:
 		"""
 		For each of our metrics, calculate the running value each self.plot_interval and plot it as a line graph.
 
@@ -182,6 +189,8 @@ class Evaluator():
 
 		Args:
 			rewards ([list of list of float]): An array containing an array of ints for each monitored agent.
+			episode_numbers (list of int, optional): The training stages the empirical distributions belong to.
+				If it is None, a prior functionality is used.
 		"""
 		# the functions that should be called to calculate the given metric
 		metric_functions = [np.mean, np.median, np.max, np.min]
@@ -207,9 +216,9 @@ class Evaluator():
 								rewards[agent_rewards_id][self.configurator.plot_interval * (start_index):self.configurator.plot_interval * (start_index + 1)]))
 					else:  # pragma: no cover
 						raise RuntimeError(f'this metric_type is unknown: {metric_types[function]}')
-			self._create_line_plot(x_axis_episodes, metric_rewards, metric_names[function], metric_types[function])
+			self._create_line_plot(x_axis_episodes, metric_rewards, metric_names[function], metric_types[function], episode_numbers)
 
-	def _create_line_plot(self, x_values: list, y_values: list, metric_name: str, metric_type: str) -> None:
+	def _create_line_plot(self, x_values: list, y_values: list, metric_name: str, metric_type: str, episode_numbers: int = None) -> None:
 		"""Create a line plot with the given rewards data.
 
 		Args:
@@ -217,6 +226,8 @@ class Evaluator():
 			y_values (list of list of ints): Defines y-values of datapoints, one array per monitored agent. Must have same length as episodes.
 			metric_name (str): Used for naming the y-axis, diagram and output file.
 			metric_type (str): What kind of "message" should be displayed at the top of the diagram.
+			episode_numbers (list of int, optional): The training stages the empirical distributions belong to.
+				If it is None, a prior functionality is used.
 		"""
 		assert len(x_values) == int(self.configurator.episodes / self.configurator.plot_interval), \
 			'x_values must have self.episodes / self.plot_interval many items'
@@ -241,7 +252,8 @@ class Evaluator():
 		else:
 			raise RuntimeError(f'this metric_type is unknown: {metric_type}')
 
-		plt.legend([a.name for a in self.configurator.agents])
+		plt.legend([f'{a.name}_episode_{episode_numbers[i]}' for i, a in enumerate(self.configurator.agents)] if episode_numbers
+			else [a.name for a in self.configurator.agents])
 		plt.grid(True)
 		plt.savefig(fname=os.path.join(self.configurator.get_folder(), 'statistics_plots', filename))
 
