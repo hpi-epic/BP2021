@@ -8,11 +8,12 @@ from datetime import datetime
 from itertools import count, filterfalse
 from types import GeneratorType
 
-import docker
 from container_db_manager import ContainerDB
 from docker.models.containers import Container
 from torch.cuda import is_available
 from utils import setup_logging
+
+import docker
 
 IMAGE_NAME = 'recommerce'
 
@@ -334,6 +335,7 @@ class DockerManager():
 			return self._get_client().ping()
 		except Exception:
 			logging.warning('Docker server is not responding!')
+			logging.info(f'Client is: {self._get_client()}')
 			return False
 
 	# PRIVATE METHODS
@@ -352,8 +354,10 @@ class DockerManager():
 		if cls._client is not None:
 			return cls._client
 		try:
+			print('Trying to get a new client from docker...')
 			cls._client = docker.from_env()
-		except docker.errors.DockerException:
+		except docker.errors.DockerException as e:
+			print(f'Got a DockerException: {e}')
 			cls._client = None
 		return cls._client
 

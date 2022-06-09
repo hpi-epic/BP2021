@@ -11,6 +11,12 @@ $(document).ready(function() {
 		});
 	};
 	addEventToAddMoreButton()
+
+	function getFormData () {
+		var form = $("form.config-form");
+		var formdata = form.serializeArray();
+		return formdata;
+	};
 	
 	function updateAPIHealth() {
 		// replaces the element by the element returned by ajax (html) and adds this click event to it
@@ -55,10 +61,33 @@ $(document).ready(function() {
 			success: function (data) {
 				all_agents.empty().append(data);
 				addEventToAddMoreButton();
+				addChangeToAgent();
 			}
 		});
-	}).trigger('change');
-	
+	}).trigger("change");
+
+
+	function addChangeToAgent () {
+		$("select.agent-agent-class").change(function () {
+			// will be called when agent dropdown has changed, we need to change rl hyperparameter for that
+			var self = $(this);
+			var formdata = getFormData();
+			const csrftoken = getCookie("csrftoken");
+			$.ajax({
+				type: "POST",
+				url: self.data("url"),
+				data: {
+					csrfmiddlewaretoken: csrftoken,
+					formdata,
+					"agent": self.val()
+				},
+				success: function (data) {
+					$("div.rl-parameter").empty().append(data)
+				}
+			});
+		}).trigger("change");
+	}
+	addChangeToAgent()
 
 	function getCookie(name) {
 		let cookieValue = null;
@@ -85,12 +114,9 @@ $(document).ready(function() {
 		}
 	}
 	
-	$("button.form-check").click(function () {
-		$("table.config-status-display").remove();
-		
+	$("button.form-check").click(function () {		
 		var self = $(this);
-		var form = $("form.config-form");
-		var formdata = form.serializeArray();
+		var formdata = getFormData();
 
 		const csrftoken = getCookie("csrftoken");
 		$.ajax({

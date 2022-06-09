@@ -7,6 +7,7 @@ from attrdict import AttrDict
 
 import recommerce.monitoring.svg_manipulation as svg_manipulation
 from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader
+from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPriceMonopoly
 from recommerce.monitoring.exampleprinter import ExamplePrinter
 
 svg_manipulator = svg_manipulation.SVGManipulator()
@@ -30,7 +31,7 @@ def test_correct_template():
 	assert correct_template == svg_manipulator.template_svg
 
 	# run one exampleprinter and to make sure the template does not get changed
-	config_market: AttrDict = HyperparameterConfigLoader.load('market_config')
+	config_market: AttrDict = HyperparameterConfigLoader.load('market_config', CircularEconomyRebuyPriceMonopoly)
 	# initialize all functions to be mocked
 	with patch('recommerce.monitoring.exampleprinter.ut.write_dict_to_tensorboard'), \
 		patch('recommerce.monitoring.svg_manipulation.os.path.isfile') as mock_isfile, \
@@ -192,7 +193,7 @@ def test_time_not_int():
 
 def test_one_exampleprinter_run():
 	# run only three episodes to be able to reuse the correct_html
-	config_market: AttrDict = HyperparameterConfigLoader.load('market_config')
+	config_market: AttrDict = HyperparameterConfigLoader.load('market_config', CircularEconomyRebuyPriceMonopoly)
 	# initialize all functions to be mocked
 	with patch('recommerce.monitoring.exampleprinter.ut.write_dict_to_tensorboard'), \
 		patch('recommerce.monitoring.svg_manipulation.os.path.isfile') as mock_isfile, \

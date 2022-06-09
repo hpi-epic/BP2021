@@ -1,10 +1,11 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import Tuple
 
 import gym
 import numpy as np
 from attrdict import AttrDict
 
+from recommerce.configuration.json_configurable import JSONConfigurable
 from recommerce.configuration.utils import filtered_class_str_from_dir
 
 # An offer is a market state that contains all prices and qualities
@@ -15,7 +16,7 @@ from recommerce.configuration.utils import filtered_class_str_from_dir
 # Third: vendor's actions from the former round which needs to be saved and influence the other's decision e.g. prices
 
 
-class SimMarket(gym.Env, ABC):
+class SimMarket(gym.Env, JSONConfigurable):
 	"""
 	The superclass to all market environments.
 	Abstract class that cannot be instantiated.
@@ -341,3 +342,14 @@ class SimMarket(gym.Env, ABC):
 				self._output_dict[name] = 0
 			else:
 				self._output_dict[name] = dict(zip([f'vendor_{i}' for i in range(self._number_of_vendors)], init_for_all_vendors))
+
+	@abstractmethod
+	def get_configurable_fields() -> list:
+		"""
+		Return a list of keys that can be used to configure this marketplace using a `market_config.json`.
+		Also contains key types and validation logic.
+
+		Returns:
+			list: The list of (key, type, validation).
+		"""
+		raise NotImplementedError

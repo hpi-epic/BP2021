@@ -9,6 +9,7 @@ from .api_response import APIResponse
 from .models.container import update_container
 
 DOCKER_API = 'https://vm-midea03.eaalab.hpi.uni-potsdam.de:8000'  # remember to include the port and the protocol, i.e. http://
+# DOCKER_API = 'http://localhost:8000'
 
 
 def _get_api_token() -> str:
@@ -173,7 +174,7 @@ def get_api_status() -> dict:
 		return {'api_success': f'API available - {current_time}'}
 	if api_is_available.status_code == 401:
 		return {}
-	return {'api_docker_timeout': f'Docker  unavailable - {current_time}'}
+	return {'api_docker_timeout': f'Docker unavailable - {current_time}'}
 
 
 def _error_handling_API(response) -> APIResponse:
