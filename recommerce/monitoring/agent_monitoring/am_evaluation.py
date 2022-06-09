@@ -248,7 +248,8 @@ class Evaluator():
 			'episode_numbers must contain ints only'
 
 		plt.clf()
-		plt.violinplot(all_rewards, episode_numbers, showmeans=True, widths=4 * (episode_numbers[1] - episode_numbers[0]) / 5),
+		width = 4 * (episode_numbers[1] - episode_numbers[0]) / 5 if len(episode_numbers) > 1 else episode_numbers[0]
+		plt.violinplot(all_rewards, episode_numbers, showmeans=True, widths=width),
 		plt.plot(episode_numbers, [np.mean(rewards_on_training_stage) for rewards_on_training_stage in all_rewards], color='steelblue')
 		plt.title(title)
 		plt.xlabel('Learned Episodes')
