@@ -52,21 +52,29 @@ class Evaluator():
 					property, np.mean(samples), np.median(samples), np.std(samples), np.min(samples), np.max(samples)))
 
 		print()
+		# Create histogram
+		print('Creating cumulative rewards histogram...')
+		# Extract the total profits of only the monitored agent from each "marketplace"
+		rewards = [analysis['profits/all'][0] for analysis in analyses]
+		self.create_histogram(rewards, True, 'Cumulative_rewards_per_episode.svg', episode_numbers)
+
 		# Create density plots
 		print('Creating density plots...')
 		for index, analysis in enumerate(analyses):
 			for property, samples in analysis.items():
 				prefix = f'episode_{episode_numbers[index]}' if episode_numbers is not None else f'{self.configurator.agents[index].name}'
-				self.create_density_plot(samples if isinstance(samples[0], list) else [samples], f'{prefix}_{property}', episode_numbers[index])
+				self.create_density_plot(samples if isinstance(samples[0], list) else [samples], f'{prefix}_{property}',
+					episode_numbers[index] if episode_numbers else None)
 
 		print('Creating statistics plots...')
 		rewards = [agent['profits/all'][0] for agent in analyses]
 		self._create_statistics_plots(rewards, episode_numbers)
 
 		if episode_numbers is not None:
+			print('Creating Violinplots...')
 			for property_name in ut.unroll_dict_with_list(analyses[0]).keys():
 				samples = [ut.unroll_dict_with_list(analysis)[property_name] for analysis in analyses]
-				self._create_violin_plot(samples, episode_numbers, f'Violinplot showing progress of {property_name}')
+				self._create_violin_plot(samples, episode_numbers, property_name)
 		print(f'All plots were saved to {os.path.abspath(self.configurator.folder_path)}')
 
 	def evaluate_joined_session(self, analyses: dict) -> None:
@@ -95,6 +103,10 @@ class Evaluator():
 						property, np.mean(agent_sample), np.median(agent_sample), np.std(agent_sample), np.min(agent_sample), np.max(agent_sample)))
 
 		print()
+		# Create histogram
+		print('Creating cumulative rewards histogram...')
+		self.create_histogram(analyses['profits/all'], True, 'Cumulative_rewards_per_episode.svg')
+
 		# Create density plots
 		print('Creating density plots...')
 		for property, samples in analyses.items():
@@ -150,14 +162,17 @@ class Evaluator():
 		plt.legend()
 		plt.savefig(fname=os.path.join(self.configurator.get_folder(), 'density_plots', f'density_plot_{property_name.replace("/", "_")}.svg'))
 
-	def create_histogram(self, rewards: list, is_last_histogram: bool, filename: str = 'default_histogram.svg') -> None:
+	def create_histogram(self, rewards: list, is_last_histogram: bool, filename: str = 'default_histogram.svg',
+		episode_numbers: list = None) -> None:
 		"""
 		Create a histogram sorting rewards into bins of 1000.
 
 		Args:
-			rewards (array of arrays of int): An array containing an array of ints for each monitored agent.
+			rewards (list of list of floats): A list containing a list of floats for each monitored agent.
 			is_last_histogram (bool): States that only the last histogram should be plotted.
 			filename (str): The name of the output file, format will be .svg. Defaults to 'default_histogram.svg'.
+			episode_numbers (list of int, optional): The training stages the empirical distributions belong to.
+				If it is None, a prior functionality is used.
 		"""
 		if not is_last_histogram:
 			return
@@ -177,7 +192,8 @@ class Evaluator():
 		plt.hist(rewards, bins=plot_bins, color=self.configurator.agent_colors, rwidth=0.9,
 			range=(plot_lower_bound, plot_upper_bound), edgecolor='black')
 		plt.xticks(x_ticks)
-		plt.legend([a.name for a in self.configurator.agents])
+		plt.legend([f'{a.name}_episode_{episode_numbers[i]}' for i, a in enumerate(self.configurator.agents)] if episode_numbers
+			else [a.name for a in self.configurator.agents])
 
 		plt.savefig(fname=os.path.join(self.configurator.get_folder(), filename))
 
@@ -257,7 +273,7 @@ class Evaluator():
 		plt.grid(True)
 		plt.savefig(fname=os.path.join(self.configurator.get_folder(), 'statistics_plots', filename))
 
-	def _create_violin_plot(self, all_rewards: 'list[list]', episode_numbers: 'list[int]', title: str = 'plot_title'):
+	def _create_violin_plot(self, all_rewards: 'list[list]', episode_numbers: 'list[int]', property_name: str):
 		"""
 		This method generates a violinplot to visualize the training progress of the agent.
 		Provide the empirical distributions and it will not just show the mean, min and max,
@@ -266,8 +282,10 @@ class Evaluator():
 		Args:
 			all_rewards (list of lists): Each entry contains samples for the empirical probability distribution
 			episode_numbers (list of int): The training stages the empirical distributions belong to.
-			title (str, optional): The filename of the plot.
+			property_name (str): The string-representation of the property-name.
 		"""
+		# Next line: Not actually, but since we only use violinplots after training, some parts were built only for separate_markets == True
+		assert self.configurator.separate_markets is True, 'This functionality can only be used of self.configurator.separate_markets is True'
 		assert isinstance(all_rewards, list), f'all_rewards must be of type list, but is {type(all_rewards)}'
 		assert isinstance(episode_numbers, list), f'episode_numbers must be of type list, but is {type(all_rewards)}'
 		assert len(all_rewards) > 0, f'all_rewards should not be an empty list: {all_rewards}'
@@ -279,11 +297,26 @@ class Evaluator():
 
 		plt.clf()
 		plt.violinplot(all_rewards, episode_numbers, showmeans=True, widths=450)
-		plt.plot(episode_numbers, [np.mean(rewards_on_training_stage) for rewards_on_training_stage in all_rewards], color='steelblue')
+		relevant_agent_name = ''
+
+		vendor_index: str = property_name.rsplit('_', 1)[-1:][0]
+		if vendor_index.isdigit():
+			# property_name without '/vendor_x'
+			property_name = property_name.rsplit('/', 1)[:-1][0]
+			relevant_agent_name = self.configurator.agents[int(vendor_index)].name if vendor_index == '0' \
+				else self.configurator.marketplace.competitors[int(vendor_index)-1].name
+			plt.plot(episode_numbers, [np.mean(rewards_on_training_stage) for rewards_on_training_stage in all_rewards], color='steelblue',
+				label=relevant_agent_name)
+			plt.legend()
+		else:
+			plt.plot(episode_numbers, [np.mean(rewards_on_training_stage) for rewards_on_training_stage in all_rewards], color='steelblue')
+
+		title = f'Violinplot for progress of {property_name}'
 		plt.title(title)
 		plt.xlabel('Learned Episodes')
 		plt.ylabel('Reward Density')
-		savepath = os.path.join(self.configurator.get_folder(), 'violinplots', title.replace(' ', '_').replace('/', '_') + '.svg')
+		savepath = os.path.join(self.configurator.get_folder(), 'violinplots',
+			f'{title.replace(" ", "_").replace("/", "_")}{relevant_agent_name}.svg')
 		plt.savefig(fname=savepath)
 
 

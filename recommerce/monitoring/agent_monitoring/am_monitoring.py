@@ -42,10 +42,10 @@ class Monitor():
 		"""
 		Run the marketplace with the given monitoring configuration.
 
-		Automatically produces histograms, but not metric diagrams.
+		Does not create any diagrams.
 
 		Returns:
-			list: A list with a list of rewards for each agent
+			list: A list with a list of rewards for each agent.
 		"""
 		# each agent on its own marketplace
 		if self.configurator.separate_markets:
@@ -69,10 +69,6 @@ class Monitor():
 						state, _, is_done, info = self.configurator.marketplace.step(action)
 						watchers[current_agent_index].add_info(info)
 
-			# only one histogram after the whole monitoring process
-			returns = [watcher.get_all_samples_of_property('profits/all', 0) for watcher in watchers]
-			self.evaluator.create_histogram(returns, True, 'Cumulative_rewards_per_episode.svg')
-
 			return [watcher.get_cumulative_properties() for watcher in watchers]
 
 		# all agents one one marketplace
@@ -87,10 +83,6 @@ class Monitor():
 					action = self.configurator.agents[0].policy(state)
 					state, _, is_done, info = self.configurator.marketplace.step(action)
 					watcher.add_info(info)
-
-			# only one histogram after the whole monitoring process
-			profits = watcher.get_cumulative_properties()['profits/all']
-			self.evaluator.create_histogram(profits, True, 'Cumulative_rewards_per_episode.svg')
 
 			return watcher.get_cumulative_properties()
 
