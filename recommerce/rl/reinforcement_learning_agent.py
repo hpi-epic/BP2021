@@ -1,13 +1,14 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 
 import torch
 from attrdict import AttrDict
 
+from recommerce.configuration.json_configurable import JSONConfigurable
 from recommerce.market.sim_market import SimMarket
 from recommerce.market.vendors import Agent
 
 
-class ReinforcementLearningAgent(Agent, ABC):
+class ReinforcementLearningAgent(Agent, JSONConfigurable):
 	@abstractmethod
 	def __init__(
 			self,

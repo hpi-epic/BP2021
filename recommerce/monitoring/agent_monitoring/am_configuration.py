@@ -29,8 +29,8 @@ class Configurator():
 		self.plot_interval = 50
 		self.marketplace = circular_market.CircularEconomyMonopoly
 		default_agent = FixedPriceCEAgent
-		self.config_market: AttrDict = HyperparameterConfigLoader.load('market_config')
-		self.config_rl: AttrDict = HyperparameterConfigLoader.load('rl_config')
+		self.config_market: AttrDict = HyperparameterConfigLoader.load('market_config', circular_market.CircularEconomyRebuyPriceMonopoly)
+		self.config_rl: AttrDict = HyperparameterConfigLoader.load('q_learning_config', QLearningAgent)
 		self.agents = [default_agent(config_market=self.config_market)]
 		self.agent_colors = [(0.0, 0.0, 1.0, 1.0)]
 		self.folder_path = os.path.abspath(os.path.join(PathManager.results_path, 'monitoring', 'plots_' + time.strftime('%b%d_%H-%M-%S')))
@@ -88,7 +88,6 @@ class Configurator():
 			'If the market is linear, the agent must be linear too!'
 
 		self.agents = []
-
 		# Instantiate all agents. If they are not rule-based, use the marketplace parameters accordingly
 		agents_with_config = [(current_agent[0], [self.config_market] + current_agent[1]) for current_agent in agents]
 
@@ -102,7 +101,8 @@ class Configurator():
 					assert (1 <= len(current_agent[1]) <= 3), 'the argument list for a RL-agent must have length between 0 and 2'
 					assert all(isinstance(argument, str) for argument in current_agent[1][1:]), 'the arguments for a RL-agent must be of type str'
 
-					# Stablebaselines ends in .zip - we don't
+					# Stablebaselines ends in .zip - so if you use it, you need to specify a modelfile name
+					# For many others, it can be omitted since we use a default format
 					agent_modelfile = f'{type(self.marketplace).__name__}_{current_agent[0].__name__}.dat'
 					agent_name = 'q_learning' if issubclass(current_agent[0], QLearningAgent) else 'actor_critic'
 					# no arguments
@@ -121,7 +121,7 @@ class Configurator():
 						agent_name = current_agent[1][1]
 					# both arguments, first must be the modelfile, second the name
 					elif len(current_agent[1]) == 3:
-						assert current_agent[1][1].endswith('.dat'), \
+						assert current_agent[1][1].endswith('.dat') or current_agent[1][1].endswith('.zip'), \
 							'if two arguments as well as a config are provided, ' + \
 							f'the first extra one must be the modelfile. Arg1: {current_agent[1][1]}, Arg2: {current_agent[1][2]}'
 						agent_modelfile = current_agent[1][1]
