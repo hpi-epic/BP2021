@@ -22,13 +22,13 @@ def test_train_continuous_a2c_circular_economy_rebuy():
 
 
 def test_train_stable_baselines_ppo():
-	with patch('recommerce.rl.stable_baselines.stable_baselines_model.StableBaselinesPPO.train_agent') as mock_train_agent:
+	with patch('recommerce.rl.stable_baselines.sb_ppo.StableBaselinesPPO.train_agent') as mock_train_agent:
 		training_scenario.train_stable_baselines_ppo()
 		assert mock_train_agent.called
 
 
 def test_train_stable_baselines_sac():
-	with patch('recommerce.rl.stable_baselines.stable_baselines_model.StableBaselinesSAC.train_agent') as mock_train_agent:
+	with patch('recommerce.rl.stable_baselines.sb_sac.StableBaselinesSAC.train_agent') as mock_train_agent:
 		training_scenario.train_stable_baselines_sac()
 		assert mock_train_agent.called
 

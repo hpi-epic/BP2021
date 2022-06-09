@@ -1,4 +1,5 @@
 {
+	"config_type": "environment",
 	"task": "agent_monitoring",
 	"episodes": 500,
 	"plot_interval": 100,

@@ -302,6 +302,7 @@ class DockerManager():
 			return self._get_client().ping()
 		except Exception:
 			print('Docker server is not responding!')
+			print(f'Client is: {self._get_client()}')
 			return False
 
 	# PRIVATE METHODS
@@ -320,8 +321,10 @@ class DockerManager():
 		if cls._client is not None:
 			return cls._client
 		try:
+			print('Trying to get a new client from docker...')
 			cls._client = docker.from_env()
-		except docker.errors.DockerException:
+		except docker.errors.DockerException as e:
+			print(f'Got a DockerException: {e}')
 			cls._client = None
 		return cls._client
 

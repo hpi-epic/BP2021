@@ -1,7 +1,8 @@
 from attrdict import AttrDict
 
 from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPriceDuopoly
-from recommerce.rl.stable_baselines.stable_baselines_model import StableBaselinesAgent, StableBaselinesPPO
+from recommerce.rl.stable_baselines.sb_ppo import StableBaselinesPPO
+from recommerce.rl.stable_baselines.stable_baselines_model import StableBaselinesAgent
 
 
 def train_self_play(

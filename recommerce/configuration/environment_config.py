@@ -13,8 +13,6 @@ from recommerce.market.linear.linear_sim_market import LinearEconomy
 from recommerce.market.linear.linear_vendors import LinearAgent
 from recommerce.market.sim_market import SimMarket
 from recommerce.market.vendors import FixedPriceAgent
-from recommerce.rl.actorcritic.actorcritic_agent import ActorCriticAgent
-from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
 from recommerce.rl.reinforcement_learning_agent import ReinforcementLearningAgent
 
 
@@ -159,7 +157,7 @@ class EnvironmentConfig(ABC):
 			agent['agent_class'] = get_class(agent['agent_class'])
 
 			# This if-else contains the parsing logic for the different types of arguments agents can have, e.g. modelfiles or fixed-price-lists
-			if needs_modelfile and issubclass(agent['agent_class'], (QLearningAgent, ActorCriticAgent)):
+			if needs_modelfile and issubclass(agent['agent_class'], ReinforcementLearningAgent):
 				assert isinstance(agent['argument'], str), \
 					f'The "argument" field of this agent ({agent["name"]}) must be a string but was ({type(agent["argument"])})'
 				assert agent['argument'].endswith('.dat') or agent['argument'].endswith('.zip'), \
@@ -295,7 +293,7 @@ class AgentMonitoringEnvironmentConfig(EnvironmentConfig):
 		self.agent = []
 		for current_agent in passed_agents:
 			# with modelfile
-			if issubclass(current_agent['agent_class'], (QLearningAgent, ActorCriticAgent)):
+			if issubclass(current_agent['agent_class'], ReinforcementLearningAgent):
 				self.agent.append((current_agent['agent_class'], [current_agent['argument'], current_agent['name']]))
 			# without modelfile
 			else:
@@ -316,8 +314,6 @@ class ExampleprinterEnvironmentConfig(EnvironmentConfig):
 	"""
 	def _validate_config(self, config: dict) -> None:
 		super(ExampleprinterEnvironmentConfig, self)._validate_config(config, single_agent=False, needs_modelfile=True)
-		# Since we only have one agent, we extract it from the provided list
-		self.agent = self.agent[0]
 
 	def _get_task(self) -> str:
 		return 'exampleprinter'

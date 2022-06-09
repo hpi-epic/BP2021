@@ -16,8 +16,9 @@ from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
 # The load path for the agent modelfiles
 parameters_path = os.path.join('tests', 'test_data')
 
-config_market: AttrDict = HyperparameterConfigLoader.load('market_config')
-config_rl: AttrDict = HyperparameterConfigLoader.load('rl_config')
+config_market: AttrDict = HyperparameterConfigLoader.load('market_config', circular_market.CircularEconomyRebuyPriceMonopoly)
+config_q_learning: AttrDict = HyperparameterConfigLoader.load('q_learning_config', QLearningAgent)
+config_actor_critic: AttrDict = HyperparameterConfigLoader.load('actor_critic_config', ContinuousActorCriticAgentFixedOneStd)
 
 
 def test_setup_exampleprinter():
@@ -60,22 +61,23 @@ def test_full_episode_rule_based(marketplace, agent):
 
 
 full_episode_testcases_rl_agent = [
-	(linear_market.LinearEconomyDuopoly(config=config_market), QLearningAgent, 'LinearEconomyDuopoly_QLearningAgent.dat'),
+	(linear_market.LinearEconomyDuopoly(config=config_market), QLearningAgent,
+		'LinearEconomyDuopoly_QLearningAgent.dat', config_q_learning),
 	(circular_market.CircularEconomyMonopoly(config=config_market), QLearningAgent,
-		'CircularEconomyMonopoly_QLearningAgent.dat'),
+		'CircularEconomyMonopoly_QLearningAgent.dat', config_q_learning),
 	(circular_market.CircularEconomyRebuyPriceMonopoly(config=config_market), QLearningAgent,
-		'CircularEconomyRebuyPriceMonopoly_QLearningAgent.dat'),
+		'CircularEconomyRebuyPriceMonopoly_QLearningAgent.dat', config_q_learning),
 	(circular_market.CircularEconomyRebuyPriceDuopoly(config=config_market), QLearningAgent,
-		'CircularEconomyRebuyPriceDuopoly_QLearningAgent.dat'),
+		'CircularEconomyRebuyPriceDuopoly_QLearningAgent.dat', config_q_learning),
 	(circular_market.CircularEconomyRebuyPriceDuopoly(config=config_market), ContinuousActorCriticAgentFixedOneStd,
-		'actor_parametersCircularEconomyRebuyPriceDuopoly_ContinuousActorCriticAgentFixedOneStd.dat'),
+		'actor_parametersCircularEconomyRebuyPriceDuopoly_ContinuousActorCriticAgentFixedOneStd.dat', config_actor_critic),
 	(circular_market.CircularEconomyRebuyPriceDuopoly(config=config_market), DiscreteActorCriticAgent,
-		'actor_parametersCircularEconomyRebuyPriceDuopoly_DiscreteACACircularEconomyRebuy.dat')
+		'actor_parametersCircularEconomyRebuyPriceDuopoly_DiscreteACACircularEconomyRebuy.dat', config_actor_critic)
 ]
 
 
-@pytest.mark.parametrize('marketplace, agent_class, parameters_file', full_episode_testcases_rl_agent)
-def test_full_episode_rl_agents(marketplace, agent_class, parameters_file):
+@pytest.mark.parametrize('marketplace, agent_class, parameters_file, config_rl', full_episode_testcases_rl_agent)
+def test_full_episode_rl_agents(marketplace, agent_class, parameters_file, config_rl):
 	agent = agent_class(
 		marketplace=marketplace,
 		config_market=config_market,

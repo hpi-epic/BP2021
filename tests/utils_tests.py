@@ -1,105 +1,38 @@
 import json
 from typing import Tuple, Union
-from unittest.mock import mock_open, patch
-
-from attrdict import AttrDict
 
 import recommerce.market.circular.circular_sim_market as circular_market
 import recommerce.market.linear.linear_sim_market as linear_market
-from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader
 
 
-def create_hyperparameter_mock_dict_rl(gamma: float = 0.99,
-	batch_size: int = 32,
-	replay_size: int = 500,
-	learning_rate: float = 1e-6,
-	sync_target_frames: int = 10,
-	replay_start_size: int = 100,
-	epsilon_decay_last_frame: int = 400,
-	epsilon_start: float = 1.0,
-	epsilon_final: float = 0.1) -> dict:
+def load_json(path: str):
 	"""
-	Create dictionary that can be used to mock the rl part of the hyperparameter_config.json file by calling json.dumps() on it.
+	Load a json file.
 
 	Args:
-		gamma (float, optional): Defaults to 0.99.
-		batch_size (int, optional): Defaults to 32.
-		replay_size (int, optional): Defaults to 100000.
-		learning_rate (float, optional): Defaults to 1e-6.
-		sync_target_frames (int, optional): Defaults to 1000.
-		replay_start_size (int, optional): Defaults to 10000.
-		epsilon_decay_last_frame (int, optional): Defaults to 75000.
-		epsilon_start (float, optional): Defaults to 1.0.
-		epsilon_final (float, optional): Defaults to 0.1.
+		path (str): The path to the json file.
 
 	Returns:
-		dict: The mock dictionary.
+		dict: The json file as a dictionary.
 	"""
-	return {
-		'gamma': gamma,
-		'batch_size': batch_size,
-		'replay_size': replay_size,
-		'learning_rate': learning_rate,
-		'sync_target_frames': sync_target_frames,
-		'replay_start_size': replay_start_size,
-		'epsilon_decay_last_frame': epsilon_decay_last_frame,
-		'epsilon_start': epsilon_start,
-		'epsilon_final': epsilon_final,
-	}
+	with open(path) as file:
+		return json.load(file)
 
 
-def create_hyperparameter_mock_dict_sim_market(
-	max_storage: int = 100,
-	episode_length: int = 25,
-	max_price: int = 10,
-	max_quality: int = 50,
-	number_of_customers: int = 10,
-	production_price: int = 3,
-	storage_cost_per_product: float = 0.1) -> dict:
+def replace_field_in_dict(initial_dict: dict, key: str, value: Union[str, int, float]) -> dict:
 	"""
-	Create dictionary that can be used to mock the sim_market part of the hyperparameter_config.json file by calling json.dumps() on it.
+	Replace a field in a dictionary with a new value.
 
 	Args:
-		max_storage (int, optional): Defaults to 20.
-		episode_length (int, optional): Defaults to 20.
-		max_price (int, optional): Defaults to 15.
-		max_quality (int, optional): Defaults to 100.
-		number_of_customers (int, optional): Defaults to 30.
-		production_price (int, optional): Defaults to 5.
-		storage_cost_per_product (float, optional): Defaults to 0.3.
+		initial_dict (dict): The dictionary in which to replace the field.
+		key (str): The key of the field to be replaced.
+		value (Union[str, int, float]): The new value of the field.
 
 	Returns:
-		dict: The mock dictionary.
+		dict: The dictionary with the field replaced.
 	"""
-	return {
-		'max_storage': max_storage,
-		'episode_length': episode_length,
-		'max_price': max_price,
-		'max_quality': max_quality,
-		'number_of_customers': number_of_customers,
-		'production_price': production_price,
-		'storage_cost_per_product': storage_cost_per_product,
-	}
-
-
-def create_hyperparameter_mock_dict(rl: dict = create_hyperparameter_mock_dict_rl(),
-	sim_market: dict = create_hyperparameter_mock_dict_sim_market()) -> dict:
-	"""
-	Create a dictionary in the format of the hyperparameter_config.json.
-	Call json.dumps() on the return value of this to mock the json file.
-
-	Args:
-		rl (dict, optional): The dictionary that should be used for the rl-part. Defaults to create_hyperparameter_mock_dict_rl().
-		sim_market (dict, optional): The dictionary that should be used for the sim_market-part.
-			Defaults to create_hyperparameter_mock_dict_sim_market().
-
-	Returns:
-		dict: The mock dictionary.
-	"""
-	return {
-		'rl': rl,
-		'sim_market': sim_market
-	}
+	initial_dict[key] = value
+	return initial_dict
 
 
 def create_environment_mock_dict(task: str = 'agent_monitoring',
@@ -143,35 +76,6 @@ def create_environment_mock_dict(task: str = 'agent_monitoring',
 	}
 
 
-def create_combined_mock_dict(hyperparameter: dict or None = create_hyperparameter_mock_dict(),
-	environment: dict or None = create_environment_mock_dict()) -> dict:
-	"""
-	Create a mock dictionary in the format of a configuration file with both a hyperparameter and environment part.
-	If any of the two parameters is `None`, leave that key out of the resulting dictionary.
-
-	Args:
-		hyperparameter (dict | None, optional): The hyperparameter part of the combined config. Defaults to create_hyperparameter_mock_dict().
-		environment (dict | None, optional): The environment part of the combined config. Defaults to create_environment_mock_dict().
-
-	Returns:
-		dict: The mock dictionary.
-	"""
-	if hyperparameter is None and environment is None:
-		return {}
-	elif hyperparameter is None:
-		return {
-			'environment': environment
-		}
-	elif environment is None:
-		return {
-			'hyperparameter': hyperparameter
-		}
-	return {
-		'hyperparameter': hyperparameter,
-		'environment': environment
-	}
-
-
 def check_mock_file(mock_file, mocked_file_content) -> None:
 	"""
 	Confirm that a mock JSON is read correctly.
@@ -202,19 +106,6 @@ def remove_key(key: str, original_dict: dict) -> dict:
 	return original_dict
 
 
-def create_mock_rewards(num_entries) -> list:
-	"""
-	Create a list of ints to be used as e.g. mock rewards.
-
-	Args:
-		num_entries (int): How many numbers should be in the list going from 1 to num_entries.
-
-	Returns:
-		list: The list of rewards.
-	"""
-	return list(range(1, num_entries))
-
-
 def create_mock_action(market_subclass) -> Union[int, Tuple]:
 	"""
 	Create an array to be used as an action. The length of the array fits to the argument's class.
@@ -231,16 +122,3 @@ def create_mock_action(market_subclass) -> Union[int, Tuple]:
 		return (1, 2, 3)
 	elif issubclass(market_subclass, circular_market.CircularEconomy):
 		return (1, 2)
-
-
-def mock_config_hyperparameter() -> AttrDict:
-	"""
-	Reload the hyperparameter_config file to update the config variable with the mocked values.
-
-	Returns:
-		HyperparameterConfig: The mocked hyperparameter config object.
-	"""
-	mock_json = json.dumps(create_hyperparameter_mock_dict())
-	with patch('builtins.open', mock_open(read_data=mock_json)) as mock_file:
-		check_mock_file(mock_file, mock_json)
-		return HyperparameterConfigLoader.load('hyperparameter_config')

@@ -1,4 +1,5 @@
 import json
+import re
 import tarfile
 import zipfile
 from io import BytesIO
@@ -9,7 +10,7 @@ from django.shortcuts import redirect, render
 from recommerce.configuration.config_validation import validate_config
 
 from .config_parser import ConfigModelParser
-from .models.config import *
+from .models.config import Config
 from .models.container import Container
 
 
@@ -56,23 +57,31 @@ def handle_uploaded_file(request, uploaded_config) -> HttpResponse:
 	except ValueError as value:
 		return render(request, 'upload.html', {'error': str(value)})
 
-	validate_status, validate_data = validate_config(content_as_dict, False)
+	# Validate the config file using the recommerce validation functionality
+	validate_status, validate_data = validate_config(content_as_dict)
 	if not validate_status:
 		return render(request, 'upload.html', {'error': validate_data})
-	hyperparameter_config, environment_config = validate_data
 
+	# configs and their corresponding top level keys as list
+	config_objects = _get_top_level_and_configs(validate_data)
+
+	# parse config model to datastructure
 	parser = ConfigModelParser()
-	web_hyperparameter_config = None
-	web_environment_config = None
-	try:
-		web_hyperparameter_config = parser.parse_config_dict_to_datastructure('hyperparameter', hyperparameter_config)
-		web_environment_config = parser.parse_config_dict_to_datastructure('environment', environment_config)
-	except ValueError:
-		return render(request, 'upload.html', {'error': 'Your config is wrong'})
+	resulting_config_parts = []
+	for top_level, config in config_objects:
+		try:
+			resulting_config_parts += [(top_level, parser.parse_config_dict_to_datastructure(top_level, config))]
+		except ValueError:
+			return render(request, 'upload.html', {'error': 'Your config is wrong'})
+		except TypeError as error:
+			invalid_keyword_search = re.search('.*keyword argument (.*)', str(error))
+			return render(request, 'upload.html', {'error': f'Your config contains an invalid key: {invalid_keyword_search.group(1)}'})
 
+	# Make it a real config object
+	environment_config, hyperparameter_config = _get_config_parts(resulting_config_parts)
 	given_name = request.POST['config_name']
 	config_name = given_name if given_name else uploaded_config.name
-	Config.objects.create(environment=web_environment_config, hyperparameter=web_hyperparameter_config, name=config_name, user=request.user)
+	Config.objects.create(environment=environment_config, hyperparameter=hyperparameter_config, name=config_name, user=request.user)
 	return redirect('/configurator', {'success': 'You successfully uploaded a config file'})
 
 
@@ -162,3 +171,62 @@ def _convert_tar_file_to_zip(fake_tar_archive: BytesIO) -> BytesIO:
 	tar_archive.close()
 
 	return file_like_zip
+
+
+def _get_top_level_and_configs(validate_data: tuple) -> list:
+	"""
+	Prepares data returned by the recommerce validation function for parsing.
+	Should only be used when the validated config was correct
+
+	Args:
+		validate_data (tuple): return of recommerce validation function, when config was correct
+
+	Returns:
+		list: of tuples, the first tuple value indecates the top level ('hyperparameter' or 'environment')
+			and the second value is the corresponding config.
+			Length will be between 1 and 2.
+	"""
+	assert tuple == type(validate_data), \
+		f'Data returned by "vaidate_config" for correct config should be tuple, but was {validate_data}'
+	result = []
+	for config in validate_data:
+		if not config:
+			continue
+		if 'environment' in config:
+			result += [('environment', config['environment'])]
+		elif 'hyperparameter' in config:
+			result += [('hyperparameter', config['hyperparameter'])]
+		elif 'rl' in config or 'sim_market' in config:
+			# we need to add those two to the same hyperparameter name
+			existing_hyperparameter = [item for item in result if 'hyperparameter' in item]
+			if existing_hyperparameter:
+				new_hyperparameter = ('hyperparameter', {**existing_hyperparameter[0][1], **config})
+				result.remove(existing_hyperparameter[0])
+				result += [new_hyperparameter]
+			else:
+				result += [('hyperparameter', config)]
+	return result
+
+
+def _get_config_parts(config_objects: list) -> tuple:
+	"""
+	Takes a list of tuple with the parsed objects from the config and their top level key
+	and returns an 'environment_config' and a 'hyperparameter_config' object to be inserted into the Config object
+
+	Args:
+		config_objects (list): list of tuples, first tuple value indecating top-level key ('hyperparameter' / 'environment')
+			second value, the actual parsed config object
+
+	Returns:
+		tuple: (instance of EnvironmentConfig, instance of HyperparameterConfig)
+	"""
+	assert len(config_objects) <= 2 and len(config_objects) >= 1, \
+		'At least one, at max two config parts should have been parsed'
+	environment_config = None
+	hyperparameter_config = None
+	for top_level, config_part in config_objects:
+		if top_level == 'environment':
+			environment_config = config_part
+		elif top_level == 'hyperparameter':
+			hyperparameter_config = config_part
+	return environment_config, hyperparameter_config

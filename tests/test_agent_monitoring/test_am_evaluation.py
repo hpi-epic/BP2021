@@ -3,18 +3,18 @@ from unittest.mock import patch
 
 import numpy as np
 import pytest
-import utils_tests as ut_t
 from attrdict import AttrDict
 
 import recommerce.market.circular.circular_sim_market as circular_market
 import recommerce.monitoring.agent_monitoring.am_monitoring as monitoring
+from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader
 from recommerce.configuration.path_manager import PathManager
 from recommerce.market.circular.circular_vendors import FixedPriceCEAgent, RuleBasedCEAgent
 from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
 
 monitor = monitoring.Monitor()
 
-config_hyperparameter: AttrDict = ut_t.mock_config_hyperparameter()
+config_market: AttrDict = HyperparameterConfigLoader.load('market_config', circular_market.CircularEconomyRebuyPriceMonopoly)
 
 
 # setup before each test
@@ -28,7 +28,7 @@ def setup_function(function):
 		plot_interval=10,
 		marketplace=circular_market.CircularEconomyMonopoly,
 		agents=[(QLearningAgent, [os.path.join(PathManager.data_path, 'CircularEconomyMonopoly_QLearningAgent.dat')])],
-		config_market=config_hyperparameter)
+		config_market=config_market)
 
 
 evaluate_session_testcases = [
@@ -49,7 +49,7 @@ def test_evaluate_session(agents, rewards):
 		patch('recommerce.monitoring.agent_monitoring.am_configuration.os.makedirs'), \
 		patch('recommerce.monitoring.agent_monitoring.am_configuration.os.path.exists') as exists_mock:
 		exists_mock.return_value = True
-		monitor.configurator.setup_monitoring(episodes=4, plot_interval=1, agents=agents, config_market=config_hyperparameter)
+		monitor.configurator.setup_monitoring(episodes=4, plot_interval=1, agents=agents, config_market=config_market)
 		monitor.evaluator.evaluate_session(rewards)
 
 
@@ -78,7 +78,7 @@ create_histogram_statistics_plots_testcases = [
 
 @pytest.mark.parametrize('agents, rewards, plot_bins, agent_color, lower_upper_range', create_histogram_statistics_plots_testcases)
 def test_create_histogram(agents, rewards, plot_bins, agent_color, lower_upper_range):
-	monitor.configurator.setup_monitoring(separate_markets=True, agents=agents, config_market=config_hyperparameter)
+	monitor.configurator.setup_monitoring(separate_markets=True, agents=agents, config_market=config_market)
 	name_list = [agent.name for agent in monitor.configurator.agents]
 	with patch('recommerce.monitoring.agent_monitoring.am_evaluation.plt.clf'), \
 		patch('recommerce.monitoring.agent_monitoring.am_evaluation.plt.xlabel'), \
@@ -100,7 +100,7 @@ def test_create_histogram(agents, rewards, plot_bins, agent_color, lower_upper_r
 
 
 def test_create_histogram_without_saving_to_directory():
-	monitor.configurator.setup_monitoring(separate_markets=False, agents=[(RuleBasedCEAgent, [])], config_market=config_hyperparameter)
+	monitor.configurator.setup_monitoring(separate_markets=False, agents=[(RuleBasedCEAgent, [])], config_market=config_market)
 	with patch('recommerce.monitoring.agent_monitoring.am_evaluation.plt.clf'), \
 		patch('recommerce.monitoring.agent_monitoring.am_evaluation.plt.xlabel'), \
 		patch('recommerce.monitoring.agent_monitoring.am_evaluation.plt.title'), \
@@ -119,7 +119,7 @@ def test_create_histogram_without_saving_to_directory():
 
 @pytest.mark.parametrize('agents, rewards, plot_bins, agent_color, lower_upper_range', create_histogram_statistics_plots_testcases)
 def test_create_statistics_plots(agents, rewards, plot_bins, agent_color, lower_upper_range):
-	monitor.configurator.setup_monitoring(agents=agents, episodes=len(rewards[0]), plot_interval=1, config_market=config_hyperparameter)
+	monitor.configurator.setup_monitoring(agents=agents, episodes=len(rewards[0]), plot_interval=1, config_market=config_market)
 	with patch('recommerce.monitoring.agent_monitoring.am_evaluation.plt'), \
 		patch('recommerce.monitoring.agent_monitoring.am_configuration.os.makedirs'), \
 		patch('recommerce.monitoring.agent_monitoring.am_configuration.os.path.exists') as exists_mock:
@@ -137,14 +137,14 @@ incorrect_create_line_plot_testcases = [
 
 @pytest.mark.parametrize('x_values, y_values, plot_type, expected_message', incorrect_create_line_plot_testcases)
 def test_incorrect_create_line_plot(x_values, y_values, plot_type, expected_message):
-	monitor.configurator.setup_monitoring(episodes=4, plot_interval=2, config_market=config_hyperparameter)
+	monitor.configurator.setup_monitoring(episodes=4, plot_interval=2, config_market=config_market)
 	with pytest.raises(AssertionError) as assertion_message:
 		monitor.evaluator._create_line_plot(x_values, y_values, 'test_plot', plot_type)
 	assert expected_message in str(assertion_message.value)
 
 
 def test_incorrect_create_line_plot_runtime_errors():
-	monitor.configurator.setup_monitoring(episodes=4, plot_interval=2, config_market=config_hyperparameter)
+	monitor.configurator.setup_monitoring(episodes=4, plot_interval=2, config_market=config_market)
 	with pytest.raises(RuntimeError) as assertion_message:
 		monitor.evaluator._create_line_plot([1, 2], [[1, 3]], 'test_plot', 'Unknown_metric_type')
 	assert 'this metric_type is unknown: Unknown_metric_type' in str(assertion_message.value)

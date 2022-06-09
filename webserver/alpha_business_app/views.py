@@ -6,6 +6,7 @@ from django.shortcuts import render
 
 from recommerce.configuration.config_validation import validate_config
 
+from .adjustable_fields import get_agent_hyperparameter
 from .buttons import ButtonHandler
 from .config_parser import ConfigFlatDictParser
 from .forms import UploadFileForm
@@ -94,11 +95,19 @@ def delete_config(request, config_id) -> HttpResponse:
 
 # AJAX relevant views
 @login_required
-def agent(request) -> HttpResponse:
+def new_agent(request) -> HttpResponse:
 	if not request.user.is_authenticated:
 		return HttpResponse('Unauthorized', status=401)
 	return render(request, 'configuration_items/agent.html',
 		{'id': str(uuid4()), 'name': 'Competitor', 'agent_selections': selection_manager.get_competitor_options_for_marketplace()})
+
+
+@login_required
+def agent_changed(request) -> HttpResponse:
+	if not request.user.is_authenticated:
+		return HttpResponse('Unauthorized', status=401)
+	return render(request, 'configuration_items/rl_parameter.html',
+		{'parameters': get_agent_hyperparameter(request.POST['agent'], request.POST.dict())})
 
 
 def api_availability(request) -> HttpResponse:
@@ -130,19 +139,19 @@ def config_validation(request) -> HttpResponse:
 
 		config_dict = ConfigFlatDictParser().flat_dict_to_hierarchical_config_dict(resulting_dict)
 
-		validate_status, validate_data = validate_config(config=config_dict, config_is_final=True)
+		validate_status, validate_data = validate_config(config=config_dict)
 		if not validate_status:
 			return render(request, 'notice_field.html', {'error': validate_data})
 	return render(request, 'notice_field.html', {'success': 'This config is valid'})
 
 
+@login_required
 def marketplace_changed(request) -> HttpResponse:
 	if not request.user.is_authenticated:
 		return HttpResponse('Unauthorized', status=401)
 	marketplace_class = None
 	if request.method == 'POST':
 		post_request = request.POST
-		# print(post_request)
 		marketplace_class = post_request['marketplace']
 		raw_html = post_request['agents_html']
 	return HttpResponse(content=selection_manager.get_correct_agents_html_on_marketplace_change(request, marketplace_class, raw_html))
