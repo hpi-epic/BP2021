@@ -81,7 +81,11 @@ class Evaluator():
 			plt.xlabel('Episode')
 			plt.ylabel(property_name)
 			plt.grid(True, linestyle='--')
-			plt.savefig(fname=os.path.join(self.configurator.get_folder(), f'lineplot_monitoring_based_{property_name.replace("/", "_")}.svg'))
+			plt.savefig(
+				fname=os.path.join(self.configurator.get_folder(),
+				f'lineplot_monitoring_based_{property_name.replace("/", "_")}.svg'),
+				transparent=True
+			)
 
 	# visualize metrics
 	def create_density_plot(self, samples: list, property: str):
@@ -119,7 +123,7 @@ class Evaluator():
 		plt.ylabel('Probability density')
 		plt.title(f'Density plot of {property}')
 		plt.legend()
-		plt.savefig(fname=os.path.join(self.configurator.get_folder(), f'density_plot_{property.replace("/", "_")}.svg'))
+		plt.savefig(fname=os.path.join(self.configurator.get_folder(), f'density_plot_{property.replace("/", "_")}.svg'), transparent=True)
 
 	def create_histogram(self, rewards: list, is_last_histogram: bool, filename: str = 'default_histogram.svg') -> None:
 		"""
@@ -154,7 +158,7 @@ class Evaluator():
 			plt.draw()
 			plt.pause(0.001)
 		if is_last_histogram:
-			plt.savefig(fname=os.path.join(self.configurator.get_folder(), filename))
+			plt.savefig(fname=os.path.join(self.configurator.get_folder(), filename), transparent=True)
 
 	def _create_statistics_plots(self, rewards: list) -> None:
 		"""
@@ -225,7 +229,7 @@ class Evaluator():
 
 		plt.legend([a.name for a in self.configurator.agents])
 		plt.grid(True)
-		plt.savefig(fname=os.path.join(self.configurator.get_folder(), filename))
+		plt.savefig(fname=os.path.join(self.configurator.get_folder(), filename), transparent=True)
 
 	def _create_violin_plot(self, all_rewards: 'list[list]', episode_numbers: 'list[int]', title: str = 'plot_title'):
 		"""
@@ -256,7 +260,7 @@ class Evaluator():
 		plt.ylabel('Reward Density')
 		savepath = os.path.join(self.configurator.get_folder(), title.replace(' ', '_').replace('/', '_') + '.svg')
 		plt.grid(True, linestyle='--')
-		plt.savefig(fname=savepath)
+		plt.savefig(fname=savepath, transparent=True)
 
 
 if __name__ == '__main__':  # pragma: no cover

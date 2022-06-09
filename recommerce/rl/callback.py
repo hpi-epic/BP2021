@@ -175,7 +175,7 @@ class RecommerceCallback(BaseCallback):
 			plt.xlabel('Episode')
 			plt.ylabel(property)
 			plt.grid(True, linestyle='--')
-			plt.savefig(os.path.join(monitor.configurator.folder_path, f'scatterplot_samples_{property.replace("/", "_")}.svg'))
+			plt.savefig(os.path.join(monitor.configurator.folder_path, f'scatterplot_samples_{property.replace("/", "_")}.svg'), transparent=True)
 
 		print('Creating lineplots...')
 		for property, samples in cumulative_properties.items():
@@ -195,7 +195,7 @@ class RecommerceCallback(BaseCallback):
 			plt.xlabel('Episode')
 			plt.ylabel(property)
 			plt.grid(True, linestyle='--')
-			plt.savefig(os.path.join(monitor.configurator.folder_path, f'lineplot_progress_{property.replace("/", "_")}.svg'))
+			plt.savefig(os.path.join(monitor.configurator.folder_path, f'lineplot_progress_{property.replace("/", "_")}.svg'), transparent=True)
 
 		if self.analyze_after_training:
 			agent_list = [(self.agent_class, [parameter_path]) for parameter_path in self.saved_parameter_paths]

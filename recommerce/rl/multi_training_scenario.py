@@ -200,7 +200,7 @@ def print_diagrams(groups, name, reduce_plot_to_tenthousand=False, individual_li
     plt.grid(True, linestyle='--')
     plt.xlabel('Episodes')
     plt.ylabel('Profit')
-    plt.savefig(os.path.join(PathManager.results_path, 'monitoring', f'{name}.svg'))
+    plt.savefig(os.path.join(PathManager.results_path, 'monitoring', f'{name}.svg'), transparent=True)
 
 
 # These experiments are all done on a CERebuy market

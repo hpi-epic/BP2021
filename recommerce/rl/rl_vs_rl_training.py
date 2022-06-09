@@ -44,4 +44,4 @@ def train_rl_vs_rl(
 	plt.plot(smoothed_return_estimation[0], label=agents[0].name)
 	plt.plot(smoothed_return_estimation[1], label=agents[1].name)
 	plt.legend()
-	plt.savefig(os.path.join(PathManager.results_path, 'monitoring', 'rl_vs_rl_all.svg'))  # Maybe save in a dedicated folder
+	plt.savefig(os.path.join(PathManager.results_path, 'monitoring', 'rl_vs_rl_all.svg'), transparent=True)  # Maybe save in a dedicated folder
