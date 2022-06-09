@@ -16,4 +16,4 @@ def train_self_play(
 	marketplace = CircularEconomyRebuyPriceDuopoly(config=config_market, support_continuous_action_space=True, competitors=[agent])
 	agent.set_marketplace(marketplace)
 
-	return agent.train_agent(training_steps=training_steps, iteration_length=25)
+	return agent.train_agent(training_steps=training_steps, iteration_length=50)
