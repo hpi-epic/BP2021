@@ -8,7 +8,8 @@ import numpy as np
 
 from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader
 from recommerce.configuration.path_manager import PathManager
-from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPriceDuopoly
+from recommerce.market.circular.circular_sim_market import (CircularEconomyRebuyPriceDuopoly, CircularEconomyRebuyPriceMonopoly,
+                                                            CircularEconomyRebuyPriceOligopoly)
 from recommerce.rl.self_play import train_self_play
 from recommerce.rl.stable_baselines.sb_a2c import StableBaselinesA2C
 from recommerce.rl.stable_baselines.sb_ddpg import StableBaselinesDDPG
@@ -207,7 +208,6 @@ def print_diagrams(groups, name, reduce_plot_to_tenthousand=False, individual_li
 standardtraining = 10000  # 1000000
 shorttraining = 10000
 market_class = CircularEconomyRebuyPriceDuopoly
-mconfig = 'market_config'
 
 
 def experiment_a2c_vs_ppo():
@@ -216,7 +216,7 @@ def experiment_a2c_vs_ppo():
         (StableBaselinesPPO, configuration_ppo_standard_all_same),
         (StableBaselinesPPO, configuration_ppo_clip_0_3_all_same)
     ]
-    groups = [run_group(market_class, mconfig, agent, configuration, standardtraining) for agent, configuration in tasks]
+    groups = [run_group(market_class, 'market_config', agent, configuration, standardtraining) for agent, configuration in tasks]
     print_diagrams(groups, 'a2c_ppo', True)
 
 
@@ -225,7 +225,7 @@ def experiment_a2c_vs_sac():
         (StableBaselinesA2C, configuration_a2c_all_same),
         (StableBaselinesSAC, configuration_sac_all_same)
     ]
-    groups = [run_group(market_class, mconfig, agent, configuration, shorttraining) for agent, configuration in tasks]
+    groups = [run_group(market_class, 'market_config', agent, configuration, shorttraining) for agent, configuration in tasks]
     print_diagrams(groups, 'a2c_sac', True)
 
 
@@ -235,27 +235,119 @@ def experiment_self_play():
         (StableBaselinesA2C, configuration_a2c_all_same),
         (StableBaselinesSAC, configuration_sac_all_same)
     ]
-    groups = [run_group(market_class, mconfig, agent, configuration, standardtraining, target_function=run_self_play_session)
+    groups = [run_group(market_class, 'market_config', agent, configuration, standardtraining, target_function=run_self_play_session)
         for agent, configuration in tasks]
     print_diagrams(groups, 'self_play', True)
 
 
 def experiment_several_ddpg_td3():
     tasks = [(StableBaselinesDDPG, configuration_learning_rate_ddpg), (StableBaselinesTD3, configuration_learning_rate_td3)]
-    groups = [run_group(market_class, mconfig, agent, configuration, standardtraining) for agent, configuration in tasks]
+    groups = [run_group(market_class, 'market_config', agent, configuration, standardtraining) for agent, configuration in tasks]
     print_diagrams(groups, 'ddpg_td3', False, True)
 
 
 def experiment_higher_clip_ranges_ppo():
     tasks = [(StableBaselinesPPO, configuration_clipping_ppo)]
-    groups = [run_group(market_class, mconfig, agent, configuration, standardtraining) for agent, configuration in tasks]
+    groups = [run_group(market_class, 'market_config', agent, configuration, standardtraining) for agent, configuration in tasks]
     print_diagrams(groups, 'ppo_clipping', True, True)
 
 
 def experiment_temperature_sac():
     tasks = [(StableBaselinesSAC, configuration_temperature_sac)]
-    groups = [run_group(market_class, mconfig, agent, configuration, shorttraining) for agent, configuration in tasks]
+    groups = [run_group(market_class, 'market_config', agent, configuration, shorttraining) for agent, configuration in tasks]
     print_diagrams(groups, 'sac_temperature', True, True)
+
+
+def experiment_partial_markov_a2c():
+    groups = [
+        run_group(market_class, 'market_config', StableBaselinesA2C, configuration_a2c_all_same, shorttraining),
+        run_group(market_class, 'market_config2', StableBaselinesA2C, configuration_a2c_all_same, shorttraining),
+        run_group(market_class, 'market_config3', StableBaselinesA2C, configuration_a2c_all_same, shorttraining)
+    ]
+    print_diagrams(groups, 'partial_markov_a2c')
+
+
+def experiment_partial_markov_ppo():
+    groups = [
+        run_group(market_class, 'market_config', StableBaselinesPPO, configuration_ppo_clip_0_3_all_same, standardtraining),
+        run_group(market_class, 'market_config2', StableBaselinesPPO, configuration_ppo_clip_0_3_all_same, standardtraining),
+        run_group(market_class, 'market_config3', StableBaselinesPPO, configuration_ppo_clip_0_3_all_same, standardtraining)
+    ]
+    print_diagrams(groups, 'partial_markov_ppo')
+
+
+def experiment_partial_markov_sac():
+    groups = [
+        run_group(market_class, 'market_config', StableBaselinesSAC, configuration_sac_all_same, shorttraining),
+        run_group(market_class, 'market_config2', StableBaselinesSAC, configuration_sac_all_same, shorttraining),
+        run_group(market_class, 'market_config3', StableBaselinesSAC, configuration_sac_all_same, shorttraining)
+    ]
+    print_diagrams(groups, 'partial_markov_sac')
+
+
+def experiment_mixed_rewards_a2c():
+    groups = [run_group(market_class, 'market_config_mixed', StableBaselinesA2C, configuration_a2c_all_same, shorttraining)]
+    print_diagrams(groups, 'mixed_rewards_a2c')
+
+
+def experiment_mixed_rewards_ppo():
+    groups = [
+        run_group(market_class, 'market_config_mixed', StableBaselinesPPO, configuration_ppo_standard_all_same, standardtraining),
+        run_group(market_class, 'market_config_mixed', StableBaselinesPPO, configuration_ppo_clip_0_3_all_same, standardtraining)
+    ]
+    print_diagrams(groups, 'mixed_rewards_ppo')
+
+
+def experiment_mixed_rewards_sac():
+    groups = [run_group(market_class, 'market_config_mixed', StableBaselinesSAC, configuration_sac_all_same, shorttraining)]
+    print_diagrams(groups, 'mixed_rewards_sac')
+
+
+def experiment_self_play_mixed():
+    tasks = [
+        (StableBaselinesPPO, configuration_ppo_clip_0_3_all_same),
+        (StableBaselinesA2C, configuration_a2c_all_same),
+        (StableBaselinesSAC, configuration_sac_all_same)
+    ]
+    groups = [run_group(market_class, 'market_config_mixed', agent, configuration, standardtraining, target_function=run_self_play_session)
+        for agent, configuration in tasks]
+    print_diagrams(groups, 'self_play_mixed', True)
+
+
+def experiment_monopoly():
+    tasks = [
+        (StableBaselinesPPO, configuration_ppo_clip_0_3_all_same),
+        (StableBaselinesA2C, configuration_a2c_all_same),
+        (StableBaselinesSAC, configuration_sac_all_same)
+    ]
+    groups = [run_group(
+        CircularEconomyRebuyPriceMonopoly, 'market_config', agent, configuration, standardtraining, target_function=run_training_session)
+        for agent, configuration in tasks]
+    print_diagrams(groups, 'comparison_monopoly', True)
+
+
+def experiment_oligopol():
+    tasks = [
+        (StableBaselinesPPO, configuration_ppo_clip_0_3_all_same),
+        (StableBaselinesA2C, configuration_a2c_all_same),
+        (StableBaselinesSAC, configuration_sac_all_same)
+    ]
+    groups = [run_group(
+        CircularEconomyRebuyPriceOligopoly, 'market_config', agent, configuration, standardtraining, target_function=run_training_session)
+        for agent, configuration in tasks]
+    print_diagrams(groups, 'comparison_oligopoly', True)
+
+
+def experiment_oligopol_mixed():
+    tasks = [
+        (StableBaselinesPPO, configuration_ppo_clip_0_3_all_same),
+        (StableBaselinesA2C, configuration_a2c_all_same),
+        (StableBaselinesSAC, configuration_sac_all_same)
+    ]
+    groups = [run_group(CircularEconomyRebuyPriceOligopoly,
+        'market_config_mixed', agent, configuration, standardtraining, target_function=run_training_session)
+        for agent, configuration in tasks]
+    print_diagrams(groups, 'comparison_oligopoly_mixed', True)
 
 
 # move the Path manager results folder to documents
