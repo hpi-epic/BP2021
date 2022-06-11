@@ -177,7 +177,7 @@ def run_group(market_class, config_market, agent, configuration, training_steps,
     return descriptions, [watcher.get_progress_values_of_property('profits/all', 0) for watcher in watchers]
 
 
-def print_diagrams(groups, name, reduce_plot_to_tenthousand=False, individual_lines=False):
+def print_diagrams(groups, name, individual_lines=False):
     plt.clf()
     plt.figure(figsize=(10, 5))
     if individual_lines:
@@ -194,19 +194,19 @@ def print_diagrams(groups, name, reduce_plot_to_tenthousand=False, individual_li
             maxs = np.max(profits_vendor_0, axis=0)
             means = np.mean(profits_vendor_0, axis=0)
             plt.fill_between(range(len(mins)), mins, maxs, alpha=0.5)
-            plt.plot(means, label=f'mean_{descriptions[0][:-2]}')
+            plt.plot(means, label=f'Mean of {descriptions[0][:-2]}')
     plt.legend()
-    if reduce_plot_to_tenthousand:
-        plt.ylim(0, 10000)
     plt.grid(True, linestyle='--')
     plt.xlabel('Episodes')
     plt.ylabel('Profit')
     plt.savefig(os.path.join(PathManager.results_path, 'monitoring', f'{name}.svg'), transparent=True)
+    plt.ylim(0, 10000)
+    plt.savefig(os.path.join(PathManager.results_path, 'monitoring', f'{name}_clipped.svg'), transparent=True)
 
 
 # These experiments are all done on a CERebuy market
-standardtraining = 10000  # 1000000
-shorttraining = 10000
+standardtraining = 1000000  # 1000000
+shorttraining = 300000
 market_class = CircularEconomyRebuyPriceDuopoly
 
 
@@ -217,7 +217,7 @@ def experiment_a2c_vs_ppo():
         (StableBaselinesPPO, configuration_ppo_clip_0_3_all_same)
     ]
     groups = [run_group(market_class, 'market_config', agent, configuration, standardtraining) for agent, configuration in tasks]
-    print_diagrams(groups, 'a2c_ppo', True)
+    print_diagrams(groups, 'a2c_ppo')
 
 
 def experiment_a2c_vs_sac():
@@ -226,7 +226,7 @@ def experiment_a2c_vs_sac():
         (StableBaselinesSAC, configuration_sac_all_same)
     ]
     groups = [run_group(market_class, 'market_config', agent, configuration, shorttraining) for agent, configuration in tasks]
-    print_diagrams(groups, 'a2c_sac', True)
+    print_diagrams(groups, 'a2c_sac')
 
 
 def experiment_self_play():
@@ -237,25 +237,27 @@ def experiment_self_play():
     ]
     groups = [run_group(market_class, 'market_config', agent, configuration, standardtraining, target_function=run_self_play_session)
         for agent, configuration in tasks]
-    print_diagrams(groups, 'self_play', True)
+    print_diagrams(groups, 'self_play')
 
 
 def experiment_several_ddpg_td3():
     tasks = [(StableBaselinesDDPG, configuration_learning_rate_ddpg), (StableBaselinesTD3, configuration_learning_rate_td3)]
     groups = [run_group(market_class, 'market_config', agent, configuration, standardtraining) for agent, configuration in tasks]
-    print_diagrams(groups, 'ddpg_td3', False, True)
+    print_diagrams(groups, 'ddpg_td3', True)
+    print_diagrams([groups[0]], 'ddpg', True)
+    print_diagrams([groups[1]], 'td3', True)
 
 
 def experiment_higher_clip_ranges_ppo():
     tasks = [(StableBaselinesPPO, configuration_clipping_ppo)]
     groups = [run_group(market_class, 'market_config', agent, configuration, standardtraining) for agent, configuration in tasks]
-    print_diagrams(groups, 'ppo_clipping', True, True)
+    print_diagrams(groups, 'ppo_clipping', True)
 
 
 def experiment_temperature_sac():
     tasks = [(StableBaselinesSAC, configuration_temperature_sac)]
     groups = [run_group(market_class, 'market_config', agent, configuration, shorttraining) for agent, configuration in tasks]
-    print_diagrams(groups, 'sac_temperature', True, True)
+    print_diagrams(groups, 'sac_temperature', True)
 
 
 def experiment_partial_markov_a2c():
@@ -305,49 +307,49 @@ def experiment_mixed_rewards_sac():
 
 def experiment_self_play_mixed():
     tasks = [
-        (StableBaselinesPPO, configuration_ppo_clip_0_3_all_same),
         (StableBaselinesA2C, configuration_a2c_all_same),
+        (StableBaselinesPPO, configuration_ppo_clip_0_3_all_same),
         (StableBaselinesSAC, configuration_sac_all_same)
     ]
     groups = [run_group(market_class, 'market_config_mixed', agent, configuration, standardtraining, target_function=run_self_play_session)
         for agent, configuration in tasks]
-    print_diagrams(groups, 'self_play_mixed', True)
+    print_diagrams(groups, 'self_play_mixed')
 
 
 def experiment_monopoly():
     tasks = [
-        (StableBaselinesPPO, configuration_ppo_clip_0_3_all_same),
         (StableBaselinesA2C, configuration_a2c_all_same),
+        (StableBaselinesPPO, configuration_ppo_clip_0_3_all_same),
         (StableBaselinesSAC, configuration_sac_all_same)
     ]
     groups = [run_group(
         CircularEconomyRebuyPriceMonopoly, 'market_config', agent, configuration, standardtraining, target_function=run_training_session)
         for agent, configuration in tasks]
-    print_diagrams(groups, 'comparison_monopoly', True)
+    print_diagrams(groups, 'comparison_monopoly')
 
 
 def experiment_oligopol():
     tasks = [
-        (StableBaselinesPPO, configuration_ppo_clip_0_3_all_same),
         (StableBaselinesA2C, configuration_a2c_all_same),
+        (StableBaselinesPPO, configuration_ppo_clip_0_3_all_same),
         (StableBaselinesSAC, configuration_sac_all_same)
     ]
     groups = [run_group(
         CircularEconomyRebuyPriceOligopoly, 'market_config', agent, configuration, standardtraining, target_function=run_training_session)
         for agent, configuration in tasks]
-    print_diagrams(groups, 'comparison_oligopoly', True)
+    print_diagrams(groups, 'comparison_oligopoly')
 
 
 def experiment_oligopol_mixed():
     tasks = [
-        (StableBaselinesPPO, configuration_ppo_clip_0_3_all_same),
         (StableBaselinesA2C, configuration_a2c_all_same),
+        (StableBaselinesPPO, configuration_ppo_clip_0_3_all_same),
         (StableBaselinesSAC, configuration_sac_all_same)
     ]
     groups = [run_group(CircularEconomyRebuyPriceOligopoly,
         'market_config_mixed', agent, configuration, standardtraining, target_function=run_training_session)
         for agent, configuration in tasks]
-    print_diagrams(groups, 'comparison_oligopoly_mixed', True)
+    print_diagrams(groups, 'comparison_oligopoly_mixed')
 
 
 # move the Path manager results folder to documents
@@ -370,3 +372,23 @@ if __name__ == '__main__':
     move_results_to_documents('ppo_clipping')
     experiment_temperature_sac()
     move_results_to_documents('sac_temperature')
+    experiment_partial_markov_a2c()
+    move_results_to_documents('partial_markov_a2c')
+    experiment_partial_markov_ppo()
+    move_results_to_documents('partial_markov_ppo')
+    experiment_partial_markov_sac()
+    move_results_to_documents('partial_markov_sac')
+    experiment_mixed_rewards_a2c()
+    move_results_to_documents('mixed_rewards_a2c')
+    experiment_mixed_rewards_ppo()
+    move_results_to_documents('mixed_rewards_ppo')
+    experiment_mixed_rewards_sac()
+    move_results_to_documents('mixed_rewards_sac')
+    experiment_self_play_mixed()
+    move_results_to_documents('self_play_mixed')
+    experiment_monopoly()
+    move_results_to_documents('comparison_monopoly')
+    experiment_oligopol()
+    move_results_to_documents('comparison_oligopoly')
+    experiment_oligopol_mixed()
+    move_results_to_documents('comparison_oligopoly_mixed')

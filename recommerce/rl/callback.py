@@ -165,7 +165,7 @@ class RecommerceCallback(BaseCallback):
 		monitor.configurator.get_folder()
 
 		print('Creating scatterplots...')
-		ignore_first_samples = 100  # the number of samples you want to skip because they can be severe outliers
+		ignore_first_samples = 10  # the number of samples you want to skip because they can be severe outliers
 		cumulative_properties = self.watcher.get_cumulative_properties()
 		for property, samples in ut.unroll_dict_with_list(cumulative_properties).items():
 			x_values = np.array(range(len(samples[ignore_first_samples:]))) + ignore_first_samples
@@ -203,7 +203,7 @@ class RecommerceCallback(BaseCallback):
 			# Only Stable Baselines agents use continuous actions at the moment. And only Stable Baselines agents have the attribute env.
 			# The correct way of doing this would be by checking for `isinstance(StableBaselinesAgent)`, but that would result in a circular import.
 			monitor.configurator.setup_monitoring(
-				False, 10, 10,  # Change to 100 again later
+				False, 100, 100,
 				self.marketplace_class,
 				agent_list,
 				support_continuous_action_space=hasattr(self.model, 'env'),
