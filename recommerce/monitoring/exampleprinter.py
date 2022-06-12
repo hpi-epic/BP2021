@@ -13,7 +13,7 @@ import recommerce.market.circular.circular_sim_market as circular_market
 from recommerce.configuration.environment_config import EnvironmentConfigLoader, ExampleprinterEnvironmentConfig
 from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader
 from recommerce.configuration.path_manager import PathManager
-from recommerce.market.circular.circular_vendors import RuleBasedCERebuyAgent
+from recommerce.market.circular.circular_vendors import RuleBasedCERebuyAgent, RuleBasedCERebuyAgentCompetitive
 from recommerce.market.sim_market import SimMarket
 from recommerce.market.vendors import Agent
 from recommerce.monitoring.svg_manipulation import SVGManipulator
@@ -131,10 +131,10 @@ if __name__ == '__main__':  # pragma: no cover
 	config_market = HyperparameterConfigLoader.load('market_config', circular_market.CircularEconomyRebuyPriceDuopoly)
 	config_rl = HyperparameterConfigLoader.load('sb_ppo_config', StableBaselinesPPO)
 	market = circular_market.CircularEconomyRebuyPriceDuopoly(config_market, support_continuous_action_space=True)
-	agent = StableBaselinesPPO(config_market, config_rl, market,
-		'C:\\Users\\jangr\\develop\\BP2021\\results\\trainedModels\\Stable_Baselines_PPO_Jun12_15-20-30\\Stable_Baselines_PPO_00500.zip')
+	# agent = StableBaselinesPPO(config_market, config_rl, market,
+	# 	'C:\\Users\\jangr\\develop\\BP2021\\results\\trainedModels\\Stable_Baselines_PPO_Jun12_15-20-30\\Stable_Baselines_PPO_00500.zip')
 	printer = ExamplePrinter(config_market)
-	printer.setup_exampleprinter(market, agent)
+	printer.setup_exampleprinter(market, RuleBasedCERebuyAgentCompetitive(config_market))
 	printer.run_example()
 
 	# main()

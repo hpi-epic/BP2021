@@ -298,6 +298,8 @@ def experiment_mixed_rewards_a2c():
         run_group(market_class, 'market_config3', StableBaselinesA2C, configuration_a2c_all_same, shorttraining),
         run_group(market_class, 'market_config_mixed', StableBaselinesA2C, configuration_a2c_all_same, shorttraining)
     ]
+    print_diagrams([groups[0]], 'partial_a2c')
+    print_diagrams([groups[1]], 'partial_mixed_a2c')
     print_diagrams(groups, 'mixed_rewards_a2c')
 
 
@@ -306,6 +308,8 @@ def experiment_mixed_rewards_ppo():
         run_group(market_class, 'market_config3', StableBaselinesPPO, configuration_ppo_clip_0_3_all_same, standardtraining),
         run_group(market_class, 'market_config_mixed', StableBaselinesPPO, configuration_ppo_clip_0_3_all_same, standardtraining)
     ]
+    print_diagrams([groups[0]], 'partial_ppo')
+    print_diagrams([groups[1]], 'partial_mixed_ppo')
     print_diagrams(groups, 'mixed_rewards_ppo')
 
 
@@ -314,6 +318,8 @@ def experiment_mixed_rewards_sac():
         run_group(market_class, 'market_config3', StableBaselinesSAC, configuration_sac_all_same, shorttraining),
         run_group(market_class, 'market_config_mixed', StableBaselinesSAC, configuration_sac_all_same, shorttraining)
     ]
+    print_diagrams([groups[0]], 'partial_sac')
+    print_diagrams([groups[1]], 'partial_mixed_sac')
     print_diagrams(groups, 'mixed_rewards_sac')
 
 
