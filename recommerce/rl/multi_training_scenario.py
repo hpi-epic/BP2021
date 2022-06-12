@@ -116,7 +116,7 @@ def configuration_learning_rate_td3():
 def configuration_ppo_standard_all_same():
     configs = []
     descriptions = []
-    for i in range(8):
+    for i in range(4):
         configs.append(HyperparameterConfigLoader.load('sb_ppo_config', StableBaselinesPPO))
         descriptions.append(f'ppo_standard_{i}')
 
@@ -126,7 +126,7 @@ def configuration_ppo_standard_all_same():
 def configuration_ppo_clip_0_3_all_same():
     configs = []
     descriptions = []
-    for i in range(8):
+    for i in range(4):
         configs.append(HyperparameterConfigLoader.load('sb_ppo_config', StableBaselinesPPO))
         configs[-1].clip_range = 0.3
         descriptions.append(f'ppo_clip_range_{0.3}_{i}')
@@ -137,7 +137,7 @@ def configuration_ppo_clip_0_3_all_same():
 def configuration_a2c_all_same():
     configs = []
     descriptions = []
-    for i in range(8):
+    for i in range(4):
         configs.append(HyperparameterConfigLoader.load('sb_a2c_config', StableBaselinesA2C))
         # configs[-1].learning_rate = learning_rate
         descriptions.append(f'a2c_standard_{i}')
@@ -148,7 +148,7 @@ def configuration_a2c_all_same():
 def configuration_sac_all_same():
     configs = []
     descriptions = []
-    for i in range(8):
+    for i in range(4):
         configs.append(HyperparameterConfigLoader.load('sb_sac_config', StableBaselinesSAC))
         # configs[-1].learning_rate = learning_rate
         descriptions.append(f'sac_standard_{i}')
@@ -200,8 +200,12 @@ def print_diagrams(groups, name, individual_lines=False):
     plt.xlabel('Episodes')
     plt.ylabel('Profit')
     plt.savefig(os.path.join(PathManager.results_path, 'monitoring', f'{name}.svg'), transparent=True)
+    plt.ylim(0, 12000)
+    plt.savefig(os.path.join(PathManager.results_path, 'monitoring', f'{name}_clipped_12000.svg'), transparent=True)
+    plt.ylim(0, 15000)
+    plt.savefig(os.path.join(PathManager.results_path, 'monitoring', f'{name}_clipped_15000.svg'), transparent=True)
     plt.ylim(0, 10000)
-    plt.savefig(os.path.join(PathManager.results_path, 'monitoring', f'{name}_clipped.svg'), transparent=True)
+    plt.savefig(os.path.join(PathManager.results_path, 'monitoring', f'{name}_clipped_10000.svg'), transparent=True)
 
 
 # These experiments are all done on a CERebuy market
