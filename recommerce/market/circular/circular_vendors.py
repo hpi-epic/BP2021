@@ -11,7 +11,6 @@ class CircularAgent(Agent, ABC):
 	def _clamp_price(self, price) -> int:
 		min_price = 0
 		max_price = self.config_market.max_price - 1
-		price = int(price)
 		price = max(price, min_price)
 		price = min(price, max_price)
 		return price
@@ -159,19 +158,15 @@ class RuleBasedCERebuyAgentCompetitive(RuleBasedAgent, CircularAgent):
 		# competitor's storage is ignored
 		if own_storage < self.config_market.max_storage / 15:
 			# fill up the storage immediately
-			price_refurbished = min(competitors_refurbished_prices) + 2
-			rebuy_price = max(min(competitors_rebuy_prices) + 1, 2)
-		elif own_storage < self.config_market.max_storage / 10:
-			# fill up the storage
 			price_refurbished = min(competitors_refurbished_prices) + 1
-			rebuy_price = min(competitors_rebuy_prices)
+			rebuy_price = max(min(competitors_rebuy_prices) + 1, 2)
 		elif own_storage < self.config_market.max_storage / 8:
 			# storage content is ok
-			rebuy_price = max(min(competitors_rebuy_prices) - 1, 1)
+			rebuy_price = max(min(competitors_rebuy_prices) - 1, 0.25)
 			price_refurbished = max(min(competitors_refurbished_prices) - 1, rebuy_price + 1)
 		else:
 			# storage too full, we need to get rid of some refurbished products
-			rebuy_price = max(min(competitors_rebuy_prices) - 2, 1)
+			rebuy_price = max(min(competitors_rebuy_prices) - 2, 0)
 			price_refurbished = max(round(np.quantile(competitors_refurbished_prices, 0.75)) - 2, rebuy_price + 1)
 
 		return (self._clamp_price(price_refurbished), self._clamp_price(price_new), self._clamp_price(rebuy_price))

@@ -18,6 +18,7 @@ from recommerce.market.sim_market import SimMarket
 from recommerce.market.vendors import Agent
 from recommerce.monitoring.svg_manipulation import SVGManipulator
 from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
+from recommerce.rl.stable_baselines.sb_ppo import StableBaselinesPPO
 
 
 class ExamplePrinter():
@@ -74,6 +75,7 @@ class ExamplePrinter():
 			while not is_done:
 				action = self.agent.policy(state)
 				print(state)
+				print(action)
 				state, reward, is_done, logdict = self.marketplace.step(action)
 				if cumulative_dict is not None:
 					cumulative_dict = ut.add_content_of_two_dicts(cumulative_dict, logdict)
@@ -126,4 +128,13 @@ if __name__ == '__main__':  # pragma: no cover
 	# Make sure a valid datapath is set
 	PathManager.manage_user_path()
 
-	main()
+	config_market = HyperparameterConfigLoader.load('market_config', circular_market.CircularEconomyRebuyPriceDuopoly)
+	config_rl = HyperparameterConfigLoader.load('sb_ppo_config', StableBaselinesPPO)
+	market = circular_market.CircularEconomyRebuyPriceDuopoly(config_market, support_continuous_action_space=True)
+	agent = StableBaselinesPPO(config_market, config_rl, market,
+		'C:\\Users\\jangr\\develop\\BP2021\\results\\trainedModels\\Stable_Baselines_PPO_Jun12_15-20-30\\Stable_Baselines_PPO_00500.zip')
+	printer = ExamplePrinter(config_market)
+	printer.setup_exampleprinter(market, agent)
+	printer.run_example()
+
+	# main()

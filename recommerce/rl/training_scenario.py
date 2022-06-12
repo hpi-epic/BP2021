@@ -202,4 +202,4 @@ if __name__ == '__main__':
 	# Make sure a valid datapath is set
 	PathManager.manage_user_path()
 
-	train_stable_baselines_a2c()
+	train_stable_baselines_ppo()
