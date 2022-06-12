@@ -294,20 +294,26 @@ def experiment_partial_markov_sac():
 
 
 def experiment_mixed_rewards_a2c():
-    groups = [run_group(market_class, 'market_config_mixed', StableBaselinesA2C, configuration_a2c_all_same, shorttraining)]
+    groups = [
+        run_group(market_class, 'market_config3', StableBaselinesA2C, configuration_a2c_all_same, shorttraining),
+        run_group(market_class, 'market_config_mixed', StableBaselinesA2C, configuration_a2c_all_same, shorttraining)
+    ]
     print_diagrams(groups, 'mixed_rewards_a2c')
 
 
 def experiment_mixed_rewards_ppo():
     groups = [
-        run_group(market_class, 'market_config_mixed', StableBaselinesPPO, configuration_ppo_standard_all_same, standardtraining),
+        run_group(market_class, 'market_config3', StableBaselinesPPO, configuration_ppo_clip_0_3_all_same, standardtraining),
         run_group(market_class, 'market_config_mixed', StableBaselinesPPO, configuration_ppo_clip_0_3_all_same, standardtraining)
     ]
     print_diagrams(groups, 'mixed_rewards_ppo')
 
 
 def experiment_mixed_rewards_sac():
-    groups = [run_group(market_class, 'market_config_mixed', StableBaselinesSAC, configuration_sac_all_same, shorttraining)]
+    groups = [
+        run_group(market_class, 'market_config3', StableBaselinesSAC, configuration_sac_all_same, shorttraining),
+        run_group(market_class, 'market_config_mixed', StableBaselinesSAC, configuration_sac_all_same, shorttraining)
+    ]
     print_diagrams(groups, 'mixed_rewards_sac')
 
 
@@ -366,24 +372,24 @@ def move_results_to_documents(dest_folder_name):
 
 
 if __name__ == '__main__':
-    experiment_a2c_vs_ppo()
-    move_results_to_documents('a2c_vs_ppo')
-    experiment_a2c_vs_sac()
-    move_results_to_documents('a2c_vs_sac')
-    experiment_self_play()
-    move_results_to_documents('self_play')
-    experiment_several_ddpg_td3()
-    move_results_to_documents('ddpg_td3')
-    experiment_higher_clip_ranges_ppo()
-    move_results_to_documents('ppo_clipping')
-    experiment_temperature_sac()
-    move_results_to_documents('sac_temperature')
-    experiment_partial_markov_a2c()
-    move_results_to_documents('partial_markov_a2c')
-    experiment_partial_markov_ppo()
-    move_results_to_documents('partial_markov_ppo')
-    experiment_partial_markov_sac()
-    move_results_to_documents('partial_markov_sac')
+    # experiment_a2c_vs_ppo()
+    # move_results_to_documents('a2c_vs_ppo')
+    # experiment_a2c_vs_sac()
+    # move_results_to_documents('a2c_vs_sac')
+    # experiment_self_play()
+    # move_results_to_documents('self_play')
+    # experiment_several_ddpg_td3()
+    # move_results_to_documents('ddpg_td3')
+    # experiment_higher_clip_ranges_ppo()
+    # move_results_to_documents('ppo_clipping')
+    # experiment_temperature_sac()
+    # move_results_to_documents('sac_temperature')
+    # experiment_partial_markov_a2c()
+    # move_results_to_documents('partial_markov_a2c')
+    # experiment_partial_markov_ppo()
+    # move_results_to_documents('partial_markov_ppo')
+    # experiment_partial_markov_sac()
+    # move_results_to_documents('partial_markov_sac')
     experiment_mixed_rewards_a2c()
     move_results_to_documents('mixed_rewards_a2c')
     experiment_mixed_rewards_ppo()
