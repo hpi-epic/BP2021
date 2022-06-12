@@ -204,6 +204,8 @@ def print_diagrams(groups, name, individual_lines=False):
     plt.savefig(os.path.join(PathManager.results_path, 'monitoring', f'{name}_clipped_12000.svg'), transparent=True)
     plt.ylim(0, 15000)
     plt.savefig(os.path.join(PathManager.results_path, 'monitoring', f'{name}_clipped_15000.svg'), transparent=True)
+    plt.ylim(0, 17500)
+    plt.savefig(os.path.join(PathManager.results_path, 'monitoring', f'{name}_clipped_17500.svg'), transparent=True)
     plt.ylim(0, 10000)
     plt.savefig(os.path.join(PathManager.results_path, 'monitoring', f'{name}_clipped_10000.svg'), transparent=True)
 
