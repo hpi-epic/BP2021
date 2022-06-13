@@ -185,7 +185,8 @@ class Configurator():
 				The first agent is "playing" on the market, while the rest are set as competitors on the market.
 			separate_markets (bool, optional): Indicates if the passed agents should be trained on separate marketplaces. Defaults to False.
 			config_market (AttrDict, optional): THe config file for the marketplace. Defaults to None.
-			support_continuous_action_space(bool, optional): Needed when setting StableBaselinesAgents in order to ensure continuous pricing. Defaults to False.
+			support_continuous_action_space(bool, optional): Needed when setting StableBaselinesAgents in order to ensure continuous pricing.
+				Defaults to False.
 		"""
 		if episodes is not None:
 			assert isinstance(episodes, int), 'episodes must be of type int'
