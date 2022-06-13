@@ -151,7 +151,7 @@ class RuleBasedCERebuyAgentCompetitive(RuleBasedAgent, CircularAgent):
 		# TODO: find a proper way asserting the length of observation (as implemented in AC & QLearning via passing marketplace)
 
 		# in_circulation is ignored
-		own_storage = observation[1].item()
+		own_storage = observation[1].item() if self.config_market.common_state_visibility else observation[0].item()
 		competitors_refurbished_prices, competitors_new_prices, competitors_rebuy_prices = self._get_competitor_prices(observation, True)
 
 		price_new = max(min(competitors_new_prices) - 1, self.config_market.production_price + 1)
