@@ -348,7 +348,7 @@ class CircularEconomyRebuyPriceDuopoly(CircularEconomyRebuyPrice):
 		return 1
 
 	def _get_competitor_list(self) -> list:
-		return [circular_vendors.RuleBasedCERebuyAgentStorageMinimizer(config_market=self.config)]
+		return [circular_vendors.RuleBasedCERebuyAgentCompetitive(config_market=self.config)]
 
 
 class CircularEconomyRebuyPriceOligopoly(CircularEconomyRebuyPrice):
