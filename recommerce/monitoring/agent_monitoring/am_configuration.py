@@ -156,7 +156,9 @@ class Configurator():
 			assert self.marketplace.get_num_competitors() == np.inf or len(self.agents)-1 == self.marketplace.get_num_competitors(), \
 				f'The number of competitors given is invalid: was {len(self.agents)-1} but should be {self.marketplace.get_num_competitors()}'
 
-			self.marketplace.competitors = self.agents[1:]
+			self.marketplace = type(self.marketplace)(config=self.config_market, competitors=self.agents[1:],
+				support_continuous_action_space=self.marketplace.support_continuous_action_space)
+			# this is internal, but we need to change it...
 			self.marketplace._number_of_vendors = self.marketplace._get_number_of_vendors()
 
 	def setup_monitoring(
