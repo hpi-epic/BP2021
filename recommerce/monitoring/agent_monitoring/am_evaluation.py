@@ -260,14 +260,14 @@ class Evaluator():
 		"""
 		if self.configurator.episodes % self.configurator.plot_interval != 0:
 			assert len(x_values) == int(self.configurator.episodes / self.configurator.plot_interval) + 1, \
-				'x_values must have self.episodes / self.plot_interval + 1 many items (episodes%interval != 0)'
+				f'x_values must have {int(self.configurator.episodes / self.configurator.plot_interval) + 1} items, had {len(x_values)}'
 			assert all(len(agent_y_value) == int(self.configurator.episodes / self.configurator.plot_interval) + 1 for agent_y_value in y_values), \
-				'y_values must have (self.episodes / self.plot_interval) + 1 many items (episodes%interval != 0)'
+				f'Each value in y_values must have {int(self.configurator.episodes / self.configurator.plot_interval) + 1} items, was {y_values}'
 		else:
 			assert len(x_values) == int(self.configurator.episodes / self.configurator.plot_interval), \
-				'x_values must have self.episodes / self.plot_interval many items (episodes%interval == 0)'
+				f'x_values must have {int(self.configurator.episodes / self.configurator.plot_interval)} items, had {len(x_values)}'
 			assert all(len(agent_y_value) == int(self.configurator.episodes / self.configurator.plot_interval) for agent_y_value in y_values), \
-				'y_values must have self.episodes / self.plot_interval many items (episodes%interval == 0)'
+				f'Each value in y_values must have {int(self.configurator.episodes / self.configurator.plot_interval)} items, was {y_values}'
 		assert len(y_values) == len(self.configurator.agents), 'y_values must have one entry per agent'
 
 		plt.clf()

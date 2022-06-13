@@ -140,9 +140,9 @@ def test_create_statistics_plots(agents, rewards, plot_bins, agent_color, lower_
 
 
 incorrect_create_line_plot_testcases = [
-	([1, 2, 3], [[2], [1]], 'Overall', 'x_values must have self.episodes / self.plot_interval many items'),
-	([1, 2], [[2], [1]], 'Overall', 'y_values must have one entry per agent'),
-	([1, 2], [[2]], 'Overall', 'y_values must have self.episodes / self.plot_interval many items')
+	([1, 2, 3], [[2], [1]], 'Overall', 'x_values must have 2 items, had 3'),
+	([1, 2], [[2, 1], [1, 2]], 'Overall', 'y_values must have one entry per agent'),
+	([1, 2], [[2]], 'Overall', 'Each value in y_values must have 2 items, was [[2]]')
 ]
 
 
