@@ -169,7 +169,7 @@ class RecommerceCallback(BaseCallback):
 			if vendor_index.isdigit():
 				# property without '/vendor_x'
 				property_name = property.rsplit('/', 1)[:-1][0]
-				relevant_agent = self.agent_class.__name__ if vendor_index == '0' else competitors[int(vendor_index)-1].name
+				relevant_agent = self.agent_class.__name__ if vendor_index == '0' else competitors[int(vendor_index) - 1].name
 				plt.scatter(x_values, samples[ignore_first_samples:], label=relevant_agent, s=10)
 				plt.grid()
 				plt.title(f'All samples of {property_name}')
@@ -203,7 +203,7 @@ class RecommerceCallback(BaseCallback):
 				if vendor_index == 0:
 					label = f'{self.agent_class.__name__}'
 				else:
-					label = competitors[vendor_index-1].name
+					label = competitors[vendor_index - 1].name
 				plt.plot(x_values, values, label=label)
 
 			if isinstance(samples[0], list):

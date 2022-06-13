@@ -51,7 +51,12 @@ def test_evaluate_session(agents, marketplace, rewards):
 		patch('recommerce.monitoring.agent_monitoring.am_configuration.os.makedirs'), \
 		patch('recommerce.monitoring.agent_monitoring.am_configuration.os.path.exists') as exists_mock:
 		exists_mock.return_value = True
-		monitor.configurator.setup_monitoring(episodes=4, plot_interval=1, separate_markets=False, agents=agents, marketplace=marketplace,
+		monitor.configurator.setup_monitoring(
+			episodes=4,
+			plot_interval=1,
+			separate_markets=False,
+			agents=agents,
+			marketplace=marketplace,
 			config_market=config_market)
 		monitor.evaluator.evaluate_session(rewards)
 
@@ -120,7 +125,11 @@ def test_create_histogram_without_saving_to_directory():
 
 @pytest.mark.parametrize('agents, rewards, plot_bins, agent_color, lower_upper_range', create_histogram_statistics_plots_testcases)
 def test_create_statistics_plots(agents, rewards, plot_bins, agent_color, lower_upper_range):
-	monitor.configurator.setup_monitoring(separate_markets=True, agents=agents, episodes=len(rewards[0]), plot_interval=1,
+	monitor.configurator.setup_monitoring(
+		separate_markets=True,
+		agents=agents,
+		episodes=len(rewards[0]),
+		plot_interval=1,
 		config_market=config_market)
 	with patch('recommerce.monitoring.agent_monitoring.am_evaluation.plt'), \
 		patch('recommerce.monitoring.agent_monitoring.am_configuration.os.makedirs'), \

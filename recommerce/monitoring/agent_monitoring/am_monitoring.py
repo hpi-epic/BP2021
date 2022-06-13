@@ -71,7 +71,7 @@ class Monitor():
 
 			return [watcher.get_cumulative_properties() for watcher in watchers]
 
-		# all agents one one marketplace
+		# all agents on one marketplace
 		else:
 			watcher = Watcher(config_market=self.configurator.marketplace.config)
 			for _ in trange(1, self.configurator.episodes + 1, unit=' episodes', leave=False):
