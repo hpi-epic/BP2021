@@ -166,7 +166,7 @@ def run_group(market_class, config_market, agent, configuration, training_steps,
         for config, description, (_, pipe_entry) in zip(configs, descriptions, pipes)]
     print('Now I start the processes')
     for p in processes:
-        time.sleep(2)
+        time.sleep(10)
         p.start()
     print('Now I wait for the results')
     watchers = [output.recv() for output, _ in pipes]
@@ -269,7 +269,6 @@ def experiment_temperature_sac():
 def experiment_partial_markov_a2c():
     groups = [
         run_group(market_class, 'market_config', StableBaselinesA2C, configuration_a2c_all_same, shorttraining),
-        run_group(market_class, 'market_config2', StableBaselinesA2C, configuration_a2c_all_same, shorttraining),
         run_group(market_class, 'market_config3', StableBaselinesA2C, configuration_a2c_all_same, shorttraining)
     ]
     print_diagrams(groups, 'partial_markov_a2c')
@@ -278,7 +277,6 @@ def experiment_partial_markov_a2c():
 def experiment_partial_markov_ppo():
     groups = [
         run_group(market_class, 'market_config', StableBaselinesPPO, configuration_ppo_clip_0_3_all_same, standardtraining),
-        run_group(market_class, 'market_config2', StableBaselinesPPO, configuration_ppo_clip_0_3_all_same, standardtraining),
         run_group(market_class, 'market_config3', StableBaselinesPPO, configuration_ppo_clip_0_3_all_same, standardtraining)
     ]
     print_diagrams(groups, 'partial_markov_ppo')
@@ -287,7 +285,6 @@ def experiment_partial_markov_ppo():
 def experiment_partial_markov_sac():
     groups = [
         run_group(market_class, 'market_config', StableBaselinesSAC, configuration_sac_all_same, shorttraining),
-        run_group(market_class, 'market_config2', StableBaselinesSAC, configuration_sac_all_same, shorttraining),
         run_group(market_class, 'market_config3', StableBaselinesSAC, configuration_sac_all_same, shorttraining)
     ]
     print_diagrams(groups, 'partial_markov_sac')
@@ -295,7 +292,7 @@ def experiment_partial_markov_sac():
 
 def experiment_mixed_rewards_a2c():
     groups = [
-        run_group(market_class, 'market_config3', StableBaselinesA2C, configuration_a2c_all_same, shorttraining),
+        run_group(market_class, 'market_config', StableBaselinesA2C, configuration_a2c_all_same, shorttraining),
         run_group(market_class, 'market_config_mixed', StableBaselinesA2C, configuration_a2c_all_same, shorttraining)
     ]
     print_diagrams([groups[0]], 'partial_a2c')
@@ -305,7 +302,7 @@ def experiment_mixed_rewards_a2c():
 
 def experiment_mixed_rewards_ppo():
     groups = [
-        run_group(market_class, 'market_config3', StableBaselinesPPO, configuration_ppo_clip_0_3_all_same, standardtraining),
+        run_group(market_class, 'market_config', StableBaselinesPPO, configuration_ppo_clip_0_3_all_same, standardtraining),
         run_group(market_class, 'market_config_mixed', StableBaselinesPPO, configuration_ppo_clip_0_3_all_same, standardtraining)
     ]
     print_diagrams([groups[0]], 'partial_ppo')
@@ -315,7 +312,7 @@ def experiment_mixed_rewards_ppo():
 
 def experiment_mixed_rewards_sac():
     groups = [
-        run_group(market_class, 'market_config3', StableBaselinesSAC, configuration_sac_all_same, shorttraining),
+        run_group(market_class, 'market_config', StableBaselinesSAC, configuration_sac_all_same, shorttraining),
         run_group(market_class, 'market_config_mixed', StableBaselinesSAC, configuration_sac_all_same, shorttraining)
     ]
     print_diagrams([groups[0]], 'partial_sac')
@@ -373,29 +370,29 @@ def experiment_oligopol_mixed():
 # move the Path manager results folder to documents
 def move_results_to_documents(dest_folder_name):
     folder = shutil.move(
-        PathManager.results_path, f'C:\\Users\\jangr\\OneDrive\\Dokumente\\Bachelorarbeit_Experimente\\{dest_folder_name}')
+        PathManager.results_path, f'C:\\Users\\jangr\\OneDrive\\Dokumente\\Bachelorarbeit_Experimente_lokal\\{dest_folder_name}')
     print(f'Moved results to {folder}')
 
 
 if __name__ == '__main__':
-    # experiment_a2c_vs_ppo()
-    # move_results_to_documents('a2c_vs_ppo')
-    # experiment_a2c_vs_sac()
-    # move_results_to_documents('a2c_vs_sac')
-    # experiment_self_play()
-    # move_results_to_documents('self_play')
-    # experiment_several_ddpg_td3()
-    # move_results_to_documents('ddpg_td3')
-    # experiment_higher_clip_ranges_ppo()
-    # move_results_to_documents('ppo_clipping')
-    # experiment_temperature_sac()
-    # move_results_to_documents('sac_temperature')
-    # experiment_partial_markov_a2c()
-    # move_results_to_documents('partial_markov_a2c')
-    # experiment_partial_markov_ppo()
-    # move_results_to_documents('partial_markov_ppo')
-    # experiment_partial_markov_sac()
-    # move_results_to_documents('partial_markov_sac')
+    experiment_a2c_vs_ppo()
+    move_results_to_documents('a2c_vs_ppo')
+    experiment_a2c_vs_sac()
+    move_results_to_documents('a2c_vs_sac')
+    experiment_self_play()
+    move_results_to_documents('self_play')
+    experiment_several_ddpg_td3()
+    move_results_to_documents('ddpg_td3')
+    experiment_higher_clip_ranges_ppo()
+    move_results_to_documents('ppo_clipping')
+    experiment_temperature_sac()
+    move_results_to_documents('sac_temperature')
+    experiment_partial_markov_a2c()
+    move_results_to_documents('partial_markov_a2c')
+    experiment_partial_markov_ppo()
+    move_results_to_documents('partial_markov_ppo')
+    experiment_partial_markov_sac()
+    move_results_to_documents('partial_markov_sac')
     experiment_mixed_rewards_a2c()
     move_results_to_documents('mixed_rewards_a2c')
     experiment_mixed_rewards_ppo()
