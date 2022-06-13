@@ -216,6 +216,8 @@ class Evaluator():
 		metric_types = ['Overall', 'Overall', 'Episode', 'Episode']
 
 		x_axis_episodes = np.arange(self.configurator.plot_interval, self.configurator.episodes + 1, self.configurator.plot_interval)
+		if self.configurator.episodes % self.configurator.plot_interval != 0:
+			x_axis_episodes = np.append(x_axis_episodes, [self.configurator.episodes])
 
 		for function in range(len(metric_functions)):
 			# calculate <metric> rewards per self.plot_interval episodes for each agent
@@ -232,6 +234,17 @@ class Evaluator():
 								rewards[agent_rewards_id][self.configurator.plot_interval * (start_index):self.configurator.plot_interval * (start_index + 1)]))
 					else:  # pragma: no cover
 						raise RuntimeError(f'this metric_type is unknown: {metric_types[function]}')
+
+				# in case some episodes were missed
+				if self.configurator.episodes % self.configurator.plot_interval != 0:
+					if metric_types[function] == 'Overall':
+						metric_rewards[agent_rewards_id].append(metric_functions[function](rewards[agent_rewards_id]))
+					elif metric_types[function] == 'Episode':
+						metric_rewards[agent_rewards_id].append(
+							metric_functions[function](rewards[agent_rewards_id][:-(self.configurator.episodes % self.configurator.plot_interval)]))
+					else:  # pragma: no cover
+						raise RuntimeError(f'this metric_type is unknown: {metric_types[function]}')
+
 			self._create_line_plot(x_axis_episodes, metric_rewards, metric_names[function], metric_types[function], episode_numbers)
 
 	def _create_line_plot(self, x_values: list, y_values: list, metric_name: str, metric_type: str, episode_numbers: int = None) -> None:
@@ -245,12 +258,17 @@ class Evaluator():
 			episode_numbers (list of int, optional): The training stages the empirical distributions belong to.
 				If it is None, a prior functionality is used.
 		"""
-		assert len(x_values) == int(self.configurator.episodes / self.configurator.plot_interval), \
-			'x_values must have self.episodes / self.plot_interval many items'
+		if self.configurator.episodes % self.configurator.plot_interval != 0:
+			assert len(x_values) == int(self.configurator.episodes / self.configurator.plot_interval) + 1, \
+				'x_values must have self.episodes / self.plot_interval + 1 many items (episodes%interval != 0)'
+			assert all(len(agent_y_value) == int(self.configurator.episodes / self.configurator.plot_interval) + 1 for agent_y_value in y_values), \
+				'y_values must have (self.episodes / self.plot_interval) + 1 many items (episodes%interval != 0)'
+		else:
+			assert len(x_values) == int(self.configurator.episodes / self.configurator.plot_interval), \
+				'x_values must have self.episodes / self.plot_interval many items (episodes%interval == 0)'
+			assert all(len(agent_y_value) == int(self.configurator.episodes / self.configurator.plot_interval) for agent_y_value in y_values), \
+				'y_values must have self.episodes / self.plot_interval many items (episodes%interval == 0)'
 		assert len(y_values) == len(self.configurator.agents), 'y_values must have one entry per agent'
-		assert all(len(agent_y_value) == int(self.configurator.episodes / self.configurator.plot_interval) for agent_y_value in y_values), \
-			'y_values must have self.episodes / self.plot_interval many items'
-		# print(f'Creating line plot for {metric_name} rewards...')
 
 		plt.clf()
 		filename = f'{metric_name}_rewards.svg'
