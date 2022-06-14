@@ -293,7 +293,7 @@ class AgentMonitoringEnvironmentConfig(EnvironmentConfig):
 		self.agent = []
 		for current_agent in passed_agents:
 			# with modelfile
-			if issubclass(current_agent['agent_class'], ReinforcementLearningAgent):
+			if issubclass(current_agent['agent_class'], (ReinforcementLearningAgent, FixedPriceAgent)):
 				self.agent.append((current_agent['agent_class'], [current_agent['argument'], current_agent['name']]))
 			# without modelfile
 			else:
