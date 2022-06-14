@@ -21,8 +21,8 @@ def test_get_required_fields_valid():
 	fields = env_config.EnvironmentConfig.get_required_fields('top-dict')
 	assert fields == {
 				'task': False,
-				'enable_live_draw': False,
 				'episodes': False,
+				'separate_markets': False,
 				'plot_interval': False,
 				'marketplace': False,
 				'agents': False
@@ -120,7 +120,26 @@ valid_ConfigLoader_validate_testcases = [
 	},
 	{
 		'task': 'agent_monitoring',
-		'enable_live_draw': False,
+		'separate_markets': False,
+		'episodes': 10,
+		'plot_interval': 5,
+		'marketplace': 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceDuopoly',
+		'agents': [
+			{
+				'name': 'Rule_Based Agent',
+				'agent_class': 'recommerce.market.circular.circular_vendors.RuleBasedCERebuyAgent',
+				'argument': ''
+			},
+			{
+				'name': 'CE Rebuy Agent (QLearning)',
+				'agent_class': 'recommerce.rl.q_learning.q_learning_agent.QLearningAgent',
+				'argument': 'CircularEconomyRebuyPriceMonopoly_QLearningAgent.dat'
+			}
+		]
+	},
+	{
+		'task': 'agent_monitoring',
+		'separate_markets': True,
 		'episodes': 10,
 		'plot_interval': 5,
 		'marketplace': 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopoly',

@@ -36,7 +36,7 @@ def replace_field_in_dict(initial_dict: dict, key: str, value: Union[str, int, f
 
 
 def create_environment_mock_dict(task: str = 'agent_monitoring',
-	enable_live_draw: bool = False,
+	separate_markets: bool = False,
 	episodes: int = 10,
 	plot_interval: int = 5,
 	marketplace: str = 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopoly',
@@ -46,7 +46,7 @@ def create_environment_mock_dict(task: str = 'agent_monitoring',
 
 	Args:
 		task (str, optional): What task to run. Defaults to 'agent_monitoring'.
-		enable_live_draw (bool, optional): If live drawing should be enabled. Defaults to False.
+		separate_markets (bool, optional): If agents should play on separate markets. Defaults to False.
 		episodes (int, optional): How many episodes to run. Defaults to 10.
 		plot_interval (int, optional): How often plots should be drawn. Defaults to 5.
 		marketplace (str, optional): What marketplace to run on.
@@ -68,7 +68,7 @@ def create_environment_mock_dict(task: str = 'agent_monitoring',
 
 	return {
 		'task': task,
-		'enable_live_draw': enable_live_draw,
+		'separate_markets': separate_markets,
 		'episodes': episodes,
 		'plot_interval': plot_interval,
 		'marketplace': marketplace,

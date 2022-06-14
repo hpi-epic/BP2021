@@ -14,7 +14,7 @@ from recommerce.rl.reinforcement_learning_agent import ReinforcementLearningAgen
 
 
 class StableBaselinesAgent(ReinforcementLearningAgent, LinearAgent, CircularAgent, ABC):
-	def __init__(self, config_market: AttrDict, config_rl: AttrDict, marketplace, load_path=None, name=None):
+	def __init__(self, config_market: AttrDict, config_rl: AttrDict, marketplace, load_path=None, name=''):
 		assert marketplace is not None
 		assert isinstance(marketplace, SimMarket), \
 			f'if marketplace is provided, marketplace must be a SimMarket, but is {type(marketplace)}'
@@ -26,13 +26,12 @@ class StableBaselinesAgent(ReinforcementLearningAgent, LinearAgent, CircularAgen
 		self.marketplace = marketplace
 		if load_path is None:
 			self._initialize_model(marketplace)
-			print(f'I initiate {self.name}-agent using {self.model.device} device')
+			print(f'Initializing {self.name}-agent using {self.model.device} device')
 		if load_path is not None:
 			self._load(load_path)
-			print(f'I load {self.name}-agent using {self.model.device} device from {load_path}')
+			print(f'Loading {self.name}-agent using {self.model.device} device from {load_path}')
 
-		if name is not None:
-			self.name = name
+		self.name = name if name != '' else type(self).__name__
 
 	@abstractmethod
 	def _initialize_model(self, marketplace):

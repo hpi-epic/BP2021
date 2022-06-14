@@ -11,7 +11,7 @@ def train_self_play(
 		agent_class: StableBaselinesAgent=StableBaselinesPPO,
 		training_steps=1000000):
 	tmp_marketplace = CircularEconomyRebuyPriceDuopoly(config=config_market, support_continuous_action_space=True)
-	agent = agent_class(config_market=config_market, config_rl=config_rl, marketplace=tmp_marketplace)
+	agent: StableBaselinesAgent = agent_class(config_market=config_market, config_rl=config_rl, marketplace=tmp_marketplace)
 	marketplace = CircularEconomyRebuyPriceDuopoly(config=config_market, support_continuous_action_space=True, competitors=[agent])
 	agent.set_marketplace(marketplace)
 
