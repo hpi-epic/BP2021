@@ -95,6 +95,16 @@ class Configurator():
 		# Instantiate all agents. If they are not rule-based, use the marketplace parameters accordingly
 		agents_with_config = [(current_agent[0], [self.config_market] + current_agent[1]) for current_agent in agents]
 
+		if not self.separate_markets and len(self.agents) > 1:
+			# set all agents but the first as the main-agent and the other ones as competitors in the market
+			assert self.marketplace.get_num_competitors() == np.inf or len(self.agents)-1 == self.marketplace.get_num_competitors(), \
+				f'The number of competitors given is invalid: was {len(self.agents)-1} but should be {self.marketplace.get_num_competitors()}'
+
+			self.marketplace.competitors = agents[1:]
+			# this is internal, but we need to change it...
+			self.marketplace._number_of_vendors = self.marketplace._get_number_of_vendors()
+			self.marketplace._setup_action_observation_space(self.marketplace.support_continuous_action_space)
+
 		for current_agent in agents_with_config:
 			if issubclass(current_agent[0], (RuleBasedAgent, HumanPlayer)):
 				# The custom_init takes two parameters: The class of the agent to be initialized and a list of arguments,
@@ -150,16 +160,6 @@ class Configurator():
 		# set a color for each agent
 		color_map = plt.cm.get_cmap('hsv', len(self.agents) + 1)
 		self.agent_colors = [color_map(agent_id) for agent_id in range(len(self.agents))]
-
-		if not self.separate_markets and len(self.agents) > 1:
-			# set all agents but one as competitors in the market
-			assert self.marketplace.get_num_competitors() == np.inf or len(self.agents)-1 == self.marketplace.get_num_competitors(), \
-				f'The number of competitors given is invalid: was {len(self.agents)-1} but should be {self.marketplace.get_num_competitors()}'
-
-			self.marketplace = type(self.marketplace)(config=self.config_market, competitors=self.agents[1:],
-				support_continuous_action_space=self.marketplace.support_continuous_action_space)
-			# this is internal, but we need to change it...
-			self.marketplace._number_of_vendors = self.marketplace._get_number_of_vendors()
 
 	def setup_monitoring(
 		self,
