@@ -1,4 +1,3 @@
-import docker
 import json
 import logging
 import os
@@ -9,6 +8,7 @@ from datetime import datetime
 from itertools import count, filterfalse
 from types import GeneratorType
 
+import docker
 from container_db_manager import ContainerDB
 from docker.models.containers import Container
 from torch.cuda import is_available
