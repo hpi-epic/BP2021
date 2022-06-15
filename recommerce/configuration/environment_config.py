@@ -44,7 +44,7 @@ class EnvironmentConfig(ABC):
 		if dict_key == 'top-dict':
 			return {
 				'task': False,
-				'enable_live_draw': False,
+				'separate_markets': False,
 				'episodes': False,
 				'plot_interval': False,
 				'marketplace': False,
@@ -72,9 +72,9 @@ class EnvironmentConfig(ABC):
 		if task in {'None', 'agent_monitoring'}:
 			types_dict = {
 				'task': str,
-				'enable_live_draw': bool,
 				'episodes': int,
 				'plot_interval': int,
+				'separate_markets': bool,
 				'marketplace': str,
 				'agents': list
 			}
@@ -267,29 +267,33 @@ class AgentMonitoringEnvironmentConfig(EnvironmentConfig):
 
 	Instance variables:
 		task (str): The task this config can be used for. Always "agent_monitoring".
-		enable_live_draw (bool): Whether or not live drawing should be enabled.
 		episodes (int): The number of episodes to run the monitoring for.
 		plot_interval (int): The interval between plot creation.
+		separate_markets (bool): If agents should be playing on separate marketplaces.
 		marketplace (SimMarket subclass): A subclass of SimMarket, what marketplace the monitoring session should be run on.
 		agent (list of tuples): A list containing the agents that should be trained.
 			Each entry in the list is a tuple with the first item being the agent class, the second being a list.
 			If the agent needs a modelfile, this will be the first entry in the list, the other entry is always an informal name for the agent.
 	"""
 	def _validate_config(self, config: dict) -> None:
-		# TODO: subfolder_name variable
 
 		super(AgentMonitoringEnvironmentConfig, self)._validate_config(config, single_agent=False, needs_modelfile=True)
 
-		self.enable_live_draw = config['enable_live_draw']
 		self.episodes = config['episodes']
 		self.plot_interval = config['plot_interval']
+		self.separate_markets = config['separate_markets']
+
+		# If we get more than one agent and all agents play on the same market, make sure that we have the right amount
+		if not self.separate_markets and len(self.agent) > 1:
+			assert self.marketplace.get_num_competitors() == np.inf or len(self.agent)-1 == self.marketplace.get_num_competitors(), \
+				f'The number of competitors given is invalid: was {len(self.agent)-1} but should be {self.marketplace.get_num_competitors()}'
 
 		# Since the agent_monitoring does not accept the dictionary but instead wants a list of tuples, we need to adapt the dictionary
 		passed_agents = self.agent
 		self.agent = []
 		for current_agent in passed_agents:
 			# with modelfile
-			if issubclass(current_agent['agent_class'], ReinforcementLearningAgent):
+			if issubclass(current_agent['agent_class'], (ReinforcementLearningAgent, FixedPriceAgent)):
 				self.agent.append((current_agent['agent_class'], [current_agent['argument'], current_agent['name']]))
 			# without modelfile
 			else:
