@@ -3,7 +3,7 @@
 	"task": "agent_monitoring",
 	"episodes": 500,
 	"plot_interval": 100,
-	"separate_markets": false,
+	"separate_markets": true,
 	"marketplace": "recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceDuopoly",
 	"agents": [
 		{
@@ -16,5 +16,6 @@
 			"agent_class": "recommerce.rl.q_learning.q_learning_agent.QLearningAgent",
 			"argument": "CircularEconomyRebuyPriceDuopoly_QLearningAgent.dat"
 		}
-	]
+	],
+	"competitors": null
 }

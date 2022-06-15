@@ -38,7 +38,7 @@ class RLTrainer(ABC):
 		agent = self.agent_class(marketplace=marketplace, config_market=self.config_market, config_rl=self.config_rl)
 		self.callback = RecommerceCallback(
 			self.agent_class,
-			self.marketplace_class,
+			marketplace,
 			self.config_market,
 			self.config_rl,
 			training_steps,

@@ -155,6 +155,7 @@ class ActorCriticAgent(ReinforcementLearningAgent, ABC):
 	def get_configurable_fields() -> list:
 		return [
 			('gamma', float, between_zero_one_rule),
+			('batch_size', int, greater_zero_rule),
 			('sync_target_frames', int, greater_zero_rule),
 			('testvalue2', float, greater_zero_rule)
 		]

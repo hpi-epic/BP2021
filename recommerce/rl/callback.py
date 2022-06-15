@@ -31,7 +31,7 @@ class RecommerceCallback(BaseCallback):
 	def __init__(
 		self,
 		agent_class,
-		marketplace_class,
+		marketplace,
 		config_market: AttrDict,
 		config_rl: AttrDict,
 		training_steps: int = 10000,
@@ -41,7 +41,7 @@ class RecommerceCallback(BaseCallback):
 		analyze_after_training: bool = True):
 
 		assert issubclass(agent_class, ReinforcementLearningAgent)
-		assert issubclass(marketplace_class, SimMarket)
+		assert isinstance(marketplace, SimMarket)
 		assert isinstance(training_steps, int) and training_steps > 0
 		assert isinstance(iteration_length, int) and iteration_length > 0
 		super(RecommerceCallback, self).__init__(True)
@@ -53,7 +53,7 @@ class RecommerceCallback(BaseCallback):
 		self.best_mean_interim_reward = None
 		self.best_mean_overall_reward = None
 		self.agent_class = agent_class
-		self.marketplace_class = marketplace_class
+		self.marketplace = marketplace
 		self.iteration_length = iteration_length
 		self.file_ending = file_ending
 		self.signature = signature
@@ -156,7 +156,7 @@ class RecommerceCallback(BaseCallback):
 		monitor.configurator.get_folder()
 
 		# used for plot legend naming
-		competitors = self.marketplace_class(config=self.config_market).competitors
+		competitors = self.marketplace.competitors
 
 		print('Creating scatterplots...')
 		ignore_first_samples = 15  # the number of samples you want to skip because they can be severe outliers
@@ -221,8 +221,9 @@ class RecommerceCallback(BaseCallback):
 			monitor.configurator.setup_monitoring(
 				episodes=250,
 				plot_interval=250,
-				marketplace=self.marketplace_class,
+				marketplace=type(self.marketplace),
 				agents=agent_list,
+				competitors=competitors,
 				separate_markets=True,
 				support_continuous_action_space=hasattr(self.model, 'env'),
 				config_market=self.config_market)

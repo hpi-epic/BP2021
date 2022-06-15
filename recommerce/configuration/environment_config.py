@@ -282,11 +282,18 @@ class AgentMonitoringEnvironmentConfig(EnvironmentConfig):
 		self.episodes = config['episodes']
 		self.plot_interval = config['plot_interval']
 		self.separate_markets = config['separate_markets']
+		self.competitors = None
 
 		# If we get more than one agent and all agents play on the same market, make sure that we have the right amount
 		if not self.separate_markets and len(self.agent) > 1:
 			assert self.marketplace.get_num_competitors() == np.inf or len(self.agent)-1 == self.marketplace.get_num_competitors(), \
 				f'The number of competitors given is invalid: was {len(self.agent)-1} but should be {self.marketplace.get_num_competitors()}'
+
+		# It is possible to add custom competitors if separate_markets is True
+		if self.separate_markets and 'competitors' in config:
+			assert self.marketplace.get_num_competitors() == np.inf or len(config['competitors']) == self.marketplace.get_num_competitors(), \
+				f'The number of competitors given is invalid: was {len(config["competitors"])} but should be {self.marketplace.get_num_competitors()}'
+			self.competitors = [get_class(competitor) for competitor in config['competitors']]
 
 		# Since the agent_monitoring does not accept the dictionary but instead wants a list of tuples, we need to adapt the dictionary
 		passed_agents = self.agent
