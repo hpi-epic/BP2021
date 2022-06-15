@@ -217,7 +217,7 @@ class RecommerceCallback(BaseCallback):
 		if self.analyze_after_training:
 			agent_list = [(self.agent_class, [parameter_path]) for parameter_path in self.saved_parameter_paths]
 			# There are RL-agent in the competitor_list which will break the `deepcopy` in `run_marketplace`
-			if not all(issubclass(competitor, RuleBasedAgent) for competitor in competitors):
+			if not all(isinstance(competitor, RuleBasedAgent) for competitor in competitors):
 				competitors = None
 			# The next line is a bit hacky. We have to provide if the marketplace is continuous or not.
 			# Only Stable Baselines agents use continuous actions at the moment. And only Stable Baselines agents have the attribute env.
