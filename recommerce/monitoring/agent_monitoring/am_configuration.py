@@ -212,6 +212,8 @@ class Configurator():
 			assert issubclass(marketplace, sim_market.SimMarket), 'the marketplace must be a subclass of SimMarket'
 			if competitors is not None:
 				assert separate_markets, 'competitors can only be provided if separate_markets is True'
+				assert all(issubclass(competitor, RuleBasedAgent) for competitor in competitors), \
+					'All competitors must be RuleBased, or `deepcopy` will fail'
 				assert marketplace.get_num_competitors() == np.inf or len(competitors) == marketplace.get_num_competitors(), \
 					f'The number of competitors given is invalid: was {len(competitors)} but should be {marketplace.get_num_competitors()}'
 				self.competitors = competitors
