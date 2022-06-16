@@ -613,11 +613,14 @@ class DockerManager():
 		running_recommerce_containers = list(cls._get_client().containers.list(filters={'label': IMAGE_NAME}))
 		# Get the port mapped to '6006/tcp' within the container
 		try:
+			print('**************')
+			print(running_recommerce_containers)
+			print('****************')
 			occupied_ports = [int(container.ports['6006/tcp'][0]['HostPort']) for container in running_recommerce_containers]
+			cls._port_mapping = dict(zip([container.id for container in running_recommerce_containers], occupied_ports))
 		except KeyError as e:
 			print(e)
 		# Create a dictionary of container_id: mapped port
-		cls._port_mapping = dict(zip([container.id for container in running_recommerce_containers], occupied_ports))
 
 
 if __name__ == '__main__':  # pragma: no cover
