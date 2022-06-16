@@ -612,7 +612,10 @@ class DockerManager():
 		# we don't care about already exited containers, since we can't see the tensorboard anyways
 		running_recommerce_containers = list(cls._get_client().containers.list(filters={'label': IMAGE_NAME}))
 		# Get the port mapped to '6006/tcp' within the container
-		occupied_ports = [int(container.ports['6006/tcp'][0]['HostPort']) for container in running_recommerce_containers]
+		try:
+			occupied_ports = [int(container.ports['6006/tcp'][0]['HostPort']) for container in running_recommerce_containers]
+		except KeyError as e:
+			print(e)
 		# Create a dictionary of container_id: mapped port
 		cls._port_mapping = dict(zip([container.id for container in running_recommerce_containers], occupied_ports))
 
