@@ -615,10 +615,12 @@ class DockerManager():
 		try:
 			print('**************')
 			print(running_recommerce_containers)
+			print([container.ports for container in running_recommerce_containers])
 			print('****************')
 			occupied_ports = [int(container.ports['6006/tcp'][0]['HostPort']) for container in running_recommerce_containers]
 			cls._port_mapping = dict(zip([container.id for container in running_recommerce_containers], occupied_ports))
 		except KeyError as e:
+			print('ERROR')
 			print(e)
 		# Create a dictionary of container_id: mapped port
 
