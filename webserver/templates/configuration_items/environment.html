@@ -24,15 +24,15 @@
             </div>
             <div class="row p-2 hide-not-monitoring">
                 <div class="col-6">
-                    {% if error_dict.enable_live_draw %}
-                        <img src="{% static 'icons/warning.svg' %}" width="18px" title="{{error_dict.enable_live_draw}}"></img>
+                    {% if error_dict.separate_markets %}
+                        <img src="{% static 'icons/warning.svg' %}" width="18px" title="{{error_dict.separate_markets}}"></img>
                     {% endif %}
-                    enable live draw
+                    separate markets
                 </div>
                 <div class="col-6">
-                    <input type="checkbox" {% if prefill.enable_live_draw %}checked{% endif %}
-                        class="form-check-input {% if error_dict.enable_live_draw %} bc-error-field {% endif %}"
-                        name="environment-enable_live_draw">
+                    <input type="checkbox" {% if prefill.separate_markets %}checked{% endif %}
+                        class="form-check-input {% if error_dict.separate_markets %} bc-error-field {% endif %}"
+                        name="environment-separate_markets">
                 </div>
             </div>
             <div class="row p-2 hide-not-monitoring">

@@ -42,6 +42,7 @@ class RLTrainer(ABC):
 			self.config_market,
 			self.config_rl,
 			training_steps,
+			# TODO: Make this configurable
 			500,
 			'dat',
 			agent.name)

@@ -12,8 +12,8 @@ class LinearAgent(Agent, ABC):
 
 
 class HumanPlayerLE(LinearAgent, HumanPlayer):
-	def __init__(self, name='YOU - Linear'):
-		self.name = name
+	def __init__(self, name=''):
+		self.name = name if name != '' else 'YOU - Linear'
 		print('Welcome to this funny game! Now, you are the one playing the game!')
 
 	def policy(self, observation, *_) -> int:
@@ -22,13 +22,13 @@ class HumanPlayerLE(LinearAgent, HumanPlayer):
 
 
 class FixedPriceLEAgent(LinearAgent, FixedPriceAgent):
-	def __init__(self, config_market: AttrDict, fixed_price: int=None, name='fixed_price_le'):
+	def __init__(self, config_market: AttrDict, fixed_price: int=None, name=''):
 
 		if fixed_price is None:
 			fixed_price = config_market.production_price + 3
 
 		assert isinstance(fixed_price, int), f'the fixed_price must be an integer: {fixed_price} ({type(fixed_price)})'
-		self.name = name
+		self.name = name if name != '' else type(self).__name__
 		self.fixed_price = fixed_price
 
 	def policy(self, *_) -> int:

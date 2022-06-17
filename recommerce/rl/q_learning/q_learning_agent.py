@@ -27,7 +27,7 @@ class QLearningAgent(ReinforcementLearningAgent, CircularAgent, LinearAgent):
 			marketplace: SimMarket,
 			device='cuda' if torch.cuda.is_available() else 'cpu',
 			load_path=None,
-			name='QLearningAgent',
+			name='',
 			network_architecture=model.simple_network):
 		assert isinstance(marketplace, SimMarket), f'marketplace must be a SimMarket, but is {type(marketplace)}'
 
@@ -38,8 +38,8 @@ class QLearningAgent(ReinforcementLearningAgent, CircularAgent, LinearAgent):
 		self.config_rl = config_rl
 		self.device = device
 		self.buffer_for_feedback = None
-		self.name = name
-		print(f'I initiate a QLearningAgent using {self.device} device')
+		self.name = name if name != '' else type(self).__name__
+		print(f'Initializing a {type(self).__name__} using {self.device} device')
 		self.net = network_architecture(n_observations, self.n_actions).to(self.device)
 		if load_path:
 			self.optimizer = None

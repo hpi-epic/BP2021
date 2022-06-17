@@ -72,11 +72,8 @@ class HyperparameterConfigValidator():
 	def _check_rules(cls, config: dict, configurable_fields: list, must_contain: bool = True) -> None:
 		for field_name, _, rule in configurable_fields:
 			if rule is not None:
-				if not isinstance(rule, tuple):
-					assert callable(rule)
-					check_method, error_string = rule(field_name)
-				else:
-					check_method, error_string = rule
+				assert callable(rule)
+				check_method, error_string = rule(field_name)
 				try:
 					assert check_method(config[field_name]), error_string
 				except KeyError as error:

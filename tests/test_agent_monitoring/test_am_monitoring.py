@@ -4,7 +4,6 @@ from unittest.mock import patch
 import pytest
 from attrdict import AttrDict
 
-import recommerce.configuration.utils as ut
 import recommerce.market.circular.circular_sim_market as circular_market
 import recommerce.monitoring.agent_monitoring.am_monitoring as monitoring
 from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader
@@ -22,14 +21,13 @@ def setup_function(function):
 	global monitor
 	monitor = monitoring.Monitor()
 	monitor.configurator.setup_monitoring(
-		enable_live_draw=False,
+		separate_markets=False,
 		episodes=50,
 		plot_interval=10,
 		marketplace=circular_market.CircularEconomyMonopoly,
 		agents=[(QLearningAgent, [os.path.join(os.path.dirname(__file__), os.pardir, 'test_data',
 			'CircularEconomyMonopoly_QLearningAgent.dat')])],
-		config_market=config_market,
-		subfolder_name=f'test_plots_{function.__name__}')
+		config_market=config_market)
 
 
 def test_run_marketplace():
@@ -43,8 +41,7 @@ def test_run_marketplace():
 		patch('recommerce.monitoring.agent_monitoring.am_configuration.os.path.exists') as exists_mock:
 		exists_mock.return_value = True
 		analysis_results = monitor.run_marketplace()
-		assert 1 == len(analysis_results)
-		assert monitor.configurator.episodes == len(ut.unroll_dict_with_list(analysis_results[0])['profits/all/vendor_0'])
+		assert 1 == len(analysis_results['profits/all'])
 
 
 def test_run_monitoring_session():
