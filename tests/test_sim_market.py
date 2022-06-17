@@ -79,4 +79,5 @@ def test_market_initialization_and_steps(market_class, config_market, agent_clas
 	state = market.reset()
 	for _ in range(10):
 		action = agent.policy(state)
+		print(action)
 		state, _, _, _ = market.step(action)

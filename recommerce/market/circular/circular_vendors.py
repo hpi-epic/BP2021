@@ -11,6 +11,8 @@ class CircularAgent(Agent, ABC):
 	def _clamp_price(self, price) -> int:
 		min_price = 0
 		max_price = self.config_market.max_price - 1
+		if not self.continuous_action_space:
+			price = int(price)
 		price = max(price, min_price)
 		price = min(price, max_price)
 		return price
@@ -89,7 +91,8 @@ class RuleBasedCEAgent(RuleBasedAgent, CircularAgent):
 	This vendor's policy does not consider the competitor's prices.
 	It tries to succeed by taking its own storage costs into account.
 	"""
-	def __init__(self, config_market: AttrDict, name='rule_based_ce'):
+	def __init__(self, config_market: AttrDict, continuous_action_space: bool = False, name='rule_based_ce'):
+		self.continuous_action_space = continuous_action_space
 		self.name = name
 		self.config_market = config_market
 
@@ -142,7 +145,8 @@ class RuleBasedCERebuyAgentCompetitive(RuleBasedAgent, CircularAgent):
 	"""
 	This vendor's policy is aiming to succeed by undercutting the competitor's prices.
 	"""
-	def __init__(self, config_market: AttrDict, name='rule_based_ce_rebuy_competitive'):
+	def __init__(self, config_market: AttrDict, continuous_action_space: bool = False, name='rule_based_ce_rebuy_competitive'):
+		self.continuous_action_space = continuous_action_space
 		self.name = name
 		self.config_market = config_market
 
@@ -176,7 +180,8 @@ class RuleBasedCERebuyAgentStorageMinimizer(RuleBasedAgent, CircularAgent):
 	"""
 	This vendor's policy reacts to the competitors' prices and minimizes the usage of storage.
 	"""
-	def __init__(self, config_market: AttrDict, name='rule_based_ce_rebuy_storage_minimizer'):
+	def __init__(self, config_market: AttrDict, continuous_action_space: bool = False, name='rule_based_ce_rebuy_storage_minimizer'):
+		self.continuous_action_space = continuous_action_space
 		self.name = name
 		self.config_market = config_market
 

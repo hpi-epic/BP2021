@@ -98,7 +98,7 @@ def test_create_histogram(agents, rewards, plot_bins, agent_color, lower_upper_r
 		hist_mock.assert_called_once_with(rewards, bins=plot_bins, color=agent_color, rwidth=0.9, range=lower_upper_range, edgecolor='black')
 		legend_mock.assert_called_once_with(name_list)
 		draw_mock.assert_called_once()
-		save_mock.assert_called_once_with(fname=os.path.join(monitor.configurator.folder_path, 'default_histogram.svg'))
+		save_mock.assert_called_once_with(fname=os.path.join(monitor.configurator.folder_path, 'default_histogram.svg'), transparent=True)
 
 
 def test_create_histogram_without_saving_to_directory():
