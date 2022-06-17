@@ -46,8 +46,8 @@ class UniformDistributionOwner(Owner):
 		return np.array([1 / number_of_options] * int(number_of_options))
 
 
-class OwnerRebuy(Owner):
-	def generate_return_probabilities_from_offer_old(self, common_state, vendor_specific_state, vendor_actions) -> np.array:
+class OwnerRebuyOld(Owner):
+	def generate_return_probabilities_from_offer(self, common_state, vendor_specific_state, vendor_actions) -> np.array:
 		"""
 		This method tries a more sophisticated version of generating return probabilities.
 		The owner likes if the rebuy price is close to the price in the sell offer.
@@ -77,11 +77,12 @@ class OwnerRebuy(Owner):
 
 		return ut.softmax(np.array([holding_preference, discard_preference] + return_preferences))
 
+
+class OwnerRebuy(Owner):
 	def generate_return_probabilities_from_offer(self, common_state, vendor_specific_state, vendor_actions) -> np.array:
 		"""
 		This method tries a more sophisticated version of generating return probabilities.
-		The owner likes if the rebuy price is close to the price in the sell offer.
-		That will increase the probability that he will return his product.
+		The owner prefers higher rebuy prices.
 		If the rebuy price is very low, the owner will just throw away his product more often. Holding the product is the fallback option.
 		Check the docstring in the superclass for interface description.
 		"""
