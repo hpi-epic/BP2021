@@ -48,39 +48,51 @@ class Monitor():
 		"""
 		Run the marketplace with the given monitoring configuration.
 
-		Automatically produces histograms, but not metric diagrams.
+		Does not create any diagrams.
 
 		Returns:
-			list: A list with a list of rewards for each agent
+			list: A list with a list of rewards for each agent.
 		"""
-		# initialize the watcher list with a list for each agent
-		watchers = [Watcher(config_market=self.configurator.marketplace.config) for _ in range(len(self.configurator.agents))]
+		# each agent on its own marketplace
+		if self.configurator.separate_markets:
+			# initialize the watcher list with a list for each agent
+			watchers = [Watcher(config_market=self.configurator.marketplace.config) for _ in range(len(self.configurator.agents))]
 
-		for episode in trange(1, self.configurator.episodes + 1, unit=' episodes', leave=False):
-			# reset the state & marketplace once to be used by all agents
-			source_state = self.configurator.marketplace.reset()
-			source_marketplace = self.configurator.marketplace
+			for _ in trange(1, self.configurator.episodes + 1, unit=' episodes', leave=False):
+				# reset the state & marketplace once to be used by all agents
+				source_state = self.configurator.marketplace.reset()
+				source_marketplace = self.configurator.marketplace
 
-			for current_agent_index in range(len(self.configurator.agents)):
-				# for every agent, set an equivalent "start-market"
-				self.configurator.marketplace = deepcopy(source_marketplace)
+				for current_agent_index in range(len(self.configurator.agents)):
+					# for every agent, set an equivalent "start-market"
+					self.configurator.marketplace = deepcopy(source_marketplace)
+					state = source_state
+					is_done = False
 
-				# reset values for all agents
-				state = source_state
+					# run marketplace for this agent
+					while not is_done:
+						action = self.configurator.agents[current_agent_index].policy(state)
+						state, reward, is_done, info = self.configurator.marketplace.step(action)
+						info['a/reward'] = reward
+						watchers[current_agent_index].add_info(info)
+
+			return [watcher.get_cumulative_properties() for watcher in watchers]
+
+		# all agents on one marketplace
+		else:
+			watcher = Watcher(config_market=self.configurator.marketplace.config)
+			for _ in trange(1, self.configurator.episodes + 1, unit=' episodes', leave=False):
+				state = self.configurator.marketplace.reset()
 				is_done = False
 
-				# run marketplace for this agent
+				# run marketplace for all agents
 				while not is_done:
-					action = self.configurator.agents[current_agent_index].policy(state)
+					action = self.configurator.agents[0].policy(state)
 					state, reward, is_done, info = self.configurator.marketplace.step(action)
 					info['a/reward'] = reward
-					watchers[current_agent_index].add_info(info)
+					watcher.add_info(info)
 
-		# only one histogram after the whole monitoring process
-		returns = [watcher.get_all_samples_of_property('profits/all', 0) for watcher in watchers]
-		self.evaluator.create_histogram(returns, True, 'Cumulative_rewards_per_episode.svg')
-
-		return [watcher.get_cumulative_properties() for watcher in watchers]
+			return watcher.get_cumulative_properties()
 
 
 def run_monitoring_session(monitor: Monitor) -> None:
@@ -92,6 +104,10 @@ def run_monitoring_session(monitor: Monitor) -> None:
 	"""
 	monitor.configurator.print_configuration()
 
+	if monitor.configurator.separate_markets:
+		print('\nAgents are playing on separate markets...')
+	else:
+		print('\nAgents are playing on the same market...')
 	print('\nStarting monitoring session...')
 	rewards = monitor.run_marketplace()
 
@@ -106,11 +122,11 @@ def main():  # pragma: no cover
 	config_environment_am: AgentMonitoringEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_agent_monitoring')
 	config_market: AttrDict = HyperparameterConfigLoader.load('market_config', config_environment_am.marketplace)
 	monitor.configurator.setup_monitoring(
-		enable_live_draw=config_environment_am.enable_live_draw,
 		episodes=config_environment_am.episodes,
 		plot_interval=config_environment_am.plot_interval,
 		marketplace=config_environment_am.marketplace,
 		agents=config_environment_am.agent,
+		separate_markets=config_environment_am.separate_markets,
 		config_market=config_market
 	)
 	run_monitoring_session(monitor)

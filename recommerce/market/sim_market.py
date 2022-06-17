@@ -283,7 +283,6 @@ class SimMarket(gym.Env, JSONConfigurable):
 	def _get_competitor_list(self) -> list:  # pragma: no cover
 		"""
 		Get a list of all competitors in the current market scenario.
-		TODO: This should get reworked since there no longer is a formal definition of 'competitor', since we see all vendors as agents.
 
 		Returns:
 			list: List containing instances of the competitors.

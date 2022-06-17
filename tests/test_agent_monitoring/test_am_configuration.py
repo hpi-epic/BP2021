@@ -1,5 +1,3 @@
-import os
-import shutil
 from unittest.mock import patch
 
 import pytest
@@ -10,7 +8,6 @@ import recommerce.market.linear.linear_sim_market as linear_market
 import recommerce.monitoring.agent_monitoring.am_monitoring as monitoring
 import recommerce.rl.actorcritic.actorcritic_agent as actorcritic_agent
 from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader
-from recommerce.configuration.path_manager import PathManager
 from recommerce.market.circular.circular_vendors import FixedPriceCEAgent, FixedPriceCERebuyAgent, HumanPlayerCERebuy, RuleBasedCEAgent
 from recommerce.market.linear.linear_vendors import FixedPriceLEAgent
 from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
@@ -26,21 +23,12 @@ def setup_function(function):
 	global monitor
 	monitor = monitoring.Monitor()
 	monitor.configurator.setup_monitoring(
-		enable_live_draw=False,
+		separate_markets=False,
 		episodes=50,
 		plot_interval=10,
 		marketplace=circular_market.CircularEconomyMonopoly,
 		agents=[(FixedPriceCERebuyAgent, [])],
-		config_market=config_market,
-		subfolder_name=f'test_plots_{function.__name__}')
-
-
-def test_get_folder():
-	# if you change the name of this function, change it here as well!
-	foldername = 'test_plots_test_get_folder'
-	monitor.configurator.get_folder()
-	assert os.path.exists(os.path.abspath(os.path.join(PathManager.results_path, 'monitoring', foldername)))
-	shutil.rmtree(os.path.join(PathManager.results_path, 'monitoring', foldername))
+		config_market=config_market)
 
 
 def test_get_modelfile_path():
@@ -86,25 +74,22 @@ def test_correct_update_agents_RL(agents):
 
 def test_correct_setup_monitoring():
 	monitor.configurator.setup_monitoring(
-		enable_live_draw=False,
+		separate_markets=False,
 		episodes=10,
 		plot_interval=2,
-		marketplace=circular_market.CircularEconomyMonopoly,
+		marketplace=circular_market.CircularEconomyRebuyPriceDuopoly,
 		agents=[(HumanPlayerCERebuy, ['reptiloid']),
-			(QLearningAgent, ['CircularEconomyMonopoly_QLearningAgent.dat', 'q_learner'])],
-		config_market=config_market,
-		subfolder_name='subfoldername')
-	assert monitor.configurator.enable_live_draw is False
+			(QLearningAgent, ['CircularEconomyRebuyPriceDuopoly_QLearningAgent.dat', 'q_learner'])],
+		config_market=config_market)
+	assert monitor.configurator.separate_markets is False
 	assert 10 == monitor.configurator.episodes
 	assert 2 == monitor.configurator.plot_interval
-	assert isinstance(monitor.configurator.marketplace, circular_market.CircularEconomyMonopoly)
+	assert isinstance(monitor.configurator.marketplace, circular_market.CircularEconomyRebuyPriceDuopoly)
 	assert 2 == len(monitor.configurator.agents)
 	assert isinstance(monitor.configurator.agents[0], HumanPlayerCERebuy)
 	assert isinstance(monitor.configurator.agents[1], QLearningAgent)
 	assert 'reptiloid' == monitor.configurator.agents[0].name
 	assert 'q_learner' == monitor.configurator.agents[1].name
-	assert (os.path.normcase(os.path.abspath(os.path.join(PathManager.results_path, 'monitoring', 'subfoldername')))
-		== os.path.normcase(os.path.abspath(monitor.configurator.folder_path)))
 	assert 2 == len(monitor.configurator.agent_colors)
 
 
@@ -116,7 +101,7 @@ setting_multiple_agents_testcases = [
 
 @pytest.mark.parametrize('agents', setting_multiple_agents_testcases)
 def test_setting_multiple_agents(agents):
-	monitor.configurator.setup_monitoring(agents=agents, config_market=config_market)
+	monitor.configurator.setup_monitoring(separate_markets=True, agents=agents, config_market=config_market)
 
 
 def test_setting_market_not_agents():
@@ -147,30 +132,28 @@ correct_setup_monitoring_testcases = [
 @pytest.mark.parametrize('parameters', correct_setup_monitoring_testcases)
 def test_correct_setup_monitoring_parametrized(parameters):
 	dict = {
-		'enable_live_draw': None,
+		'separate_markets': None,
 		'episodes': None,
 		'plot_interval': None,
 		'marketplace': None,
-		'agents': None,
-		'subfolder_name': None
+		'agents': None
 	}
 	# replace the given parameters
 	for key, val in parameters.items():
 		dict[key] = val
 
 	monitor.configurator.setup_monitoring(
-		enable_live_draw=dict['enable_live_draw'],
+		separate_markets=dict['separate_markets'],
 		episodes=dict['episodes'],
 		plot_interval=dict['plot_interval'],
 		marketplace=dict['marketplace'],
 		agents=dict['agents'],
-		config_market=config_market,
-		subfolder_name=dict['subfolder_name']
+		config_market=config_market
 	)
 
 
 incorrect_setup_monitoring_testcases = [
-	({'enable_live_draw': 1}, 'enable_live_draw must be a Boolean'),
+	({'separate_markets': 1}, 'separate_markets must be a Boolean'),
 	({'episodes': 'Hello World'}, 'episodes must be of type int'),
 	({'episodes': 0}, 'episodes must not be 0'),
 	({'plot_interval': '1'}, 'plot_interval must be of type int'),
@@ -196,7 +179,6 @@ incorrect_setup_monitoring_testcases = [
 		'If the market is circular, the agent must be circular too!'),
 	({'marketplace': linear_market.LinearEconomyDuopoly, 'agents': [(FixedPriceCEAgent, [])]},
 		'If the market is linear, the agent must be linear too!'),
-	({'subfolder_name': 1}, 'subfolder_name must be of type str'),
 	({'marketplace': linear_market.LinearEconomyOligopoly,
 		'agents': [(QLearningAgent,
 		['CircularEconomyRebuyPriceMonopoly_QLearningAgent.dat'])]},
@@ -223,12 +205,11 @@ incorrect_setup_monitoring_testcases = [
 @pytest.mark.parametrize('parameters, expected_message', incorrect_setup_monitoring_testcases)
 def test_incorrect_setup_monitoring(parameters, expected_message):
 	dict = {
-		'enable_live_draw': None,
+		'separate_markets': None,
 		'episodes': None,
 		'plot_interval': None,
 		'marketplace': None,
-		'agents': None,
-		'subfolder_name': None
+		'agents': None
 	}
 	# replace the given parameters
 	for key, val in parameters.items():
@@ -236,13 +217,12 @@ def test_incorrect_setup_monitoring(parameters, expected_message):
 
 	with pytest.raises(Exception) as assertion_message:
 		monitor.configurator.setup_monitoring(
-			enable_live_draw=dict['enable_live_draw'],
+			separate_markets=dict['separate_markets'],
 			episodes=dict['episodes'],
 			plot_interval=dict['plot_interval'],
 			marketplace=dict['marketplace'],
 			agents=dict['agents'],
-			config_market=config_market,
-			subfolder_name=dict['subfolder_name']
+			config_market=config_market
 		)
 	assert expected_message in str(assertion_message.value)
 
@@ -257,12 +237,11 @@ incorrect_setup_monitoring_type_errors_testcases = [
 @pytest.mark.parametrize('parameters', incorrect_setup_monitoring_type_errors_testcases)
 def test_incorrect_setup_monitoring_type_errors(parameters):
 	dict = {
-		'enable_live_draw': None,
+		'separate_markets': None,
 		'episodes': None,
 		'plot_interval': None,
 		'marketplace': None,
-		'agents': None,
-		'subfolder_name': None
+		'agents': None
 	}
 	# replace the given parameters
 	for key, val in parameters.items():
@@ -270,13 +249,12 @@ def test_incorrect_setup_monitoring_type_errors(parameters):
 
 	with pytest.raises(TypeError):
 		monitor.configurator.setup_monitoring(
-			enable_live_draw=dict['enable_live_draw'],
+			separate_markets=dict['separate_markets'],
 			episodes=dict['episodes'],
 			plot_interval=dict['plot_interval'],
 			marketplace=dict['marketplace'],
 			agents=dict['agents'],
-			config_market=config_market,
-			subfolder_name=dict['subfolder_name']
+			config_market=config_market
 		)
 
 
@@ -288,14 +266,14 @@ print_configuration_testcases = [
 
 @pytest.mark.parametrize('agents', print_configuration_testcases)
 def test_print_configuration(agents):
-	monitor.configurator.setup_monitoring(agents=agents, config_market=config_market)
+	monitor.configurator.setup_monitoring(separate_markets=True, agents=agents, config_market=config_market)
 
 	monitor.configurator.print_configuration()
 
 
 @pytest.mark.parametrize('agents', print_configuration_testcases)
 def test_print_configuration_ratio(agents):
-	monitor.configurator.setup_monitoring(config_market=config_market, episodes=51, plot_interval=1, agents=agents)
+	monitor.configurator.setup_monitoring(separate_markets=True, config_market=config_market, episodes=51, plot_interval=1, agents=agents)
 
 	with patch('recommerce.monitoring.agent_monitoring.am_configuration.input', create=True) as mocked_input:
 		mocked_input.side_effect = ['n']

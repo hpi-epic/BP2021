@@ -2,6 +2,7 @@ import os
 import time
 
 import matplotlib.pyplot as plt
+import numpy as np
 from attrdict import AttrDict
 
 import recommerce.configuration.utils as ut
@@ -12,7 +13,6 @@ from recommerce.configuration.path_manager import PathManager
 from recommerce.market.circular.circular_vendors import CircularAgent, FixedPriceCEAgent
 from recommerce.market.linear.linear_vendors import LinearAgent
 from recommerce.market.vendors import Agent, HumanPlayer, RuleBasedAgent
-from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
 from recommerce.rl.reinforcement_learning_agent import ReinforcementLearningAgent
 
 
@@ -23,10 +23,10 @@ class Configurator():
 	def __init__(self, config_market: AttrDict, config_rl: AttrDict, name='plots') -> None:
 		# Do not change the values in here when setting up a session! Instead use setup_monitoring()!
 		ut.ensure_results_folders_exist()
-		self.enable_live_draw = False
 		self.episodes = 500
 		self.plot_interval = 50
 		self.marketplace = circular_market.CircularEconomyMonopoly
+		self.separate_markets = False
 		default_agent = FixedPriceCEAgent
 		self.config_market: AttrDict = config_market
 		self.config_rl: AttrDict = config_rl
@@ -43,6 +43,9 @@ class Configurator():
 		"""
 		# create folder with current timestamp to save diagrams at
 		os.makedirs(os.path.join(self.folder_path), exist_ok=True)
+		os.makedirs(os.path.join(self.folder_path, 'violinplots'), exist_ok=True)
+		os.makedirs(os.path.join(self.folder_path, 'statistics_plots'), exist_ok=True)
+		os.makedirs(os.path.join(self.folder_path, 'density_plots'), exist_ok=True)
 		return self.folder_path
 
 	def _get_modelfile_path(self, model_name: str) -> str:
@@ -90,6 +93,16 @@ class Configurator():
 		# Instantiate all agents. If they are not rule-based, use the marketplace parameters accordingly
 		agents_with_config = [(current_agent[0], [self.config_market] + current_agent[1]) for current_agent in agents]
 
+		if not self.separate_markets and len(self.agents) > 1:
+			# set all agents but the first as the main-agent and the other ones as competitors in the market
+			assert self.marketplace.get_num_competitors() == np.inf or len(self.agents)-1 == self.marketplace.get_num_competitors(), \
+				f'The number of competitors given is invalid: was {len(self.agents)-1} but should be {self.marketplace.get_num_competitors()}'
+
+			self.marketplace.competitors = agents[1:]
+			# this is internal, but we need to change it...
+			self.marketplace._number_of_vendors = self.marketplace._get_number_of_vendors()
+			self.marketplace._setup_action_observation_space(self.marketplace.support_continuous_action_space)
+
 		for current_agent in agents_with_config:
 			if issubclass(current_agent[0], (RuleBasedAgent, HumanPlayer)):
 				# The custom_init takes two parameters: The class of the agent to be initialized and a list of arguments,
@@ -103,7 +116,7 @@ class Configurator():
 					# Stablebaselines ends in .zip - so if you use it, you need to specify a modelfile name
 					# For many others, it can be omitted since we use a default format
 					agent_modelfile = f'{type(self.marketplace).__name__}_{current_agent[0].__name__}.dat'
-					agent_name = 'q_learning' if issubclass(current_agent[0], QLearningAgent) else 'actor_critic'
+					agent_name = current_agent[0].__name__
 					# no arguments
 					if len(current_agent[1]) == 0:
 						assert False, 'There should always be at least a config'
@@ -116,7 +129,6 @@ class Configurator():
 						agent_modelfile = current_agent[1][1]
 					# only name argument
 					elif len(current_agent[1]) == 2:
-						# get implicit modelfile name
 						agent_name = current_agent[1][1]
 					# both arguments, first must be the modelfile, second the name
 					elif len(current_agent[1]) == 3:
@@ -141,7 +153,7 @@ class Configurator():
 				except RuntimeError as error:  # pragma: no cover
 					raise RuntimeError('The modelfile is not compatible with the agent you tried to instantiate') from error
 			else:  # pragma: no cover
-				assert False, f'{current_agent[0]} is neither a RuleBased nor a QLearning agent nor a HumanPlayer'
+				assert False, f'{current_agent[0]} is neither a RuleBasedAgent nor a ReinforcementLearningAgent nor a HumanPlayer'
 
 		# set a color for each agent
 		color_map = plt.cm.get_cmap('hsv', len(self.agents) + 1)
@@ -149,34 +161,33 @@ class Configurator():
 
 	def setup_monitoring(
 		self,
-		enable_live_draw: bool = None,
 		episodes: int = None,
 		plot_interval: int = None,
 		marketplace: sim_market.SimMarket = None,
 		agents: list = None,
+		separate_markets: bool = False,
 		config_market: AttrDict = None,
-		subfolder_name: str = None,
-		support_continuous_action_space: bool = False) -> None:
+		support_continuous_action_space: bool = False,) -> None:
 		"""
 		Configure the current monitoring session.
 
 		Args:
-			enable_live_draw (bool, optional): Whether or not diagrams should be displayed on screen when drawn. Defaults to None.
 			episodes (int, optional): The number of episodes to run. Defaults to None.
 			plot_interval (int, optional): After how many episodes a new data point/plot should be generated. Defaults to None.
 			marketplace (sim_market class, optional): What marketplace to run the monitoring on. Defaults to None.
 			agents (list of tuples of agent classes and lists): What agents to monitor. Each entry must be a tuple of a valid agent class and a list
-				of optional arguments, where a .dat modelfile and/or a name for the agent can be specified.
-				Modelfile defaults to \'marketplaceClass_AgentClass.dat\', Name defaults to \'q_learning\'
-			Must be tuples where the first entry is the class of the agent and the second entry is a list of arguments for its initialization.
-			Arguments are read left to right, arguments cannot be skipped.
-			The first argument must exist and be the path to the modelfile for the agent, the second is optional and the name the agent should have.
-			Each agent will generate data points in the diagrams. Defaults to None.
-			subfolder_name (str, optional): The name of the folder to save the diagrams in. Defaults to None.
+				of optional arguments, where a .dat/.zip modelfile/fixed-price-list and/or a name for the agent can be specified.
+				Modelfile defaults to \'marketplaceClass_AgentClass.dat\', Name defaults to agentClass.
+				Must be tuples where the first entry is the class of the agent and the second entry is a list of arguments for its initialization.
+				Arguments are read left to right, arguments cannot be skipped.
+				The first argument must exist and be the path to the modelfile for the agent, the second is optional and the name the agent should have.
+				Each agent will generate data points in the diagrams. Defaults to None.
+				The first agent is "playing" on the market, while the rest are set as competitors on the market.
+			separate_markets (bool, optional): Indicates if the passed agents should be trained on separate marketplaces. Defaults to False.
+			config_market (AttrDict, optional): THe config file for the marketplace. Defaults to None.
+			support_continuous_action_space(bool, optional): Needed when setting StableBaselinesAgents in order to ensure continuous pricing.
+				Defaults to False.
 		"""
-		if enable_live_draw is not None:
-			assert isinstance(enable_live_draw, bool), 'enable_live_draw must be a Boolean'
-			self.enable_live_draw = enable_live_draw
 		if episodes is not None:
 			assert isinstance(episodes, int), 'episodes must be of type int'
 			assert episodes > 0, 'episodes must not be 0'
@@ -187,6 +198,9 @@ class Configurator():
 			assert plot_interval <= self.episodes, \
 				f'plot_interval must be <= episodes, or no plots can be generated. Episodes: {self.episodes}. Plot_interval: {plot_interval}'
 			self.plot_interval = plot_interval
+		if separate_markets is not None:
+			assert isinstance(separate_markets, bool), 'separate_markets must be a Boolean'
+			self.separate_markets = separate_markets
 		if config_market is not None:
 			self.config_market = config_market
 		if marketplace is not None:
@@ -201,10 +215,6 @@ class Configurator():
 		# marketplace has not changed but agents have
 		elif agents is not None:
 			self._update_agents(agents)
-
-		if subfolder_name is not None:
-			assert isinstance(subfolder_name, str), f'subfolder_name must be of type str: {type(subfolder_name)}, {subfolder_name}'
-			self.folder_path = os.path.join(PathManager.results_path, 'monitoring', subfolder_name)
 
 	def print_configuration(self):
 		"""
@@ -222,9 +232,9 @@ class Configurator():
 				return
 
 		print('Running a monitoring session with the following configuration:')
-		print(str.ljust('Live Drawing enabled:', 25) + str(self.enable_live_draw))
 		print(str.ljust('Episodes:', 25) + str(self.episodes))
 		print(str.ljust('Plot interval:', 25) + str(self.plot_interval))
+		print(str.ljust('Separate markets:', 25) + str(self.separate_markets))
 		print(str.ljust('Marketplace:', 25) + type(self.marketplace).__name__)
 		print('Monitoring these agents:')
 		for current_agent in self.agents:

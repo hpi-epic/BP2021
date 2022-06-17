@@ -35,7 +35,7 @@ class ConfigParserTest(TestCase):
 		},
 		'environment': {
 			'task': 'training',
-			'enable_live_draw': False,
+			'separate_markets': False,
 			'marketplace': 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopoly',
 			'agents': [
 				{
@@ -116,14 +116,14 @@ class ConfigParserTest(TestCase):
 			'task': ['training'],
 			'episodes': [''],
 			'plot_interval': [''],
-			'enable_live_draw': [''],
+			'separate_markets': [''],
 			'marketplace': ['recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopoly'],
 			'agents-name': ['QLearning Agent'],
 			'agents-agent_class': ['recommerce.rl.q_learning.q_learning_agent.QLearningAgent'],
 			'agents-argument': [''],
 		}
 		expected_environment_dict = EXAMPLE_HIERARCHY_DICT['environment'].copy()
-		expected_environment_dict['enable_live_draw'] = True
+		expected_environment_dict['separate_markets'] = True
 		assert expected_environment_dict == self.flat_parser._flat_environment_to_hierarchical(test_dict)
 
 	def test_flat_agents(self):
@@ -199,7 +199,7 @@ class ConfigParserTest(TestCase):
 		assert final_config.environment is not None
 		environment_config: EnvironmentConfig = final_config.environment
 		assert 'training' == environment_config.task
-		assert environment_config.enable_live_draw is False
+		assert environment_config.separate_markets is False
 		assert environment_config.episodes is None
 		assert environment_config.plot_interval is None
 		assert 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopoly' == environment_config.marketplace
