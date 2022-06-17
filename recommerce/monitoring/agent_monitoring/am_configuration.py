@@ -230,11 +230,14 @@ class Configurator():
 		elif agents is not None:
 			self._update_agents(agents)
 
-	def print_configuration(self):
+	def print_configuration(self) -> bool:
 		"""
 		Print the current configuration in a human-readable format.
 
 		Used when running a monitoring session from `agent_monitoring.Monitor()`.
+
+		Returns:
+			bool: If the monitoring session should continue or not.
 		"""
 		if self.episodes / self.plot_interval > 50:
 			print('The ratio of episodes/plot_interval is over 50. In order for the plots to be more readable we recommend a lower ratio.')
@@ -243,7 +246,7 @@ class Configurator():
 			print(f'Ratio: {int(self.episodes / self.plot_interval)}')
 			if input('Continue anyway? [y]/n: ') == 'n':
 				print('Stopping monitoring session...')
-				return
+				return False
 
 		print('Running a monitoring session with the following configuration:')
 		print(str.ljust('Episodes:', 25) + str(self.episodes))
@@ -253,6 +256,8 @@ class Configurator():
 		print('Monitoring these agents:')
 		for current_agent in self.agents:
 			print(str.ljust('', 25) + current_agent.name)
+
+		return True
 
 
 if __name__ == '__main__':  # pragma: no cover

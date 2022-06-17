@@ -94,7 +94,8 @@ def run_monitoring_session(monitor: Monitor) -> None:
 	Args:
 		monitor (Monitor instance, optional): The monitor to run the session on. Defaults to a default Monitor() instance.
 	"""
-	monitor.configurator.print_configuration()
+	if not monitor.configurator.print_configuration():
+		return
 
 	if monitor.configurator.separate_markets:
 		print('\nAgents are playing on separate markets...')
