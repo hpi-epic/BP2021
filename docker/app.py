@@ -1,3 +1,4 @@
+# app.py
 import hashlib
 import os
 import time
@@ -28,9 +29,12 @@ app = FastAPI()
 def is_invalid_status(status: str) -> bool:
 	"""
 	Utitlity function that checks a given string against a set of valid container statuses.
+
 	If the string does not match any of them, the status is deemed invalid and the API should return a 404.
+
 	Args:
 		status (str): The status to check against the set.
+
 	Returns:
 		bool: Whether or not the status indicates a successful operation.
 	"""
@@ -43,8 +47,10 @@ def verify_token(request: Request) -> bool:
 	"""
 	verifies for a given request that the header contains the right AUTHORIZATION_TOKEN.
 	Warning: This cannot be considered 100% secure, without https, any network sniffer can read the token
+
 	Args:
 		request (Request): The request to the API
+
 	Returns:
 		bool: if the given authorization token matches our authorization token.
 	"""
@@ -66,9 +72,11 @@ def verify_token(request: Request) -> bool:
 async def start_container(num_experiments: int, config: Request, authorized: bool = Depends(verify_token)) -> JSONResponse:
 	"""
 	Start a container with the specified config.json and perform a command on it.
+
 	Args:
 		num_experiments (int): the number of container, that should be started with this configuration
 		config (Request):  The combined hyperparameter_config.json and environment_config_command.json files that should be sent to the container.
+
 	Returns:
 		JSONResponse: If starting was successfull the response contains multiple dicts, one for each started container.
 			If not, there will be one dict with an error message
@@ -93,9 +101,12 @@ async def start_container(num_experiments: int, config: Request, authorized: boo
 async def is_container_alive(id: str, authorized: bool = Depends(verify_token)) -> JSONResponse:
 	"""
 	Check the status of a container.
+
 	Most other commands also return the status of the container in the `status` field, or in their header.
+
 	Args:
 		id (str): The id of the container.
+
 	Returns:
 		JSONResponse: The response of the status request.
 	"""
@@ -116,11 +127,13 @@ async def get_container_logs(id: str,
 	authorized: bool = Depends(verify_token)) -> JSONResponse:
 	"""
 	Get the logs of a container.
+
 	Args:
 		id (str): The id of the container.
 		timestamps (bool): Whether or not timestamps should be included in the logs. Defaults to False.
 		stream (bool): Whether to stream the logs instead of directly retrieving them. Defaults to False.
 		tail (int): How many lines at the end of the logs should be returned. int or 'all'. Defaults to 'all'.
+
 	Returns:
 		JSONResponse: If stream=False. The response of the log request.
 		StreamingResponse: If stream=True. The response of the log request.
@@ -145,9 +158,11 @@ async def get_container_logs(id: str,
 async def get_container_data(id: str, path: str = '/app/results', authorized: bool = Depends(verify_token)) -> StreamingResponse:
 	"""
 	Extract a folder or file from a container.
+
 	Args:
 		id (str): The id of the container.
 		path (str, optional): The path of the folder or file that should be extracted. Defaults to '/app/results'.
+
 	Returns:
 		StreamingResponse: A stream generator that will download the requested path as a .tar archive.
 	"""
@@ -171,8 +186,10 @@ async def get_container_data(id: str, path: str = '/app/results', authorized: bo
 async def get_tensorboard_link(id: str, authorized: bool = Depends(verify_token)) -> JSONResponse:
 	"""
 	Start a tensorboard session in a container.
+
 	Args:
 		id (str): The id of the container.
+
 	Returns:
 		JSONResponse: The response of the tensorboard request encapsuled in a DockerInfo JSON. A link is in the data field.
 	"""
@@ -189,8 +206,10 @@ async def get_tensorboard_link(id: str, authorized: bool = Depends(verify_token)
 async def pause_container(id: str, authorized: bool = Depends(verify_token)) -> JSONResponse:
 	"""
 	Pause a container.
+
 	Args:
 		id (str): The id of the container.
+
 	Returns:
 		JSONResponse: The response of the pause request encapsuled in a DockerInfo JSON.
 	"""
@@ -207,8 +226,10 @@ async def pause_container(id: str, authorized: bool = Depends(verify_token)) -> 
 async def unpause_container(id: str, authorized: bool = Depends(verify_token)) -> JSONResponse:
 	"""
 	Unpause a container.
+
 	Args:
 		id (str): The id of the container.
+
 	Returns:
 		JSONResponse: The response of the unpause request encapsuled in a DockerInfo JSON.
 	"""
@@ -225,8 +246,10 @@ async def unpause_container(id: str, authorized: bool = Depends(verify_token)) -
 async def remove_container(id: str, authorized: bool = Depends(verify_token)) -> JSONResponse:
 	"""
 	Stop and remove a container.
+
 	Args:
 		id (str): The id of the container.
+
 	Returns:
 		JSONResponse: The response of the remove request encapsuled in a DockerInfo JSON. Status will be 'removed' if successful.
 	"""
@@ -245,6 +268,7 @@ async def check_if_api_is_available(authorized: bool = Depends(verify_token)) ->
 	This is a route you can call to see if the API is available.
 	If the API is unavailable, this will of course not actually get called which the Webserver will catch.
 	But if it is available, we also check if docker is responsive, i.e. if `manager._client` is a valid docker.DockerClient.
+
 	Returns:
 		JSONResponse: A json with a `status` field and status code indicating if docker is available.
 	"""
