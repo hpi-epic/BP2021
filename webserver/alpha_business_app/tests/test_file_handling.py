@@ -226,7 +226,7 @@ class FileHandling(TestCase):
 		hyperparameter_config: HyperparameterConfig = final_config.hyperparameter
 
 		assert 'training' == environment_config.task
-		assert environment_config.enable_live_draw is None
+		assert environment_config.separate_markets is None
 		assert environment_config.episodes is None
 		assert environment_config.plot_interval is None
 		assert 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopoly' == environment_config.marketplace

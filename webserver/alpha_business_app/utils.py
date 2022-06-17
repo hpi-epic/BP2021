@@ -4,10 +4,6 @@ from recommerce.configuration.environment_config import EnvironmentConfig
 from recommerce.configuration.utils import get_class
 
 
-def convert_python_type_to_input_type(to_convert) -> str:
-	return 'number' if to_convert == float or to_convert == int else 'text'
-
-
 def convert_python_type_to_django_type(to_convert: type) -> str:
 	"""
 	Converts standard python types, into a string of a Django model classes.
