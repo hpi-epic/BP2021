@@ -116,9 +116,7 @@ def get_structure_dict_for(keyword: str) -> dict:
 	environment_dict_with_none['agents'] = []
 
 	hyperparameter_dict_sim_market = {parameter[0]: None for parameter in get_all_possible_sim_market_hyperparameter()}
-	print(hyperparameter_dict_sim_market)
 	hyperparameter_dict_rl = {parameter[0]: None for parameter in get_all_possible_rl_hyperparameter()}
-	print(hyperparameter_dict_rl)
 
 	hyperparameter_dict = {
 		'sim_market': hyperparameter_dict_sim_market,
