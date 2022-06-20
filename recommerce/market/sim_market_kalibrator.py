@@ -1,3 +1,5 @@
+import math
+
 import pandas as pd
 import torch
 from sim_market_kalibrated import SimMarketKalibrated
@@ -39,6 +41,8 @@ class SimMarketKalibrator:
 	def kalibrate_market(self, data, y1_index, y2_index, y3_index, y12_index, y22_index, y32_index, y4_index, y5_index, y6_index):
 		self.N = len(data[0])
 		by1 = self.first_regression(data, self.M1, y1_index)  # used sales agent
+		self.first_regression_old(data, self.M1, y1_index)
+		exit()
 		by2 = self.first_regression(data, self.M2, y2_index)  # new sales agent
 		by3 = self.first_regression(data, self.M3, y3_index)  # rebuy sales agent
 		# exit()
@@ -69,52 +73,118 @@ class SimMarketKalibrator:
 		print('bx6:', bxy6)
 		# exit()
 		return SimMarketKalibrated(self.config, by1, by2, by3, by12, by22, by32, by4, bxy4, by5, bxy5, by6, bxy6,
-			self.M1, self.M1, self.M4, self.M5, self.M6, self.M4x, self.M5x, self.M6x, data[23, :])
+			self.M1, self.M1, self.M4, self.M5, self.M6, self.M4x, self.M5x, self.M6x,
+			[1.0, 24.0, 5.0, 8.0, 4.0, 97.0, 333.0, 6.0, 7.0, 3.0, 2.1, 3.0, 3.0, 0.0, -10.0, 2.0, 8.0, 8.0, 27.9, 8.0, 339.5, 63.9, 5.0, 8.0, 4.0])
 
 	def first_regression(self, data, x_rows, y_index: int):
 		x = data
-
+		print(x)
 		# param y3 {i in 1..N} := x[13,i];
 		# set M3 := {0,1,2,3,4,7,8,9,22,23,24};
 		# y3a = [x[i, y_index] for i in range(1, self.N)]
 		if y_index == 15 or y_index == 16 or y_index == 17:
+			# assert False
 			return torch.zeros(10)
 		assert y_index == 11 or y_index == 12 or y_index == 13
 		y3 = torch.tensor([x[y_index, i] for i in range(1, self.N)])
 
 		# torch.transpose(y3, 0, 1)
 		x_y3 = torch.tensor(x[x_rows, 1: self.N])
+		x3 = torch.transpose(x_y3, 0, 1)
+		x4 = []
+		for vector in x3:
+			# print('neuer lauf')
+			# print(vector)
+			vector1 = vector[1:]
+			v1 = vector1.view(-1, 1)
+			v2 = vector1.view(1, -1)
+			mat = torch.matmul(v1, v2)
+			condensed = mat.view(-1)
+			# print('con:',condensed)
+
+			x4.append(torch.cat([vector, condensed]).view(1, -1))
+		print(type(x4))
+		x4_tensor = torch.cat(x4)
+		print(x4_tensor.shape)
+
+		# x_y31 =
 		# print(x_y3)
-		transposed_x_y3 = x_y3.transpose(0, 1)
+		# transposed_x_y3 = x4_tensor.transpose(0, 1)
 
 		# minimize OLSy3: sum{i in 1..N} ( sum{k in M3} beta3[k]*x[k,i] - y3[i] )^2;
 		# objective OLSy3; solve; for{k in M3} let b3[k]:=beta3[k];;
-		result_tuple_y3 = torch.linalg.lstsq(transposed_x_y3, y3, driver='gelsd')
+		result_tuple_y3 = torch.linalg.lstsq(x4_tensor, y3, driver='gelsd')
 		# pt.training(transposed_x_y3, y3)
 		# self.new_regression(transposed_x_y3.float(), y3.float())
-		b3 = result_tuple_y3[0]
-		print('b1:', b3)
-		assert len(b3) == len(x_rows) and len(b3) == 11, 'len(b3) = ' + str(len(b3))
-		# self.new_regression(transposed_x_y3, y3)
-		olsy1 = 0
-		for i in range(1, self.N):
-			y1 = x[y_index, i]
-			predicted_y1 = (b3[0] * 1
-				+ b3[1] * x[1, i]
-				+ b3[2] * x[2, i]
-				+ b3[3] * x[3, i]
-				+ b3[4] * x[4, i]
-				+ b3[5] * x[7, i]
-				+ b3[6] * x[8, i]
-				+ b3[7] * x[9, i]
-				+ b3[8] * x[22, i]
-				+ b3[9] * x[23, i]
-				+ b3[10] * x[24, i])
-			olsy1 += (predicted_y1 - y1) ** 2
-		print('olsy1:', olsy1)
-		print('loss per value:', olsy1 / (self.N - 1))
 
-		print()
+		b3_b3x = result_tuple_y3[0]
+		print('residuals:', result_tuple_y3[1])
+		# print(len(x_rows))
+		b3 = b3_b3x[0:len(x_rows)]
+		b3x = b3_b3x[len(x_rows):]
+
+		print('b:', b3_b3x)
+		assert len(b3_b3x) == 111, 'len(b3) = ' + str(len(b3_b3x))
+		# self.new_regression(transposed_x_y3, y3)
+		# olsy1 = 0
+		# for i in range(1, self.N):
+		# 	y1 = x[y_index, i]
+		# 	predicted_y1 = (b3[0] * 1
+		# 		+ b3[1] * x[1, i]
+		# 		+ b3[2] * x[2, i]
+		# 		+ b3[3] * x[3, i]
+		# 		+ b3[4] * x[4, i]
+		# 		+ b3[5] * x[7, i]
+		# 		+ b3[6] * x[8, i]
+		# 		+ b3[7] * x[9, i]
+		# 		+ b3[8] * x[22, i]
+		# 		+ b3[9] * x[23, i]
+		# 		+ b3[10] * x[24, i])
+
+		# 	olsy1 += (predicted_y1 - y1) ** 2
+		# print('olsy1:', olsy1)
+		# print('loss per value:', olsy1 / (self.N - 1))
+
+		print('new MSE calculation:')
+		sse = 0
+
+		# for vector in torch.transpose(x, 0, 1):
+		for vi, vector in enumerate(x3):
+			y1 = x[y_index, vi]
+			result = sum([b3[ki] * vector[ki] for ki, k in enumerate(x_rows)])
+			# print(vector.shape)
+			# print(x_rows)
+			vector1 = vector[1:]
+			v1 = vector1.view(-1, 1)
+			v2 = vector1.view(1, -1)
+			mat = torch.matmul(v1, v2)
+
+			condensed = mat.view(-1)
+			result_mat = torch.matmul(b3x, condensed)
+			predicted_y1 = result + result_mat
+			sse += ((predicted_y1 - y1) ** 2)
+		mse = sse / (self.N - 1)
+		print('mse:', mse)
+		print('rmse', math.sqrt(mse))
+
+		# for i in range(1, self.N):
+		# 	y1 = x[y_index + 4, i]
+		# 	predicted_y1 = (b3[0] * 1
+		# 		+ b3[1] * x[1, i]
+		# 		+ b3[2] * x[2, i]
+		# 		+ b3[3] * x[3, i]
+		# 		+ b3[4] * x[4, i]
+		# 		+ b3[5] * x[7, i]
+		# 		+ b3[6] * x[8, i]
+		# 		+ b3[7] * x[9, i]
+		# 		+ b3[8] * x[22, i]
+		# 		+ b3[9] * x[23, i]
+		# 		+ b3[10] * x[24, i])
+		# 	olsy1 += (predicted_y1 - y1) ** 2
+		# print('MSE comp:', olsy1)
+		# print('RMSE per value:', math.sqrt(olsy1) / (self.N - 1))
+		# print()
+
 		return b3
 
 	def fourth_regression(self, data, x_rows, xx_rows, y_index: int, flag: str):
@@ -149,44 +219,6 @@ class SimMarketKalibrator:
 		# print(len(x_rows))
 		b6 = b6_b6x[0:len(x_rows)]
 		b6x = b6_b6x[len(x_rows):]
-
-		# print('b6:', b6)
-		# print('b6x:', b6x)
-
-		# olsy4 = 0
-		# for i in range(1, self.N):
-		# 	y1 = x[y_index, i]
-		# 	predicted_y1 = (b6[0] * 1
-		# 		+ b6[1] * x[1, i]
-		# 		+ b6[2] * x[2, i]
-		# 		+ b6[3] * x[3, i]
-		# 		+ b6[4] * x[4, i]
-		# 		+ b6[5] * x[7, i]
-		# 		+ b6[6] * x[8, i]
-		# 		+ b6[7] * x[9, i])
-
-		# 	olsy4 += (predicted_y1 - y1) ** 2
-		# print('olsy4:', olsy4)
-		# print('loss per value:', olsy4 / (self.N - 1))
-
-		# olsy4x = 0
-		# for i in range(1, self.N):
-		# 	y1 = x[y_index, i]
-		# 	predicted_y1 = (b6[0] * 1
-		# 		+ b6[1] * x[1, i]
-		# 		+ b6[2] * x[2, i]
-		# 		+ b6[3] * x[3, i]
-		# 		+ b6[4] * x[4, i]
-		# 		+ b6[5] * x[7, i]
-		# 		+ b6[6] * x[8, i]
-		# 		+ b6[7] * x[9, i])
-		# 	for ki, k in enumerate(xx_rows):
-		# 		if x[ki, i] < k:
-		# 			predicted_y1 += b6x[ki]
-
-		# 	olsy4x += (predicted_y1 - y1) ** 2
-		# print('olsy4x:', olsy4x)
-		# print('loss per value:', olsy4x / (self.N - 1))
 
 		mse = sum(
 			[(
@@ -240,6 +272,94 @@ class SimMarketKalibrator:
 		pred_y = our_model(new_var)
 		print('predict (after training)', 4, our_model(new_var).item())
 
+	def first_regression_old(self, data, x_rows, y_index: int):
+		x = data
+		print(x)
+		# param y3 {i in 1..N} := x[13,i];
+		# set M3 := {0,1,2,3,4,7,8,9,22,23,24};
+		# y3a = [x[i, y_index] for i in range(1, self.N)]
+		if y_index == 15 or y_index == 16 or y_index == 17:
+			# assert False
+			return torch.zeros(10)
+		assert y_index == 11 or y_index == 12 or y_index == 13
+		y3 = torch.tensor([x[y_index, i] for i in range(1, self.N)])
+
+		# torch.transpose(y3, 0, 1)
+		x_y3 = torch.tensor(x[x_rows, 1: self.N])
+
+		# x_y31 =
+		# print(x_y3)
+		transposed_x_y3 = x_y3.transpose(0, 1)
+
+		# minimize OLSy3: sum{i in 1..N} ( sum{k in M3} beta3[k]*x[k,i] - y3[i] )^2;
+		# objective OLSy3; solve; for{k in M3} let b3[k]:=beta3[k];;
+		result_tuple_y3 = torch.linalg.lstsq(transposed_x_y3, y3, driver='gelsd')
+		# pt.training(transposed_x_y3, y3)
+		# self.new_regression(transposed_x_y3.float(), y3.float())
+
+		b3 = result_tuple_y3[0]
+		# print(len(x_rows))
+
+		assert len(b3) == 11, 'len(b3) = ' + str(len(b3))
+		olsy1 = 0
+		for i in range(1, self.N):
+			y1 = x[y_index, i]
+			predicted_y1 = (b3[0] * 1
+				+ b3[1] * x[1, i]
+				+ b3[2] * x[2, i]
+				+ b3[3] * x[3, i]
+				+ b3[4] * x[4, i]
+				+ b3[5] * x[7, i]
+				+ b3[6] * x[8, i]
+				+ b3[7] * x[9, i]
+				+ b3[8] * x[22, i]
+				+ b3[9] * x[23, i]
+				+ b3[10] * x[24, i])
+
+			olsy1 += (predicted_y1 - y1) ** 2
+		print('old mse:', olsy1 / (self.N - 1))
+		print('rmse:', math.sqrt(olsy1 / (self.N - 1)))
+
+		# print('new MSE calculation:')
+		# mse = 0
+		# x
+		# # for vector in torch.transpose(x, 0, 1):
+		# for vi, vector in enumerate(x3):
+		# 	y1 = x[y_index, vi]
+		# 	result = max(0, sum([b3[ki] * vector[ki] for ki, k in enumerate(x_rows)]))
+		# 	# print(vector.shape)
+		# 	# print(x_rows)
+		# 	vector1 = vector[1:]
+		# 	v1 = vector1.view(-1, 1)
+		# 	v2 = vector1.view(1, -1)
+		# 	mat = torch.matmul(v1, v2)
+		# 	condensed = mat.view(-1)
+		# 	result_mat = torch.matmul(b3x, condensed)
+		# 	predicted_y1 = result + result_mat
+		# 	mse += (predicted_y1 - y1) ** 2
+		# print('mse:', mse)
+		# print('rmse', math.sqrt(mse))
+
+		# for i in range(1, self.N):
+		# 	y1 = x[y_index + 4, i]
+		# 	predicted_y1 = (b3[0] * 1
+		# 		+ b3[1] * x[1, i]
+		# 		+ b3[2] * x[2, i]
+		# 		+ b3[3] * x[3, i]
+		# 		+ b3[4] * x[4, i]
+		# 		+ b3[5] * x[7, i]
+		# 		+ b3[6] * x[8, i]
+		# 		+ b3[7] * x[9, i]
+		# 		+ b3[8] * x[22, i]
+		# 		+ b3[9] * x[23, i]
+		# 		+ b3[10] * x[24, i])
+		# 	olsy1 += (predicted_y1 - y1) ** 2
+		# print('MSE comp:', olsy1)
+		# print('RMSE per value:', math.sqrt(olsy1) / (self.N - 1))
+		# print()
+
+		return b3
+
 
 def stable_baselines_agent_kalibrator():
 	# training_scenario.train_to_calibrate_marketplace()
@@ -275,7 +395,7 @@ def stable_baselines_agent_kalibrator():
 def predictable_agent_market_kalibrator():
 	# training_scenario.train_to_calibrate_marketplace()
 	# data_path = 'data/kalibration_data/training_data_predictable_int.csv'
-	data_path = 'data/kalibration_data/training_data_predictable_int_standard.csv'
+	data_path = 'data/kalibration_data/training_data_predictable_rotating.csv'
 	print('Loading data from:', data_path)
 	data_frame = pd.read_csv(data_path)
 	data = torch.tensor(data_frame.values).transpose(0, 1)
@@ -303,7 +423,7 @@ def predictable_agent_market_kalibrator():
 	kalibrated_market: SimMarketKalibrated = kalibrator.kalibrate_market(
 		data, y1_index, y2_index, y3_index, y12_index, y22_index, y32_index, y4_index, y5_index, y6_index)
 
-	# training_scenario.train_with_calibrated_marketplace(kalibrated_market)
+	training_scenario.train_with_calibrated_marketplace(kalibrated_market)
 	agent = PredictableAgent(config_hyperparameter)
 	# state = kalibrated_market.reset()
 	# for i in range(50):

@@ -74,6 +74,7 @@ class SimMarketKalibrated(CircularEconomyRebuyPriceDuopoly):
 		# 3.0000e+00,  0.0000e+00,  3.0000e+00,  1.6300e+01,  3.5062e+01,
 		# 1.0208e+04,  2.3988e+03,  1.8651e+01,  1.2789e+01,  4.5772e+00])
 		self.step_counter = 0
+		self.previous_state = self.reset_state
 		agent_observation = np.array([np.round_(self.reset_state[state_index]) for state_index in self.observable_state])
 		return agent_observation
 		# return np.array([30, 20, 5, 5, 5, 20])

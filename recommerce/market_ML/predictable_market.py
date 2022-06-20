@@ -44,11 +44,12 @@ class OwnerPredictable(OwnerRebuy):
 		price_rebuy_vendor_1 = vendor_actions[1][2] + 1
 
 		if price_rebuy_vendor_0 == price_rebuy_vendor_1:
-			return np.array([0.25, 0.25, 0.25, 0.25])
+			# trow away, keep, sell to v0 , sell to v1
+			return np.array([0.05, 0.45, 0.25, 0.25])
 		elif price_rebuy_vendor_0 < price_rebuy_vendor_1:
-			return np.array([0.25, 0.25, 0.0, 0.5])
+			return np.array([0.05, 0.45, 0.0, 0.5])
 		else:
-			return np.array([0.25, 0.25, 0.5, 0.0])
+			return np.array([0.05, 0.45, 0.5, 0.0])
 
 
 class CustomerPredictable(CustomerCircular):
@@ -61,7 +62,7 @@ class CustomerPredictable(CustomerCircular):
 		assert len(vendor_specific_state) > 0, 'there must be at least one vendor.'
 
 		nothingpreference = 0
-		preferences = [nothingpreference]
+
 		price_refurbished_latest_setter = vendor_actions[0][0] + 1
 		price_new_latest_setter = vendor_actions[0][1] + 1
 		price_refurbished_other = vendor_actions[1][0] + 1
@@ -73,7 +74,7 @@ class CustomerPredictable(CustomerCircular):
 		ratio_old_other = 0.5 * (1 if price_refurbished_other >= price_refurbished_latest_setter else 0)
 		ratio_new_other = 0.5 * (1 if price_new_other >= price_new_latest_setter else 0)
 
-		preferences += [ratio_old_latest_setter, ratio_new_latest_setter, ratio_old_other, ratio_new_other]
+		preferences = [nothingpreference, ratio_old_latest_setter, ratio_new_latest_setter, ratio_old_other, ratio_new_other]
 		# preferences += [1,0,0,0]
 		assert sum(preferences) == 1, f'preferences must sum to 1, but the are {preferences}'
 		return ut.softmax(np.array(preferences))
@@ -191,7 +192,7 @@ class PredictableDatagenerator(PredictableMarketRebuyPriceDuopoly):
 			# np.savetxt(f'{PathManager.data_path}/kalibration_data/training_data-txtfile_int1dot.txt',
 			# 	saving_array_rainer, delimiter=' ', fmt='%1.3f', newline='\n')
 
-			save_path = f'{PathManager.data_path}/kalibration_data/training_data_predictable_int_standard.csv'
+			save_path = f'{PathManager.data_path}/kalibration_data/training_data_predictable_rotating.csv'
 			df = pd.DataFrame(saving_array)
 			print(df.head())
 			df.to_csv(save_path, index=False)
