@@ -67,6 +67,19 @@ class SimMarketKalibrated(CircularEconomyRebuyPriceDuopoly):
 		# tmp += sum([bix[ki] * (1 if (state_to_get_parameters_from[xb_index] < k) else 0) for ki, k in enumerate(Mix)])
 		return tmp
 
+	def customer_decisions(self, data, xrows):
+		x = torch.index_select(data, 0, torch.IntTensor(xrows)).reshape(1, 11).float()
+		number_datapoints = x.shape[0]
+		number_features = x.shape[1] - 1
+		new_x = x[:, 1:].view((number_datapoints, 1, -1))
+		x_append = torch.matmul(new_x.transpose(1, 2), new_x)
+		x_append = x_append.view(number_datapoints, -1)
+		wanted_features = list(filter(lambda x: x // number_features <= x % number_features, range(number_features * number_features)))
+		x_append = torch.index_select(x_append, 1, torch.IntTensor(wanted_features))
+		features = torch.cat([x, x_append], 1)
+		predicted = torch.matmul(features, self.by1.float()).reshape(3)
+		return predicted
+
 	def reset(self) -> np.array:
 		# market_state = np.array([-1.0000e+00,  2.3400e+02,  2.2745e+01,  1.3406e+01,  2.5241e+00,
 		# 2.7200e+02,  2.7000e+01,  1.8000e+01,  1.2000e+01,  2.4086e-02,
@@ -91,9 +104,11 @@ class SimMarketKalibrated(CircularEconomyRebuyPriceDuopoly):
 		xb[0] = 1
 		xb[1] = prev[1] - prev[12] + prev[13]  # agent inventory (after the previous step)
 
-		xb[2] = self.comp_prices(self.M4, self.M4x, self.by4, self.bxy4, 'used', xb, prev)  # comp price used 	(old)
-		xb[3] = self.comp_prices(self.M5, self.M5x, self.by5, self.bxy5, 'new', xb, prev)  # comp price new 	(old)
-		xb[4] = self.comp_prices(self.M6, self.M6x, self.by6, self.bxy6, 'rebuy', xb, prev)  # comp price rebuy 	(old)
+		# xb[2] = self.comp_prices(self.M4, self.M4x, self.by4, self.bxy4, 'used', xb, prev)  # comp price used 	(old)
+		# xb[3] = self.comp_prices(self.M5, self.M5x, self.by5, self.bxy5, 'new', xb, prev)  # comp price new 	(old)
+		# xb[4] = self.comp_prices(self.M6, self.M6x, self.by6, self.bxy6, 'rebuy', xb, prev)  # comp price rebuy 	(old)
+
+		xb[2], xb[3], xb[4] = self.previous_state[2], self.previous_state[3], self.previous_state[4]
 
 		xb[5] = prev[5] - prev[16] + prev[17]  # comp inventory (after the previous step)
 
@@ -122,66 +137,75 @@ class SimMarketKalibrated(CircularEconomyRebuyPriceDuopoly):
 		# assert float(xb[22]) == float(examplevalue), f'{xb[22]} != {examplevalue}'
 		# xb[11,i]= np.round_(max(0, np.random.uniform(-5,5) + sum{k in self.Ma} self.b1[k]*xb[k,i]))
 
-		xb[11] = np.round_(max(0,  # np.random.uniform(-5, 5) +
-			sum([self.by1[ki] * xb[k] for ki, k in enumerate(self.M123)])))
-		# agent sales used
-		xb[12] = np.round_(min(xb[1], max(0,  # np.random.uniform(-5, 5) +
-			sum([self.by2[ki] * xb[k] for ki, k in enumerate(self.M123)]))))
-		# agent sales new
-		xb[13] = np.round_(min(xb[6] / 2, max(0,  # np.random.uniform(-5, 5) +
-			sum([self.by3[ki] * xb[k] for ki, k in enumerate(self.M123)]))))
+		# xb[11] = np.round_(min(xb[1], max(0,  # np.random.uniform(-5, 5) +
+		# 	sum([self.by1[ki] * xb[k] for ki, k in enumerate(self.M123)]))))
+		# # agent sales used
+		# xb[12] = np.round_(max(0,  # np.random.uniform(-5, 5) +
+		# 	sum([self.by2[ki] * xb[k] for ki, k in enumerate(self.M123)])))
+		# # agent sales new
+		# xb[13] = np.round_(min(xb[6] / 2, max(0,  # np.random.uniform(-5, 5) +
+		# 	sum([self.by3[ki] * xb[k] for ki, k in enumerate(self.M123)]))))
 		# agent sales rebuy
+		customer_decisions = self.customer_decisions(xb, self.M123)
+		xb[11] = np.round_(min(xb[1], max(0, customer_decisions[0])))  # agent sales used
+		xb[12] = np.round_(max(0, customer_decisions[1]))  # agent sales new
+		xb[13] = np.round_(min(xb[6] / 2, max(0, customer_decisions[2])))  # agent sales rebuy
 
 		xb[14] = xb[5]*0.05  # comp holding cost
 		# TODO: refactor these into loops or something more beautiful
 
 		# xb[15] = np.round_(max(0,
 		# 	sum([self.by12[ki] * xb[k] for ki, k in enumerate(self.M456)])))
+		x_comp = torch.cat([prev.index_select(0, torch.tensor([7, 8, 9])), xb.index_select(0, torch.IntTensor([0, 1, 2, 3, 4, 7, 8, 9]))], 0)
+		customer_decisions_comp = self.customer_decisions(x_comp, (3, 4, 0, 1, 2, 5, 6, 7, 8, 9, 10))
+		xb[15] = np.round_(min(xb[5], max(0, customer_decisions_comp[0])))  # comp sales used
+		xb[16] = np.round_(max(0, customer_decisions_comp[1]))  # comp sales new
+		xb[17] = np.round_(min(xb[6] / 2, max(0, customer_decisions_comp[2])))  # comp sales rebuy
 
-		xb[15] = np.round_(max(0, 0  # np.random.uniform(-5, 5)
-			+ self.by1[0] * 1
-			+ self.by1[1] * prev[7]
-			+ self.by1[2] * prev[8]
-			+ self.by1[3] * prev[9]
-			+ self.by1[4] * xb[2]
-			+ self.by1[5] * xb[3]
-			+ self.by1[6] * xb[4]
-			+ self.by1[7] * xb[7]
-			+ self.by1[8] * xb[8]
-			+ self.by1[9] * xb[9]
-		))  # cf self.Ma # competitor sales used
+		# xb[15] = np.round_(max(0, 0  # np.random.uniform(-5, 5)
+		# 	+ self.by1[0] * 1
+		# 	+ self.by1[1] * prev[7]
+		# 	+ self.by1[2] * prev[8]
+		# 	+ self.by1[3] * prev[9]
+		# 	+ self.by1[4] * xb[2]
+		# 	+ self.by1[5] * xb[3]
+		# 	+ self.by1[6] * xb[4]
+		# 	+ self.by1[7] * xb[7]
+		# 	+ self.by1[8] * xb[8]
+		# 	+ self.by1[9] * xb[9]
+		# ))  # cf self.Ma # competitor sales used
 
 		# xb[16] = np.round_(min(xb[5], max(0,
 		# 	sum([self.by22[ki] * xb[k] for ki, k in enumerate(self.M456)]))))
 
-		xb[16] = np.round_(min(xb[5], max(0, 0  # np.random.uniform(-5, 5)
-			+ self.by2[0] * 1
-			+ self.by2[0] * prev[7]
-			+ self.by2[1] * prev[8]
-			+ self.by2[2] * prev[9]
-			+ self.by2[3] * xb[2]
-			+ self.by2[4] * xb[3]
-			+ self.by2[5] * xb[4]
-			+ self.by2[6] * xb[7]
-			+ self.by2[7] * xb[8]
-			+ self.by2[8] * xb[9])))  # cf self.Ma # competitor sales new
+		# xb[16] = np.round_(min(xb[5], max(0, 0  # np.random.uniform(-5, 5)
+		# 	+ self.by2[0] * 1
+		# 	+ self.by2[0] * prev[7]
+		# 	+ self.by2[1] * prev[8]
+		# 	+ self.by2[2] * prev[9]
+		# 	+ self.by2[3] * xb[2]
+		# 	+ self.by2[4] * xb[3]
+		# 	+ self.by2[5] * xb[4]
+		# 	+ self.by2[6] * xb[7]
+		# 	+ self.by2[7] * xb[8]
+		# 	+ self.by2[8] * xb[9])))  # cf self.Ma # competitor sales new
 
 		# xb[17] = np.round_(min(xb[6], max(0,
 		# 	sum([self.by32[ki] * xb[k] for ki, k in enumerate(self.M456)]))))
 
-		xb[17] = np.round_(min(xb[6] / 2, max(0, 0  # np.random.uniform(-5, 5)
-			+ self.by3[0] * 1
-			+ self.by3[1] * prev[7]
-			+ self.by3[2] * prev[8]
-			+ self.by3[3] * prev[9]
-			+ self.by3[4] * xb[2]
-			+ self.by3[5] * xb[3]
-			+ self.by3[6] * xb[4]
-			+ self.by3[7] * xb[7]
-			+ self.by3[8] * xb[8]
-			+ self.by3[9] * xb[9])))  # cf self.Ma # competitor sales rebuy
+		# xb[17] = np.round_(min(xb[6] / 2, max(0, 0  # np.random.uniform(-5, 5)
+		# 	+ self.by3[0] * 1
+		# 	+ self.by3[1] * prev[7]
+		# 	+ self.by3[2] * prev[8]
+		# 	+ self.by3[3] * prev[9]
+		# 	+ self.by3[4] * xb[2]
+		# 	+ self.by3[5] * xb[3]
+		# 	+ self.by3[6] * xb[4]
+		# 	+ self.by3[7] * xb[7]
+		# 	+ self.by3[8] * xb[8]
+		# 	+ self.by3[9] * xb[9])))  # cf self.Ma # competitor sales rebuy
 
-		print(f'Sales: agent:{np.array([xb[11], xb[12], xb[13]])}, comp:{np.array([xb[15], xb[16], xb[17]])}', end='\t')
+		# print(f'Sales: agent:{np.array([xb[11], xb[12], xb[13]])}, comp:{np.array([xb[15], xb[16], xb[17]])}', end='\t')
 		# assert xb[11] != xb[15] and xb[12] != xb[16] and xb[13] != xb[17], 'agent and competitor sales are the same'
 
 		# rewards

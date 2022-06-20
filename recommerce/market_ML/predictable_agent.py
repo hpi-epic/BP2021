@@ -1,5 +1,7 @@
 
 
+import random
+
 from recommerce.configuration.hyperparameter_config import HyperparameterConfig
 from recommerce.market.circular.circular_vendors import CircularAgent, RuleBasedAgent
 
@@ -12,10 +14,11 @@ class PredictableAgent(RuleBasedAgent, CircularAgent):
 		self.step_counter = 0
 
 	def policy(self, observation, *_):
-		self.step_counter += 1
-		return [round(self.step_counter / 100) % self.config.max_price,
+		self.step_counter = random.randint(0, 1000)
+		prices = [round(self.step_counter / 100) % self.config.max_price,
 			round(self.step_counter / 10) % self.config.max_price,
 			(self.step_counter) % self.config.max_price]
+		return prices
 
 		# return [6, 7, 3]
 
