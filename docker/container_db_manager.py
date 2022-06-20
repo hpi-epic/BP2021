@@ -1,6 +1,8 @@
 import sqlite3
 from uuid import uuid4
 
+from docker.docker_manager import DockerInfo
+
 
 class ContainerDBRow:
 	def __init__(self, database_row: tuple or None) -> None:
@@ -38,8 +40,12 @@ class ContainerDBManager:
 		return result
 
 	def translate_n_container(self, container_info_dict: int) -> list:
-		print(container_info_dict)
-		return container_info_dict
+		resulting_container_info = {}
+		for index, docker_info in sorted(container_info_dict.items(), key=lambda tup: tup[0]):
+			given_id = f'recommerce-{uuid4()}'
+			self._insert_into_database(given_id, docker_info['id'], 'running')
+			resulting_container_info[index] = vars(DockerInfo(given_id, docker_info['status'], docker_info['data'], docker_info['stream']))
+		return resulting_container_info
 
 	def set_container_id(self, given_id: str, new_container_id: str) -> bool:
 		try:

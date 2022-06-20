@@ -55,7 +55,6 @@ def verify_token(request: Request) -> bool:
 	Returns:
 		bool: if the given authorization token matches our authorization token.
 	"""
-	return True
 	try:
 		token = request.headers['Authorization']
 	except KeyError:
