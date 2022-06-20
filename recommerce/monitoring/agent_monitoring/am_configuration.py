@@ -31,6 +31,7 @@ class Configurator():
 		self.config_market: AttrDict = config_market
 		self.config_rl: AttrDict = config_rl
 		self.agents = [default_agent(config_market=self.config_market)]
+		self.competitors = None
 		self.agent_colors = [(0.0, 0.0, 1.0, 1.0)]
 		self.folder_path = os.path.abspath(os.path.join(PathManager.results_path, 'monitoring', f"{name}_{time.strftime('%b%d_%H-%M-%S')}"))
 
@@ -166,6 +167,7 @@ class Configurator():
 		marketplace: sim_market.SimMarket = None,
 		agents: list = None,
 		separate_markets: bool = False,
+		competitors: list = None,
 		config_market: AttrDict = None,
 		support_continuous_action_space: bool = False,) -> None:
 		"""
@@ -184,7 +186,8 @@ class Configurator():
 				Each agent will generate data points in the diagrams. Defaults to None.
 				The first agent is "playing" on the market, while the rest are set as competitors on the market.
 			separate_markets (bool, optional): Indicates if the passed agents should be trained on separate marketplaces. Defaults to False.
-			config_market (AttrDict, optional): THe config file for the marketplace. Defaults to None.
+			competitors (list same as agents): If separate_markets is True, competitors can be used to overwrite default competitors in the market.
+			config_market (AttrDict, optional): The config file for the marketplace. Defaults to None.
 			support_continuous_action_space(bool, optional): Needed when setting StableBaselinesAgents in order to ensure continuous pricing.
 				Defaults to False.
 		"""
@@ -205,8 +208,17 @@ class Configurator():
 			self.config_market = config_market
 		if marketplace is not None:
 			assert issubclass(marketplace, sim_market.SimMarket), 'the marketplace must be a subclass of SimMarket'
-			self.marketplace = marketplace(config=self.config_market, support_continuous_action_space=support_continuous_action_space)
-			# If the agents have not been changed, we reuse the old agents
+			if competitors is not None:
+				assert separate_markets, 'competitors can only be provided if separate_markets is True'
+				assert all(isinstance(competitor, RuleBasedAgent) for competitor in competitors), \
+					'All competitors must be RuleBased, or `deepcopy` will fail'
+				assert marketplace.get_num_competitors() == np.inf or len(competitors) == marketplace.get_num_competitors(), \
+					f'The number of competitors given is invalid: was {len(competitors)} but should be {marketplace.get_num_competitors()}'
+				self.competitors = competitors
+			self.marketplace = marketplace(
+				config=self.config_market, support_continuous_action_space=support_continuous_action_space, competitors=self.competitors)
+
+			# If the agents have not been changed, we reuse the default agents
 			if(agents is None):
 				print('Warning: Your agents are being overwritten by new instances of themselves!')
 				agents = [(type(current_agent), []) for current_agent in self.agents]

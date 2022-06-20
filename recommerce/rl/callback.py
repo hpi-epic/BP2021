@@ -15,6 +15,7 @@ from tqdm.auto import trange
 import recommerce.configuration.utils as ut
 from recommerce.configuration.path_manager import PathManager
 from recommerce.market.sim_market import SimMarket
+from recommerce.market.vendors import RuleBasedAgent
 from recommerce.monitoring.agent_monitoring.am_evaluation import Evaluator
 from recommerce.monitoring.agent_monitoring.am_monitoring import Monitor
 from recommerce.monitoring.watcher import Watcher
@@ -32,7 +33,7 @@ class RecommerceCallback(BaseCallback):
 	def __init__(
 		self,
 		agent_class,
-		marketplace_class,
+		marketplace,
 		config_market: AttrDict,
 		config_rl: AttrDict,
 		training_steps: int = 10000,
@@ -42,7 +43,7 @@ class RecommerceCallback(BaseCallback):
 		analyze_after_training: bool = True):
 
 		assert issubclass(agent_class, ReinforcementLearningAgent)
-		assert issubclass(marketplace_class, SimMarket)
+		assert isinstance(marketplace, SimMarket)
 		assert isinstance(training_steps, int) and training_steps > 0
 		assert isinstance(iteration_length, int) and iteration_length > 0
 		super(RecommerceCallback, self).__init__(True)
@@ -54,7 +55,7 @@ class RecommerceCallback(BaseCallback):
 		self.best_mean_interim_reward = None
 		self.best_mean_overall_reward = None
 		self.agent_class = agent_class
-		self.marketplace_class = marketplace_class
+		self.marketplace = marketplace
 		self.iteration_length = iteration_length
 		self.file_ending = file_ending
 		self.signature = signature
@@ -165,7 +166,7 @@ class RecommerceCallback(BaseCallback):
 		monitor.configurator.get_folder()
 
 		# used for plot legend naming
-		competitors = self.marketplace_class(config=self.config_market).competitors
+		competitors = self.marketplace.competitors
 
 		print('Creating scatterplots...')
 		ignore_first_samples = 10  # the number of samples you want to skip because they can be severe outliers
@@ -226,15 +227,19 @@ class RecommerceCallback(BaseCallback):
 
 		if self.analyze_after_training:
 			agent_list = [(self.agent_class, [parameter_path]) for parameter_path in self.saved_parameter_paths]
+			# There are RL-agents in the competitor_list which will break the `deepcopy` in `run_marketplace`
+			if not all(isinstance(competitor, RuleBasedAgent) for competitor in competitors):
+				competitors = None
 			# The next line is a bit hacky. We have to provide if the marketplace is continuous or not.
 			# Only Stable Baselines agents use continuous actions at the moment. And only Stable Baselines agents have the attribute env.
 			# The correct way of doing this would be by checking for `isinstance(StableBaselinesAgent)`, but that would result in a circular import.
 			monitor.configurator.setup_monitoring(
-				episodes=25,  # This is for performance reasons. Switch back to 100 if you want more details.
-				plot_interval=25,
-				marketplace=self.marketplace_class,
+				episodes=50,  # This is for performance reasons. Switch back to 100 if you want more details.
+				plot_interval=5,
+				marketplace=type(self.marketplace),
 				agents=agent_list,
 				separate_markets=True,
+				competitors=competitors,
 				support_continuous_action_space=hasattr(self.model, 'env'),
 				config_market=self.config_market)
 			rewards = monitor.run_marketplace()

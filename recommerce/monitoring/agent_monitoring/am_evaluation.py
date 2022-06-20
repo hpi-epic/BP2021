@@ -137,13 +137,18 @@ class Evaluator():
 	def create_monitoring_based_line_plots(self, analyses, episode_numbers: 'list[int]'):
 		for property_name in analyses[0].keys():
 			plt.clf()
+			plt.title(f'Mean values per training stage of {property_name}')
 			if not isinstance(analyses[0][property_name][0], list):
 				plt.plot(episode_numbers, [np.mean(analysis[property_name]) for analysis in analyses])
 			else:
 				number_of_vendors = len(analyses[0][property_name])
+				# this is alway only run after training, so we know there is only one agent (trained agent)
+				# and the rest are competitors
+				labels = [self.configurator.agents[0].name] + [a.name for a in self.configurator.competitors]
 				for i in range(number_of_vendors):
-					plt.plot(episode_numbers, [np.mean(analysis[property_name][i]) for analysis in analyses], label=f'Vendor {i}')
-				plt.legend()
+					plt.plot(episode_numbers, [np.mean(analysis[property_name][i]) for analysis in analyses], label=labels[i])
+					plt.legend()
+
 			plt.xlabel('Episode')
 			plt.ylabel(property_name)
 			plt.grid(True, linestyle='--')
@@ -195,7 +200,9 @@ class Evaluator():
 		plt.xlabel(property_name)
 		plt.ylabel('Probability density')
 		plt.title(f'Density plot of {property_name}')
-		plt.legend()
+		plt.grid(True, linestyle='--')
+		if len(ys) > 1:
+			plt.legend()
 		plt.savefig(
 			fname=os.path.join(self.configurator.get_folder(),
 			'density_plots',
@@ -227,8 +234,8 @@ class Evaluator():
 		# find the number of bins needed, we only use steps of 1000, assuming our agents are good bois :)
 		plot_lower_bound = np.floor(int(np.min(rewards)) * 1e-3) / 1e-3
 		plot_upper_bound = np.ceil(int(np.max(rewards)) * 1e-3) / 1e-3
-		plot_bins = int(np.abs(plot_lower_bound) + plot_upper_bound) // 1000
-		x_ticks = np.arange(plot_lower_bound, plot_upper_bound + 1, 1000)
+		plot_bins = int(np.abs(plot_lower_bound) + plot_upper_bound) // 200
+		x_ticks = np.arange(plot_lower_bound, plot_upper_bound + 1, 200)
 
 		plt.hist(rewards, bins=plot_bins, color=self.configurator.agent_colors, rwidth=0.9,
 			range=(plot_lower_bound, plot_upper_bound), edgecolor='black')
