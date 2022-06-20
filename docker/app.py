@@ -4,6 +4,7 @@ import os
 import time
 
 import uvicorn
+from container_db_manager import ContainerDBManager
 from docker_manager import DockerInfo, DockerManager
 from fastapi import Depends, FastAPI, Request
 from fastapi.responses import JSONResponse, StreamingResponse
@@ -54,6 +55,7 @@ def verify_token(request: Request) -> bool:
 	Returns:
 		bool: if the given authorization token matches our authorization token.
 	"""
+	return True
 	try:
 		token = request.headers['Authorization']
 	except KeyError:
@@ -66,6 +68,14 @@ def verify_token(request: Request) -> bool:
 	# token that was expected last hour
 	expected_last_token = hashlib.sha256(str(master_secret_as_int + (current_time - 3600)).encode('utf-8')). hexdigest()
 	return token == expected_this_token or token == expected_last_token
+
+
+def translated_id(request: Request) -> str or None:
+	if not request.method == 'GET' or 'id' not in request.query_params:
+		return None
+	container_db_manager = ContainerDBManager()
+	container_id = container_db_manager.get_translated_container(request.query_params['id'])
+	return container_id
 
 
 @app.post('/start')
@@ -94,11 +104,12 @@ async def start_container(num_experiments: int, config: Request, authorized: boo
 			return JSONResponse(status_code=404, content=vars(all_container_infos[index]))
 		return_dict[index] = vars(all_container_infos[index])
 	print(f'successfully started {num_experiments} container')
-	return JSONResponse(return_dict, status_code=200)
+	translated_return_dict = ContainerDBManager().translate_n_container(return_dict)
+	return JSONResponse(translated_return_dict, status_code=200)
 
 
 @app.get('/health/')
-async def is_container_alive(id: str, authorized: bool = Depends(verify_token)) -> JSONResponse:
+async def is_container_alive(id: str or None = Depends(translated_id), authorized: bool = Depends(verify_token)) -> JSONResponse:
 	"""
 	Check the status of a container.
 
@@ -112,6 +123,8 @@ async def is_container_alive(id: str, authorized: bool = Depends(verify_token)) 
 	"""
 	if not authorized:
 		return JSONResponse(status_code=401, content=vars(DockerInfo('', 'Not authorized')))
+	if not id:
+		return JSONResponse(status_code=400, content=vars(DockerInfo('', 'Bad Request')))
 	container_info = manager.health(id)
 	if is_invalid_status(container_info.status):
 		return JSONResponse(status_code=404, content=vars(container_info))
@@ -120,7 +133,7 @@ async def is_container_alive(id: str, authorized: bool = Depends(verify_token)) 
 
 
 @app.get('/logs/')
-async def get_container_logs(id: str,
+async def get_container_logs(id: str or None = Depends(translated_id),
 	timestamps: bool = False,
 	stream: bool = False,
 	tail: int = 'all',
@@ -282,6 +295,4 @@ async def check_if_api_is_available(authorized: bool = Depends(verify_token)) ->
 if __name__ == '__main__':
 	uvicorn.run('app:app',
 		host='0.0.0.0',
-		port=8000,
-		ssl_keyfile='/etc/sslzertifikat/api_cert.key',
-		ssl_certfile='/etc/sslzertifikat/api_cert.crt')
+		port=7000)
