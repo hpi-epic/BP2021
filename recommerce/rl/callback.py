@@ -209,6 +209,7 @@ class RecommerceCallback(BaseCallback):
 
 			if isinstance(samples[0], list):
 				plt.legend()
+			plt.grid()
 			plt.title(f'Rolling average training progress of {property}')
 			plt.xlabel('Episode')
 			plt.ylabel(property)

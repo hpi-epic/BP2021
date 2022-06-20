@@ -159,6 +159,7 @@ class Evaluator():
 		plt.xlabel(property_name)
 		plt.ylabel('Probability density')
 		plt.title(f'Density plot of {property_name}')
+		plt.grid()
 		plt.legend()
 		plt.savefig(fname=os.path.join(self.configurator.get_folder(), 'density_plots', f'density_plot_{property_name.replace("/", "_")}.svg'))
 
@@ -186,8 +187,8 @@ class Evaluator():
 		# find the number of bins needed, we only use steps of 1000, assuming our agents are good bois :)
 		plot_lower_bound = np.floor(int(np.min(rewards)) * 1e-3) / 1e-3
 		plot_upper_bound = np.ceil(int(np.max(rewards)) * 1e-3) / 1e-3
-		plot_bins = int(np.abs(plot_lower_bound) + plot_upper_bound) // 1000
-		x_ticks = np.arange(plot_lower_bound, plot_upper_bound + 1, 1000)
+		plot_bins = int(np.abs(plot_lower_bound) + plot_upper_bound) // 150
+		x_ticks = np.arange(plot_lower_bound, plot_upper_bound + 1, 150)
 
 		plt.hist(rewards, bins=plot_bins, color=self.configurator.agent_colors, rwidth=0.9,
 			range=(plot_lower_bound, plot_upper_bound), edgecolor='black')
@@ -288,7 +289,7 @@ class Evaluator():
 
 		plt.legend([f'{a.name}_episode_{episode_numbers[i]}' for i, a in enumerate(self.configurator.agents)] if episode_numbers
 			else [a.name for a in self.configurator.agents])
-		plt.grid(True)
+		plt.grid()
 		plt.savefig(fname=os.path.join(self.configurator.get_folder(), 'statistics_plots', filename))
 
 	def _create_violin_plot(self, all_rewards: 'list[list]', episode_numbers: 'list[int]', property_name: str):
