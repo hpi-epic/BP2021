@@ -4,46 +4,15 @@ import shutil
 import tarfile
 import time
 from itertools import count, filterfalse
-from types import GeneratorType
 
+from container_db_manager import ContainerDBManager
+from docker_info import DockerInfo
 from torch.cuda import is_available
 
 import docker
 from docker.models.containers import Container
 
 IMAGE_NAME = 'recommerce'
-
-
-class DockerInfo():
-	"""
-	This class encapsules the return values for the REST API.
-	"""
-
-	def __init__(self, id: str, status: str, data=None, stream: GeneratorType = None) -> None:
-		"""
-		Args:
-			id (str): The sha256 id of the container.
-			status (str): Status of the container.
-			data ([str, bool, int], optional): Any other data, dependent on the function called this differs.
-			stream (stream generator, optional): A stream generator.
-		"""
-		assert isinstance(id, str), f'id must be a string: {id}'
-		assert isinstance(status, str), f'status must be a string: {status}'
-		assert isinstance(data, (str, bool, int, type(None))), f'data must be a string, bool or int: {data}'
-		assert isinstance(stream, (GeneratorType, type(None))), f'stream must be a stream Generator (GeneratorType): {stream} ({type(stream)})'
-		self.id = id
-		self.status = status
-		self.data = data
-		self.stream = stream
-
-	def __eq__(self, other: object) -> bool:
-		if not isinstance(other, DockerInfo):
-			# don't attempt to compare against unrelated types
-			return False
-		return self.id == other.id \
-			and self.status == other.status \
-			and self.data == other.data \
-			and self.stream == other.stream
 
 
 class DockerManager():
@@ -92,6 +61,8 @@ class DockerManager():
 			return DockerInfo(id='No container was started', status='The config is missing the "hyperparameter"-field')
 		if 'environment' not in config:
 			return DockerInfo(id='No container was started', status='The config is missing the "environment"-field')
+		if count <= 0:
+			return DockerInfo(id='No container was started', status='number of container must be positive')
 
 		command_id = config['environment']['task']
 
@@ -102,16 +73,23 @@ class DockerManager():
 		if not self._confirm_image_exists():
 			return DockerInfo(id='No container was started', status='Image build failed')
 
+		db_manager = ContainerDBManager()
+		given_container_ids = db_manager.insert_n_container(count)
 		all_container_infos = []
-		for _ in range(count):
+		for given_id in given_container_ids:
 			# start a container for the image of the requested command
 			container_info: DockerInfo = self._create_container(command_id, config, use_gpu=is_available())
 			if 'Image not found' in container_info.status or container_info.data is False:
 				# something is wrong with our container
 				self.remove_container(container_info.id)
+				container_info.id = given_id
 				return container_info
 			# the container is fine, we can start the container now
 			all_container_infos += [self._start_container(container_info.id)]
+			db_manager.update_container_id(given_id, all_container_infos[-1].id)
+			all_container_infos[-1].id = given_id
+		for i in all_container_infos:
+			print(i)
 		return all_container_infos
 
 	def health(self, container_id: str) -> DockerInfo:

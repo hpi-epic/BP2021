@@ -98,8 +98,7 @@ async def start_container(num_experiments: int, config: Request, authorized: boo
 			return JSONResponse(status_code=404, content=vars(all_container_infos[index]))
 		return_dict[index] = vars(all_container_infos[index])
 	print(f'successfully started {num_experiments} container')
-	translated_return_dict = ContainerDBManager().translate_n_container(return_dict)
-	return JSONResponse(translated_return_dict, status_code=200)
+	return JSONResponse(return_dict, status_code=200)
 
 
 @app.get('/health/')

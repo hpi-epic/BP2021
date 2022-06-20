@@ -1,7 +1,7 @@
 import sqlite3
 from uuid import uuid4
 
-from docker_manager import DockerInfo
+from docker_info import DockerInfo
 
 
 class ContainerDBRow:
@@ -18,6 +18,9 @@ class ContainerDBRow:
 
 	def table_columns() -> str:
 		return '(:given_id, :container_id, :status)'
+
+	def __str__(self) -> str:
+		return f'given: {self.given_id}, container_id: {self.container_id}'
 
 
 class ContainerDBManager:
@@ -47,6 +50,12 @@ class ContainerDBManager:
 			self._insert_into_database(given_id, '')
 			result += [given_id]
 		return result
+
+	def update_container_id(self, given_id: str, container_id: str) -> None:
+		print('++', self._select_value(given_id))
+		print('bevor update: given', given_id, 'c_id', container_id)
+		self._update_value('container_id', container_id, given_id)
+		print('++', self._select_value(given_id))
 
 	def translate_n_container(self, container_info_dict: dict) -> dict:
 		"""
