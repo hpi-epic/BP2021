@@ -45,6 +45,7 @@ class ContainerDBManager:
 			given_id = f'recommerce-{uuid4()}'
 			self._insert_into_database(given_id, docker_info['id'], 'running')
 			resulting_container_info[index] = vars(DockerInfo(given_id, docker_info['status'], docker_info['data'], docker_info['stream']))
+		print(resulting_container_info)
 		return resulting_container_info
 
 	def set_container_id(self, given_id: str, new_container_id: str) -> bool:

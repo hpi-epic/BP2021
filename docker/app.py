@@ -294,4 +294,6 @@ async def check_if_api_is_available(authorized: bool = Depends(verify_token)) ->
 if __name__ == '__main__':
 	uvicorn.run('app:app',
 		host='0.0.0.0',
-		port=7000)
+		port=7000,
+		ssl_keyfile='/etc/sslzertifikat/api_cert.key',
+		ssl_certfile='/etc/sslzertifikat/api_cert.crt')
