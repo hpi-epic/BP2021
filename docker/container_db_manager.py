@@ -28,6 +28,15 @@ class ContainerDBManager:
 			self._create_table(self.table_name)
 
 	def get_translated_container(self, given_id: str) -> str or None:
+		"""
+		Translates a given id into a real docker id.
+
+		Args:
+			given_id (str): id starting with recommerce that should be translated
+
+		Returns:
+			str or None: real container id or None if not exists
+		"""
 		data = self._select_value(given_id)
 		return data.container_id
 
@@ -39,7 +48,16 @@ class ContainerDBManager:
 			result += [given_id]
 		return result
 
-	def translate_n_container(self, container_info_dict: int) -> list:
+	def translate_n_container(self, container_info_dict: dict) -> dict:
+		"""
+		Translates a dictionary of DockerInfo dicts into a dictionary of DockerInfo dicts, but with given ids instead of real ids.
+
+		Args:
+			container_info_dict (dict): a dictionary of DockerInfo dicts
+
+		Returns:
+			list: a dictionary of DockerInfo dicts
+		"""
 		resulting_container_info = {}
 		for index, docker_info in sorted(container_info_dict.items(), key=lambda tup: tup[0]):
 			given_id = f'recommerce-{uuid4()}'
@@ -48,6 +66,16 @@ class ContainerDBManager:
 		return resulting_container_info
 
 	def set_container_id(self, given_id: str, new_container_id: str) -> bool:
+		"""
+		Sets container_id of a container to a new id for a given_id.
+
+		Args:
+			given_id (str): our custom id, should be in database
+			new_container_id (str): value the container id should be set to
+
+		Returns:
+			bool: indecates if this was successfull.
+		"""
 		try:
 			self._update_value('container_id', new_container_id, given_id)
 			self._update_value('status', 'running', given_id)
@@ -55,7 +83,12 @@ class ContainerDBManager:
 			return False
 		return True
 
-	def _create_connection(self):
+	def _create_connection(self) -> tuple:
+		"""Connects to self.db_file.
+
+		Returns:
+			tuple: db and cursor if successfull, otherwise (None, None)
+		"""
 		db = None
 		try:
 			db = sqlite3.connect(self.db_file)
@@ -65,7 +98,7 @@ class ContainerDBManager:
 			print(f'Could not connect to the database {error}')
 		return None, None
 
-	def _create_table(self, table_name: str):
+	def _create_table(self, table_name: str) -> None:
 		cursor, db = self._create_connection()
 		try:
 			cursor.execute(
@@ -79,14 +112,32 @@ class ContainerDBManager:
 			print(f'Could not create database table. {error}')
 		self._tear_down_connection(db, cursor)
 
-	def _does_table_exist(self, table_name) -> bool:
+	def _does_table_exist(self, table_name: str) -> bool:
+		"""checks if table with `table_name` exists in database
+
+		Args:
+			table_name (str): name of the table that should be checked
+
+		Returns:
+			bool: indecates if table exists or not
+		"""
 		cursor, db = self._create_connection()
 		cursor.execute('SELECT name FROM sqlite_master WHERE type="table" AND name=:name', {'name': table_name})
 		data = cursor.fetchone()
 		self._tear_down_connection(db, cursor)
 		return bool(data)
 
-	def _insert_into_database(self, given_id: str, container_id: str, status: str = 'waiting'):
+	def _insert_into_database(self, given_id: str, container_id: str, status: str = 'waiting') -> bool:
+		"""inserts a new row into database.
+
+		Args:
+			given_id (str): given_id of new row
+			container_id (str): container_id of new row
+			status (str): status of new row. Defaults to 'waiting'
+
+		Returns:
+			bool: indecates if value was correctly inserted
+		"""
 		cursor, db = self._create_connection()
 		try:
 			cursor.execute(
@@ -97,9 +148,19 @@ class ContainerDBManager:
 			db.commit()
 		except Exception as error:
 			print(f'Could not insert value into database: {error}')
+			return False
 		self._tear_down_connection(db, cursor)
+		return True
 
 	def _select_value(self, given_id: str) -> ContainerDBRow:
+		"""selects database row by given_id.
+
+		Args:
+			given_id (str): given_id of new row
+
+		Returns:
+			ContainerDBRow: row as ContainerDBRow
+		"""
 		data = ''
 		cursor, db = self._create_connection()
 		try:
@@ -115,6 +176,12 @@ class ContainerDBManager:
 		return ContainerDBRow(data)
 
 	def _tear_down_connection(self, db, cursor):
+		"""Stops connection to database.
+
+		Args:
+			db: database object
+			cursor: database cursor
+		"""
 		try:
 			cursor.close()
 			db.close()
