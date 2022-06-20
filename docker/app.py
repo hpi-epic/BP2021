@@ -9,21 +9,7 @@ from docker_manager import DockerInfo, DockerManager
 from fastapi import Depends, FastAPI, Request
 from fastapi.responses import JSONResponse, StreamingResponse
 
-# This file should expose a RESTful api for using the docker container with the following routes:
-# POST /start/<command><config>
-# GET /health/<id>
-# GET /logs/<id><timestamps><stream><tail>
-# GET /data/<id><path>
-# GET /data/tensorboard/<id>
-# GET /remove/<id>
-
-# start API with
-# uvicorn app:app --reload
-# If using a remote machine use
-# uvicorn --host 0.0.0.0 app:app --reload
-# instead to expose it to the local network
 manager = DockerManager()
-
 app = FastAPI()
 
 
@@ -70,6 +56,15 @@ def verify_token(request: Request) -> bool:
 
 
 def translated_id(request: Request) -> str or None:
+	"""
+	Translates a given container id into a real container id.
+
+	Args:
+		request (Request): The request made by the client.
+
+	Returns:
+		str or None: the real Docker container id or None if it does not exist.
+	"""
 	if not request.method == 'GET' or 'id' not in request.query_params:
 		return None
 	container_db_manager = ContainerDBManager()
@@ -152,6 +147,8 @@ async def get_container_logs(id: str or None = Depends(translated_id),
 	"""
 	if not authorized:
 		return JSONResponse(status_code=401, content=vars(DockerInfo('', 'Not authorized')))
+	if not id:
+		return JSONResponse(status_code=400, content=vars(DockerInfo('', 'Bad Request')))
 	container_info = manager.get_container_logs(id, timestamps, stream, tail)
 	if is_invalid_status(container_info.status):
 		return JSONResponse(status_code=404, content=vars(container_info))
@@ -167,7 +164,9 @@ async def get_container_logs(id: str or None = Depends(translated_id),
 
 
 @app.get('/data/')
-async def get_container_data(id: str, path: str = '/app/results', authorized: bool = Depends(verify_token)) -> StreamingResponse:
+async def get_container_data(id: str = Depends(translated_id),
+	path: str = '/app/results',
+	authorized: bool = Depends(verify_token)) -> StreamingResponse:
 	"""
 	Extract a folder or file from a container.
 
@@ -180,6 +179,8 @@ async def get_container_data(id: str, path: str = '/app/results', authorized: bo
 	"""
 	if not authorized:
 		return JSONResponse(status_code=401, content=vars(DockerInfo('', 'Not authorized')))
+	if not id:
+		return JSONResponse(status_code=400, content=vars(DockerInfo('', 'Bad Request')))
 	container_info = manager.get_container_data(id, path)
 	if is_invalid_status(container_info.status):
 		return JSONResponse(status_code=404, content=vars(container_info))
@@ -195,7 +196,7 @@ async def get_container_data(id: str, path: str = '/app/results', authorized: bo
 
 
 @app.get('/data/tensorboard/')
-async def get_tensorboard_link(id: str, authorized: bool = Depends(verify_token)) -> JSONResponse:
+async def get_tensorboard_link(id: str = Depends(translated_id), authorized: bool = Depends(verify_token)) -> JSONResponse:
 	"""
 	Start a tensorboard session in a container.
 
@@ -207,6 +208,8 @@ async def get_tensorboard_link(id: str, authorized: bool = Depends(verify_token)
 	"""
 	if not authorized:
 		return JSONResponse(status_code=401, content=vars(DockerInfo('', 'Not authorized')))
+	if not id:
+		return JSONResponse(status_code=400, content=vars(DockerInfo('', 'Bad Request')))
 	container_info = manager.start_tensorboard(id)
 	if is_invalid_status(container_info.status):
 		return JSONResponse(status_code=404, content=vars(container_info))
@@ -215,7 +218,7 @@ async def get_tensorboard_link(id: str, authorized: bool = Depends(verify_token)
 
 
 @app.get('/pause/')
-async def pause_container(id: str, authorized: bool = Depends(verify_token)) -> JSONResponse:
+async def pause_container(id: str = Depends(translated_id), authorized: bool = Depends(verify_token)) -> JSONResponse:
 	"""
 	Pause a container.
 
@@ -227,6 +230,8 @@ async def pause_container(id: str, authorized: bool = Depends(verify_token)) -> 
 	"""
 	if not authorized:
 		return JSONResponse(status_code=401, content=vars(DockerInfo('', 'Not authorized')))
+	if not id:
+		return JSONResponse(status_code=400, content=vars(DockerInfo('', 'Bad Request')))
 	container_info = manager.pause(id)
 	if is_invalid_status(container_info.status):
 		return JSONResponse(status_code=404, content=vars(container_info))
@@ -235,7 +240,7 @@ async def pause_container(id: str, authorized: bool = Depends(verify_token)) -> 
 
 
 @app.get('/unpause/')
-async def unpause_container(id: str, authorized: bool = Depends(verify_token)) -> JSONResponse:
+async def unpause_container(id: str = Depends(translated_id), authorized: bool = Depends(verify_token)) -> JSONResponse:
 	"""
 	Unpause a container.
 
@@ -247,6 +252,8 @@ async def unpause_container(id: str, authorized: bool = Depends(verify_token)) -
 	"""
 	if not authorized:
 		return JSONResponse(status_code=401, content=vars(DockerInfo('', 'Not authorized')))
+	if not id:
+		return JSONResponse(status_code=400, content=vars(DockerInfo('', 'Bad Request')))
 	container_info = manager.unpause(id)
 	if is_invalid_status(container_info.status):
 		return JSONResponse(status_code=404, content=vars(container_info))
@@ -255,7 +262,7 @@ async def unpause_container(id: str, authorized: bool = Depends(verify_token)) -
 
 
 @app.get('/remove/')
-async def remove_container(id: str, authorized: bool = Depends(verify_token)) -> JSONResponse:
+async def remove_container(id: str = Depends(translated_id), authorized: bool = Depends(verify_token)) -> JSONResponse:
 	"""
 	Stop and remove a container.
 
@@ -267,6 +274,8 @@ async def remove_container(id: str, authorized: bool = Depends(verify_token)) ->
 	"""
 	if not authorized:
 		return JSONResponse(status_code=401, content=vars(DockerInfo('', 'Not authorized')))
+	if not id:
+		return JSONResponse(status_code=400, content=vars(DockerInfo('', 'Bad Request')))
 	container_info = manager.remove_container(id)
 	if is_invalid_status(container_info.status):
 		return JSONResponse(status_code=404, content=vars(container_info))
