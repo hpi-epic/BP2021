@@ -210,14 +210,14 @@ class SimMarketKalibrated(CircularEconomyRebuyPriceDuopoly):
 
 		# rewards
 
-		profit_new_agent = xb[11] * (xb[7] - self.cost_new_product)
-		profit_used_agent = xb[12] * xb[8]
+		profit_used_agent = xb[11] * xb[7]
+		profit_new_agent = xb[12] * (xb[8] - self.cost_new_product)
 		cost_rebuy_agent = xb[13] * xb[9]
 		# print(f'profit_new: {profit_new}, profit_used: {profit_used}, cost_rebuy: {cost_rebuy}')
 		xb[18] = -xb[10] + profit_new_agent + profit_used_agent - cost_rebuy_agent  # agent	total rewards
 
-		profit_new_comp = xb[15] * (xb[3] - self.cost_new_product)
-		profit_used_comp = xb[16] * xb[3]
+		profit_used_comp = xb[15] * xb[2]
+		profit_new_comp = xb[16] * (xb[3] - self.cost_new_product)
 		cost_rebuy_comp = xb[17] * xb[4]
 
 		xb[19] = -xb[14] + profit_new_comp + profit_used_comp - cost_rebuy_comp  # comp total rewards

@@ -11,6 +11,7 @@ from recommerce.market.sim_market import SimMarket
 from recommerce.market.vendors import FixedPriceAgent
 from recommerce.rl.actorcritic.actorcritic_agent import ActorCriticAgent
 from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
+from recommerce.rl.reinforcement_learning_agent import ReinforcementLearningAgent
 
 
 def get_class(import_string: str) -> object:
@@ -260,7 +261,7 @@ class TrainingEnvironmentConfig(EnvironmentConfig):
 		# Since we only have one agent we extract it from the provided list
 		# TODO: In #370 we can have more than one agent, since the rest are competitors
 		self.agent = self.agent[0]
-		assert issubclass(self.agent['agent_class'], (QLearningAgent, ActorCriticAgent)), \
+		assert issubclass(self.agent['agent_class'], (ReinforcementLearningAgent)), \
 			f'The agent must be a subclass of either QLearningAgent or ActorCriticAgent: {self.agent}'
 
 	def _get_task(self) -> str:

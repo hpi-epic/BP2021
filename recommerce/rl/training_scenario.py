@@ -16,6 +16,7 @@ from recommerce.market.linear.linear_vendors import LinearAgent
 from recommerce.market_ML.datagenerator_sim_market import CircularEconomyDatagenerator
 from recommerce.rl.actorcritic.actorcritic_training import ActorCriticTrainer
 from recommerce.rl.q_learning.q_learning_training import QLearningTrainer
+from recommerce.rl.reinforcement_learning_agent import ReinforcementLearningAgent
 
 print('successfully imported torch: cuda?', torch.cuda.is_available())
 
@@ -33,7 +34,7 @@ def run_training_session(
 	"""
 	assert issubclass(marketplace, sim_market.SimMarket), \
 		f'the type of the passed marketplace must be a subclass of SimMarket: {marketplace}'
-	assert issubclass(agent, (q_learning_agent.QLearningAgent, actorcritic_agent.ActorCriticAgent)), \
+	assert issubclass(agent, (ReinforcementLearningAgent)), \
 		f'the RL_agent_class passed must be a subclass of either QLearningAgent or ActorCriticAgent: {agent}'
 	if issubclass(marketplace, circular_market.CircularEconomy):
 		assert issubclass(agent, CircularAgent), \
@@ -158,4 +159,5 @@ def main():
 if __name__ == '__main__':
 	# Make sure a valid datapath is set
 	PathManager.manage_user_path()
-	train_with_pretrained_agent()
+	# train_with_pretrained_agent()
+	train_stable_baselines_sac()
