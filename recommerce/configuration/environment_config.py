@@ -1,36 +1,19 @@
 # helper
-import importlib
 import json
 import os
 from abc import ABC, abstractmethod
 
+import numpy as np
+
 from recommerce.configuration.path_manager import PathManager
+from recommerce.configuration.utils import get_class
 from recommerce.market.circular.circular_sim_market import CircularEconomy
 from recommerce.market.circular.circular_vendors import CircularAgent
+from recommerce.market.linear.linear_sim_market import LinearEconomy
+from recommerce.market.linear.linear_vendors import LinearAgent
 from recommerce.market.sim_market import SimMarket
 from recommerce.market.vendors import FixedPriceAgent
-from recommerce.rl.actorcritic.actorcritic_agent import ActorCriticAgent
-from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
 from recommerce.rl.reinforcement_learning_agent import ReinforcementLearningAgent
-
-
-def get_class(import_string: str) -> object:
-	"""
-	Get the class from the given string.
-
-	Args:
-		import_string (str): A string containing the import path in the format 'module.submodule.class'.
-
-	Returns:
-		A class object: The imported class.
-	"""
-	module_name, class_name = import_string.rsplit('.', 1)
-	try:
-		return getattr(importlib.import_module(module_name), class_name)
-	except AttributeError as error:
-		raise AttributeError(f'The string you passed could not be resolved to a class: {import_string}') from error
-	except ModuleNotFoundError as error:
-		raise ModuleNotFoundError(f'The string you passed could not be resolved to a module: {import_string}') from error
 
 
 class EnvironmentConfig(ABC):
@@ -61,7 +44,7 @@ class EnvironmentConfig(ABC):
 		if dict_key == 'top-dict':
 			return {
 				'task': False,
-				'enable_live_draw': False,
+				'separate_markets': False,
 				'episodes': False,
 				'plot_interval': False,
 				'marketplace': False,
@@ -89,9 +72,9 @@ class EnvironmentConfig(ABC):
 		if task in {'None', 'agent_monitoring'}:
 			types_dict = {
 				'task': str,
-				'enable_live_draw': bool,
 				'episodes': int,
 				'plot_interval': int,
+				'separate_markets': bool,
 				'marketplace': str,
 				'agents': list
 			}
@@ -174,7 +157,7 @@ class EnvironmentConfig(ABC):
 			agent['agent_class'] = get_class(agent['agent_class'])
 
 			# This if-else contains the parsing logic for the different types of arguments agents can have, e.g. modelfiles or fixed-price-lists
-			if needs_modelfile and issubclass(agent['agent_class'], (QLearningAgent, ActorCriticAgent)):
+			if needs_modelfile and issubclass(agent['agent_class'], ReinforcementLearningAgent):
 				assert isinstance(agent['argument'], str), \
 					f'The "argument" field of this agent ({agent["name"]}) must be a string but was ({type(agent["argument"])})'
 				assert agent['argument'].endswith('.dat') or agent['argument'].endswith('.zip'), \
@@ -210,9 +193,12 @@ class EnvironmentConfig(ABC):
 		"""
 		Utility function that makes sure the agent(s) and marketplace are of the same type.
 		"""
-
-		assert all(issubclass(agent['agent_class'], CircularAgent) == issubclass(self.marketplace, CircularEconomy) for agent in self.agent), \
-			f'The agents and marketplace must be of the same economy type (Linear/Circular): {self.agent} and {self.marketplace}'
+		if issubclass(self.marketplace, CircularEconomy):
+			assert all(issubclass(agent['agent_class'], CircularAgent) for agent in self.agent), \
+				f'The marketplace ({self.marketplace}) is circular, so all agents need to be circular agents {self.agent}'
+		elif issubclass(self.marketplace, LinearEconomy):
+			assert all(issubclass(agent['agent_class'], LinearAgent) for agent in self.agent), \
+				f'The marketplace ({self.marketplace}) is linear, so all agents need to be linear agents {self.agent}'
 
 	def _validate_config(self, config: dict, single_agent: bool, needs_modelfile: bool) -> None:
 		"""
@@ -256,13 +242,20 @@ class TrainingEnvironmentConfig(EnvironmentConfig):
 		agent (QlearningAgent or ActorCriticAgent subclass): A subclass of QlearningAgent or ActorCritic, the agent to be trained.
 	"""
 	def _validate_config(self, config: dict) -> None:
-		super(TrainingEnvironmentConfig, self)._validate_config(config, single_agent=True, needs_modelfile=False)
+		super(TrainingEnvironmentConfig, self)._validate_config(config, single_agent=False, needs_modelfile=False)
 
-		# Since we only have one agent we extract it from the provided list
-		# TODO: In #370 we can have more than one agent, since the rest are competitors
-		self.agent = self.agent[0]
-		assert issubclass(self.agent['agent_class'], (ReinforcementLearningAgent)), \
-			f'The agent must be a subclass of either QLearningAgent or ActorCriticAgent: {self.agent}'
+		# Make sure the first given agent is a valid agent that can be trained
+		assert issubclass(self.agent[0]['agent_class'], ReinforcementLearningAgent), \
+			f'The first agent must be a ReinforcementLearningAgent: {self.agent}'
+
+		# If we get more than one agent, make sure the rest are valid competitors and that we have the right amount
+		if len(self.agent) > 1:
+			assert self.marketplace.get_num_competitors() == np.inf or len(self.agent)-1 == self.marketplace.get_num_competitors(), \
+				f'The number of competitors given is invalid: was {len(self.agent)-1} but should be {self.marketplace.get_num_competitors()}'
+
+			for agent in self.agent[1:]:
+				assert str(agent['agent_class'])[8:-2] in self.marketplace.get_competitor_classes(), \
+					f'{agent["agent_class"]} is not a valid competitor on a {self.marketplace} market'
 
 	def _get_task(self) -> str:
 		return 'training'
@@ -274,29 +267,33 @@ class AgentMonitoringEnvironmentConfig(EnvironmentConfig):
 
 	Instance variables:
 		task (str): The task this config can be used for. Always "agent_monitoring".
-		enable_live_draw (bool): Whether or not live drawing should be enabled.
 		episodes (int): The number of episodes to run the monitoring for.
 		plot_interval (int): The interval between plot creation.
+		separate_markets (bool): If agents should be playing on separate marketplaces.
 		marketplace (SimMarket subclass): A subclass of SimMarket, what marketplace the monitoring session should be run on.
 		agent (list of tuples): A list containing the agents that should be trained.
 			Each entry in the list is a tuple with the first item being the agent class, the second being a list.
 			If the agent needs a modelfile, this will be the first entry in the list, the other entry is always an informal name for the agent.
 	"""
 	def _validate_config(self, config: dict) -> None:
-		# TODO: subfolder_name variable
 
 		super(AgentMonitoringEnvironmentConfig, self)._validate_config(config, single_agent=False, needs_modelfile=True)
 
-		self.enable_live_draw = config['enable_live_draw']
 		self.episodes = config['episodes']
 		self.plot_interval = config['plot_interval']
+		self.separate_markets = config['separate_markets']
+
+		# If we get more than one agent and all agents play on the same market, make sure that we have the right amount
+		if not self.separate_markets and len(self.agent) > 1:
+			assert self.marketplace.get_num_competitors() == np.inf or len(self.agent)-1 == self.marketplace.get_num_competitors(), \
+				f'The number of competitors given is invalid: was {len(self.agent)-1} but should be {self.marketplace.get_num_competitors()}'
 
 		# Since the agent_monitoring does not accept the dictionary but instead wants a list of tuples, we need to adapt the dictionary
 		passed_agents = self.agent
 		self.agent = []
 		for current_agent in passed_agents:
 			# with modelfile
-			if issubclass(current_agent['agent_class'], (QLearningAgent, ActorCriticAgent)):
+			if issubclass(current_agent['agent_class'], (ReinforcementLearningAgent, FixedPriceAgent)):
 				self.agent.append((current_agent['agent_class'], [current_agent['argument'], current_agent['name']]))
 			# without modelfile
 			else:
@@ -316,9 +313,7 @@ class ExampleprinterEnvironmentConfig(EnvironmentConfig):
 		agent (Agent subclass): A subclass of Agent, the agent for which the exampleprinter should be run.
 	"""
 	def _validate_config(self, config: dict) -> None:
-		super(ExampleprinterEnvironmentConfig, self)._validate_config(config, single_agent=True, needs_modelfile=True)
-		# Since we only have one agent, we extract it from the provided list
-		self.agent = self.agent[0]
+		super(ExampleprinterEnvironmentConfig, self)._validate_config(config, single_agent=False, needs_modelfile=True)
 
 	def _get_task(self) -> str:
 		return 'exampleprinter'

@@ -2,6 +2,10 @@ name: Pre-commit & Tests
 
 on: push
 
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   pre-commit:
     runs-on: [self-hosted, ubuntu-20.04]

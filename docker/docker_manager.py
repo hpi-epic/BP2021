@@ -302,6 +302,7 @@ class DockerManager():
 			return self._get_client().ping()
 		except Exception:
 			print('Docker server is not responding!')
+			print(f'Client is: {self._get_client()}')
 			return False
 
 	# PRIVATE METHODS
@@ -320,8 +321,10 @@ class DockerManager():
 		if cls._client is not None:
 			return cls._client
 		try:
+			print('Trying to get a new client from docker...')
 			cls._client = docker.from_env()
-		except docker.errors.DockerException:
+		except docker.errors.DockerException as e:
+			print(f'Got a DockerException: {e}')
 			cls._client = None
 		return cls._client
 
@@ -531,8 +534,10 @@ class DockerManager():
 		os.makedirs('configuration_files', exist_ok=True)
 
 		# write dict to json
-		with open(os.path.join('configuration_files', 'hyperparameter_config.json'), 'w') as config_json:
-			config_json.write(json.dumps(config_dict['hyperparameter']))
+		with open(os.path.join('configuration_files', 'market_config.json'), 'w') as config_json:
+			config_json.write(json.dumps(config_dict['hyperparameter']['sim_market']))
+		with open(os.path.join('configuration_files', 'rl_config.json'), 'w') as config_json:
+			config_json.write(json.dumps(config_dict['hyperparameter']['rl']))
 		with open(os.path.join('configuration_files', f'environment_config_{command_id}.json'), 'w') as config_json:
 			config_json.write(json.dumps(config_dict['environment']))
 

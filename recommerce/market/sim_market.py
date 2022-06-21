@@ -1,10 +1,12 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import Tuple
 
 import gym
 import numpy as np
+from attrdict import AttrDict
 
-from recommerce.configuration.hyperparameter_config import HyperparameterConfig
+from recommerce.configuration.json_configurable import JSONConfigurable
+from recommerce.configuration.utils import filtered_class_str_from_dir
 
 # An offer is a market state that contains all prices and qualities
 
@@ -14,14 +16,33 @@ from recommerce.configuration.hyperparameter_config import HyperparameterConfig
 # Third: vendor's actions from the former round which needs to be saved and influence the other's decision e.g. prices
 
 
-class SimMarket(gym.Env, ABC):
+class SimMarket(gym.Env, JSONConfigurable):
 	"""
 	The superclass to all market environments.
 	Abstract class that cannot be instantiated.
 	Inherits from `gym.env`.
 	"""
+	@staticmethod
+	def get_num_competitors() -> int:
+		raise NotImplementedError
 
-	def __init__(self, config: HyperparameterConfig, support_continuous_action_space: bool = False) -> None:
+	@staticmethod
+	def get_possible_rl_agents() -> list:
+		import recommerce.rl.actorcritic.actorcritic_agent as ac_agents
+		import recommerce.rl.q_learning.q_learning_agent as q_agents
+		import recommerce.rl.stable_baselines.stable_baselines_model as sb_agents
+		all_actorcritic = filtered_class_str_from_dir('recommerce.rl.actorcritic.actorcritic_agent', dir(ac_agents), '^.*Agent.+|Discrete.+$')
+		all_qlearning = filtered_class_str_from_dir('recommerce.rl.q_learning.q_learning_agent', dir(q_agents), '^QLearningAgent$')
+		all_stable_base_lines = filtered_class_str_from_dir('recommerce.rl.stable_baselines.stable_baselines_model',
+			dir(sb_agents), '^StableBaselines.*')
+
+		return sorted(all_actorcritic + all_qlearning + all_stable_base_lines)
+
+	@staticmethod
+	def get_competitor_classes() -> list:
+		raise NotImplementedError
+
+	def __init__(self, config: AttrDict, support_continuous_action_space: bool = False, competitors: list = None) -> None:
 		"""
 		Initialize a SimMarket instance.
 		Set up needed values such as competitors and action/observation-space and reset the environment.
@@ -29,10 +50,11 @@ class SimMarket(gym.Env, ABC):
 		You can activate continuous actions using setting support_continuous_action_space.
 
 		Args:
-			support_continuous_action_space (bool): If True, the action space will be continuous.
+			support_continuous_action_space (bool, optional): If True, the action space will be continuous. Defaults to False.
+			competitors (list, optional): If not None, this overwrites the default competitor list with a custom one.
 		"""
 		self.config = config
-		self.competitors = self._get_competitor_list()
+		self.competitors = self._get_competitor_list() if not competitors else competitors
 		# The agent's price does not belong to the observation_space any more because an agent should not depend on it
 		self._setup_action_observation_space(support_continuous_action_space)
 		self.support_continuous_action_space = support_continuous_action_space
@@ -245,7 +267,7 @@ class SimMarket(gym.Env, ABC):
 	def get_actions_dimension(self) -> int:
 		"""
 		Get the dimension of the action space.
-		This can be used to set the number of outputs for vendors with continuos action space.
+		This can be used to set the number of outputs for vendors with continuous action space.
 
 		Returns:
 			int: The dimension of the action space.
@@ -256,7 +278,6 @@ class SimMarket(gym.Env, ABC):
 	def _get_competitor_list(self) -> list:  # pragma: no cover
 		"""
 		Get a list of all competitors in the current market scenario.
-		TODO: This should get reworked since there no longer is a formal definition of 'competitor', since we see all vendors as agents.
 
 		Returns:
 			list: List containing instances of the competitors.
@@ -321,3 +342,14 @@ class SimMarket(gym.Env, ABC):
 				self._output_dict[name] = 0
 			else:
 				self._output_dict[name] = dict(zip([f'vendor_{i}' for i in range(self._number_of_vendors)], init_for_all_vendors))
+
+	@abstractmethod
+	def get_configurable_fields() -> list:
+		"""
+		Return a list of keys that can be used to configure this marketplace using a `market_config.json`.
+		Also contains key types and validation logic.
+
+		Returns:
+			list: The list of (key, type, validation).
+		"""
+		raise NotImplementedError

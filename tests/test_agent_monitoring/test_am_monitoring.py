@@ -2,18 +2,17 @@ import os
 from unittest.mock import patch
 
 import pytest
-import utils_tests as ut_t
+from attrdict import AttrDict
 
-import recommerce.configuration.utils as ut
 import recommerce.market.circular.circular_sim_market as circular_market
 import recommerce.monitoring.agent_monitoring.am_monitoring as monitoring
-from recommerce.configuration.hyperparameter_config import HyperparameterConfig
+from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader
 from recommerce.market.circular.circular_vendors import FixedPriceCEAgent
 from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
 
 monitor = monitoring.Monitor()
 
-config_hyperparameter: HyperparameterConfig = ut_t.mock_config_hyperparameter()
+config_market: AttrDict = HyperparameterConfigLoader.load('market_config', circular_market.CircularEconomyRebuyPriceMonopoly)
 
 
 # setup before each test
@@ -22,14 +21,13 @@ def setup_function(function):
 	global monitor
 	monitor = monitoring.Monitor()
 	monitor.configurator.setup_monitoring(
-		enable_live_draw=False,
+		separate_markets=False,
 		episodes=50,
 		plot_interval=10,
 		marketplace=circular_market.CircularEconomyMonopoly,
 		agents=[(QLearningAgent, [os.path.join(os.path.dirname(__file__), os.pardir, 'test_data',
 			'CircularEconomyMonopoly_QLearningAgent.dat')])],
-		config=config_hyperparameter,
-		subfolder_name=f'test_plots_{function.__name__}')
+		config_market=config_market)
 
 
 def test_run_marketplace():
@@ -43,12 +41,11 @@ def test_run_marketplace():
 		patch('recommerce.monitoring.agent_monitoring.am_configuration.os.path.exists') as exists_mock:
 		exists_mock.return_value = True
 		analysis_results = monitor.run_marketplace()
-		assert 1 == len(analysis_results)
-		assert monitor.configurator.episodes == len(ut.unroll_dict_with_list(analysis_results[0])['profits/all/vendor_0'])
+		assert 1 == len(analysis_results['profits/all'])
 
 
 def test_run_monitoring_session():
-	monitor.configurator.setup_monitoring(episodes=10, plot_interval=10, config=config_hyperparameter)
+	monitor.configurator.setup_monitoring(episodes=10, plot_interval=10, config_market=config_market)
 	with patch('recommerce.monitoring.agent_monitoring.am_evaluation.plt'), \
 		patch('recommerce.monitoring.agent_monitoring.am_configuration.os.makedirs'), \
 		patch('recommerce.monitoring.agent_monitoring.am_configuration.os.path.exists') as exists_mock:
@@ -66,5 +63,5 @@ def test_run_monitoring_ratio():
 		patch('recommerce.monitoring.agent_monitoring.am_configuration.os.path.exists') as exists_mock:
 		mocked_input.side_effect = ['n']
 		exists_mock.return_value = True
-		monitor.configurator.setup_monitoring(episodes=51, plot_interval=1, config=config_hyperparameter)
+		monitor.configurator.setup_monitoring(episodes=51, plot_interval=1, config_market=config_market)
 		monitoring.run_monitoring_session(monitor)

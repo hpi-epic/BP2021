@@ -8,7 +8,10 @@ from django.test.client import RequestFactory
 # from ..buttons import ButtonHandler
 from ..config_merger import ConfigMerger
 from ..config_parser import ConfigModelParser
-from ..models.config import Config, EnvironmentConfig, HyperparameterConfig, RlConfig
+from ..models.config import Config
+from ..models.environment_config import EnvironmentConfig
+from ..models.hyperparameter_config import HyperparameterConfig
+from ..models.rl_config import RlConfig
 from .constant_tests import EMPTY_STRUCTURE_CONFIG, EXAMPLE_HIERARCHY_DICT, EXAMPLE_HIERARCHY_DICT2
 
 # from unittest.mock import patch
@@ -35,9 +38,12 @@ class ConfigMergerTest(TestCase):
 		expected_dict = copy.deepcopy(config_dict)
 		expected_dict['environment']['episodes'] = None
 		expected_dict['environment']['plot_interval'] = None
+		expected_dict['hyperparameter']['rl']['testvalue2'] = None
+		expected_dict['hyperparameter']['rl']['stable_baseline_test'] = None
+
 		empty_config = Config.get_empty_structure_dict()
 		merger = ConfigMerger()
-		actual_config = merger._merge_config_into_base_config(empty_config, config_dict)
+		actual_config = merger.merge_config_into_base_config(empty_config, config_dict)
 
 		assert expected_dict == actual_config
 
@@ -50,7 +56,7 @@ class ConfigMergerTest(TestCase):
 		test_config2 = Config.objects.create(hyperparameter=test_hyper_parameter_config)
 
 		merger = ConfigMerger()
-		final_dict, error_dict = merger.merge_config_objects([test_config1.id, test_config2.id])
+		final_dict, error_dict = merger.merge_config_objects([test_config1.id, test_config2.id], Config.get_empty_structure_dict())
 
 		expected_dict = copy.deepcopy(EMPTY_STRUCTURE_CONFIG)
 		expected_dict['hyperparameter']['rl']['gamma'] = 0.99
@@ -67,7 +73,7 @@ class ConfigMergerTest(TestCase):
 		test_config2 = Config.objects.create(environment=test_environment_config2)
 
 		merger = ConfigMerger()
-		final_dict, error_dict = merger.merge_config_objects([test_config1.id, test_config2.id])
+		final_dict, error_dict = merger.merge_config_objects([test_config1.id, test_config2.id], Config.get_empty_structure_dict())
 
 		expected_dict = copy.deepcopy(EMPTY_STRUCTURE_CONFIG)
 		expected_dict['environment']['task'] = 'monitoring'
@@ -87,19 +93,19 @@ class ConfigMergerTest(TestCase):
 		config_object2 = parser.parse_config(test_config2)
 
 		merger = ConfigMerger()
-		final_config, error_dict = merger.merge_config_objects([config_object1.id, config_object2.id])
+		final_config, error_dict = merger.merge_config_objects([config_object1.id, config_object2.id], Config.get_empty_structure_dict())
 
 		expected_final_config = {
 			'environment': {
-				'enable_live_draw': True,
+				'separate_markets': True,
 				'episodes': None,
 				'plot_interval': None,
 				'marketplace': 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopoly',
 				'task': 'monitoring',
 				'agents': [
 					{
-						'name': 'Rule_Based Agent',
-						'agent_class': 'recommerce.market.circular.circular_vendors.RuleBasedCERebuyAgent',
+						'name': 'QLearning Agent',
+						'agent_class': 'recommerce.rl.q_learning.q_learning_agent.QLearningAgent',
 						'argument': ''
 					},
 					{
@@ -122,7 +128,10 @@ class ConfigMergerTest(TestCase):
 					'sync_target_frames': 100,
 					'replay_start_size': 1000,
 					'epsilon_decay_last_frame': 7500,
-					'epsilon_start': 0.9, 'epsilon_final': 0.2
+					'epsilon_start': 0.9,
+					'epsilon_final': 0.2,
+					'testvalue2': None,
+					'stable_baseline_test': None
 				},
 				'sim_market': {
 					'max_storage': 80,
@@ -136,7 +145,7 @@ class ConfigMergerTest(TestCase):
 		}
 		expected_error_dict = {
 			'environment': {
-				'enable_live_draw': 'changed environment enable_live_draw from False to True',
+				'separate_markets': 'changed environment separate_markets from False to True',
 				'episodes': None,
 				'plot_interval': None,
 				'marketplace': None,
@@ -153,7 +162,9 @@ class ConfigMergerTest(TestCase):
 					'replay_start_size': 'changed hyperparameter-rl replay_start_size from 10000 to 1000',
 					'epsilon_decay_last_frame': 'changed hyperparameter-rl epsilon_decay_last_frame from 75000 to 7500',
 					'epsilon_start': 'changed hyperparameter-rl epsilon_start from 1.0 to 0.9',
-					'epsilon_final': 'changed hyperparameter-rl epsilon_final from 0.1 to 0.2'
+					'epsilon_final': 'changed hyperparameter-rl epsilon_final from 0.1 to 0.2',
+					'testvalue2': None,
+					'stable_baseline_test': None
 				},
 				'sim_market': {
 					'max_storage': 'changed hyperparameter-sim_market max_storage from 100 to 80',

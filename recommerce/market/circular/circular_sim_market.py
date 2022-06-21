@@ -3,9 +3,10 @@ from abc import ABC
 import gym
 import numpy as np
 
+import recommerce.configuration.utils as ut
 import recommerce.market.circular.circular_vendors as circular_vendors
 import recommerce.market.owner as owner
-from recommerce.configuration.hyperparameter_config import HyperparameterConfig
+from recommerce.configuration.common_rules import greater_zero_even_rule, greater_zero_rule, non_negative_rule
 from recommerce.market.circular.circular_customers import CustomerCircular
 from recommerce.market.customer import Customer
 from recommerce.market.owner import Owner
@@ -13,6 +14,23 @@ from recommerce.market.sim_market import SimMarket
 
 
 class CircularEconomy(SimMarket, ABC):
+	@staticmethod
+	def get_competitor_classes() -> list:
+		import recommerce.market.circular.circular_vendors as c_vendors
+		return sorted(ut.filtered_class_str_from_dir('recommerce.market.circular.circular_vendors', dir(c_vendors), '.*CE.*Agent.*'))
+
+	@staticmethod
+	def get_configurable_fields() -> list:
+		# TODO: reduce this list to only the required fields (remove max_quality)
+		return [
+			('max_storage', int, greater_zero_rule),
+			('episode_length', int, greater_zero_rule),
+			('max_price', int, greater_zero_rule),
+			('max_quality', int, greater_zero_rule),
+			('number_of_customers', int, greater_zero_even_rule),
+			('production_price', int, non_negative_rule),
+			('storage_cost_per_product', (int, float), non_negative_rule),
+		]
 
 	def _setup_action_observation_space(self, support_continuous_action_space: bool) -> None:
 		# cell 0: number of products in the used storage, cell 1: number of products in circulation
@@ -209,29 +227,51 @@ class CircularEconomy(SimMarket, ABC):
 
 
 class CircularEconomyMonopoly(CircularEconomy):
+	"""
+	This is a circular economy with only one vendor having the monopoly.
+	"""
+	@staticmethod
+	def get_num_competitors() -> int:
+		return 0
 
 	def _get_competitor_list(self) -> list:
 		return []
 
 
 class CircularEconomyDuopoly(CircularEconomy):
+	"""
+	This is a circular economy with two vendors (one agent and one competitor) playing against each other.
+	"""
+	@staticmethod
+	def get_num_competitors() -> int:
+		return 1
 
 	def _get_competitor_list(self) -> list:
-		return [circular_vendors.RuleBasedCEAgent(config=self.config)]
+		return [circular_vendors.RuleBasedCEAgent(config_market=self.config)]
 
 
 class CircularEconomyOligopoly(CircularEconomy):
+	"""
+	This is a circular economy with multiple vendors.
+	"""
+	@staticmethod
+	def get_num_competitors() -> int:
+		return np.inf
 
 	def _get_competitor_list(self) -> list:
 		return [
-			circular_vendors.RuleBasedCEAgent(config=self.config),
-			circular_vendors.RuleBasedCEAgent(config=self.config),
-			circular_vendors.FixedPriceCEAgent(config=self.config, fixed_price=(3, 5)),
-			circular_vendors.FixedPriceCEAgent(config=self.config, fixed_price=(2, 6))
+			circular_vendors.RuleBasedCEAgent(config_market=self.config),
+			circular_vendors.RuleBasedCEAgent(config_market=self.config),
+			circular_vendors.FixedPriceCEAgent(config_market=self.config, fixed_price=(3, 5)),
+			circular_vendors.FixedPriceCEAgent(config_market=self.config, fixed_price=(2, 6))
 			]
 
 
 class CircularEconomyRebuyPrice(CircularEconomy, ABC):
+	@staticmethod
+	def get_competitor_classes() -> list:
+		import recommerce.market.circular.circular_vendors as c_vendors
+		return sorted(ut.filtered_class_str_from_dir('recommerce.market.circular.circular_vendors', dir(c_vendors), '.*CERebuy.*Agent.*'))
 
 	def _setup_action_observation_space(self, support_continuous_action_space: bool) -> None:
 		super()._setup_action_observation_space(support_continuous_action_space)
@@ -273,37 +313,45 @@ class CircularEconomyRebuyPrice(CircularEconomy, ABC):
 
 
 class CircularEconomyRebuyPriceMonopoly(CircularEconomyRebuyPrice):
+	"""
+	This is a circular economy with rebuy price, so the vendor buys back its products from the customers.
+
+	There is only one vendor.
+	"""
+	@staticmethod
+	def get_num_competitors() -> int:
+		return 0
 
 	def _get_competitor_list(self) -> list:
 		return []
 
 
 class CircularEconomyRebuyPriceDuopoly(CircularEconomyRebuyPrice):
+	"""
+	This is a circular economy with rebuy price, so the vendors buy back their products from the customers.
+	There are two vendors.
+	"""
+	@staticmethod
+	def get_num_competitors() -> int:
+		return 1
 
 	def _get_competitor_list(self) -> list:
-		return [circular_vendors.RuleBasedCERebuyAgentCompetitive(config=self.config)]
+		return [circular_vendors.RuleBasedCERebuyAgentCompetitive(config_market=self.config)]
 
 
 class CircularEconomyRebuyPriceOligopoly(CircularEconomyRebuyPrice):
+	"""
+	This is a circular economy with rebuy price, so the vendors buy back their products from the customers.
+	There are multiple vendors.
+	"""
+	@staticmethod
+	def get_num_competitors() -> int:
+		return np.inf
 
 	def _get_competitor_list(self) -> list:
 		return [
-			circular_vendors.RuleBasedCERebuyAgentCompetitive(config=self.config),
-			circular_vendors.RuleBasedCERebuyAgent(config=self.config),
-			circular_vendors.FixedPriceCERebuyAgent(config=self.config, fixed_price=(3, 6, 2)),
-			circular_vendors.RuleBasedCERebuyAgentStorageMinimizer(config=self.config)
+			circular_vendors.RuleBasedCERebuyAgentCompetitive(config_market=self.config),
+			circular_vendors.RuleBasedCERebuyAgent(config_market=self.config),
+			circular_vendors.FixedPriceCERebuyAgent(config_market=self.config, fixed_price=(3, 6, 2)),
+			circular_vendors.RuleBasedCERebuyAgentStorageMinimizer(config_market=self.config)
 			]
-
-
-class CircularEconomyRebuyPriceVariableDuopoly(CircularEconomyRebuyPrice):
-	"""
-	This Scenario allows the training of an RL-agent against a customizable agent
-	that is passed as a parameter to the constructor of the class.
-	"""
-
-	def __init__(self, config: HyperparameterConfig, constant_agent: circular_vendors.CircularAgent):
-		self.customized_competitor_list = [constant_agent]
-		super().__init__(config=config, support_continuous_action_space=True)
-
-	def _get_competitor_list(self) -> list:
-		return self.customized_competitor_list

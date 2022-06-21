@@ -1,11 +1,12 @@
 import pytest
+from attrdict import AttrDict
 
-import tests.utils_tests as ut_t
-from recommerce.configuration.hyperparameter_config import HyperparameterConfig
+from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader
+from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPriceMonopoly
 from recommerce.rl.self_play import train_self_play
-from recommerce.rl.stable_baselines.stable_baselines_model import StableBaselinesPPO, StableBaselinesSAC
+from recommerce.rl.stable_baselines.sb_ppo import StableBaselinesPPO
+from recommerce.rl.stable_baselines.sb_sac import StableBaselinesSAC
 
-config_hyperparameter: HyperparameterConfig = ut_t.mock_config_hyperparameter()
 agents = [StableBaselinesPPO, StableBaselinesSAC]
 
 
@@ -13,4 +14,6 @@ agents = [StableBaselinesPPO, StableBaselinesSAC]
 @pytest.mark.slow
 @pytest.mark.parametrize('agent_class', agents)
 def test_self_play(agent_class):
-    train_self_play(config=config_hyperparameter, agent_class=agent_class, training_steps=230)
+	config_market: AttrDict = HyperparameterConfigLoader.load('market_config', CircularEconomyRebuyPriceMonopoly)
+	config_rl: AttrDict = HyperparameterConfigLoader.load('sb_ppo_config', StableBaselinesPPO)
+	train_self_play(config_market=config_market, config_rl=config_rl, agent_class=agent_class, training_steps=230)

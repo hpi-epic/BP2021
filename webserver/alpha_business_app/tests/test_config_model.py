@@ -1,9 +1,16 @@
 from django.test import TestCase
 
-from ..models.config import *
-from ..models.config import remove_none_values_from_dict
+from ..models.agent_config import AgentConfig
+from ..models.agents_config import AgentsConfig
+from ..models.config import Config
 from ..models.container import Container
-from .constant_tests import EMPTY_STRUCTURE_CONFIG
+from ..models.environment_config import EnvironmentConfig
+from ..models.hyperparameter_config import HyperparameterConfig
+from ..models.rl_config import RlConfig
+from ..models.sim_market_config import SimMarketConfig
+from ..utils import remove_none_values_from_dict, to_config_class_name
+
+# from .constant_tests import EMPTY_STRUCTURE_CONFIG
 
 
 class ConfigTest(TestCase):
@@ -24,15 +31,6 @@ class ConfigTest(TestCase):
 
 	def test_class_name_sim_market_config(self):
 		assert 'SimMarketConfig' == to_config_class_name('sim_market')
-
-	def test_capitalize(self):
-		assert 'TestTesTTest' == capitalize('testTesTTest')
-
-	def test_capitalize_empty_strings(self):
-		assert '' == capitalize('')
-
-	def test_capitalize_one_letter_strings(self):
-		assert 'A' == capitalize('a')
 
 	def test_is_referenced(self):
 		test_config_not_referenced = Config.objects.create()
@@ -119,7 +117,16 @@ class ConfigTest(TestCase):
 	def test_dict_representation_of_agent(self):
 		test_agent = AgentConfig.objects.create(name='test_agent', agent_class='test_class', argument='1234')
 		expected_dict = {'name': 'test_agent', 'agent_class': 'test_class', 'argument': '1234'}
-		assert expected_dict == test_agent.as_dict(), (expected_dict, test_agent.as_dict())
+		assert expected_dict == test_agent.as_dict()
+
+	def test_dict_representation_of_environment_config(self):
+		test_environment = EnvironmentConfig.objects.create(enable_live_draw=True, episodes=50, plot_interval=12, marketplace='test')
+		expected_dict = {'enable_live_draw': True, 'episodes': 50, 'plot_interval': 12, 'marketplace': 'test'}
+		assert expected_dict == test_environment.as_dict()
+
+	def test_dict_representation_of_empty_config(self):
+		test_config = Config.objects.create()
+		assert {} == test_config.as_dict()
 
 	def test_list_representation_of_agents(self):
 		test_agents = AgentsConfig.objects.create()
@@ -140,13 +147,21 @@ class ConfigTest(TestCase):
 			]
 		assert expected_list == test_agents.as_list()
 
-	def test_dict_representation_of_empty_config(self):
-		test_config = Config.objects.create()
-		assert {} == test_config.as_dict()
-
-	def test_get_empty_structure_dict(self):
-		actual_dict = Config.get_empty_structure_dict()
-		assert EMPTY_STRUCTURE_CONFIG == actual_dict
+	def test_get_empty_structure_dict_for_rl(self):
+		expected_dict = {
+			'sync_target_frames': None,
+			'testvalue2': None,
+			'gamma': None,
+			'epsilon_start': None,
+			'replay_size': None,
+			'stable_baseline_test': None,
+			'epsilon_decay_last_frame': None,
+			'batch_size': None,
+			'epsilon_final': None,
+			'replay_start_size': None,
+			'learning_rate': None
+		}
+		assert expected_dict == RlConfig.get_empty_structure_dict()
 
 	def test_remove_none_values_from_dict(self):
 		test_dict = {'test': 'test', 'test2': None}

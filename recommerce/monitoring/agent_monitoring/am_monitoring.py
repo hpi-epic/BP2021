@@ -4,15 +4,16 @@ import sys
 from copy import deepcopy
 
 import torch
+from attrdict import AttrDict
 from tqdm import trange
 
 import recommerce.monitoring.agent_monitoring.am_configuration as am_configuration
 import recommerce.monitoring.agent_monitoring.am_evaluation as am_evaluation
 from recommerce.configuration.environment_config import AgentMonitoringEnvironmentConfig, EnvironmentConfigLoader
-from recommerce.configuration.hyperparameter_config import HyperparameterConfig, HyperparameterConfigLoader
+from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader
 from recommerce.configuration.path_manager import PathManager
-from recommerce.market_ML.predictable_agent import PredictableAgent
-from recommerce.market_ML.predictable_market import PredictableMarketRebuyPriceDuopoly
+# from recommerce.market_ML.predictable_agent import PredictableAgent
+# from recommerce.market_ML.predictable_market import PredictableMarketRebuyPriceDuopoly
 from recommerce.monitoring.watcher import Watcher
 
 print('successfully imported torch: cuda?', torch.cuda.is_available())
@@ -43,42 +44,52 @@ class Monitor():
 		"""
 		Run the marketplace with the given monitoring configuration.
 
-		Automatically produces histograms, but not metric diagrams.
+		Does not create any diagrams.
 
 		Returns:
-			list: A list with a list of rewards for each agent
+			list: A list with a list of rewards for each agent.
 		"""
-		config = HyperparameterConfigLoader.load('hyperparameter_config')
-		# initialize the watcher list with a list for each agent
-		watchers = [Watcher(config=config) for _ in range(len(self.configurator.agents))]
+		# each agent on its own marketplace
+		if self.configurator.separate_markets:
+			# initialize the watcher list with a list for each agent
+			watchers = [Watcher(config_market=self.configurator.marketplace.config) for _ in range(len(self.configurator.agents))]
 
-		for episode in trange(1, self.configurator.episodes + 1, unit=' episodes', leave=False):
-			# reset the state & marketplace once to be used by all agents
-			source_state = self.configurator.marketplace.reset()
-			source_marketplace = self.configurator.marketplace
+			for _ in trange(1, self.configurator.episodes + 1, unit=' episodes', leave=False):
+				# reset the state & marketplace once to be used by all agents
+				source_state = self.configurator.marketplace.reset()
+				source_marketplace = self.configurator.marketplace
 
-			for current_agent_index in range(len(self.configurator.agents)):
-				# for every agent, set an equivalent "start-market"
-				self.configurator.marketplace = deepcopy(source_marketplace)
+				for current_agent_index in range(len(self.configurator.agents)):
+					# for every agent, set an equivalent "start-market"
+					self.configurator.marketplace = deepcopy(source_marketplace)
+					state = source_state
+					is_done = False
 
-				# reset values for all agents
-				state = source_state
+					# run marketplace for this agent
+					while not is_done:
+						action = self.configurator.agents[current_agent_index].policy(state)
+						state, _, is_done, info = self.configurator.marketplace.step(action)
+						watchers[current_agent_index].add_info(info)
+
+			return [watcher.get_cumulative_properties() for watcher in watchers]
+
+		# all agents on one marketplace
+		else:
+			watcher = Watcher(config_market=self.configurator.marketplace.config)
+			for _ in trange(1, self.configurator.episodes + 1, unit=' episodes', leave=False):
+				state = self.configurator.marketplace.reset()
 				is_done = False
 
-				# run marketplace for this agent
+				# run marketplace for all agents
 				while not is_done:
-					action = self.configurator.agents[current_agent_index].policy(state)
+					action = self.configurator.agents[0].policy(state)
 					state, _, is_done, info = self.configurator.marketplace.step(action)
-					watchers[current_agent_index].add_info(info)
+					watcher.add_info(info)
 
-		# only one histogram after the whole monitoring process
-		returns = [watcher.get_all_samples_of_property('profits/all', 0) for watcher in watchers]
-		self.evaluator.create_histogram(returns, True, 'Cumulative_rewards_per_episode.svg')
-
-		return [watcher.get_cumulative_properties() for watcher in watchers]
+			return watcher.get_cumulative_properties()
 
 
-def run_monitoring_session(monitor: Monitor = Monitor()) -> None:
+def run_monitoring_session(monitor: Monitor) -> None:
 	"""
 	Run a monitoring session with a configured Monitor() and display and save metrics.
 
@@ -87,6 +98,10 @@ def run_monitoring_session(monitor: Monitor = Monitor()) -> None:
 	"""
 	monitor.configurator.print_configuration()
 
+	if monitor.configurator.separate_markets:
+		print('\nAgents are playing on separate markets...')
+	else:
+		print('\nAgents are playing on the same market...')
 	print('\nStarting monitoring session...')
 	rewards = monitor.run_marketplace()
 
@@ -99,47 +114,14 @@ def main():  # pragma: no cover
 	"""
 	monitor = Monitor()
 	config_environment_am: AgentMonitoringEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_agent_monitoring')
-	config_hyperparameter: HyperparameterConfig = HyperparameterConfigLoader.load('hyperparameter_config')
+	config_market: AttrDict = HyperparameterConfigLoader.load('market_config', config_environment_am.marketplace)
 	monitor.configurator.setup_monitoring(
-		enable_live_draw=config_environment_am.enable_live_draw,
 		episodes=config_environment_am.episodes,
 		plot_interval=config_environment_am.plot_interval,
 		marketplace=config_environment_am.marketplace,
 		agents=config_environment_am.agent,
-		config=config_hyperparameter,
-		support_continuous_action_space=True
-	)
-	run_monitoring_session(monitor)
-
-
-def monitor_kalibrated_marketplace(marketplace, agent):  # pragma: no cover
-	"""
-	Monitors a given Arketplace and agent.
-	"""
-	monitor = Monitor()
-	config: AgentMonitoringEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_agent_monitoring')
-	monitor.configurator.setup_monitoring(
-		enable_live_draw=config.enable_live_draw,
-		episodes=config.episodes,
-		plot_interval=config.plot_interval,
-		agents=agent
-	)
-	monitor.configurator.marketplace = marketplace
-	run_monitoring_session(monitor)
-
-
-def monitor_predictable():  # pragma: no cover
-	"""
-	Defines what is performed when the `agent_monitoring` command is chosen in `main.py`.
-	"""
-	monitor = Monitor()
-	config: AgentMonitoringEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_agent_monitoring')
-	monitor.configurator.setup_monitoring(
-		enable_live_draw=config.enable_live_draw,
-		episodes=config.episodes,
-		plot_interval=config.plot_interval,
-		marketplace=PredictableMarketRebuyPriceDuopoly,
-		agents=PredictableAgent
+		separate_markets=config_environment_am.separate_markets,
+		config_market=config_market
 	)
 	run_monitoring_session(monitor)
 

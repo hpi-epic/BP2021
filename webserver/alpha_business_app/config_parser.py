@@ -1,4 +1,12 @@
-from .models.config import *
+from .config_merger import ConfigMerger
+from .models.agent_config import AgentConfig
+from .models.agents_config import AgentsConfig
+from .models.config import Config
+from .models.environment_config import EnvironmentConfig
+from .models.hyperparameter_config import HyperparameterConfig
+from .models.rl_config import RlConfig
+from .models.sim_market_config import SimMarketConfig
+from .utils import remove_none_values_from_dict, to_config_class_name
 
 
 class ConfigFlatDictParser():
@@ -33,6 +41,10 @@ class ConfigFlatDictParser():
 			'hyperparameter': self._flat_hyperparameter_to_hierarchical(hyperparameter)
 			}
 
+	def flat_dict_to_complete_hierarchical_config_dict(self, flat_dict: dict) -> dict:
+		not_complete_config_dict = self.flat_dict_to_hierarchical_config_dict(flat_dict)
+		return ConfigMerger().merge_config_into_base_config(Config.get_empty_structure_dict(), not_complete_config_dict)
+
 	def _flat_environment_to_hierarchical(self, flat_dict: dict) -> dict:
 		"""
 		Parses the environment part of the flat dict to a hierarchical environment dict.
@@ -51,8 +63,8 @@ class ConfigFlatDictParser():
 		environment_dict = self._first_list_element_without_empty(environment_dict)
 		# add parsed agents
 		environment_dict['agents'] = self._flat_agents_to_hierarchical(raw_agents_dict)
-		# add enable_live_draw if exists
-		environment_dict['enable_live_draw'] = 'enable_live_draw' in flat_dict
+		# add separate_markets if exists
+		environment_dict['separate_markets'] = 'separate_markets' in flat_dict
 		return environment_dict
 
 	def _flat_agents_to_hierarchical(self, flat_dict: dict) -> dict:
@@ -232,4 +244,5 @@ class ConfigModelParser():
 		Returns:
 			an instance of the `class_name` with the parameters given.
 		"""
+		assert class_name in globals(), f'The provided name: {class_name} not in {globals()}'
 		return globals()[class_name].objects.create(**parameters)

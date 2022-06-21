@@ -4,6 +4,7 @@ from django.utils import timezone
 
 from recommerce.configuration.config_validation import validate_config
 
+from .adjustable_fields import get_rl_parameter_prefill
 from .config_merger import ConfigMerger
 from .config_parser import ConfigFlatDictParser
 from .container_parser import parse_response_to_database
@@ -11,6 +12,7 @@ from .handle_files import download_file
 from .handle_requests import DOCKER_API, send_get_request, send_get_request_with_streaming, send_post_request, stop_container
 from .models.config import Config
 from .models.container import Container, update_container
+from .selection_manager import SelectionManager
 
 
 class ButtonHandler():
@@ -42,9 +44,10 @@ class ButtonHandler():
 		self.wanted_key = None
 		self.all_containers = Container.objects.all().filter(user=request.user)
 		self.wanted_config = wanted_config
+		self.selection_manager = SelectionManager()
 
 		if request.method == 'POST':
-			self.wanted_key = request.POST['action']
+			self.wanted_key = request.POST['action'].strip()
 			if 'container_id' in request.POST:
 				wanted_container_id = request.POST['container_id'].strip()
 				self.wanted_container = Container.objects.get(id=wanted_container_id)
@@ -71,8 +74,8 @@ class ButtonHandler():
 			return self._remove()
 		if self.wanted_key == 'start':
 			return self._start()
-		if self.wanted_key == 'pre-fill':
-			return self._pre_fill()
+		if self.wanted_key == 'prefill':
+			return self._prefill()
 		if self.wanted_key == 'logs':
 			return self._logs()
 		if self.wanted_key == 'manage_config':
@@ -129,18 +132,14 @@ class ButtonHandler():
 			}
 
 	def _params_for_selection(self) -> dict:
-		# TODO: implement the selection parameters here
-		# import recommerce.market.circular.circular_sim_market as circular_market
-		# circular_market_places = list(set(filter(lambda class_name: class_name.startswith('CircularEconomy'), dir(circular_market))))
-		circular_market_places = ['CircularEconomyMonopoly',
-			'CircularEconomyRebuyPrice',
-			'CircularEconomyRebuyPriceMonopoly',
-			'CircularEconomyRebuyPriceDuopoly']
-		circular_market_places = [('recommerce.market.circular.circular_sim_market.' + market, market) for market in circular_market_places]
 		return {
 			'selections': {
-				'tasks': [('training', 'training'), ('agent_monitoring', 'agent_monitoring'), ('exampleprinter', 'exampleprinter')],
-				'marketplaces': circular_market_places}}
+				'tasks': self.selection_manager._get_task_options(),
+				'marketplaces': self.selection_manager.get_marketplace_options(),
+				'agents': self.selection_manager.get_agent_options_for_marketplace(),
+				'competitors': self.selection_manager.get_competitor_options_for_marketplace()
+				}
+			}
 
 	def _render_default(self) -> HttpResponse:
 		"""
@@ -171,7 +170,7 @@ class ButtonHandler():
 		"""
 		return render(self.request, self.view_to_render, {**self._params_for_config(), **self._message_for_view()})
 
-	def _render_prefill(self, pre_fill_dict: dict, error_dict: dict) -> HttpResponse:
+	def _render_prefill(self, prefill_dict: dict, error_dict: dict) -> HttpResponse:
 		"""
 		This will return a rendering for `self.view` with params for selection a prefill dict and the error dict
 
@@ -183,7 +182,7 @@ class ButtonHandler():
 			HttpResponse: _description_
 		"""
 		return render(self.request, self.view_to_render,
-			{'prefill': pre_fill_dict,
+			{'prefill': prefill_dict,
 			'error_dict': error_dict,
 			'all_configurations': Config.objects.all().filter(user=self.request.user),
 			**self._params_for_selection()})
@@ -268,7 +267,7 @@ class ButtonHandler():
 			self.wanted_config.delete()
 		return redirect('/configurator')
 
-	def _pre_fill(self) -> HttpResponse:
+	def _prefill(self) -> HttpResponse:
 		"""
 		This function will be called when the config form should be prefilled with values from the config.
 		It converts a list of given config objects to dicts and merges these dicts.
@@ -280,10 +279,13 @@ class ButtonHandler():
 		post_request = dict(self.request.POST.lists())
 		if 'config_id' not in post_request:
 			return self._decide_rendering()
+		config_dict = ConfigFlatDictParser().flat_dict_to_complete_hierarchical_config_dict(post_request)
 		merger = ConfigMerger()
-		final_dict, error_dict = merger.merge_config_objects(post_request['config_id'])
+		final_dict, error_dict = merger.merge_config_objects(post_request['config_id'], config_dict)
+		final_dict['hyperparameter']['rl'] = get_rl_parameter_prefill(final_dict['hyperparameter']['rl'], error_dict['hyperparameter']['rl'])
 		# set an id for each agent (necessary for view)
 		for agent_index in range(len(final_dict['environment']['agents'])):
+			final_dict['environment']['agents'][agent_index]['display_name'] = 'Agent' if agent_index == 0 else 'Competitor'
 			final_dict['environment']['agents'][agent_index]['id'] = agent_index
 		return self._render_prefill(final_dict, error_dict)
 
@@ -309,7 +311,7 @@ class ButtonHandler():
 
 		config_dict = ConfigFlatDictParser().flat_dict_to_hierarchical_config_dict(post_request)
 
-		validate_status, validate_data = validate_config(config=config_dict, config_is_final=True)
+		validate_status, validate_data = validate_config(config=config_dict.copy())
 		if not validate_status:
 			self.message = ['error', validate_data]
 			return self._decide_rendering()

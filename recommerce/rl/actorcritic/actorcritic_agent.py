@@ -2,10 +2,11 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 import torch
+from attrdict import AttrDict
 
 import recommerce.configuration.utils as ut
 import recommerce.rl.model as model
-from recommerce.configuration.hyperparameter_config import HyperparameterConfig
+from recommerce.configuration.common_rules import between_zero_one_rule, greater_zero_rule
 from recommerce.market.circular.circular_vendors import CircularAgent
 from recommerce.market.linear.linear_vendors import LinearAgent
 from recommerce.market.sim_market import SimMarket
@@ -19,22 +20,24 @@ class ActorCriticAgent(ReinforcementLearningAgent, ABC):
 	def __init__(
 			self,
 			marketplace: SimMarket,
-			config: HyperparameterConfig,
+			config_market: AttrDict,
+			config_rl: AttrDict,
 			device='cuda' if torch.cuda.is_available() else 'cpu',
 			load_path=None,
 			critic_path=None,
-			name='actor_critic',
+			name='',
 			network_architecture=model.simple_network):
 		assert isinstance(marketplace, SimMarket), f'marketplace must be a SimMarket, but is {type(marketplace)}'
 
 		n_observations = marketplace.get_observations_dimension()
-		network_output_size = marketplace.get_actions_dimension() if isinstance(self, ContinuosActorCriticAgent) else marketplace.get_n_actions()
+		network_output_size = marketplace.get_actions_dimension() if isinstance(self, ContinuousActorCriticAgent) else marketplace.get_n_actions()
 		if isinstance(self, DiscreteActorCriticAgent):
 			self.actions_dimension = marketplace.get_actions_dimension()
-		self.config = config
+		self.config_market = config_market
+		self.config_rl = config_rl
 		self.device = device
-		self.name = name
-		print(f'I initiate an ActorCriticAgent using {self.device} device')
+		self.name = name if name != '' else type(self).__name__
+		print(f'Initializing an ActorCriticAgent using {self.device} device')
 		self.initialize_models_and_optimizer(n_observations, network_output_size, network_architecture)
 		if load_path is not None:
 			self.actor_net.load_state_dict(torch.load(load_path, map_location=self.device))
@@ -97,7 +100,7 @@ class ActorCriticAgent(ReinforcementLearningAgent, ABC):
 
 		v_estimates = self.critic_net(states)
 		with torch.no_grad():
-			v_expected = (rewards + self.config.gamma * self.critic_tgt_net(next_states).detach()).view(-1, 1)
+			v_expected = (rewards + self.config_rl.gamma * self.critic_tgt_net(next_states).detach()).view(-1, 1)
 		critic_loss = torch.nn.MSELoss()(v_estimates, v_expected)
 		critic_loss.backward()
 
@@ -148,6 +151,14 @@ class ActorCriticAgent(ReinforcementLearningAgent, ABC):
 		"""
 		raise NotImplementedError('This method is abstract. Use a subclass')
 
+	@staticmethod
+	def get_configurable_fields() -> list:
+		return [
+			('gamma', float, between_zero_one_rule),
+			('sync_target_frames', int, greater_zero_rule),
+			('testvalue2', float, greater_zero_rule)
+		]
+
 
 class DiscreteActorCriticAgent(ActorCriticAgent, LinearAgent, CircularAgent):
 	"""
@@ -186,22 +197,22 @@ class DiscreteActorCriticAgent(ActorCriticAgent, LinearAgent, CircularAgent):
 			return action
 		action_list = []
 		for _ in range(self.actions_dimension):
-			action_list.append(action % self.config.max_price)
-			action = action // self.config.max_price
+			action_list.append(action % self.config_market.max_price)
+			action = action // self.config_market.max_price
 		action_list.reverse()
 		return tuple(action_list)
 
 
-class ContinuosActorCriticAgent(ActorCriticAgent, LinearAgent, CircularAgent):
+class ContinuousActorCriticAgent(ActorCriticAgent, LinearAgent, CircularAgent):
 	"""
-	This is an actor critic agent with continuos action space.
+	This is an actor critic agent with continuous action space.
 	It's distribution is a normal distribution parameterized by mean and standard deviation.
 	It works on any sort of market we have so far, just the number of action values must be given.
 	Note that this class is abstract.
 	You must use one of its subclasses.
 	"""
 	softplus = torch.nn.Softplus()
-	name = 'ContinuosActorCriticAgent'
+	name = 'ContinuousActorCriticAgent'
 
 	def initialize_models_and_optimizer(self, n_observations, network_output_size, network_architecture):
 		self.actor_net = network_architecture(n_observations, network_output_size).to(self.device)
@@ -271,7 +282,7 @@ class ContinuosActorCriticAgent(ActorCriticAgent, LinearAgent, CircularAgent):
 		return action.tolist()
 
 
-class ContinuosActorCriticAgentFixedOneStd(ContinuosActorCriticAgent):
+class ContinuousActorCriticAgentFixedOneStd(ContinuousActorCriticAgent):
 	def transform_network_output(self, number_outputs, network_result):
 		"""
 		This implementation of transform_network_output uses the full output as mean.
@@ -290,7 +301,7 @@ class ContinuosActorCriticAgentFixedOneStd(ContinuosActorCriticAgent):
 		return network_result, torch.ones(network_result.shape).to(self.device)
 
 
-class ContinuosActorCriticAgentEstimatingStd(ContinuosActorCriticAgent):
+class ContinuousActorCriticAgentEstimatingStd(ContinuousActorCriticAgent):
 	def initialize_models_and_optimizer(self, n_observations, n_actions, network_architecture):
 		super().initialize_models_and_optimizer(n_observations, 2 * n_actions, network_architecture)
 

@@ -1,13 +1,22 @@
 $(document).ready(function() {
-	$("button.add-more").click(function () {
-		// adds the return value of the ajax call (html) before the element.
-		var self = $(this)
-		$.ajax({url: self.data("url"),
-		success: function (data) {
-			self.before(data)
-		}
+	function addEventToAddMoreButton () {
+		$("button.add-more").click(function () {
+			// adds the return value of the ajax call (html) before the element.
+			var self = $(this)
+			$.ajax({url: self.data("url"),
+			success: function (data) {
+				self.before(data)
+			}
+			});
 		});
-	});
+	};
+	addEventToAddMoreButton()
+
+	function getFormData () {
+		var form = $("form.config-form");
+		var formdata = form.serializeArray();
+		return formdata;
+	};
 	
 	function updateAPIHealth() {
 		// replaces the element by the element returned by ajax (html) and adds this click event to it
@@ -36,6 +45,50 @@ $(document).ready(function() {
 		}
 	}).trigger('change');
 
+	$("select.marketplace-selection").change(function () {
+		// will be called when another marketplace has been selected
+		var self = $(this);
+		const csrftoken = getCookie("csrftoken");
+		var all_agents = $("div.all-agents");
+		$.ajax({
+			type: "POST",
+			url: self.data("url"),
+			data: {
+				csrfmiddlewaretoken: csrftoken,
+				"marketplace": self.val(),
+				"agents_html": all_agents.html()
+			},
+			success: function (data) {
+				all_agents.empty().append(data);
+				addEventToAddMoreButton();
+				addChangeToAgent();
+			}
+		});
+	}).trigger("change");
+
+
+	function addChangeToAgent () {
+		$("select.agent-agent-class").change(function () {
+			// will be called when agent dropdown has changed, we need to change rl hyperparameter for that
+			var self = $(this);
+			var formdata = getFormData();
+			const csrftoken = getCookie("csrftoken");
+			$.ajax({
+				type: "POST",
+				url: self.data("url"),
+				data: {
+					csrfmiddlewaretoken: csrftoken,
+					formdata,
+					"agent": self.val()
+				},
+				success: function (data) {
+					$("div.rl-parameter").empty().append(data)
+				}
+			});
+		}).trigger("change");
+	}
+	addChangeToAgent()
+
 	function getCookie(name) {
 		let cookieValue = null;
 		if (document.cookie && document.cookie !== '') {
@@ -52,12 +105,9 @@ $(document).ready(function() {
 		return cookieValue;
 	}
 	
-	$("button.form-check").click(function () {
-		$("table.config-status-display").remove();
-		
+	$("button.form-check").click(function () {		
 		var self = $(this);
-		var form = $("form.config-form");
-		var formdata = form.serializeArray();
+		var formdata = getFormData();
 
 		const csrftoken = getCookie('csrftoken');
 		$.ajax({

@@ -6,6 +6,7 @@ from django.shortcuts import render
 
 from recommerce.configuration.config_validation import validate_config
 
+from .adjustable_fields import get_agent_hyperparameter
 from .buttons import ButtonHandler
 from .config_parser import ConfigFlatDictParser
 from .forms import UploadFileForm
@@ -13,6 +14,9 @@ from .handle_files import handle_uploaded_file
 from .handle_requests import get_api_status
 from .models.config import Config
 from .models.container import Container
+from .selection_manager import SelectionManager
+
+selection_manager = SelectionManager()
 
 
 @login_required
@@ -70,7 +74,7 @@ def upload(request) -> HttpResponse:
 
 
 @login_required
-def configurator(request):
+def configurator(request) -> HttpResponse:
 	if not request.user.is_authenticated:
 		return HttpResponse('Unauthorized', status=401)
 	button_handler = ButtonHandler(request, view='configurator.html', rendering_method='config')
@@ -91,13 +95,22 @@ def delete_config(request, config_id) -> HttpResponse:
 
 # AJAX relevant views
 @login_required
-def agent(request):
+def new_agent(request) -> HttpResponse:
 	if not request.user.is_authenticated:
 		return HttpResponse('Unauthorized', status=401)
-	return render(request, 'configuration_items/agent.html', {'id': str(uuid4())})
+	return render(request, 'configuration_items/agent.html',
+		{'id': str(uuid4()), 'name': 'Competitor', 'agent_selections': selection_manager.get_competitor_options_for_marketplace()})
 
 
-def api_availability(request):
+@login_required
+def agent_changed(request) -> HttpResponse:
+	if not request.user.is_authenticated:
+		return HttpResponse('Unauthorized', status=401)
+	return render(request, 'configuration_items/rl_parameter.html',
+		{'parameters': get_agent_hyperparameter(request.POST['agent'], request.POST.dict())})
+
+
+def api_availability(request) -> HttpResponse:
 	if not request.user.is_authenticated:
 		return render(request, 'api_buttons/api_health_button.html')
 	parameter_dict = get_api_status()
@@ -105,7 +118,7 @@ def api_availability(request):
 
 
 @login_required
-def config_validation(request):
+def config_validation(request) -> HttpResponse:
 	if not request.user.is_authenticated:
 		return HttpResponse('Unauthorized', status=401)
 	if request.method == 'POST':
@@ -126,7 +139,19 @@ def config_validation(request):
 
 		config_dict = ConfigFlatDictParser().flat_dict_to_hierarchical_config_dict(resulting_dict)
 
-		validate_status, validate_data = validate_config(config=config_dict, config_is_final=True)
+		validate_status, validate_data = validate_config(config=config_dict)
 		if not validate_status:
 			return render(request, 'notice_field.html', {'error': validate_data})
 	return render(request, 'notice_field.html', {'success': 'This config is valid'})
+
+
+@login_required
+def marketplace_changed(request) -> HttpResponse:
+	if not request.user.is_authenticated:
+		return HttpResponse('Unauthorized', status=401)
+	marketplace_class = None
+	if request.method == 'POST':
+		post_request = request.POST
+		marketplace_class = post_request['marketplace']
+		raw_html = post_request['agents_html']
+	return HttpResponse(content=selection_manager.get_correct_agents_html_on_marketplace_change(request, marketplace_class, raw_html))

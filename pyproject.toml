@@ -8,7 +8,7 @@ exclude = ["tests", "webserver/webserver", "webserver/alpha_business_app/migrati
 verbose = 1
 ignore-init-method = true
 ignore-module = true
-fail-under = 50
+fail-under = 40
 
 [tool.pytest.ini_options]
 markers = [
