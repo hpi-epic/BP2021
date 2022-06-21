@@ -145,8 +145,12 @@ class Evaluator():
 				# this is alway only run after training, so we know there is only one agent (trained agent)
 				# and the rest are competitors
 				labels = [self.configurator.agents[0].name]
+				# if we have competitors, append their names
 				if self.configurator.competitors:
 					labels += [a.name for a in self.configurator.competitors]
+				# else its self-play or rl-vs-rl and we need more of our current name
+				else:
+					labels *= number_of_vendors
 				for i in range(number_of_vendors):
 					plt.plot(episode_numbers, [np.mean(analysis[property_name][i]) for analysis in analyses], marker='o', label=labels[i])
 					plt.legend()
