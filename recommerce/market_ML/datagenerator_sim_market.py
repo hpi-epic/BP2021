@@ -110,7 +110,7 @@ class CircularEconomyDatagenerator(CircularEconomyRebuyPriceDuopoly):
 		# self.rainer_states = np.hstack((self.rainer_states, np.round(x, 3)))
 
 		# print('episode_counter: ', self.episode_counter)
-		if self.episode_counter == 100000:
+		if self.episode_counter == self.config.episode_length * 10000:
 			saving_array = self.cumulated_states.transpose()
 			# saving_array_rainer = self.rainer_states.transpose()
 			print(saving_array)
@@ -119,7 +119,7 @@ class CircularEconomyDatagenerator(CircularEconomyRebuyPriceDuopoly):
 			# np.savetxt(f'{PathManager.data_path}/kalibration_data/training_data-txtfile_int1dot.txt',
 			# 	saving_array_rainer, delimiter=' ', fmt='%1.3f', newline='\n')
 
-			save_path = f'{PathManager.data_path}/kalibration_data/training_data_native_marketplace_exploration.csv'
+			save_path = f'{PathManager.data_path}/kalibration_data/training_data_native_marketplace_exploration_after_merge.csv'
 			df = pd.DataFrame(saving_array)
 			print(df.head())
 			df.to_csv(save_path, index=False)

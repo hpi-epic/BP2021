@@ -9,14 +9,14 @@ from recommerce.market.circular.circular_vendors import CircularAgent, RuleBased
 
 class PredictableAgent(RuleBasedAgent, CircularAgent):
 	def __init__(self, config_market: AttrDict, name='Predicatable Agent'):
-		super(CircularAgent, self).__init__(config=config_market, name=name)
+		super(CircularAgent, self).__init__(config_market=config_market, name=name)
 		self.step_counter = 0
 
 	def policy(self, observation, *_):
 		self.step_counter = random.randint(0, 1000)
-		prices = [round(self.step_counter / 100) % self.config.max_price,
-			round(self.step_counter / 10) % self.config.max_price,
-			(self.step_counter) % self.config.max_price]
+		prices = [round(self.step_counter / 100) % self.config_market.max_price,
+			round(self.step_counter / 10) % self.config_market.max_price,
+			(self.step_counter) % self.config_market.max_price]
 		return prices
 
 		# return [6, 7, 3]
