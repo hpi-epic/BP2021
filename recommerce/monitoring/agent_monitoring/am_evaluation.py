@@ -144,7 +144,9 @@ class Evaluator():
 				number_of_vendors = len(analyses[0][property_name])
 				# this is alway only run after training, so we know there is only one agent (trained agent)
 				# and the rest are competitors
-				labels = [self.configurator.agents[0].name] + [a.name for a in self.configurator.competitors]
+				labels = [self.configurator.agents[0].name]
+				if self.configurator.competitors:
+					labels += [a.name for a in self.configurator.competitors]
 				for i in range(number_of_vendors):
 					plt.plot(episode_numbers, [np.mean(analysis[property_name][i]) for analysis in analyses], marker='o', label=labels[i])
 					plt.legend()
