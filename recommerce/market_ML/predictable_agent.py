@@ -1,16 +1,15 @@
-
-
 import random
 
-from recommerce.configuration.hyperparameter_config import HyperparameterConfig
+from attrdict import AttrDict
+
 from recommerce.market.circular.circular_vendors import CircularAgent, RuleBasedAgent
 
 # from recommerce.market.vendors import Agent
 
 
 class PredictableAgent(RuleBasedAgent, CircularAgent):
-	def __init__(self, config: HyperparameterConfig, name='Predicatable Agent'):
-		super(CircularAgent, self).__init__(config=config, name=name)
+	def __init__(self, config_market: AttrDict, name='Predicatable Agent'):
+		super(CircularAgent, self).__init__(config=config_market, name=name)
 		self.step_counter = 0
 
 	def policy(self, observation, *_):
@@ -24,8 +23,8 @@ class PredictableAgent(RuleBasedAgent, CircularAgent):
 
 
 class PredictableCompetitor(RuleBasedAgent, CircularAgent):
-	def __init__(self, config: HyperparameterConfig, name='Predicatable Competitor'):
-		super(CircularAgent, self).__init__(config=config, name=name)
+	def __init__(self, config_market: AttrDict, name='Predicatable Competitor'):
+		super(CircularAgent, self).__init__(config=config_market, name=name)
 
 	def policy(self, observation, *_):
 		result = [int(max(0, observation[2] - 1)), int(max(0, observation[3] - 1)), int(max(0, observation[4] - 1))]

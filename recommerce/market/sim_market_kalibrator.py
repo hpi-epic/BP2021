@@ -3,6 +3,7 @@ import random
 
 import pandas as pd
 import torch
+from attrdict import AttrDict
 from sim_market_kalibrated import SimMarketKalibrated
 
 import recommerce.monitoring.exampleprinter as exampleprinter
@@ -26,8 +27,8 @@ class LinearRegressionModel(torch.nn.Module):
 
 class SimMarketKalibrator:
 
-	def __init__(self, config, M1, M2, M3, M4, M5, M6, M4x, M5x, M6x):
-		self.config = config
+	def __init__(self, config_market, M1, M2, M3, M4, M5, M6, M4x, M5x, M6x):
+		self.config_market = config_market
 		self.M1 = M1
 		self.M2 = M2
 		self.M3 = M3
@@ -95,7 +96,7 @@ class SimMarketKalibrator:
 		print(data.shape)
 		reset_state = data[random.randint(1, self.N), :]
 		print('reset_state:', reset_state)
-		return SimMarketKalibrated(self.config, b1, b1, b1, b1, b1, b1, by4, bxy4, by5, bxy5, by6, bxy6,
+		return SimMarketKalibrated(self.config_market, b1, b1, b1, b1, b1, b1, by4, bxy4, by5, bxy5, by6, bxy6,
 			self.M1, self.M1, self.M4, self.M5, self.M6, self.M4x, self.M5x, self.M6x, reset_state)
 
 	def jans_regression_without(self, data, x_rows, y_index):
@@ -424,8 +425,8 @@ def jans_kalibrator():
 	M6 = (0, 1, 2, 3, 4, 7, 8, 9)
 	M6x = (1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10)
 	y6_index = 4
-	config_hyperparameter = HyperparameterConfigLoader.load('hyperparameter_config')
-	kalibrator = SimMarketKalibrator(config_hyperparameter, M123, M123, M123, M4, M5, M6, M4x, M5x, M6x)
+	config_market: AttrDict = HyperparameterConfigLoader.load('market_config', SimMarketKalibrated)
+	kalibrator = SimMarketKalibrator(config_market, M123, M123, M123, M4, M5, M6, M4x, M5x, M6x)
 
 	kalibrated_market: SimMarketKalibrated = kalibrator.kalibrate_market(
 		data, y1_index, y2_index, y3_index, y12_index, y22_index, y32_index, y4_index, y5_index, y6_index)

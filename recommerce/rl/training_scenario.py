@@ -143,7 +143,7 @@ def train_from_config():
 	Use the `environment_config_training.json` file to decide on the training parameters.
 	"""
 	config_environment: TrainingEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_training')
-	config_rl: AttrDict = HyperparameterConfigLoader.load('q_learning_config', config_environment.agent[0]['agent_class'])
+	config_rl: AttrDict = HyperparameterConfigLoader.load('sb_sac_config', config_environment.agent[0]['agent_class'])
 	config_market: AttrDict = HyperparameterConfigLoader.load('market_config', config_environment.marketplace)
 
 	competitor_list = []
@@ -199,7 +199,8 @@ def train_with_pretrained_agent(load_path=None):
 
 
 def main():
-	train_from_config()
+	# train_from_config()
+	train_stable_baselines_sac()
 
 
 if __name__ == '__main__':
