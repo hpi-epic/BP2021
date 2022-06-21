@@ -11,7 +11,6 @@ class StableBaselinesPPO(StableBaselinesAgent):
 	name = 'Stable_Baselines_PPO'
 
 	def _initialize_model(self, marketplace):
-		print(self.config_rl)
 		self.model = PPO('MlpPolicy', marketplace, verbose=False, tensorboard_log=self.tensorboard_log, **self.config_rl)
 
 	def _load(self, load_path):
