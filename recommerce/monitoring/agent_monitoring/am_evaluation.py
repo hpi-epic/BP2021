@@ -382,6 +382,7 @@ class Evaluator():
 			plt.plot(episode_numbers, [np.mean(rewards_on_training_stage) for rewards_on_training_stage in all_rewards], color='steelblue',
 				label=relevant_agent_name)
 			plt.legend()
+			relevant_agent_name = f'_{relevant_agent_name}'
 		else:
 			plt.plot(episode_numbers, [np.mean(rewards_on_training_stage) for rewards_on_training_stage in all_rewards], color='steelblue')
 
