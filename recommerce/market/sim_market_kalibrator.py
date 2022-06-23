@@ -4,14 +4,16 @@ import random
 import pandas as pd
 import torch
 from attrdict import AttrDict
-from sim_market_kalibrated import SimMarketKalibrated
 
 import recommerce.monitoring.exampleprinter as exampleprinter
-import recommerce.rl.training_scenario as training_scenario
+# import recommerce.rl.training_scenario as training_scenario
 # import recommerce.rl.stable_baselines.stable_baselines_model as sbmodel
 from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader
 from recommerce.configuration.path_manager import PathManager
+from recommerce.market.sim_market_kalibrated import SimMarketKalibrated
 from recommerce.market_ML.predictable_agent import PredictableAgent
+from recommerce.rl import training_scenario
+from recommerce.rl.stable_baselines import stable_baselines_model as sbmodel
 
 
 class LinearRegressionModel(torch.nn.Module):
@@ -39,7 +41,7 @@ class SimMarketKalibrator:
 		self.M5x = M5x
 		self.M6x = M6x
 
-	def kalibrate_market(self, data, y1_index, y2_index, y3_index, y12_index, y22_index, y32_index, y4_index, y5_index, y6_index):
+	def kalibrate_market(self, data, y1_index, y2_index, y3_index, y4_index, y5_index, y6_index):
 		"""Kalibrates a marketplace with the given data. part of Johanns bachelors thesis
 
 		Args:
@@ -350,12 +352,12 @@ def stable_baselines_agent_kalibrator():
 	config_hyperparameter = HyperparameterConfigLoader.load('hyperparameter_config')
 	kalibrator = SimMarketKalibrator(config_hyperparameter, M123, M123, M123, M4, M5, M6, M4x, M5x, M6x)
 	kalibrated_market: SimMarketKalibrated = kalibrator.kalibrate_market(data, y1_index, y2_index, y3_index, y4_index, y5_index, y6_index)
-	training_scenario.train_with_calibrated_marketplace(kalibrated_market)
-	# agent = sbmodel.StableBaselinesSAC(
-	# 	config=config_hyperparameter,
-	# 	marketplace=kalibrated_market,
-	# 	load_path='results/trainedModels/Stable_Baselines_SAC_May08_15-02-28/Stable_Baselines_SAC_01999')
-	# exampleprinter.main_kalibrated_marketplace(kalibrated_market, agent, config_hyperparameter)
+	# training_scenario.train_with_calibrated_marketplace(kalibrated_market)
+	agent = sbmodel.StableBaselinesSAC(
+		config=config_hyperparameter,
+		marketplace=kalibrated_market,
+		load_path='results/trainedModels/Stable_Baselines_SAC_May08_15-02-28/Stable_Baselines_SAC_01999')
+	exampleprinter.main_kalibrated_marketplace(kalibrated_market, agent, config_hyperparameter)
 
 
 def predictable_agent_market_kalibrator():
@@ -389,21 +391,21 @@ def predictable_agent_market_kalibrator():
 	kalibrated_market: SimMarketKalibrated = kalibrator.kalibrate_market(
 		data, y1_index, y2_index, y3_index, y12_index, y22_index, y32_index, y4_index, y5_index, y6_index)
 
-	training_scenario.train_with_calibrated_marketplace(kalibrated_market)
+	# training_scenario.train_with_calibrated_marketplace(kalibrated_market)
 	agent = PredictableAgent(config_hyperparameter)
-	# state = kalibrated_market.reset()
-	# for i in range(50):
-	# 	action = agent.policy(state)
-	# 	# print(action)
-	# 	state, reward, is_done, _ = kalibrated_market.step(action)
-	# 	print(i, action, state, reward, is_done)
+	state = kalibrated_market.reset()
+	for i in range(50):
+		action = agent.policy(state)
+		# print(action)
+		state, reward, is_done, _ = kalibrated_market.step(action)
+		print(i, action, state, reward, is_done)
 	exampleprinter.main_kalibrated_marketplace(kalibrated_market, agent, config_hyperparameter)
 
 
 def jans_kalibrator():
 	# training_scenario.train_to_calibrate_marketplace()
 	# data_path = 'data/kalibration_data/training_data_predictable_int.csv'
-	data_path = 'data/kalibration_data/training_data_native_marketplace_exploration.csv'
+	data_path = 'data/kalibration_data/training_data_native_marketplace_exploration_after_merge.csv'
 	print('Loading data from:', data_path)
 	data_frame = pd.read_csv(data_path)
 	data = torch.tensor(data_frame.values)[1:, :]

@@ -88,9 +88,19 @@ class SimMarketKalibrated(CircularEconomyRebuyPriceDuopoly):
 		# 1.0208e+04,  2.3988e+03,  1.8651e+01,  1.2789e+01,  4.5772e+00])
 		self.step_counter = 0
 		self.previous_state = self.reset_state
+		# observation = super(CircularEconomyRebuyPriceDuopoly, self).reset()
 		agent_observation = np.array([np.round_(self.reset_state[state_index]) for state_index in self.observable_state])
 		return agent_observation
 		# return np.array([30, 20, 5, 5, 5, 20])
+
+	def reset_with_foreign_state(self, foreign_obs):
+		self.step_counter = 0
+		self.previous_state = self.reset_state
+		foreign_obs = torch.tensor(foreign_obs)
+		for i, state_index in enumerate(self.observable_state):
+			self.previous_state[state_index] = foreign_obs[i]
+		agent_observation = np.array([self.reset_state[state_index] for state_index in self.observable_state])
+		return agent_observation
 
 	def step(self, agent_action) -> Tuple[np.array, np.float32, bool, dict]:
 		prev = self.previous_state
@@ -108,7 +118,7 @@ class SimMarketKalibrated(CircularEconomyRebuyPriceDuopoly):
 		# xb[3] = self.comp_prices(self.M5, self.M5x, self.by5, self.bxy5, 'new', xb, prev)  # comp price new 	(old)
 		# xb[4] = self.comp_prices(self.M6, self.M6x, self.by6, self.bxy6, 'rebuy', xb, prev)  # comp price rebuy 	(old)
 
-		xb[2], xb[3], xb[4] = self.previous_state[2], self.previous_state[3], self.previous_state[4]
+		xb[2], xb[3], xb[4] = prev[2], prev[3], prev[4]
 
 		xb[5] = prev[5] - prev[16] + prev[17]  # comp inventory (after the previous step)
 
@@ -125,7 +135,7 @@ class SimMarketKalibrated(CircularEconomyRebuyPriceDuopoly):
 		xb[8] = float(agent_action[1])  # agent price new
 		xb[9] = float(agent_action[2])  # agent price rebuy
 
-		xb[10] = xb[1] * 0.1  # agent holding cost
+		xb[10] = xb[1] * -0.1  # agent holding cost
 
 		xb[22] = self.comp_prices(self.M4, self.M4x, self.by4, self.bxy4, 'used', xb, xb)  # comp price used (updated)
 		xb[23] = self.comp_prices(self.M5, self.M5x, self.by5, self.bxy5, 'new', xb, xb)  # comp price new (updated)
@@ -158,9 +168,9 @@ class SimMarketKalibrated(CircularEconomyRebuyPriceDuopoly):
 		# 	sum([self.by12[ki] * xb[k] for ki, k in enumerate(self.M456)])))
 		x_comp = torch.cat([prev.index_select(0, torch.tensor([7, 8, 9])), xb.index_select(0, torch.IntTensor([0, 1, 2, 3, 4, 7, 8, 9]))], 0)
 		customer_decisions_comp = self.customer_decisions(x_comp, (3, 4, 0, 1, 2, 5, 6, 7, 8, 9, 10))
-		xb[15] = np.round_(min(xb[5], max(0, customer_decisions_comp[0])))  # comp sales used
-		xb[16] = np.round_(max(0, customer_decisions_comp[1]))  # comp sales new
-		xb[17] = np.round_(min(xb[6] / 2, max(0, customer_decisions_comp[2])))  # comp sales rebuy
+		xb[15] = min(xb[5], max(0, customer_decisions_comp[0]))  # comp sales used
+		xb[16] = max(0, customer_decisions_comp[1])  # comp sales new
+		xb[17] = min(xb[6] / 2, max(0, customer_decisions_comp[2]))  # comp sales rebuy
 
 		# xb[15] = np.round_(max(0, 0  # np.random.uniform(-5, 5)
 		# 	+ self.by1[0] * 1
@@ -214,7 +224,7 @@ class SimMarketKalibrated(CircularEconomyRebuyPriceDuopoly):
 		profit_new_agent = xb[12] * (xb[8] - self.cost_new_product)
 		cost_rebuy_agent = xb[13] * xb[9]
 		# print(f'profit_new: {profit_new}, profit_used: {profit_used}, cost_rebuy: {cost_rebuy}')
-		xb[18] = -xb[10] + profit_new_agent + profit_used_agent - cost_rebuy_agent  # agent	total rewards
+		xb[18] = xb[10] + profit_new_agent + profit_used_agent - cost_rebuy_agent  # agent	total rewards
 
 		profit_used_comp = xb[15] * xb[2]
 		profit_new_comp = xb[16] * (xb[3] - self.cost_new_product)
@@ -233,7 +243,13 @@ class SimMarketKalibrated(CircularEconomyRebuyPriceDuopoly):
 		assert xb[18] <= np.inf
 		self.step_counter += 1
 		is_done = (self.step_counter >= self.config.episode_length)
-		return agent_observation, float(xb[18]), is_done, {'profits/all': {'vendor_0': float(xb[18]), 'vendor_1': float(xb[19])}}
+		output_dict = {
+			'profits/all': {'vendor_0': float(xb[18]), 'vendor_1': float(xb[19])},
+			'customer/purchases_refurbished': {'vendor_0': float(xb[11]), 'vendor_1': float(xb[15])},
+			'customer/purchases_new': {'vendor_0': float(xb[12]), 'vendor_1': float(xb[16])},
+			'owner/rebuys': {'vendor_0': float(xb[13]), 'vendor_1': float(xb[17])},
+			}
+		return agent_observation, float(xb[18]), is_done, output_dict
 		# return agent_observation, xb[18], False, {}
 
 	def _clamp_price(self, price):

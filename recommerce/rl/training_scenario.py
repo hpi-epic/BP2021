@@ -15,6 +15,7 @@ from recommerce.market.circular.circular_vendors import CircularAgent
 from recommerce.market.linear.linear_vendors import LinearAgent
 from recommerce.market.vendors import FixedPriceAgent
 from recommerce.market_ML.datagenerator_sim_market import CircularEconomyDatagenerator
+from recommerce.market_ML.training_comparer import CircularEconomyComparerMarket
 from recommerce.rl.actorcritic.actorcritic_training import ActorCriticTrainer
 from recommerce.rl.q_learning.q_learning_training import QLearningTrainer
 from recommerce.rl.reinforcement_learning_agent import ReinforcementLearningAgent
@@ -198,6 +199,16 @@ def train_with_pretrained_agent(load_path=None):
 	agent.train_agent()
 
 
+def train_comparer_stable_baselines_sac():
+	used_marketplace = CircularEconomyComparerMarket
+	config_market: AttrDict = HyperparameterConfigLoader.load('market_config', used_marketplace)
+	config_rl: AttrDict = HyperparameterConfigLoader.load('sb_sac_config', StableBaselinesSAC)
+	StableBaselinesSAC(
+		config_market=config_market,
+		config_rl=config_rl,
+		marketplace=used_marketplace(config_market, True)).train_agent()
+
+
 def main():
 	# train_from_config()
 	train_stable_baselines_sac()
@@ -207,4 +218,4 @@ if __name__ == '__main__':
 	# Make sure a valid datapath is set
 	PathManager.manage_user_path()
 	# train_with_pretrained_agent()
-	train_stable_baselines_sac()
+	train_comparer_stable_baselines_sac()

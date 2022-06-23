@@ -2,13 +2,15 @@ import os
 
 import matplotlib.pyplot as plt
 import numpy as np
+from attrdict import AttrDict
 
 import recommerce.configuration.utils as ut
 from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader
 from recommerce.configuration.path_manager import PathManager
-from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPriceMonopoly
-from recommerce.market.circular.circular_vendors import RuleBasedCERebuyAgentCompetitive
+from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPriceDuopoly, CircularEconomyRebuyPriceMonopoly
+# from recommerce.market.circular.circular_vendors import RuleBasedCERebuyAgentCompetitive
 from recommerce.rl.actorcritic.actorcritic_agent import ContinuousActorCriticAgent
+from recommerce.rl.stable_baselines.sb_sac import StableBaselinesSAC
 
 
 class PolicyAnalyzer():
@@ -44,7 +46,8 @@ class PolicyAnalyzer():
 
 	def _access_and_adjust_policy(self, policy_value, policy_access):
 		policy_value = policy_value if policy_access is None else policy_value[policy_access]
-		assert isinstance(policy_value, (int, float)), f'policy_value must be an int or float but is {policy_value}, a {type(policy_value)}'
+		assert isinstance(policy_value, (int, float, np.float32)), \
+			f'policy_value must be an int or float but is {policy_value}, a {type(policy_value)}'
 		return policy_value + 1
 
 	def _plot_one_depending_variable(self, base_input, analyzed_features, title, policyaccess):
@@ -120,7 +123,11 @@ class PolicyAnalyzer():
 
 if __name__ == '__main__':
 	config_market = HyperparameterConfigLoader.load('market_config', CircularEconomyRebuyPriceMonopoly)
-	pa = PolicyAnalyzer(RuleBasedCERebuyAgentCompetitive(config_market=config_market), 'default_configuration')
+	config_rl: AttrDict = HyperparameterConfigLoader.load('sb_sac_config', StableBaselinesSAC)
+	load_path = 'results/trainedModels/Stable_Baselines_SAC_Jun21_00-35-45/Stable_Baselines_SAC_01999.zip'
+	market = CircularEconomyRebuyPriceDuopoly(config_market)
+	agent = StableBaselinesSAC(config_market=config_market, config_rl=config_rl, marketplace=market, load_path=load_path)
+	pa = PolicyAnalyzer(agent, 'default_configuration')
 	one_competitor_examples = [
 		('rule based own refurbished price', 0),
 		('rule based own new price', 1),

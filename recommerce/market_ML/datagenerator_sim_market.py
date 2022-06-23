@@ -14,7 +14,7 @@ from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyP
 class CircularEconomyDatagenerator(CircularEconomyRebuyPriceDuopoly):
 
 	def __init__(self, config, support_continuous_action_space: bool = False) -> None:
-		super(CircularEconomyDatagenerator, self).__init__(config, support_continuous_action_space)
+		super(CircularEconomyRebuyPriceDuopoly, self).__init__(config, support_continuous_action_space)
 		self.cumulated_states = np.array(np.zeros(25)).reshape(25, 1)
 		self.episode_counter = 0
 		self.is_tracking = False
@@ -83,18 +83,18 @@ class CircularEconomyDatagenerator(CircularEconomyRebuyPriceDuopoly):
 		assert float(output_dict['actions/price_refurbished']['vendor_1']).is_integer()
 		assert float(output_dict['actions/price_rebuy']['vendor_1']).is_integer()
 
-		x[22, 0] = int(output_dict['actions/price_refurbished']['vendor_1'])  # comp price new (updated)
-		x[23, 0] = int(output_dict['actions/price_new']['vendor_1'])  # comp price used (updated)
+		x[22, 0] = int(output_dict['actions/price_refurbished']['vendor_1'])  # comp price used (updated)
+		x[23, 0] = int(output_dict['actions/price_new']['vendor_1'])  # comp price new (updated)
 		x[24, 0] = int(output_dict['actions/price_rebuy']['vendor_1'])  # comp price rebuy (updated)
 
-		x[11, 0] = output_dict['customer/purchases_new']['vendor_0']  # agent sales new
-		x[12, 0] = output_dict['customer/purchases_refurbished']['vendor_0']  # agent sales used
+		x[11, 0] = output_dict['customer/purchases_refurbished']['vendor_0']  # agent sales used
+		x[12, 0] = output_dict['customer/purchases_new']['vendor_0']  # agent sales new
 		x[13, 0] = output_dict['owner/rebuys']['vendor_0']  # agent sales rebuy
 
 		x[14, 0] = output_dict['profits/storage_cost']['vendor_1']  # comp holding cost
 
-		x[15, 0] = output_dict['customer/purchases_new']['vendor_1']  # comp sales new
-		x[16, 0] = output_dict['customer/purchases_refurbished']['vendor_1']  # comp sales used
+		x[15, 0] = output_dict['customer/purchases_refurbished']['vendor_1']  # comp sales used
+		x[16, 0] = output_dict['customer/purchases_new']['vendor_1']  # comp sales nes
 		x[17, 0] = output_dict['owner/rebuys']['vendor_1']  # comp sales rebuy
 
 		x[18, 0] = output_dict['profits/all']['vendor_0']  # agent total reward
