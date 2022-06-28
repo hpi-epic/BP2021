@@ -13,6 +13,7 @@ from recommerce.configuration.hyperparameter_config import HyperparameterConfigL
 from recommerce.configuration.path_manager import PathManager
 from recommerce.market.circular.circular_vendors import CircularAgent
 from recommerce.market.linear.linear_vendors import LinearAgent
+from recommerce.market.sim_market_kalibrated import SimMarketKalibrated
 from recommerce.market.vendors import FixedPriceAgent
 from recommerce.market_ML.datagenerator_sim_market import CircularEconomyDatagenerator
 from recommerce.market_ML.training_comparer import CircularEconomyComparerMarket
@@ -94,7 +95,7 @@ def train_q_learning_circular_economy_rebuy():
 		agent=q_learning_agent.QLearningAgent,)
 
 
-def train_continuous_a2c_circular_economy_rebuy():
+def train_continuous_ac_circular_economy_rebuy():
 	"""
 	Train an ActorCriticAgent on a Circular Economy Market with Rebuy Prices and one competitor.
 	"""
@@ -177,11 +178,12 @@ def train_to_calibrate_marketplace():
 		agent=actorcritic_agent.ContinuosActorCriticAgentEstimatingStd)
 
 
-def train_with_calibrated_marketplace(marketplace):
+def train_with_calibrated_marketplace(marketplace, save_path=None):
 	config_environment: TrainingEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_training')
 	config_rl: AttrDict = HyperparameterConfigLoader.load('sb_sac_config', config_environment.agent[0]['agent_class'])
 	config_market: AttrDict = HyperparameterConfigLoader.load('market_config', config_environment.marketplace)
-	StableBaselinesSAC(config_rl=config_rl, config_market=config_market, marketplace=marketplace).train_agent()
+	StableBaselinesSAC(config_rl=config_rl, config_market=config_market, marketplace=marketplace).train_agent(training_steps=1000,
+		save_path=save_path)
 
 
 def train_with_pretrained_agent(load_path=None):
@@ -209,13 +211,17 @@ def train_comparer_stable_baselines_sac():
 		marketplace=used_marketplace(config_market, True)).train_agent()
 
 
-def main():
-	# train_from_config()
-	train_stable_baselines_sac()
+def train_with_calibrated_marketplace_(save_path=None):
+	config_environment: TrainingEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_training')
+	config_rl: AttrDict = HyperparameterConfigLoader.load('sb_sac_config', config_environment.agent[0]['agent_class'])
+	config_market: AttrDict = HyperparameterConfigLoader.load('market_config', config_environment.marketplace)
+	model_b = SimMarketKalibrated
+	StableBaselinesSAC(config_rl=config_rl, config_market=config_market,
+		marketplace=model_b(config_market, True)).train_agent(training_steps=50000, save_path=save_path)
 
 
 if __name__ == '__main__':
 	# Make sure a valid datapath is set
 	PathManager.manage_user_path()
 	# train_with_pretrained_agent()
-	train_comparer_stable_baselines_sac()
+	train_with_calibrated_marketplace_()

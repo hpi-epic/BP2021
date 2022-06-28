@@ -13,7 +13,7 @@ from tqdm.auto import trange
 
 import recommerce.configuration.utils as ut
 from recommerce.configuration.path_manager import PathManager
-from recommerce.market.sim_market import SimMarket
+# from recommerce.market.sim_market import SimMarket
 from recommerce.monitoring.agent_monitoring.am_evaluation import Evaluator
 from recommerce.monitoring.agent_monitoring.am_monitoring import Monitor
 from recommerce.monitoring.watcher import Watcher
@@ -38,10 +38,10 @@ class RecommerceCallback(BaseCallback):
 		iteration_length: int = 500,
 		file_ending: str = 'zip',
 		signature: str = 'train',
-		analyze_after_training: bool = True):
-
+		analyze_after_training: bool = True,
+		save_path=None):
 		assert issubclass(agent_class, ReinforcementLearningAgent)
-		assert issubclass(marketplace_class, SimMarket)
+		# assert issubclass(marketplace_class, SimMarket) or isinstance(marketplace_class, SimMarket)
 		assert isinstance(training_steps, int) and training_steps > 0
 		assert isinstance(iteration_length, int) and iteration_length > 0
 		super(RecommerceCallback, self).__init__(True)
@@ -64,7 +64,7 @@ class RecommerceCallback(BaseCallback):
 		signal.signal(signal.SIGINT, self._signal_handler)
 		print('initializing callback')
 
-		self.initialize_io_related()
+		self.initialize_io_related(save_path)
 
 	def _signal_handler(self, signum, frame) -> None:  # pragma: no cover
 		"""
@@ -74,7 +74,7 @@ class RecommerceCallback(BaseCallback):
 		self._end_of_training()
 		sys.exit(0)
 
-	def initialize_io_related(self) -> None:
+	def initialize_io_related(self, save_path) -> None:
 		"""
 		Initializes the local variables self.curr_time, self.signature, self.writer, self.save_path
 		and self.tmp_parameters which are needed for saving the models and writing to tensorboard
@@ -83,7 +83,10 @@ class RecommerceCallback(BaseCallback):
 		self.curr_time = time.strftime('%b%d_%H-%M-%S')
 		self.writer = SummaryWriter(log_dir=os.path.join(PathManager.results_path, 'runs', f'training_{self.curr_time}'))
 		path_name = f'{self.signature}_{self.curr_time}'
-		self.save_path = os.path.join(PathManager.results_path, 'trainedModels', path_name)
+		if save_path is None:
+			self.save_path = os.path.join(PathManager.results_path, 'trainedModels', path_name)
+		else:
+			self.save_path = save_path
 		os.makedirs(os.path.abspath(self.save_path), exist_ok=True)
 		self.tmp_parameters = os.path.join(self.save_path, f'tmp_model.{self.file_ending}')
 
@@ -157,7 +160,7 @@ class RecommerceCallback(BaseCallback):
 		monitor.configurator.get_folder()
 
 		# used for plot legend naming
-		competitors = self.marketplace_class(config=self.config_market).competitors
+		# competitors = self.marketplace_class(config=self.config_market).competitors
 
 		print('Creating scatterplots...')
 		ignore_first_samples = 15  # the number of samples you want to skip because they can be severe outliers
@@ -170,7 +173,7 @@ class RecommerceCallback(BaseCallback):
 			if vendor_index.isdigit():
 				# property without '/vendor_x'
 				property_name = property.rsplit('/', 1)[:-1][0]
-				relevant_agent = self.agent_class.__name__ if vendor_index == '0' else competitors[int(vendor_index) - 1].name
+				relevant_agent = self.agent_class.__name__  # if vendor_index == '0' else competitors[int(vendor_index) - 1].name
 				plt.scatter(x_values, samples[ignore_first_samples:], label=relevant_agent, s=10)
 				plt.grid()
 				plt.title(f'All samples of {property_name}')
@@ -204,7 +207,8 @@ class RecommerceCallback(BaseCallback):
 				if vendor_index == 0:
 					label = f'{self.agent_class.__name__}'
 				else:
-					label = competitors[vendor_index - 1].name
+					pass
+					# label = competitors[vendor_index - 1].name
 				plt.plot(x_values, values, label=label)
 
 			if isinstance(samples[0], list):

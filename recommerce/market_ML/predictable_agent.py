@@ -7,7 +7,7 @@ from recommerce.market.circular.circular_vendors import CircularAgent, RuleBased
 # from recommerce.market.vendors import Agent
 
 
-class PredictableAgent(RuleBasedAgent, CircularAgent):
+class UnpredictableAgent(RuleBasedAgent, CircularAgent):
 	def __init__(self, config_market: AttrDict, name='Predicatable Agent'):
 		super(CircularAgent, self).__init__(config_market=config_market, name=name)
 		self.step_counter = 0
@@ -20,6 +20,16 @@ class PredictableAgent(RuleBasedAgent, CircularAgent):
 		return prices
 
 		# return [6, 7, 3]
+
+
+class PredictableAgent(RuleBasedAgent, CircularAgent):
+	def __init__(self, config_market: AttrDict, name='Predicatable Agent'):
+		super(CircularAgent, self).__init__(config_market=config_market, name=name)
+		self.step_counter = 0
+
+	def policy(self, observation, *_):
+
+		return [6, 7, 3]
 
 
 class PredictableCompetitor(RuleBasedAgent, CircularAgent):

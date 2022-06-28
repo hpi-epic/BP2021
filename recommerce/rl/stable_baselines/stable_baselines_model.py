@@ -17,7 +17,7 @@ class StableBaselinesAgent(ReinforcementLearningAgent, LinearAgent, CircularAgen
 	def __init__(self, config_market: AttrDict, config_rl: AttrDict, marketplace, load_path=None, name=''):
 		assert marketplace is not None
 		assert isinstance(marketplace, SimMarket), \
-			f'if marketplace is provided, marketplace must be a SimMarket, but is {type(marketplace)}'
+			f'marketplace must be a SimMarket, but is {type(marketplace)}'
 		assert load_path is None or isinstance(load_path, str)
 		assert name is None or isinstance(name, str)
 		self.config_market = config_market
@@ -53,10 +53,10 @@ class StableBaselinesAgent(ReinforcementLearningAgent, LinearAgent, CircularAgen
 		self.marketplace = new_marketplace
 		self.model.set_env(new_marketplace)
 
-	def train_agent(self, training_steps=100000, iteration_length=500, analyze_after_training=True):
+	def train_agent(self, training_steps=100000, iteration_length=500, analyze_after_training=True, save_path=None):
 		callback = RecommerceCallback(
 			type(self), type(self.marketplace), self.config_market, self.config_rl, training_steps=training_steps, iteration_length=iteration_length,
-			signature=self.name, analyze_after_training=analyze_after_training)
+			signature=self.name, analyze_after_training=analyze_after_training, save_path=save_path)
 		self.model.learn(training_steps, callback=callback)
 		return callback.watcher.all_dicts
 

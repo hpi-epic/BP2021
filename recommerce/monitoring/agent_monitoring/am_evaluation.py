@@ -150,7 +150,7 @@ class Evaluator():
 
 		for i, y in enumerate(ys):
 			if self.configurator.separate_markets and i > 0:
-				label = f'{self.configurator.marketplace.competitors[i-1].name}'
+				label = 'ERROR in am_evaluation Z.153'  # f'{self.configurator.marketplace.competitors[i-1].name}'
 			else:
 				label = f'{self.configurator.agents[i].name}_episode_{current_episode_number}' if current_episode_number is not None \
 					else f'{self.configurator.agents[i].name}'
@@ -321,8 +321,8 @@ class Evaluator():
 		if vendor_index.isdigit():
 			# property_name without '/vendor_x'
 			property_name = property_name.rsplit('/', 1)[:-1][0]
-			relevant_agent_name = self.configurator.agents[int(vendor_index)].name if vendor_index == '0' \
-				else self.configurator.marketplace.competitors[int(vendor_index)-1].name
+			relevant_agent_name = 'ERROR in am_evaluation Z.324'  # self.configurator.agents[int(vendor_index)].name if vendor_index == '0' \
+			# 	else self.configurator.marketplace.competitors[int(vendor_index)-1].name
 			plt.plot(episode_numbers, [np.mean(rewards_on_training_stage) for rewards_on_training_stage in all_rewards], color='steelblue',
 				label=relevant_agent_name)
 			plt.legend()

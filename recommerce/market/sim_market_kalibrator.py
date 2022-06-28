@@ -3,17 +3,19 @@ import random
 
 import pandas as pd
 import torch
-from attrdict import AttrDict
 
-import recommerce.monitoring.exampleprinter as exampleprinter
-# import recommerce.rl.training_scenario as training_scenario
-# import recommerce.rl.stable_baselines.stable_baselines_model as sbmodel
-from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader
-from recommerce.configuration.path_manager import PathManager
-from recommerce.market.sim_market_kalibrated import SimMarketKalibrated
-from recommerce.market_ML.predictable_agent import PredictableAgent
-from recommerce.rl import training_scenario
-from recommerce.rl.stable_baselines import stable_baselines_model as sbmodel
+# import recommerce.monitoring.exampleprinter as exampleprinter
+# # import recommerce.rl.training_scenario as training_scenario
+# # import recommerce.rl.stable_baselines.stable_baselines_model as sbmodel
+# from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader
+# from recommerce.configuration.path_manager import PathManager
+# # from recommerce.market.sim_market_kalibrated import SimMarketKalibrated
+# from recommerce.market_ML.predictable_agent import PredictableAgent
+from recommerce.rl.model import simple_network
+
+# from recommerce.rl.stable_baselines import stable_baselines_model as sbmodel
+
+# from attrdict import AttrDict
 
 
 class LinearRegressionModel(torch.nn.Module):
@@ -60,18 +62,9 @@ class SimMarketKalibrator:
 			SimMarketKalibrated: The kalibrated SimMarket
 		"""
 		self.N = len(data[0])
-		self.jans_regression_without(data, self.M1, y1_index)
-		b1 = self.jans_regression_with(data, self.M2, y2_index)
-
-		# by1 = self.first_regression(data, self.M1, y1_index)  # used sales agent
-		# self.first_regression_old(data, self.M1, y1_index)
-
-		# by2 = self.first_regression(data, self.M2, y2_index)  # new sales agent
-		# by3 = self.first_regression(data, self.M3, y3_index)  # rebuy sales agent
-		# # exit()
-		# by12 = self.first_regression(data, self.M1, y12_index)  # used sales comp
-		# by22 = self.first_regression(data, self.M2, y22_index)  # new sales comp
-		# by32 = self.first_regression(data, self.M3, y32_index)  # rebuy sales comp
+		# self.jans_regression_without(data, self.M1, y1_index)
+		b1 = self.jans_regression_nn(data, self.M2, y2_index)
+		print(b1)
 		print()
 		print()
 		by4, bxy4 = self.fourth_regression(data, self.M4, self.M4x, y4_index, 'used')  # used price comp
@@ -98,8 +91,88 @@ class SimMarketKalibrator:
 		print(data.shape)
 		reset_state = data[random.randint(1, self.N), :]
 		print('reset_state:', reset_state)
-		return SimMarketKalibrated(self.config_market, b1, b1, b1, b1, b1, b1, by4, bxy4, by5, bxy5, by6, bxy6,
-			self.M1, self.M1, self.M4, self.M5, self.M6, self.M4x, self.M5x, self.M6x, reset_state)
+		# return SimMarketKalibrated(self.config_market, b1, b1, b1, b1, b1, b1, by4, bxy4, by5, bxy5, by6, bxy6,
+		# 	self.M1, self.M1, self.M4, self.M5, self.M6, self.M4x, self.M5x, self.M6x, reset_state)
+
+	def kalibrate_market_betas(self, data, y1_index, y2_index, y3_index, y4_index, y5_index, y6_index):
+		"""Kalibrates a marketplace with the given data. part of Johanns bachelors thesis
+
+		Args:
+			data (torch.tensor): The data to kalibrate with
+			y1_index (int): Index of the used customer decision of the agent
+			y2_index (int): Index of the new customer decision of the agent
+			y3_index (int): Index of the rebuy customer decision of the agent
+			y4_index (int): Index of the competitors used price
+			y5_index (int): Index of the competitors new price
+			y6_index (int): Index of the competitors rebuy price
+
+		Returns:
+			betas for customer and competitor behaviour
+		"""
+		self.N = len(data[0])
+		# self.jans_regression_without(data, self.M1, y1_index)
+		b1 = self.jans_regression_nn(data, self.M2, y2_index)
+
+		print()
+		print()
+		by4, bxy4 = self.fourth_regression(data, self.M4, self.M4x, y4_index, 'used')  # used price comp
+		by5, bxy5 = self.fourth_regression(data, self.M5, self.M5x, y5_index, 'new')  # new price comp
+		by6, bxy6 = self.fourth_regression(data, self.M6, self.M6x, y6_index, 'rebuy')  # rebuy price comp
+
+		print('b4:', by4)
+		print('bx4:', bxy4)
+
+		print('b5:', by5)
+		print('bx5:', bxy5)
+
+		print('b6:', by6)
+		print('bx6:', bxy6)
+		# exit()
+		print(data.shape)
+		reset_state = data[random.randint(1, self.N), :]
+		print('reset_state:', reset_state)
+		return b1, b1, b1, by4, bxy4, by5, bxy5, by6, bxy6
+
+	def jans_regression_nn(self, data, x_rows, y_index):
+		y_index = (11, 12, 13)
+		x = torch.index_select(data, 1, torch.IntTensor(x_rows))
+		y = torch.index_select(data, 1, torch.IntTensor(y_index))
+		# make x and y float tensors
+		x = x.float()
+		y = y.float()
+		x_test = x[-1000:]
+		y_test = y[-1000:]
+		x = x[:-1000]
+		y = y[:-1000]
+		batch_size = 32
+		model = simple_network(x.shape[1], y.shape[1])
+		lossfunction = torch.nn.MSELoss()
+		optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=0.01)
+		episodes = 10
+
+		# use torch utils dataloader to iterate over the data
+		data_loader = torch.utils.data.DataLoader(
+			dataset=torch.utils.data.TensorDataset(x, y),
+			batch_size=batch_size,
+			shuffle=True
+		)
+		for i in range(episodes):
+			losses = []
+			for x_batch, y_batch in data_loader:
+				optimizer.zero_grad()
+				output = model(x_batch)
+				loss = lossfunction(output, y_batch)
+				losses.append(loss.item())
+				loss.backward()
+				optimizer.step()
+
+			print('episode:', i, 'loss:', torch.mean(torch.Tensor(losses)).item())
+
+		final_ys = model(x_test)
+		final_loss = lossfunction(final_ys, y_test)
+		print('final_loss:', final_loss.item())
+		print('final_loss_sqrt:', torch.sqrt(final_loss).item())
+		return model
 
 	def jans_regression_without(self, data, x_rows, y_index):
 		"""Regression a la Jan without added features
@@ -330,76 +403,78 @@ class SimMarketKalibrator:
 
 
 def stable_baselines_agent_kalibrator():
+	pass
 	# training_scenario.train_to_calibrate_marketplace()
-	data_path = f'{PathManager.data_path}/kalibration_data/training_data_native_marketplace_exploration.csv'
-	print('Loading data from:', data_path)
-	data_frame = pd.read_csv(data_path)
-	data = torch.tensor(data_frame.values).transpose(0, 1)
-	M123 = (0, 1, 2, 3, 4, 7, 8, 9, 22, 23, 24)
-	y1_index = 11  # sales used agent
-	y2_index = 12  # sales new agent
-	y3_index = 13  # sales rebuy agent
-	# TODO: Improve the data by adding competitor sales as well, now competitor sells just like the agent
-	M4 = (1, 2, 3, 4, 7, 8, 9)
-	M4x = (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20)
-	y4_index = 22
-	M5 = (1, 2, 3, 4, 7, 8, 9)
-	M5x = (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20)
-	y5_index = 23
-	M6 = (1, 2, 3, 4, 7, 8, 9)
-	M6x = (1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10)
-	y6_index = 24
-	config_hyperparameter = HyperparameterConfigLoader.load('hyperparameter_config')
-	kalibrator = SimMarketKalibrator(config_hyperparameter, M123, M123, M123, M4, M5, M6, M4x, M5x, M6x)
-	kalibrated_market: SimMarketKalibrated = kalibrator.kalibrate_market(data, y1_index, y2_index, y3_index, y4_index, y5_index, y6_index)
-	# training_scenario.train_with_calibrated_marketplace(kalibrated_market)
-	agent = sbmodel.StableBaselinesSAC(
-		config=config_hyperparameter,
-		marketplace=kalibrated_market,
-		load_path='results/trainedModels/Stable_Baselines_SAC_May08_15-02-28/Stable_Baselines_SAC_01999')
-	exampleprinter.main_kalibrated_marketplace(kalibrated_market, agent, config_hyperparameter)
+	# data_path = f'{PathManager.data_path}/kalibration_data/training_data_native_marketplace_exploration.csv'
+	# print('Loading data from:', data_path)
+	# data_frame = pd.read_csv(data_path)
+	# data = torch.tensor(data_frame.values).transpose(0, 1)
+	# M123 = (0, 1, 2, 3, 4, 7, 8, 9, 22, 23, 24)
+	# y1_index = 11  # sales used agent
+	# y2_index = 12  # sales new agent
+	# y3_index = 13  # sales rebuy agent
+	# # TODO: Improve the data by adding competitor sales as well, now competitor sells just like the agent
+	# M4 = (1, 2, 3, 4, 7, 8, 9)
+	# M4x = (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20)
+	# y4_index = 22
+	# M5 = (1, 2, 3, 4, 7, 8, 9)
+	# M5x = (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20)
+	# y5_index = 23
+	# M6 = (1, 2, 3, 4, 7, 8, 9)
+	# M6x = (1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10)
+	# y6_index = 24
+	# config_hyperparameter = HyperparameterConfigLoader.load('hyperparameter_config')
+	# kalibrator = SimMarketKalibrator(config_hyperparameter, M123, M123, M123, M4, M5, M6, M4x, M5x, M6x)
+	# # kalibrated_market: SimMarketKalibrated = kalibrator.kalibrate_market(data, y1_index, y2_index, y3_index, y4_index, y5_index, y6_index)
+	# # training_scenario.train_with_calibrated_marketplace(kalibrated_market)
+	# agent = sbmodel.StableBaselinesSAC(
+	# 	config=config_hyperparameter,
+	# 	marketplace=kalibrated_market,
+	# 	load_path='results/trainedModels/Stable_Baselines_SAC_May08_15-02-28/Stable_Baselines_SAC_01999')
+	# exampleprinter.main_kalibrated_marketplace(kalibrated_market, agent, config_hyperparameter)
 
 
 def predictable_agent_market_kalibrator():
+	pass
 	# training_scenario.train_to_calibrate_marketplace()
 	# data_path = 'data/kalibration_data/training_data_predictable_int.csv'
-	data_path = 'data/kalibration_data/training_data_native_marketplace.csv'
-	print('Loading data from:', data_path)
-	data_frame = pd.read_csv(data_path)
-	data = torch.tensor(data_frame.values).transpose(0, 1)
-	M123 = (0, 1, 2, 3, 4, 7, 8, 9, 22, 23, 24)  # comp prices old, agent prices, comp prices updated
-	y1_index = 11  # sales used agent
-	y2_index = 12  # sales new agent
-	y3_index = 13  # sales rebuy agent
+	# data_path = 'data/kalibration_data/training_data_native_marketplace.csv'
+	# print('Loading data from:', data_path)
+	# data_frame = pd.read_csv(data_path)
+	# data = torch.tensor(data_frame.values).transpose(0, 1)
+	# M123 = (0, 1, 2, 3, 4, 7, 8, 9, 22, 23, 24)  # comp prices old, agent prices, comp prices updated
+	# y1_index = 11  # sales used agent
+	# y2_index = 12  # sales new agent
+	# y3_index = 13  # sales rebuy agent
 
-	y12_index = 15  # sales used comp
-	y22_index = 16  # sales new comp
-	y32_index = 17  # sales rebuy comp
-	# TODO: Improve the data by adding competitor sales as well, now competitor sells just like the agent
-	M4 = (0, 1, 2, 3, 4, 7, 8, 9)
-	M4x = (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20)
-	y4_index = 2
-	M5 = (0, 1, 2, 3, 4, 7, 8, 9)
-	M5x = (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20)
-	y5_index = 3
-	M6 = (0, 1, 2, 3, 4, 7, 8, 9)
-	M6x = (1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10)
-	y6_index = 4
-	config_hyperparameter = HyperparameterConfigLoader.load('hyperparameter_config')
-	kalibrator = SimMarketKalibrator(config_hyperparameter, M123, M123, M123, M4, M5, M6, M4x, M5x, M6x)
+	# y12_index = 15  # sales used comp
+	# y22_index = 16  # sales new comp
+	# y32_index = 17  # sales rebuy comp
+	# # TODO: Improve the data by adding competitor sales as well, now competitor sells just like the agent
+	# M4 = (0, 1, 2, 3, 4, 7, 8, 9)
+	# M4x = (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20)
+	# y4_index = 2
+	# M5 = (0, 1, 2, 3, 4, 7, 8, 9)
+	# M5x = (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20)
+	# y5_index = 3
+	# M6 = (0, 1, 2, 3, 4, 7, 8, 9)
+	# M6x = (1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10)
+	# y6_index = 4
+	# config_hyperparameter = HyperparameterConfigLoader.load('hyperparameter_config')
+	# kalibrator = SimMarketKalibrator(config_hyperparameter, M123, M123, M123, M4, M5, M6, M4x, M5x, M6x)
 
-	kalibrated_market: SimMarketKalibrated = kalibrator.kalibrate_market(
-		data, y1_index, y2_index, y3_index, y12_index, y22_index, y32_index, y4_index, y5_index, y6_index)
+	# kalibrated_market: SimMarketKalibrated = kalibrator.kalibrate_market(
+	# 	data, y1_index, y2_index, y3_index, y12_index, y22_index, y32_index, y4_index, y5_index, y6_index)
 
 	# training_scenario.train_with_calibrated_marketplace(kalibrated_market)
-	agent = PredictableAgent(config_hyperparameter)
-	state = kalibrated_market.reset()
-	for i in range(50):
-		action = agent.policy(state)
-		# print(action)
-		state, reward, is_done, _ = kalibrated_market.step(action)
-		print(i, action, state, reward, is_done)
-	exampleprinter.main_kalibrated_marketplace(kalibrated_market, agent, config_hyperparameter)
+	# agent = PredictableAgent(config_hyperparameter)
+	# state = kalibrated_market.reset()
+	# for i in range(50):
+	# 	action = agent.policy(state)
+	# 	# print(action)
+	# 	state, reward, is_done, _ = kalibrated_market.step(action)
+	# 	print(i, action, state, reward, is_done)
+	# exampleprinter.main_kalibrated_marketplace(kalibrated_market, agent, config_hyperparameter)
 
 
 def jans_kalibrator():
@@ -413,10 +488,7 @@ def jans_kalibrator():
 	y1_index = 11  # sales used agent
 	y2_index = 12  # sales new agent
 	y3_index = 13  # sales rebuy agent
-
-	y12_index = 15  # sales used comp
-	y22_index = 16  # sales new comp
-	y32_index = 17  # sales rebuy comp
+	config_market = ''
 	# TODO: Improve the data by adding competitor sales as well, now competitor sells just like the agent
 	M4 = (0, 1, 2, 3, 4, 7, 8, 9)
 	M4x = (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20)
@@ -427,12 +499,14 @@ def jans_kalibrator():
 	M6 = (0, 1, 2, 3, 4, 7, 8, 9)
 	M6x = (1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10)
 	y6_index = 4
-	config_market: AttrDict = HyperparameterConfigLoader.load('market_config', SimMarketKalibrated)
+	# config_market: AttrDict = HyperparameterConfigLoader.load('market_config', SimMarketKalibrated)
 	kalibrator = SimMarketKalibrator(config_market, M123, M123, M123, M4, M5, M6, M4x, M5x, M6x)
 
-	kalibrated_market: SimMarketKalibrated = kalibrator.kalibrate_market(
-		data, y1_index, y2_index, y3_index, y12_index, y22_index, y32_index, y4_index, y5_index, y6_index)
-	training_scenario.train_with_calibrated_marketplace(kalibrated_market)
+	# kalibrated_market: SimMarketKalibrated =
+	kalibrator.kalibrate_market(
+		data, y1_index, y2_index, y3_index, y4_index, y5_index, y6_index)
+	# save_path = f'{PathManager.data_path}data/kalibrated_agents/SAC_Agent_Kalibrated_Marketplace_01.zip'
+	# training_scenario.train_with_calibrated_marketplace(kalibrated_market, save_path=save_path)
 
 
 if __name__ == '__main__':

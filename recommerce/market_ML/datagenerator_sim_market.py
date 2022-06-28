@@ -119,7 +119,7 @@ class CircularEconomyDatagenerator(CircularEconomyRebuyPriceDuopoly):
 			# np.savetxt(f'{PathManager.data_path}/kalibration_data/training_data-txtfile_int1dot.txt',
 			# 	saving_array_rainer, delimiter=' ', fmt='%1.3f', newline='\n')
 
-			save_path = f'{PathManager.data_path}/kalibration_data/training_data_native_marketplace_exploration_after_merge.csv'
+			save_path = f'{PathManager.data_path}/kalibration_data/training_data_native_marketplace_new_for_composite2.csv'
 			df = pd.DataFrame(saving_array)
 			print(df.head())
 			df.to_csv(save_path, index=False)
