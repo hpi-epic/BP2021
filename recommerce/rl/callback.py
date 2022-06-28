@@ -12,8 +12,8 @@ from tqdm.auto import trange
 import recommerce.configuration.utils as ut
 from recommerce.configuration.path_manager import PathManager
 from recommerce.market.sim_market import SimMarket
-from recommerce.monitoring.agent_monitoring.am_evaluation import Evaluator
 from recommerce.monitoring.agent_monitoring.am_monitoring import Monitor
+from recommerce.monitoring.consecutive_model_analyzer import analyze_consecutive_models
 from recommerce.monitoring.training_progress_visualizer import save_progress_plots
 from recommerce.monitoring.watcher import Watcher
 from recommerce.rl.actorcritic.actorcritic_agent import ActorCriticAgent
@@ -165,21 +165,17 @@ class RecommerceCallback(BaseCallback):
 		save_progress_plots(self.watcher, monitor.configurator.folder_path, self.agent_class.__name__, competitor_names, self.signature)
 
 		if self.analyze_after_training:
-			agent_list = [(self.agent_class, [parameter_path]) for parameter_path in self.saved_parameter_paths]
 			# The next line is a bit hacky. We have to provide if the marketplace is continuous or not.
 			# Only Stable Baselines agents use continuous actions at the moment. And only Stable Baselines agents have the attribute env.
 			# The correct way of doing this would be by checking for `isinstance(StableBaselinesAgent)`, but that would result in a circular import.
-			monitor.configurator.setup_monitoring(
-				episodes=25,  # This is for performance reasons. Switch back to 100 if you want more details.
-				plot_interval=25,
-				marketplace=self.marketplace_class,
-				agents=agent_list,
-				separate_markets=True,
-				support_continuous_action_space=hasattr(self.model, 'env'),
-				config_market=self.config_market)
-			rewards = monitor.run_marketplace()
-			episode_numbers = [int(parameter_path[-9:][:5]) for parameter_path in self.saved_parameter_paths]
-			Evaluator(monitor.configurator).evaluate_session(rewards, episode_numbers)
+			analyze_consecutive_models(
+				self.saved_parameter_paths,
+				monitor,
+				self.marketplace_class,
+				self.config_market,
+				self.agent_class,
+				hasattr(self.model, 'env')
+			)
 
 	def save_parameters(self, finished_episodes: int):
 		assert isinstance(finished_episodes, int)
