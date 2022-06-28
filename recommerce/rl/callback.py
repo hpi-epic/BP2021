@@ -1,4 +1,3 @@
-import json
 import os
 import signal
 import sys
@@ -156,9 +155,7 @@ class RecommerceCallback(BaseCallback):
 
 		print('Saving watchers...')
 		# write self watchers as json to save path
-		float_dicts = [ut.convert_dict_to_float(d) for d in self.watcher.all_dicts]
-		with open(os.path.join(self.save_path, 'watchers.json'), 'w') as f:
-			json.dump(float_dicts, f)
+		self.watcher.save_all_dicts_to_json(os.path.join(self.save_path, 'watcher.json'))
 
 		monitor = Monitor(self.config_market, self.config_rl, self.signature)
 		monitor.configurator.get_folder()

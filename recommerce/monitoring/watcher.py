@@ -1,3 +1,5 @@
+import json
+
 import numpy as np
 from attrdict import AttrDict
 
@@ -14,6 +16,28 @@ class Watcher:
 		self.step_counters = [0 for _ in range(number_envs)]
 		self.info_accumulators = [None for _ in range(number_envs)]
 		self.config_market = config_market
+
+	@classmethod
+	def load_from_json(cls, path: str, config_market: AttrDict):
+		"""
+		Loads a Watcher from a json file.
+
+		Args:
+			path (str): The path to the json file with all dicts.
+
+		Returns:
+			Watcher: The loaded Watcher.
+		"""
+		with open(path, 'r') as f:
+			all_dicts_loaded = json.load(f)
+		watcher = cls(config_market, len(all_dicts_loaded))
+		watcher.all_dicts = all_dicts_loaded
+		return watcher
+
+	def save_all_dicts_to_json(self, save_path):
+		float_dicts = [ut.convert_dict_to_float(d) for d in self.all_dicts]
+		with open(save_path, 'w') as f:
+			json.dump(float_dicts, f)
 
 	def add_info(self, info: dict, index: int = 0):
 		"""

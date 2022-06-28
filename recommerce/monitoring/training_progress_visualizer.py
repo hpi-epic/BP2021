@@ -4,6 +4,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 import recommerce.configuration.utils as ut
+from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader
+from recommerce.configuration.path_manager import PathManager
+from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPriceDuopoly
+from recommerce.monitoring.watcher import Watcher
 
 
 def save_progress_plots(watcher, monitor_path, agent_name, competitor_names, signature):
@@ -17,6 +21,8 @@ def save_progress_plots(watcher, monitor_path, agent_name, competitor_names, sig
         competitors (list of strings): The names of the competitors.
         signature (str): The signature of the training run.
     """
+    os.makedirs(os.path.join(monitor_path, 'progress_plots'), exist_ok=True)
+    os.makedirs(os.path.join(monitor_path, 'scatterplots'), exist_ok=True)
     print('Creating scatterplots...')
     ignore_first_samples = 10  # the number of samples you want to skip because they can be severe outliers
     cumulative_properties = watcher.get_cumulative_properties()
@@ -48,14 +54,14 @@ def save_progress_plots(watcher, monitor_path, agent_name, competitor_names, sig
             filename = f'scatterplot_samples_{property_name.replace("/", "_")}.svg'
         else:
             filename = f'scatterplot_samples_{property_name.replace("/", "_")}_{relevant_agent}.svg'
-        plt.savefig(os.path.join(monitor_path, filename), transparent=True)
+        plt.savefig(os.path.join(monitor_path, 'scatterplots', filename), transparent=True)
 
     print('Creating lineplots...')
     for property, samples in cumulative_properties.items():
         plt.clf()
         if isinstance(samples[0], list):
             plot_values = [watcher.get_progress_values_of_property(property, vendor)[ignore_first_samples:]
-                for vendor in range(watcher.get_number_of_vendors())]
+                           for vendor in range(watcher.get_number_of_vendors())]
         else:
             plot_values = [watcher.get_progress_values_of_property(property)[ignore_first_samples:]]
 
@@ -72,4 +78,28 @@ def save_progress_plots(watcher, monitor_path, agent_name, competitor_names, sig
         plt.xlabel('Episode')
         plt.ylabel(property)
         plt.grid(True, linestyle='--')
-        plt.savefig(os.path.join(monitor_path, f'lineplot_progress_{property.replace("/", "_")}.svg'), transparent=True)
+        plt.savefig(os.path.join(monitor_path, 'progress_plots', f'lineplot_progress_{property.replace("/", "_")}.svg'), transparent=True)
+
+
+def load_and_analyze_existing_watcher_json(path, config_market, agent_name, competitor_names, title):
+    """
+    Load a watcher from a json file and analyze it.
+
+    Args:
+        path (str): The path to the json file.
+    """
+    watcher = Watcher.load_from_json(path, config_market)
+    save_progress_plots(watcher, PathManager.results_path, agent_name, competitor_names, title)
+
+
+if __name__ == '__main__':
+    # Load the market config file
+    config_market = HyperparameterConfigLoader.load('market_config', CircularEconomyRebuyPriceDuopoly)
+    load_and_analyze_existing_watcher_json(
+        'C:\\Users\\jangr\\OneDrive\\Dokumente\\Bachelorarbeit_Experimente_lokal\\'
+        'a2c_vs_sac\\trainedModels\\Traina2c_standard_1_Jun13_19-32-04\\watchers.json',
+        config_market,
+        'a2c',
+        ['Rule Based Undercutting'],
+        'a2c_study'
+    )
