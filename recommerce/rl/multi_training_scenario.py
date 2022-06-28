@@ -226,6 +226,15 @@ def experiment_a2c_vs_ppo():
     print_diagrams(groups, 'a2c_ppo')
 
 
+def experiment_ppo_vs_sac():
+    tasks = [
+        (StableBaselinesPPO, configuration_ppo_clip_0_3_all_same),
+        (StableBaselinesSAC, configuration_sac_all_same)
+    ]
+    groups = [run_group(market_class, 'market_config', agent, configuration, standardtraining) for agent, configuration in tasks]
+    print_diagrams(groups, 'ppo_sac')
+
+
 def experiment_a2c_vs_sac():
     tasks = [
         (StableBaselinesA2C, configuration_a2c_all_same),
@@ -377,6 +386,8 @@ def move_results_to_documents(dest_folder_name):
 if __name__ == '__main__':
     experiment_a2c_vs_ppo()
     move_results_to_documents('a2c_vs_ppo')
+    experiment_ppo_vs_sac()
+    move_results_to_documents('ppo_vs_sac')
     experiment_a2c_vs_sac()
     move_results_to_documents('a2c_vs_sac')
     experiment_self_play()
