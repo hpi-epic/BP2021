@@ -200,14 +200,10 @@ def print_diagrams(groups, name, individual_lines=False):
     plt.xlabel('Episodes')
     plt.ylabel('Profit')
     plt.savefig(os.path.join(PathManager.results_path, 'monitoring', f'{name}.svg'), transparent=True)
-    plt.ylim(0, 12000)
-    plt.savefig(os.path.join(PathManager.results_path, 'monitoring', f'{name}_clipped_12000.svg'), transparent=True)
-    plt.ylim(0, 15000)
-    plt.savefig(os.path.join(PathManager.results_path, 'monitoring', f'{name}_clipped_15000.svg'), transparent=True)
-    plt.ylim(0, 17500)
-    plt.savefig(os.path.join(PathManager.results_path, 'monitoring', f'{name}_clipped_17500.svg'), transparent=True)
-    plt.ylim(0, 10000)
-    plt.savefig(os.path.join(PathManager.results_path, 'monitoring', f'{name}_clipped_10000.svg'), transparent=True)
+    bounds = [(0, 12000), (0, 15000), (0, 17500), (0, 10000), (-10000, 10000), (-5000, 10000)]
+    for bound in bounds:
+        plt.ylim(*bound)
+        plt.savefig(os.path.join(PathManager.results_path, 'monitoring', f'{name}_clipped_{bound[0]}_{bound[1]}.svg'), transparent=True)
 
 
 # These experiments are all done on a CERebuy market

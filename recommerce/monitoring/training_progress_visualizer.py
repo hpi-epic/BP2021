@@ -79,6 +79,15 @@ def save_progress_plots(watcher, monitor_path, agent_name, competitor_names, sig
         plt.ylabel(property)
         plt.grid(True, linestyle='--')
         plt.savefig(os.path.join(monitor_path, 'progress_plots', f'lineplot_progress_{property.replace("/", "_")}.svg'), transparent=True)
+        if 'profits' in property_name:
+            bounds = [(0, 12000), (0, 15000), (0, 17500), (0, 10000), (-10000, 10000), (-5000, 10000)]
+            for bound in bounds:
+                plt.ylim(*bound)
+                plt.savefig(
+                    fname=os.path.join(monitor_path, 'progress_plots',
+                        f'lineplot_progress_{property.replace("/", "_")}_{bound[0]}_{bound[1]}.svg'),
+                    transparent=True
+                )
 
 
 def load_and_analyze_existing_watcher_json(path, config_market, agent_name, competitor_names, title):
