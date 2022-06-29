@@ -161,6 +161,13 @@ class Evaluator():
 							f'lineplot_monitoring_based_{property_name.replace("/", "_")}_{bound[0]}_{bound[1]}.svg'),
 						transparent=True
 					)
+			if 'actions' in property_name:
+				plt.ylim(0, 10)
+				plt.savefig(
+					fname=os.path.join(self.configurator.get_folder(), 'monitoring_based_line_plots',
+						f'lineplot_monitoring_based_{property_name.replace("/", "_")}_0_10.svg'),
+					transparent=True
+				)
 
 	# visualize metrics
 	def create_density_plot(self, samples: list, property_name: str, current_episode_number: int = None):
