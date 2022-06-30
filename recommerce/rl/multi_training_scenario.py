@@ -46,6 +46,19 @@ def configuration_best_learning_rate_ppo():
     return configs, descriptions
 
 
+def configuration_ppo_different_architectures():
+    # Use default parametrisation at all other points
+    configs = []
+    descriptions = []
+    for _ in range(4):
+        configs.append(HyperparameterConfigLoader.load('sb_ppo_config', StableBaselinesPPO))
+    for i, config in enumerate(configs):
+        config.neurones_per_hidden_layer = 32 * 2 ** i
+        descriptions.append(f'ppo_{config["neurones_per_hidden_layer"]}_per_hidden_layer')
+
+    return configs, descriptions
+
+
 def configuration_clipping_ppo():
     # Use default parametrisation at all other points
     configs = []
@@ -210,6 +223,12 @@ def print_diagrams(groups, name, individual_lines=False):
 standardtraining = 1000000  # 1000000
 shorttraining = 300000
 market_class = CircularEconomyRebuyPriceDuopoly
+
+
+def experiment_different_network_architectures_ppo():
+    tasks = [(StableBaselinesPPO, configuration_ppo_different_architectures)]
+    groups = [run_group(market_class, 'market_config', agent, configuration, standardtraining) for agent, configuration in tasks]
+    print_diagrams(groups, 'ppo_networks', True)
 
 
 def experiment_a2c_vs_ppo():
@@ -380,37 +399,39 @@ def move_results_to_documents(dest_folder_name):
 
 
 if __name__ == '__main__':
-    experiment_a2c_vs_ppo()
-    move_results_to_documents('a2c_vs_ppo')
-    experiment_ppo_vs_sac()
-    move_results_to_documents('ppo_vs_sac')
-    experiment_a2c_vs_sac()
-    move_results_to_documents('a2c_vs_sac')
-    experiment_self_play()
-    move_results_to_documents('self_play')
-    experiment_several_ddpg_td3()
-    move_results_to_documents('ddpg_td3')
-    experiment_higher_clip_ranges_ppo()
-    move_results_to_documents('ppo_clipping')
-    experiment_temperature_sac()
-    move_results_to_documents('sac_temperature')
-    experiment_partial_markov_a2c()
-    move_results_to_documents('partial_markov_a2c')
-    experiment_partial_markov_ppo()
-    move_results_to_documents('partial_markov_ppo')
-    experiment_partial_markov_sac()
-    move_results_to_documents('partial_markov_sac')
-    experiment_mixed_rewards_a2c()
-    move_results_to_documents('mixed_rewards_a2c')
-    experiment_mixed_rewards_ppo()
-    move_results_to_documents('mixed_rewards_ppo')
-    experiment_mixed_rewards_sac()
-    move_results_to_documents('mixed_rewards_sac')
-    experiment_self_play_mixed()
-    move_results_to_documents('self_play_mixed')
-    experiment_monopoly()
-    move_results_to_documents('comparison_monopoly')
-    experiment_oligopol()
-    move_results_to_documents('comparison_oligopoly')
-    experiment_oligopol_mixed()
-    move_results_to_documents('comparison_oligopoly_mixed')
+    experiment_different_network_architectures_ppo()
+    move_results_to_documents('ppo_different_networks')
+    # experiment_a2c_vs_ppo()
+    # move_results_to_documents('a2c_vs_ppo')
+    # experiment_ppo_vs_sac()
+    # move_results_to_documents('ppo_vs_sac')
+    # experiment_a2c_vs_sac()
+    # move_results_to_documents('a2c_vs_sac')
+    # experiment_self_play()
+    # move_results_to_documents('self_play')
+    # experiment_several_ddpg_td3()
+    # move_results_to_documents('ddpg_td3')
+    # experiment_higher_clip_ranges_ppo()
+    # move_results_to_documents('ppo_clipping')
+    # experiment_temperature_sac()
+    # move_results_to_documents('sac_temperature')
+    # experiment_partial_markov_a2c()
+    # move_results_to_documents('partial_markov_a2c')
+    # experiment_partial_markov_ppo()
+    # move_results_to_documents('partial_markov_ppo')
+    # experiment_partial_markov_sac()
+    # move_results_to_documents('partial_markov_sac')
+    # experiment_mixed_rewards_a2c()
+    # move_results_to_documents('mixed_rewards_a2c')
+    # experiment_mixed_rewards_ppo()
+    # move_results_to_documents('mixed_rewards_ppo')
+    # experiment_mixed_rewards_sac()
+    # move_results_to_documents('mixed_rewards_sac')
+    # experiment_self_play_mixed()
+    # move_results_to_documents('self_play_mixed')
+    # experiment_monopoly()
+    # move_results_to_documents('comparison_monopoly')
+    # experiment_oligopol()
+    # move_results_to_documents('comparison_oligopoly')
+    # experiment_oligopol_mixed()
+    # move_results_to_documents('comparison_oligopoly_mixed')
