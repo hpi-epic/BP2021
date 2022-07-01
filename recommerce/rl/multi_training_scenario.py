@@ -459,3 +459,5 @@ if __name__ == '__main__':
     move_results_to_documents('comparison_oligopoly')
     experiment_oligopol_mixed()
     move_results_to_documents('comparison_oligopoly_mixed')
+    experiment_oligopol_big_network()
+    move_results_to_documents('comparison_oligopoly_big_network')
