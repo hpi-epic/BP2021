@@ -11,6 +11,7 @@
 .bc-outline-orange {
 	color: rgb(248, 83, 7) !important;
 	border-color: rgb(248, 83, 7)  !important;
+	background-color: rgba(248, 83, 7, 0.3) !important;
 }
 .bc-outline-orange:hover {
 	color: #fff !important;
@@ -21,6 +22,7 @@
 .bc-outline-unpause {
 	color: rgb(0, 50, 187) !important;
 	border-color: rgb(0, 50, 187)  !important;
+	background-color: rgba(0, 50, 187, 0.3) !important;
 }
 .bc-outline-unpause:hover {
 	color: #fff !important;
@@ -31,6 +33,7 @@
 .bc-outline-red {
 	color: rgb(219, 1, 56) !important;
 	border-color: rgb(219, 1, 56)  !important;
+	background-color: rgba(219, 1, 56, 0.3) !important;
 }
 .bc-outline-red:hover {
 	color: #fff !important;
@@ -52,6 +55,7 @@
 .bc-outline-tensorboard {
 	color: rgb(135, 4, 211) !important;
 	border-color: rgb(135, 4, 211)  !important;
+	background-color: rgba(135, 4, 211, 0.3) !important;
 }
 .bc-outline-tensorboard:hover {
 	color: #fff !important;
@@ -62,6 +66,7 @@
 .bc-outline-lightgreen {
 	color: rgb(69, 211, 4) !important;
 	border-color: rgb(69, 211, 4)  !important;
+	background-color: rgba(69, 211, 4, 0.3) !important;
 }
 .bc-outline-lightgreen:hover {
 	color: #fff !important;
