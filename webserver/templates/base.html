@@ -22,28 +22,28 @@
                     <div class="collapse navbar-collapse" id="navbarNav">
                         <ul class="navbar-nav w-100">
                             <li class="nav-item">
-                                <a class="nav-item nav-link" href="/">Home</a>
+                                <a class="nav-item nav-link fs-4" href="/">Home</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-item nav-link" href="/upload">Upload</a>
+                                <a class="nav-item nav-link fs-4" href="/upload">Upload</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-item nav-link" href="/configurator">Configurator</a>
+                                <a class="nav-item nav-link fs-4" href="/configurator">Configurator</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-item nav-link" href="/observe">Observe</a>
+                                <a class="nav-item nav-link fs-4" href="/observe">Observe</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-item nav-link" href="/download">Download</a>
+                                <a class="nav-item nav-link fs-4" href="/download">Download</a>
                             </li>
-                            <li class="nav-item d-flex ms-auto">
+                            <!-- <li class="nav-item d-flex ms-auto mt-1">
                                 <a class="nav-item nav-link mr-1"></a>
                                 {% include "api_buttons/api_health_button.html" %}
-                            </li>
+                            </li> -->
                             <li class="nav-item d-flex ms-auto">
                                 {% if user.is_authenticated %}
                                     <div class="dropdown">
-                                        <button class="btn bc-outline-lightgray btn-sm dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <button class="btn bc-outline-lightgray btn-sm dropdown-toggle fs-5 border-3 mt-1" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
                                             Hello {{user}}
                                         </button>
                                         <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
