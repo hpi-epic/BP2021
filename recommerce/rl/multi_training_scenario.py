@@ -147,6 +147,18 @@ def configuration_ppo_clip_0_3_all_same():
     return configs, descriptions
 
 
+def configuration_ppo_big_network_clip_0_3_all_same():
+    configs = []
+    descriptions = []
+    for i in range(4):
+        configs.append(HyperparameterConfigLoader.load('sb_ppo_config', StableBaselinesPPO))
+        configs[-1].clip_range = 0.3
+        configs[-1].neurones_per_hidden_layer = 256
+        descriptions.append(f'ppo_clip_range_{0.3}_{configs[-1].neurones_per_hidden_layer}_neurones_{i}')
+
+    return configs, descriptions
+
+
 def configuration_a2c_all_same():
     configs = []
     descriptions = []
@@ -221,6 +233,7 @@ def print_diagrams(groups, name, individual_lines=False):
 
 # These experiments are all done on a CERebuy market
 standardtraining = 1000000  # 1000000
+mediumtraining = 500000  # 1000000
 shorttraining = 300000
 market_class = CircularEconomyRebuyPriceDuopoly
 
@@ -374,7 +387,7 @@ def experiment_oligopol():
         (StableBaselinesSAC, configuration_sac_all_same)
     ]
     groups = [run_group(
-        CircularEconomyRebuyPriceOligopoly, 'market_config', agent, configuration, standardtraining, target_function=run_training_session)
+        CircularEconomyRebuyPriceOligopoly, 'market_config', agent, configuration, mediumtraining, target_function=run_training_session)
         for agent, configuration in tasks]
     print_diagrams(groups, 'comparison_oligopoly')
 
@@ -386,9 +399,20 @@ def experiment_oligopol_mixed():
         (StableBaselinesSAC, configuration_sac_all_same)
     ]
     groups = [run_group(CircularEconomyRebuyPriceOligopoly,
-        'market_config_mixed', agent, configuration, standardtraining, target_function=run_training_session)
+        'market_config_mixed', agent, configuration, mediumtraining, target_function=run_training_session)
         for agent, configuration in tasks]
     print_diagrams(groups, 'comparison_oligopoly_mixed')
+
+
+def experiment_oligopol_big_network():
+    tasks = [
+        (StableBaselinesA2C, configuration_a2c_all_same),
+        (StableBaselinesPPO, configuration_ppo_big_network_clip_0_3_all_same),
+    ]
+    groups = [run_group(
+        CircularEconomyRebuyPriceOligopoly, 'market_config', agent, configuration, mediumtraining, target_function=run_training_session)
+        for agent, configuration in tasks]
+    print_diagrams(groups, 'comparison_oligopoly_big_network')
 
 
 # move the Path manager results folder to documents
@@ -401,37 +425,37 @@ def move_results_to_documents(dest_folder_name):
 if __name__ == '__main__':
     experiment_different_network_architectures_ppo()
     move_results_to_documents('ppo_different_networks')
-    # experiment_a2c_vs_ppo()
-    # move_results_to_documents('a2c_vs_ppo')
-    # experiment_ppo_vs_sac()
-    # move_results_to_documents('ppo_vs_sac')
-    # experiment_a2c_vs_sac()
-    # move_results_to_documents('a2c_vs_sac')
-    # experiment_self_play()
-    # move_results_to_documents('self_play')
-    # experiment_several_ddpg_td3()
-    # move_results_to_documents('ddpg_td3')
-    # experiment_higher_clip_ranges_ppo()
-    # move_results_to_documents('ppo_clipping')
-    # experiment_temperature_sac()
-    # move_results_to_documents('sac_temperature')
-    # experiment_partial_markov_a2c()
-    # move_results_to_documents('partial_markov_a2c')
-    # experiment_partial_markov_ppo()
-    # move_results_to_documents('partial_markov_ppo')
-    # experiment_partial_markov_sac()
-    # move_results_to_documents('partial_markov_sac')
-    # experiment_mixed_rewards_a2c()
-    # move_results_to_documents('mixed_rewards_a2c')
-    # experiment_mixed_rewards_ppo()
-    # move_results_to_documents('mixed_rewards_ppo')
-    # experiment_mixed_rewards_sac()
-    # move_results_to_documents('mixed_rewards_sac')
-    # experiment_self_play_mixed()
-    # move_results_to_documents('self_play_mixed')
-    # experiment_monopoly()
-    # move_results_to_documents('comparison_monopoly')
-    # experiment_oligopol()
-    # move_results_to_documents('comparison_oligopoly')
-    # experiment_oligopol_mixed()
-    # move_results_to_documents('comparison_oligopoly_mixed')
+    experiment_a2c_vs_ppo()
+    move_results_to_documents('a2c_vs_ppo')
+    experiment_ppo_vs_sac()
+    move_results_to_documents('ppo_vs_sac')
+    experiment_a2c_vs_sac()
+    move_results_to_documents('a2c_vs_sac')
+    experiment_self_play()
+    move_results_to_documents('self_play')
+    experiment_several_ddpg_td3()
+    move_results_to_documents('ddpg_td3')
+    experiment_higher_clip_ranges_ppo()
+    move_results_to_documents('ppo_clipping')
+    experiment_temperature_sac()
+    move_results_to_documents('sac_temperature')
+    experiment_partial_markov_a2c()
+    move_results_to_documents('partial_markov_a2c')
+    experiment_partial_markov_ppo()
+    move_results_to_documents('partial_markov_ppo')
+    experiment_partial_markov_sac()
+    move_results_to_documents('partial_markov_sac')
+    experiment_mixed_rewards_a2c()
+    move_results_to_documents('mixed_rewards_a2c')
+    experiment_mixed_rewards_ppo()
+    move_results_to_documents('mixed_rewards_ppo')
+    experiment_mixed_rewards_sac()
+    move_results_to_documents('mixed_rewards_sac')
+    experiment_self_play_mixed()
+    move_results_to_documents('self_play_mixed')
+    experiment_monopoly()
+    move_results_to_documents('comparison_monopoly')
+    experiment_oligopol()
+    move_results_to_documents('comparison_oligopoly')
+    experiment_oligopol_mixed()
+    move_results_to_documents('comparison_oligopoly_mixed')
