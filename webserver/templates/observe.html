@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Observe{% endblock title %}
 {% block content %}
-    <h1>You can observe all of your active containers here</h1>
+    <h1>Active Simulations</h1>
     <div class="content">
         {% if all_saved_containers %}
             <table class="table">
@@ -13,7 +13,7 @@
                     <th><span style="background-color:#c9c9c9; color:transparent; border:0.2px; border-radius:3px">health status</span></th>
                     <th><span style="background-color:#c9c9c9; color:transparent; border:0.2px; border-radius:3px">get health status</span></th>
                     <th><span style="background-color:#c9c9c9; color:transparent; border:0.2px; border-radius:3px">toggle pause</span></th>
-                    <th><span style="background-color:#c9c9c9; color:transparent; border:0.2px; border-radius:3px">stop and remove container</span></th>
+                    <th><span style="background-color:#c9c9c9; color:transparent; border:0.2px; border-radius:3px">stop container</span></th>
                     <th><span style="background-color:#c9c9c9; color:transparent; border:0.2px; border-radius:3px">tensorboard</span></th>
                 </tr>
                 {% for container in all_saved_containers %}
@@ -22,21 +22,116 @@
                         <!-- <td>{{ container.command }}</td> -->
                         <!-- <td>{{ container.created_at }}</td> -->
                         <td class="fs-5">{{ container.created_at|date:"F d, Y" }}</td>
-                        <td class="fs-5">learning...</td>
+                        <td class="fs-5">learned!</td>
                         <td class="button_row" >
-                            {% include "api_buttons/health_button.html" %}
+                            {% include "api_buttons/health_button.html" with show=False%}
                         </td>
                         <td class="button_row">
-                            {% include "api_buttons/pause_button.html" %}
+                            {% include "api_buttons/pause_button.html" with show=False%}
                         </td>
                         <td class="button_row" >
-                            {% include "api_buttons/stop_button.html" %}
+                            {% include "api_buttons/stop_button.html" with show=False%}
                         </td>
                         <td class="button_row" >
-                            {% include "api_buttons/tensorboard_button.html" %}
+                            {% include "api_buttons/tensorboard_button.html" with show=False%}
                         </td>
                     </tr>
                 {% endfor %}
+                <tr>
+                    <td class="fs-5"><a href="/details/12345">Annik</a></td>
+                    <!-- <td>{{ container.command }}</td> -->
+                    <!-- <td>{{ container.created_at }}</td> -->
+                    <td class="fs-5">July 05, 2022</td>
+                    <td class="fs-5">learned!</td>
+                    <td class="button_row" >
+                        {% include "api_buttons/health_button.html" with show=False%}
+                    </td>
+                    <td class="button_row">
+                        {% include "api_buttons/pause_button.html" with show=False%}
+                    </td>
+                    <td class="button_row" >
+                        {% include "api_buttons/stop_button.html" with show=False%}
+                    </td>
+                    <td class="button_row" >
+                        {% include "api_buttons/tensorboard_button.html" with show=False%}
+                    </td>
+                </tr>
+                <tr>
+                    <td class="fs-5"><a href="/details/123456">Rainer</a></td>
+                    <!-- <td>{{ container.command }}</td> -->
+                    <!-- <td>{{ container.created_at }}</td> -->
+                    <td class="fs-5">July 06, 2022</td>
+                    <td class="fs-5">learning...</td>
+                    <td class="button_row" >
+                        {% include "api_buttons/health_button.html" with show=False%}
+                    </td>
+                    <td class="button_row">
+                        {% include "api_buttons/pause_button.html" with show=False%}
+                    </td>
+                    <td class="button_row" >
+                        {% include "api_buttons/stop_button.html" with show=False%}
+                    </td>
+                    <td class="button_row" >
+                        {% include "api_buttons/tensorboard_button.html" with show=False%}
+                    </td>
+                </tr>
+                <tr>
+                    <td class="fs-5"><a href="/details/12345">Bachelorpodium Simulation</a></td>
+                    <!-- <td>{{ container.command }}</td> -->
+                    <!-- <td>{{ container.created_at }}</td> -->
+                    <td class="fs-5">July 07, 2022</td>
+                    <td class="fs-5">learning...</td>
+                    <td class="button_row" >
+                        {% include "api_buttons/health_button.html" with show=True%}
+                    </td>
+                    <td class="button_row">
+                        {% include "api_buttons/pause_button.html" with show=True%}
+                    </td>
+                    <td class="button_row" >
+                        {% include "api_buttons/stop_button.html" with show=True%}
+                    </td>
+                    <td class="button_row" >
+                        {% include "api_buttons/tensorboard_button.html" with show=True%}
+                    </td>
+                </tr>
+                <tr>
+                    <td class="fs-5"><a href="/details/123456">Alex</a></td>
+                    <!-- <td>{{ container.command }}</td> -->
+                    <!-- <td>{{ container.created_at }}</td> -->
+                    <td class="fs-5">July 07, 2022</td>
+                    <td class="fs-5">learning...</td>
+                    <td class="button_row" >
+                        {% include "api_buttons/health_button.html" with show=False%}
+                    </td>
+                    <td class="button_row">
+                        {% include "api_buttons/pause_button.html" with show=False%}
+                    </td>
+                    <td class="button_row" >
+                        {% include "api_buttons/stop_button.html" with show=False%}
+                    </td>
+                    <td class="button_row" >
+                        {% include "api_buttons/tensorboard_button.html" with show=False%}
+                    </td>
+                </tr>
+                <tr>
+                    <td class="fs-5"><a href="/details/123456">Johannes</a></td>
+                    <!-- <td>{{ container.command }}</td> -->
+                    <!-- <td>{{ container.created_at }}</td> -->
+                    <td class="fs-5">July 07, 2022</td>
+                    <td class="fs-5">learning...</td>
+                    <td class="button_row" >
+                        {% include "api_buttons/health_button.html" with show=False%}
+                    </td>
+                    <td class="button_row">
+                        {% include "api_buttons/pause_button.html" with show=False%}
+                    </td>
+                    <td class="button_row" >
+                        {% include "api_buttons/stop_button.html" with show=False%}
+                    </td>
+                    <td class="button_row" >
+                        {% include "api_buttons/tensorboard_button.html" with show=False%}
+                    </td>
+                </tr>
             </table>
         {% else %}
             <p>

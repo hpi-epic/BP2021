@@ -1,15 +1,15 @@
 <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
     <input type="hidden" name="action" , value="pause">
-    <button class="btn btn-sm {% if container.is_paused %}bc-outline-unpause{% else %}bc-outline-orange{% endif %} border-3"
+    <button class="btn btn-sm {% if container.is_paused %}bc-outline-unpause{% else %}bc-outline-orange{% endif %} border-3 fs-6 {% if not show %} bc-orange-demo  {% endif %}"
         title="{% if container.is_paused %}un{% endif %}pauses execution of the script in the running container"
         name="container_id"
         value="{{ container.id }}"
-        type="submit">
-        {% if container.is_paused %}
-            <span style="opacity: 0.0">pause</span>
+        type="button">
+        {% if show %}
+            Pause
         {% else %}
-            <span style="opacity: 0.0">unpause</span>
+            <span style="opacity: 0.0">Pause</span>
         {% endif %}
     </button>
 </form>

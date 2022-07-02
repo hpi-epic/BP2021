@@ -1,7 +1,15 @@
 <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
     <input type="hidden" name="action", value="health">
-    <button class="btn btn-sm bc-outline-lightgreen border-3"
+    <button class="btn btn-sm bc-outline-lightgreen border-3 fs-6 {% if not show %} bc-lightgreen-demo  {% endif %}"
         title="check health of your container"
-        name="container_id" value="{{ container.id }}" type="submit"><span style="opacity: 0.0">check health</span></button>
+        name="container_id" value="{{ container.id }}" type="button">
+        {% if show %}
+            Status
+        {% else %}
+            <span style="opacity: 0.0">
+                Status
+            </span>
+        {% endif %}
+    </button>
 </form>

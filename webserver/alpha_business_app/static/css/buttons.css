@@ -11,11 +11,13 @@
 .bc-outline-orange {
 	color: rgb(248, 83, 7) !important;
 	border-color: rgb(248, 83, 7)  !important;
+}
+.bc-orange-demo {
 	background-color: rgba(248, 83, 7, 0.3) !important;
 }
 .bc-outline-orange:hover {
 	color: #fff !important;
-	background-color: rgb(248, 83, 7);
+	background-color: rgb(248, 83, 7) !important;
 	border-color: rgb(248, 83, 7);
 }
 
@@ -33,11 +35,13 @@
 .bc-outline-red {
 	color: rgb(219, 1, 56) !important;
 	border-color: rgb(219, 1, 56)  !important;
+}
+.bc-red-demo {
 	background-color: rgba(219, 1, 56, 0.3) !important;
 }
 .bc-outline-red:hover {
 	color: #fff !important;
-	background-color: rgb(219, 1, 56);
+	background-color: rgb(219, 1, 56) !important;
 	border-color: rgb(219, 1, 56);
 }
 
@@ -52,25 +56,29 @@
 	border-color: rgb(78, 77, 77);
 }
 
-.bc-outline-tensorboard {
+.bc-outline-purple {
 	color: rgb(135, 4, 211) !important;
 	border-color: rgb(135, 4, 211)  !important;
+}
+.bc-purple-demo {
 	background-color: rgba(135, 4, 211, 0.3) !important;
 }
-.bc-outline-tensorboard:hover {
+.bc-outline-purple:hover {
 	color: #fff !important;
-	background-color: rgb(135, 4, 211);
+	background-color: rgb(135, 4, 211) !important;
 	border-color: rgb(135, 4, 211);
 }
 
 .bc-outline-lightgreen {
 	color: rgb(69, 211, 4) !important;
 	border-color: rgb(69, 211, 4)  !important;
+}
+.bc-lightgreen-demo {
 	background-color: rgba(69, 211, 4, 0.3) !important;
 }
 .bc-outline-lightgreen:hover {
 	color: #fff !important;
-	background-color: rgb(69, 211, 4);
+	background-color: rgb(69, 211, 4) !important;
 	border-color: rgb(69, 211, 4);
 }
 
