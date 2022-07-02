@@ -1,13 +1,50 @@
 <div class="accordion-item">
     <h2 class="accordion-header">
-        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSimMarket" aria-expanded="false" aria-controls="collapseSimMarket">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+            data-bs-target="#collapseSimMarketConfig" aria-expanded="false" aria-controls="collapseSimMarketConfig">
             Sim Market
         </button>
     </h2>
-    <div id="collapseSimMarket" class="accordion-collapse collapse">
+    <div id="collapseSimMarketConfig" class="accordion-collapse collapse">
         <div class="accordion-body">
             {% load static %}
-            <div class="row p-2">
+            <div class="row p-2" id="hyperparameter-sim_market-episode_length">
+                <div class="col-6">
+                    {% if error_dict.episode_length %}
+                        <img src="{% static 'icons/warning.svg' %}" width="18px" title="{{error_dict.episode_length}}"></img>
+                    {% endif %}
+                    episode length
+                </div>
+                <div class="col-6">
+                    <input type="number" class="form-control {% if error_dict.max_storage %} bc-error-field {% endif %}"
+                        min="0" step="any" value="{{prefill.episode_length}}" name="hyperparameter-sim_market-episode_length">
+                </div>
+            </div>
+            <div class="row p-2" id="hyperparameter-sim_market-max_price">
+                <div class="col-6">
+                    {% if error_dict.max_price %}
+                        <img src="{% static 'icons/warning.svg' %}" width="18px" title="{{error_dict.max_price}}"></img>
+                    {% endif %}
+                    max price
+                </div>
+                <div class="col-6">
+                    <input type="number" class="form-control {% if error_dict.max_storage %} bc-error-field {% endif %}"
+                        min="0" step="any" value="{{prefill.max_price}}" name="hyperparameter-sim_market-max_price">
+                </div>
+            </div>
+            <div class="row p-2" id="hyperparameter-sim_market-max_quality">
+                <div class="col-6">
+                    {% if error_dict.max_quality %}
+                        <img src="{% static 'icons/warning.svg' %}" width="18px" title="{{error_dict.max_quality}}"></img>
+                    {% endif %}
+                    max quality
+                </div>
+                <div class="col-6">
+                    <input type="number" class="form-control {% if error_dict.max_storage %} bc-error-field {% endif %}"
+                        min="0" step="any" value="{{prefill.max_quality}}" name="hyperparameter-sim_market-max_quality">
+                </div>
+            </div>
+            <div class="row p-2" id="hyperparameter-sim_market-max_storage">
                 <div class="col-6">
                     {% if error_dict.max_storage %}
                         <img src="{% static 'icons/warning.svg' %}" width="18px" title="{{error_dict.max_storage}}"></img>
@@ -19,43 +56,7 @@
                         min="0" step="any" value="{{prefill.max_storage}}" name="hyperparameter-sim_market-max_storage">
                 </div>
             </div>
-            <div class="row p-2">
-                <div class="col-6">
-                    {% if error_dict.episode_length %}
-                        <img src="{% static 'icons/warning.svg' %}" width="18px" title="{{error_dict.episode_length}}"></img>
-                    {% endif %}
-                    episode length
-                </div>
-                <div class="col-6">
-                    <input type="number" class="form-control {% if error_dict.episode_length %} bc-error-field {% endif %}"
-                        min="0" step="any" value="{{prefill.episode_length}}" name="hyperparameter-sim_market-episode_length">
-                </div>
-            </div>
-            <div class="row p-2">
-                <div class="col-6">
-                    {% if error_dict.max_price %}
-                        <img src="{% static 'icons/warning.svg' %}" width="18px" title="{{error_dict.max_price}}"></img>
-                    {% endif %}
-                    max price
-                </div>
-                <div class="col-6">
-                    <input type="number" class="form-control {% if error_dict.max_price %} bc-error-field {% endif %}"
-                        min="0" step="any" value="{{prefill.max_price}}" name="hyperparameter-sim_market-max_price">
-                </div>
-            </div>
-            <div class="row p-2">
-                <div class="col-6">
-                    {% if error_dict.max_quality %}
-                        <img src="{% static 'icons/warning.svg' %}" width="18px" title="{{error_dict.max_quality}}"></img>
-                    {% endif %}
-                    max quality
-                </div>
-                <div class="col-6">
-                    <input type="number" class="form-control {% if error_dict.max_quality %} bc-error-field {% endif %}"
-                        min="0" step="any" value="{{prefill.max_quality}}" name="hyperparameter-sim_market-max_quality">
-                </div>
-            </div>
-            <div class="row p-2">
+            <div class="row p-2" id="hyperparameter-sim_market-number_of_customers">
                 <div class="col-6">
                     {% if error_dict.number_of_customers %}
                         <img src="{% static 'icons/warning.svg' %}" width="18px" title="{{error_dict.number_of_customers}}"></img>
@@ -63,11 +64,11 @@
                     number of customers
                 </div>
                 <div class="col-6">
-                    <input type="number" class="form-control {% if error_dict.number_of_customers %} bc-error-field {% endif %}"
+                    <input type="number" class="form-control {% if error_dict.max_storage %} bc-error-field {% endif %}"
                         min="0" step="any" value="{{prefill.number_of_customers}}" name="hyperparameter-sim_market-number_of_customers">
                 </div>
             </div>
-            <div class="row p-2">
+            <div class="row p-2" id="hyperparameter-sim_market-production_price">
                 <div class="col-6">
                     {% if error_dict.production_price %}
                         <img src="{% static 'icons/warning.svg' %}" width="18px" title="{{error_dict.production_price}}"></img>
@@ -75,11 +76,11 @@
                     production price
                 </div>
                 <div class="col-6">
-                    <input type="number" class="form-control {% if error_dict.production_price %} bc-error-field {% endif %}"
+                    <input type="number" class="form-control {% if error_dict.max_storage %} bc-error-field {% endif %}"
                         min="0" step="any" value="{{prefill.production_price}}" name="hyperparameter-sim_market-production_price">
                 </div>
             </div>
-            <div class="row p-2">
+            <div class="row p-2" id="hyperparameter-sim_market-storage_cost_per_product">
                 <div class="col-6">
                     {% if error_dict.storage_cost_per_product %}
                         <img src="{% static 'icons/warning.svg' %}" width="18px" title="{{error_dict.storage_cost_per_product}}"></img>
@@ -87,8 +88,8 @@
                     storage cost per product
                 </div>
                 <div class="col-6">
-                    <input type="number" class="form-control {% if error_dict.storage_cost_per_product %} bc-error-field {% endif %}"
-                        min="0", step="any" value="{{prefill.storage_cost_per_product}}" name="hyperparameter-sim_market-storage_cost_per_product">
+                    <input type="number" class="form-control {% if error_dict.max_storage %} bc-error-field {% endif %}"
+                        min="0" step="any" value="{{prefill.storage_cost_per_product}}" name="hyperparameter-sim_market-storage_cost_per_product">
                 </div>
             </div>
         </div>
