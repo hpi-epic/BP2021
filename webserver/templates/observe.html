@@ -7,8 +7,8 @@
             <table class="table">
                 <tr>
                     <th><span style="background-color:#c9c9c9; color:transparent; border:0.2px; border-radius:3px">container name</span></th>
-                    <th><span style="background-color:#c9c9c9; color:transparent; border:0.2px; border-radius:3px">command</span></th>
-                    <th><span style="background-color:#c9c9c9; color:transparent; border:0.2px; border-radius:3px">created at</span></th>
+                    <!-- <th><span style="background-color:#c9c9c9; color:transparent; border:0.2px; border-radius:3px">command</span></th> -->
+                    <!-- <th><span style="background-color:#c9c9c9; color:transparent; border:0.2px; border-radius:3px">created at</span></th> -->
                     <th><span style="background-color:#c9c9c9; color:transparent; border:0.2px; border-radius:3px">last checked at</span></th>
                     <th><span style="background-color:#c9c9c9; color:transparent; border:0.2px; border-radius:3px">health status</span></th>
                     <th><span style="background-color:#c9c9c9; color:transparent; border:0.2px; border-radius:3px">get health status</span></th>
@@ -18,11 +18,11 @@
                 </tr>
                 {% for container in all_saved_containers %}
                     <tr>
-                        <td><a href="/details/{{ container.id }}">{{ container.name }}</a></td>
-                        <td>{{ container.command }}</td>
-                        <td>{{ container.created_at }}</td>
-                        <td>{{ container.last_check_at }}</td>
-                        <td>{{ container.health_status }}</td>
+                        <td class="fs-5"><a href="/details/{{ container.id }}">{{ container.name }}</a></td>
+                        <!-- <td>{{ container.command }}</td> -->
+                        <!-- <td>{{ container.created_at }}</td> -->
+                        <td class="fs-5">{{ container.created_at|date:"F d, Y" }}</td>
+                        <td class="fs-5">learning...</td>
                         <td class="button_row" >
                             {% include "api_buttons/health_button.html" %}
                         </td>
