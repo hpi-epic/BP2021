@@ -241,7 +241,7 @@ class RecommerceCallback(BaseCallback):
 		os.rename(self.tmp_parameters, path_to_parameters)
 		self.saved_parameter_paths.append(path_to_parameters)
 		tqdm.write(f'Writing the interim model after {finished_episodes} episodes to the disk.')
-		tqdm.write(f'You can find the parameters here: {path_to_parameters}.')
+		tqdm.write(f'You can find the parameters here: {path_to_parameters}')
 		tqdm.write(f'This model achieved a mean reward of {self.best_mean_interim_reward}.')
 		self.best_mean_interim_reward = None
 

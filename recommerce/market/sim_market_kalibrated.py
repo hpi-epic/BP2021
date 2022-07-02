@@ -7,10 +7,10 @@ import pandas as pd
 import torch
 
 from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader
+from recommerce.market.circular.circular_customers import CustomerCircular
 from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPriceDuopoly
+from recommerce.market.owner import OwnerRebuy
 from recommerce.market.sim_market_kalibrator import SimMarketKalibrator
-
-NB = 200
 
 
 class SimMarketKalibrated(CircularEconomyRebuyPriceDuopoly):
@@ -104,6 +104,37 @@ class SimMarketKalibrated(CircularEconomyRebuyPriceDuopoly):
 		# tmp += sum([bix[ki] * (1 if (state_to_get_parameters_from[xb_index] < k) else 0) for ki, k in enumerate(Mix)])
 		return tmp
 
+	def customer_decisions_real(self, data, is_agent):
+		number_of_owners = int(0.05 * data[6] / 2)
+		common_state = np.array(data[6])  # in circulation
+		if is_agent:
+			vendor_specific_state = [[data[1]], [data[5]]]  # storage agent, comp
+			vendor_actions = [[data[7], data[8], data[9]], [data[2], data[3], data[4]]]  # prices agent, prices comp old
+		else:
+			vendor_specific_state = [[data[5]], [data[1]]]  # storage agent, comp
+			vendor_actions = [[data[2], data[3], data[4]], [data[7], data[8], data[9]]]  # prices
+		prob_array_0 = CustomerCircular().generate_purchase_probabilities_from_offer(common_state, vendor_specific_state, vendor_actions)
+		sales_array_0 = np.multiply(prob_array_0, (self.config.number_of_customers) / 2)
+		prob_array_rebuy_0 = OwnerRebuy().generate_return_probabilities_from_offer(common_state, vendor_specific_state, vendor_actions)
+		rebuy_array_0 = np.multiply(prob_array_rebuy_0, number_of_owners)
+
+		if is_agent:
+			vendor_specific_state = [[data[1]], [data[5]]]  # storage agent, comp
+			vendor_actions = [[data[7], data[8], data[9]], [data[22], data[23], data[24]]]  # prices agent, prices comp old
+		else:
+			vendor_specific_state = [[data[5]], [data[1]]]  # storage agent, comp
+			vendor_actions = [[data[2], data[3], data[4]], [data[7], data[8], data[9]]]  # prices
+		prob_array_1 = CustomerCircular().generate_purchase_probabilities_from_offer(common_state, vendor_specific_state, vendor_actions)
+		sales_array_1 = np.multiply(prob_array_1, (self.config.number_of_customers) / 2)
+		prob_array_rebuy_1 = OwnerRebuy().generate_return_probabilities_from_offer(common_state, vendor_specific_state, vendor_actions)
+		rebuy_array_1 = np.multiply(prob_array_rebuy_1, number_of_owners)
+		sales_array = np.add(sales_array_0, sales_array_1)
+		assert round(sum(sales_array)) == self.config.number_of_customers, f'{sum(sales_array)} != {self.config.number_of_customers}'
+		rebuy_array = np.add(rebuy_array_0, rebuy_array_1)
+		assert round(sum(rebuy_array)) == self.config.number_of_customers, f'{sum(rebuy_array)} != {self.config.number_of_customers}'
+		# print('sales_array', sales_array_0)
+		return np.append(sales_array, [rebuy_array[2], rebuy_array[3]])
+
 	def customer_decisions(self, data, xrows):
 		x = torch.index_select(data, 0, torch.IntTensor(xrows)).reshape(1, 11).float()
 		number_datapoints = x.shape[0]
@@ -159,19 +190,12 @@ class SimMarketKalibrated(CircularEconomyRebuyPriceDuopoly):
 		# xb[3] = self.comp_prices(self.M5, self.M5x, self.by5, self.bxy5, 'new', xb, prev)  # comp price new 	(old)
 		# xb[4] = self.comp_prices(self.M6, self.M6x, self.by6, self.bxy6, 'rebuy', xb, prev)  # comp price rebuy 	(old)
 
-		xb[2], xb[3], xb[4] = prev[2], prev[3], prev[4]
+		xb[2], xb[3], xb[4] = prev[22], prev[23], prev[24]
 
 		xb[5] = prev[5] - prev[16] + prev[17]  # comp inventory (after the previous step)
 
 		xb[6] = max(0, np.round_(0.9 * prev[6]) + prev[12] - prev[13] + prev[16] - prev[17])  # resources in use (after the previous step)
 
-		# TODO: check if there is a logic behind this
-		# let xb[7,i] := if 9<xb[2,i]<=18 then xb[2,i]-1  +round(x[1,i]/200) else 18;
-		# let xb[8,i] := if 5<xb[3,i]<=12 then xb[3,i]-1  +round(x[1,i]/200) else 12;
-		# let xb[9,i] := if 1<xb[4,i]<= 5 then xb[4,i]-0.5-round(x[1,i]/200) else  5;
-		# xb[7] = xb[2] - 1 + np.round_(x[1]/200) if 9 < xb[2] <= 18 else 18  # agent price new
-		# xb[8] = xb[3] - 1 + np.round_(x[1]/200) if 5 < xb[3] <= 12 else 12  # agent price used
-		# xb[9] = xb[4] - 0.5 - np.round_(x[1]/200) if 1 < xb[4] <= 5 else 5    # agent price rebuy
 		xb[7] = float(agent_action[0])  # agent price refurbushed
 		xb[8] = float(agent_action[1])  # agent price new
 		xb[9] = float(agent_action[2])  # agent price rebuy
@@ -197,20 +221,24 @@ class SimMarketKalibrated(CircularEconomyRebuyPriceDuopoly):
 		# xb[13] = np.round_(min(xb[6] / 2, max(0,  # np.random.uniform(-5, 5) +
 		# 	sum([self.by3[ki] * xb[k] for ki, k in enumerate(self.M123)]))))
 		# agent sales rebuy
-		customer_decisions = self.customer_decisions_nn(xb, self.M123)
-		xb[11] = np.round_(min(xb[1], max(0, customer_decisions[0])))  # agent sales used
-		xb[12] = np.round_(max(0, customer_decisions[1]))  # agent sales new
-		xb[13] = np.round_(min(xb[6] / 2, max(0, customer_decisions[2])))  # agent sales rebuy
+		# customer_decisions = self.customer_decisions_nn(xb, self.M123)
+		customer_decisions_raw = self.customer_decisions_real(xb, True)
+		print(customer_decisions_raw)
+		customer_dec_a = [customer_decisions_raw[1], customer_decisions_raw[2], customer_decisions_raw[5]]
+		customer_dec_c = [customer_decisions_raw[3], customer_decisions_raw[4], customer_decisions_raw[6]]
+		xb[11] = np.round_(min(xb[1], max(0, customer_dec_a[0])))  # agent sales used
+		xb[12] = np.round_(max(0, customer_dec_a[1]))  # agent sales new
+		xb[13] = np.round_(min(xb[6] / 2, max(0, customer_dec_a[2])))  # agent sales rebuy
 
 		xb[14] = xb[5]*0.05  # comp holding cost
 
 		# xb[15] = np.round_(max(0,
 		# 	sum([self.by12[ki] * xb[k] for ki, k in enumerate(self.M456)])))
-		x_comp = torch.cat([prev.index_select(0, torch.tensor([7, 8, 9])), xb.index_select(0, torch.IntTensor([0, 1, 2, 3, 4, 7, 8, 9]))], 0)
-		customer_decisions_comp = self.customer_decisions_nn(x_comp, (3, 4, 0, 1, 2, 5, 6, 7, 8, 9, 10))
-		xb[15] = min(xb[5], max(0, customer_decisions_comp[0]))  # comp sales used
-		xb[16] = max(0, customer_decisions_comp[1])  # comp sales new
-		xb[17] = min(xb[6] / 2, max(0, customer_decisions_comp[2]))  # comp sales rebuy
+		# x_comp = torch.cat([prev.index_select(0, torch.tensor([7, 8, 9])), xb.index_select(0, torch.IntTensor([0, 1, 2, 3, 4, 7, 8, 9]))], 0)
+		# customer_decisions_comp = self.customer_decisions_nn(x_comp, (3, 4, 0, 1, 2, 5, 6, 7, 8, 9, 10))
+		xb[15] = min(xb[5], max(0, customer_dec_c[0]))  # comp sales used
+		xb[16] = max(0, customer_dec_c[1])  # comp sales new
+		xb[17] = min(xb[6] / 2, max(0, customer_dec_c[2]))  # comp sales rebuy
 
 		# xb[15] = np.round_(max(0, 0  # np.random.uniform(-5, 5)
 		# 	+ self.by1[0] * 1
@@ -288,13 +316,10 @@ class SimMarketKalibrated(CircularEconomyRebuyPriceDuopoly):
 			'customer/purchases_refurbished': {'vendor_0': float(xb[11]), 'vendor_1': float(xb[15])},
 			'customer/purchases_new': {'vendor_0': float(xb[12]), 'vendor_1': float(xb[16])},
 			'owner/rebuys': {'vendor_0': float(xb[13]), 'vendor_1': float(xb[17])},
-			}
-		output_dict['actions/price_refurbished']['vendor_0'] = float(xb[7])
-		output_dict['actions/price_new']['vendor_0'] = float(xb[8])
-		output_dict['actions/price_rebuy']['vendor_0'] = float(xb[9])
-		output_dict['actions/price_refurbished']['vendor_1'] = float(xb[22])
-		output_dict['actions/price_new']['vendor_1'] = float(xb[23])
-		output_dict['actions/price_rebuy']['vendor_1'] = float(xb[24])
+			'actions/price_refurbished': {'vendor_0': float(xb[7]), 'vendor_1': float(xb[22])},
+			'actions/price_new': {'vendor_0': float(xb[8]), 'vendor_1': float(xb[23])},
+			'actions/price_rebuy': {'vendor_0': float(xb[9]), 'vendor_1': float(xb[24])}
+		}
 		return agent_observation, float(xb[18]), is_done, output_dict
 		# return agent_observation, xb[18], False, {}
 

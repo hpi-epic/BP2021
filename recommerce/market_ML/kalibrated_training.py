@@ -1,6 +1,5 @@
 # import math
 # import random
-import os
 
 # import pandas as pd
 # import torch
@@ -38,15 +37,17 @@ def monitor_agent_model_a():
 	config_market: AttrDict = HyperparameterConfigLoader.load('market_config', CircularEconomyRebuyPriceDuopoly)
 	# config_rl: AttrDict = HyperparameterConfigLoader.load('sb_sac_config', StableBaselinesSAC)
 	marketplace = CircularEconomyRebuyPriceDuopoly
-	model_name = 'StableBaselinesSAC_kalibrated_nn_regression.zip'
-	load_path = os.path.join(PathManager.data_path, model_name)
+	model_name = 'StableBaselinesSAC_new_training_nn'
+	# model_path = f'{model_name}.zip'
+	load_path = '/Users/Johann/Documents/GitHub/BP2021/results/trainedModels/StableBaselinesSAC_Jun28_17-13-33/StableBaselinesSAC_00999.zip'
+	# os.path.join(PathManager.data_path, model_path)
 	# agent = StableBaselinesSAC(config_rl=config_rl, config_market=config_market, load_path=load_path)
 	monitor.configurator.setup_monitoring(
 		support_continuous_action_space=True,
 		episodes=1000,
 		plot_interval=200,
 		marketplace=marketplace,
-		agents=[(StableBaselinesSAC, [load_path, 'trained_agent_from model_a']), (RuleBasedCERebuyAgentCompetitive, ['Rule_based_competitor'])],
+		agents=[(StableBaselinesSAC, [load_path, model_name]), (RuleBasedCERebuyAgentCompetitive, ['Rule_based_competitor'])],
 		separate_markets=False,
 		config_market=config_market
 	)

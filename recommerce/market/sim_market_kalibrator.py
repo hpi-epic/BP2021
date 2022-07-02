@@ -148,7 +148,7 @@ class SimMarketKalibrator:
 		model = simple_network(x.shape[1], y.shape[1])
 		lossfunction = torch.nn.MSELoss()
 		optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=0.01)
-		episodes = 10
+		episodes = 1
 
 		# use torch utils dataloader to iterate over the data
 		data_loader = torch.utils.data.DataLoader(
