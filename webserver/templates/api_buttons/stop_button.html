@@ -3,7 +3,7 @@
     <input type="hidden" name="action", value="remove">
     <button class="btn btn-sm bc-outline-red border-3 fs-6 {% if not show %} bc-red-demo  {% endif %}"
         title="stops execution of the script in the running container"
-        name="container_id" value="{{ container.id }}" type="submit">
+        name="container_id" value="{{ container.id }}" type="button">
         {% if show %}
             Stop
         {% else %}
