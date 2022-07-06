@@ -17,7 +17,7 @@ class CircularEconomy(SimMarket, ABC):
 	@staticmethod
 	def get_competitor_classes() -> list:
 		import recommerce.market.circular.circular_vendors as c_vendors
-		return sorted(ut.filtered_class_str_from_dir('recommerce.market.circular.circular_vendors', dir(c_vendors), '.*CE.*Agent.*'))
+		return sorted(ut.filtered_class_str_from_dir('recommerce.market.circular.circular_vendors', dir(c_vendors), '.*CE(?!Rebuy).*Agent.*'))
 
 	@staticmethod
 	def get_configurable_fields() -> list:
