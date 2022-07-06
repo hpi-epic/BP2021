@@ -6,7 +6,6 @@ from django.shortcuts import render
 
 from recommerce.configuration.config_validation import validate_config
 
-from .adjustable_fields import get_agent_hyperparameter
 from .buttons import ButtonHandler
 from .config_parser import ConfigFlatDictParser
 from .container_helper import get_actually_stopped_container_from_api_notification
@@ -16,6 +15,7 @@ from .handle_requests import get_api_status, send_statistic_request, websocket_u
 from .models.config import Config
 from .models.container import Container
 from .selection_manager import SelectionManager
+from .utils import get_not_possible_agent_hyperparameter
 
 selection_manager = SelectionManager()
 
@@ -112,8 +112,8 @@ def new_agent(request) -> HttpResponse:
 def agent_changed(request) -> HttpResponse:
 	if not request.user.is_authenticated:
 		return HttpResponse('Unauthorized', status=401)
-	return render(request, 'configuration_items/rl_parameter.html',
-		{'parameters': get_agent_hyperparameter(request.POST['agent'], request.POST.dict())})
+	not_possible, all_parameter = get_not_possible_agent_hyperparameter(request.POST['agent'])
+	return HttpResponse(';'.join(not_possible) + '|' + ';'.join(all_parameter))
 
 
 def api_availability(request) -> HttpResponse:

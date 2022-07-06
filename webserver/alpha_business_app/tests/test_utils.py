@@ -9,7 +9,7 @@ class UtilsTest(TestCase):
         expected_dict = {
             'environment': {
                 'task': None,
-                'enable_live_draw': None,
+                'separate_markets': None,
                 'episodes': None,
                 'plot_interval': None,
                 'marketplace': None,
@@ -73,7 +73,7 @@ class UtilsTest(TestCase):
     def test_get_structure_dict_for_environment(self):
         expected_dict = {
             'task': None,
-            'enable_live_draw': None,
+            'separate_markets': None,
             'episodes': None,
             'plot_interval': None,
             'marketplace': None,
