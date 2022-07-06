@@ -13,6 +13,7 @@ from docker.models.containers import Container
 from torch.cuda import is_available
 from utils import setup_logging
 
+# precommit please
 import docker
 
 IMAGE_NAME = 'recommerce'
