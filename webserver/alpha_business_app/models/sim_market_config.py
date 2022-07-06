@@ -9,12 +9,8 @@ class SimMarketConfig(AbstractConfig, models.Model):
 	It can be auto generated, using `on_recommerce_change`.
 	This will set all fields to currently needed fields by the `recommerce` package
 	"""
-	max_quality = models.IntegerField(null=True, default=None)
-	max_storage = models.IntegerField(null=True, default=None)
 	episode_length = models.IntegerField(null=True, default=None)
-	production_price = models.IntegerField(null=True, default=None)
 	max_price = models.IntegerField(null=True, default=None)
-	number_of_customers = models.IntegerField(null=True, default=None)
 	max_quality = models.IntegerField(null=True, default=None)
 	max_storage = models.IntegerField(null=True, default=None)
 	number_of_customers = models.IntegerField(null=True, default=None)

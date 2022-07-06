@@ -8,11 +8,12 @@ from datetime import datetime
 from itertools import count, filterfalse
 from types import GeneratorType
 
-import docker
 from container_db_manager import ContainerDB
 from docker.models.containers import Container
 from torch.cuda import is_available
 from utils import setup_logging
+
+import docker
 
 IMAGE_NAME = 'recommerce'
 
