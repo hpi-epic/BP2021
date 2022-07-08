@@ -128,7 +128,8 @@ def main():  # pragma: no cover
 		agents=config_environment_am.agent,
 		separate_markets=config_environment_am.separate_markets,
 		competitors=config_environment_am.competitors,
-		config_market=config_market
+		config_market=config_market,
+		# TODO: Insert a check/variable in config for `support_continuous_action_space`
 	)
 	run_monitoring_session(monitor)
 

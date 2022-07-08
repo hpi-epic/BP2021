@@ -91,7 +91,7 @@ class RuleBasedCEAgent(RuleBasedAgent, CircularAgent):
 	This vendor's policy does not consider the competitor's prices.
 	It tries to succeed by taking its own storage costs into account.
 	"""
-	def __init__(self, config_market: AttrDict, continuous_action_space: bool = False, name=''):
+	def __init__(self, config_market: AttrDict, name='', continuous_action_space: bool = False):
 		self.continuous_action_space = continuous_action_space
 		self.name = name if name != '' else type(self).__name__
 		self.config_market = config_market
@@ -145,7 +145,7 @@ class RuleBasedCERebuyAgentCompetitive(RuleBasedAgent, CircularAgent):
 	"""
 	This vendor's policy is aiming to succeed by undercutting the competitor's prices.
 	"""
-	def __init__(self, config_market: AttrDict, continuous_action_space: bool = False, name=''):
+	def __init__(self, config_market: AttrDict, name='', continuous_action_space: bool = False):
 		self.continuous_action_space = continuous_action_space
 		self.name = name if name != '' else type(self).__name__
 		self.config_market = config_market
@@ -180,7 +180,7 @@ class RuleBasedCERebuyAgentStorageMinimizer(RuleBasedAgent, CircularAgent):
 	"""
 	This vendor's policy reacts to the competitors' prices and minimizes the usage of storage.
 	"""
-	def __init__(self, config_market: AttrDict, continuous_action_space: bool = False, name=''):
+	def __init__(self, config_market: AttrDict, name='', continuous_action_space: bool = False):
 		self.continuous_action_space = continuous_action_space
 		self.name = name if name != '' else type(self).__name__
 		self.config_market = config_market
