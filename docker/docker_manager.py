@@ -79,29 +79,13 @@ class DockerManager():
 
 		return cls._instance
 
-	def check_health_of_all_container(self) -> tuple:
-		"""
-		Checks health of all containers, and collects exited container and their status code as tuples in a Docker Info
-
-		Returns:
-			tuple: first value indecating, if a container has exited, second is a DockerInfo containing exited container
-		"""
-		exited_recommerce_containers = list(self._get_client().containers.list(filters={'label': 'recommerce', 'status': 'exited'}))
-		exited_container = []
-		for container in exited_recommerce_containers:
-			exited_container += [(container.id, docker.APIClient().inspect_container(container.id)['State']['ExitCode'])]
-		all_container_ids = ';'.join([str(container_id) for container_id, _ in exited_container])
-		all_container_status = ';'.join([str((container_id, exit_code)) for container_id, exit_code in exited_container])
-		return exited_recommerce_containers != [], DockerInfo(id=all_container_ids, status=all_container_status)
-
-	def start(self, config: dict, count: int, is_webserver: bool) -> DockerInfo or list:
+	def start(self, config: dict, count: int) -> DockerInfo or list:
 		"""
 		To be called by the REST API. Create and start a new docker container from the image of the specified command.
 
 		Args:
 			config (dict): The combined hyperparameter_config and environment_config_command dicts that should be sent to the container.
 			count (int): number of containers that should be started
-			is_webserver (bool): is the user who did the request the official webserver?
 
 		Returns:
 			DockerInfo or list: A JSON serializable object containing the error messages if the prerequisite were not met, or a list of
@@ -299,7 +283,7 @@ class DockerManager():
 
 		self._logger.info(f'Removing container: {container_id}')
 		try:
-			exit_code = self._get_container_exit_code(container)
+			exit_code = container.wait()['StatusCode']
 			container.remove()
 			# update the local port mapping
 			self._update_port_mapping()
@@ -596,17 +580,8 @@ class DockerManager():
 		# we don't care about already exited containers, since we can't see the tensorboard anyways
 		running_recommerce_containers = list(cls._get_client().containers.list(filters={'label': IMAGE_NAME}))
 		# Get the port mapped to '6006/tcp' within the container
-		try:
-			print('**************')
-			print(running_recommerce_containers)
-			for i in [container.ports for container in running_recommerce_containers]:
-				print(i)
-			print('****************')
-			occupied_ports = [int(container.ports['6006/tcp'][0]['HostPort']) for container in running_recommerce_containers]
-			cls._port_mapping = dict(zip([container.id for container in running_recommerce_containers], occupied_ports))
-		except KeyError as e:
-			print('ERROR')
-			print(e)
+		occupied_ports = [int(container.ports['6006/tcp'][0]['HostPort']) for container in running_recommerce_containers]
+		cls._port_mapping = dict(zip([container.id for container in running_recommerce_containers], occupied_ports))
 		# Create a dictionary of container_id: mapped port
 
 

@@ -9,8 +9,7 @@ mock_port_mapping = {
 	'0dcecfa02fcd34588805af5c540ff0e912102a6d91f6f3ee8391af42b8a6831b': 6009
 }
 with patch('docker_manager.docker'), \
-	patch('docker_manager.DockerManager._update_port_mapping'), \
-	patch('docker_manager.setup_logging'):
+	patch('docker_manager.DockerManager._update_port_mapping'):
 	manager = docker_manager.DockerManager()
 
 # Remember to ALWAYS do:

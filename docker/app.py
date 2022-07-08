@@ -28,7 +28,6 @@ if not os.path.isdir(path_to_log_files):
 logger = logging.getLogger('uvicorn.error')
 manager = DockerManager(logger)
 app = FastAPI()
-is_webserver = True
 
 
 def is_invalid_status(status: str) -> bool:
@@ -52,10 +51,8 @@ def verify_token(request: Request) -> bool:
 	"""
 	verifies for a given request that the header contains the right AUTHORIZATION_TOKEN.
 	Warning: This cannot be considered 100% secure, without https, any network sniffer can read the token
-
 	Args:
 		request (Request): The request to the API
-
 	Returns:
 		bool: if the given authorization token matches our authorization token.
 	"""
@@ -64,27 +61,13 @@ def verify_token(request: Request) -> bool:
 	except KeyError:
 		logger.error('The request did not set an Authorization header')
 		return False
-
-	try:
-		with open('./.env.txt', 'r') as file:
-			secrets = file.readlines()
-	except FileNotFoundError:
-		logger.warning('could not find suitable `.env.txt`. Trying to use env variables instead')
-		try:
-			secrets = [os.environ['AUTHORIZATION_TOKEN_WEB'], os.environ['AUTHORIZATION_TOKEN']]
-		except KeyError:
-			logger.error('could not get environment variables.')
-			return False
-	last_webserver_token, this_webserver_token = _convert_secret_to_token(secrets[0].strip())
-	last_other_token, this_other_token = _convert_secret_to_token(secrets[1].strip())
-	global is_webserver
-	if token == last_webserver_token or this_webserver_token == token:
-		is_webserver = True
-		return True
-	if token == last_other_token or token == this_other_token:
-		is_webserver = False
-		return True
-	return False
+	master_secret_as_int = sum(ord(c) for c in os.environ['AUTHORIZATION_TOKEN'])
+	current_time = int(time.time() / 3600)  # unix time in hours
+	# token, that is currently expected
+	expected_this_token = hashlib.sha256(str(master_secret_as_int + current_time).encode('utf-8')).hexdigest()
+	# token that was expected last hour
+	expected_last_token = hashlib.sha256(str(master_secret_as_int + (current_time - 3600)).encode('utf-8')). hexdigest()
+	return token == expected_this_token or token == expected_last_token
 
 
 @app.post('/start')
@@ -102,7 +85,7 @@ async def start_container(num_experiments: int, config: Request, authorized: boo
 	"""
 	if not authorized:
 		return JSONResponse(status_code=401, content=vars(DockerInfo('', 'Not authorized')))
-	all_container_infos = manager.start(config=await config.json(), count=num_experiments, is_webserver=is_webserver)
+	all_container_infos = manager.start(config=await config.json(), count=num_experiments)
 
 	# check if all prerequisites were met
 	if type(all_container_infos) == DockerInfo:
@@ -220,13 +203,6 @@ async def get_tensorboard_link(id: str, authorized: bool = Depends(verify_token)
 		return JSONResponse(status_code=404, content=vars(container_info))
 	else:
 		return JSONResponse(vars(container_info), status_code=200)
-
-
-@app.get('/data/statistics')
-async def get_statistical_csv_data(system: bool=False, authorized: bool = Depends(verify_token)) -> JSONResponse:
-	if not authorized:
-		return JSONResponse(status_code=401, content=vars(DockerInfo('', 'Not authorized')))
-	return JSONResponse(status_code=200, content=vars(manager.get_statistic_data(wants_system_data=system)))
 
 
 @app.get('/pause/')
