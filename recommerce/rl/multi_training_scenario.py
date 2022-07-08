@@ -46,6 +46,19 @@ def configuration_best_learning_rate_ppo():
     return configs, descriptions
 
 
+def configuration_ppo_different_architectures():
+    # Use default parametrisation at all other points
+    configs = []
+    descriptions = []
+    for _ in range(4):
+        configs.append(HyperparameterConfigLoader.load('sb_ppo_config', StableBaselinesPPO))
+    for i, config in enumerate(configs):
+        config.neurones_per_hidden_layer = 32 * 2 ** i
+        descriptions.append(f'ppo_{config["neurones_per_hidden_layer"]}_per_hidden_layer')
+
+    return configs, descriptions
+
+
 def configuration_clipping_ppo():
     # Use default parametrisation at all other points
     configs = []
@@ -134,6 +147,18 @@ def configuration_ppo_clip_0_3_all_same():
     return configs, descriptions
 
 
+def configuration_ppo_big_network_clip_0_3_all_same():
+    configs = []
+    descriptions = []
+    for i in range(4):
+        configs.append(HyperparameterConfigLoader.load('sb_ppo_config', StableBaselinesPPO))
+        configs[-1].clip_range = 0.3
+        configs[-1].neurones_per_hidden_layer = 256
+        descriptions.append(f'ppo_clip_range_{0.3}_{configs[-1].neurones_per_hidden_layer}_neurones_{i}')
+
+    return configs, descriptions
+
+
 def configuration_a2c_all_same():
     configs = []
     descriptions = []
@@ -200,20 +225,23 @@ def print_diagrams(groups, name, individual_lines=False):
     plt.xlabel('Episodes')
     plt.ylabel('Profit')
     plt.savefig(os.path.join(PathManager.results_path, 'monitoring', f'{name}.svg'), transparent=True)
-    plt.ylim(0, 12000)
-    plt.savefig(os.path.join(PathManager.results_path, 'monitoring', f'{name}_clipped_12000.svg'), transparent=True)
-    plt.ylim(0, 15000)
-    plt.savefig(os.path.join(PathManager.results_path, 'monitoring', f'{name}_clipped_15000.svg'), transparent=True)
-    plt.ylim(0, 17500)
-    plt.savefig(os.path.join(PathManager.results_path, 'monitoring', f'{name}_clipped_17500.svg'), transparent=True)
-    plt.ylim(0, 10000)
-    plt.savefig(os.path.join(PathManager.results_path, 'monitoring', f'{name}_clipped_10000.svg'), transparent=True)
+    bounds = [(0, 12000), (0, 15000), (0, 17500), (0, 10000), (-10000, 10000), (-5000, 10000)]
+    for bound in bounds:
+        plt.ylim(*bound)
+        plt.savefig(os.path.join(PathManager.results_path, 'monitoring', f'{name}_clipped_{bound[0]}_{bound[1]}.svg'), transparent=True)
 
 
 # These experiments are all done on a CERebuy market
 standardtraining = 1000000  # 1000000
+mediumtraining = 500000  # 1000000
 shorttraining = 300000
 market_class = CircularEconomyRebuyPriceDuopoly
+
+
+def experiment_different_network_architectures_ppo():
+    tasks = [(StableBaselinesPPO, configuration_ppo_different_architectures)]
+    groups = [run_group(market_class, 'market_config', agent, configuration, standardtraining) for agent, configuration in tasks]
+    print_diagrams(groups, 'ppo_networks', True)
 
 
 def experiment_a2c_vs_ppo():
@@ -224,6 +252,15 @@ def experiment_a2c_vs_ppo():
     ]
     groups = [run_group(market_class, 'market_config', agent, configuration, standardtraining) for agent, configuration in tasks]
     print_diagrams(groups, 'a2c_ppo')
+
+
+def experiment_ppo_vs_sac():
+    tasks = [
+        (StableBaselinesPPO, configuration_ppo_clip_0_3_all_same),
+        (StableBaselinesSAC, configuration_sac_all_same)
+    ]
+    groups = [run_group(market_class, 'market_config', agent, configuration, standardtraining) for agent, configuration in tasks]
+    print_diagrams(groups, 'ppo_sac')
 
 
 def experiment_a2c_vs_sac():
@@ -350,7 +387,7 @@ def experiment_oligopol():
         (StableBaselinesSAC, configuration_sac_all_same)
     ]
     groups = [run_group(
-        CircularEconomyRebuyPriceOligopoly, 'market_config', agent, configuration, standardtraining, target_function=run_training_session)
+        CircularEconomyRebuyPriceOligopoly, 'market_config', agent, configuration, mediumtraining, target_function=run_training_session)
         for agent, configuration in tasks]
     print_diagrams(groups, 'comparison_oligopoly')
 
@@ -362,9 +399,20 @@ def experiment_oligopol_mixed():
         (StableBaselinesSAC, configuration_sac_all_same)
     ]
     groups = [run_group(CircularEconomyRebuyPriceOligopoly,
-        'market_config_mixed', agent, configuration, standardtraining, target_function=run_training_session)
+        'market_config_mixed', agent, configuration, mediumtraining, target_function=run_training_session)
         for agent, configuration in tasks]
     print_diagrams(groups, 'comparison_oligopoly_mixed')
+
+
+def experiment_oligopol_big_network():
+    tasks = [
+        (StableBaselinesA2C, configuration_a2c_all_same),
+        (StableBaselinesPPO, configuration_ppo_big_network_clip_0_3_all_same),
+    ]
+    groups = [run_group(
+        CircularEconomyRebuyPriceOligopoly, 'market_config', agent, configuration, mediumtraining, target_function=run_training_session)
+        for agent, configuration in tasks]
+    print_diagrams(groups, 'comparison_oligopoly_big_network')
 
 
 # move the Path manager results folder to documents
@@ -375,8 +423,12 @@ def move_results_to_documents(dest_folder_name):
 
 
 if __name__ == '__main__':
+    experiment_different_network_architectures_ppo()
+    move_results_to_documents('ppo_different_networks')
     experiment_a2c_vs_ppo()
     move_results_to_documents('a2c_vs_ppo')
+    experiment_ppo_vs_sac()
+    move_results_to_documents('ppo_vs_sac')
     experiment_a2c_vs_sac()
     move_results_to_documents('a2c_vs_sac')
     experiment_self_play()
@@ -407,3 +459,5 @@ if __name__ == '__main__':
     move_results_to_documents('comparison_oligopoly')
     experiment_oligopol_mixed()
     move_results_to_documents('comparison_oligopoly_mixed')
+    experiment_oligopol_big_network()
+    move_results_to_documents('comparison_oligopoly_big_network')

@@ -159,10 +159,26 @@ class Evaluator():
 			plt.ylabel(property_name)
 			plt.grid(True, linestyle='--')
 			plt.savefig(
-				fname=os.path.join(self.configurator.get_folder(),
-				f'lineplot_monitoring_based_{property_name.replace("/", "_")}.svg'),
+				fname=os.path.join(self.configurator.get_folder(), 'monitoring_based_line_plots',
+					f'lineplot_monitoring_based_{property_name.replace("/", "_")}.svg'),
 				transparent=True
 			)
+			if 'profits' in property_name:
+				bounds = [(0, 12000), (0, 15000), (0, 17500), (0, 10000), (-10000, 10000), (-5000, 10000)]
+				for bound in bounds:
+					plt.ylim(*bound)
+					plt.savefig(
+						fname=os.path.join(self.configurator.get_folder(), 'monitoring_based_line_plots',
+							f'lineplot_monitoring_based_{property_name.replace("/", "_")}_{bound[0]}_{bound[1]}.svg'),
+						transparent=True
+					)
+			if 'actions' in property_name:
+				plt.ylim(0, 10)
+				plt.savefig(
+					fname=os.path.join(self.configurator.get_folder(), 'monitoring_based_line_plots',
+						f'lineplot_monitoring_based_{property_name.replace("/", "_")}_0_10.svg'),
+					transparent=True
+				)
 
 	# visualize metrics
 	def create_density_plot(self, samples: list, property_name: str, current_episode_number: int = None):

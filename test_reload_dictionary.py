@@ -1,0 +1,16 @@
+import os
+
+from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader
+from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPriceDuopoly
+from recommerce.monitoring.training_progress_visualizer import load_and_analyze_existing_watcher_json
+
+
+def test_reload_and_visualize_watcher():
+    config_market = HyperparameterConfigLoader.load('market_config', CircularEconomyRebuyPriceDuopoly)
+    load_and_analyze_existing_watcher_json(
+        os.path.join('tests', 'test_data', 'watcher_a2c_run.json'),
+        config_market,
+        'a2c',
+        ['Rule Based Undercutting'],
+        'a2c_study'
+    )

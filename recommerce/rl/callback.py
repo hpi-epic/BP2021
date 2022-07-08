@@ -1,11 +1,8 @@
-import json
 import os
 import signal
 import sys
 import time
 
-import matplotlib.pyplot as plt
-import numpy as np
 from attrdict import AttrDict
 from stable_baselines3.common.callbacks import BaseCallback
 from torch.utils.tensorboard import SummaryWriter
@@ -16,8 +13,9 @@ import recommerce.configuration.utils as ut
 from recommerce.configuration.path_manager import PathManager
 from recommerce.market.sim_market import SimMarket
 from recommerce.market.vendors import RuleBasedAgent
-from recommerce.monitoring.agent_monitoring.am_evaluation import Evaluator
 from recommerce.monitoring.agent_monitoring.am_monitoring import Monitor
+from recommerce.monitoring.consecutive_model_analyzer import analyze_consecutive_models
+from recommerce.monitoring.training_progress_visualizer import save_progress_plots
 from recommerce.monitoring.watcher import Watcher
 from recommerce.rl.actorcritic.actorcritic_agent import ActorCriticAgent
 from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
@@ -158,9 +156,7 @@ class RecommerceCallback(BaseCallback):
 
 		print('Saving watchers...')
 		# write self watchers as json to save path
-		float_dicts = [ut.convert_dict_to_float(d) for d in self.watcher.all_dicts]
-		with open(os.path.join(self.save_path, 'watchers.json'), 'w') as f:
-			json.dump(float_dicts, f)
+		self.watcher.save_all_dicts_to_json(os.path.join(self.save_path, 'watcher.json'))
 
 		monitor = Monitor(self.config_market, self.config_rl, self.signature)
 		monitor.configurator.get_folder()
@@ -168,83 +164,24 @@ class RecommerceCallback(BaseCallback):
 		# used for plot legend naming
 		competitors = self.marketplace.competitors
 
-		print('Creating scatterplots...')
-		ignore_first_samples = 10  # the number of samples you want to skip because they can be severe outliers
-		cumulative_properties = self.watcher.get_cumulative_properties()
-		for property, samples in ut.unroll_dict_with_list(cumulative_properties).items():
-			x_values = np.array(range(len(samples[ignore_first_samples:]))) + ignore_first_samples
-			plt.clf()
-
-			vendor_index: str = property.rsplit('_', 1)[-1:][0]
-			if vendor_index.isdigit():
-				# property without '/vendor_x'
-				property_name = property.rsplit('/', 1)[:-1][0]
-				relevant_agent = self.agent_class.__name__ if vendor_index == '0' else competitors[int(vendor_index) - 1].name
-				plt.scatter(x_values, samples[ignore_first_samples:], label=relevant_agent, s=10)
-				plt.grid()
-				plt.title(f'All samples of {property_name}')
-				plt.legend()
-			else:
-				property_name = property
-				relevant_agent = None
-				plt.scatter(x_values, samples[ignore_first_samples:], s=10)
-				plt.grid()
-				plt.title(f'All samples of {property_name}')
-
-			plt.xlabel('Episode')
-			plt.ylabel(property_name)
-			plt.grid(True, linestyle='--')
-
-			if relevant_agent is None:
-				filename = f'scatterplot_samples_{property_name.replace("/", "_")}.svg'
-			else:
-				filename = f'scatterplot_samples_{property_name.replace("/", "_")}_{relevant_agent}.svg'
-			plt.savefig(os.path.join(monitor.configurator.folder_path, filename), transparent=True)
-
-		print('Creating lineplots...')
-		for property, samples in cumulative_properties.items():
-			plt.clf()
-			if isinstance(samples[0], list):
-				plot_values = [self.watcher.get_progress_values_of_property(property, vendor)[ignore_first_samples:]
-					for vendor in range(self.watcher.get_number_of_vendors())]
-			else:
-				plot_values = [self.watcher.get_progress_values_of_property(property)[ignore_first_samples:]]
-
-			for vendor_index, values in enumerate(plot_values):
-				if vendor_index == 0:
-					label = f'{self.agent_class.__name__}'
-				else:
-					label = competitors[vendor_index - 1].name
-				plt.plot(x_values, values, label=label)
-
-			if isinstance(samples[0], list):
-				plt.legend()
-			plt.title(f'Rolling average training progress of {property}')
-			plt.xlabel('Episode')
-			plt.ylabel(property)
-			plt.grid(True, linestyle='--')
-			plt.savefig(os.path.join(monitor.configurator.folder_path, f'lineplot_progress_{property.replace("/", "_")}.svg'), transparent=True)
+		save_progress_plots(self.watcher, monitor.configurator.folder_path, self.agent_class.__name__, competitors, self.signature)
 
 		if self.analyze_after_training:
-			agent_list = [(self.agent_class, [parameter_path]) for parameter_path in self.saved_parameter_paths]
-			# There are RL-agents in the competitor_list which will break the `deepcopy` in `run_marketplace`
+			# If there are RL-agents in the competitor_list, they will break the `deepcopy` in `run_marketplace`
 			if not all(isinstance(competitor, RuleBasedAgent) for competitor in competitors):
 				competitors = None
 			# The next line is a bit hacky. We have to provide if the marketplace is continuous or not.
 			# Only Stable Baselines agents use continuous actions at the moment. And only Stable Baselines agents have the attribute env.
 			# The correct way of doing this would be by checking for `isinstance(StableBaselinesAgent)`, but that would result in a circular import.
-			monitor.configurator.setup_monitoring(
-				episodes=50,  # This is for performance reasons. Switch back to 100 if you want more details.
-				plot_interval=5,
-				marketplace=type(self.marketplace),
-				agents=agent_list,
-				separate_markets=True,
-				competitors=competitors,
-				support_continuous_action_space=hasattr(self.model, 'env'),
-				config_market=self.config_market)
-			rewards = monitor.run_marketplace()
-			episode_numbers = [int(parameter_path[-9:][:5]) for parameter_path in self.saved_parameter_paths]
-			Evaluator(monitor.configurator).evaluate_session(rewards, episode_numbers)
+			analyze_consecutive_models(
+				self.saved_parameter_paths,
+				monitor,
+				self.marketplace_class,
+				self.config_market,
+				self.agent_class,
+				hasattr(self.model, 'env'),
+				competitors
+			)
 
 	def save_parameters(self, finished_episodes: int):
 		assert isinstance(finished_episodes, int)

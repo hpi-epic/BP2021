@@ -47,6 +47,7 @@ class Configurator():
 		os.makedirs(os.path.join(self.folder_path, 'violinplots'), exist_ok=True)
 		os.makedirs(os.path.join(self.folder_path, 'statistics_plots'), exist_ok=True)
 		os.makedirs(os.path.join(self.folder_path, 'density_plots'), exist_ok=True)
+		os.makedirs(os.path.join(self.folder_path, 'monitoring_based_line_plots'), exist_ok=True)
 		return self.folder_path
 
 	def _get_modelfile_path(self, model_name: str) -> str:
