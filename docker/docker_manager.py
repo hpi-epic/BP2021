@@ -79,6 +79,21 @@ class DockerManager():
 
 		return cls._instance
 
+	def check_health_of_all_container(self) -> tuple:
+		"""
+		Checks health of all containers, and collects exited container and their status code as tuples in a Docker Info
+		Returns:
+			tuple: first value indecating, if a container has exited, second is a DockerInfo containing exited container
+		"""
+		exited_recommerce_containers = list(self._get_client().containers.list(filters={'label': 'recommerce', 'status': 'exited'}))
+		exited_container = []
+		for container in exited_recommerce_containers:
+			exited_container += [(container.id, docker.APIClient().inspect_container(container.id)['State']['ExitCode'])]
+
+		all_container_ids = ';'.join([str(container_id) for container_id, _ in exited_container])
+		all_container_status = ';'.join([str((container_id, exit_code)) for container_id, exit_code in exited_container])
+		return exited_recommerce_containers != [], DockerInfo(id=all_container_ids, status=all_container_status)
+
 	def start(self, config: dict, count: int) -> DockerInfo or list:
 		"""
 		To be called by the REST API. Create and start a new docker container from the image of the specified command.
