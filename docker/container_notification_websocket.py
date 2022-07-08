@@ -1,9 +1,14 @@
 import asyncio
 import json
+import logging
 
 import uvicorn
 from docker_manager import DockerManager
 from fastapi import FastAPI, WebSocket
+
+from docker.utils import setup_logging
+
+setup_logging('websocket')
 
 
 class ConnectionManager:
@@ -13,6 +18,9 @@ class ConnectionManager:
 	async def connect(self, websocket: WebSocket):
 		await websocket.accept()
 		self.active_connections.append(websocket)
+		logging.info(f'got new connection of {websocket}')
+		print(websocket)
+		print(self.active_connections)
 
 	def disconnect(self, websocket: WebSocket):
 		self.active_connections.remove(websocket)
