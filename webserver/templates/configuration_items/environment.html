@@ -1,0 +1,78 @@
+<div class="accordion-item">
+    <h2 class="accordion-header">
+        <button class="accordion-button {% if not should_show %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEnvironment"
+            aria-expanded="{% if should_show %}true{% else %}false{% endif %}" aria-controls="collapseEnvironment">
+            Environment
+        </button>
+    </h2>
+    <div id="collapseEnvironment" class="accordion-collapse collapse {% if should_show %}show{% endif %}">
+        <div class="accordion-body">
+            {% load static %}
+            <div class="row p-2">
+                <div class="col-6">
+                    {% if error_dict.task %}
+                        <img src="{% static 'icons/warning.svg' %}" width="18px" title="{{error_dict.task}}"></img>
+                    {% endif %}
+                    task
+                </div>
+                <div class="col-6 p-2">
+                    <select class="form-select task-selection {% if error_dict.task %} bc-error-field {% endif %}"
+                        name="environment-task">
+                        {% include "configuration_items/selection_list.html" with prefill_value=prefill.task selections=selections.tasks %}
+                    </select>
+                </div>
+            </div>
+            <div class="row p-2 hide-not-monitoring">
+                <div class="col-6">
+                    {% if error_dict.separate_markets %}
+                        <img src="{% static 'icons/warning.svg' %}" width="18px" title="{{error_dict.separate_markets}}"></img>
+                    {% endif %}
+                    separate markets
+                </div>
+                <div class="col-6">
+                    <input type="checkbox" {% if prefill.separate_markets %}checked{% endif %}
+                        class="form-check-input {% if error_dict.separate_markets %} bc-error-field {% endif %}"
+                        name="environment-separate_markets">
+                </div>
+            </div>
+            <div class="row p-2 hide-not-monitoring">
+                <div class="col-6">
+                    {% if error_dict.episodes %}
+                        <img src="{% static 'icons/warning.svg' %}" width="18px" title="{{error_dict.episodes}}"></img>
+                    {% endif %}
+                    episodes
+                </div>
+                <div class="col-6">
+                    <input type="number" class="form-control {% if error_dict.episodes %} bc-error-field {% endif %}"
+                        value="{{prefill.episodes}}" name="environment-episodes">
+                </div>
+            </div>
+            <div class="row p-2 hide-not-monitoring">
+                <div class="col-6">
+                    {% if error_dict.plot_interval %}
+                        <img src="{% static 'icons/warning.svg' %}" width="18px" title="{{error_dict.plot_interval}}"></img>
+                    {% endif %}
+                    plot interval
+                </div>
+                <div class="col-6">
+                    <input type="number" class="form-control {% if error_dict.plot_interval %} bc-error-field {% endif %}"
+                        value="{{prefill.plot_interval}}" name="environment-plot_interval">
+                </div>
+            </div>
+            <div class="row p-2">
+                <div class="col-6">
+                    {% if error_dict.marketplace %}
+                        <img src="{% static 'icons/warning.svg' %}" width="18px" title="{{error_dict.marketplace}}"></img>
+                    {% endif %}
+                    marketplace
+                </div>
+                <div class="col-6">
+                    <select class="form-select marketplace-selection {% if error_dict.task %} bc-error-field {% endif %}" name="environment-marketplace" data-url="/marketplace_changed">
+                        {% include "configuration_items/selection_list.html" with prefill_value=prefill.marketplace selections=selections.marketplaces %}
+                    </select>
+                </div>
+            </div>
+            {% include "configuration_items/agents.html" with prefill=prefill.agents error_dict=error_dict.agents agent_selections=selections.agents%}
+        </div>
+    </div>
+</div>

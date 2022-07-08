@@ -1,0 +1,20 @@
+{
+	"task": "agent_monitoring",
+	"separate_markets": false,
+	"episodes": 50,
+	"plot_interval": 25,
+	"marketplace": "recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopoly",
+	"agents": [
+		{
+			"name": "QLearning Agent",
+			"agent_class": "recommerce.market.circular.circular_vendors.RuleBasedCERebuyAgent",
+			"argument": ""
+		},
+		{
+			"name": "CE Rebuy Agent (QLearning)",
+			"agent_class": "recommerce.rl.q_learning.q_learning_agent.QLearningAgent",
+			"argument": "CircularEconomyRebuyPriceMonopoly_QLearningAgent.dat"
+		}
+	],
+	"config_type": "environment"
+}

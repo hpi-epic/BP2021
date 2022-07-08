@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Observe{% endblock title %}
+{% block content %}
+    <h1>You can observe all of your active containers here</h1>
+    <div class="content">
+        {% if all_saved_containers %}
+            <table class="table">
+                <tr>
+                    <th>container name</th>
+                    <th>command</th>
+                    <th>created at</th>
+                    <th>last checked at</th>
+                    <th>health status</th>
+                    <th>get health status</th>
+                    <th>toggle pause</th>
+                    <th>stop and remove container</th>
+                    <th>tensorboard</th>
+                </tr>
+                {% for container in all_saved_containers %}
+                    <tr>
+                        <td><a href="/details/{{ container.id }}">{{ container.name }}</a></td>
+                        <td>{{ container.command }}</td>
+                        <td>{{ container.created_at }}</td>
+                        <td>{{ container.last_check_at }}</td>
+                        <td>{{ container.health_status }}</td>
+                        <td class="button_row" >
+                            {% include "api_buttons/health_button.html" %}
+                        </td>
+                        <td class="button_row">
+                            {% include "api_buttons/pause_button.html" %}
+                        </td>
+                        <td class="button_row" >
+                            {% include "api_buttons/stop_button.html" %}
+                        </td>
+                        <td class="button_row" >
+                            {% include "api_buttons/tensorboard_button.html" %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </table>
+        {% else %}
+            <p>
+                Currently you have no containers running :( You can start one by uploading a config file
+                <a href="/upload">here</a> or by manually creating a config file
+                <a href="/configurator">here</a>
+            </p>
+        {% endif %}
+    </div>
+{% endblock content %}

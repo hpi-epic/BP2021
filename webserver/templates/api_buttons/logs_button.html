@@ -1,0 +1,9 @@
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="hidden" name="action", value="logs">
+    <button class="btn btn-sm bc-outline-logs"
+        name="container_id"
+        value="{{ container.id }}"
+        title="gets the logs of your container"
+        type="submit">get logs</button>
+</form>
