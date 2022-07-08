@@ -27,7 +27,7 @@ connection_manager = ConnectionManager()
 app = FastAPI()
 
 
-@app.websocket('/ws')
+@app.websocket('/wss')
 async def websocket_endpoint(websocket: WebSocket):
 	await connection_manager.connect(websocket)
 	last_docker_info = None
