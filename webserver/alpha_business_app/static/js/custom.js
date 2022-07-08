@@ -142,34 +142,34 @@ $(document).ready(function() {
 		});
 	});
 	// var url = "ws://192.168.159.134:8001/ws";
-	// var url = "wss://vm-midea03.eaalab.hpi.uni-potsdam.de:8001/ws";
+	var url = "wss://vm-midea03.eaalab.hpi.uni-potsdam.de:8001/wss";
 	// $.ajax({url: "/api_info",
 	// 	success: function (data) {
 	// 		url = data["url"];
 	// 		console.log(url)
 	// 	}
 	// });
-	// var ws = new WebSocket(url);
-	// ws.onopen = function (_) {
-	// 	console.log("connection to ", url, "open");
-	// };
-	// ws.onmessage = function(event) {
-	// 	const csrftoken = getCookie("csrftoken");
-	// 	$.ajax({
-	// 		type: "POST",
-	// 		url: "/container_notification",
-	// 		data: {
-	// 			csrfmiddlewaretoken: csrftoken,
-	// 			api_response: event.data
-	// 		},
-	// 		success: function (data) {
-	// 			const endOfContent = document.getElementById("main-nav-bar");
-	// 			endOfContent.insertAdjacentHTML("afterend", data);
-	// 		}
-	// 	});
-	// 	console.log(event.data);
-	// };
-	// ws.onclose = function(_) {
-	// 	console.log("connection to ", url, "closed");
-	// };
+	var ws = new WebSocket(url);
+	ws.onopen = function (_) {
+		console.log("connection to ", url, "open");
+	};
+	ws.onmessage = function(event) {
+		const csrftoken = getCookie("csrftoken");
+		$.ajax({
+			type: "POST",
+			url: "/container_notification",
+			data: {
+				csrfmiddlewaretoken: csrftoken,
+				api_response: event.data
+			},
+			success: function (data) {
+				const endOfContent = document.getElementById("main-nav-bar");
+				endOfContent.insertAdjacentHTML("afterend", data);
+			}
+		});
+		console.log(event.data);
+	};
+	ws.onclose = function(_) {
+		console.log("connection to ", url, "closed");
+	};
 });

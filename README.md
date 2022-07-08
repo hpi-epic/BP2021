@@ -440,11 +440,11 @@ To run tests you have written for the Django webserver go into the *webserver* f
 python3 ./manage.py test -v 2
 ```
 
-### 6.3. Docker API
+### 6.3. API
 
 There is a RESTful API written with the python libary FastAPI for communicating with docker containers that can be found in `/docker`.
 
-The API needs to run on `127.0.0.1:8000`. To start the API go to `/docker` and run
+The API needs to run on `0.0.0.1:8000`. To start the API go to `/docker` and run
 
 ```terminal
 uvicorn app:app --reload
@@ -456,7 +456,23 @@ You can just run the `app.py` with python from the docker folder as well.
 
 If you want to use the API, you need to provide an `AUTHORIZATION_TOKEN` in your environment variables. For each API request the value at the authorization header will be checked. You can only perform actions on the API, when this value is the same, as the value in your environment variable.
 
-WARNING: Please keep in mind, that the `AUTHORIZATION_TOKEN` must be kept a secret, if it is revealed, you need to revoke it and set a new secret. Furthermore, think about using transport encryption to ensure that the token won't get stolen on the way.
+**WARNING**: Please keep in mind, that the `AUTHORIZATION_TOKEN` must be kept a secret, if it is revealed, you need to revoke it and set a new secret. Furthermore, think about using transport encryption to ensure that the token won't get stolen on the way.
+
+### 6.4. Websocket
+
+You can receive notifications on your website about stopped container by our websocket.
+Just run the `container_notification_websocket.py` file in `/docker`.
+The websocket will run on port 8001.
+Your webserver will automatically connect to this websocket.
+Whenever a container is exited you will receive a push notification in your interface.
+
+#### Troubleshooting Websocket
+
+Check in the developer console of your favorite browser if the connection is established.
+It might read "cannot connect to the websocket due to `ERR_CERT_AUTHORITY_INVALID` or similar".
+This is caused by self signed certificates.
+Open a new tab and enter the address of the websocket server, but with `https` protocol instead of `wss`.
+Accept the risk and continue. 
 
 ## 7. Tensorboard
 
