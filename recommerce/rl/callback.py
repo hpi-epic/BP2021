@@ -176,7 +176,7 @@ class RecommerceCallback(BaseCallback):
 			analyze_consecutive_models(
 				self.saved_parameter_paths,
 				monitor,
-				self.marketplace_class,
+				type(self.marketplace),
 				self.config_market,
 				self.agent_class,
 				hasattr(self.model, 'env'),

@@ -3,7 +3,8 @@ from recommerce.monitoring.agent_monitoring.am_evaluation import Evaluator
 
 def analyze_consecutive_models(
 		saved_parameter_paths,
-		monitor, marketplace_class,
+		monitor,
+		marketplace_class,
 		config_market,
 		agent_class,
 		continuous_action_space,
