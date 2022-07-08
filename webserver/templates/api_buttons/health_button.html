@@ -1,7 +1,0 @@
-<form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    <input type="hidden" name="action", value="health">
-    <button class="btn btn-sm bc-outline-lightgreen"
-        title="check health of your container"
-        name="container_id" value="{{ container.id }}" type="submit">check health</button>
-</form>
