@@ -2,6 +2,7 @@
 import json
 import os
 from abc import ABC, abstractmethod
+from ast import literal_eval
 
 import numpy as np
 
@@ -167,6 +168,11 @@ class EnvironmentConfig(ABC):
 				assert os.path.exists(full_path), f'the specified modelfile does not exist: {full_path}'
 
 			elif issubclass(agent['agent_class'], FixedPriceAgent):
+				if isinstance(agent['argument'], str):
+					try:
+						agent['argument'] = literal_eval(agent['argument'])
+					except ValueError as e:
+						raise ValueError(f'Argument was: {agent["argument"]}, could not be parsed correctly') from e
 				assert isinstance(agent['argument'], list), \
 					f'The "argument" field of this agent ({agent["name"]}) must be a list but was ({type(agent["argument"])})'
 				# Subclasses of FixedPriceAgent solely accept tuples
