@@ -1,12 +1,16 @@
 import asyncio
 import json
 import logging
+import os
 
 import uvicorn
 from docker_manager import DockerManager
 from fastapi import FastAPI, WebSocket
 
 logger = logging.getLogger('uvicorn.error')
+path_to_log_files = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'log_files')
+if not os.path.isdir(path_to_log_files):
+	os.makedirs(path_to_log_files)
 
 
 class ConnectionManager:
