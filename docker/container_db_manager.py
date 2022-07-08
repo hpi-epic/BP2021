@@ -4,8 +4,6 @@ import sqlite3
 from datetime import datetime
 from uuid import uuid4
 
-from utils import setup_logging
-
 
 class DBRow:
 	def column_names_as_dict(self) -> dict:
@@ -71,7 +69,7 @@ class SystemMonitorRow(DBRow):
 
 class ContainerDB:
 	def __init__(self, db_file_name: str = 'sqlite.db') -> None:
-		setup_logging('db', level=logging.ERROR)
+		# setup_logging('db', level=logging.ERROR)
 		self.db_file = db_file_name
 		self.data_table_name = 'container'
 		self.data_table_class = ContainerDBRow

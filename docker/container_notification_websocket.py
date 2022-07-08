@@ -6,10 +6,6 @@ import uvicorn
 from docker_manager import DockerManager
 from fastapi import FastAPI, WebSocket
 
-from docker.utils import setup_logging
-
-setup_logging('websocket')
-
 
 class ConnectionManager:
 	def __init__(self):
@@ -31,6 +27,13 @@ class ConnectionManager:
 manager = DockerManager()
 connection_manager = ConnectionManager()
 app = FastAPI()
+logger = logging.getLogger('uvicorn.error')
+
+
+@app.on_event('startup')
+async def startup_event():
+	logger.info('started websocket')
+	print(logger)
 
 
 @app.websocket('/wss')
@@ -53,5 +56,6 @@ if __name__ == '__main__':
 	uvicorn.run('container_notification_websocket:app',
 		host='0.0.0.0',
 		port=8001,
+		log_config='./log_websocket.ini',
 		ssl_keyfile='/etc/sslzertifikat/api_cert.key',
 		ssl_certfile='/etc/sslzertifikat/api_cert.crt')

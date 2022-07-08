@@ -7,7 +7,6 @@ import uvicorn
 from docker_manager import DockerInfo, DockerManager
 from fastapi import Depends, FastAPI, Request
 from fastapi.responses import JSONResponse, StreamingResponse
-from utils import setup_logging
 
 # This file should expose a RESTful api for using the docker container with the following routes:
 # POST /start/<command><config>
@@ -22,10 +21,10 @@ from utils import setup_logging
 # If using a remote machine use
 # uvicorn --host 0.0.0.0 app:app --reload
 # instead to expose it to the local network
-manager = DockerManager()
+logger = logging.getLogger('uvicorn.error')
+manager = DockerManager(logger)
 app = FastAPI()
 is_webserver = True
-setup_logging('api')
 
 
 def is_invalid_status(status: str) -> bool:
@@ -59,18 +58,18 @@ def verify_token(request: Request) -> bool:
 	try:
 		token = request.headers['Authorization']
 	except KeyError:
-		logging.error('The request did not set an Authorization header')
+		logger.error('The request did not set an Authorization header')
 		return False
 
 	try:
 		with open('./.env.txt', 'r') as file:
 			secrets = file.readlines()
 	except FileNotFoundError:
-		logging.warning('could not find suitable `.env.txt`. Trying to use env variables instead')
+		logger.warning('could not find suitable `.env.txt`. Trying to use env variables instead')
 		try:
 			secrets = [os.environ['AUTHORIZATION_TOKEN_WEB'], os.environ['AUTHORIZATION_TOKEN']]
 		except KeyError:
-			logging.error('could not get environment variables.')
+			logger.error('could not get environment variables.')
 			return False
 	last_webserver_token, this_webserver_token = _convert_secret_to_token(secrets[0].strip())
 	last_other_token, this_other_token = _convert_secret_to_token(secrets[1].strip())
@@ -110,7 +109,7 @@ async def start_container(num_experiments: int, config: Request, authorized: boo
 		if (is_invalid_status(all_container_infos[index].status) or all_container_infos[index].data is False):
 			return JSONResponse(status_code=404, content=vars(all_container_infos[index]))
 		return_dict[index] = vars(all_container_infos[index])
-	logging.info(f'successfully started {num_experiments} container')
+	logger.info(f'successfully started {num_experiments} container')
 	return JSONResponse(return_dict, status_code=200)
 
 
@@ -317,5 +316,6 @@ if __name__ == '__main__':
 	uvicorn.run('app:app',
 		host='0.0.0.0',
 		port=8000,
+		log_config='./log_api.ini',
 		ssl_keyfile='/etc/sslzertifikat/api_cert.key',
 		ssl_certfile='/etc/sslzertifikat/api_cert.crt')

@@ -6,14 +6,13 @@ from datetime import datetime, timedelta
 import psutil
 from container_db_manager import ContainerDB
 from docker_manager import DockerManager
-from utils import setup_logging
 
 manager = DockerManager()
 container_db = ContainerDB()
 last_docker_info = None
 diff = timedelta(minutes=5)
 last_time = datetime.now()
-setup_logging('health_checker')
+# setup_logging('health_checker')
 print('successfully started container health checker, waiting for container to die')
 
 
