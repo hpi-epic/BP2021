@@ -22,11 +22,11 @@ def _get_api_token() -> str:
 	try:
 		with open('./.env.txt', 'r') as file:
 			lines = file.readlines()
-			master_secret = lines[1]
+			master_secret = lines[1].strip()
 	except FileNotFoundError:
 		print('No .env file found, using environment variable instead.')
 		try:
-			master_secret = os.environ['API_TOKEN']
+			master_secret = os.environ['API_TOKEN'].strip()
 		except KeyError:
 			print('Could not get API key')
 			return 'abc'
@@ -152,6 +152,10 @@ def get_api_status() -> dict:
 	if api_is_available.status_code == 401:
 		return {}
 	return {'api_docker_timeout': f'Docker unavailable - {current_time}'}
+
+
+def websocket_url(self) -> str:
+	return 'wss://vm-midea03.eaalab.hpi.uni-potsdam.de:8001/wss'
 
 
 def _error_handling_API(response) -> APIResponse:
