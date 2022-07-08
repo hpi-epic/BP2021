@@ -18,9 +18,7 @@ class ConnectionManager:
 	async def connect(self, websocket: WebSocket):
 		await websocket.accept()
 		self.active_connections.append(websocket)
-		logging.info(f'got new connection of {websocket}')
-		print(websocket)
-		print(self.active_connections)
+		logging.info(f'got new connection of {websocket}, current connections: {self.active_connections}')
 
 	def disconnect(self, websocket: WebSocket):
 		self.active_connections.remove(websocket)
@@ -44,6 +42,7 @@ async def websocket_endpoint(websocket: WebSocket):
 			await asyncio.sleep(5)
 			is_exited, docker_info = manager.check_health_of_all_container()
 			if is_exited and last_docker_info != docker_info:
+				logging.info(f'Sending information about stopped container {docker_info}')
 				await connection_manager.broadcast(json.dumps(vars(docker_info)))
 				last_docker_info = docker_info
 	except Exception:
