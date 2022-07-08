@@ -5,9 +5,6 @@ from .abstract_config import AbstractConfig
 
 
 class EnvironmentConfig(AbstractConfig, models.Model):
-	"""
-	This class represents the `environment` part of our configuration file.
-	"""
 	agents = models.ForeignKey('alpha_business_app.AgentsConfig', on_delete=models.CASCADE, null=True)
 	separate_markets = models.BooleanField(null=True)
 	episodes = models.IntegerField(null=True)

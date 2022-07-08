@@ -1,21 +1,20 @@
 from uuid import uuid4
 
 from django.contrib.auth.decorators import login_required
-from django.http import Http404, HttpResponse, JsonResponse
+from django.http import Http404, HttpResponse
 from django.shortcuts import render
 
 from recommerce.configuration.config_validation import validate_config
 
+from .adjustable_fields import get_agent_hyperparameter
 from .buttons import ButtonHandler
 from .config_parser import ConfigFlatDictParser
-from .container_helper import get_actually_stopped_container_from_api_notification
 from .forms import UploadFileForm
-from .handle_files import get_statistic_data, handle_uploaded_file
-from .handle_requests import get_api_status, send_statistic_request, websocket_url
+from .handle_files import handle_uploaded_file
+from .handle_requests import get_api_status
 from .models.config import Config
 from .models.container import Container
 from .selection_manager import SelectionManager
-from .utils import get_not_possible_agent_hyperparameter
 
 selection_manager = SelectionManager()
 
@@ -49,11 +48,6 @@ def download(request) -> HttpResponse:
 def index(request) -> HttpResponse:
 	if not request.user.is_authenticated:
 		return HttpResponse('Unauthorized', status=401)
-	if request.method == 'POST' and request.user.is_superuser:
-		wants_system_statistic = request.POST['action'] == 'statistic_system'
-		api_response = send_statistic_request(wants_system_statistic)
-		if api_response.ok():
-			return get_statistic_data(api_response.content['data'], request.POST['action'])
 	return render(request, 'index.html')
 
 
@@ -112,8 +106,8 @@ def new_agent(request) -> HttpResponse:
 def agent_changed(request) -> HttpResponse:
 	if not request.user.is_authenticated:
 		return HttpResponse('Unauthorized', status=401)
-	not_possible, all_parameter = get_not_possible_agent_hyperparameter(request.POST['agent'])
-	return HttpResponse(';'.join(not_possible) + '|' + ';'.join(all_parameter))
+	return render(request, 'configuration_items/rl_parameter.html',
+		{'parameters': get_agent_hyperparameter(request.POST['agent'], request.POST.dict())})
 
 
 def api_availability(request) -> HttpResponse:
@@ -149,17 +143,6 @@ def config_validation(request) -> HttpResponse:
 		if not validate_status:
 			return render(request, 'notice_field.html', {'error': validate_data})
 	return render(request, 'notice_field.html', {'success': 'This config is valid'})
-
-
-@login_required
-def container_notification(request):
-	if request.method == 'POST':
-		is_notification_necessary, result = get_actually_stopped_container_from_api_notification(request.POST['api_response'])
-	return render(request, 'alert_field.html', {'warning': result, 'should_render': is_notification_necessary})
-
-
-def get_api_url(request):
-	return JsonResponse({'url': websocket_url()}, status=200, content_type='application/json')
 
 
 @login_required

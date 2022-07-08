@@ -32,7 +32,7 @@ $(document).ready(function() {
 	updateAPIHealth();
 
 	$("select.task-selection").change(function () {
-		// displays the monitoring options when "agent_monitoring" is selected
+		// displays the monitoring options when 'agent_monitoring' is selected
 		var self = this
 		if(self.value == "agent_monitoring") {
 			$(".hide-not-monitoring").each(function () {
@@ -43,7 +43,7 @@ $(document).ready(function() {
 				$(this).addClass("d-none")
 			});
 		}
-	}).trigger("change");
+	}).trigger('change');
 
 	$("select.marketplace-selection").change(function () {
 		// will be called when another marketplace has been selected
@@ -66,33 +66,23 @@ $(document).ready(function() {
 		});
 	}).trigger("change");
 
+
 	function addChangeToAgent () {
 		$("select.agent-agent-class").change(function () {
 			// will be called when agent dropdown has changed, we need to change rl hyperparameter for that
 			var self = $(this);
+			var formdata = getFormData();
 			const csrftoken = getCookie("csrftoken");
 			$.ajax({
 				type: "POST",
 				url: self.data("url"),
 				data: {
 					csrfmiddlewaretoken: csrftoken,
+					formdata,
 					"agent": self.val()
 				},
 				success: function (data) {
-					// our view returns the data in the form:
-					// <agent specific parameters ; seperated>|<all possible parameters ; seperated>
-					// The parameters are already real IDs in our template, we just need to split it up again.
-					parameter_parts = data.split('|');
-					all_parameters = parameter_parts[1].split(';');
-					specific_parameters = parameter_parts[0].split(';');
-					$(all_parameters).each(function (_ , value) {
-						// show all possible rl parameters
-						$("#" + value).removeClass('d-none')
-					});
-					$(specific_parameters).each(function (_ , value) {
-						// make the specific ones not visible
-						$("#" + value).addClass('d-none')
-					});
+					$("div.rl-parameter").empty().append(data)
 				}
 			});
 		}).trigger("change");
@@ -101,12 +91,12 @@ $(document).ready(function() {
 
 	function getCookie(name) {
 		let cookieValue = null;
-		if (document.cookie && document.cookie !== "") {
-			const cookies = document.cookie.split(";");
+		if (document.cookie && document.cookie !== '') {
+			const cookies = document.cookie.split(';');
 			for (let i = 0; i < cookies.length; i++) {
 				const cookie = cookies[i].trim();
 				// Does this cookie string begin with the name we want?
-				if (cookie.substring(0, name.length + 1) === (name + "=")) {
+				if (cookie.substring(0, name.length + 1) === (name + '=')) {
 					cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
 					break;
 				}
@@ -114,21 +104,12 @@ $(document).ready(function() {
 		}
 		return cookieValue;
 	}
-
-	function replaceOrInsert(element, identifier, data) {
-		if (element.length > 0) {
-			element.replaceWith(data);
-		} else {
-			const endOfContent = document.getElementById(identifier);
-			endOfContent.insertAdjacentHTML("afterend", data);
-		}
-	}
 	
 	$("button.form-check").click(function () {		
 		var self = $(this);
 		var formdata = getFormData();
 
-		const csrftoken = getCookie("csrftoken");
+		const csrftoken = getCookie('csrftoken');
 		$.ajax({
 			type: "POST",
 			url: self.data("url"),
@@ -137,39 +118,8 @@ $(document).ready(function() {
 				formdata
 			},
 			success: function (data) {
-				replaceOrInsert($("#notice-field"), "end-of-content", data);
+				$("p.notice-field").replaceWith(data);
 			}
 		});
 	});
-	// var url = "ws://192.168.159.134:8001/ws";
-	var url = "wss://vm-midea03.eaalab.hpi.uni-potsdam.de:8001/wss";
-	// $.ajax({url: "/api_info",
-	// 	success: function (data) {
-	// 		url = data["url"];
-	// 		console.log(url)
-	// 	}
-	// });
-	var ws = new WebSocket(url);
-	ws.onopen = function (_) {
-		console.log("connection to ", url, "open");
-	};
-	ws.onmessage = function(event) {
-		const csrftoken = getCookie("csrftoken");
-		$.ajax({
-			type: "POST",
-			url: "/container_notification",
-			data: {
-				csrfmiddlewaretoken: csrftoken,
-				api_response: event.data
-			},
-			success: function (data) {
-				const endOfContent = document.getElementById("main-nav-bar");
-				endOfContent.insertAdjacentHTML("afterend", data);
-			}
-		});
-		console.log(event.data);
-	};
-	ws.onclose = function(_) {
-		console.log("connection to ", url, "closed");
-	};
 });

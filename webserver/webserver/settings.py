@@ -23,7 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 try:
 	with open('./.env.txt', 'r') as file:
 		lines = file.readlines()
-		SECRET_KEY = lines[0].strip()
+		SECRET_KEY = lines[0]
 except FileNotFoundError:
 	print('No .env file found, using environment variable instead.')
 	try:

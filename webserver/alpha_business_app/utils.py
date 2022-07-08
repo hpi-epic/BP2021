@@ -4,6 +4,10 @@ from recommerce.configuration.environment_config import EnvironmentConfig
 from recommerce.configuration.utils import get_class
 
 
+def convert_python_type_to_input_type(to_convert) -> str:
+	return 'number' if to_convert == float or to_convert == int else 'text'
+
+
 def convert_python_type_to_django_type(to_convert: type) -> str:
 	"""
 	Converts standard python types, into a string of a Django model classes.
@@ -61,24 +65,6 @@ def get_all_possible_rl_hyperparameter() -> set:
 		all_agents += get_recommerce_agents_for_marketplace(marketplace)
 
 	return get_attributes(all_agents)
-
-
-def get_not_possible_agent_hyperparameter(agent: str) -> tuple:
-	"""
-	Returns two lists, the first one being all rl hyperparameter that are possible for that agent,
-	the second one being all possible rl hyperparamter.
-	Both lists contain the parameter with the prefix 'hyperparameter-rl-' as string.
-
-	Args:
-		agent (str): the Agent we want to get the fields that are not possible of
-
-	Returns:
-		tuple: of lists, containing parameters the agent does not have and all possible rl parameter.
-	"""
-	prefix = 'hyperparameter-rl-'
-	all_parameter = set([prefix + parameter[0] for parameter in get_all_possible_rl_hyperparameter()])
-	specific_parameters = set([prefix + parameter[0] for parameter in get_class(agent).get_configurable_fields()])
-	return list(all_parameter - specific_parameters), list(all_parameter)
 
 
 def get_all_possible_sim_market_hyperparameter() -> set:

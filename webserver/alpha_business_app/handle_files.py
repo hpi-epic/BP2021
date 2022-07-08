@@ -1,4 +1,3 @@
-import csv
 import json
 import re
 import tarfile
@@ -122,30 +121,6 @@ def download_file(response, wants_zip: bool, wanted_container: Container) -> Htt
 	file_response['Content-Disposition'] = f'attachment; filename={archive_name}.{application_type}'
 
 	return file_response
-
-
-def get_statistic_data(csv_string: str, file_name: str) -> HttpResponse:
-	"""
-	Converts string in csv format (seperator = ;) to actual csv file and returns this file as HttpResponse.
-	Warning, we do not consider quoting! The string will be split at \n and ;
-	Args:
-		csv_string (str): string in csv format (; seperated)
-		file_name (str): name of final csv file
-
-	Returns:
-		HttpResponse: contains csv file
-	"""
-	lines = csv_string.split('\n')
-	final_lines = []
-	for line in lines:
-		final_lines += [line.split(';')]
-	response = HttpResponse(
-		content_type='text/csv',
-		headers={'Content-Disposition': f'attachment; filename="{file_name}.csv"'},
-	)
-	writer = csv.writer(response, delimiter=';', quotechar='"')
-	writer.writerows(final_lines)
-	return response
 
 
 def _add_files_to_zip(file_like_zip: BytesIO, string_to_add: str) -> BytesIO:

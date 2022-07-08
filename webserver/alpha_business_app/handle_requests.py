@@ -22,7 +22,7 @@ def _get_api_token() -> str:
 	try:
 		with open('./.env.txt', 'r') as file:
 			lines = file.readlines()
-			master_secret = lines[1].strip()
+			master_secret = lines[1]
 	except FileNotFoundError:
 		print('No .env file found, using environment variable instead.')
 		try:
@@ -54,10 +54,6 @@ def _default_request_parameter(wanted_action: str, params: dict) -> dict:
 	}
 
 
-def websocket_url():
-	return 'wss://vm-midea03.eaalab.hpi.uni-potsdam.de:8001/ws'
-
-
 def send_get_request(wanted_action: str, container_id: str) -> APIResponse:
 	"""
 	Sends a get request to the API with the wanted action for a wanted container.
@@ -71,25 +67,6 @@ def send_get_request(wanted_action: str, container_id: str) -> APIResponse:
 	"""
 	try:
 		response = requests.get(**_default_request_parameter(wanted_action, {'id': str(container_id)}))
-	except requests.exceptions.RequestException:
-		return APIResponse('error', content='The API is unavailable')
-	if response.ok:
-		return APIResponse('success', content=response.json())
-	return _error_handling_API(response)
-
-
-def send_statistic_request(wants_system_data: bool) -> APIResponse:
-	"""
-	Sends a get request to `data/statistics`. This request is special, because it does use different parameters
-
-	Args:
-		wants_system_data (bool): indecates if the user wants the information about the runnning system.
-
-	Returns:
-		APIResponse: Response from the API converted into our special format.
-	"""
-	try:
-		response = requests.get(**_default_request_parameter('data/statistics', {'system': wants_system_data}))
 	except requests.exceptions.RequestException:
 		return APIResponse('error', content='The API is unavailable')
 	if response.ok:

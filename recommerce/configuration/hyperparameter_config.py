@@ -53,11 +53,11 @@ class HyperparameterConfigValidator():
 
 		if config_keys != demanded_keys:
 			missing_keys = demanded_keys.difference(config_keys)
-			# redundant_keys = config_keys.difference(demanded_keys)
+			redundant_keys = config_keys.difference(demanded_keys)
 			if missing_keys:
 				assert False, f'your config is missing {missing_keys}'
-			# if redundant_keys:
-			# 	assert False, f'your config provides {redundant_keys} which was not demanded'
+			if redundant_keys:
+				assert False, f'your config provides {redundant_keys} which was not demanded'
 
 	@classmethod
 	def _check_types(cls, config: dict, configurable_fields: list, must_contain: bool = True) -> None:
