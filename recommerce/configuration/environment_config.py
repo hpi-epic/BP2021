@@ -172,7 +172,7 @@ class EnvironmentConfig(ABC):
 					try:
 						agent['argument'] = literal_eval(agent['argument'])
 					except ValueError or SyntaxError or TypeError or MemoryError or RecursionError as e:
-						raise Exception(f'Argument was: {agent["argument"]}, could not be parsed correctly, should be list of numbers') from e
+						raise Exception(f'Argument was: "{agent["argument"]}", could not be parsed correctly, should be list of numbers') from e
 				assert isinstance(agent['argument'], list), \
 					f'The "argument" field of this agent ({agent["name"]}) must be a list but was ({type(agent["argument"])})'
 				# Subclasses of FixedPriceAgent solely accept tuples
