@@ -21,6 +21,10 @@ from fastapi.responses import JSONResponse, StreamingResponse
 # If using a remote machine use
 # uvicorn --host 0.0.0.0 app:app --reload
 # instead to expose it to the local network
+path_to_log_files = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'log_files')
+if not os.path.isdir(path_to_log_files):
+	os.makedirs(path_to_log_files)
+
 logger = logging.getLogger('uvicorn.error')
 manager = DockerManager(logger)
 app = FastAPI()
