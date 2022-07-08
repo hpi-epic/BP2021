@@ -282,16 +282,6 @@ async def check_if_api_is_available(authorized: bool = Depends(verify_token)) ->
 	return JSONResponse({'status': docker_status}, status_code=status_code)
 
 
-def _convert_secret_to_token(secret: str) -> tuple:
-	master_secret_as_int = sum(ord(c) for c in secret)
-	current_time = int(time.time() / 3600)  # unix time in hours
-	# token, that is currently expected
-	expected_this_token = hashlib.sha256(str(master_secret_as_int + current_time).encode('utf-8')).hexdigest()
-	# token that was expected last hour
-	expected_last_token = hashlib.sha256(str(master_secret_as_int + (current_time - 3600)).encode('utf-8')). hexdigest()
-	return expected_last_token, expected_this_token
-
-
 if __name__ == '__main__':
 	uvicorn.run('app:app',
 		host='0.0.0.0',
