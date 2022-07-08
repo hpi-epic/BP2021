@@ -36,7 +36,7 @@ class ConfigModelParserTest(TestCase):
 		},
 		'environment': {
 			'task': 'training',
-			'enable_live_draw': False,
+			'separate_markets': False,
 			'marketplace': 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopoly',
 			'agents': [
 				{
@@ -88,7 +88,7 @@ class ConfigModelParserTest(TestCase):
 		assert final_config.environment is not None
 		environment_config: EnvironmentConfig = final_config.environment
 		assert 'training' == environment_config.task
-		assert environment_config.enable_live_draw is False
+		assert environment_config.separate_markets is False
 		assert environment_config.episodes is None
 		assert environment_config.plot_interval is None
 		assert 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopoly' == environment_config.marketplace
