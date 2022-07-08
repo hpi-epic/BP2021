@@ -11,7 +11,6 @@ tests/test_results
 # all webserver and docker related directories
 webserver/.env.txt
 docker_api/.env.txt
-docker_api/*.db
 docker_api/log_files/*
 
 # file where the users data path is saved
