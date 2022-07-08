@@ -3,7 +3,7 @@ import json
 
 import uvicorn
 from docker_manager import DockerManager
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, WebSocket  # , WebSocketDisconnect
 from utils import bcolors
 
 
@@ -40,8 +40,8 @@ async def websocket_endpoint(websocket: WebSocket):
 			if is_exited and last_docker_info != docker_info:
 				await connection_manager.broadcast(json.dumps(vars(docker_info)))
 				last_docker_info = docker_info
-	except WebSocketDisconnect:
-		print(f'{bcolors.FAIL}webserver disconnect exception{bcolors.ENDC}')
+	except Exception as e:
+		print(f'{bcolors.FAIL}webserver disconnect exception: {e}{bcolors.ENDC}')
 		connection_manager.disconnect(websocket)
 
 
