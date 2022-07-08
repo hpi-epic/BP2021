@@ -120,8 +120,8 @@ class ConfigTest(TestCase):
 		assert expected_dict == test_agent.as_dict()
 
 	def test_dict_representation_of_environment_config(self):
-		test_environment = EnvironmentConfig.objects.create(enable_live_draw=True, episodes=50, plot_interval=12, marketplace='test')
-		expected_dict = {'enable_live_draw': True, 'episodes': 50, 'plot_interval': 12, 'marketplace': 'test'}
+		test_environment = EnvironmentConfig.objects.create(separate_markets=True, episodes=50, plot_interval=12, marketplace='test')
+		expected_dict = {'separate_markets': True, 'episodes': 50, 'plot_interval': 12, 'marketplace': 'test'}
 		assert expected_dict == test_environment.as_dict()
 
 	def test_dict_representation_of_empty_config(self):
