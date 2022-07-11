@@ -90,7 +90,7 @@ class ExamplePrinter():
 					cumulative_dict = copy.deepcopy(logdict)
 				ut.write_dict_to_tensorboard(writer, logdict, counter)
 				ut.write_dict_to_tensorboard(writer, cumulative_dict, counter, is_cumulative=True,
-					episode_length=self.marketplace.config.episode_length)
+					episode_length=self.config_market.episode_length)
 				if isinstance(self.marketplace, circular_market.CircularEconomyRebuyPriceDuopoly):
 					ut.write_content_of_dict_to_overview_svg(svg_manipulator, counter, logdict, cumulative_dict, self.config_market)
 				our_profit += reward
@@ -107,7 +107,7 @@ class ExamplePrinter():
 		if isinstance(self.marketplace, circular_market.CircularEconomyRebuyPriceDuopoly):
 			svg_manipulator.to_html()
 
-		x = np.array(range(1, self.marketplace.config.episode_length + 1))
+		x = np.array(range(1, self.config_market.episode_length + 1))
 		plt.step(x, in_circulations)
 		plt.savefig(os.path.join(PathManager.results_path, 'exampleprinter', signature, 'lineplot_in_circulations.svg'))
 		plt.xlim(450, 475)
