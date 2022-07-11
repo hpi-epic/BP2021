@@ -1,5 +1,5 @@
 import os
-from unittest.mock import patch
+import shutil
 
 import pytest
 from attrdict import AttrDict
@@ -8,6 +8,7 @@ import recommerce.market.circular.circular_sim_market as circular_market
 import recommerce.market.circular.circular_vendors as circular_vendors
 import recommerce.market.linear.linear_sim_market as linear_market
 from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader
+from recommerce.configuration.path_manager import PathManager
 from recommerce.market.linear.linear_vendors import FixedPriceLEAgent
 from recommerce.monitoring.exampleprinter import ExamplePrinter
 from recommerce.rl.actorcritic.actorcritic_agent import ContinuousActorCriticAgentFixedOneStd, DiscreteActorCriticAgent
@@ -53,11 +54,12 @@ full_episode_testcases_rule_based = [
 
 @pytest.mark.parametrize('marketplace, agent', full_episode_testcases_rule_based)
 def test_full_episode_rule_based(marketplace, agent):
-	with patch('recommerce.monitoring.exampleprinter.SVGManipulator'),\
-		patch('recommerce.monitoring.exampleprinter.SummaryWriter'):
-		printer = ExamplePrinter(config_market=config_market)
-		printer.setup_exampleprinter(marketplace, agent)
-		assert printer.run_example() >= -5000
+	# with patch('recommerce.monitoring.exampleprinter.SVGManipulator'),\
+	# 	patch('recommerce.monitoring.exampleprinter.SummaryWriter'):
+	printer = ExamplePrinter(config_market=config_market)
+	printer.setup_exampleprinter(marketplace, agent)
+	assert printer.run_example(True) >= -5000
+	shutil.rmtree(PathManager.results_path)
 
 
 full_episode_testcases_rl_agent = [
@@ -83,14 +85,15 @@ def test_full_episode_rl_agents(marketplace, agent_class, parameters_file, confi
 		config_market=config_market,
 		config_rl=config_rl,
 		load_path=os.path.join(parameters_path, parameters_file))
-	with patch('recommerce.monitoring.exampleprinter.SVGManipulator'),\
-		patch('recommerce.monitoring.exampleprinter.SummaryWriter'):
-		printer = ExamplePrinter(config_market=config_market)
-		printer.setup_exampleprinter(marketplace, agent)
-		assert printer.run_example() >= -5000
+	# with patch('recommerce.monitoring.exampleprinter.SVGManipulator'),\
+	# 	patch('recommerce.monitoring.exampleprinter.SummaryWriter'):
+	printer = ExamplePrinter(config_market=config_market)
+	printer.setup_exampleprinter(marketplace, agent)
+	assert printer.run_example(True) >= -5000
+	shutil.rmtree(PathManager.results_path)
 
 
 @pytest.mark.slow
 def test_exampleprinter_with_tensorboard():
-	with patch('recommerce.monitoring.exampleprinter.SVGManipulator'):
-		assert ExamplePrinter(config_market=config_market).run_example() >= -5000
+	assert ExamplePrinter(config_market=config_market).run_example(True) >= -5000
+	shutil.rmtree(PathManager.results_path)

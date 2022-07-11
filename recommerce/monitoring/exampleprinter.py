@@ -52,9 +52,12 @@ class ExamplePrinter():
 		print('\nAborting exampleprinter run...')
 		sys.exit(0)
 
-	def run_example(self) -> int:
+	def run_example(self, save_lineplots=False) -> int:
 		"""
 		Run a specified marketplace with a (pre-trained, if RL) agent and record various statistics using TensorBoard.
+
+		Args:
+			save_lineplots (bool, optional): Whether to save lineplots of the market's performance.
 
 		Returns:
 			int: The profit made.
@@ -67,15 +70,17 @@ class ExamplePrinter():
 
 		signature = f'exampleprinter_{time.strftime("%b%d_%H-%M-%S")}'
 		writer = SummaryWriter(log_dir=os.path.join(PathManager.results_path, 'runs', signature))
+		os.makedirs(os.path.join(PathManager.results_path, 'exampleprinter', signature))
 
 		if isinstance(self.marketplace, circular_market.CircularEconomyRebuyPriceDuopoly):
 			svg_manipulator = SVGManipulator(signature)
 		cumulative_dict = None
 
-		price_used = [[] for _ in range(self.marketplace._number_of_vendors)]
-		price_news = [[] for _ in range(self.marketplace._number_of_vendors)]
-		price_rebuy = [[] for _ in range(self.marketplace._number_of_vendors)]
-		in_storages = [[] for _ in range(self.marketplace._number_of_vendors)]
+		if isinstance(self.marketplace, circular_market.CircularEconomyRebuyPrice) and save_lineplots:
+			price_used = [[] for _ in range(self.marketplace._number_of_vendors)]
+			price_news = [[] for _ in range(self.marketplace._number_of_vendors)]
+			price_rebuy = [[] for _ in range(self.marketplace._number_of_vendors)]
+			in_storages = [[] for _ in range(self.marketplace._number_of_vendors)]
 		in_circulations = []
 
 		with torch.no_grad():
@@ -95,31 +100,33 @@ class ExamplePrinter():
 					ut.write_content_of_dict_to_overview_svg(svg_manipulator, counter, logdict, cumulative_dict, self.config_market)
 				our_profit += reward
 				counter += 1
-				for i in range(self.marketplace._number_of_vendors):
-					price_used[i].append(logdict['actions/price_refurbished'][f'vendor_{i}'])
-					price_news[i].append(logdict['actions/price_new'][f'vendor_{i}'])
-					price_rebuy[i].append(logdict['actions/price_rebuy'][f'vendor_{i}'])
-					in_storages[i].append(logdict['state/in_storage'][f'vendor_{i}'])
-				in_circulations.append(logdict['state/in_circulation'])
+				if isinstance(self.marketplace, circular_market.CircularEconomyRebuyPrice) and save_lineplots:
+					for i in range(self.marketplace._number_of_vendors):
+						price_used[i].append(logdict['actions/price_refurbished'][f'vendor_{i}'])
+						price_news[i].append(logdict['actions/price_new'][f'vendor_{i}'])
+						price_rebuy[i].append(logdict['actions/price_rebuy'][f'vendor_{i}'])
+						in_storages[i].append(logdict['state/in_storage'][f'vendor_{i}'])
+					in_circulations.append(logdict['state/in_circulation'])
 				if isinstance(self.marketplace, circular_market.CircularEconomyRebuyPriceDuopoly):
 					svg_manipulator.save_overview_svg(filename=('MarketOverview_%.3d' % counter))
 
 		if isinstance(self.marketplace, circular_market.CircularEconomyRebuyPriceDuopoly):
 			svg_manipulator.to_html()
 
-		x = np.array(range(1, self.config_market.episode_length + 1))
-		plt.step(x, in_circulations)
-		plt.savefig(os.path.join(PathManager.results_path, 'exampleprinter', signature, 'lineplot_in_circulations.svg'))
-		plt.xlim(450, 475)
-		plt.savefig(os.path.join(PathManager.results_path, 'exampleprinter', signature, 'lineplot_in_circulations_xlim.svg'))
-		plt.clf()
-		for data, name in [(price_used, 'price_used'), (price_news, 'price_news'), (price_rebuy, 'price_rebuy'), (in_storages, 'in_storages')]:
-			for i in range(self.marketplace._number_of_vendors):
-				plt.step(x - (0.5 if i == 1 else 0), data[i])
-			plt.savefig(os.path.join(PathManager.results_path, 'exampleprinter', signature, f'lineplot_{name}.svg'))
+		if isinstance(self.marketplace, circular_market.CircularEconomyRebuyPrice) and save_lineplots:
+			x = np.array(range(1, self.config_market.episode_length + 1))
+			plt.step(x, in_circulations)
+			plt.savefig(os.path.join(PathManager.results_path, 'exampleprinter', signature, 'lineplot_in_circulations.svg'))
 			plt.xlim(450, 475)
-			plt.savefig(os.path.join(PathManager.results_path, 'exampleprinter', signature, f'lineplot_{name}_xlim.svg'))
+			plt.savefig(os.path.join(PathManager.results_path, 'exampleprinter', signature, 'lineplot_in_circulations_xlim.svg'))
 			plt.clf()
+			for data, name in [(price_used, 'price_used'), (price_news, 'price_news'), (price_rebuy, 'price_rebuy'), (in_storages, 'in_storages')]:
+				for i in range(self.marketplace._number_of_vendors):
+					plt.step(x - (0.5 if i == 1 else 0), data[i])
+				plt.savefig(os.path.join(PathManager.results_path, 'exampleprinter', signature, f'lineplot_{name}.svg'))
+				plt.xlim(450, 475)
+				plt.savefig(os.path.join(PathManager.results_path, 'exampleprinter', signature, f'lineplot_{name}_xlim.svg'))
+				plt.clf()
 
 		return our_profit
 
