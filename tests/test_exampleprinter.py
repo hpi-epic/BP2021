@@ -54,8 +54,6 @@ full_episode_testcases_rule_based = [
 
 @pytest.mark.parametrize('marketplace, agent', full_episode_testcases_rule_based)
 def test_full_episode_rule_based(marketplace, agent):
-	# with patch('recommerce.monitoring.exampleprinter.SVGManipulator'),\
-	# 	patch('recommerce.monitoring.exampleprinter.SummaryWriter'):
 	printer = ExamplePrinter(config_market=config_market)
 	printer.setup_exampleprinter(marketplace, agent)
 	assert printer.run_example(True) >= -5000
@@ -85,8 +83,6 @@ def test_full_episode_rl_agents(marketplace, agent_class, parameters_file, confi
 		config_market=config_market,
 		config_rl=config_rl,
 		load_path=os.path.join(parameters_path, parameters_file))
-	# with patch('recommerce.monitoring.exampleprinter.SVGManipulator'),\
-	# 	patch('recommerce.monitoring.exampleprinter.SummaryWriter'):
 	printer = ExamplePrinter(config_market=config_market)
 	printer.setup_exampleprinter(marketplace, agent)
 	assert printer.run_example(True) >= -5000
