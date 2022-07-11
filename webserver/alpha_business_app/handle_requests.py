@@ -154,7 +154,7 @@ def get_api_status() -> dict:
 	return {'api_docker_timeout': f'Docker unavailable - {current_time}'}
 
 
-def websocket_url(self) -> str:
+def websocket_url() -> str:
 	return 'wss://vm-midea03.eaalab.hpi.uni-potsdam.de:8001/wss'
 
 
