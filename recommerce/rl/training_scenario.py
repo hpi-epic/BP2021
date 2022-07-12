@@ -140,7 +140,6 @@ def train_stable_baselines_ppo():
 	used_marketplace = circular_market.CircularEconomyRebuyPriceDuopoly
 	config_market: AttrDict = HyperparameterConfigLoader.load('market_config', used_marketplace)
 	config_rl: AttrDict = HyperparameterConfigLoader.load('sb_ppo_config', StableBaselinesPPO)
-	config_rl.neurones_per_hidden_layer = 256
 	StableBaselinesPPO(
 		config_market=config_market,
 		config_rl=config_rl,

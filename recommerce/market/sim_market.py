@@ -63,7 +63,6 @@ class SimMarket(gym.Env, JSONConfigurable):
 		self._number_of_vendors = self._get_number_of_vendors()
 		# TODO: Better testing for the observation and action space
 		assert (self.observation_space and self.action_space), 'Your observation or action space is not defined'
-		# Make sure that variables such as state, customer are known
 		assert not self.config.reward_mixed_profit_and_difference or self._number_of_vendors > 1, \
 			'You cannot use the mixed profit and difference reward in a monopoly market'
 		self.reset()

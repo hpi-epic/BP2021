@@ -306,7 +306,7 @@ def experiment_temperature_sac():
 def experiment_partial_markov_a2c():
     groups = [
         run_group(market_class, 'market_config', StableBaselinesA2C, configuration_a2c_all_same, shorttraining),
-        run_group(market_class, 'market_config3', StableBaselinesA2C, configuration_a2c_all_same, shorttraining)
+        run_group(market_class, 'market_config_only_partial_view', StableBaselinesA2C, configuration_a2c_all_same, shorttraining)
     ]
     print_diagrams(groups, 'partial_markov_a2c')
 
@@ -314,7 +314,8 @@ def experiment_partial_markov_a2c():
 def experiment_partial_markov_ppo():
     groups = [
         run_group(market_class, 'market_config', StableBaselinesPPO, configuration_ppo_clip_0_3_all_same, standardtraining),
-        run_group(market_class, 'market_config3', StableBaselinesPPO, configuration_ppo_clip_0_3_all_same, standardtraining)
+        run_group(market_class, 'market_config_only_partial_view',
+            StableBaselinesPPO, configuration_ppo_clip_0_3_all_same, standardtraining)
     ]
     print_diagrams(groups, 'partial_markov_ppo')
 
@@ -322,7 +323,7 @@ def experiment_partial_markov_ppo():
 def experiment_partial_markov_sac():
     groups = [
         run_group(market_class, 'market_config', StableBaselinesSAC, configuration_sac_all_same, shorttraining),
-        run_group(market_class, 'market_config3', StableBaselinesSAC, configuration_sac_all_same, shorttraining)
+        run_group(market_class, 'market_config_only_partial_view', StableBaselinesSAC, configuration_sac_all_same, shorttraining)
     ]
     print_diagrams(groups, 'partial_markov_sac')
 
@@ -330,7 +331,7 @@ def experiment_partial_markov_sac():
 def experiment_mixed_rewards_a2c():
     groups = [
         run_group(market_class, 'market_config', StableBaselinesA2C, configuration_a2c_all_same, shorttraining),
-        run_group(market_class, 'market_config_mixed', StableBaselinesA2C, configuration_a2c_all_same, shorttraining)
+        run_group(market_class, 'market_config_mixed_reward_function', StableBaselinesA2C, configuration_a2c_all_same, shorttraining)
     ]
     print_diagrams([groups[0]], 'partial_a2c')
     print_diagrams([groups[1]], 'partial_mixed_a2c')
@@ -340,7 +341,8 @@ def experiment_mixed_rewards_a2c():
 def experiment_mixed_rewards_ppo():
     groups = [
         run_group(market_class, 'market_config', StableBaselinesPPO, configuration_ppo_clip_0_3_all_same, standardtraining),
-        run_group(market_class, 'market_config_mixed', StableBaselinesPPO, configuration_ppo_clip_0_3_all_same, standardtraining)
+        run_group(market_class, 'market_config_mixed_reward_function',
+            StableBaselinesPPO, configuration_ppo_clip_0_3_all_same, standardtraining)
     ]
     print_diagrams([groups[0]], 'partial_ppo')
     print_diagrams([groups[1]], 'partial_mixed_ppo')
@@ -350,7 +352,7 @@ def experiment_mixed_rewards_ppo():
 def experiment_mixed_rewards_sac():
     groups = [
         run_group(market_class, 'market_config', StableBaselinesSAC, configuration_sac_all_same, shorttraining),
-        run_group(market_class, 'market_config_mixed', StableBaselinesSAC, configuration_sac_all_same, shorttraining)
+        run_group(market_class, 'market_config_mixed_reward_function', StableBaselinesSAC, configuration_sac_all_same, shorttraining)
     ]
     print_diagrams([groups[0]], 'partial_sac')
     print_diagrams([groups[1]], 'partial_mixed_sac')
@@ -363,7 +365,8 @@ def experiment_self_play_mixed():
         (StableBaselinesPPO, configuration_ppo_clip_0_3_all_same),
         (StableBaselinesSAC, configuration_sac_all_same)
     ]
-    groups = [run_group(market_class, 'market_config_mixed', agent, configuration, standardtraining, target_function=run_self_play_session)
+    groups = [run_group(market_class, 'market_config_mixed_reward_function',
+        agent, configuration, standardtraining, target_function=run_self_play_session)
         for agent, configuration in tasks]
     print_diagrams(groups, 'self_play_mixed')
 
@@ -399,7 +402,7 @@ def experiment_oligopol_mixed():
         (StableBaselinesSAC, configuration_sac_all_same)
     ]
     groups = [run_group(CircularEconomyRebuyPriceOligopoly,
-        'market_config_mixed', agent, configuration, mediumtraining, target_function=run_training_session)
+        'market_config_mixed_reward_function', agent, configuration, mediumtraining, target_function=run_training_session)
         for agent, configuration in tasks]
     print_diagrams(groups, 'comparison_oligopoly_mixed')
 

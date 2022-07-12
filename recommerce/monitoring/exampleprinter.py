@@ -4,6 +4,8 @@ import signal
 import sys
 import time
 
+import matplotlib.pyplot as plt
+import numpy as np
 import torch
 from attrdict import AttrDict
 from torch.utils.tensorboard import SummaryWriter
@@ -50,9 +52,12 @@ class ExamplePrinter():
 		print('\nAborting exampleprinter run...')
 		sys.exit(0)
 
-	def run_example(self) -> int:
+	def run_example(self, save_lineplots=False) -> int:
 		"""
 		Run a specified marketplace with a (pre-trained, if RL) agent and record various statistics using TensorBoard.
+
+		Args:
+			save_lineplots (bool, optional): Whether to save lineplots of the market's performance.
 
 		Returns:
 			int: The profit made.
@@ -65,10 +70,18 @@ class ExamplePrinter():
 
 		signature = f'exampleprinter_{time.strftime("%b%d_%H-%M-%S")}'
 		writer = SummaryWriter(log_dir=os.path.join(PathManager.results_path, 'runs', signature))
+		os.makedirs(os.path.join(PathManager.results_path, 'exampleprinter', signature))
 
 		if isinstance(self.marketplace, circular_market.CircularEconomyRebuyPriceDuopoly):
 			svg_manipulator = SVGManipulator(signature)
 		cumulative_dict = None
+
+		if isinstance(self.marketplace, circular_market.CircularEconomyRebuyPrice) and save_lineplots:
+			price_used = [[] for _ in range(self.marketplace._number_of_vendors)]
+			price_news = [[] for _ in range(self.marketplace._number_of_vendors)]
+			price_rebuy = [[] for _ in range(self.marketplace._number_of_vendors)]
+			in_storages = [[] for _ in range(self.marketplace._number_of_vendors)]
+		in_circulations = []
 
 		with torch.no_grad():
 			while not is_done:
@@ -82,16 +95,47 @@ class ExamplePrinter():
 					cumulative_dict = copy.deepcopy(logdict)
 				ut.write_dict_to_tensorboard(writer, logdict, counter)
 				ut.write_dict_to_tensorboard(writer, cumulative_dict, counter, is_cumulative=True,
-					episode_length=self.marketplace.config.episode_length)
+					episode_length=self.config_market.episode_length)
 				if isinstance(self.marketplace, circular_market.CircularEconomyRebuyPriceDuopoly):
 					ut.write_content_of_dict_to_overview_svg(svg_manipulator, counter, logdict, cumulative_dict, self.config_market)
 				our_profit += reward
 				counter += 1
+				if isinstance(self.marketplace, circular_market.CircularEconomyRebuyPrice) and save_lineplots:
+					for i in range(self.marketplace._number_of_vendors):
+						price_used[i].append(logdict['actions/price_refurbished'][f'vendor_{i}'])
+						price_news[i].append(logdict['actions/price_new'][f'vendor_{i}'])
+						price_rebuy[i].append(logdict['actions/price_rebuy'][f'vendor_{i}'])
+						in_storages[i].append(logdict['state/in_storage'][f'vendor_{i}'])
+					in_circulations.append(logdict['state/in_circulation'])
 				if isinstance(self.marketplace, circular_market.CircularEconomyRebuyPriceDuopoly):
 					svg_manipulator.save_overview_svg(filename=('MarketOverview_%.3d' % counter))
 
 		if isinstance(self.marketplace, circular_market.CircularEconomyRebuyPriceDuopoly):
 			svg_manipulator.to_html()
+
+		if isinstance(self.marketplace, circular_market.CircularEconomyRebuyPrice) and save_lineplots:
+			x = np.array(range(1, self.config_market.episode_length + 1))
+			plt.step(x, in_circulations)
+			plt.savefig(os.path.join(PathManager.results_path, 'exampleprinter', signature, 'lineplot_in_circulations.svg'))
+			plt.xlim(450, 475)
+			plt.savefig(os.path.join(PathManager.results_path, 'exampleprinter', signature, 'lineplot_in_circulations_xlim.svg'), transparent=True)
+			plt.clf()
+			for data, name in [(price_used, 'price_refurbished'), (price_news, 'price_new'),
+				(price_rebuy, 'price_rebuy'), (in_storages, 'in_storages')]:
+				for i in range(self.marketplace._number_of_vendors):
+					plt.step(x - (0.5 if i == 1 else 0), data[i], label=(self.agent.name if i == 0 else self.marketplace.competitors[i - 1].name))
+				plt.legend()
+				plt.title(f'Step Diagram of {name}')
+				plt.xlabel('Step')
+				plt.ylabel(name)
+				if 'price' in name:
+					plt.ylim(0, 10)
+				elif 'in_storage' in name:
+					plt.ylim(0, 100)
+				plt.savefig(os.path.join(PathManager.results_path, 'exampleprinter', signature, f'lineplot_{name}.svg'), transparent=True)
+				plt.xlim(450, 475)
+				plt.savefig(os.path.join(PathManager.results_path, 'exampleprinter', signature, f'lineplot_{name}_xlim.svg'), transparent=True)
+				plt.clf()
 
 		return our_profit
 

@@ -95,7 +95,7 @@ class OwnerRebuy(Owner):
 
 		holding_preference = 1
 		return_preferences = []
-		lowest_purchase_offer = 100000
+		lowest_purchase_offer = np.inf
 		best_rebuy_price = 0
 
 		for vendor_idx in range(len(vendor_specific_state)):

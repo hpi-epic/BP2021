@@ -26,15 +26,6 @@ market_classes = [
 ]
 
 
-@pytest.mark.parametrize('marketclass', market_classes)
-def test_unique_output_dict(marketclass):
-	config_market: AttrDict = HyperparameterConfigLoader.load('market_config', circular_market.CircularEconomyRebuyPriceMonopoly)
-	market = marketclass(config=config_market)
-	_, _, _, info_dict_1 = market.step(ut_t.create_mock_action(marketclass))
-	_, _, _, info_dict_2 = market.step(ut_t.create_mock_action(marketclass))
-	assert id(info_dict_1) != id(info_dict_2)
-
-
 market_combinations = []
 for market_class in market_classes:
 	for i in range(8):
@@ -63,13 +54,23 @@ agent_classes = [
 ]
 
 
-testcases = [(*market_related, *agent_related)
+market_initialization_and_steps_testcases = [(*market_related, *agent_related)
 	for market_related, agent_related in ut.cartesian_product(market_combinations, agent_classes)]
-testcases = list(filter(lambda x: not (issubclass(x[2], (StableBaselinesA2C, StableBaselinesPPO)) and
-	issubclass(x[0], linear_market.LinearEconomy)), testcases))
+market_initialization_and_steps_testcases = list(filter(lambda x: not (issubclass(x[2], (StableBaselinesA2C, StableBaselinesPPO)) and
+	issubclass(x[0], linear_market.LinearEconomy)), market_initialization_and_steps_testcases))
 
 
-@pytest.mark.parametrize('market_class, config_market, agent_class, config_agent, continuos_action_space', testcases)
+@pytest.mark.parametrize('marketclass', market_classes)
+def test_unique_output_dict(marketclass):
+	config_market: AttrDict = HyperparameterConfigLoader.load('market_config', circular_market.CircularEconomyRebuyPriceMonopoly)
+	market = marketclass(config=config_market)
+	_, _, _, info_dict_1 = market.step(ut_t.create_mock_action(marketclass))
+	_, _, _, info_dict_2 = market.step(ut_t.create_mock_action(marketclass))
+	assert id(info_dict_1) != id(info_dict_2)
+
+
+@pytest.mark.parametrize('market_class, config_market, agent_class, config_agent, continuos_action_space',
+	market_initialization_and_steps_testcases)
 def test_market_initialization_and_steps(market_class, config_market, agent_class, config_agent, continuos_action_space):
 	market = market_class(config_market, support_continuous_action_space=continuos_action_space)
 	config_rl = HyperparameterConfigLoader.load(config_agent, agent_class)
