@@ -18,6 +18,16 @@
 	border-color: rgb(248, 83, 7);
 }
 
+.bc-outline-yellow {
+	color: rgb(248, 228, 7) !important;
+	border-color: rgb(248, 228, 7)  !important;
+}
+.bc-outline-yellow:hover {
+	color: #000 !important;
+	background-color: rgb(248, 228, 7);
+	border-color: rgb(248, 228, 7);
+}
+
 .bc-outline-unpause {
 	color: rgb(0, 50, 187) !important;
 	border-color: rgb(0, 50, 187)  !important;

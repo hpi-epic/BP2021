@@ -15,6 +15,7 @@
                 <th>logs</th>
                 <th>stop and remove container</th>
                 <th>tensorboard</th>
+                <th>configuration</th>
             </tr>
             <tr>
                 <td>{{ container.command }}</td>
@@ -22,22 +23,25 @@
                 <td>{{ container.last_check_at }}</td>
                 <td>{{ container.health_status }}</td>
                 <td class="button_row" >
-                    {% include "api_buttons/health_button.html" %}
+                    {% include "buttons/health_button.html" %}
                 </td>
                 <td class="button_row">
-                    {% include "api_buttons/pause_button.html" %}
+                    {% include "buttons/pause_button.html" %}
                 </td>
                 <td class="button_row" >
-                    {% include "api_buttons/download_button.html" %}
+                    {% include "buttons/download_button.html" %}
                 </td>
                 <td class="button_row" >
-                    {% include "api_buttons/logs_button.html" %}
+                    {% include "buttons/logs_button.html" %}
                 </td>
                 <td class="button_row">
-                    {% include "api_buttons/stop_button.html" %}
+                    {% include "buttons/stop_button.html" %}
                 </td>
                 <td class="button_row" >
-                    {% include "api_buttons/tensorboard_button.html" %}
+                    {% include "buttons/tensorboard_button.html" %}
+                </td>
+                <td class="button_row" >
+                    {% include "buttons/config_button.html" %}
                 </td>
             </tr>
         </table>
