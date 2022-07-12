@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 import recommerce.configuration.utils as ut
+import recommerce.market.circular.circular_vendors as circular_vendors
 from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader
 from recommerce.configuration.path_manager import PathManager
 from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPriceDuopoly
@@ -116,6 +117,11 @@ if __name__ == '__main__':
 		'comparison_oligopoly\\trainedModels\\Trainsac_standard_1_Jun15_04-53-16\\watchers.json',
 		config_market,
 		'SAC',
-		['Rule Based Undercutting', 'Rule Based (non competitive)', 'Fixed Price', 'Storage Minimizer'],
+		[
+			circular_vendors.RuleBasedCERebuyAgentCompetitive(config_market=config_market, name='Rule Based Undercutting'),
+			circular_vendors.RuleBasedCERebuyAgent(config_market=config_market, name='Rule Based (non competitive)'),
+			circular_vendors.FixedPriceCERebuyAgent(config_market=config_market, name='Fixed Price'),
+			circular_vendors.RuleBasedCERebuyAgentStorageMinimizer(config_market=config_market, name='Storage Minimizer')
+		],
 		'test'
 	)
