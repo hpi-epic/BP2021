@@ -24,16 +24,16 @@ def validate_config(config: dict) -> tuple:
 			assert len(config) == 2, 'Your config should not contain keys other than "environment" and "hyperparameter"'
 			hyperparameter_config = config['hyperparameter']
 			environment_config = config['environment']
+			environment_config.pop('config_type')
 
 			market_class = get_class(environment_config['marketplace'])
 			agent_class = get_class(environment_config['agents'][0]['agent_class'])
 
-			HyperparameterConfigValidator.validate_config(hyperparameter_config['sim_market'], market_class)
-			HyperparameterConfigValidator.validate_config(hyperparameter_config['rl'], agent_class)
+			sim_market_config = HyperparameterConfigValidator.validate_config(hyperparameter_config['sim_market'], market_class)
+			rl_config = HyperparameterConfigValidator.validate_config(hyperparameter_config['rl'], agent_class)
 			EnvironmentConfig.check_types(environment_config, environment_config['task'], False, True)
 
-			return True, ({'rl': hyperparameter_config['rl']}, {'sim_market': hyperparameter_config['sim_market']},
-				{'environment': environment_config})
+			return True, ({'rl': rl_config}, {'sim_market': sim_market_config}, {'environment': environment_config})
 		# if the two keys are not present, the config MUST be one of environment, rl, or market
 		# this is only the case when uploading a config
 		else:
