@@ -24,7 +24,6 @@ def validate_config(config: dict) -> tuple:
 			assert len(config) == 2, 'Your config should not contain keys other than "environment" and "hyperparameter"'
 			hyperparameter_config = config['hyperparameter']
 			environment_config = config['environment']
-			environment_config.pop('config_type')
 
 			market_class = get_class(environment_config['marketplace'])
 			agent_class = get_class(environment_config['agents'][0]['agent_class'])
