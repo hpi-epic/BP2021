@@ -5,8 +5,8 @@
 ![Docstring-Coverage](/badges/docstring_coverage.svg)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 
-- [1. Using the `recommerce` package](#1-using-the-recommerce-package)
-	- [1.1. Quick-Start guide](#11-quick-start-guide)
+- [1. The `recommerce` package](#1-the-recommerce-package)
+	- [1.1. Quick Start Guide](#11-quick-start-guide)
 - [2. Installing dependencies](#2-installing-dependencies)
 	- [2.1. Dependency Installation Troubleshooting](#21-dependency-installation-troubleshooting)
 - [3. Installing the `Recommerce` package](#3-installing-the-recommerce-package)
@@ -25,27 +25,27 @@
 		- [6.1.3. Docker/GPU-VM Troubleshooting](#613-dockergpu-vm-troubleshooting)
 	- [6.2. Webserver](#62-webserver)
 	- [6.3. Docker API](#63-docker-api)
-- [7. Tensorboard](#7-tensorboard)
+- [7. TensorBoard](#7-tensorboard)
 
 Working repository in context of the bachelor's project "*Online Marketplace Simulation: A Testbed for Self-Learning Agents*" at the *Enterprise Platform and Integration Concepts* ([@hpi-epic](https://github.com/hpi-epic)) research group of the Hasso-Plattner-Institute.
 
 *TODO: Project summary*
 
-## 1. Using the `recommerce` package
+## 1. The `recommerce` package
 
-If you have not yet done so, first install the package by following [Installing dependencies](#2-installing-dependencies) and [Installing the `recommerce` package](#3-installing-the-recommerce-package).
+If you have not yet done so, first install the `recommerce` package by following [Installing dependencies](#2-installing-dependencies) and [Installing the `recommerce` package](#3-installing-the-recommerce-package).
 
-At any point, use
+At any point after the installation has completed, use
 
 ```terminal
 recommerce --help
 ```
 
-to see the usage options of the package.
+in your terminal to see the usage options of the package. The Quick Start Guide in the next section will help you set up the simulation framework and get started with a first experiment.
 
-### 1.1. Quick-Start guide
+### 1.1. Quick Start Guide
 
-The `recommerce` package requires users to provide it with a datapath, which is where `recommerce` will look for configuration files and write output files, such as trained models.
+The `recommerce` package requires users to provide it with a datapath, which is where the package will look for configuration files and write output files, such as statistics and diagrams.
 During installation of the package, the datapath was set to the current working directory. If you want to modify the datapath, you can use the following command:
 
 ```terminal
@@ -64,7 +64,7 @@ You can check the currently set datapath at any point by running
 recommerce --get-datapath
 ```
 
-To start your first training or exampleprinter session, `recommerce` requires you to provide two configuration files. You can either write those yourself or use the following command to have `recommerce` copy over default files which you can immediately use or modify as you wish.
+To start an experiment, `recommerce` requires you to provide configuration files, which contain the necessary information to set up the simulation. You can either write those files yourself or use the following command to have `recommerce` copy over default files which you can immediately use or modify as you wish:
 
 *WARNING*: By using the following command, any files with the same names as the default data will be overwritten, so use with caution! To get the data in a folder called `default_data` use the flag `--get-defaults` instead.
 
@@ -72,7 +72,7 @@ To start your first training or exampleprinter session, `recommerce` requires yo
 recommerce --get-defaults-unpack
 ```
 
-The `-unpack` part flag makes sure that the default files are not just stored in the `default-data` folder in your datapath, but unpacked in a way that `recommerce` can find them.
+The `-unpack` part of the flag makes sure that the default files are not just stored in the `default-data` folder in your datapath, but unpacked in a way that `recommerce` can immediately find them, by storing configuration files and pre-trained models in the `configuration_files` and `data` directories respectively.
 
 Now you are ready to run your first exampleprinter session:
 
@@ -80,7 +80,7 @@ Now you are ready to run your first exampleprinter session:
 recommerce -c exampleprinter
 ```
 
-If you are using the default configuration files provided by `recommerce --get-defaults`, this exampleprinter run will create an in-depth HTML-Slideshow of the run in the `results/exampleprinter` folder within your datapath.
+If you are using the default configuration files provided by `recommerce --get-defaults`, this exampleprinter run will also create an in-depth HTML-Slideshow of the run in the `results/exampleprinter` folder within your datapath.
 
 ## 2. Installing dependencies
 
@@ -104,7 +104,7 @@ To update an existing environment with the needed packages run the following com
 conda env update -n your_venv_name
 ```
 
-If version numbers have changed in the `environment.yml` it can happen that conda finds conflicts and tries resolving them without succeeding. In this case you may need to reinstall the packages. Deactivate your environment before proceeding, otherwise conda cannot perform the commands.
+If version numbers have changed in the `environment.yml` it can happen that conda finds conflicts and tries resolving them without succeeding. In this case you may need to reinstall the packages. Deactivate your environment before proceeding, otherwise conda cannot perform the commands:
 
 ```terminal
 conda uninstall -n your_venv_name --all
@@ -129,7 +129,7 @@ python Path/To/Anaconda3/Scripts/pywin32_postinstall.py -install
 
 ## 3. Installing the `Recommerce` package
 
-Before installing, please inform yourself on whether or not your device has `cuda`-support, one starting point could be [this](https://developer.nvidia.com/cuda-gpus) resource by NVIDIA. This decides if you should install our project with cuda support, or without, which comes down to the specific version of `torch` that will be installed. 
+Before proceeding, please inform yourself on whether or not your device supports `cuda`, take a look at [this](https://developer.nvidia.com/cuda-gpus) resource provided by NVIDIA. This decides if you should install our project with cuda support, or without, which comes down to the specific version of `torch` that will be installed. The file size of the torch version that supports cuda is much larger in comparison. 
 
 If your device supports cuda and you want to utilize its capabilities, use the following command within the project directory:
 
@@ -143,17 +143,15 @@ Otherwise, to install without cuda support, use:
 pip install -e .[cpu]
 ```
 
-This installs the `recommerce` folder (and its subdirectories) as a local pip package. The `-e` flag indicates to pip that the package should be installed in an editable state. This results in the packages not being directly written to where pip dependencies usually would, but only a "link" to you current working directory being created. In order to install the package, we use `setuptools`, which uses the `setup.py`, `setup.cfg` and `pyproject.toml` files located in the `recommerce` directory of the project. The `setup.cfg` file includes all necessary metadata needed to correctly install the project.
+This installs the `recommerce` folder (and its subdirectories) as a local pip package. The `-e` flag indicates to pip that the package should be installed in an editable state. This results in the packages not being directly written to where pip dependencies usually would, but only a "link" to you current working directory being created. In order to install the package, we use `setuptools`, which uses the `setup.py`, `setup.cfg` and `pyproject.toml` files located in the root directory of the project. The `setup.cfg` file includes all necessary metadata needed to correctly install the project.
 
 If you want to properly install the project as a pip package, omit the `-e` flag. This will "copy" the packages into your pip-installation folder (when using conda, this will be `Path/To/anaconda3/envs/your_venv_name/Lib/site-packages`), meaning that any changes to your source-code will only be reflected when installing the package again, therefore you should not use that command if you plan on changing the code.
 
-You can confirm that the installation was successfull by checking
+You can confirm that the installation was successful by checking
 
 ```terminal
 recommerce --version
 ```
-
-Package installation was adapted from [this repository](https://github.com/mCodingLLC/SlapThatLikeButton-TestingStarterProject).
 
 ## 4. Testing
 
@@ -164,19 +162,15 @@ Package installation was adapted from [this repository](https://github.com/mCodi
 If you want to run tests locally you can do so in a few ways:
 
 Simply running all tests:
+
 ```terminal
 pytest
 ```
 
 Running all tests with increased verbosity:
+
 ```terminal
 pytest -v
-```
-
-Additionally, if you have installed the `recommerce` package and the `tests`-folder is located in your `datapath`, you can use the following command to run the tests:
-
-```terminal
-recommerce --test
 ```
 
 #### 4.1.2. Pytest Plugins
@@ -184,7 +178,8 @@ recommerce --test
 __Markers__
 
 We have also added markers to some tests, such as `slow` or `training`. You can filter tests using the `-m` flag, if for example
-you want to exclude slow tests from the run, use:
+you want to exclude `slow` tests from the run, use:
+
 ```terminal
 pytest -m "not slow"
 ```
@@ -192,7 +187,7 @@ pytest -m "not slow"
 __Pytest-randomly__
 
 To make sure that our tests do not have hidden dependencies between each other, their order is shuffled every time the suite is run.
-For this, we use [pytest-randomly](https://pypi.org/project/pytest-randomly/). Before collection, a `--randomly-seed` is set and printed, which you can afterwards use to repeat the same order of tests, which is useful for debugging purposes. 
+For this, we use the [pytest-randomly](https://pypi.org/project/pytest-randomly/) plugin. Before test collection, a `--randomly-seed` is set and printed to the terminal, which you can use in sbsequent runs to repeat the same order of tests, which can be useful for debugging. 
 
 __Pytest-xdist__
 
@@ -200,10 +195,10 @@ __Pytest-xdist__
 
 ### 4.2. Webserver Tests
 
-To run tests you have written for the Django webserver go into the *webserver* folder and run
+To run tests you have written for the Django webserver go into the `webserver` folder and run
 
 ```terminal
-python3 ./manage.py test -v 2
+python ./manage.py test -v 2
 ```
 
 ### 4.3. Coverage
@@ -212,7 +207,7 @@ python3 ./manage.py test -v 2
 
 If you want to track the current test coverage use these commands:
 
-- Run all tests, collect coverage info, write it to the coverage.json (for source code analysis of coverage) and update the coverage.svg badge:
+- Run all tests, collect coverage info, write it to the coverage.json (for source code analysis of coverage) and update the `coverage.svg` badge:
 
 ```terminal
 coverage run --source=. -m pytest
@@ -230,13 +225,13 @@ coverage report
 
 [Pre-commit documentation](https://pre-commit.com/)
 
-We are using `pre-commit` to lint our files before committing. Pre-commit itself should already have been installed through the `environment.yml`. Initialize pre-commit using
+We are using `pre-commit` to lint and format our files before committing. Pre-commit itself should already have been installed through the `environment.yml`. Initialize pre-commit before the first commit using
 
 ```terminal
 pre-commit install
 ```
 
-To circumvent possible errors caused later on, run pre-commit once with the following command:
+To circumvent possible errors caused later on, we recommend also running pre-commit once using the following command:
 
 ```terminal
 pre-commit run --all-files
@@ -244,32 +239,25 @@ pre-commit run --all-files
 
 which will install the needed environment.
 
+From now on, pre-commit will always be run automatically before committing. It is also run as part of our CI pipeline.
+
 ### 5.1. Interrogate
 
 [Interrogate documentation](https://interrogate.readthedocs.io/en/latest/)
 
-We use Interrogate to monitor our docstring coverage. It is being configured within the `pyproject.toml` in the root directory of the project. Interrogate is automatically run with Pre-commit, but the badge can only be updated manually.
-To update the badge, modify the `pre-commit-config.yml` file by swapping the following line:
+We use Interrogate to monitor our docstring coverage. The plugin is configured within the `pyproject.toml` in the root directory of the project. Interrogate is automatically run with Pre-commit, but the badge can only be updated manually.
 
-```yml
-args: [--config=pyproject.toml]
-```
-
-with
-
-```yml
-args: [--config=pyproject.toml, --generate-badge=./badges/docstring_coverage.svg, --badge-style=flat]
-```
+To update the badge, modify the `pre-commit-config.yml` file by swapping the line setting the `args` for the plugin and then running pre-commit locally. Do not commit this modified `pre-commit-config.yml` file to Github, as this will break the CI pipeline.
 
 ### 5.2. Pre-commit Troubleshooting
 
 If you get the following error:
 
-```terminal
+```text
 Git: Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from Settings > Manage App Execution Aliases
 ```
 
-while trying to commit, the cause is most likely `pre-commit` trying to access a Python version not in your venv.
+while trying to commit, the cause is most likely `pre-commit` trying to access a Python version not in your virtual environment.
 
 Solution: Check the App execution Aliases, and if no Python version is present, install it from the Microsoft Store. You do not need to disable the alias.
 
@@ -289,7 +277,7 @@ Path\To\anaconda3\envs\your_venv_name\DLLs
 
 [Docker SDK documentation](https://docker-py.readthedocs.io/en/stable/index.html)
 
-To use docker, first install it on your machine, for more convenience we recommend using [Docker Desktop](https://www.docker.com/products/docker-desktop/). Afterwards, you can build the images used in our repository using the following command:
+To use Docker, first install it on your machine, for more convenience we recommend using [Docker Desktop](https://www.docker.com/products/docker-desktop/). Afterwards, you can build the image used in our repository using the following command:
 
 ```terminal
 python ./docker/docker_manager.py
@@ -332,7 +320,7 @@ At any point you can list all current containers with:
 docker ps -a
 ```
 
-You can stop a container using:
+You can stop a container using its ID:
 
 ```terminal
 docker stop CONTAINER_ID
@@ -392,8 +380,8 @@ pip install torch==1.11.0+cu115 torchvision==0.12.0+cu115 torchaudio==0.11.0+cu1
 
 ### 6.2. Webserver
 
-We provide a Django Webserver with a simple user interface to manage the docker container.
-To use the webserver you need to eiter have a `.env.txt` in `BP2021/webserver` or have the environment variables `SECRET_KEY` and `API_TOKEN` set.
+We provide a Django Webserver with a simple user interface to manage the docker containers.
+To use the webserver you need to either have a `.env.txt` in the `BP2021/webserver` directory or have the environment variables `SECRET_KEY` and `API_TOKEN` set.
 
 Here is an example for a `.env.txt`
 
@@ -404,11 +392,10 @@ this_line_contains_the_master_secret_for_the_api
 
 Remember to change these secrets when they are leaked to the public. Both secrets should be random long strings. Keep in mind, that the master_secret for the API (`API_TOKEN`) should be equal to the `AUTHORIZATION_TOKEN` on the API side.
 
-When starting the webserver, you will notice, that you have a login page. 
-To create a superuser and login to the page, you need to run:
+When starting the webserver, you will notice the login page. To create a *superuser* and login to the page, change to the webserver directory and run:
 
 ```terminal
-python3 ./manage.py createsuperuser
+python ./manage.py createsuperuser
 ```
 
 To manage your other users, go to `127.0.0.1:2709/admin` and login with the credentials you provided when creating the superuser.
@@ -416,32 +403,32 @@ To manage your other users, go to `127.0.0.1:2709/admin` and login with the cred
 To start the webserver on `127.0.0.1:2709` go to `/webserver` and start the server by using the following command
 
 ```terminal
-python3 ./manage.py runserver 2709
+python ./manage.py runserver 2709
 ```
 
 When you add more fields to the database model or you change existing fields, you need to run
 
 ```terminal
-python3 ./manage.py makemigrations
+python ./manage.py makemigrations
 ```
 
 Before starting the server you might need to apply any pending migrations using
 
 ```terminal
-python3 ./manage.py migrate
+python ./manage.py migrate
 ```
 
 To run tests you have written for the Django webserver go into the *webserver* folder and run
 
 ```terminal
-python3 ./manage.py test -v 2
+python ./manage.py test -v 2
 ```
 
 ### 6.3. Docker API
 
-There is a RESTful API written with the python libary FastAPI for communicating with docker containers that can be found in `/docker`.
+There is a RESTful API written with the python library FastAPI for communicating with docker containers that can be found in the `/docker` directory.
 
-The API needs to run on `127.0.0.1:8000`. To start the API go to `/docker` and run
+The API needs to run on `127.0.0.1:8000`. To start the API go to the `/docker` directory and run
 
 ```terminal
 uvicorn app:app --reload
@@ -449,21 +436,19 @@ uvicorn app:app --reload
 
 Don't use `--reload` when deploying in production.
 
-You can just run the `app.py` with python from the docker folder as well.
+Alternatively, you can also run the `app.py` from the docker directory as well.
 
-If you want to use the API, you need to provide an `AUTHORIZATION_TOKEN` in your environment variables. For each API request the value at the authorization header will be checked. You can only perform actions on the API, when this value is the same, as the value in your environment variable.
+If you want to use the API, you need to provide an `AUTHORIZATION_TOKEN` in your environment variables. For each API request the value at the authorization header will be checked. You can only perform actions on the API when this value is the same as the value in your environment variable.
 
-WARNING: Please keep in mind, that the `AUTHORIZATION_TOKEN` must be kept a secret, if it is revealed, you need to revoke it and set a new secret. Furthermore, think about using transport encryption to ensure that the token won't get stolen on the way.
+WARNING: Please keep in mind that the `AUTHORIZATION_TOKEN` must be kept a secret. If it is revealed you need to revoke it and set a new secret. Furthermore, think about using transport encryption to ensure that the token won't get stolen on the way.
 
-## 7. Tensorboard
+## 7. TensorBoard
 
-Tensorboard is used extensively to track parameters of the training as well as the agents and the market itself. It is started from the console by using:
+TensorBoard is used extensively to track parameters of the training as well as the agents and the market itself. It is started from the console by using:
 
 ```terminal
-tensorboard serve --logdir your_data_path
+tensorboard serve --logdir your_log_path
 ```
 
 The path specified can be changed to just include one subfolder of the runs folder to track just one of the experiments.
-NOTE: It might not work with Safari, but Chrome does the job.
-
-If you are using the webserver the yellow button opens the tensorboard, you might need to reload the page it redirects you to, because the tensorboard server in the container did not start fast enough, most times the browser will do this for you.
+NOTE: TensorBoard might not work with Safari, but Chrome does the job.
