@@ -1,14 +1,9 @@
-# Online Marketplace Simulation: A Testbed for Self-Learning Agents  <!-- omit in toc -->
+# Online Marketplace Simulation: A Testbed for Self-Learning Agents
 
 ![CI](https://github.com/hpi-epic/BP2021/actions/workflows/CI.yml/badge.svg)
 ![Coverage-Badge](/badges/coverage.svg)
 ![Docstring-Coverage](/badges/docstring_coverage.svg)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
-
-- [Quick Start Guide](#quick-start-guide)
-- [Installing dependencies](#installing-dependencies)
-	- [Dependency Installation Troubleshooting](#dependency-installation-troubleshooting)
-- [Installing the `Recommerce` package](#installing-the-recommerce-package)
 
 Working repository in context of the bachelor's project "*Online Marketplace Simulation: A Testbed for Self-Learning Agents*" at the *Enterprise Platform and Integration Concepts* ([@hpi-epic](https://github.com/hpi-epic)) research group of the Hasso-Plattner-Institute.
 
