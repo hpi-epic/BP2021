@@ -89,7 +89,7 @@ def download_config(wanted_container: Container) -> HttpResponse:
 	config_object = wanted_container.config
 	config_as_string = json.dumps(config_object.as_dict(), indent=4, sort_keys=True)
 	file_response = HttpResponse(config_as_string, content_type='application/json')
-	file_response['Content-Disposition'] = f'attachment; filename=config_{wanted_container.name}.json'
+	file_response['Content-Disposition'] = f'attachment; filename=config_{wanted_container.id}.json'
 	return file_response
 
 
