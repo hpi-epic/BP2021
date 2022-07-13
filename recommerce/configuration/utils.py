@@ -141,15 +141,12 @@ def convert_dict_to_float(dict1: dict) -> dict:
 	Returns:
 		dict: same structure as dict1, but all entries are floats
 	"""
-	newdict = {}
 	for key in dict1:
 		if isinstance(dict1[key], dict):
-			newdict[key] = convert_dict_to_float(dict1[key])
+			dict1[key] = convert_dict_to_float(dict1[key])
 		elif isinstance(dict1[key], np.float32):
-			newdict[key] = float(dict1[key])
-		else:
-			newdict[key] = dict1[key]
-	return newdict
+			dict1[key] = float(dict1[key])
+	return dict1
 
 
 def unroll_dict_with_list(input_dict: dict) -> dict:
@@ -254,4 +251,4 @@ def filtered_class_str_from_dir(import_path: str, all_classes: list, regex_match
 		list: list of filtered class strings starting with the import path
 	"""
 	filtered_classes = list(set(filter(lambda class_name: re.match(regex_match, class_name), all_classes)))
-	return [import_path + '.' + f_class for f_class in sorted(filtered_classes)]
+	return [f'{import_path}.{f_class}' for f_class in sorted(filtered_classes)]
