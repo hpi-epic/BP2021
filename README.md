@@ -7,7 +7,7 @@
 
 Working repository in context of the bachelor's project "*Online Marketplace Simulation: A Testbed for Self-Learning Agents*" at the *Enterprise Platform and Integration Concepts* ([@hpi-epic](https://github.com/hpi-epic)) research group of the Hasso-Plattner-Institute.
 
-During the project, a simulation framework, *`recommerce`*, was built. The framework can be used to simulate online, *recommerce* marketplaces, which are more complex than traditional, Linear Economy models. Using these simulated marketplaces, various Reinforcement-Learning algorithms can be used to train so-called agents to set prices that optimize profit on these markets. These agents can be trained against a multitude of pre-implemented rule-based vendors, on a number of different market scenarios.
+During the project, a simulation framework, *`recommerce`*, was built. The framework can be used to simulate online *recommerce* marketplaces, which are more complex than traditional Linear Economy models. Using these simulated marketplaces, various Reinforcement learning algorithms can be used to train so-called *agents* to set prices that optimize profit on these markets. These agents can be trained against a multitude of pre-implemented rule-based vendors, on a number of different market scenarios.
 
 After training, the produced models can be further monitored and analyzed using an extensive number of monitoring tools. For more information beyond installation and the Quick Start Guide pertained in this README, please refer to our [Wiki](https://github.com/hpi-epic/BP2021/wiki).
 
