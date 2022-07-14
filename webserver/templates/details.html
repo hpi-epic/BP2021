@@ -15,7 +15,6 @@
                 <th>logs</th>
                 <th>stop and remove container</th>
                 <th>tensorboard</th>
-                <th>configuration file</th>
             </tr>
             <tr>
                 <td>{{ container.command }}</td>
@@ -29,7 +28,10 @@
                     {% include "buttons/pause_button.html" %}
                 </td>
                 <td class="button_row" >
-                    {% include "buttons/download_button.html" %}
+                    <div class="d-flex">
+                        {% include "buttons/download_button.html" %}
+                        {% include "buttons/config_button.html" %}
+                    </div>
                 </td>
                 <td class="button_row" >
                     {% include "buttons/logs_button.html" %}
@@ -39,9 +41,6 @@
                 </td>
                 <td class="button_row" >
                     {% include "buttons/tensorboard_button.html" %}
-                </td>
-                <td class="button_row" >
-                    {% include "buttons/config_button.html" %}
                 </td>
             </tr>
         </table>
