@@ -124,7 +124,7 @@ class ConfigParserTest(TestCase):
 			'agents-agent_class': ['recommerce.rl.q_learning.q_learning_agent.QLearningAgent'],
 			'agents-argument': [''],
 		}
-		expected_environment_dict = EXAMPLE_HIERARCHY_DICT['environment'].copy()
+		expected_environment_dict = copy.deepcopy(EXAMPLE_HIERARCHY_DICT['environment'])
 		expected_environment_dict['separate_markets'] = True
 		assert expected_environment_dict == self.flat_parser._flat_environment_to_hierarchical(test_dict)
 
