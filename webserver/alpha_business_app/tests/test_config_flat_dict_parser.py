@@ -1,3 +1,5 @@
+import copy
+
 from django.test import TestCase
 
 from ..config_parser import ConfigFlatDictParser, ConfigModelParser
@@ -163,7 +165,7 @@ class ConfigParserTest(TestCase):
 
 	# parsing hierarchical
 	def test_parsing_config_dict(self):
-		test_dict = EXAMPLE_HIERARCHY_DICT.copy()
+		test_dict = copy.deepcopy(EXAMPLE_HIERARCHY_DICT)
 
 		final_config = self.parser.parse_config(test_dict)
 
