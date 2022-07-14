@@ -64,7 +64,7 @@ def get_all_possible_rl_hyperparameter() -> set:
 		marketplace = get_class(marketplace_str)
 		all_agents += get_recommerce_agents_for_marketplace(marketplace)
 
-	return get_attributes(all_agents)
+	return get_attributes(set(all_agents))
 
 
 def get_all_possible_sim_market_hyperparameter() -> set:

@@ -30,11 +30,14 @@ class SimMarket(gym.Env, JSONConfigurable):
 	def get_possible_rl_agents() -> list:
 		import recommerce.rl.actorcritic.actorcritic_agent as ac_agents
 		import recommerce.rl.q_learning.q_learning_agent as q_agents
-		import recommerce.rl.stable_baselines.stable_baselines_model as sb_agents
+		from recommerce.rl.stable_baselines import sb_a2c, sb_ddpg, sb_ppo, sb_sac, sb_td3
 		all_actorcritic = filtered_class_str_from_dir('recommerce.rl.actorcritic.actorcritic_agent', dir(ac_agents), '^.*Agent.+|Discrete.+$')
 		all_qlearning = filtered_class_str_from_dir('recommerce.rl.q_learning.q_learning_agent', dir(q_agents), '^QLearningAgent$')
-		all_stable_base_lines = filtered_class_str_from_dir('recommerce.rl.stable_baselines.stable_baselines_model',
-			dir(sb_agents), '^StableBaselines.*')
+		all_stable_base_lines = filtered_class_str_from_dir('recommerce.rl.stable_baselines.sb_ddpg', dir(sb_ddpg), '^StableBaselines(?!Agent).*')
+		all_stable_base_lines += filtered_class_str_from_dir('recommerce.rl.stable_baselines.sb_a2c', dir(sb_a2c), '^StableBaselines(?!Agent).*')
+		all_stable_base_lines += filtered_class_str_from_dir('recommerce.rl.stable_baselines.sb_ppo', dir(sb_ppo), '^StableBaselines(?!Agent).*')
+		all_stable_base_lines += filtered_class_str_from_dir('recommerce.rl.stable_baselines.sb_sac', dir(sb_sac), '^StableBaselines(?!Agent).*')
+		all_stable_base_lines += filtered_class_str_from_dir('recommerce.rl.stable_baselines.sb_td3', dir(sb_td3), '^StableBaselines(?!Agent).*')
 
 		return sorted(all_actorcritic + all_qlearning + all_stable_base_lines)
 
