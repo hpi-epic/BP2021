@@ -21,7 +21,7 @@ At any point after the installation has completed, use
 recommerce --help
 ```
 
-in your terminal to see the usage options of the package. The Quick Start Guide in the next section will help you set up the simulation framework and get started with a first experiment.
+in your terminal to see the usage options of the package. The guide below will help you set up the framework and get started with a first experiment.
 
 The `recommerce` package requires users to provide it with a datapath, which is where the package will look for configuration files and write output files, such as statistics and diagrams.
 During installation of the package, the datapath was set to the current working directory. If you want to modify the datapath, you can use the following command:
