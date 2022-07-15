@@ -9,6 +9,7 @@ from ..models.hyperparameter_config import HyperparameterConfig
 from ..models.rl_config import RlConfig
 from ..models.sim_market_config import SimMarketConfig
 from ..utils import remove_none_values_from_dict, to_config_class_name
+from .constant_tests import EMPTY_STRUCTURE_CONFIG
 
 # from .constant_tests import EMPTY_STRUCTURE_CONFIG
 
@@ -148,19 +149,7 @@ class ConfigTest(TestCase):
 		assert expected_list == test_agents.as_list()
 
 	def test_get_empty_structure_dict_for_rl(self):
-		expected_dict = {
-			'sync_target_frames': None,
-			'testvalue2': None,
-			'gamma': None,
-			'epsilon_start': None,
-			'replay_size': None,
-			'stable_baseline_test': None,
-			'epsilon_decay_last_frame': None,
-			'batch_size': None,
-			'epsilon_final': None,
-			'replay_start_size': None,
-			'learning_rate': None
-		}
+		expected_dict = EMPTY_STRUCTURE_CONFIG['hyperparameter']['rl']
 		assert expected_dict == RlConfig.get_empty_structure_dict()
 
 	def test_remove_none_values_from_dict(self):

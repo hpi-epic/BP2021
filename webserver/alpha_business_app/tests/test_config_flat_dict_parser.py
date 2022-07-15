@@ -151,7 +151,10 @@ class ConfigParserTest(TestCase):
 			'sim_market-max_quality': [50],
 			'sim_market-number_of_customers': [20],
 			'sim_market-production_price': [3],
-			'sim_market-storage_cost_per_product': [0.1]
+			'sim_market-storage_cost_per_product': [0.1],
+			'sim_market-opposite_own_state_visibility': [False],
+			'sim_market-common_state_visibility': [False],
+			'sim_market-reward_mixed_profit_and_difference': [False]
 		}
 		assert EXAMPLE_HIERARCHY_DICT['hyperparameter'] == self.flat_parser._flat_hyperparameter_to_hierarchical(test_dict)
 

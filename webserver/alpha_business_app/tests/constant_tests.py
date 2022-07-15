@@ -60,7 +60,10 @@ EXAMPLE_HIERARCHY_DICT = {
 				'max_quality': 50,
 				'number_of_customers': 20,
 				'production_price': 3,
-				'storage_cost_per_product': 0.1
+				'storage_cost_per_product': 0.1,
+				'opposite_own_state_visibility': False,
+				'common_state_visibility': False,
+				'reward_mixed_profit_and_difference': False
 			}
 		}
 	}
@@ -118,26 +121,35 @@ EMPTY_STRUCTURE_CONFIG = {
 			},
 			'hyperparameter': {
 				'rl': {
-					'gamma': None,
-					'batch_size': None,
-					'replay_size': None,
-					'learning_rate': None,
+					'n_steps': None,
+					'n_epochs': None,
 					'sync_target_frames': None,
+					'tau': None,
+					'replay_size': None,
+					'clip_range': None,
+					'gamma': None,
+					'neurones_per_hidden_layer': None,
 					'replay_start_size': None,
+					'learning_starts': None,
+					'ent_coef': None,
+					'epsilon_final': None,
 					'epsilon_decay_last_frame': None,
 					'epsilon_start': None,
-					'epsilon_final': None,
-					'testvalue2': None,
-					'stable_baseline_test': None
+					'batch_size': None,
+					'learning_rate': None,
+					'buffer_size': None
 				},
 				'sim_market': {
+					'common_state_visibility': None,
+					'opposite_own_state_visibility': None,
 					'max_storage': None,
-					'episode_length': None,
-					'max_price': None,
-					'max_quality': None,
-					'number_of_customers': None,
 					'production_price': None,
-					'storage_cost_per_product': None
+					'max_quality': None,
+					'episode_length': None,
+					'storage_cost_per_product': None,
+					'number_of_customers': None,
+					'reward_mixed_profit_and_difference': None,
+					'max_price': None
 				}
 			}
 		}

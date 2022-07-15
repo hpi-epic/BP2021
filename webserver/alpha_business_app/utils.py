@@ -24,6 +24,8 @@ def convert_python_type_to_django_type(to_convert: type) -> str:
 		return str(models.FloatField)
 	elif to_convert == int:
 		return str(models.IntegerField)
+	elif to_convert == bool:
+		return str(models.BooleanField)
 	else:
 		return str(models.CharField)
 
