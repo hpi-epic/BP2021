@@ -16,8 +16,9 @@
                     common state visibility
                 </div>
                 <div class="col-6">
-                    <input type="number" class="form-control {% if error_dict.max_storage %} bc-error-field {% endif %}"
-                        min="0" step="any" value="{{prefill.common_state_visibility}}" name="hyperparameter-sim_market-common_state_visibility">
+                    <input type="checkbox" {% if prefill.common_state_visibility %}checked{% endif %}
+                        class="form-check-input {% if error_dict.common_state_visibility %} bc-error-field {% endif %}"
+                        name="hyperparameter-sim_market-common_state_visibility">
                 </div>
             </div>
             <div class="row p-2" id="hyperparameter-sim_market-episode_length">
@@ -88,8 +89,9 @@
                     opposite own state visibility
                 </div>
                 <div class="col-6">
-                    <input type="number" class="form-control {% if error_dict.max_storage %} bc-error-field {% endif %}"
-                        min="0" step="any" value="{{prefill.opposite_own_state_visibility}}" name="hyperparameter-sim_market-opposite_own_state_visibility">
+                    <input type="checkbox" {% if prefill.opposite_own_state_visibility %}checked{% endif %}
+                        class="form-check-input {% if error_dict.opposite_own_state_visibility %} bc-error-field {% endif %}"
+                        name="hyperparameter-sim_market-opposite_own_state_visibility">
                 </div>
             </div>
             <div class="row p-2" id="hyperparameter-sim_market-production_price">
@@ -112,8 +114,9 @@
                     reward mixed profit and difference
                 </div>
                 <div class="col-6">
-                    <input type="number" class="form-control {% if error_dict.max_storage %} bc-error-field {% endif %}"
-                        min="0" step="any" value="{{prefill.reward_mixed_profit_and_difference}}" name="hyperparameter-sim_market-reward_mixed_profit_and_difference">
+                    <input type="checkbox" {% if prefill.reward_mixed_profit_and_difference %}checked{% endif %}
+                        class="form-check-input {% if error_dict.reward_mixed_profit_and_difference %} bc-error-field {% endif %}"
+                        name="hyperparameter-sim_market-reward_mixed_profit_and_difference">
                 </div>
             </div>
             <div class="row p-2" id="hyperparameter-sim_market-storage_cost_per_product">

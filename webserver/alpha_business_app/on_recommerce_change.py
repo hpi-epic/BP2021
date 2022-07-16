@@ -36,7 +36,7 @@ class ConfigModelWriter:
 			print(f'skipping {self.class_name} model file')
 			return
 		# imports
-		lines = ['from django.db import models', '', 'from .abstract_config import AbstractConfig', '']
+		lines = ['from django.db import models', '', 'from .abstract_config import AbstractConfig', '', '']
 		# class definition
 		lines += [f'class {self.class_name}(AbstractConfig, models.Model):']
 		lines += [
@@ -52,6 +52,7 @@ class ConfigModelWriter:
 			django_class = str(attr[1]).rsplit('.')[-1][:-2]
 			additional_attributes = self._get_additional_attributes(django_class)
 			lines += [f'{self.whitespace}{attr[0]} = models.{django_class}(null=True, default=None{additional_attributes})']
+		lines += ['']
 		path_to_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'models', f'{self.name}_config.py')
 		self._write_lines_to_file(path_to_file, lines)
 
@@ -110,13 +111,44 @@ class ConfigModelWriter:
 			'\t\t{% endif %}',
 			f'\t\t{visual_keyword}',
 			'\t</div>',
-			'\t<div class="col-6">',
+			'\t<div class="col-6">'
+			]
+		lines += self._tick_box(keyword) if input_type == 'bool' else self._text_input(keyword, input_type)
+		lines += ['\t</div>',
+				'</div>']
+		return [f'\t\t\t{line}' for line in lines]
+
+	def _tick_box(self, keyword: str) -> list:
+		"""
+		Tick box for a keyword
+
+		Args:
+			keyword (str): hyperparameter keyword
+
+		Returns:
+			list: of lines containing valid html code for a checkbox
+		"""
+		return [
+			'\t\t<input type="checkbox" {% if prefill.' + keyword + ' %}checked{% endif %}',
+			'\t\t\tclass="form-check-input {% if error_dict.' + keyword + ' %} bc-error-field {% endif %}"',
+			f'\t\t\tname="hyperparameter-{self.name}-{keyword}">'
+			]
+
+	def _text_input(self, keyword: str, input_type: str) -> list:
+		"""
+		Input box for text or numbers
+
+		Args:
+			keyword (str): hyperparameter keyword
+			input_type (str): text or input
+
+		Returns:
+			list: of lines of valid html code for an input field type number
+		"""
+		return [
 			'\t\t<input type="' + input_type + '" class="form-control {% if error_dict.max_storage %} bc-error-field {% endif %}"',
 			'\t\t\tmin="0" step="any" value="{{prefill.' + keyword + '}}" name="' + self.top_level + '-' + self.name + '-' + keyword + '">',
-			'\t</div>',
-			'</div>'
-		]
-		return [f'\t\t\t{line}' for line in lines]
+			]
 
 	def _get_additional_attributes(self, django_class: str) -> str:
 		"""At the moment only Charfield needs some extra parameters
@@ -125,14 +157,14 @@ class ConfigModelWriter:
 			django_class (str): a Django class as string
 
 		Returns:
-			str: possibl extra arguments, that need to be passed when initializing this field in Django code
+			str: possible extra arguments, that need to be passed when initializing this field in Django code
 		"""
 		if 'CharField' in django_class:
 			return ', max_length=100'
 		return ''
 
 	def _to_html_input_type(self, django_type: str) -> str:
-		"""Convrets a Django datatype into an html datatype
+		"""Converts a Django datatype into an html datatype
 
 		Args:
 			django_type (str): a Django class as string
@@ -140,8 +172,10 @@ class ConfigModelWriter:
 		Returns:
 			str: either 'number' or 'text'
 		"""
-		if 'Int' or 'Float' in django_type:
+		if 'Int' in django_type or 'Float' in django_type:
 			return 'number'
+		elif 'Boolean' in django_type:
+			return 'bool'
 		else:
 			return 'text'
 
