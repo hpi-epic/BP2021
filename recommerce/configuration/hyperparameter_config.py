@@ -34,7 +34,7 @@ class HyperparameterConfigValidator():
 		Returns:
 			dict: A valid hyperparameter config dict.
 		"""
-		demanded_fields = [field for field, _, _ in checked_class.get_configurable_fields()]
+		demanded_fields = [(field, class_type) for field, class_type, _ in checked_class.get_configurable_fields()]
 		config = cls._validate_keys(config, demanded_fields)
 		cls._check_types(config, checked_class.get_configurable_fields())
 		cls._check_rules(config, checked_class.get_configurable_fields())
@@ -47,7 +47,7 @@ class HyperparameterConfigValidator():
 
 		Args:
 			config (dict): The config which should contain all values in demanded_fields.
-			demanded_fields (list): The list containing all values that should be contained in config.
+			demanded_fields (list): The list of tuples containing all values that should be contained in config.
 
 		Returns:
 			dict: The config dictionary containing only valid keys.
@@ -56,12 +56,17 @@ class HyperparameterConfigValidator():
 		# the config_type key is completely optional as it is only used for webserver validation, so we don't prevent people from adding it
 		if 'config_type' in config_keys:
 			config_keys.remove('config_type')
-		demanded_keys = set(demanded_fields)
+		demanded_keys = set([field for field, _ in demanded_fields])
+		demanded_fields_as_dict = dict(demanded_fields)
 		if config_keys != demanded_keys:
 			missing_keys = demanded_keys.difference(config_keys)
 			redundant_keys = config_keys.difference(demanded_keys)
 			if missing_keys:
-				assert False, f'your config is missing {missing_keys}'
+				for key in missing_keys:
+					if demanded_fields_as_dict[key] == bool:
+						config[key] = False
+					else:
+						assert False, f'your config is missing {missing_keys}'
 			if redundant_keys:
 				for key in redundant_keys:
 					config.pop(key)
