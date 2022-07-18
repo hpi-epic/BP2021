@@ -62,3 +62,20 @@ def test_valid_config_validation_incomplete(config, removed_key):
 	success, result = config_validation.validate_config(tested_config)
 	assert success
 	assert result == ({config_type: tested_config}, None, None)
+
+
+def test_validation_strips_redundant_keys():
+	expected_config = {
+		'hyperparameter': {
+			'sim_market': config_market.copy(),
+			'rl': config_rl.copy()},
+		'environment': config_environment.copy()
+	}
+	test_config = expected_config.copy()
+	test_config['hyperparameter']['rl']['test_key'] = 123
+	status, new_config = config_validation.validate_config(test_config)
+	assert status, 'This is not valid'
+
+	assert expected_config['hyperparameter']['rl'] == new_config[0]['rl']
+	assert expected_config['hyperparameter']['sim_market'] == new_config[1]['sim_market']
+	assert expected_config['environment'] == new_config[2]['environment']
