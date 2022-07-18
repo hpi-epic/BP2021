@@ -124,8 +124,7 @@ class RuleBasedCEAgent(RuleBasedAgent, CircularAgent):
 			price_new += int(self.config_market.max_price * 7 / 10)
 			rebuy_price = 0
 
-		price_new = min(9, price_new)
-		assert price_refurbished <= price_new, 'The price for used products should be lower or equal to the price of new products'
+		# assert price_refurbished <= price_new, 'The price for used products should be lower or equal to the price of new products'
 		return self.convert_price_format(price_refurbished, price_new, rebuy_price)
 
 
@@ -199,7 +198,7 @@ class RuleBasedCERebuyAgentStorageMinimizer(RuleBasedAgent, CircularAgent):
 			rebuy_price = price_new - 1
 		else:
 			# storage too full, we need to get rid of some refurbished products
-			rebuy_price = min(competitors_rebuy_prices) - self.config_market.max_price / 0.1
+			rebuy_price = min(competitors_rebuy_prices) - self.config_market.max_price / 10
 			# rebuy_price = min(competitors_rebuy_prices + competitors_new_prices + competitors_refurbished_prices)
 			price_refurbished = int(np.quantile(competitors_refurbished_prices, 0.25))
 

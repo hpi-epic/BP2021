@@ -119,7 +119,8 @@ def main():  # pragma: no cover
 		marketplace=config_environment_am.marketplace,
 		agents=config_environment_am.agent,
 		separate_markets=config_environment_am.separate_markets,
-		config_market=config_market
+		config_market=config_market,
+		support_continuous_action_space=True
 	)
 	run_monitoring_session(monitor)
 

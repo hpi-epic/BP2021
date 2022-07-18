@@ -336,7 +336,7 @@ class CircularEconomyRebuyPriceDuopoly(CircularEconomyRebuyPrice):
 		return 1
 
 	def _get_competitor_list(self) -> list:
-		return [circular_vendors.RuleBasedCERebuyAgentCompetitive(config_market=self.config)]
+		return [circular_vendors.RuleBasedCERebuyAgentStorageMinimizer(config_market=self.config)]
 
 
 class CircularEconomyRebuyPriceOligopoly(CircularEconomyRebuyPrice):
@@ -347,11 +347,19 @@ class CircularEconomyRebuyPriceOligopoly(CircularEconomyRebuyPrice):
 	@staticmethod
 	def get_num_competitors() -> int:
 		return np.inf
-
+	"""
 	def _get_competitor_list(self) -> list:
 		return [
 			circular_vendors.RuleBasedCERebuyAgentCompetitive(config_market=self.config),
 			circular_vendors.RuleBasedCERebuyAgent(config_market=self.config),
 			circular_vendors.FixedPriceCERebuyAgent(config_market=self.config, fixed_price=(3, 6, 2)),
+			circular_vendors.RuleBasedCERebuyAgentStorageMinimizer(config_market=self.config)
+			]
+	"""
+	def _get_competitor_list(self) -> list:
+		return [
+			circular_vendors.RuleBasedCERebuyAgentStorageMinimizer(config_market=self.config),
+			circular_vendors.RuleBasedCERebuyAgentStorageMinimizer(config_market=self.config),
+			circular_vendors.RuleBasedCERebuyAgentStorageMinimizer(config_market=self.config),
 			circular_vendors.RuleBasedCERebuyAgentStorageMinimizer(config_market=self.config)
 			]

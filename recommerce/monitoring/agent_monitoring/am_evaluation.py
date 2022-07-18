@@ -106,6 +106,8 @@ class Evaluator():
 		# Create histogram
 		print('Creating cumulative rewards histogram...')
 		self.create_histogram(analyses['profits/all'], True, 'Cumulative_rewards_per_episode.svg')
+		#self.create_histogram_new(rewards=analyses['profits/all'],pos=0, is_last_histogram=True, filename='hist_vendor_ppo.svg')
+		#self.create_histogram_new(rewards=analyses['profits/all'],pos=1, is_last_histogram=True, filename='hist_vendor_benchmark.svg')
 
 		# Create density plots
 		print('Creating density plots...')
@@ -194,6 +196,44 @@ class Evaluator():
 		plt.xticks(x_ticks)
 		plt.legend([f'{a.name}_episode_{episode_numbers[i]}' for i, a in enumerate(self.configurator.agents)] if episode_numbers
 			else [a.name for a in self.configurator.agents])
+
+		plt.savefig(fname=os.path.join(self.configurator.get_folder(), filename))
+	
+
+	def create_histogram_new(self, rewards: list, pos: int, is_last_histogram: bool, filename: str = 'default_histogram.svg',
+		episode_numbers: list = None) -> None:
+		"""
+		Create a histogram sorting rewards into bins of 10.
+
+		Args:
+			rewards (list of list of floats): A list containing a list of floats for each monitored agent.
+			is_last_histogram (bool): States that only the last histogram should be plotted.
+			filename (str): The name of the output file, format will be .svg. Defaults to 'default_histogram.svg'.
+			episode_numbers (list of int, optional): The training stages the empirical distributions belong to.
+				If it is None, a prior functionality is used.
+		"""
+		if not is_last_histogram:
+			return
+		assert all(len(curr_reward) == len(rewards[0]) for curr_reward in rewards), 'all rewards-arrays must be of the same size'
+
+		plt.clf()
+		plt.xlabel('Reward', fontsize='18')
+		plt.ylabel('Episodes', fontsize='18')
+		plt.title('Cumulative Reward per Episode')
+
+		# find the number of bins needed, we only use steps of 1000, assuming our agents are good bois :)
+		# plot_lower_bound = np.floor(int(np.min(rewards)) * 1e-3) / 1e-3
+		# plot_upper_bound = np.ceil(int(np.max(rewards)) * 1e-3) / 1e-3
+		plot_lower_bound = -300
+		plot_upper_bound = 600
+		plot_bins = int(np.abs(plot_lower_bound) + plot_upper_bound) // 50
+		x_ticks = np.arange(plot_lower_bound, plot_upper_bound + 1, 100)
+
+		plt.hist(rewards[pos], bins=plot_bins, color=self.configurator.agent_colors[pos],
+			range=(plot_lower_bound, plot_upper_bound), edgecolor='black')
+		plt.xticks(x_ticks)
+		# plt.legend([f'{a.name}_episode_{episode_numbers[i]}' for i, a in enumerate(self.configurator.agents)] if episode_numbers
+			# else [a.name for a in self.configurator.agents])
 
 		plt.savefig(fname=os.path.join(self.configurator.get_folder(), filename))
 
