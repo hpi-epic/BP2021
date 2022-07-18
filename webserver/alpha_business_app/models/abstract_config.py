@@ -4,6 +4,10 @@ from ..utils import get_structure_dict_for, remove_none_values_from_dict, to_con
 
 
 class AbstractConfig():
+	"""
+	This class is an abstract configuration, implementing important functions for parsing configurations.
+	All configuration classes need to be child classes of this class.
+	"""
 	def as_dict(self) -> dict:
 		config_field_values = vars(self)
 		resulting_dict = {}

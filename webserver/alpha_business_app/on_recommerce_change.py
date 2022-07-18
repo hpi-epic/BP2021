@@ -9,7 +9,8 @@ from utils import get_structure_with_types_of, to_config_class_name
 
 
 class ConfigModelWriter:
-	"""This class can be used to write various files concerning changing sim market and rl models in recommerce.
+	"""
+	This class can be used to write various files concerning changing sim market and rl models in recommerce.
 	It should be used bevor server startup and migration on the change of the recommerce package.
 	Please always double check the generated files when deploying in production.
 	"""
@@ -21,13 +22,15 @@ class ConfigModelWriter:
 		self.class_name = to_config_class_name(self.name)
 
 	def write_files(self) -> None:
-		"""Writes Model file and template file.
+		"""
+		Writes Model file and template file.
 		"""
 		self.write_model_file()
 		self.write_template()
 
 	def write_model_file(self) -> None:
-		"""Writes model file for current self.class_name.
+		"""
+		Writes model file for current self.class_name.
 		Gets all possible attributes from the recommerce package first and writes valid Django model code afterwards.
 		"""
 		print(f'{self._warning()}WARNING: This action will override the {self.class_name} model file.{self._end()}')
@@ -56,7 +59,8 @@ class ConfigModelWriter:
 		self._write_lines_to_file(path_to_file, lines)
 
 	def write_template(self) -> None:
-		"""Writes template file for current self.class_name.
+		"""
+		Writes template file for current self.class_name.
 		Gets all possible attributes from the recommerce package first and writes valid html code afterwards.
 		"""
 		print(f'{self._warning()}WARNING: This action will override the {self.name} template file.{self._end()}')
@@ -92,7 +96,8 @@ class ConfigModelWriter:
 		self._write_lines_to_file(path_to_file, lines)
 
 	def _row_lines_for(self, keyword: str, input_type: str) -> list:
-		"""Retuns a list of lines with valid html code for one hyperparameter attribut aka a row in the template.
+		"""
+		Retuns a list of lines with valid html code for one hyperparameter attribut aka a row in the template.
 
 		Args:
 			keyword (str): hyperparameter keyword
@@ -119,7 +124,8 @@ class ConfigModelWriter:
 		return [f'\t\t\t{line}' for line in lines]
 
 	def _get_additional_attributes(self, django_class: str) -> str:
-		"""At the moment only Charfield needs some extra parameters
+		"""
+		At the moment only Charfield needs some extra parameters
 
 		Args:
 			django_class (str): a Django class as string
@@ -146,7 +152,8 @@ class ConfigModelWriter:
 			return 'text'
 
 	def _visual_name(self) -> str:
-		"""The name that should be displayed to the user in template
+		"""
+		The name that should be displayed to the user in template
 
 		Raises:
 			NotImplementedError: implement other names than rl or sim_market first
@@ -165,7 +172,8 @@ class ConfigModelWriter:
 		return '\033[93m'
 
 	def _write_lines_to_file(self, path_to_file: str, lines: list) -> None:
-		"""Writes all collected lines into a file
+		"""
+		Writes all collected lines into a file
 
 		Args:
 			path_to_file (str): path to the file that should be written to
