@@ -51,7 +51,10 @@ class ConfigModelWriter:
 		for attr in sorted(attributes, key=lambda tup: tup[0]):
 			django_class = str(attr[1]).rsplit('.')[-1][:-2]
 			additional_attributes = self._get_additional_attributes(django_class)
-			lines += [f'{self.whitespace}{attr[0]} = models.{django_class}(null=True, default=None{additional_attributes})']
+			if 'Boolean' in django_class:
+				lines += [f'{self.whitespace}{attr[0]} = models.{django_class}(null=True, default=False{additional_attributes})']
+			else:
+				lines += [f'{self.whitespace}{attr[0]} = models.{django_class}(null=True, default=None{additional_attributes})']
 		lines += ['']
 		path_to_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'models', f'{self.name}_config.py')
 		self._write_lines_to_file(path_to_file, lines)
