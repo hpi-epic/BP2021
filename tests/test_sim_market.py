@@ -28,6 +28,9 @@ market_classes = [
 
 market_combinations = []
 for market_class in market_classes:
+	# In the following loop, we iterate through all combinations boolean hyperparameters.
+	# We will test each combination.
+	# The three toggles are opposite_own_state_visibility, common_state_visibility and reward_mixed_profit_and_difference
 	for i in range(8):
 		config_market = HyperparameterConfigLoader.load('market_config', market_class)
 		config_market.opposite_own_state_visibility = i % 2
