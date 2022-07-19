@@ -113,6 +113,8 @@ class ConfigTest(TestCase):
 					]
 				}
 			}
+		print(expected_dict)
+		print(final_config.as_dict())
 		assert expected_dict == final_config.as_dict()
 
 	def test_dict_representation_of_agent(self):

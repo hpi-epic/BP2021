@@ -113,6 +113,11 @@ class ExamplePrinter():
 		if isinstance(self.marketplace, circular_market.CircularEconomyRebuyPriceDuopoly):
 			svg_manipulator.to_html()
 
+		self.consider_write_diagrams(save_lineplots, price_used, price_news, price_rebuy, in_storages, in_circulations, signature)
+
+		return our_profit
+
+	def consider_write_diagrams(self, save_lineplots, price_used, price_news, price_rebuy, in_storages, in_circulations, signature) -> None:
 		if isinstance(self.marketplace, circular_market.CircularEconomyRebuyPrice) and save_lineplots:
 			x = np.array(range(1, self.config_market.episode_length + 1))
 			plt.step(x, in_circulations)
@@ -136,8 +141,6 @@ class ExamplePrinter():
 				plt.xlim(450, 475)
 				plt.savefig(os.path.join(PathManager.results_path, 'exampleprinter', signature, f'lineplot_{name}_xlim.svg'), transparent=True)
 				plt.clf()
-
-		return our_profit
 
 
 def main():  # pragma: no cover
