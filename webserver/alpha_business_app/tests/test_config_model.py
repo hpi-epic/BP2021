@@ -98,7 +98,10 @@ class ConfigTest(TestCase):
 						'max_quality': 50,
 						'number_of_customers': 20,
 						'production_price': 3,
-						'storage_cost_per_product': 0.1
+						'storage_cost_per_product': 0.1,
+						'opposite_own_state_visibility': False,
+						'common_state_visibility': False,
+						'reward_mixed_profit_and_difference': False
 					}
 				},
 				'environment': {
@@ -113,8 +116,6 @@ class ConfigTest(TestCase):
 					]
 				}
 			}
-		print(expected_dict)
-		print(final_config.as_dict())
 		assert expected_dict == final_config.as_dict()
 
 	def test_dict_representation_of_agent(self):
