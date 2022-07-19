@@ -11,7 +11,7 @@ from utils import get_structure_with_types_of, to_config_class_name
 class ConfigModelWriter:
 	"""
 	This class can be used to write various files concerning changing sim market and rl models in recommerce.
-	It should be used bevor server startup and migration on the change of the recommerce package.
+	It should be used before server startup and migration on the change of the recommerce package.
 	Please always double check the generated files when deploying in production.
 	"""
 	def __init__(self, top_level: str, second_level: str = None) -> None:
@@ -23,7 +23,7 @@ class ConfigModelWriter:
 
 	def write_files(self) -> None:
 		"""
-		Writes Model file and template file.
+		Writes model file and template file.
 		"""
 		self.write_model_file()
 		self.write_template()
