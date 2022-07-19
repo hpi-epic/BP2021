@@ -112,8 +112,7 @@ if __name__ == '__main__':
     # Load the market config file
     config_market = HyperparameterConfigLoader.load('market_config', CircularEconomyRebuyPriceDuopoly)
     load_and_analyze_existing_watcher_json(
-        'C:\\Users\\jangr\\OneDrive\\Dokumente\\Bachelorarbeit_Experimente_lokal\\'
-        'comparison_oligopoly\\trainedModels\\Trainsac_standard_1_Jun15_04-53-16\\watchers.json',
+        'ENTER YOUR PATH HERE',
         config_market,
         'SAC',
         ['Rule Based Undercutting', 'Rule Based (non competitive)', 'Fixed Price', 'Storage Minimizer'],
