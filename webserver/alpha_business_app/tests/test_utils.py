@@ -1,7 +1,6 @@
 from django.test import TestCase
 
-from ..utils import (convert_python_type_to_django_type, get_all_possible_rl_hyperparameter, get_all_possible_sim_market_hyperparameter,
-                     get_structure_dict_for, to_config_keyword)
+from ..utils import *
 from .constant_tests import EMPTY_STRUCTURE_CONFIG
 
 
@@ -53,7 +52,7 @@ class UtilsTest(TestCase):
 		assert expected_dict == get_structure_dict_for('')
 
 	def test_get_structure_dict_for_rl(self):
-		expected_dict =  EMPTY_STRUCTURE_CONFIG.copy()['hyperparameter']['rl']
+		expected_dict = EMPTY_STRUCTURE_CONFIG.copy()['hyperparameter']['rl']
 		assert expected_dict == get_structure_dict_for('rl')
 
 	def test_get_structure_dict_for_sim_market(self):
@@ -110,7 +109,7 @@ class UtilsTest(TestCase):
 			('max_storage', int),
 			('number_of_customers', int),
 			('opposite_own_state_visibility', bool),
-			('storage_cost_per_product', (int,float)),
+			('storage_cost_per_product', (int, float)),
 			('max_quality', int),
 			('production_price', int),
 			('common_state_visibility', bool),
