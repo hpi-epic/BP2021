@@ -23,41 +23,54 @@ class HyperparameterConfigValidator():
 		return f'{self.__class__.__name__}: {self.__dict__}'
 
 	@classmethod
-	def validate_config(cls, config: dict, checked_class: SimMarket or Agent) -> None:
+	def validate_config(cls, config: dict, checked_class: SimMarket or Agent) -> dict:
 		"""
 		Validate the given config dictionary.
 
 		Args:
 			config (dict): The config to validate and take the values from.
 			checked_class (SimMarket or Agent): The relevant class for which the fields are to be checked.
+
+		Returns:
+			dict: A valid hyperparameter config dict.
 		"""
-		demanded_fields = [field for field, _, _ in checked_class.get_configurable_fields()]
-		cls._check_only_valid_keys(config, demanded_fields)
+		demanded_fields = [(field, class_type) for field, class_type, _ in checked_class.get_configurable_fields()]
+		config = cls._validate_keys(config, demanded_fields)
 		cls._check_types(config, checked_class.get_configurable_fields())
 		cls._check_rules(config, checked_class.get_configurable_fields())
+		return config
 
 	@classmethod
-	def _check_only_valid_keys(cls, config: dict, demanded_fields: list) -> None:
+	def _validate_keys(cls, config: dict, demanded_fields: list) -> dict:
 		"""
 		Checks if only valid keys were provided.
 
 		Args:
 			config (dict): The config which should contain all values in demanded_fields.
-			demanded_fields (list): The list containing all values that should be contained in config.
+			demanded_fields (list): The list of tuples containing all values that should be contained in config.
+
+		Returns:
+			dict: The config dictionary containing only valid keys.
 		"""
 		config_keys = set(config.keys())
 		# the config_type key is completely optional as it is only used for webserver validation, so we don't prevent people from adding it
 		if 'config_type' in config_keys:
 			config_keys.remove('config_type')
-		demanded_keys = set(demanded_fields)
-
+		demanded_keys = set([field for field, _ in demanded_fields])
+		demanded_fields_as_dict = dict(demanded_fields)
 		if config_keys != demanded_keys:
 			missing_keys = demanded_keys.difference(config_keys)
 			redundant_keys = config_keys.difference(demanded_keys)
 			if missing_keys:
-				assert False, f'your config is missing {missing_keys}'
+				for key in missing_keys:
+					if demanded_fields_as_dict[key] == bool:
+						config[key] = False
+					else:
+						assert False, f'your config is missing {missing_keys}'
 			if redundant_keys:
-				assert False, f'your config provides {redundant_keys} which was not demanded'
+				for key in redundant_keys:
+					config.pop(key)
+		return config
 
 	@classmethod
 	def _check_types(cls, config: dict, configurable_fields: list, must_contain: bool = True) -> None:

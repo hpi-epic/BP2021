@@ -114,30 +114,33 @@ class ExamplePrinter():
 			svg_manipulator.to_html()
 
 		if isinstance(self.marketplace, circular_market.CircularEconomyRebuyPrice) and save_lineplots:
-			x = np.array(range(1, self.config_market.episode_length + 1))
-			plt.step(x, in_circulations)
-			plt.savefig(os.path.join(PathManager.results_path, 'exampleprinter', signature, 'lineplot_in_circulations.svg'))
-			plt.xlim(450, 475)
-			plt.savefig(os.path.join(PathManager.results_path, 'exampleprinter', signature, 'lineplot_in_circulations_xlim.svg'), transparent=True)
-			plt.clf()
-			for data, name in [(price_used, 'price_refurbished'), (price_news, 'price_new'),
-				(price_rebuy, 'price_rebuy'), (in_storages, 'in_storages')]:
-				for i in range(self.marketplace._number_of_vendors):
-					plt.step(x - (0.5 if i == 1 else 0), data[i], label=(self.agent.name if i == 0 else self.marketplace.competitors[i - 1].name))
-				plt.legend()
-				plt.title(f'Step Diagram of {name}')
-				plt.xlabel('Step')
-				plt.ylabel(name)
-				if 'price' in name:
-					plt.ylim(0, 10)
-				elif 'in_storage' in name:
-					plt.ylim(0, 100)
-				plt.savefig(os.path.join(PathManager.results_path, 'exampleprinter', signature, f'lineplot_{name}.svg'), transparent=True)
-				plt.xlim(450, 475)
-				plt.savefig(os.path.join(PathManager.results_path, 'exampleprinter', signature, f'lineplot_{name}_xlim.svg'), transparent=True)
-				plt.clf()
+			self.save_step_diagrams(price_used, price_news, price_rebuy, in_storages, in_circulations, signature)
 
 		return our_profit
+
+	def save_step_diagrams(self, price_used, price_news, price_rebuy, in_storages, in_circulations, signature) -> None:
+		x = np.array(range(1, self.config_market.episode_length + 1))
+		plt.step(x, in_circulations)
+		plt.savefig(os.path.join(PathManager.results_path, 'exampleprinter', signature, 'lineplot_in_circulations.svg'))
+		plt.xlim(450, 475)
+		plt.savefig(os.path.join(PathManager.results_path, 'exampleprinter', signature, 'lineplot_in_circulations_xlim.svg'), transparent=True)
+		plt.clf()
+		for data, name in [(price_used, 'price_refurbished'), (price_news, 'price_new'),
+			(price_rebuy, 'price_rebuy'), (in_storages, 'in_storages')]:
+			for i in range(self.marketplace._number_of_vendors):
+				plt.step(x - (0.5 if i == 1 else 0), data[i], label=(self.agent.name if i == 0 else self.marketplace.competitors[i - 1].name))
+			plt.legend()
+			plt.title(f'Step Diagram of {name}')
+			plt.xlabel('Step')
+			plt.ylabel(name)
+			if 'price' in name:
+				plt.ylim(0, 10)
+			elif 'in_storage' in name:
+				plt.ylim(0, 100)
+			plt.savefig(os.path.join(PathManager.results_path, 'exampleprinter', signature, f'lineplot_{name}.svg'), transparent=True)
+			plt.xlim(450, 475)
+			plt.savefig(os.path.join(PathManager.results_path, 'exampleprinter', signature, f'lineplot_{name}_xlim.svg'), transparent=True)
+			plt.clf()
 
 
 def main():  # pragma: no cover

@@ -1,3 +1,5 @@
+import copy
+
 from django.test import TestCase
 
 from ..config_parser import ConfigFlatDictParser, ConfigModelParser
@@ -122,7 +124,7 @@ class ConfigParserTest(TestCase):
 			'agents-agent_class': ['recommerce.rl.q_learning.q_learning_agent.QLearningAgent'],
 			'agents-argument': [''],
 		}
-		expected_environment_dict = EXAMPLE_HIERARCHY_DICT['environment'].copy()
+		expected_environment_dict = copy.deepcopy(EXAMPLE_HIERARCHY_DICT['environment'])
 		expected_environment_dict['separate_markets'] = True
 		assert expected_environment_dict == self.flat_parser._flat_environment_to_hierarchical(test_dict)
 
@@ -151,7 +153,10 @@ class ConfigParserTest(TestCase):
 			'sim_market-max_quality': [50],
 			'sim_market-number_of_customers': [20],
 			'sim_market-production_price': [3],
-			'sim_market-storage_cost_per_product': [0.1]
+			'sim_market-storage_cost_per_product': [0.1],
+			'sim_market-opposite_own_state_visibility': [False],
+			'sim_market-common_state_visibility': [False],
+			'sim_market-reward_mixed_profit_and_difference': [False]
 		}
 		assert EXAMPLE_HIERARCHY_DICT['hyperparameter'] == self.flat_parser._flat_hyperparameter_to_hierarchical(test_dict)
 
@@ -163,7 +168,7 @@ class ConfigParserTest(TestCase):
 
 	# parsing hierarchical
 	def test_parsing_config_dict(self):
-		test_dict = EXAMPLE_HIERARCHY_DICT.copy()
+		test_dict = copy.deepcopy(EXAMPLE_HIERARCHY_DICT)
 
 		final_config = self.parser.parse_config(test_dict)
 

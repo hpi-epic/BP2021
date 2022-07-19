@@ -103,7 +103,6 @@ class ConfigFlatDictParser():
 		# take first list element and remove empty values
 		rl = self._first_list_element_without_empty(rl)
 		sim_market = self._first_list_element_without_empty(sim_market)
-
 		return {'rl': rl, 'sim_market': sim_market}
 
 	# HELPER
@@ -158,6 +157,8 @@ class ConfigFlatDictParser():
 		Returns:
 			int, float or string: the value converted if possible
 		"""
+		if value == 'on':
+			return True
 		try:
 			float(value)
 		except ValueError:

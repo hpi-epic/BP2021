@@ -1,3 +1,5 @@
+import copy
+
 from django.test import TestCase
 
 from ..config_parser import ConfigModelParser
@@ -36,7 +38,7 @@ class ConfigModelParserTest(TestCase):
 		},
 		'environment': {
 			'task': 'training',
-			'enable_live_draw': False,
+			'separate_markets': False,
 			'marketplace': 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopoly',
 			'agents': [
 				{
@@ -52,7 +54,7 @@ class ConfigModelParserTest(TestCase):
 		self.parser = ConfigModelParser()
 
 	def test_parsing_config_dict(self):
-		test_dict = EXAMPLE_HIERARCHY_DICT.copy()
+		test_dict = copy.deepcopy(EXAMPLE_HIERARCHY_DICT)
 
 		final_config = self.parser.parse_config(test_dict)
 
@@ -88,7 +90,7 @@ class ConfigModelParserTest(TestCase):
 		assert final_config.environment is not None
 		environment_config: EnvironmentConfig = final_config.environment
 		assert 'training' == environment_config.task
-		assert environment_config.enable_live_draw is False
+		assert environment_config.separate_markets is False
 		assert environment_config.episodes is None
 		assert environment_config.plot_interval is None
 		assert 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopoly' == environment_config.marketplace
@@ -148,4 +150,11 @@ class ConfigModelParserTest(TestCase):
 		assert 75000 == hyperparameter_rl_config.epsilon_decay_last_frame
 		assert 1.0 == hyperparameter_rl_config.epsilon_start
 		assert 0.1 == hyperparameter_rl_config.epsilon_final
-		assert hyperparameter_rl_config.stable_baseline_test is None
+		assert hyperparameter_rl_config.n_steps is None
+		assert hyperparameter_rl_config.n_epochs is None
+		assert hyperparameter_rl_config.tau is None
+		assert hyperparameter_rl_config.clip_range is None
+		assert hyperparameter_rl_config.neurones_per_hidden_layer is None
+		assert hyperparameter_rl_config.ent_coef is None
+		assert hyperparameter_rl_config.buffer_size is None
+		assert hyperparameter_rl_config.learning_starts is None
