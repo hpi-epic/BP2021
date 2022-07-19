@@ -1,3 +1,6 @@
+# This is the script describing all experiments used for Jan's Bachelor thesis.
+# It does not contain new framework features, but it stays in the repo to keep the experiments reproducible.
+
 import os
 import shutil
 import time
