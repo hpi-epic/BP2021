@@ -586,5 +586,7 @@ class DockerManager():
 
 
 if __name__ == '__main__':  # pragma: no cover
-	manager = DockerManager()
+	import logging
+	docker_manager_logger = logging.getLogger('docker-manager')
+	manager = DockerManager(docker_manager_logger)
 	print(manager._confirm_image_exists(update=True), '\n')
