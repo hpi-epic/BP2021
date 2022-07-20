@@ -587,6 +587,16 @@ class DockerManager():
 
 if __name__ == '__main__':  # pragma: no cover
 	import logging
+	path_to_log_files = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'log_files')
+	if not os.path.isdir(path_to_log_files):
+		os.makedirs(path_to_log_files)
+
+	logging.basicConfig(filename=os.path.join(path_to_log_files, 'docker_manager.log'),
+					filemode='a',
+					format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
+					datefmt='%H:%M:%S',
+					level=logging.DEBUG)
+
 	docker_manager_logger = logging.getLogger('docker-manager')
 	manager = DockerManager(docker_manager_logger)
 	print(manager._confirm_image_exists(update=True), '\n')
