@@ -39,6 +39,7 @@ def get_system_information():
 
 while True:
 	if manager.check_for_running_recommerce_container():
+		print('writing data')
 		try:
 			is_exited, docker_info = manager.check_health_of_all_container()
 			if is_exited and last_docker_info != docker_info:
