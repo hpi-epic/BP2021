@@ -21,6 +21,10 @@ from fastapi.responses import JSONResponse, StreamingResponse
 # If using a remote machine use
 # uvicorn --host 0.0.0.0 app:app --reload
 # instead to expose it to the local network
+path_to_log_files = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'log_files')
+if not os.path.isdir(path_to_log_files):
+	os.makedirs(path_to_log_files)
+
 logger = logging.getLogger('uvicorn.error')
 manager = DockerManager(logger)
 app = FastAPI()
@@ -48,10 +52,8 @@ def verify_token(request: Request) -> bool:
 	"""
 	verifies for a given request that the header contains the right AUTHORIZATION_TOKEN.
 	Warning: This cannot be considered 100% secure, without https, any network sniffer can read the token
-
 	Args:
 		request (Request): The request to the API
-
 	Returns:
 		bool: if the given authorization token matches our authorization token.
 	"""

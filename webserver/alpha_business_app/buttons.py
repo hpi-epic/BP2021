@@ -7,7 +7,7 @@ from recommerce.configuration.config_validation import validate_config
 from .config_merger import ConfigMerger
 from .config_parser import ConfigFlatDictParser
 from .container_helper import parse_response_to_database
-from .handle_files import download_file
+from .handle_files import download_config, download_file
 from .handle_requests import DOCKER_API, send_get_request, send_get_request_with_streaming, send_post_request, stop_container
 from .models.config import Config
 from .models.container import Container, update_container
@@ -79,6 +79,8 @@ class ButtonHandler():
 			return self._logs()
 		if self.wanted_key == 'manage_config':
 			return self._manage_config()
+		if self.wanted_key == 'config':
+			return self._download_config()
 		# no button was clicked?
 		return self._decide_rendering()
 
@@ -372,3 +374,12 @@ class ButtonHandler():
 		self.wanted_container = Container.objects.get(id=self.wanted_container.id)
 
 		return self._decide_rendering()
+
+	def _download_config(self) -> HttpResponse:
+		"""
+		Provides the configuration of a container for the user.
+
+		Returns:
+			HttpResponse: configuration file as `HttpResponse`
+		"""
+		return download_config(self.wanted_container)

@@ -118,9 +118,9 @@ def agent_changed(request) -> HttpResponse:
 
 def api_availability(request) -> HttpResponse:
 	if not request.user.is_authenticated:
-		return render(request, 'api_buttons/api_health_button.html')
+		return render(request, 'buttons/api_health_button.html')
 	parameter_dict = get_api_status()
-	return render(request, 'api_buttons/api_health_button.html', parameter_dict)
+	return render(request, 'buttons/api_health_button.html', parameter_dict)
 
 
 @login_required

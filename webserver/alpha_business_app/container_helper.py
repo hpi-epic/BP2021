@@ -1,10 +1,9 @@
 import copy
-import json
 
 import names
 
 from .config_parser import ConfigModelParser
-from .models.container import Container, update_container
+from .models.container import Container
 
 
 def parse_response_to_database(api_response, config_dict: dict, given_name: str, user) -> None:
@@ -55,30 +54,3 @@ def parse_response_to_database(api_response, config_dict: dict, given_name: str,
 			name=current_container_name,
 			user=user)
 	return True, [], name
-
-
-def get_actually_stopped_container_from_api_notification(api_response: str) -> str:
-	print('parse api response to warning')
-	try:
-		raw_data = json.loads(json.loads(api_response))
-	except json.decoder.JSONDecodeError:
-		print(f'Could not parse API Response to valid JSON {api_response}')
-		return False, []
-
-	polished_data = [item[1:-1].split(',') for item in raw_data['status'].split(';')]
-	polished_data = [(container_id[1:-1].strip(), exit_code.strip()) for container_id, exit_code in polished_data]
-	result = []
-	for container_id, exit_code in polished_data:
-		try:
-			wanted_container = Container.objects.get(id=container_id)
-		except Container.DoesNotExist:
-			continue
-		if wanted_container.health_status.startswith('exit'):
-			continue
-		update_container(container_id, {'health_status': f'exited({exit_code})'})
-		result += [{'container_name': wanted_container.name, 'exit_code': exit_code}]
-	print(result)
-	if not result:
-		return False, []
-
-	return True, result
