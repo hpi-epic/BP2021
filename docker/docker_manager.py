@@ -566,7 +566,7 @@ class DockerManager():
 		if upload_ok:
 			os.chdir('..')
 			shutil.rmtree('config_tmp')
-		self.logger.info('Copying config files complete')
+		self._logger.info('Copying config files complete')
 		return DockerInfo(id=container_id, status=container.status, data=upload_ok)
 
 	@classmethod
