@@ -353,7 +353,7 @@ class DockerManager():
 		Returns:
 			tuple: first value indecating, if a container has exited, second is a DockerInfo containing exited container
 		"""
-		exited_recommerce_containers = cls._list_containers({'label': IMAGE_NAME, 'status': 'exited'})
+		exited_recommerce_containers = cls._list_containers(cls, {'label': IMAGE_NAME, 'status': 'exited'})
 		exited_container = []
 		for container in exited_recommerce_containers:
 			exited_container += [(container.id, docker.APIClient().inspect_container(container.id)['State']['ExitCode'])]
@@ -363,8 +363,8 @@ class DockerManager():
 
 	@classmethod
 	def check_for_running_recommerce_container(cls) -> list:
-		exited_recommerce_containers = cls._list_containers({'label': IMAGE_NAME, 'status': 'exited'})
-		all_recommerce_containers = cls._list_containers({'label': IMAGE_NAME})
+		exited_recommerce_containers = cls._list_containers(cls, {'label': IMAGE_NAME, 'status': 'exited'})
+		all_recommerce_containers = cls._list_containers(cls, {'label': IMAGE_NAME})
 		print(exited_recommerce_containers, all_recommerce_containers, sep='\n')
 		return list(set(all_recommerce_containers) - set(exited_recommerce_containers))
 
@@ -621,7 +621,7 @@ class DockerManager():
 		"""
 		# Get all RUNNING containers with the IMAGE_NAME label
 		# we don't care about already exited containers, since we can't see the tensorboard anyways
-		running_recommerce_containers = cls._list_containers({'label': IMAGE_NAME})
+		running_recommerce_containers = cls._list_containers(cls, {'label': IMAGE_NAME})
 		# Get the port mapped to '6006/tcp' within the container
 		occupied_ports = [int(container.ports['6006/tcp'][0]['HostPort']) for container in running_recommerce_containers]
 		cls._port_mapping = dict(zip([container.id for container in running_recommerce_containers], occupied_ports))
