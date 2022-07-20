@@ -7,6 +7,10 @@ from .sim_market_config import SimMarketConfig
 
 
 class HyperparameterConfig(AbstractConfig, models.Model):
+	"""
+	This class represents the `hyperparameter` part of our configuration file.
+	It contains both `sim_market` config and `rl`config.
+	"""
 	rl = models.ForeignKey('alpha_business_app.RLConfig', on_delete=models.CASCADE, null=True)
 	sim_market = models.ForeignKey('alpha_business_app.SimMarketConfig', on_delete=models.CASCADE, null=True)
 

@@ -66,23 +66,33 @@ $(document).ready(function() {
 		});
 	}).trigger("change");
 
-
 	function addChangeToAgent () {
 		$("select.agent-agent-class").change(function () {
 			// will be called when agent dropdown has changed, we need to change rl hyperparameter for that
 			var self = $(this);
-			var formdata = getFormData();
 			const csrftoken = getCookie("csrftoken");
 			$.ajax({
 				type: "POST",
 				url: self.data("url"),
 				data: {
 					csrfmiddlewaretoken: csrftoken,
-					formdata,
 					"agent": self.val()
 				},
 				success: function (data) {
-					$("div.rl-parameter").empty().append(data)
+					// our view returns the data in the form:
+					// <agent specific parameters ; seperated>|<all possible parameters ; seperated>
+					// The parameters are already real IDs in our template, we just need to split it up again.
+					parameter_parts = data.split('|');
+					all_parameters = parameter_parts[1].split(';');
+					specific_parameters = parameter_parts[0].split(';');
+					$(all_parameters).each(function (_ , value) {
+						// show all possible rl parameters
+						$("#" + value).removeClass('d-none')
+					});
+					$(specific_parameters).each(function (_ , value) {
+						// make the specific ones not visible
+						$("#" + value).addClass('d-none')
+					});
 				}
 			});
 		}).trigger("change");
