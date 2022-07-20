@@ -82,22 +82,6 @@ class DockerManager():
 
 		return cls._instance
 
-	def check_health_of_all_container(self) -> tuple:
-		"""
-		Checks health of all containers, and collects exited container and their status code as tuples in a Docker Info
-
-		Returns:
-			tuple: first value indecating, if a container has exited, second is a DockerInfo containing exited container
-		"""
-		exited_recommerce_containers = list(self._get_client().containers.list(filters={'label': 'recommerce', 'status': 'exited'}))
-		exited_container = []
-		for container in exited_recommerce_containers:
-			exited_container += [(container.id, docker.APIClient().inspect_container(container.id)['State']['ExitCode'])]
-		self._container_db.they_are_exited(exited_container)
-		all_container_ids = ';'.join([str(container_id) for container_id, _ in exited_container])
-		all_container_status = ';'.join([str((container_id, exit_code)) for container_id, exit_code in exited_container])
-		return exited_recommerce_containers != [], DockerInfo(id=all_container_ids, status=all_container_status)
-
 	def start(self, config: dict, count: int, is_webserver: bool) -> DockerInfo or list:
 		"""
 		To be called by the REST API. Create and start a new docker container from the image of the specified command.
@@ -361,6 +345,29 @@ class DockerManager():
 			cls._client = None
 		return cls._client
 
+	@classmethod
+	def check_health_of_all_container(cls) -> tuple:
+		"""
+		Checks health of all containers, and collects exited container and their status code as tuples in a Docker Info
+
+		Returns:
+			tuple: first value indecating, if a container has exited, second is a DockerInfo containing exited container
+		"""
+		exited_recommerce_containers = cls._list_containers(filters={'label': IMAGE_NAME, 'status': 'exited'})
+		exited_container = []
+		for container in exited_recommerce_containers:
+			exited_container += [(container.id, docker.APIClient().inspect_container(container.id)['State']['ExitCode'])]
+		all_container_ids = ';'.join([str(container_id) for container_id, _ in exited_container])
+		all_container_status = ';'.join([str((container_id, exit_code)) for container_id, exit_code in exited_container])
+		return exited_recommerce_containers != [], DockerInfo(id=all_container_ids, status=all_container_status)
+
+	@classmethod
+	def check_for_running_recommerce_container(cls) -> list:
+		exited_recommerce_containers = cls._list_containers({'label': IMAGE_NAME, 'status': 'exited'})
+		all_recommerce_containers = cls._list_containers(filters={'label': IMAGE_NAME})
+		print(exited_recommerce_containers, all_recommerce_containers, sep='\n')
+		return list(set(all_recommerce_containers) - set(exited_recommerce_containers))
+
 	def _confirm_image_exists(self, update: bool = False) -> str:
 		"""
 		Find out if the IMAGE_NAME image exists. If not, the image will be built.
@@ -473,6 +480,9 @@ class DockerManager():
 		if not upload_info.data:
 			self._logger.warning('Failed to upload configuration file!')
 		return upload_info
+
+	def _list_containers(self, filter_arguments: dict) -> list:
+		return list(self._get_client().containers.list(filters=filter_arguments))
 
 	def _start_container(self, container_id: str) -> DockerInfo:
 		"""
@@ -611,7 +621,7 @@ class DockerManager():
 		"""
 		# Get all RUNNING containers with the IMAGE_NAME label
 		# we don't care about already exited containers, since we can't see the tensorboard anyways
-		running_recommerce_containers = list(cls._get_client().containers.list(filters={'label': IMAGE_NAME}))
+		running_recommerce_containers = cls._list_containers(filters={'label': IMAGE_NAME})
 		# Get the port mapped to '6006/tcp' within the container
 		occupied_ports = [int(container.ports['6006/tcp'][0]['HostPort']) for container in running_recommerce_containers]
 		cls._port_mapping = dict(zip([container.id for container in running_recommerce_containers], occupied_ports))
