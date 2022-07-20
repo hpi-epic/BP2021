@@ -22,22 +22,25 @@
                 <td>{{ container.last_check_at }}</td>
                 <td>{{ container.health_status }}</td>
                 <td class="button_row" >
-                    {% include "api_buttons/health_button.html" %}
+                    {% include "buttons/health_button.html" %}
                 </td>
                 <td class="button_row">
-                    {% include "api_buttons/pause_button.html" %}
+                    {% include "buttons/pause_button.html" %}
                 </td>
                 <td class="button_row" >
-                    {% include "api_buttons/download_button.html" %}
+                    <div class="d-flex">
+                        {% include "buttons/download_button.html" %}
+                        {% include "buttons/config_button.html" %}
+                    </div>
                 </td>
                 <td class="button_row" >
-                    {% include "api_buttons/logs_button.html" %}
+                    {% include "buttons/logs_button.html" %}
                 </td>
                 <td class="button_row">
-                    {% include "api_buttons/stop_button.html" %}
+                    {% include "buttons/stop_button.html" %}
                 </td>
                 <td class="button_row" >
-                    {% include "api_buttons/tensorboard_button.html" %}
+                    {% include "buttons/tensorboard_button.html" %}
                 </td>
             </tr>
         </table>

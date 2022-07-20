@@ -1,0 +1,6 @@
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="config">
+    <button class="btn bc-outline-download btn-sm" title="download config of this container"
+        name="container_id" value="{{ container.id }}" type="submit">config</button>
+</form>

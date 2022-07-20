@@ -17,11 +17,11 @@ class ConfigFlatDictParser():
 	def flat_dict_to_hierarchical_config_dict(self, flat_dict: dict) -> dict:
 		"""
 		Parses a flat config dictionary to hierarchical dictionary.
-		The flat dictionary should have the hierarchical path in the keys, separated by '-'
+		The flat dictionary should have the hierarchical path in the keys, separated by '-'.
 
 		Args:
 			flat_dict (dict): a dictionary containing key value pairs from a config.
-				Keys must have a keypath for hierarchical config separated by '-'
+				Keys must have a keypath for hierarchical config separated by '-'.
 
 		Returns:
 			dict: hierarchical config dict
@@ -42,6 +42,17 @@ class ConfigFlatDictParser():
 			}
 
 	def flat_dict_to_complete_hierarchical_config_dict(self, flat_dict: dict) -> dict:
+		"""
+		Parses a flat config dictionary to a complete hierarcical config dict.
+		A complete dict means that this dict includes all possible config parameters.
+
+		Args:
+			flat_dict (dict): a dictionary containing key value pairs from a config.
+				Keys must have a keypath for hierarchical config separated by '-'.
+
+		Returns:
+			dict: Hierarchical config dictionary
+		"""
 		not_complete_config_dict = self.flat_dict_to_hierarchical_config_dict(flat_dict)
 		return ConfigMerger().merge_config_into_base_config(Config.get_empty_structure_dict(), not_complete_config_dict)
 

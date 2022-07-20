@@ -79,21 +79,6 @@ class DockerManager():
 
 		return cls._instance
 
-	def check_health_of_all_container(self) -> tuple:
-		"""
-		Checks health of all containers, and collects exited container and their status code as tuples in a Docker Info
-		Returns:
-			tuple: first value indecating, if a container has exited, second is a DockerInfo containing exited container
-		"""
-		exited_recommerce_containers = list(self._get_client().containers.list(filters={'label': 'recommerce', 'status': 'exited'}))
-		exited_container = []
-		for container in exited_recommerce_containers:
-			exited_container += [(container.id, docker.APIClient().inspect_container(container.id)['State']['ExitCode'])]
-
-		all_container_ids = ';'.join([str(container_id) for container_id, _ in exited_container])
-		all_container_status = ';'.join([str((container_id, exit_code)) for container_id, exit_code in exited_container])
-		return exited_recommerce_containers != [], DockerInfo(id=all_container_ids, status=all_container_status)
-
 	def start(self, config: dict, count: int) -> DockerInfo or list:
 		"""
 		To be called by the REST API. Create and start a new docker container from the image of the specified command.
@@ -560,7 +545,7 @@ class DockerManager():
 		# write dict to json
 		with open(os.path.join('configuration_files', 'market_config.json'), 'w') as config_json:
 			config_json.write(json.dumps(config_dict['hyperparameter']['sim_market']))
-		with open(os.path.join('configuration_files', 'q_learning_config.json'), 'w') as config_json:
+		with open(os.path.join('configuration_files', 'q_learning_config.json'), 'w') as config_json:  # needs to be fixed
 			config_json.write(json.dumps(config_dict['hyperparameter']['rl']))
 		with open(os.path.join('configuration_files', f'environment_config_{command_id}.json'), 'w') as config_json:
 			config_json.write(json.dumps(config_dict['environment']))
@@ -581,7 +566,7 @@ class DockerManager():
 		if upload_ok:
 			os.chdir('..')
 			shutil.rmtree('config_tmp')
-		self.logger.info('Copying config files complete')
+		self._logger.info('Copying config files complete')
 		return DockerInfo(id=container_id, status=container.status, data=upload_ok)
 
 	@classmethod
@@ -601,5 +586,17 @@ class DockerManager():
 
 
 if __name__ == '__main__':  # pragma: no cover
-	manager = DockerManager()
+	import logging
+	path_to_log_files = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'log_files')
+	if not os.path.isdir(path_to_log_files):
+		os.makedirs(path_to_log_files)
+
+	logging.basicConfig(filename=os.path.join(path_to_log_files, 'docker_manager.log'),
+					filemode='a',
+					format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
+					datefmt='%H:%M:%S',
+					level=logging.DEBUG)
+
+	docker_manager_logger = logging.getLogger('docker-manager')
+	manager = DockerManager(docker_manager_logger)
 	print(manager._confirm_image_exists(update=True), '\n')
