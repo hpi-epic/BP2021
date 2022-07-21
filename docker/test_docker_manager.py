@@ -3,6 +3,18 @@ from unittest.mock import patch
 import docker_manager
 import pytest
 
+
+class MockedLogger:
+	def info(self, logging_text):
+		return
+
+	def warning(self, logging_text):
+		return
+
+	def error(self, logging_text):
+		return
+
+
 mock_port_mapping = {
 	'2d680af1e272e0573d44f0adccccf03361a1c4e8db98c540e03ac84f9d9c4e3c': 6006,
 	'c818251ed4088168b51b5677082c1bdf87200fbdb87bab25a7d2faca30ffac6e': 6008,
@@ -10,7 +22,7 @@ mock_port_mapping = {
 }
 with patch('docker_manager.docker'), \
 	patch('docker_manager.DockerManager._update_port_mapping'):
-	manager = docker_manager.DockerManager()
+	manager = docker_manager.DockerManager(MockedLogger())
 
 # Remember to ALWAYS do:
 # patch('docker_manager.docker') \
@@ -24,7 +36,7 @@ def setup_function(function):
 		global manager
 		# reset the instance for our tests, as we always want a fresh one
 		docker_manager.DockerManager._instance = None
-		manager = docker_manager.DockerManager()
+		manager = docker_manager.DockerManager(MockedLogger())
 		manager._port_mapping = mock_port_mapping
 
 
@@ -79,7 +91,7 @@ def test_incorrect_docker_info_initialization(id, status, data, stream, expected
 def test_docker_manager_is_singleton():
 	with patch('docker_manager.docker'), \
 		patch('docker_manager.DockerManager._update_port_mapping'):
-		manager2 = docker_manager.DockerManager()
+		manager2 = docker_manager.DockerManager(MockedLogger())
 		assert manager is manager2
 
 
@@ -108,7 +120,7 @@ invalid_start_parameter_testcases = [
 def test_start_with_invalid_command(test_config, expected_docker_info_params):
 	expected_docker_info = docker_manager.DockerInfo(**expected_docker_info_params)
 
-	actual_docker_info = docker_manager.DockerManager().start(test_config, 2)
+	actual_docker_info = docker_manager.DockerManager(MockedLogger()).start(test_config, 2)
 	assert expected_docker_info == actual_docker_info
 
 
@@ -119,7 +131,7 @@ def test_start_but_no_image():
 	with patch('docker_manager.DockerManager._confirm_image_exists') as image_exists_mock:
 		image_exists_mock.return_value = None
 
-		actual_docker_info = docker_manager.DockerManager().start(test_config, 2)
+		actual_docker_info = docker_manager.DockerManager(MockedLogger()).start(test_config, 2)
 		assert expected_docker_info == actual_docker_info
 		image_exists_mock.assert_called_once()
 
@@ -141,7 +153,7 @@ def test_start_create_container_failed(docker_info_mock_parameter):
 		image_exists_mock.return_value = '12345'
 		create_container_mock.return_value = docker_manager.DockerInfo(**docker_info_mock_parameter)
 
-		actual_docker_info = docker_manager.DockerManager().start(test_config, 2)
+		actual_docker_info = docker_manager.DockerManager(MockedLogger()).start(test_config, 2)
 
 		assert expected_docker_info == actual_docker_info
 		image_exists_mock.assert_called_once()
@@ -158,7 +170,7 @@ def test_start_container_works():
 		patch('docker_manager.DockerManager._start_container') as start_container_mock:
 		image_exists_mock.return_value = '12345'
 		create_container_mock.return_value = docker_info
-		actual_docker_infos = docker_manager.DockerManager().start(test_config, 2)
+		actual_docker_infos = docker_manager.DockerManager(MockedLogger()).start(test_config, 2)
 
 		assert 2 == len(actual_docker_infos)
 		image_exists_mock.assert_called_once()

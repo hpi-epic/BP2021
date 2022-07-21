@@ -8,12 +8,10 @@ data
 # results from the tests
 tests/test_results
 
-# all webserver related directories
-webserver/configurations
-webserver/data
-webserver/package-lock.json
-webserver/node_modules
+# all webserver and docker related directories
 webserver/.env.txt
+docker_api/.env.txt
+docker_api/log_files/*
 
 # file where the users data path is saved
 recommerce/configuration/user_path.txt
