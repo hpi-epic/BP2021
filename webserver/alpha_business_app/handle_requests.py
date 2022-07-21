@@ -22,7 +22,7 @@ def _get_api_token() -> str:
 	try:
 		with open('./.env.txt', 'r') as file:
 			lines = file.readlines()
-			master_secret = lines[1]
+			master_secret = lines[1].strip()
 	except FileNotFoundError:
 		print('No .env file found, using environment variable instead.')
 		try:
