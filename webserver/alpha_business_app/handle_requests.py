@@ -22,7 +22,7 @@ def _get_api_token() -> str:
 	try:
 		with open('./.env.txt', 'r') as file:
 			lines = file.readlines()
-			master_secret = lines[1]
+			master_secret = lines[1].strip()
 	except FileNotFoundError:
 		print('No .env file found, using environment variable instead.')
 		try:
@@ -32,8 +32,6 @@ def _get_api_token() -> str:
 			return 'abc'
 	master_secret_as_int = sum(ord(c) for c in master_secret)
 	current_time = int(time.time() / 3600)  # unix time in hours
-	print('time:', current_time, '\n master secret', master_secret, '\nint master:', master_secret_as_int)
-	print('\n', hashlib.sha256(str(master_secret_as_int + current_time).encode('utf-8')).hexdigest(), '\n')
 	return hashlib.sha256(str(master_secret_as_int + current_time).encode('utf-8')).hexdigest()
 
 

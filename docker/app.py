@@ -67,8 +67,6 @@ def verify_token(request: Request) -> bool:
 	expected_this_token = hashlib.sha256(str(master_secret_as_int + current_time).encode('utf-8')).hexdigest()
 	# token that was expected last hour
 	expected_last_token = hashlib.sha256(str(master_secret_as_int + (current_time - 3600)).encode('utf-8')). hexdigest()
-	print('this:', expected_this_token, '\nlast:', expected_last_token, '\ntoken:', token)
-	print('time:', current_time, '\n master secret', os.environ['AUTHORIZATION_TOKEN'], '\nint master:', master_secret_as_int)
 	return token == expected_this_token or token == expected_last_token
 
 
