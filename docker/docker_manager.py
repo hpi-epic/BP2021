@@ -59,21 +59,24 @@ class DockerManager():
 	_allowed_commands = ['training', 'exampleprinter', 'agent_monitoring']
 	# dictionary of container_id:host-port pairs
 	_port_mapping = {}
+	_logger = None
 
-	def __new__(cls):
+	def __new__(cls, logger):
 		"""
 		This function makes sure that the `DockerManager` is a singleton.
 
 		Returns:
 			DockerManager: The DockerManager instance.
 		"""
+		cls._logger = logger
 		if cls._instance is None:
-			print('A new instance of DockerManager is being initialized')
+			cls._logger.info('A new instance of DockerManager is being initialized')
 			cls._instance = super(DockerManager, cls).__new__(cls)
 			cls._client = cls._get_client()
 
 		if cls._client is not None:
 			cls._update_port_mapping()
+
 		return cls._instance
 
 	def start(self, config: dict, count: int) -> DockerInfo or list:
@@ -96,7 +99,7 @@ class DockerManager():
 		command_id = config['environment']['task']
 
 		if command_id not in self._allowed_commands:
-			print(f'Command with ID {command_id} not allowed')
+			self._logger.warning(f'Command with ID {command_id} not allowed')
 			return DockerInfo(id='No container was started', status=f'Command not allowed: {command_id}')
 
 		if not self._confirm_image_exists():
@@ -105,7 +108,6 @@ class DockerManager():
 		all_container_infos = []
 		for _ in range(count):
 			# start a container for the image of the requested command
-			print('cuda?', is_available())
 			container_info: DockerInfo = self._create_container(command_id, config, use_gpu=is_available())
 			if 'Image not found' in container_info.status or container_info.data is False:
 				# something is wrong with our container
@@ -125,7 +127,7 @@ class DockerManager():
 		Returns:
 			DockerInfo: A JSON serializable object containing the id and the status of the new container.
 		"""
-		print(f'Checking health status for: {container_id}')
+		self._logger.info(f'Checking health status for: {container_id}')
 		container: Container = self._get_container(container_id)
 		if not container:
 			return DockerInfo(container_id, status='Container not found')
@@ -206,7 +208,7 @@ class DockerManager():
 		if container.status != 'running':
 			return DockerInfo(container_id, status='Container is not running. Download the data and start a tensorboard locally.')
 
-		print(f'Starting tensorboard for: {container_id}')
+		self._logger.info(f'Starting tensorboard for: {container_id}')
 		container.exec_run(cmd='tensorboard serve --host 0.0.0.0 --logdir ./results/runs', detach=True)
 		port = self._port_mapping[container.id]
 		return DockerInfo(container_id, status=container.status, data=str(port))
@@ -229,7 +231,7 @@ class DockerManager():
 		if not container:
 			return DockerInfo(container_id, status='Container not found')
 
-		print(f'Getting logs for {container_id}...')
+		self._logger.info(f'Getting logs for {container_id}...')
 
 		logs = container.logs(stream=stream, timestamps=timestamps, tail=tail,
 			stderr=docker.APIClient().inspect_container(container.id)['State']['ExitCode'] != 0)
@@ -276,10 +278,10 @@ class DockerManager():
 
 		container_info = self._stop_container(container_id)
 		if container_info.status != 'exited':
-			print(f'Container not stopped successfully. Status: {container_info.status}')
+			self._logger.warning(f'Container not stopped successfully. Status: {container_info.status}')
 			return DockerInfo(id=container_id, status=f'Container not stopped successfully. Status: {container_info.status}')
 
-		print(f'Removing container: {container_id}')
+		self._logger.info(f'Removing container: {container_id}')
 		try:
 			exit_code = container.wait()['StatusCode']
 			container.remove()
@@ -297,12 +299,12 @@ class DockerManager():
 		Returns:
 			bool: If the server is running or not.
 		"""
-		print('Pinging docker server...')
+		self._logger.info('Pinging docker server...')
 		try:
 			return self._get_client().ping()
 		except Exception:
-			print('Docker server is not responding!')
-			print(f'Client is: {self._get_client()}')
+			self._logger.warning('Docker server is not responding!')
+			self._logger.info(f'Client is: {self._get_client()}')
 			return False
 
 	# PRIVATE METHODS
@@ -344,19 +346,19 @@ class DockerManager():
 		tagged_images = [image.tags[0].rsplit(':')[0] for image in all_images if len(image.tags)]
 
 		if len(all_images) != len(tagged_images):
-			print('You have untagged images and may want to remove them:')
+			self._logger.info('You have untagged images and may want to remove them:')
 			for image in all_images:
 				if len(image.tags) == 0:
-					print(image.id)
+					self._logger.info(image.id)
 
 		if update:
-			print(f'{IMAGE_NAME} image will be created/updated.')
+			self._logger.info(f'{IMAGE_NAME} image will be created/updated.')
 			return self._build_image()
 
 		if IMAGE_NAME not in tagged_images:
-			print(f'{IMAGE_NAME} image does not exist and will be created')
+			self._logger.info(f'{IMAGE_NAME} image does not exist and will be created')
 			return self._build_image()
-		print(f'{IMAGE_NAME} image already exists')
+		self._logger.info(f'{IMAGE_NAME} image already exists')
 		return self._get_client().images.get(IMAGE_NAME).id[7:]
 
 	def _build_image(self) -> str:
@@ -367,7 +369,7 @@ class DockerManager():
 			str: The id of the image or None if the build failed.
 		"""
 		# https://docker-py.readthedocs.io/en/stable/images.html
-		print(f'Building {IMAGE_NAME} image')
+		self._logger.info(f'Building {IMAGE_NAME} image')
 
 		# Find out if an image with the name already exists to remove it afterwards
 		try:
@@ -381,13 +383,13 @@ class DockerManager():
 			for output in logs:
 				if 'stream' in output:
 					output_str = output['stream'].strip('\r\n').strip('\n')
-					print(output_str)
+					self._logger.info(output_str)
 			img = self._get_client().images.get(IMAGE_NAME)
 		except docker.errors.BuildError or docker.errors.APIError as error:
-			print(f'An error occurred while building the {IMAGE_NAME} image\n{error}')
+			self._logger.error(f'An error occurred while building the {IMAGE_NAME} image\n{error}')
 			return None
 		if old_img is not None and old_img.id != img.id:
-			print(f'\nA {IMAGE_NAME} image already exists, it will be overwritten')
+			self._logger.warning(f'\nA {IMAGE_NAME} image already exists, it will be overwritten')
 			self._get_client().images.remove(old_img.id[7:])
 		# return id without the 'sha256:'-prefix
 		return img.id[7:]
@@ -405,7 +407,7 @@ class DockerManager():
 			DockerInfo: A DockerInfo object with id and status set.
 		"""
 		# https://docker-py.readthedocs.io/en/stable/containers.html
-		print(f'Creating container for command: {command_id}')
+		self._logger.info(f'Creating container for command: {command_id}')
 
 		# first update the port mapping in case containers were added/removed without our knowledge
 		self._update_port_mapping()
@@ -438,7 +440,7 @@ class DockerManager():
 
 		upload_info = self._upload_config(container.id, command_id, config)
 		if not upload_info.data:
-			print('Failed to upload configuration file!')
+			self._logger.warning('Failed to upload configuration file!')
 		return upload_info
 
 	def _start_container(self, container_id: str) -> DockerInfo:
@@ -456,10 +458,10 @@ class DockerManager():
 			return DockerInfo(id=container_id, status='Container not found.')
 
 		if container.status == 'running':
-			print(f'Container is already running: {container_id}')
+			self._logger.info(f'Container is already running: {container_id}')
 			return DockerInfo(id=container_id, status='running')
 
-		print(f'Starting container: {container_id}')
+		self._logger.info(f'Starting container: {container_id}')
 		try:
 			container.start()
 			# Reload the attributes to get the correct status
@@ -484,6 +486,13 @@ class DockerManager():
 		except docker.errors.NotFound:
 			return None
 
+	def _get_container_exit_code(self, container: Container) -> str:
+		try:
+			exit_code = container.wait()['StatusCode']
+		except docker.errors.APIError as error:
+			exit_code = f'could not get, {error}'
+		return exit_code
+
 	def _stop_container(self, container_id: str) -> DockerInfo:
 		"""
 		Stop a running container.
@@ -500,7 +509,7 @@ class DockerManager():
 		if not container:
 			return DockerInfo(container_id, status='Container not found.')
 
-		print(f'Stopping container: {container_id}')
+		self._logger.info(f'Stopping container: {container_id}')
 		try:
 			container.stop(timeout=10)
 			# Reload the attributes to get the correct status
@@ -525,7 +534,7 @@ class DockerManager():
 		if not container:
 			return DockerInfo(id=container_id, status='Container not found.')
 
-		print('Copying config files into container...')
+		self._logger.info('Copying config files into container...')
 		# create a directory to store the files safely
 		os.makedirs('config_tmp', exist_ok=True)
 		os.chdir('config_tmp')
@@ -557,7 +566,7 @@ class DockerManager():
 		if upload_ok:
 			os.chdir('..')
 			shutil.rmtree('config_tmp')
-		print('Copying config files complete.')
+		self._logger.info('Copying config files complete')
 		return DockerInfo(id=container_id, status=container.status, data=upload_ok)
 
 	@classmethod
@@ -572,10 +581,22 @@ class DockerManager():
 		running_recommerce_containers = list(cls._get_client().containers.list(filters={'label': IMAGE_NAME}))
 		# Get the port mapped to '6006/tcp' within the container
 		occupied_ports = [int(container.ports['6006/tcp'][0]['HostPort']) for container in running_recommerce_containers]
-		# Create a dictionary of container_id: mapped port
 		cls._port_mapping = dict(zip([container.id for container in running_recommerce_containers], occupied_ports))
+		# Create a dictionary of container_id: mapped port
 
 
 if __name__ == '__main__':  # pragma: no cover
-	manager = DockerManager()
+	import logging
+	path_to_log_files = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'log_files')
+	if not os.path.isdir(path_to_log_files):
+		os.makedirs(path_to_log_files)
+
+	logging.basicConfig(filename=os.path.join(path_to_log_files, 'docker_manager.log'),
+					filemode='a',
+					format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
+					datefmt='%H:%M:%S',
+					level=logging.DEBUG)
+
+	docker_manager_logger = logging.getLogger('docker-manager')
+	manager = DockerManager(docker_manager_logger)
 	print(manager._confirm_image_exists(update=True), '\n')

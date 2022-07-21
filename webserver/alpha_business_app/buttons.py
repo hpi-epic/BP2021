@@ -376,4 +376,10 @@ class ButtonHandler():
 		return self._decide_rendering()
 
 	def _download_config(self) -> HttpResponse:
+		"""
+		Provides the configuration of a container for the user.
+
+		Returns:
+			HttpResponse: configuration file as `HttpResponse`
+		"""
 		return download_config(self.wanted_container)
