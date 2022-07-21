@@ -32,6 +32,7 @@ def _get_api_token() -> str:
 			return 'abc'
 	master_secret_as_int = sum(ord(c) for c in master_secret)
 	current_time = int(time.time() / 3600)  # unix time in hours
+	print('\n', hashlib.sha256(str(master_secret_as_int + current_time).encode('utf-8')).hexdigest(), '\n')
 	return hashlib.sha256(str(master_secret_as_int + current_time).encode('utf-8')).hexdigest()
 
 

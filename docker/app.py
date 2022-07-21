@@ -67,6 +67,7 @@ def verify_token(request: Request) -> bool:
 	expected_this_token = hashlib.sha256(str(master_secret_as_int + current_time).encode('utf-8')).hexdigest()
 	# token that was expected last hour
 	expected_last_token = hashlib.sha256(str(master_secret_as_int + (current_time - 3600)).encode('utf-8')). hexdigest()
+	print('this:', expected_this_token, '\nlast:', expected_last_token, '\ntoken:', token)
 	return token == expected_this_token or token == expected_last_token
 
 
@@ -286,6 +287,6 @@ if __name__ == '__main__':
 	uvicorn.run('app:app',
 		host='0.0.0.0',
 		port=8000,
-		log_config='./log_api.ini',
+		# log_config='./log_api.ini',
 		ssl_keyfile='/etc/sslzertifikat/api_cert.key',
 		ssl_certfile='/etc/sslzertifikat/api_cert.crt')
