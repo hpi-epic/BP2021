@@ -76,8 +76,8 @@ If you are using the default configuration files provided by `recommerce --get-d
 
 ## Installing dependencies
 
-We are using both [pip](https://pip.pypa.io/en/stable/index.html) and [anaconda](https://www.anaconda.com/) to install our dependencies.
-The difference between the two is that we install all dependencies we need to run the core functionality of our project using pip, and all other dependencies (such as `pytest` or `django`) using anaconda.
+We are using both [pip](https://pip.pypa.io/en/stable/index.html) and [`anaconda`](https://www.anaconda.com/) to install our dependencies.
+The difference between the two is that we install all dependencies we need to run the core functionality of our project using pip, and all other dependencies (such as `pytest` or `django`) using `anaconda`.
 This allows us to have a clear distinction between the purposes of the different packages, while also keeping our `docker` containers small by only installing pip dependencies there.
 You can read up more about our usage of docker [here](https://github.com/hpi-epic/BP2021/wiki/Developer-guides-%E2%80%93-Docker-&-UI).
 
