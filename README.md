@@ -31,13 +31,15 @@ The `recommerce` package requires users to provide it with a datapath, which is 
 During installation of the package, the datapath was set to the current working directory. If you want to modify the datapath, you can use the following command:
 
 ```terminal
-recommerce --datapath "your_preferred_path"
+recommerce --datapath "<datapath>"
 ```
+
+where <datapath> is a valid path from which `recommerce` will read write data.
 
 You should see the following message indicating your path is valid:
 
 ```terminal
-Data will be read from and saved to "your_preferred_path"
+Data will be read from and saved to "<datapath>"
 ```
 
 You can check the currently set datapath at any point by running
@@ -71,26 +73,28 @@ We are using both pip and conda to install our dependencies. The difference betw
 If you have not yet done so, install Anaconda and run the following command to create an environment and install the required packages from the `environment.yml`:
 
 ```terminal
-conda env create -n your_venv_name
+conda env create -n <your_venv_name>
 ```
+
+where <your_venv_name> is the name the environment should have.
 
 To activate your created environment use:
 
 ```terminal
-conda activate your_venv_name
+conda activate <your_venv_name>
 ```
 
 To update an existing environment with the needed packages run the following command:
 
 ```terminal
-conda env update -n your_venv_name
+conda env update -n <your_venv_name>
 ```
 
 If version numbers have changed in the `environment.yml` it can happen that conda finds conflicts and tries resolving them without succeeding. In this case you may need to reinstall the packages. Deactivate your environment before proceeding, otherwise conda cannot perform the commands:
 
 ```terminal
-conda uninstall -n your_venv_name --all
-conda env update -n your_venv_name
+conda uninstall -n <your_venv_name> --all
+conda env update -n <your_venv_name>
 ```
 
 This will first uninstall all packages and then re-install them from the `environment.yml`.
