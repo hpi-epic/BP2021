@@ -76,55 +76,13 @@ If you are using the default configuration files provided by `recommerce --get-d
 
 ## Installing dependencies
 
-We are using both pip and conda to install our dependencies.
-The difference between the two is that we install all dependencies we need to run the core functionality of our project using pip, and all other dependencies (such as pytest or django) with conda.
-This allows us to keep our docker containers small by only installing pip dependencies there.
+We are using both [pip](https://pip.pypa.io/en/stable/index.html) and [anaconda](https://www.anaconda.com/) to install our dependencies.
+The difference between the two is that we install all dependencies we need to run the core functionality of our project using pip, and all other dependencies (such as `pytest` or `django`) using anaconda.
+This allows us to have a clear distinction between the purposes of the different packages, while also keeping our `docker` containers small by only installing pip dependencies there.
+You can read up more about our usage of docker [here](https://github.com/hpi-epic/BP2021/wiki/Developer-guides-%E2%80%93-Docker-&-UI).
 
-If you have not yet done so, install Anaconda and run the following command to create an environment and install the required packages from the `environment.yml`:
-
-```terminal
-conda env create -n <your_venv_name>
-```
-
-where <your_venv_name> is the name the environment should have.
-
-To activate your created environment use:
-
-```terminal
-conda activate <your_venv_name>
-```
-
-To update an existing environment with the needed packages run the following command:
-
-```terminal
-conda env update -n <your_venv_name>
-```
-
-If version numbers have changed in the `environment.yml` it can happen that conda finds conflicts and tries resolving them without succeeding.
-In this case you may need to reinstall the packages.
-Deactivate your environment before proceeding, otherwise conda cannot perform the commands:
-
-```terminal
-conda uninstall -n <your_venv_name> --all
-conda env update -n <your_venv_name>
-```
-
-This will first uninstall all packages and then re-install them from the `environment.yml`.
-
-### Dependency installation troubleshooting
-
-If you get the following error message when trying to access the docker SDK (e.g. by starting the API through `docker/app.py`):
-
-```terminal
-docker.errors.DockerException: Install pypiwin32 package to enable npipe:// support
-```
-
-you have to run the `pywin32_postinstall.py` script.
-To do so, run the following command:
-
-```terminal
-python Path/To/Anaconda3/Scripts/pywin32_postinstall.py -install
-```
+For the purpose of staying user-centered, this Quick Start Guide will only include installation instructions for the pip dependencies, through the use of our `recommerce` package, described in the next section.
+To learn how to properly install the dependencies needed to continue developing the framework, take a look at our [developer guide](https://github.com/hpi-epic/BP2021/wiki/Developer-guides-%E2%80%93-Installation).
 
 ## Installing the `recommerce` package
 
