@@ -5,11 +5,15 @@
 ![Docstring-Coverage](/badges/docstring_coverage.svg)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 
-Working repository in context of the bachelor's project "*Online Marketplace Simulation: A Testbed for Self-Learning Agents*" at the *Enterprise Platform and Integration Concepts* ([@hpi-epic](https://github.com/hpi-epic)) research group of the Hasso-Plattner-Institute.
+Working repository in context of the bachelor's project "*Online Marketplace Simulation: A Testbed for Self-Learning Agents*" at the *Enterprise Platform and Integration Concepts* ([@hpi-epic](https://github.com/hpi-epic), [epic.hpi.de](https://hpi.de/plattner/home.html)) research group of the Hasso Plattner Institute.
 
 During the project a simulation framework, *`recommerce`*, was built. The framework can be used to simulate online *recommerce* marketplaces, which are more complex than traditional Linear Economy models. Using these simulated marketplaces, various Reinforcement learning algorithms can be used to train so-called *agents* to set prices that optimize profit on these markets. These agents can be trained against a multitude of pre-implemented rule-based vendors, on a number of different market scenarios.
 
 After training, the produced models can be further monitored and analyzed using an extensive number of monitoring tools. For more information beyond installation and the Quick Start Guide contained in this README, please refer to our [wiki](https://github.com/hpi-epic/BP2021/wiki).
+
+- [Quick Start Guide](#quick-start-guide)
+- [Installing dependencies](#installing-dependencies)
+- [Installing the `recommerce` package](#installing-the-recommerce-package)
 
 ## Quick Start Guide
 
@@ -91,7 +95,7 @@ conda env update -n your_venv_name
 
 This will first uninstall all packages and then re-install them from the `environment.yml`.
 
-### Dependency Installation Troubleshooting
+### Dependency installation troubleshooting
 
 If you get the following error message when trying to access the docker SDK (e.g. by starting the API through `docker/app.py`):
 
@@ -105,7 +109,7 @@ you have to run the `pywin32_postinstall.py` script. To do so, run the following
 python Path/To/Anaconda3/Scripts/pywin32_postinstall.py -install
 ```
 
-## Installing the `Recommerce` package
+## Installing the `recommerce` package
 
 Before proceeding, please inform yourself on whether or not your device supports `cuda`, take a look at [this](https://developer.nvidia.com/cuda-gpus) resource provided by NVIDIA. This decides if you should install our project with cuda support, or without, which comes down to the specific version of `torch` that will be installed. The file size of the torch version that supports cuda is much larger in comparison. 
 
