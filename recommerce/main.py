@@ -79,7 +79,7 @@ Relative paths are supported.""")
 	# So this one is more to make the users happy and provide a command that doesn't do anything else
 	parser.add_argument('--get-datapath', action='store_true', help='Will print the currently set datapath.')
 
-	parser.add_argument('-gd', '--get-defaults', action='store_true', help="""default files, such as configuration files and
+	parser.add_argument('-gd', '--get-defaults', action='store_true', help="""Default files, such as configuration files and
 trained models will be copied to your `datapath`.""")
 	parser.add_argument('-gdu', '--get-defaults-unpack', action='store_true', dest='unpack',
 		help="""Works the same as --get-defaults, but also unpacks the default files so they are in the correct relative
