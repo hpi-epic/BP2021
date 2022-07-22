@@ -15,6 +15,7 @@ from recommerce.market.circular.circular_vendors import CircularAgent
 from recommerce.market.linear.linear_vendors import LinearAgent
 from recommerce.market.sim_market_kalibrated import SimMarketKalibrated
 from recommerce.market.vendors import FixedPriceAgent
+from recommerce.market_ML.datagenerator_kalibrated_market import KalibratedDatagenerator
 from recommerce.market_ML.datagenerator_sim_market import CircularEconomyDatagenerator
 from recommerce.market_ML.training_comparer import CircularEconomyComparerMarket
 from recommerce.rl.actorcritic.actorcritic_training import ActorCriticTrainer
@@ -220,8 +221,21 @@ def train_with_calibrated_marketplace_(save_path=None):
 		marketplace=model_b(config_market, True)).train_agent(training_steps=50000, save_path=save_path)
 
 
+def data_with_calibrated_marketplace_(save_path=None):
+	config_environment: TrainingEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_training')
+	# config_rl: AttrDict = HyperparameterConfigLoader.load('sb_sac_config', config_environment.agent[0]['agent_class'])
+	config_market: AttrDict = HyperparameterConfigLoader.load('market_config', config_environment.marketplace)
+	# model_b = KalibratedDatagenerator
+	# StableBaselinesSAC(config_rl=config_rl, config_market=config_market,
+	# 	marketplace=model_b(config_market, True)).train_agent(training_steps=50000, save_path=save_path)
+	model_b = KalibratedDatagenerator(config_market, True)
+	for i in range(10):
+		print(model_b.step([4, 7, 3])[0])
+		model_b.reset()
+
+
 if __name__ == '__main__':
 	# Make sure a valid datapath is set
 	PathManager.manage_user_path()
 	# train_with_pretrained_agent()
-	train_with_calibrated_marketplace_()
+	data_with_calibrated_marketplace_()

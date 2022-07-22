@@ -13,7 +13,7 @@ from recommerce.market.owner import OwnerRebuy
 from recommerce.market.sim_market_kalibrator import SimMarketKalibrator
 
 
-class SimMarketKalibrated(CircularEconomyRebuyPriceDuopoly):
+class SimMarketKalibratedStandard(CircularEconomyRebuyPriceDuopoly):
 	cost_new_product = 3
 	observable_state = (6, 1, 22, 23, 24, 5)  # (in_circulation, agent, storage, comp_used, comp_new, comp_rebuy, comp_storage)
 
@@ -71,7 +71,7 @@ class SimMarketKalibrated(CircularEconomyRebuyPriceDuopoly):
 		self.M6 = (0, 1, 2, 3, 4, 7, 8, 9)
 		self.M6x = (1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10)
 		y6_index = 4
-		config_market = HyperparameterConfigLoader.load('market_config', SimMarketKalibrated)
+		config_market = HyperparameterConfigLoader.load('market_config', SimMarketKalibratedStandard)
 		kalibrator = SimMarketKalibrator(config_market, self.M123, self.M123, self.M123, self.M4, self.M5, self.M6, self.M4x, self.M5x, self.M6x)
 		self.reset_state = data[random.randint(1, self.N), :]
 		self.by1, self.by2, self.by3, self.by4, self.bxy4, self.by5, self.bxy5, self.by6, self.bxy6 = kalibrator.kalibrate_market_betas(
@@ -129,9 +129,9 @@ class SimMarketKalibrated(CircularEconomyRebuyPriceDuopoly):
 		prob_array_rebuy_1 = OwnerRebuy().generate_return_probabilities_from_offer(common_state, vendor_specific_state, vendor_actions)
 		rebuy_array_1 = np.multiply(prob_array_rebuy_1, number_of_owners)
 		sales_array = np.add(sales_array_0, sales_array_1)
-		# assert round(sum(sales_array)) == self.config.number_of_customers, f'{sum(sales_array)} != {self.config.number_of_customers}'
+		assert round(sum(sales_array)) == self.config.number_of_customers, f'{sum(sales_array)} != {self.config.number_of_customers}'
 		rebuy_array = np.add(rebuy_array_0, rebuy_array_1)
-		# assert round(sum(rebuy_array)) == self.config.number_of_customers, f'{sum(rebuy_array)} != {self.config.number_of_customers}'
+		assert round(sum(rebuy_array)) == self.config.number_of_customers, f'{sum(rebuy_array)} != {self.config.number_of_customers}'
 		# print('sales_array', sales_array_0)
 		return np.append(sales_array, [rebuy_array[2], rebuy_array[3]])
 
@@ -200,8 +200,8 @@ class SimMarketKalibrated(CircularEconomyRebuyPriceDuopoly):
 		xb[8] = float(agent_action[1])  # agent price new
 		xb[9] = float(agent_action[2])  # agent price rebuy
 
-		xb[10] = 0.1 * xb[1]   # agent holding cost
-		xb[14] = 0.1 * xb[5]  # comp holding cost
+		xb[10] = xb[1] * -0.1  # agent holding cost
+
 		xb[22] = self.comp_prices(self.M4, self.M4x, self.by4, self.bxy4, 'used', xb, xb)  # comp price used (updated)
 		xb[23] = self.comp_prices(self.M5, self.M5x, self.by5, self.bxy5, 'new', xb, xb)  # comp price new (updated)
 		xb[24] = self.comp_prices(self.M6, self.M6x, self.by6, self.bxy6, 'rebuy', xb, xb)  # comp price rebuy (updated)
@@ -223,12 +223,14 @@ class SimMarketKalibrated(CircularEconomyRebuyPriceDuopoly):
 		# agent sales rebuy
 		# customer_decisions = self.customer_decisions_nn(xb, self.M123)
 		customer_decisions_raw = self.customer_decisions_real(xb, True)
-		# print(customer_decisions_raw)
+		print(customer_decisions_raw)
 		customer_dec_a = [customer_decisions_raw[1], customer_decisions_raw[2], customer_decisions_raw[5]]
 		customer_dec_c = [customer_decisions_raw[3], customer_decisions_raw[4], customer_decisions_raw[6]]
 		xb[11] = np.round_(min(xb[1], max(0, customer_dec_a[0])))  # agent sales used
 		xb[12] = np.round_(max(0, customer_dec_a[1]))  # agent sales new
 		xb[13] = np.round_(min(xb[6] / 2, max(0, customer_dec_a[2])))  # agent sales rebuy
+
+		xb[14] = xb[5]*0.05  # comp holding cost
 
 		# xb[15] = np.round_(max(0,
 		# 	sum([self.by12[ki] * xb[k] for ki, k in enumerate(self.M456)])))
@@ -291,7 +293,6 @@ class SimMarketKalibrated(CircularEconomyRebuyPriceDuopoly):
 		cost_rebuy_agent = xb[13] * xb[9]
 		# print(f'profit_new: {profit_new}, profit_used: {profit_used}, cost_rebuy: {cost_rebuy}')
 		xb[18] = xb[10] + profit_new_agent + profit_used_agent - cost_rebuy_agent  # agent total rewards
-
 		profit_used_comp = xb[15] * xb[2]
 		profit_new_comp = xb[16] * (xb[3] - self.cost_new_product)
 		cost_rebuy_comp = xb[17] * xb[4]
@@ -309,7 +310,7 @@ class SimMarketKalibrated(CircularEconomyRebuyPriceDuopoly):
 		assert xb[18] <= np.inf
 		self.step_counter += 1
 		is_done = (self.step_counter >= self.config.episode_length)
-		self._output_dict = {
+		output_dict = {
 			'profits/all': {'vendor_0': float(xb[18]), 'vendor_1': float(xb[19])},
 			'customer/purchases_refurbished': {'vendor_0': float(xb[11]), 'vendor_1': float(xb[15])},
 			'customer/purchases_new': {'vendor_0': float(xb[12]), 'vendor_1': float(xb[16])},
@@ -318,10 +319,7 @@ class SimMarketKalibrated(CircularEconomyRebuyPriceDuopoly):
 			'actions/price_new': {'vendor_0': float(xb[8]), 'vendor_1': float(xb[23])},
 			'actions/price_rebuy': {'vendor_0': float(xb[9]), 'vendor_1': float(xb[24])}
 		}
-		# xb_float = [np.round_(float(xb[i]), 4) for i in range(len(xb))]
-		# print(xb_float)
-		self.xb = xb
-		return agent_observation, float(xb[18]), is_done, self._output_dict
+		return agent_observation, float(xb[18]), is_done, output_dict
 		# return agent_observation, xb[18], False, {}
 
 	def _clamp_price(self, price):
@@ -354,7 +352,7 @@ class SimMarketKalibrated(CircularEconomyRebuyPriceDuopoly):
 	def _setup_action_observation_space(self, support_continuous_action_space: bool = True) -> None:
 		# cell 0: number of products in the used storage, cell 1: number of products in circulation
 		# ADAPTED FROM SUPERCLASS TODO: fix magic numbers
-		# assert not support_continuous_action_space
+		assert not support_continuous_action_space
 		self.max_storage = 100
 		self.max_price = 10
 		self.max_circulation = 10 * self.max_storage
