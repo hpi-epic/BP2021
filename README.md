@@ -82,13 +82,17 @@ This allows us to have a clear distinction between the purposes of the different
 You can read up more about our usage of docker [here](https://github.com/hpi-epic/BP2021/wiki/Developer-guides-%E2%80%93-Docker-&-UI).
 
 For the purpose of staying user-centered, this Quick Start Guide will only include installation instructions for the pip dependencies, through the use of our `recommerce` package, described in the next section.
-To learn how to properly install the dependencies needed to continue developing the framework, take a look at our [developer guide](https://github.com/hpi-epic/BP2021/wiki/Developer-guides-%E2%80%93-Installation).
+If you plan on not only using the framework but also continue its development, please take a look at the installation instructions in the [Developer Guide](https://github.com/hpi-epic/BP2021/wiki/Developer-guides-%E2%80%93-Installation) first, to ensure that all dependencies are installed correctly using an `anaconda` virtual environment (though we recommend installing the `recommerce` package in a virtual environment in any case).
 
 ## Installing the `recommerce` package
+
+*NOTE: If you want to continue development of the simulation framework, please read the installation instructions in the [Developer Guide](https://github.com/hpi-epic/BP2021/wiki/Developer-guides-%E2%80%93-Installation) **first**!*
 
 Before proceeding, please inform yourself on whether or not your device supports `cuda`, take a look at [this](https://developer.nvidia.com/cuda-gpus) resource provided by NVIDIA.
 This decides if you should install our project with cuda support, or without, which comes down to the specific version of `torch` that will be installed.
 The file size of the torch version that supports cuda is much larger in comparison.
+
+Depending on your preferences, you may first want to create a dedicated virtual environment for the `recommerce` package (recommended).
 
 If your device supports cuda and you want to utilize its capabilities, use the following command within the project directory:
 
