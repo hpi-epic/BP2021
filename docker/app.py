@@ -1,11 +1,14 @@
+import subprocess
 import hashlib
 import logging
 import os
 import time
 
 import uvicorn
+import threading
 from docker_manager import DockerInfo, DockerManager
-from fastapi import Depends, FastAPI, Request
+from container_health_checker import ContainerHealthChecker
+from fastapi import Depends, FastAPI, Request, BackgroundTasks
 from fastapi.responses import JSONResponse, StreamingResponse
 
 # This file should expose a RESTful api for using the docker container with the following routes:
@@ -29,6 +32,7 @@ logger = logging.getLogger('uvicorn.error')
 manager = DockerManager(logger)
 app = FastAPI()
 is_webserver = True
+container_health_checker = ContainerHealthChecker()
 
 
 def is_invalid_status(status: str) -> bool:
@@ -57,6 +61,7 @@ def verify_token(request: Request) -> bool:
 	Returns:
 		bool: if the given authorization token matches our authorization token.
 	"""
+	return True
 	try:
 		token = request.headers['Authorization']
 	except KeyError:
@@ -83,10 +88,19 @@ def verify_token(request: Request) -> bool:
 		is_webserver = False
 		return True
 	return False
+p = None
+@app.on_event('startup')
+async def startup_event():
+	global p 
+	p = subprocess.Popen(['ls'], stdout=subprocess.PIPE)
 
+@app.on_event('shutdown')
+async def shutdown_event():
+	global p
+	p.kill()
 
 @app.post('/start')
-async def start_container(num_experiments: int, config: Request, authorized: bool = Depends(verify_token)) -> JSONResponse:
+async def start_container(num_experiments: int,	config: Request, authorized: bool = Depends(verify_token)) -> JSONResponse:
 	"""
 	Start a container with the specified config.json and perform a command on it.
 
@@ -100,19 +114,23 @@ async def start_container(num_experiments: int, config: Request, authorized: boo
 	"""
 	if not authorized:
 		return JSONResponse(status_code=401, content=vars(DockerInfo('', 'Not authorized')))
-	all_container_infos = manager.start(config=await config.json(), count=num_experiments, is_webserver=is_webserver)
+	#background_tasks.add_task(container_health_checker.check_container_health)
 
-	# check if all prerequisites were met
-	if type(all_container_infos) == DockerInfo:
-		return JSONResponse(status_code=404, content=vars(all_container_infos))
+	all_container_infos = 'abc'#manager.start(config=await config.json(), count=num_experiments, is_webserver=is_webserver)
 
-	return_dict = {}
-	for index in range(num_experiments):
-		if (is_invalid_status(all_container_infos[index].status) or all_container_infos[index].data is False):
-			return JSONResponse(status_code=404, content=vars(all_container_infos[index]))
-		return_dict[index] = vars(all_container_infos[index])
-	logger.info(f'successfully started {num_experiments} container')
-	return JSONResponse(return_dict, status_code=200)
+	# # check if all prerequisites were met
+	# if type(all_container_infos) == DockerInfo:
+	# 	return JSONResponse(status_code=404, content=vars(all_container_infos))
+
+	# return_dict = {}
+	# for index in range(num_experiments):
+	# 	if (is_invalid_status(all_container_infos[index].status) or all_container_infos[index].data is False):
+	# 		return JSONResponse(status_code=404, content=vars(all_container_infos[index]))
+	# 	return_dict[index] = vars(all_container_infos[index])
+	# logger.info(f'successfully started {num_experiments} container')
+	# return JSONResponse(return_dict, status_code=200)
+	return JSONResponse('return_dict', status_code=200)
+
 
 
 @app.get('/health/')
@@ -317,7 +335,7 @@ def _convert_secret_to_token(secret: str) -> tuple:
 if __name__ == '__main__':
 	uvicorn.run('app:app',
 		host='0.0.0.0',
-		port=8000,
-		log_config='./log_api.ini',
-		ssl_keyfile='/etc/sslzertifikat/api_cert.key',
-		ssl_certfile='/etc/sslzertifikat/api_cert.crt')
+		port=8000)#,
+		# log_config='./log_api.ini',
+		# ssl_keyfile='/etc/sslzertifikat/api_cert.key',
+		# ssl_certfile='/etc/sslzertifikat/api_cert.crt')
