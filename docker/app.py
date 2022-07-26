@@ -1,14 +1,14 @@
-import subprocess
 import hashlib
 import logging
 import os
+import subprocess
+import threading
 import time
 
 import uvicorn
-import threading
-from docker_manager import DockerInfo, DockerManager
 from container_health_checker import ContainerHealthChecker
-from fastapi import Depends, FastAPI, Request, BackgroundTasks
+from docker_manager import DockerInfo, DockerManager
+from fastapi import BackgroundTasks, Depends, FastAPI, Request
 from fastapi.responses import JSONResponse, StreamingResponse
 
 # This file should expose a RESTful api for using the docker container with the following routes:
@@ -91,12 +91,15 @@ def verify_token(request: Request) -> bool:
 p = None
 @app.on_event('startup')
 async def startup_event():
-	global p 
+	global p
+	print('startup')
 	p = subprocess.Popen(['ls'], stdout=subprocess.PIPE)
+	print('startup2', p)
 
 @app.on_event('shutdown')
 async def shutdown_event():
 	global p
+	print('shutdown')
 	p.kill()
 
 @app.post('/start')
