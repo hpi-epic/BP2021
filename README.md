@@ -456,7 +456,7 @@ You can just run the `app.py` with python from the docker folder as well.
 
 If you want to use the API, you need to provide an `AUTHORIZATION_TOKEN` in your environment variables. For each API request the value at the authorization header will be checked. You can only perform actions on the API, when this value is the same, as the value in your environment variable.
 
-**WARNING**: Please keep in mind, that the `AUTHORIZATION_TOKEN` must be kept a secret, if it is revealed, you need to revoke it and set a new secret. Furthermore, think about using transport encryption to ensure that the token won't get stolen on the way.
+WARNING: Please keep in mind, that the `AUTHORIZATION_TOKEN` must be kept a secret, if it is revealed, you need to revoke it and set a new secret. Furthermore, think about using transport encryption to ensure that the token won't get stolen on the way.
 
 ## 7. Tensorboard
 
