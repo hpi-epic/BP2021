@@ -29,6 +29,8 @@ class ContainerHealthChecker:
 		self.last_time = datetime.now()
 
 	def _get_system_information(self):
+		"""Writes new system information to database.
+		"""
 		global last_time
 		cpu = psutil.cpu_percent(percpu=True)
 		ram = psutil.virtual_memory()
@@ -38,7 +40,9 @@ class ContainerHealthChecker:
 		last_time = datetime.now()
 
 	def check_container_health(self):
-		print('successfully started container health checker, waiting for container to die')
+		"""Checks health of all containers every five seconds and writes to the database if container are exited.
+		It also writes information about the system performance to the database
+		"""
 		while True:
 			if self.manager.check_for_running_recommerce_container():
 				try:

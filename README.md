@@ -458,7 +458,6 @@ If you want to use the API, you need to provide an `AUTHORIZATION_TOKEN` in your
 
 **WARNING**: Please keep in mind, that the `AUTHORIZATION_TOKEN` must be kept a secret, if it is revealed, you need to revoke it and set a new secret. Furthermore, think about using transport encryption to ensure that the token won't get stolen on the way.
 
-
 ## 7. Tensorboard
 
 Tensorboard is used extensively to track parameters of the training as well as the agents and the market itself. It is started from the console by using:

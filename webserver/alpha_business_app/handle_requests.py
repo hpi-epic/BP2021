@@ -8,7 +8,7 @@ import requests
 from .api_response import APIResponse
 from .models.container import update_container
 
-DOCKER_API = 'https://vm-midea03.eaalab.hpi.uni-potsdam.de:8001'  # remember to include the port and the protocol, i.e. http://
+DOCKER_API = 'https://vm-midea03.eaalab.hpi.uni-potsdam.de:8000'  # remember to include the port and the protocol, i.e. http://
 # DOCKER_API = 'http://localhost:8000'
 
 
@@ -52,10 +52,6 @@ def _default_request_parameter(wanted_action: str, params: dict) -> dict:
 		'headers': {'Authorization': _get_api_token()},
 		'verify': os.path.join('.', 'ssl_certificates', 'api.crt')
 	}
-
-
-def websocket_url():
-	return 'wss://vm-midea03.eaalab.hpi.uni-potsdam.de:8001/ws'
 
 
 def send_get_request(wanted_action: str, container_id: str) -> APIResponse:
