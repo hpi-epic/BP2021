@@ -63,8 +63,9 @@ class DockerManager():
 	_port_mapping = {}
 	_container_db = ContainerDB()
 	_logger = None
+	_should_run_monitoring = False
 
-	def __new__(cls, logger):
+	def __new__(cls, logger, should_run_monitoring=False):
 		"""
 		This function makes sure that the `DockerManager` is a singleton.
 
@@ -72,6 +73,7 @@ class DockerManager():
 			DockerManager: The DockerManager instance.
 		"""
 		cls._logger = logger
+		cls._should_run_monitoring = should_run_monitoring
 		if cls._instance is None:
 			cls._logger.info('A new instance of DockerManager is being initialized')
 			cls._instance = super(DockerManager, cls).__new__(cls)
@@ -120,7 +122,8 @@ class DockerManager():
 				return container_info
 			# the container is fine, we can start the container now
 			all_container_infos += [self._start_container(container_info.id)]
-		self._container_db.insert(all_container_infos, current_time, is_webserver, config)
+		if self._should_run_monitoring:
+			self._container_db.insert(all_container_infos, current_time, is_webserver, config)
 		return all_container_infos
 
 	def health(self, container_id: str) -> DockerInfo:
@@ -138,7 +141,8 @@ class DockerManager():
 		if not container:
 			return DockerInfo(container_id, status='Container not found')
 
-		self._container_db.has_been_health_checked(container_id)
+		if self._should_run_monitoring:
+			self._container_db.has_been_health_checked(container_id)
 		if container.status == 'exited':
 			return DockerInfo(container_id, status=f'exited ({docker.APIClient().inspect_container(container.id)["State"]["ExitCode"]})')
 
@@ -167,7 +171,8 @@ class DockerManager():
 			container.pause()
 			# Reload the attributes to get the correct status
 			container.reload()
-			self._container_db.has_been_paused(container_id)
+			if self._should_run_monitoring:
+				self._container_db.has_been_paused(container_id)
 			return DockerInfo(id=container_id, status=container.status)
 		except docker.errors.APIError as error:
 			return DockerInfo(container_id, status=f'APIError encountered while pausing container.\n{error}')
@@ -195,7 +200,8 @@ class DockerManager():
 			container.unpause()
 			# Reload the attributes to get the correct status
 			container.reload()
-			self._container_db.has_been_unpaused(container_id)
+			if self._should_run_monitoring:
+				self._container_db.has_been_unpaused(container_id)
 			return DockerInfo(id=container_id, status=container.status)
 		except docker.errors.APIError as error:
 			return DockerInfo(container_id, status=f'APIError encountered while unpausing container.\n{error}')
@@ -220,7 +226,8 @@ class DockerManager():
 		self._logger.info(f'Starting tensorboard for: {container_id}')
 		container.exec_run(cmd='tensorboard serve --host 0.0.0.0 --logdir ./results/runs', detach=True)
 		port = self._port_mapping[container.id]
-		self._container_db.has_got_tensorboard(container_id)
+		if self._should_run_monitoring:
+			self._container_db.has_got_tensorboard(container_id)
 		return DockerInfo(container_id, status=container.status, data=str(port))
 
 	def get_container_logs(self, container_id: str, timestamps: bool, stream: bool, tail: int) -> DockerInfo:
@@ -245,7 +252,8 @@ class DockerManager():
 
 		logs = container.logs(stream=stream, timestamps=timestamps, tail=tail,
 			stderr=docker.APIClient().inspect_container(container.id)['State']['ExitCode'] != 0)
-		self._container_db.has_got_logs(container_id)
+		if self._should_run_monitoring:
+			self._container_db.has_got_logs(container_id)
 		if stream:
 			return DockerInfo(container_id, status=container.status, stream=logs)
 		else:
@@ -268,7 +276,8 @@ class DockerManager():
 			return DockerInfo(container_id, status='Container not found')
 		try:
 			bits, _ = container.get_archive(path=container_path)
-			self._container_db.has_got_data(container_id)
+			if self._should_run_monitoring:
+				self._container_db.has_got_data(container_id)
 			return DockerInfo(container_id, status=container.status,
 				data=f'archive_{container_path.rpartition("/")[2]}_{time.strftime("%b%d_%H-%M-%S")}', stream=bits)
 		except docker.errors.NotFound:
@@ -365,7 +374,6 @@ class DockerManager():
 	def check_for_running_recommerce_container(cls) -> list:
 		exited_recommerce_containers = cls._list_containers(cls, {'label': IMAGE_NAME, 'status': 'exited'})
 		all_recommerce_containers = cls._list_containers(cls, {'label': IMAGE_NAME})
-		print(exited_recommerce_containers, all_recommerce_containers, sep='\n')
 		return list(set(all_recommerce_containers) - set(exited_recommerce_containers))
 
 	def _confirm_image_exists(self, update: bool = False) -> str:
@@ -556,7 +564,8 @@ class DockerManager():
 			container.stop(timeout=10)
 			# Reload the attributes to get the correct status
 			container.reload()
-			self._container_db.has_been_stopped(container_id, before_stop, container.status, self._get_container_exit_code(container))
+			if self._should_run_monitoring:
+				self._container_db.has_been_stopped(container_id, before_stop, container.status, self._get_container_exit_code(container))
 			return DockerInfo(id=container_id, status=container.status)
 		except docker.errors.APIError as error:
 			return DockerInfo(container_id, status=f'APIError encountered while stopping container.\n{error}')

@@ -26,12 +26,12 @@ path_to_log_files = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'lo
 if not os.path.isdir(path_to_log_files):
 	os.makedirs(path_to_log_files)
 
-logger = logging.getLogger('uvicorn.error')
-manager = DockerManager(logger)
-app = FastAPI()
-is_webserver = True
 should_run_monitoring = False
 container_health_checker_process = None
+logger = logging.getLogger('uvicorn.error')
+manager = DockerManager(logger, should_run_monitoring)
+app = FastAPI()
+is_webserver = True
 
 
 def is_invalid_status(status: str) -> bool:
