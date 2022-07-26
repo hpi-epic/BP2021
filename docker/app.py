@@ -89,21 +89,25 @@ def verify_token(request: Request) -> bool:
 
 
 @app.on_event('startup')
-async def startup_event():
+async def startup_event() -> None:
+	"""If monitoring is enabled, this will start a subprocess with the `container_health_checker.py` when the API is started.
+	"""
 	if should_run_monitoring:
 		global container_health_checker_process
 		container_health_checker_process = subprocess.Popen(['python3', 'container_health_checker.py'], stdout=subprocess.PIPE)
 
 
 @app.on_event('shutdown')
-async def shutdown_event():
+async def shutdown_event() -> None:
+	"""If monitoring is enabled, this will kill the subprocess on API stop.
+	"""
 	global container_health_checker_process
 	if container_health_checker_process:
 		container_health_checker_process.kill()
 
 
 @app.post('/start')
-async def start_container(num_experiments: int,	config: Request, authorized: bool = Depends(verify_token)) -> JSONResponse:
+async def start_container(num_experiments: int, config: Request, authorized: bool = Depends(verify_token)) -> JSONResponse:
 	"""
 	Start a container with the specified config.json and perform a command on it.
 
@@ -239,6 +243,16 @@ async def get_tensorboard_link(id: str, authorized: bool = Depends(verify_token)
 
 @app.get('/data/statistics')
 async def get_statistical_csv_data(system: bool=False, authorized: bool = Depends(verify_token)) -> JSONResponse:
+	"""
+	This will return a csv file with the data collected when monitoring is enabled.
+	This csv file can either contain data about the system performance or data about running container.
+
+	Args:
+		system (bool, optional): Indecates if the data about the system performance is wanted. Defaults to False.
+
+	Returns:
+		JSONResponse: The wanted data as csv file.
+	"""
 	if not authorized:
 		return JSONResponse(status_code=401, content=vars(DockerInfo('', 'Not authorized')))
 	return JSONResponse(status_code=200, content=vars(manager.get_statistic_data(wants_system_data=system)))
@@ -322,6 +336,15 @@ async def check_if_api_is_available(authorized: bool = Depends(verify_token)) ->
 
 
 def _convert_secret_to_token(secret: str) -> tuple:
+	"""
+	Calculation for converting the secret to two valid tokens.
+
+	Args:
+		secret (str): the secret tat should be used for the calculation
+
+	Returns:
+		tuple: the token of last hour and token of current hour
+	"""
 	master_secret_as_int = sum(ord(c) for c in secret)
 	current_time = int(time.time() / 3600)  # unix time in hours
 	# token, that is currently expected

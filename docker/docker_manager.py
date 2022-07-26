@@ -7,7 +7,7 @@ from datetime import datetime
 from itertools import count, filterfalse
 from types import GeneratorType
 
-from container_db_manager import ContainerDB
+from container_db_manager import MonitorDB
 from torch.cuda import is_available
 
 import docker
@@ -61,7 +61,7 @@ class DockerManager():
 	_allowed_commands = ['training', 'exampleprinter', 'agent_monitoring']
 	# dictionary of container_id:host-port pairs
 	_port_mapping = {}
-	_container_db = ContainerDB()
+	_container_db = MonitorDB()
 	_logger = None
 	_should_run_monitoring = False
 

@@ -5,7 +5,7 @@ import time
 from datetime import datetime, timedelta
 
 import psutil
-from container_db_manager import ContainerDB
+from container_db_manager import MonitorDB
 from docker_manager import DockerManager
 
 
@@ -23,7 +23,7 @@ class ContainerHealthChecker:
 
 		docker_manager_logger = logging.getLogger('docker-manager')
 		self.manager = DockerManager(docker_manager_logger)
-		self.container_db = ContainerDB()
+		self.container_db = MonitorDB()
 		self.last_docker_info = None
 		self.diff = timedelta(minutes=5)
 		self.last_time = datetime.now()
