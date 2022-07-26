@@ -1,17 +1,16 @@
 from uuid import uuid4
 
 from django.contrib.auth.decorators import login_required
-from django.http import Http404, HttpResponse, JsonResponse
+from django.http import Http404, HttpResponse
 from django.shortcuts import render
 
 from recommerce.configuration.config_validation import validate_config
 
 from .buttons import ButtonHandler
 from .config_parser import ConfigFlatDictParser
-from .container_helper import get_actually_stopped_container_from_api_notification
 from .forms import UploadFileForm
 from .handle_files import get_statistic_data, handle_uploaded_file
-from .handle_requests import get_api_status, send_statistic_request, websocket_url
+from .handle_requests import get_api_status, send_statistic_request
 from .models.config import Config
 from .models.container import Container
 from .selection_manager import SelectionManager
@@ -149,17 +148,6 @@ def config_validation(request) -> HttpResponse:
 		if not validate_status:
 			return render(request, 'notice_field.html', {'error': validate_data})
 	return render(request, 'notice_field.html', {'success': 'This config is valid'})
-
-
-@login_required
-def container_notification(request):
-	if request.method == 'POST':
-		is_notification_necessary, result = get_actually_stopped_container_from_api_notification(request.POST['api_response'])
-	return render(request, 'alert_field.html', {'warning': result, 'should_render': is_notification_necessary})
-
-
-def get_api_url(request):
-	return JsonResponse({'url': websocket_url()}, status=200, content_type='application/json')
 
 
 @login_required
