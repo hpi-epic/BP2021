@@ -8,7 +8,6 @@ import psutil
 from container_db_manager import ContainerDB
 from docker_manager import DockerManager
 
-RUN = True
 
 class ContainerHealthChecker:
 	def __init__(self) -> None:
@@ -38,29 +37,25 @@ class ContainerHealthChecker:
 		self.container_db.update_system(cpu, ram, io, gpu)
 		last_time = datetime.now()
 
-
 	def check_container_health(self):
 		print('successfully started container health checker, waiting for container to die')
-		while RUN:
-			# if self.manager.check_for_running_recommerce_container():
-			# 	try:
-			# 		is_exited, docker_info = self.manager.check_health_of_all_container()
-			# 		if is_exited and last_docker_info != docker_info:
-			# 			last_docker_info = docker_info
-			# 			polished_data = [item[1:-1].split(',') for item in docker_info.status.split(';')]
-			# 			polished_data = [(container_id[1:-1].strip(), exit_code.strip()) for container_id, exit_code in polished_data]
-			# 			self.container_db.they_are_exited(polished_data)
-			# 	except Exception as e:
-			# 		print(f'something went wrong {e}')
-			# 	# get memory, cpu and io information
-			# 	current_time = datetime.now()
-			# 	if current_time - last_time > self.diff:
-			# 		self._get_system_information()
-			# time.sleep(5)
-			with open('./tmp', 'a') as file:
-				file.write(str(RUN) + '\n')
+		while True:
+			if self.manager.check_for_running_recommerce_container():
+				try:
+					is_exited, docker_info = self.manager.check_health_of_all_container()
+					if is_exited and self.last_docker_info != docker_info:
+						self.last_docker_info = docker_info
+						polished_data = [item[1:-1].split(',') for item in docker_info.status.split(';')]
+						polished_data = [(container_id[1:-1].strip(), exit_code.strip()) for container_id, exit_code in polished_data]
+						self.container_db.they_are_exited(polished_data)
+				except Exception as e:
+					print(f'something went wrong {e}')
+				# get memory, cpu and io information
+				current_time = datetime.now()
+				if current_time - last_time > self.diff:
+					self._get_system_information()
 			time.sleep(5)
 
 
-if __name__ == 'main':
+if __name__ == '__main__':
 	ContainerHealthChecker().check_container_health()

@@ -2,13 +2,11 @@ import hashlib
 import logging
 import os
 import subprocess
-import threading
 import time
 
 import uvicorn
-from container_health_checker import ContainerHealthChecker
 from docker_manager import DockerInfo, DockerManager
-from fastapi import BackgroundTasks, Depends, FastAPI, Request
+from fastapi import Depends, FastAPI, Request
 from fastapi.responses import JSONResponse, StreamingResponse
 
 # This file should expose a RESTful api for using the docker container with the following routes:
@@ -32,7 +30,8 @@ logger = logging.getLogger('uvicorn.error')
 manager = DockerManager(logger)
 app = FastAPI()
 is_webserver = True
-container_health_checker = ContainerHealthChecker()
+should_run_monitoring = False
+container_health_checker_process = None
 
 
 def is_invalid_status(status: str) -> bool:
@@ -61,7 +60,6 @@ def verify_token(request: Request) -> bool:
 	Returns:
 		bool: if the given authorization token matches our authorization token.
 	"""
-	return True
 	try:
 		token = request.headers['Authorization']
 	except KeyError:
@@ -88,19 +86,21 @@ def verify_token(request: Request) -> bool:
 		is_webserver = False
 		return True
 	return False
-p = None
+
+
 @app.on_event('startup')
 async def startup_event():
-	global p
-	print('startup')
-	p = subprocess.Popen(['ls'], stdout=subprocess.PIPE)
-	print('startup2', p)
+	if should_run_monitoring:
+		global container_health_checker_process
+		container_health_checker_process = subprocess.Popen(['python3', 'container_health_checker.py'], stdout=subprocess.PIPE)
+
 
 @app.on_event('shutdown')
 async def shutdown_event():
-	global p
-	print('shutdown')
-	p.kill()
+	global container_health_checker_process
+	if container_health_checker_process:
+		container_health_checker_process.kill()
+
 
 @app.post('/start')
 async def start_container(num_experiments: int,	config: Request, authorized: bool = Depends(verify_token)) -> JSONResponse:
@@ -117,23 +117,19 @@ async def start_container(num_experiments: int,	config: Request, authorized: boo
 	"""
 	if not authorized:
 		return JSONResponse(status_code=401, content=vars(DockerInfo('', 'Not authorized')))
-	#background_tasks.add_task(container_health_checker.check_container_health)
+	all_container_infos = manager.start(config=await config.json(), count=num_experiments, is_webserver=is_webserver)
 
-	all_container_infos = 'abc'#manager.start(config=await config.json(), count=num_experiments, is_webserver=is_webserver)
+	# check if all prerequisites were met
+	if type(all_container_infos) == DockerInfo:
+		return JSONResponse(status_code=404, content=vars(all_container_infos))
 
-	# # check if all prerequisites were met
-	# if type(all_container_infos) == DockerInfo:
-	# 	return JSONResponse(status_code=404, content=vars(all_container_infos))
-
-	# return_dict = {}
-	# for index in range(num_experiments):
-	# 	if (is_invalid_status(all_container_infos[index].status) or all_container_infos[index].data is False):
-	# 		return JSONResponse(status_code=404, content=vars(all_container_infos[index]))
-	# 	return_dict[index] = vars(all_container_infos[index])
-	# logger.info(f'successfully started {num_experiments} container')
-	# return JSONResponse(return_dict, status_code=200)
-	return JSONResponse('return_dict', status_code=200)
-
+	return_dict = {}
+	for index in range(num_experiments):
+		if (is_invalid_status(all_container_infos[index].status) or all_container_infos[index].data is False):
+			return JSONResponse(status_code=404, content=vars(all_container_infos[index]))
+		return_dict[index] = vars(all_container_infos[index])
+	logger.info(f'successfully started {num_experiments} container')
+	return JSONResponse(return_dict, status_code=200)
 
 
 @app.get('/health/')
@@ -338,7 +334,7 @@ def _convert_secret_to_token(secret: str) -> tuple:
 if __name__ == '__main__':
 	uvicorn.run('app:app',
 		host='0.0.0.0',
-		port=8000)#,
-		# log_config='./log_api.ini',
-		# ssl_keyfile='/etc/sslzertifikat/api_cert.key',
-		# ssl_certfile='/etc/sslzertifikat/api_cert.crt')
+		port=8000,
+		log_config='./log_api.ini',
+		ssl_keyfile='/etc/sslzertifikat/api_cert.key',
+		ssl_certfile='/etc/sslzertifikat/api_cert.crt')
