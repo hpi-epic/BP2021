@@ -1,12 +1,12 @@
 {% load static %}
-<div>
-    <p class="alert {% if success %}alert-success{% elif error %}alert-danger{% else %}d-none{% endif %} m-3 notice-field">
-        {% if success %}
-            <img src="{% static 'icons/happy_emoji.svg' %}" width="25px" class="ms-auto m-2"></img>
-            {{success}}
-        {% elif error %}
-            <img src="{% static 'icons/sad_emoji.svg' %}" width="25px" class="ms-auto m-2"></img>
-            {{error}}
-        {% endif %}
-    </p>
+<div class="alert alert-dismissible fade show {% if success %}alert-success{% elif error %}alert-danger{% else %}d-none{% endif %} m-3"
+    id="notice-field">
+    {% if success %}
+        <img src="{% static 'icons/happy_emoji.svg' %}" width="25px" class="ms-auto m-2"></img>
+        {{success}}
+    {% elif error %}
+        <img src="{% static 'icons/sad_emoji.svg' %}" width="25px" class="ms-auto m-2"></img>
+        {{error}}
+    {% endif %}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
 </div>

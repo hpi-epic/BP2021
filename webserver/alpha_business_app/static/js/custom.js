@@ -43,7 +43,7 @@ $(document).ready(function() {
 				$(this).addClass("d-none")
 			});
 		}
-	}).trigger('change');
+	}).trigger("change");
 
 	$("select.marketplace-selection").change(function () {
 		// will be called when another marketplace has been selected
@@ -101,12 +101,12 @@ $(document).ready(function() {
 
 	function getCookie(name) {
 		let cookieValue = null;
-		if (document.cookie && document.cookie !== '') {
-			const cookies = document.cookie.split(';');
+		if (document.cookie && document.cookie !== "") {
+			const cookies = document.cookie.split(";");
 			for (let i = 0; i < cookies.length; i++) {
 				const cookie = cookies[i].trim();
 				// Does this cookie string begin with the name we want?
-				if (cookie.substring(0, name.length + 1) === (name + '=')) {
+				if (cookie.substring(0, name.length + 1) === (name + "=")) {
 					cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
 					break;
 				}
@@ -114,12 +114,21 @@ $(document).ready(function() {
 		}
 		return cookieValue;
 	}
-	
+
+	function replaceOrInsert(element, identifier, data) {
+		if (element.length > 0) {
+			element.replaceWith(data);
+		} else {
+			const endOfContent = document.getElementById(identifier);
+			endOfContent.insertAdjacentHTML("afterend", data);
+		}
+	}
+
 	$("button.form-check").click(function () {		
 		var self = $(this);
 		var formdata = getFormData();
 
-		const csrftoken = getCookie('csrftoken');
+		const csrftoken = getCookie("csrftoken");
 		$.ajax({
 			type: "POST",
 			url: self.data("url"),
@@ -128,8 +137,41 @@ $(document).ready(function() {
 				formdata
 			},
 			success: function (data) {
-				$("p.notice-field").replaceWith(data);
+				replaceOrInsert($("#notice-field"), "end-of-content", data);
 			}
 		});
 	});
+	// var url = "";
+	// var url = "ws://192.168.159.134:8001/ws";
+	// var url = "wss://vm-midea03.eaalab.hpi.uni-potsdam.de:8001/wss";
+	$.ajax({url: "/api_info",
+		success: function (data) {
+			var url = data["url"];
+			console.log('ajax return', data["url"])
+			var ws = new WebSocket(url);
+			ws.onopen = function (_) {
+				console.log("connection to ", url, "open");
+			};
+			ws.onmessage = function(event) {
+				const csrftoken = getCookie("csrftoken");
+				$.ajax({
+					type: "POST",
+					url: "/container_notification",
+					data: {
+						csrfmiddlewaretoken: csrftoken,
+						api_response: event.data
+					},
+					success: function (data) {
+						const endOfContent = document.getElementById("main-nav-bar");
+						endOfContent.insertAdjacentHTML("afterend", data);
+					}
+				});
+				console.log(event.data);
+			};
+			ws.onclose = function(_) {
+				console.log("connection to ", url, "closed");
+			};
+		}
+	});
+	
 });

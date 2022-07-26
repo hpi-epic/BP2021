@@ -6,7 +6,7 @@ from recommerce.configuration.config_validation import validate_config
 
 from .config_merger import ConfigMerger
 from .config_parser import ConfigFlatDictParser
-from .container_parser import parse_response_to_database
+from .container_helper import parse_response_to_database
 from .handle_files import download_config, download_file
 from .handle_requests import DOCKER_API, send_get_request, send_get_request_with_streaming, send_post_request, stop_container
 from .models.config import Config
