@@ -30,11 +30,14 @@ class SimMarket(gym.Env, JSONConfigurable):
 	def get_possible_rl_agents() -> list:
 		import recommerce.rl.actorcritic.actorcritic_agent as ac_agents
 		import recommerce.rl.q_learning.q_learning_agent as q_agents
-		import recommerce.rl.stable_baselines.stable_baselines_model as sb_agents
+		from recommerce.rl.stable_baselines import sb_a2c, sb_ddpg, sb_ppo, sb_sac, sb_td3
 		all_actorcritic = filtered_class_str_from_dir('recommerce.rl.actorcritic.actorcritic_agent', dir(ac_agents), '^.*Agent.+|Discrete.+$')
 		all_qlearning = filtered_class_str_from_dir('recommerce.rl.q_learning.q_learning_agent', dir(q_agents), '^QLearningAgent$')
-		all_stable_base_lines = filtered_class_str_from_dir('recommerce.rl.stable_baselines.stable_baselines_model',
-			dir(sb_agents), '^StableBaselines.*')
+		all_stable_base_lines = filtered_class_str_from_dir('recommerce.rl.stable_baselines.sb_ddpg', dir(sb_ddpg), '^StableBaselines(?!Agent).*')
+		all_stable_base_lines += filtered_class_str_from_dir('recommerce.rl.stable_baselines.sb_a2c', dir(sb_a2c), '^StableBaselines(?!Agent).*')
+		all_stable_base_lines += filtered_class_str_from_dir('recommerce.rl.stable_baselines.sb_ppo', dir(sb_ppo), '^StableBaselines(?!Agent).*')
+		all_stable_base_lines += filtered_class_str_from_dir('recommerce.rl.stable_baselines.sb_sac', dir(sb_sac), '^StableBaselines(?!Agent).*')
+		all_stable_base_lines += filtered_class_str_from_dir('recommerce.rl.stable_baselines.sb_td3', dir(sb_td3), '^StableBaselines(?!Agent).*')
 
 		return sorted(all_actorcritic + all_qlearning + all_stable_base_lines)
 
@@ -54,16 +57,17 @@ class SimMarket(gym.Env, JSONConfigurable):
 			competitors (list, optional): If not None, this overwrites the default competitor list with a custom one.
 		"""
 		self.config = config
+		self.support_continuous_action_space = support_continuous_action_space
 		self.competitors = self._get_competitor_list() if not competitors else competitors
 		# The agent's price does not belong to the observation_space any more because an agent should not depend on it
 		self._setup_action_observation_space(support_continuous_action_space)
-		self.support_continuous_action_space = support_continuous_action_space
 		self._owner = None
 		self._customer = None
 		self._number_of_vendors = self._get_number_of_vendors()
 		# TODO: Better testing for the observation and action space
 		assert (self.observation_space and self.action_space), 'Your observation or action space is not defined'
-		# Make sure that variables such as state, customer are known
+		assert not self.config.reward_mixed_profit_and_difference or self._number_of_vendors > 1, \
+			'You cannot use the mixed profit and difference reward in a monopoly market'
 		self.reset()
 
 	def _get_number_of_vendors(self) -> int:
@@ -138,7 +142,9 @@ class SimMarket(gym.Env, JSONConfigurable):
 			the reward he made between these actions,
 			a flag indicating if the market closes and information about the market for logging purposes.
 		"""
-		if isinstance(action, np.ndarray):
+		if isinstance(action, np.ndarray) and len(action) == 1:
+			action = action.item()
+		elif isinstance(action, np.ndarray):
 			action = np.array(action, dtype=np.float32)
 		assert self.action_space.contains(action), f'{action} ({type(action)}) invalid'
 
@@ -169,7 +175,8 @@ class SimMarket(gym.Env, JSONConfigurable):
 
 		self._ensure_output_dict_has('profits/all', profits)
 		is_done = self.step_counter >= self.config.episode_length
-		return self._observation(), float(profits[0]), is_done, self._output_dict
+		reward = profits[0] if not self.config.reward_mixed_profit_and_difference else 2 * profits[0] - np.max(profits[1:])
+		return self._observation(), float(reward), is_done, self._output_dict
 
 	def _observation(self, vendor_view=0) -> np.array:
 		"""
@@ -184,8 +191,9 @@ class SimMarket(gym.Env, JSONConfigurable):
 			np.array: the view for the vendor with index vendor_view
 		"""
 		# observatons is the array containing the global states. We add everything relevant to it, then return a concatenated version.
-		observations = [self._get_common_state_array()]
-		assert isinstance(observations[0], np.ndarray), '_get_common_state_array must return an np.ndarray'
+		observations = [self._get_common_state_array()] if self.config.common_state_visibility else []
+		if self.config.common_state_visibility:
+			assert isinstance(observations[0], np.ndarray), '_get_common_state_array must return an np.ndarray'
 
 		# first the state of the vendor whose view we create will be added
 		if self.vendor_specific_state[vendor_view] is not None:
@@ -196,7 +204,7 @@ class SimMarket(gym.Env, JSONConfigurable):
 			if vendor_index == vendor_view:
 				continue
 			observations.append(np.array(self.vendor_actions[vendor_index], ndmin=1, dtype=np.float32))
-			if self.vendor_specific_state[vendor_index] is not None:
+			if self.vendor_specific_state[vendor_index] is not None and self.config.opposite_own_state_visibility:
 				observations.append(np.array(self.vendor_specific_state[vendor_index], ndmin=1, dtype=np.float32))
 
 		# The observation has to be part of the observation_space defined by the market

@@ -59,7 +59,7 @@ def cartesian_product(list_a, list_b):
 	return output_list
 
 
-def write_dict_to_tensorboard(writer, dictionary: dict, counter: int, is_cumulative: bool = False) -> None:
+def write_dict_to_tensorboard(writer, dictionary: dict, counter: int, is_cumulative: bool = False, episode_length: int = None) -> None:
 	"""
 	This function takes a dictionary of data with data from one step and adds it at the specified time to the tensorboard.
 
@@ -69,12 +69,16 @@ def write_dict_to_tensorboard(writer, dictionary: dict, counter: int, is_cumulat
 		counter (int): Specifies the timestamp/step at which the data should be added to the tensorboard.
 		is_cumulative (bool, optional): . Defaults to False.
 	"""
+	assert is_cumulative == (episode_length is not None), 'Episode length must be exactly specified if is_cumulative is True'
 	for name, content in dictionary.items():
-
 		if is_cumulative:
 			# do not print cumulative actions or states because it has no meaning
 			if (name.startswith('actions') or name.startswith('state')):
-				continue
+				name = f'average_{name}'
+				if isinstance(content, dict):
+					content = divide_content_of_dict(content, episode_length)
+				else:
+					content = content / episode_length
 			else:
 				name = f'cumulated_{name}'
 		if isinstance(content, dict):
@@ -127,6 +131,24 @@ def add_content_of_two_dicts(dict1, dict2) -> dict:
 	return newdict
 
 
+def convert_dict_to_float(dict1: dict) -> dict:
+	"""
+	This function takes a dict and recursively converts all entries to float.
+
+	Args:
+		dict1 (dict): the dict you want to convert
+
+	Returns:
+		dict: same structure as dict1, but all entries are floats
+	"""
+	for key in dict1:
+		if isinstance(dict1[key], dict):
+			dict1[key] = convert_dict_to_float(dict1[key])
+		elif isinstance(dict1[key], np.float32):
+			dict1[key] = float(dict1[key])
+	return dict1
+
+
 def unroll_dict_with_list(input_dict: dict) -> dict:
 	"""
 	This function takes a dictionary containing numbers and lists and unrolls it into a flat dictionary.
@@ -174,9 +196,9 @@ def write_content_of_dict_to_overview_svg(
 		'a_garbage': str(cumulated_dictionary['owner/throw_away']),
 		'a_inventory': str(episode_dictionary['state/in_storage']['vendor_0']),
 		'a_profit': '{0:.1f}'.format(cumulated_dictionary['profits/all']['vendor_0']),
-		'a_price_new': str(episode_dictionary['actions/price_new']['vendor_0'] + 1),
-		'a_price_used':	str(episode_dictionary['actions/price_refurbished']['vendor_0'] + 1),
-		'a_rebuy_price': str(episode_dictionary['actions/price_rebuy']['vendor_0'] + 1),
+		'a_price_new': str(episode_dictionary['actions/price_new']['vendor_0']),
+		'a_price_used':	str(episode_dictionary['actions/price_refurbished']['vendor_0']),
+		'a_rebuy_price': str(episode_dictionary['actions/price_rebuy']['vendor_0']),
 		'a_repurchases': str(episode_dictionary['owner/rebuys']['vendor_0']),
 		'a_resource_cost': str(config.production_price),
 		'a_resources_in_use': str(episode_dictionary['state/in_circulation']),
@@ -185,9 +207,9 @@ def write_content_of_dict_to_overview_svg(
 		'b_competitor_name': 'vendor_1',
 		'b_inventory': str(episode_dictionary['state/in_storage']['vendor_1']),
 		'b_profit': '{0:.1f}'.format(cumulated_dictionary['profits/all']['vendor_1']),
-		'b_price_new': str(episode_dictionary['actions/price_new']['vendor_1'] + 1),
-		'b_price_used': str(episode_dictionary['actions/price_refurbished']['vendor_1'] + 1),
-		'b_rebuy_price': str(episode_dictionary['actions/price_rebuy']['vendor_1'] + 1),
+		'b_price_new': str(episode_dictionary['actions/price_new']['vendor_1']),
+		'b_price_used': str(episode_dictionary['actions/price_refurbished']['vendor_1']),
+		'b_rebuy_price': str(episode_dictionary['actions/price_rebuy']['vendor_1']),
 		'b_repurchases': str(episode_dictionary['owner/rebuys']['vendor_1']),
 		'b_resource_cost': str(config.production_price),
 		'b_sales_new': str(episode_dictionary['customer/purchases_new']['vendor_1']),
@@ -229,4 +251,4 @@ def filtered_class_str_from_dir(import_path: str, all_classes: list, regex_match
 		list: list of filtered class strings starting with the import path
 	"""
 	filtered_classes = list(set(filter(lambda class_name: re.match(regex_match, class_name), all_classes)))
-	return [import_path + '.' + f_class for f_class in sorted(filtered_classes)]
+	return [f'{import_path}.{f_class}' for f_class in sorted(filtered_classes)]

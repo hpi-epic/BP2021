@@ -80,7 +80,7 @@ def test_write_dict_to_tensorboard(dictionary: dict, counter: int, is_cumulative
 
 	mock_writer = Mock()
 
-	ut.write_dict_to_tensorboard(mock_writer, dictionary, counter, is_cumulative)
+	ut.write_dict_to_tensorboard(mock_writer, dictionary, counter, is_cumulative, 35 if is_cumulative else None)
 
 	for name, content in dictionary.items():
 		if is_cumulative:
@@ -237,9 +237,9 @@ testcases_write_dict_svg = [(
 		'a_garbage': '0',
 		'a_inventory': '30',
 		'a_profit': '3.5',
-		'a_price_new': '7',
-		'a_price_used': '5',
-		'a_rebuy_price': '3',
+		'a_price_new': '6',
+		'a_price_used': '4',
+		'a_rebuy_price': '2',
 		'a_repurchases': '6',
 		'a_resource_cost': '3',
 		'a_resources_in_use': '455',
@@ -248,9 +248,9 @@ testcases_write_dict_svg = [(
 		'b_competitor_name': 'vendor_1',
 		'b_inventory': '79',
 		'b_profit': '7.1',
-		'b_price_new': '5',
-		'b_price_used': '4',
-		'b_rebuy_price': '2',
+		'b_price_new': '4',
+		'b_price_used': '3',
+		'b_rebuy_price': '1',
 		'b_repurchases': '7',
 		'b_resource_cost': '3',
 		'b_sales_new': '5',

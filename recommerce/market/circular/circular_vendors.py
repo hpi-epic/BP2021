@@ -11,7 +11,8 @@ class CircularAgent(Agent, ABC):
 	def _clamp_price(self, price) -> int:
 		min_price = 0
 		max_price = self.config_market.max_price - 1
-		price = int(price)
+		if not self.continuous_action_space:
+			price = int(price)
 		price = max(price, min_price)
 		price = min(price, max_price)
 		return price
@@ -21,7 +22,9 @@ class CircularAgent(Agent, ABC):
 		competitors_refurbished_prices = []
 		competitors_new_prices = []
 		competitors_rebuy_prices = []
-		for competitor in range(2, observation.size, 4):
+		for competitor in range(
+			2 if self.config_market.common_state_visibility else 1, observation.size,
+			4 if self.config_market.opposite_own_state_visibility else 3):
 			competitors_refurbished_prices.append(observation[competitor].item())
 			competitors_new_prices.append(observation[competitor + 1].item())
 			if is_rebuy_economy:
@@ -88,7 +91,8 @@ class RuleBasedCEAgent(RuleBasedAgent, CircularAgent):
 	This vendor's policy does not consider the competitor's prices.
 	It tries to succeed by taking its own storage costs into account.
 	"""
-	def __init__(self, config_market: AttrDict, name=''):
+	def __init__(self, config_market: AttrDict, name='', continuous_action_space: bool = False):
+		self.continuous_action_space = continuous_action_space
 		self.name = name if name != '' else type(self).__name__
 		self.config_market = config_market
 
@@ -141,7 +145,8 @@ class RuleBasedCERebuyAgentCompetitive(RuleBasedAgent, CircularAgent):
 	"""
 	This vendor's policy is aiming to succeed by undercutting the competitor's prices.
 	"""
-	def __init__(self, config_market: AttrDict, name=''):
+	def __init__(self, config_market: AttrDict, name='', continuous_action_space: bool = False):
+		self.continuous_action_space = continuous_action_space
 		self.name = name if name != '' else type(self).__name__
 		self.config_market = config_market
 
@@ -150,26 +155,22 @@ class RuleBasedCERebuyAgentCompetitive(RuleBasedAgent, CircularAgent):
 		# TODO: find a proper way asserting the length of observation (as implemented in AC & QLearning via passing marketplace)
 
 		# in_circulation is ignored
-		own_storage = observation[1].item()
+		own_storage = observation[1].item() if self.config_market.common_state_visibility else observation[0].item()
 		competitors_refurbished_prices, competitors_new_prices, competitors_rebuy_prices = self._get_competitor_prices(observation, True)
 
 		price_new = max(min(competitors_new_prices) - 1, self.config_market.production_price + 1)
 		# competitor's storage is ignored
 		if own_storage < self.config_market.max_storage / 15:
 			# fill up the storage immediately
-			price_refurbished = min(competitors_refurbished_prices) + 2
-			rebuy_price = max(min(competitors_rebuy_prices) + 1, 2)
-		elif own_storage < self.config_market.max_storage / 10:
-			# fill up the storage
 			price_refurbished = min(competitors_refurbished_prices) + 1
-			rebuy_price = min(competitors_rebuy_prices)
+			rebuy_price = max(min(competitors_rebuy_prices) + 1, 2)
 		elif own_storage < self.config_market.max_storage / 8:
 			# storage content is ok
-			rebuy_price = max(min(competitors_rebuy_prices) - 1, 1)
+			rebuy_price = max(min(competitors_rebuy_prices) - 1, 0.25)
 			price_refurbished = max(min(competitors_refurbished_prices) - 1, rebuy_price + 1)
 		else:
 			# storage too full, we need to get rid of some refurbished products
-			rebuy_price = max(min(competitors_rebuy_prices) - 2, 1)
+			rebuy_price = max(min(competitors_rebuy_prices) - 2, 0)
 			price_refurbished = max(round(np.quantile(competitors_refurbished_prices, 0.75)) - 2, rebuy_price + 1)
 
 		return (self._clamp_price(price_refurbished), self._clamp_price(price_new), self._clamp_price(rebuy_price))
@@ -179,7 +180,8 @@ class RuleBasedCERebuyAgentStorageMinimizer(RuleBasedAgent, CircularAgent):
 	"""
 	This vendor's policy reacts to the competitors' prices and minimizes the usage of storage.
 	"""
-	def __init__(self, config_market: AttrDict, name=''):
+	def __init__(self, config_market: AttrDict, name='', continuous_action_space: bool = False):
+		self.continuous_action_space = continuous_action_space
 		self.name = name if name != '' else type(self).__name__
 		self.config_market = config_market
 
@@ -188,7 +190,7 @@ class RuleBasedCERebuyAgentStorageMinimizer(RuleBasedAgent, CircularAgent):
 		# TODO: find a proper way asserting the length of observation (as implemented in AC & QLearning via passing marketplace)
 
 		# in_circulation is ignored
-		own_storage = observation[1].item()
+		own_storage = observation[1].item() if self.config_market.common_state_visibility else observation[0].item()
 		competitors_refurbished_prices, competitors_new_prices, competitors_rebuy_prices = self._get_competitor_prices(observation, True)
 
 		price_new = max(median(competitors_new_prices) - 1, self.config_market.production_price + 1)

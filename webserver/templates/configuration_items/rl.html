@@ -1,12 +1,217 @@
 <div class="accordion-item">
-    <h2 class="accordion-header" >
-        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseRL" aria-expanded="false" aria-controls="collapseRL">
+    <h2 class="accordion-header">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+            data-bs-target="#collapseRlConfig" aria-expanded="false" aria-controls="collapseRlConfig">
             RL
         </button>
     </h2>
-    <div id="collapseRL" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
-        <div class="accordion-body rl-parameter">
-            {% include "configuration_items/rl_parameter.html" with parameters=prefill %}
+    <div id="collapseRlConfig" class="accordion-collapse collapse">
+        <div class="accordion-body">
+            {% load static %}
+            <div class="row p-2" id="hyperparameter-rl-batch_size">
+                <div class="col-6">
+                    {% if error_dict.batch_size %}
+                        <img src="{% static 'icons/warning.svg' %}" width="18px" title="{{error_dict.batch_size}}"></img>
+                    {% endif %}
+                    batch size
+                </div>
+                <div class="col-6">
+                    <input type="number" class="form-control {% if error_dict.max_storage %} bc-error-field {% endif %}"
+                        min="0" step="any" value="{{prefill.batch_size}}" name="hyperparameter-rl-batch_size">
+                </div>
+            </div>
+            <div class="row p-2" id="hyperparameter-rl-buffer_size">
+                <div class="col-6">
+                    {% if error_dict.buffer_size %}
+                        <img src="{% static 'icons/warning.svg' %}" width="18px" title="{{error_dict.buffer_size}}"></img>
+                    {% endif %}
+                    buffer size
+                </div>
+                <div class="col-6">
+                    <input type="number" class="form-control {% if error_dict.max_storage %} bc-error-field {% endif %}"
+                        min="0" step="any" value="{{prefill.buffer_size}}" name="hyperparameter-rl-buffer_size">
+                </div>
+            </div>
+            <div class="row p-2" id="hyperparameter-rl-clip_range">
+                <div class="col-6">
+                    {% if error_dict.clip_range %}
+                        <img src="{% static 'icons/warning.svg' %}" width="18px" title="{{error_dict.clip_range}}"></img>
+                    {% endif %}
+                    clip range
+                </div>
+                <div class="col-6">
+                    <input type="number" class="form-control {% if error_dict.max_storage %} bc-error-field {% endif %}"
+                        min="0" step="any" value="{{prefill.clip_range}}" name="hyperparameter-rl-clip_range">
+                </div>
+            </div>
+            <div class="row p-2" id="hyperparameter-rl-ent_coef">
+                <div class="col-6">
+                    {% if error_dict.ent_coef %}
+                        <img src="{% static 'icons/warning.svg' %}" width="18px" title="{{error_dict.ent_coef}}"></img>
+                    {% endif %}
+                    ent coef
+                </div>
+                <div class="col-6">
+                    <input type="number" class="form-control {% if error_dict.max_storage %} bc-error-field {% endif %}"
+                        min="0" step="any" value="{{prefill.ent_coef}}" name="hyperparameter-rl-ent_coef">
+                </div>
+            </div>
+            <div class="row p-2" id="hyperparameter-rl-epsilon_decay_last_frame">
+                <div class="col-6">
+                    {% if error_dict.epsilon_decay_last_frame %}
+                        <img src="{% static 'icons/warning.svg' %}" width="18px" title="{{error_dict.epsilon_decay_last_frame}}"></img>
+                    {% endif %}
+                    epsilon decay last frame
+                </div>
+                <div class="col-6">
+                    <input type="number" class="form-control {% if error_dict.max_storage %} bc-error-field {% endif %}"
+                        min="0" step="any" value="{{prefill.epsilon_decay_last_frame}}" name="hyperparameter-rl-epsilon_decay_last_frame">
+                </div>
+            </div>
+            <div class="row p-2" id="hyperparameter-rl-epsilon_final">
+                <div class="col-6">
+                    {% if error_dict.epsilon_final %}
+                        <img src="{% static 'icons/warning.svg' %}" width="18px" title="{{error_dict.epsilon_final}}"></img>
+                    {% endif %}
+                    epsilon final
+                </div>
+                <div class="col-6">
+                    <input type="number" class="form-control {% if error_dict.max_storage %} bc-error-field {% endif %}"
+                        min="0" step="any" value="{{prefill.epsilon_final}}" name="hyperparameter-rl-epsilon_final">
+                </div>
+            </div>
+            <div class="row p-2" id="hyperparameter-rl-epsilon_start">
+                <div class="col-6">
+                    {% if error_dict.epsilon_start %}
+                        <img src="{% static 'icons/warning.svg' %}" width="18px" title="{{error_dict.epsilon_start}}"></img>
+                    {% endif %}
+                    epsilon start
+                </div>
+                <div class="col-6">
+                    <input type="number" class="form-control {% if error_dict.max_storage %} bc-error-field {% endif %}"
+                        min="0" step="any" value="{{prefill.epsilon_start}}" name="hyperparameter-rl-epsilon_start">
+                </div>
+            </div>
+            <div class="row p-2" id="hyperparameter-rl-gamma">
+                <div class="col-6">
+                    {% if error_dict.gamma %}
+                        <img src="{% static 'icons/warning.svg' %}" width="18px" title="{{error_dict.gamma}}"></img>
+                    {% endif %}
+                    gamma
+                </div>
+                <div class="col-6">
+                    <input type="number" class="form-control {% if error_dict.max_storage %} bc-error-field {% endif %}"
+                        min="0" step="any" value="{{prefill.gamma}}" name="hyperparameter-rl-gamma">
+                </div>
+            </div>
+            <div class="row p-2" id="hyperparameter-rl-learning_rate">
+                <div class="col-6">
+                    {% if error_dict.learning_rate %}
+                        <img src="{% static 'icons/warning.svg' %}" width="18px" title="{{error_dict.learning_rate}}"></img>
+                    {% endif %}
+                    learning rate
+                </div>
+                <div class="col-6">
+                    <input type="number" class="form-control {% if error_dict.max_storage %} bc-error-field {% endif %}"
+                        min="0" step="any" value="{{prefill.learning_rate}}" name="hyperparameter-rl-learning_rate">
+                </div>
+            </div>
+            <div class="row p-2" id="hyperparameter-rl-learning_starts">
+                <div class="col-6">
+                    {% if error_dict.learning_starts %}
+                        <img src="{% static 'icons/warning.svg' %}" width="18px" title="{{error_dict.learning_starts}}"></img>
+                    {% endif %}
+                    learning starts
+                </div>
+                <div class="col-6">
+                    <input type="number" class="form-control {% if error_dict.max_storage %} bc-error-field {% endif %}"
+                        min="0" step="any" value="{{prefill.learning_starts}}" name="hyperparameter-rl-learning_starts">
+                </div>
+            </div>
+            <div class="row p-2" id="hyperparameter-rl-n_epochs">
+                <div class="col-6">
+                    {% if error_dict.n_epochs %}
+                        <img src="{% static 'icons/warning.svg' %}" width="18px" title="{{error_dict.n_epochs}}"></img>
+                    {% endif %}
+                    n epochs
+                </div>
+                <div class="col-6">
+                    <input type="number" class="form-control {% if error_dict.max_storage %} bc-error-field {% endif %}"
+                        min="0" step="any" value="{{prefill.n_epochs}}" name="hyperparameter-rl-n_epochs">
+                </div>
+            </div>
+            <div class="row p-2" id="hyperparameter-rl-n_steps">
+                <div class="col-6">
+                    {% if error_dict.n_steps %}
+                        <img src="{% static 'icons/warning.svg' %}" width="18px" title="{{error_dict.n_steps}}"></img>
+                    {% endif %}
+                    n steps
+                </div>
+                <div class="col-6">
+                    <input type="number" class="form-control {% if error_dict.max_storage %} bc-error-field {% endif %}"
+                        min="0" step="any" value="{{prefill.n_steps}}" name="hyperparameter-rl-n_steps">
+                </div>
+            </div>
+            <div class="row p-2" id="hyperparameter-rl-neurones_per_hidden_layer">
+                <div class="col-6">
+                    {% if error_dict.neurones_per_hidden_layer %}
+                        <img src="{% static 'icons/warning.svg' %}" width="18px" title="{{error_dict.neurones_per_hidden_layer}}"></img>
+                    {% endif %}
+                    neurones per hidden layer
+                </div>
+                <div class="col-6">
+                    <input type="number" class="form-control {% if error_dict.max_storage %} bc-error-field {% endif %}"
+                        min="0" step="any" value="{{prefill.neurones_per_hidden_layer}}" name="hyperparameter-rl-neurones_per_hidden_layer">
+                </div>
+            </div>
+            <div class="row p-2" id="hyperparameter-rl-replay_size">
+                <div class="col-6">
+                    {% if error_dict.replay_size %}
+                        <img src="{% static 'icons/warning.svg' %}" width="18px" title="{{error_dict.replay_size}}"></img>
+                    {% endif %}
+                    replay size
+                </div>
+                <div class="col-6">
+                    <input type="number" class="form-control {% if error_dict.max_storage %} bc-error-field {% endif %}"
+                        min="0" step="any" value="{{prefill.replay_size}}" name="hyperparameter-rl-replay_size">
+                </div>
+            </div>
+            <div class="row p-2" id="hyperparameter-rl-replay_start_size">
+                <div class="col-6">
+                    {% if error_dict.replay_start_size %}
+                        <img src="{% static 'icons/warning.svg' %}" width="18px" title="{{error_dict.replay_start_size}}"></img>
+                    {% endif %}
+                    replay start size
+                </div>
+                <div class="col-6">
+                    <input type="number" class="form-control {% if error_dict.max_storage %} bc-error-field {% endif %}"
+                        min="0" step="any" value="{{prefill.replay_start_size}}" name="hyperparameter-rl-replay_start_size">
+                </div>
+            </div>
+            <div class="row p-2" id="hyperparameter-rl-sync_target_frames">
+                <div class="col-6">
+                    {% if error_dict.sync_target_frames %}
+                        <img src="{% static 'icons/warning.svg' %}" width="18px" title="{{error_dict.sync_target_frames}}"></img>
+                    {% endif %}
+                    sync target frames
+                </div>
+                <div class="col-6">
+                    <input type="number" class="form-control {% if error_dict.max_storage %} bc-error-field {% endif %}"
+                        min="0" step="any" value="{{prefill.sync_target_frames}}" name="hyperparameter-rl-sync_target_frames">
+                </div>
+            </div>
+            <div class="row p-2" id="hyperparameter-rl-tau">
+                <div class="col-6">
+                    {% if error_dict.tau %}
+                        <img src="{% static 'icons/warning.svg' %}" width="18px" title="{{error_dict.tau}}"></img>
+                    {% endif %}
+                    tau
+                </div>
+                <div class="col-6">
+                    <input type="number" class="form-control {% if error_dict.max_storage %} bc-error-field {% endif %}"
+                        min="0" step="any" value="{{prefill.tau}}" name="hyperparameter-rl-tau">
+                </div>
+            </div>
         </div>
     </div>
 </div>

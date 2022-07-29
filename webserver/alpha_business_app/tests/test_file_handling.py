@@ -1,19 +1,24 @@
+import copy
+import json
 import os
 from unittest.mock import patch
 
 from django.contrib.auth.models import User
 from django.contrib.sessions.middleware import SessionMiddleware
+from django.http import HttpResponse
 from django.test import TestCase
 from django.test.client import RequestFactory
 
 from ..config_parser import ConfigModelParser
-from ..handle_files import handle_uploaded_file
+from ..handle_files import download_config, handle_uploaded_file
 from ..models.agents_config import AgentsConfig
 from ..models.config import Config
+from ..models.container import Container
 from ..models.environment_config import EnvironmentConfig
 from ..models.hyperparameter_config import HyperparameterConfig
 from ..models.rl_config import RlConfig
 from ..models.sim_market_config import SimMarketConfig
+from .constant_tests import EXAMPLE_HIERARCHY_DICT
 
 
 class MockedResponse():
@@ -226,7 +231,7 @@ class FileHandling(TestCase):
 		hyperparameter_config: HyperparameterConfig = final_config.hyperparameter
 
 		assert 'training' == environment_config.task
-		assert environment_config.enable_live_draw is None
+		assert environment_config.separate_markets is None
 		assert environment_config.episodes is None
 		assert environment_config.plot_interval is None
 		assert 'recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceMonopoly' == environment_config.marketplace
@@ -275,6 +280,17 @@ class FileHandling(TestCase):
 			render_mock.assert_called_once()
 			assert 'upload.html' == actual_arguments[1]
 			assert {'error': "Your config contains duplicate keys: 'rl'"} == actual_arguments[2], actual_arguments[2]
+
+	def test_download_config(self):
+		# create a container with a suitable config
+		config_dict = copy.deepcopy(EXAMPLE_HIERARCHY_DICT)
+		config_object = ConfigModelParser().parse_config(copy.deepcopy(config_dict))
+		container_object = Container.objects.create(config=config_object, user=self.user)
+		# parse used config as json and create HttpResponse
+		json_file_content = json.dumps(config_dict, indent=4, sort_keys=True)
+		expected_http_response = HttpResponse(json_file_content, content_type='application/json')
+		# we want to make sure, that the content is correct
+		assert expected_http_response.content == download_config(container_object).content
 
 	def _setup_request(self) -> RequestFactory:
 		request = RequestFactory().post('upload.html', {'action': 'start', 'config_name': 'test'})

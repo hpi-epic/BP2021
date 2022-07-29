@@ -8,6 +8,10 @@ from .hyperparameter_config import HyperparameterConfig
 
 
 class Config(AbstractConfig, models.Model):
+	"""
+	This class collects all parts of the configuration file.
+	It contains the `HyperparameterConfig` and the `EnvironmentConfig`
+	"""
 	environment = models.ForeignKey('alpha_business_app.EnvironmentConfig', on_delete=models.CASCADE, null=True)
 	hyperparameter = models.ForeignKey('alpha_business_app.HyperparameterConfig', on_delete=models.CASCADE, null=True)
 	name = models.CharField(max_length=100, editable=False, default='')

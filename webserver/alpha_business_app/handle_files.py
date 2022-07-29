@@ -19,13 +19,13 @@ def _dict_raise_on_duplicates(ordered_pairs):
 	"""
 	Reject duplicate keys.
 	"""
-	no_cuplicates_dict = {}
+	no_duplicates_dict = {}
 	for key, value in ordered_pairs:
-		if key in no_cuplicates_dict:
+		if key in no_duplicates_dict:
 			raise ValueError(f"Your config contains duplicate keys: '{key}'")
 		else:
-			no_cuplicates_dict[key] = value
-	return no_cuplicates_dict
+			no_duplicates_dict[key] = value
+	return no_duplicates_dict
 
 
 def handle_uploaded_file(request, uploaded_config) -> HttpResponse:
@@ -83,6 +83,25 @@ def handle_uploaded_file(request, uploaded_config) -> HttpResponse:
 	config_name = given_name if given_name else uploaded_config.name
 	Config.objects.create(environment=environment_config, hyperparameter=hyperparameter_config, name=config_name, user=request.user)
 	return redirect('/configurator', {'success': 'You successfully uploaded a config file'})
+
+
+def download_config(wanted_container: Container) -> HttpResponse:
+	"""
+	Provides the configuration file of the given container as an HttpResponse.
+
+	Args:
+		wanted_container (Container): container, which the configuration belongs to
+
+	Returns:
+		HttpResponse: contains the configuration file belonging to this container.
+	"""
+	config_object = wanted_container.config
+	config_as_string = json.dumps(config_object.as_dict(), indent=4, sort_keys=True)
+	file_response = HttpResponse(config_as_string, content_type='application/json')
+	# we only want the alphanumeric characters from container name
+	file_name = ''.join(character for character in wanted_container.name if character.isalnum())
+	file_response['Content-Disposition'] = f'attachment; filename=config_{file_name}.json'
+	return file_response
 
 
 def download_file(response, wants_zip: bool, wanted_container: Container) -> HttpResponse:
