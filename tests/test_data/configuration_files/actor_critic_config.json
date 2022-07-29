@@ -1,5 +1,4 @@
 {
 	"gamma": 0.99,
-	"sync_target_frames": 35,
-	"testvalue2": 15.0
+	"sync_target_frames": 35
 }

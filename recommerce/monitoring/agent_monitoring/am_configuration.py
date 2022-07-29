@@ -210,12 +210,16 @@ class Configurator():
 		if marketplace is not None:
 			assert issubclass(marketplace, sim_market.SimMarket), 'the marketplace must be a subclass of SimMarket'
 			if competitors is not None:
+				# if we don't get the competitors from after training (= they are initialized) but from config, we need to initialize
+				for competitor in competitors:
+					if not isinstance(competitor, Agent):
+						competitor = competitor(config_market=config_market)
 				assert separate_markets, 'competitors can only be provided if separate_markets is True'
 				assert all(isinstance(competitor, RuleBasedAgent) for competitor in competitors), \
 					'All competitors must be RuleBased, or `deepcopy` will fail'
 				assert marketplace.get_num_competitors() == np.inf or len(competitors) == marketplace.get_num_competitors(), \
 					f'The number of competitors given is invalid: was {len(competitors)} but should be {marketplace.get_num_competitors()}'
-				self.competitors = competitors
+
 			self.marketplace = marketplace(
 				config=self.config_market, support_continuous_action_space=support_continuous_action_space, competitors=self.competitors)
 
@@ -229,11 +233,14 @@ class Configurator():
 		elif agents is not None:
 			self._update_agents(agents)
 
-	def print_configuration(self):
+	def print_configuration(self) -> bool:
 		"""
 		Print the current configuration in a human-readable format.
 
 		Used when running a monitoring session from `agent_monitoring.Monitor()`.
+
+		Returns:
+			bool: If the monitoring session should continue or not.
 		"""
 		if self.episodes / self.plot_interval > 50:
 			print('The ratio of episodes/plot_interval is over 50. In order for the plots to be more readable we recommend a lower ratio.')
@@ -242,7 +249,7 @@ class Configurator():
 			print(f'Ratio: {int(self.episodes / self.plot_interval)}')
 			if input('Continue anyway? [y]/n: ') == 'n':
 				print('Stopping monitoring session...')
-				return
+				return False
 
 		print('Running a monitoring session with the following configuration:')
 		print(str.ljust('Episodes:', 25) + str(self.episodes))
@@ -252,6 +259,12 @@ class Configurator():
 		print('Monitoring these agents:')
 		for current_agent in self.agents:
 			print(str.ljust('', 25) + current_agent.name)
+		if self.competitors is not None:
+			print('Competitors:')
+			for current_competitor in self.competitors:
+				print(str.ljust('', 25) + current_competitor.name)
+
+		return True
 
 
 if __name__ == '__main__':  # pragma: no cover
