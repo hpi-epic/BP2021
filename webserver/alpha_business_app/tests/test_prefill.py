@@ -38,14 +38,23 @@ class ConfigMergerTest(TestCase):
 		expected_dict = copy.deepcopy(config_dict)
 		expected_dict['environment']['episodes'] = None
 		expected_dict['environment']['plot_interval'] = None
-		expected_dict['hyperparameter']['rl']['testvalue2'] = None
-		expected_dict['hyperparameter']['rl']['stable_baseline_test'] = None
+		expected_dict['hyperparameter']['rl']['n_steps'] = None
+		expected_dict['hyperparameter']['rl']['n_epochs'] = None
+		expected_dict['hyperparameter']['rl']['tau'] = None
+		expected_dict['hyperparameter']['rl']['clip_range'] = None
+		expected_dict['hyperparameter']['rl']['neurones_per_hidden_layer'] = None
+		expected_dict['hyperparameter']['rl']['ent_coef'] = None
+		expected_dict['hyperparameter']['rl']['buffer_size'] = None
+		expected_dict['hyperparameter']['rl']['learning_starts'] = None
+		expected_dict['hyperparameter']['sim_market']['common_state_visibility'] = False
+		expected_dict['hyperparameter']['sim_market']['opposite_own_state_visibility'] = False
+		expected_dict['hyperparameter']['sim_market']['reward_mixed_profit_and_difference'] = False
 
 		empty_config = Config.get_empty_structure_dict()
 		merger = ConfigMerger()
 		actual_config = merger.merge_config_into_base_config(empty_config, config_dict)
 
-		assert expected_dict == actual_config
+		assert expected_dict == actual_config, f'{expected_dict}\n\n{actual_config}'
 
 	def test_merge_two_configs_without_conflicts(self):
 		test_environment_config = EnvironmentConfig.objects.create(task='training')
@@ -130,8 +139,14 @@ class ConfigMergerTest(TestCase):
 					'epsilon_decay_last_frame': 7500,
 					'epsilon_start': 0.9,
 					'epsilon_final': 0.2,
-					'testvalue2': None,
-					'stable_baseline_test': None
+					'n_steps': None,
+					'n_epochs': None,
+					'tau': None,
+					'clip_range': None,
+					'neurones_per_hidden_layer': None,
+					'ent_coef': None,
+					'buffer_size': None,
+					'learning_starts': None
 				},
 				'sim_market': {
 					'max_storage': 80,
@@ -139,7 +154,10 @@ class ConfigMergerTest(TestCase):
 					'max_price': 90, 'max_quality': 50,
 					'number_of_customers': 6,
 					'production_price': 1,
-					'storage_cost_per_product': 0.7
+					'storage_cost_per_product': 0.7,
+					'common_state_visibility': False,
+					'opposite_own_state_visibility': False,
+					'reward_mixed_profit_and_difference': False
 				}
 			}
 		}
@@ -163,8 +181,14 @@ class ConfigMergerTest(TestCase):
 					'epsilon_decay_last_frame': 'changed hyperparameter-rl epsilon_decay_last_frame from 75000 to 7500',
 					'epsilon_start': 'changed hyperparameter-rl epsilon_start from 1.0 to 0.9',
 					'epsilon_final': 'changed hyperparameter-rl epsilon_final from 0.1 to 0.2',
-					'testvalue2': None,
-					'stable_baseline_test': None
+					'n_steps': None,
+					'n_epochs': None,
+					'tau': None,
+					'clip_range': None,
+					'neurones_per_hidden_layer': None,
+					'ent_coef': None,
+					'buffer_size': None,
+					'learning_starts': None
 				},
 				'sim_market': {
 					'max_storage': 'changed hyperparameter-sim_market max_storage from 100 to 80',
@@ -174,12 +198,15 @@ class ConfigMergerTest(TestCase):
 					'number_of_customers': 'changed hyperparameter-sim_market number_of_customers from 20 to 6',
 					'production_price': 'changed hyperparameter-sim_market production_price from 3 to 1',
 					'storage_cost_per_product':
-					'changed hyperparameter-sim_market storage_cost_per_product from 0.1 to 0.7'
+					'changed hyperparameter-sim_market storage_cost_per_product from 0.1 to 0.7',
+					'common_state_visibility': None,
+					'opposite_own_state_visibility': None,
+					'reward_mixed_profit_and_difference': None
 				}
 			}
 		}
 		assert expected_final_config == final_config
-		assert expected_error_dict == error_dict, f'{expected_error_dict}\n\n{error_dict}'
+		assert expected_error_dict == error_dict
 
 	# following tests are commented since we currently simply append multiple agents and do not merge
 	# def test_merge_one_agent(self):

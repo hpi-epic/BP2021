@@ -10,11 +10,16 @@ from recommerce.rl.stable_baselines.sb_ppo import StableBaselinesPPO
 from recommerce.rl.stable_baselines.sb_sac import StableBaselinesSAC
 
 
-def train_rl_vs_rl(config_market: AttrDict, config_rl: AttrDict, num_switches: int = 30, num_steps_per_switch: int = 25000):
+def train_rl_vs_rl(
+		config_market: AttrDict,
+		config_rl1: AttrDict,
+		config_rl2: AttrDict,
+		num_switches: int = 30,
+		num_steps_per_switch: int = 25000):
 	tmp_marketplace = CircularEconomyRebuyPriceDuopoly(config=config_market, support_continuous_action_space=True)
-	agent1 = StableBaselinesPPO(config_market=config_market, config_rl=config_rl, marketplace=tmp_marketplace)
+	agent1 = StableBaselinesPPO(config_market=config_market, config_rl=config_rl1, marketplace=tmp_marketplace)
 	marketplace_for_agent2 = CircularEconomyRebuyPriceDuopoly(config=config_market, support_continuous_action_space=True, competitors=[agent1])
-	agent2 = StableBaselinesSAC(config_market=config_market, config_rl=config_rl, marketplace=marketplace_for_agent2)
+	agent2 = StableBaselinesSAC(config_market=config_market, config_rl=config_rl2, marketplace=marketplace_for_agent2)
 	marketplace_for_agent1 = CircularEconomyRebuyPriceDuopoly(config=config_market, support_continuous_action_space=True, competitors=[agent2])
 	agent1.set_marketplace(marketplace_for_agent1)
 	agents = [agent1, agent2]
@@ -24,7 +29,7 @@ def train_rl_vs_rl(config_market: AttrDict, config_rl: AttrDict, num_switches: i
 
 	for i in range(num_switches):
 		print(f'\n\nTraining {i + 1}\nTraining generation {i // 2 + 1} of {agents[i % 2].name}.')
-		last_dicts = agents[i % 2].train_agent(training_steps=num_steps_per_switch)
+		last_dicts = agents[i % 2].train_agent(training_steps=num_steps_per_switch).all_dicts
 		for mydict in last_dicts:
 			rewards[i % 2].append(mydict['profits/all']['vendor_0'])
 			rewards[(i + 1) % 2].append(mydict['profits/all']['vendor_1'])
@@ -37,4 +42,4 @@ def train_rl_vs_rl(config_market: AttrDict, config_rl: AttrDict, num_switches: i
 	plt.plot(smoothed_return_estimation[0], label=agents[0].name)
 	plt.plot(smoothed_return_estimation[1], label=agents[1].name)
 	plt.legend()
-	plt.savefig(os.path.join(PathManager.results_path, 'monitoring', 'rl_vs_rl_all.svg'))  # Maybe save in a dedicated folder
+	plt.savefig(os.path.join(PathManager.results_path, 'monitoring', 'rl_vs_rl_all.svg'), transparent=True)  # Maybe save in a dedicated folder

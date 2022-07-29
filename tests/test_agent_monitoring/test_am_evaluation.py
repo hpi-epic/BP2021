@@ -33,9 +33,9 @@ def setup_function(function):
 
 evaluate_session_testcases = [
 	([(RuleBasedCEAgent, [])], circular_market.CircularEconomyMonopoly,
-		{'profits/all': [[5, 10, 0, -5]]}),
+		{'profits/all': [[5, 10, 0, -5]], 'a/reward': [10, 15, 25, -50]}),
 	([(RuleBasedCEAgent, []), (FixedPriceCEAgent, [])], circular_market.CircularEconomyDuopoly,
-		{'profits/all': [[5, 10, 0, -5], [5, -10, 60, 5]]}),
+		{'profits/all': [[5, 10, 0, -5], [5, -10, 60, 5]], 'a/reward': [[10, 15, 25, -50], [10, 15, 25, -50]]})
 ]
 
 
@@ -73,12 +73,12 @@ def test_rewards_array_size():
 
 
 create_histogram_statistics_plots_testcases = [
-	([(RuleBasedCEAgent, [])], [[100, 0]], 1, [(1.0, 0.0, 0.0, 1.0)], (0.0, 1000.0)),
+	([(RuleBasedCEAgent, [])], [[100, 0]], 5, [(1.0, 0.0, 0.0, 1.0)], (0.0, 1000.0)),
 	([(RuleBasedCEAgent, []), (RuleBasedCEAgent, [])],
-		[[100, 0], [10, 5]], 1, [(1.0, 0.0, 0.0, 1.0), (0.0, 1.0, 0.9531223422015865, 1.0)], (0.0, 1000.0)),
+		[[100, 0], [10, 5]], 5, [(1.0, 0.0, 0.0, 1.0), (0.0, 1.0, 0.9531223422015865, 1.0)], (0.0, 1000.0)),
 	([(RuleBasedCEAgent, []), (RuleBasedCEAgent, []), (RuleBasedCEAgent, []), (RuleBasedCEAgent, [])],
 		[[100, 0], [10, 5], [100, 10000], [10, 1000]],
-		10,
+		50,
 		[(1.0, 0.0, 0.0, 1.0), (0.5234360234360234, 1.0, 0.0, 1.0), (0.0, 1.0, 0.9531223422015865, 1.0), (0.4296860234360234, 0.0, 1.0, 1.0)],
 		(0.0, 10000.0))
 ]
@@ -102,7 +102,7 @@ def test_create_histogram(agents, rewards, plot_bins, agent_color, lower_upper_r
 		monitor.evaluator.create_histogram(rewards, True)
 		hist_mock.assert_called_once_with(rewards, bins=plot_bins, color=agent_color, rwidth=0.9, range=lower_upper_range, edgecolor='black')
 		legend_mock.assert_called_once_with(name_list)
-		save_mock.assert_called_once_with(fname=os.path.join(monitor.configurator.folder_path, 'default_histogram.svg'))
+		save_mock.assert_called_once_with(fname=os.path.join(monitor.configurator.folder_path, 'default_histogram.svg'), transparent=True)
 
 
 def test_create_histogram_without_saving_to_directory():

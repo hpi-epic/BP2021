@@ -30,6 +30,9 @@ class CircularEconomy(SimMarket, ABC):
 			('number_of_customers', int, greater_zero_even_rule),
 			('production_price', int, non_negative_rule),
 			('storage_cost_per_product', (int, float), non_negative_rule),
+			('opposite_own_state_visibility', bool, None),
+			('common_state_visibility', bool, None),
+			('reward_mixed_profit_and_difference', bool, None)
 		]
 
 	def _setup_action_observation_space(self, support_continuous_action_space: bool) -> None:
@@ -37,9 +40,13 @@ class CircularEconomy(SimMarket, ABC):
 		self.max_storage = self.config.max_storage
 		self.max_circulation = 10 * self.max_storage
 		self.observation_space = gym.spaces.Box(
-			np.array([0, 0] + [0, 0, 0] * len(self.competitors), dtype=np.float32),
-			np.array([self.max_circulation, self.max_storage] +
-				[self.config.max_price, self.config.max_price, self.max_storage] * len(self.competitors), dtype=np.float32))
+			np.array(([0.0, 0.0] if self.config.common_state_visibility else [0.0]) +
+				([0.0] * (3 if self.config.opposite_own_state_visibility else 2)) * len(self.competitors), dtype=np.float32),
+			np.array(([self.max_circulation, self.max_storage] if self.config.common_state_visibility else [self.max_storage]) +
+				([self.config.max_price, self.config.max_price] + ([self.max_storage] if self.config.opposite_own_state_visibility else [])) *
+				len(self.competitors), dtype=np.float32
+			)
+		)
 
 		if support_continuous_action_space:
 			self.action_space = gym.spaces.Box(np.array([0] * 2, dtype=np.float32), np.array([self.config.max_price] * 2, dtype=np.float32))
@@ -276,9 +283,14 @@ class CircularEconomyRebuyPrice(CircularEconomy, ABC):
 	def _setup_action_observation_space(self, support_continuous_action_space: bool) -> None:
 		super()._setup_action_observation_space(support_continuous_action_space)
 		self.observation_space = gym.spaces.Box(
-			np.array([0, 0] + [0, 0, 0, 0] * len(self.competitors), dtype=np.float32),
-			np.array([self.max_circulation, self.max_storage] + [self.config.max_price, self.config.max_price,
-				self.config.max_price, self.max_storage] * len(self.competitors), dtype=np.float32))
+			np.array(([0.0, 0.0] if self.config.common_state_visibility else [0.0]) +
+				([0.0] * (4 if self.config.opposite_own_state_visibility else 3)) * len(self.competitors), dtype=np.float32),
+			np.array(([self.max_circulation, self.max_storage] if self.config.common_state_visibility else [self.max_storage]) +
+				([self.config.max_price, self.config.max_price, self.config.max_price] +
+					([self.max_storage] if self.config.opposite_own_state_visibility else [])) *
+				len(self.competitors), dtype=np.float32
+				)
+			)
 
 		if support_continuous_action_space:
 			self.action_space = gym.spaces.Box(np.array([0] * 3, dtype=np.float32), np.array([self.config.max_price] * 3, dtype=np.float32))
@@ -336,7 +348,8 @@ class CircularEconomyRebuyPriceDuopoly(CircularEconomyRebuyPrice):
 		return 1
 
 	def _get_competitor_list(self) -> list:
-		return [circular_vendors.RuleBasedCERebuyAgentCompetitive(config_market=self.config)]
+		return [circular_vendors.RuleBasedCERebuyAgentCompetitive(config_market=self.config,
+			continuous_action_space=self.support_continuous_action_space)]
 
 
 class CircularEconomyRebuyPriceOligopoly(CircularEconomyRebuyPrice):
@@ -350,8 +363,11 @@ class CircularEconomyRebuyPriceOligopoly(CircularEconomyRebuyPrice):
 
 	def _get_competitor_list(self) -> list:
 		return [
-			circular_vendors.RuleBasedCERebuyAgentCompetitive(config_market=self.config),
-			circular_vendors.RuleBasedCERebuyAgent(config_market=self.config),
+			circular_vendors.RuleBasedCERebuyAgentCompetitive(config_market=self.config,
+				continuous_action_space=self.support_continuous_action_space),
+			circular_vendors.RuleBasedCERebuyAgent(config_market=self.config,
+				continuous_action_space=self.support_continuous_action_space),
 			circular_vendors.FixedPriceCERebuyAgent(config_market=self.config, fixed_price=(3, 6, 2)),
-			circular_vendors.RuleBasedCERebuyAgentStorageMinimizer(config_market=self.config)
+			circular_vendors.RuleBasedCERebuyAgentStorageMinimizer(config_market=self.config,
+				continuous_action_space=self.support_continuous_action_space),
 			]

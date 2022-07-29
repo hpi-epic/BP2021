@@ -8,6 +8,19 @@
     <div id="collapseSimMarketConfig" class="accordion-collapse collapse">
         <div class="accordion-body">
             {% load static %}
+            <div class="row p-2" id="hyperparameter-sim_market-common_state_visibility">
+                <div class="col-6">
+                    {% if error_dict.common_state_visibility %}
+                        <img src="{% static 'icons/warning.svg' %}" width="18px" title="{{error_dict.common_state_visibility}}"></img>
+                    {% endif %}
+                    common state visibility
+                </div>
+                <div class="col-6">
+                    <input type="checkbox" {% if prefill.common_state_visibility %}checked{% endif %}
+                        class="form-check-input {% if error_dict.common_state_visibility %} bc-error-field {% endif %}"
+                        name="hyperparameter-sim_market-common_state_visibility">
+                </div>
+            </div>
             <div class="row p-2" id="hyperparameter-sim_market-episode_length">
                 <div class="col-6">
                     {% if error_dict.episode_length %}
@@ -68,6 +81,19 @@
                         min="0" step="any" value="{{prefill.number_of_customers}}" name="hyperparameter-sim_market-number_of_customers">
                 </div>
             </div>
+            <div class="row p-2" id="hyperparameter-sim_market-opposite_own_state_visibility">
+                <div class="col-6">
+                    {% if error_dict.opposite_own_state_visibility %}
+                        <img src="{% static 'icons/warning.svg' %}" width="18px" title="{{error_dict.opposite_own_state_visibility}}"></img>
+                    {% endif %}
+                    opposite own state visibility
+                </div>
+                <div class="col-6">
+                    <input type="checkbox" {% if prefill.opposite_own_state_visibility %}checked{% endif %}
+                        class="form-check-input {% if error_dict.opposite_own_state_visibility %} bc-error-field {% endif %}"
+                        name="hyperparameter-sim_market-opposite_own_state_visibility">
+                </div>
+            </div>
             <div class="row p-2" id="hyperparameter-sim_market-production_price">
                 <div class="col-6">
                     {% if error_dict.production_price %}
@@ -78,6 +104,19 @@
                 <div class="col-6">
                     <input type="number" class="form-control {% if error_dict.max_storage %} bc-error-field {% endif %}"
                         min="0" step="any" value="{{prefill.production_price}}" name="hyperparameter-sim_market-production_price">
+                </div>
+            </div>
+            <div class="row p-2" id="hyperparameter-sim_market-reward_mixed_profit_and_difference">
+                <div class="col-6">
+                    {% if error_dict.reward_mixed_profit_and_difference %}
+                        <img src="{% static 'icons/warning.svg' %}" width="18px" title="{{error_dict.reward_mixed_profit_and_difference}}"></img>
+                    {% endif %}
+                    reward mixed profit and difference
+                </div>
+                <div class="col-6">
+                    <input type="checkbox" {% if prefill.reward_mixed_profit_and_difference %}checked{% endif %}
+                        class="form-check-input {% if error_dict.reward_mixed_profit_and_difference %} bc-error-field {% endif %}"
+                        name="hyperparameter-sim_market-reward_mixed_profit_and_difference">
                 </div>
             </div>
             <div class="row p-2" id="hyperparameter-sim_market-storage_cost_per_product">

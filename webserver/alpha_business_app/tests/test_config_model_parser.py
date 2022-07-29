@@ -150,4 +150,11 @@ class ConfigModelParserTest(TestCase):
 		assert 75000 == hyperparameter_rl_config.epsilon_decay_last_frame
 		assert 1.0 == hyperparameter_rl_config.epsilon_start
 		assert 0.1 == hyperparameter_rl_config.epsilon_final
-		assert hyperparameter_rl_config.stable_baseline_test is None
+		assert hyperparameter_rl_config.n_steps is None
+		assert hyperparameter_rl_config.n_epochs is None
+		assert hyperparameter_rl_config.tau is None
+		assert hyperparameter_rl_config.clip_range is None
+		assert hyperparameter_rl_config.neurones_per_hidden_layer is None
+		assert hyperparameter_rl_config.ent_coef is None
+		assert hyperparameter_rl_config.buffer_size is None
+		assert hyperparameter_rl_config.learning_starts is None
