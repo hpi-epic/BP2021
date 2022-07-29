@@ -28,6 +28,9 @@ class LinearEconomy(SimMarket, ABC):
 			('number_of_customers', int, greater_zero_even_rule),
 			('production_price', int, non_negative_rule),
 			('storage_cost_per_product', (int, float), non_negative_rule),
+			('opposite_own_state_visibility', bool, None),
+			('common_state_visibility', bool, None),
+			('reward_mixed_profit_and_difference', bool, None)
 		]
 
 	def _setup_action_observation_space(self, support_continuous_action_space: bool) -> None:
@@ -41,12 +44,13 @@ class LinearEconomy(SimMarket, ABC):
 				Args:
 			support_continuous_action_space (bool): If True, the action space will be continuous.
 		"""
+		assert self.config.opposite_own_state_visibility, 'This market does not make sense without a visibility of the competitors own states.'
 		self.observation_space = gym.spaces.Box(
 			np.array([0.0] * (len(self.competitors) * 2 + 1), dtype=np.float32),
 			np.array([self.config.max_quality] + [self.config.max_price, self.config.max_quality] * len(self.competitors), dtype=np.float32))
 
 		if support_continuous_action_space:
-			self.action_space = gym.spaces.Box(np.float32(0), np.float32(self.config.max_price))
+			self.action_space = gym.spaces.Box(np.array(0.0, dtype=np.float32), np.array(self.config.max_price, dtype=np.float32))
 		else:
 			self.action_space = gym.spaces.Discrete(self.config.max_price)
 

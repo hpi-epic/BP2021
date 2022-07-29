@@ -16,8 +16,11 @@ from recommerce.market.linear.linear_vendors import LinearAgent
 from recommerce.market.vendors import FixedPriceAgent
 from recommerce.rl.actorcritic.actorcritic_training import ActorCriticTrainer
 from recommerce.rl.q_learning.q_learning_training import QLearningTrainer
+from recommerce.rl.stable_baselines.sb_a2c import StableBaselinesA2C
+from recommerce.rl.stable_baselines.sb_ddpg import StableBaselinesDDPG
 from recommerce.rl.stable_baselines.sb_ppo import StableBaselinesPPO
 from recommerce.rl.stable_baselines.sb_sac import StableBaselinesSAC
+from recommerce.rl.stable_baselines.sb_td3 import StableBaselinesTD3
 
 print('successfully imported torch: cuda?', torch.cuda.is_available())
 
@@ -69,7 +72,7 @@ def run_training_session(
 			config_rl=config_rl,
 			config_market=config_market,
 			competitors=competitors
-			).train_agent(number_of_training_steps=10000)
+			).train_agent(number_of_training_steps=100000)
 
 
 # Just add some standard usecases.
@@ -102,6 +105,37 @@ def train_continuous_a2c_circular_economy_rebuy():
 		config_rl=HyperparameterConfigLoader.load('actor_critic_config', used_agent))
 
 
+def train_stable_baselines_ddpg():
+	used_marketplace = circular_market.CircularEconomyRebuyPriceDuopoly
+	config_market: AttrDict = HyperparameterConfigLoader.load('market_config', used_marketplace)
+	config_rl: AttrDict = HyperparameterConfigLoader.load('sb_ddpg_config', StableBaselinesDDPG)
+	StableBaselinesDDPG(
+		config_market=config_market,
+		config_rl=config_rl,
+		marketplace=circular_market.CircularEconomyRebuyPriceDuopoly(config_market, True)).train_agent()
+
+
+def train_stable_baselines_td3():
+	used_marketplace = circular_market.CircularEconomyRebuyPriceDuopoly
+	config_market: AttrDict = HyperparameterConfigLoader.load('market_config', used_marketplace)
+	config_rl: AttrDict = HyperparameterConfigLoader.load('sb_td3_config', StableBaselinesTD3)
+	StableBaselinesTD3(
+		config_market=config_market,
+		config_rl=config_rl,
+		marketplace=circular_market.CircularEconomyRebuyPriceDuopoly(config_market, True)).train_agent()
+
+
+def train_stable_baselines_a2c():
+	used_marketplace = circular_market.CircularEconomyRebuyPriceDuopoly
+	config_market: AttrDict = HyperparameterConfigLoader.load('market_config', used_marketplace)
+	config_market.reward_mixed_profit_and_difference = True
+	config_rl: AttrDict = HyperparameterConfigLoader.load('sb_a2c_config', StableBaselinesA2C)
+	StableBaselinesA2C(
+		config_market=config_market,
+		config_rl=config_rl,
+		marketplace=circular_market.CircularEconomyRebuyPriceDuopoly(config_market, True)).train_agent(100000)
+
+
 def train_stable_baselines_ppo():
 	used_marketplace = circular_market.CircularEconomyRebuyPriceDuopoly
 	config_market: AttrDict = HyperparameterConfigLoader.load('market_config', used_marketplace)
@@ -109,7 +143,7 @@ def train_stable_baselines_ppo():
 	StableBaselinesPPO(
 		config_market=config_market,
 		config_rl=config_rl,
-		marketplace=used_marketplace(config_market, True)).train_agent()
+		marketplace=used_marketplace(config_market, True)).train_agent(1000000)
 
 
 def train_stable_baselines_sac():
@@ -125,15 +159,16 @@ def train_stable_baselines_sac():
 def train_rl_vs_rl():
 	# marketplace is currently hardcoded in train_rl_vs_rl
 	config_market: AttrDict = HyperparameterConfigLoader.load('market_config', circular_market.CircularEconomyRebuyPriceDuopoly)
-	config_rl: AttrDict = HyperparameterConfigLoader.load('sb_ppo_config', StableBaselinesPPO)
-	rl_vs_rl_training.train_rl_vs_rl(config_market, config_rl)
+	config_rl1: AttrDict = HyperparameterConfigLoader.load('sb_ppo_config', StableBaselinesPPO)
+	config_rl2: AttrDict = HyperparameterConfigLoader.load('sb_sac_config', StableBaselinesSAC)
+	rl_vs_rl_training.train_rl_vs_rl(config_market, config_rl1, config_rl2)
 
 
 def train_self_play():
 	# marketplace is currently hardcoded in train_self_play
 	config_market: AttrDict = HyperparameterConfigLoader.load('market_config', circular_market.CircularEconomyRebuyPriceDuopoly)
 	config_rl: AttrDict = HyperparameterConfigLoader.load('sb_ppo_config', StableBaselinesPPO)
-	self_play.train_self_play(config_market, config_rl)
+	self_play.train_self_play(config_market, config_rl, StableBaselinesPPO)
 
 
 def train_from_config():

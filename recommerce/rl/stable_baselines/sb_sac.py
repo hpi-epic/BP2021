@@ -11,7 +11,7 @@ class StableBaselinesSAC(StableBaselinesAgent):
 	name = 'Stable_Baselines_SAC'
 
 	def _initialize_model(self, marketplace):
-		self.model = SAC('MlpPolicy', marketplace, verbose=False, tensorboard_log=self.tensorboard_log)
+		self.model = SAC('MlpPolicy', marketplace, verbose=False, tensorboard_log=self.tensorboard_log, **self.config_rl)
 
 	def _load(self, load_path):
 		self.model = SAC.load(load_path, tensorboard_log=self.tensorboard_log)
@@ -19,6 +19,11 @@ class StableBaselinesSAC(StableBaselinesAgent):
 	@staticmethod
 	def get_configurable_fields() -> list:
 		return [
-			('testvalue1', float, between_zero_one_rule),
-			('sacvalue', float, greater_zero_rule)
+			('learning_rate', float, between_zero_one_rule),
+			('buffer_size', int, greater_zero_rule),
+			('learning_starts', int, greater_zero_rule),
+			('batch_size', int, greater_zero_rule),
+			('tau', float, between_zero_one_rule),
+			('gamma', float, between_zero_one_rule),
+			('ent_coef', (str, float), None)
 		]

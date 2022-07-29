@@ -20,6 +20,8 @@ def convert_python_type_to_django_type(to_convert: type) -> str:
 		return str(models.FloatField)
 	elif to_convert == int:
 		return str(models.IntegerField)
+	elif to_convert == bool:
+		return str(models.BooleanField)
 	else:
 		return str(models.CharField)
 
@@ -60,7 +62,7 @@ def get_all_possible_rl_hyperparameter() -> set:
 		marketplace = get_class(marketplace_str)
 		all_agents += get_recommerce_agents_for_marketplace(marketplace)
 
-	return get_attributes(all_agents)
+	return get_attributes(set(all_agents))
 
 
 def get_not_possible_agent_hyperparameter(agent: str) -> tuple:

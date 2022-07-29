@@ -3,8 +3,6 @@ import signal
 import sys
 import time
 
-import matplotlib.pyplot as plt
-import numpy as np
 from attrdict import AttrDict
 from stable_baselines3.common.callbacks import BaseCallback
 from torch.utils.tensorboard import SummaryWriter
@@ -14,8 +12,10 @@ from tqdm.auto import trange
 import recommerce.configuration.utils as ut
 from recommerce.configuration.path_manager import PathManager
 from recommerce.market.sim_market import SimMarket
-from recommerce.monitoring.agent_monitoring.am_evaluation import Evaluator
+from recommerce.market.vendors import RuleBasedAgent
 from recommerce.monitoring.agent_monitoring.am_monitoring import Monitor
+from recommerce.monitoring.consecutive_model_analyzer import analyze_consecutive_models
+from recommerce.monitoring.training_progress_visualizer import save_progress_plots
 from recommerce.monitoring.watcher import Watcher
 from recommerce.rl.actorcritic.actorcritic_agent import ActorCriticAgent
 from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
@@ -31,7 +31,7 @@ class RecommerceCallback(BaseCallback):
 	def __init__(
 		self,
 		agent_class,
-		marketplace_class,
+		marketplace,
 		config_market: AttrDict,
 		config_rl: AttrDict,
 		training_steps: int = 10000,
@@ -41,7 +41,7 @@ class RecommerceCallback(BaseCallback):
 		analyze_after_training: bool = True):
 
 		assert issubclass(agent_class, ReinforcementLearningAgent)
-		assert issubclass(marketplace_class, SimMarket)
+		assert isinstance(marketplace, SimMarket)
 		assert isinstance(training_steps, int) and training_steps > 0
 		assert isinstance(iteration_length, int) and iteration_length > 0
 		super(RecommerceCallback, self).__init__(True)
@@ -53,7 +53,7 @@ class RecommerceCallback(BaseCallback):
 		self.best_mean_interim_reward = None
 		self.best_mean_overall_reward = None
 		self.agent_class = agent_class
-		self.marketplace_class = marketplace_class
+		self.marketplace = marketplace
 		self.iteration_length = iteration_length
 		self.file_ending = file_ending
 		self.signature = signature
@@ -80,8 +80,8 @@ class RecommerceCallback(BaseCallback):
 		"""
 		ut.ensure_results_folders_exist()
 		self.curr_time = time.strftime('%b%d_%H-%M-%S')
-		self.writer = SummaryWriter(log_dir=os.path.join(PathManager.results_path, 'runs', f'training_{self.curr_time}'))
 		path_name = f'{self.signature}_{self.curr_time}'
+		self.writer = SummaryWriter(log_dir=os.path.join(PathManager.results_path, 'runs', path_name))
 		self.save_path = os.path.join(PathManager.results_path, 'trainedModels', path_name)
 		os.makedirs(os.path.abspath(self.save_path), exist_ok=True)
 		self.tmp_parameters = os.path.join(self.save_path, f'tmp_model.{self.file_ending}')
@@ -118,7 +118,9 @@ class RecommerceCallback(BaseCallback):
 		if finished_episodes == self.last_finished_episode or finished_episodes < 5:
 			return True
 
-		ut.write_dict_to_tensorboard(self.writer, self.watcher.get_average_dict(), finished_episodes, is_cumulative=True)
+		ut.write_dict_to_tensorboard(
+			self.writer, self.watcher.get_average_dict(), finished_episodes,
+			is_cumulative=True, episode_length=self.config_market.episode_length)
 		self.last_finished_episode = finished_episodes
 		mean_return = self.watcher.get_average_dict()['profits/all']['vendor_0']
 		assert isinstance(mean_return, float)
@@ -152,83 +154,34 @@ class RecommerceCallback(BaseCallback):
 			print('No agents saved! Nothing to monitor.')
 			return
 
-		monitor = Monitor()
+		print('Saving watchers...')
+		# write self watchers as json to save path
+		self.watcher.save_all_dicts_to_json(os.path.join(self.save_path, 'watcher.json'))
+
+		monitor = Monitor(self.config_market, self.config_rl, self.signature)
 		monitor.configurator.get_folder()
 
 		# used for plot legend naming
-		competitors = self.marketplace_class(config=self.config_market).competitors
+		competitors = self.marketplace.competitors
 
-		print('Creating scatterplots...')
-		ignore_first_samples = 15  # the number of samples you want to skip because they can be severe outliers
-		cumulative_properties = self.watcher.get_cumulative_properties()
-		for property, samples in ut.unroll_dict_with_list(cumulative_properties).items():
-			x_values = np.array(range(len(samples[ignore_first_samples:]))) + ignore_first_samples
-			plt.clf()
-
-			vendor_index: str = property.rsplit('_', 1)[-1:][0]
-			if vendor_index.isdigit():
-				# property without '/vendor_x'
-				property_name = property.rsplit('/', 1)[:-1][0]
-				relevant_agent = self.agent_class.__name__ if vendor_index == '0' else competitors[int(vendor_index) - 1].name
-				plt.scatter(x_values, samples[ignore_first_samples:], label=relevant_agent, s=10)
-				plt.grid()
-				plt.title(f'All samples of {property_name}')
-				plt.legend()
-			else:
-				property_name = property
-				relevant_agent = None
-				plt.scatter(x_values, samples[ignore_first_samples:], s=10)
-				plt.grid()
-				plt.title(f'All samples of {property_name}')
-
-			plt.xlabel('Episode')
-			plt.ylabel(property_name)
-
-			if relevant_agent is None:
-				filename = f'scatterplot_samples_{property_name.replace("/", "_")}.svg'
-			else:
-				filename = f'scatterplot_samples_{property_name.replace("/", "_")}_{relevant_agent}.svg'
-			plt.savefig(os.path.join(monitor.configurator.folder_path, filename))
-
-		print('Creating lineplots...')
-		for property, samples in cumulative_properties.items():
-			plt.clf()
-			if isinstance(samples[0], list):
-				plot_values = [self.watcher.get_progress_values_of_property(property, vendor)[ignore_first_samples:]
-					for vendor in range(self.watcher.get_number_of_vendors())]
-			else:
-				plot_values = [self.watcher.get_progress_values_of_property(property)[ignore_first_samples:]]
-
-			for vendor_index, values in enumerate(plot_values):
-				if vendor_index == 0:
-					label = f'{self.agent_class.__name__}'
-				else:
-					label = competitors[vendor_index - 1].name
-				plt.plot(x_values, values, label=label)
-
-			if isinstance(samples[0], list):
-				plt.legend()
-			plt.title(f'Rolling average training progress of {property}')
-			plt.xlabel('Episode')
-			plt.ylabel(property)
-			plt.savefig(os.path.join(monitor.configurator.folder_path, f'lineplot_progress_{property.replace("/", "_")}.svg'))
+		save_progress_plots(self.watcher, monitor.configurator.folder_path, self.agent_class.__name__, competitors, self.signature)
 
 		if self.analyze_after_training:
-			agent_list = [(self.agent_class, [parameter_path]) for parameter_path in self.saved_parameter_paths]
+			# If there are RL-agents in the competitor_list, they will break the `deepcopy` in `run_marketplace`
+			if not all(isinstance(competitor, RuleBasedAgent) for competitor in competitors):
+				competitors = None
 			# The next line is a bit hacky. We have to provide if the marketplace is continuous or not.
 			# Only Stable Baselines agents use continuous actions at the moment. And only Stable Baselines agents have the attribute env.
 			# The correct way of doing this would be by checking for `isinstance(StableBaselinesAgent)`, but that would result in a circular import.
-			monitor.configurator.setup_monitoring(
-				episodes=250,
-				plot_interval=250,
-				marketplace=self.marketplace_class,
-				agents=agent_list,
-				separate_markets=True,
-				support_continuous_action_space=hasattr(self.model, 'env'),
-				config_market=self.config_market)
-			rewards = monitor.run_marketplace()
-			episode_numbers = [int(parameter_path[-9:][:5]) for parameter_path in self.saved_parameter_paths]
-			Evaluator(monitor.configurator).evaluate_session(rewards, episode_numbers)
+			analyze_consecutive_models(
+				self.saved_parameter_paths,
+				monitor,
+				type(self.marketplace),
+				self.config_market,
+				self.agent_class,
+				hasattr(self.model, 'env'),
+				competitors
+			)
 
 	def save_parameters(self, finished_episodes: int):
 		assert isinstance(finished_episodes, int)

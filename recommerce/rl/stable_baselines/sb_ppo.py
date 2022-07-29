@@ -11,7 +11,10 @@ class StableBaselinesPPO(StableBaselinesAgent):
 	name = 'Stable_Baselines_PPO'
 
 	def _initialize_model(self, marketplace):
-		self.model = PPO('MlpPolicy', marketplace, verbose=False, tensorboard_log=self.tensorboard_log)
+		hidden_neurons = self.config_rl['neurones_per_hidden_layer']
+		policy_kwargs = {'net_arch': [dict(pi=[hidden_neurons, hidden_neurons], vf=[hidden_neurons, hidden_neurons])]}
+		self.model = PPO('MlpPolicy', marketplace, verbose=False, tensorboard_log=self.tensorboard_log, policy_kwargs=policy_kwargs,
+			**{i: self.config_rl[i] for i in self.config_rl if i != 'neurones_per_hidden_layer'})
 
 	def _load(self, load_path):
 		self.model = PPO.load(load_path, tensorboard_log=self.tensorboard_log)
@@ -19,6 +22,11 @@ class StableBaselinesPPO(StableBaselinesAgent):
 	@staticmethod
 	def get_configurable_fields() -> list:
 		return [
-			('testvalue1', float, between_zero_one_rule),
-			('ppovalue', float, greater_zero_rule)
+			('learning_rate', float, between_zero_one_rule),
+			('n_steps', int, greater_zero_rule),
+			('batch_size', int, greater_zero_rule),
+			('n_epochs', int, greater_zero_rule),
+			('gamma', float, between_zero_one_rule),
+			('clip_range', float, between_zero_one_rule),
+			('neurones_per_hidden_layer', int, greater_zero_rule)
 		]

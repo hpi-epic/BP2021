@@ -46,7 +46,7 @@ class UniformDistributionOwner(Owner):
 		return np.array([1 / number_of_options] * int(number_of_options))
 
 
-class OwnerRebuy(Owner):
+class OwnerRebuyOld(Owner):
 	def generate_return_probabilities_from_offer(self, common_state, vendor_specific_state, vendor_actions) -> np.array:
 		"""
 		This method tries a more sophisticated version of generating return probabilities.
@@ -74,5 +74,38 @@ class OwnerRebuy(Owner):
 			return_preferences.append(2 * np.exp((price_rebuy - best_purchase_offer) / best_purchase_offer))
 
 			discard_preference = min(discard_preference, 2 / (price_rebuy + 1))
+
+		return ut.softmax(np.array([holding_preference, discard_preference] + return_preferences))
+
+
+class OwnerRebuy(Owner):
+	def generate_return_probabilities_from_offer(self, common_state, vendor_specific_state, vendor_actions) -> np.array:
+		"""
+		This method tries a more sophisticated version of generating return probabilities.
+		The owner prefers higher rebuy prices.
+		If the rebuy price is very low, the owner will just throw away his product more often. Holding the product is the fallback option.
+		Check the docstring in the superclass for interface description.
+		"""
+		assert isinstance(common_state, np.ndarray), 'offers needs to be a ndarray'
+		assert isinstance(vendor_specific_state, list), 'vendor_specific_state must be a list'
+		assert isinstance(vendor_actions, list), 'vendor_actions must be a list'
+		assert len(vendor_specific_state) == len(vendor_actions), \
+			'Both the vendor_specific_state and vendor_actions contain one element per vendor. So they must have the same length.'
+		assert len(vendor_specific_state) > 0, 'there must be at least one vendor.'
+
+		holding_preference = 1
+		return_preferences = []
+		lowest_purchase_offer = np.inf
+		best_rebuy_price = 0
+
+		for vendor_idx in range(len(vendor_specific_state)):
+			price_refurbished = vendor_actions[vendor_idx][0] + 1
+			price_new = vendor_actions[vendor_idx][1] + 1
+			price_rebuy = vendor_actions[vendor_idx][2] + 1
+			best_rebuy_price = max(best_rebuy_price, price_rebuy)
+			lowest_purchase_offer = min(lowest_purchase_offer, price_refurbished, price_new)
+			return_preferences.append(price_rebuy)
+
+		discard_preference = lowest_purchase_offer - best_rebuy_price
 
 		return ut.softmax(np.array([holding_preference, discard_preference] + return_preferences))

@@ -39,19 +39,31 @@ class Evaluator():
 			episode_numbers (list of int): The training stages the empirical distributions belong to.
 				If it is None, a prior functionality is used.
 		"""
+		max_mean = -np.inf
+		max_mean_index = 0
+		analysis_string = ''
 		assert self.configurator.separate_markets, 'This functionality can only be used if self.configurator.separate_markets is True'
 		# Print the statistics
 		for index, analysis in enumerate(analyses):
 			if episode_numbers is None:
-				print(f'\nStatistics for agent: {self.configurator.agents[index].name}')
+				analysis_string += f'\nStatistics for agent: {self.configurator.agents[index].name}\n'
 			else:
-				print(f'\nStatistics for episode {episode_numbers[index]}')
+				analysis_string += f'\nStatistics for episode {episode_numbers[index]}\n'
+
+			reward_mean = np.mean(analysis['a/reward'])
+			if reward_mean > max_mean:
+				max_mean = reward_mean
+				max_mean_index = index
 
 			for property, samples in ut.unroll_dict_with_list(analysis).items():
-				print('%40s: %7.2f (mean), %7.2f (median), %7.2f (std), %7.2f (min), %7.2f (max)' % (
+				analysis_string += ('%40s: %7.2f (mean), %7.2f (median), %7.2f (std), %7.2f (min), %7.2f (max)\n' % (
 					property, np.mean(samples), np.median(samples), np.std(samples), np.min(samples), np.max(samples)))
 
-		print()
+		pre_string = f'The best mean reward is {max_mean} after episode {episode_numbers[max_mean_index]}'if episode_numbers is not None \
+			else f'The best mean reward is {max_mean} for agent {self.configurator.agents[max_mean_index].name}'
+		analysis_string = f'\n\nThis is the final analysis:\n{pre_string}\n{analysis_string}\n'
+		print(analysis_string)
+
 		# Create histogram
 		print('Creating cumulative rewards histogram...')
 		# Extract the total profits of only the monitored agent from each "marketplace"
@@ -71,7 +83,12 @@ class Evaluator():
 		self._create_statistics_plots(rewards, episode_numbers)
 
 		if episode_numbers is not None:
-			print('Creating Violinplots...')
+			print('Writing written results to disk...')
+			with open(os.path.join(self.configurator.get_folder(), 'written_analyses.txt'), 'w') as file:
+				file.write(analysis_string)
+			print('Creating monitoring-based line plots...')
+			self.create_monitoring_based_line_plots(analyses, episode_numbers)
+			print('Creating violin plots...')
 			for property_name in ut.unroll_dict_with_list(analyses[0]).keys():
 				samples = [ut.unroll_dict_with_list(analysis)[property_name] for analysis in analyses]
 				self._create_violin_plot(samples, episode_numbers, property_name)
@@ -117,6 +134,52 @@ class Evaluator():
 		self._create_statistics_plots(rewards)
 		print(f'All plots were saved to {os.path.abspath(self.configurator.folder_path)}')
 
+	def create_monitoring_based_line_plots(self, analyses, episode_numbers: 'list[int]'):
+		for property_name in analyses[0].keys():
+			plt.clf()
+			plt.title(f'Mean values per training stage of {property_name}')
+			if not isinstance(analyses[0][property_name][0], list):
+				plt.plot(episode_numbers, [np.mean(analysis[property_name]) for analysis in analyses], marker='o')
+			else:
+				number_of_vendors = len(analyses[0][property_name])
+				# this is alway only run after training, so we know there is only one agent (trained agent)
+				# and the rest are competitors
+				labels = [self.configurator.agents[0].name]
+				# if we have competitors, append their names
+				if self.configurator.competitors:
+					labels += [a.name for a in self.configurator.competitors]
+				# else its self-play or rl-vs-rl and we need more of our current name
+				else:
+					labels *= number_of_vendors
+				for i in range(number_of_vendors):
+					plt.plot(episode_numbers, [np.mean(analysis[property_name][i]) for analysis in analyses], marker='o', label=labels[i])
+					plt.legend()
+
+			plt.xlabel('Trained episodes')
+			plt.ylabel(property_name)
+			plt.grid(True, linestyle='--')
+			plt.savefig(
+				fname=os.path.join(self.configurator.get_folder(), 'monitoring_based_line_plots',
+					f'lineplot_monitoring_based_{property_name.replace("/", "_")}.svg'),
+				transparent=True
+			)
+			if 'profits' in property_name:
+				bounds = [(0, 12000), (0, 15000), (0, 17500), (0, 10000), (-10000, 10000), (-5000, 10000)]
+				for bound in bounds:
+					plt.ylim(*bound)
+					plt.savefig(
+						fname=os.path.join(self.configurator.get_folder(), 'monitoring_based_line_plots',
+							f'lineplot_monitoring_based_{property_name.replace("/", "_")}_{bound[0]}_{bound[1]}.svg'),
+						transparent=True
+					)
+			if 'actions' in property_name:
+				plt.ylim(0, 10)
+				plt.savefig(
+					fname=os.path.join(self.configurator.get_folder(), 'monitoring_based_line_plots',
+						f'lineplot_monitoring_based_{property_name.replace("/", "_")}_0_10.svg'),
+					transparent=True
+				)
+
 	# visualize metrics
 	def create_density_plot(self, samples: list, property_name: str, current_episode_number: int = None):
 		"""
@@ -159,8 +222,15 @@ class Evaluator():
 		plt.xlabel(property_name)
 		plt.ylabel('Probability density')
 		plt.title(f'Density plot of {property_name}')
-		plt.legend()
-		plt.savefig(fname=os.path.join(self.configurator.get_folder(), 'density_plots', f'density_plot_{property_name.replace("/", "_")}.svg'))
+		plt.grid(True, linestyle='--')
+		if len(ys) > 1:
+			plt.legend()
+		plt.savefig(
+			fname=os.path.join(self.configurator.get_folder(),
+			'density_plots',
+			f'density_plot_{property_name.replace("/", "_")}.svg'),
+			transparent=True
+		)
 
 	def create_histogram(self, rewards: list, is_last_histogram: bool, filename: str = 'default_histogram.svg',
 		episode_numbers: list = None) -> None:
@@ -186,8 +256,8 @@ class Evaluator():
 		# find the number of bins needed, we only use steps of 1000, assuming our agents are good bois :)
 		plot_lower_bound = np.floor(int(np.min(rewards)) * 1e-3) / 1e-3
 		plot_upper_bound = np.ceil(int(np.max(rewards)) * 1e-3) / 1e-3
-		plot_bins = int(np.abs(plot_lower_bound) + plot_upper_bound) // 1000
-		x_ticks = np.arange(plot_lower_bound, plot_upper_bound + 1, 1000)
+		plot_bins = int(np.abs(plot_lower_bound) + plot_upper_bound) // 200
+		x_ticks = np.arange(plot_lower_bound, plot_upper_bound + 1, 200)
 
 		plt.hist(rewards, bins=plot_bins, color=self.configurator.agent_colors, rwidth=0.9,
 			range=(plot_lower_bound, plot_upper_bound), edgecolor='black')
@@ -195,7 +265,7 @@ class Evaluator():
 		plt.legend([f'{a.name}_episode_{episode_numbers[i]}' for i, a in enumerate(self.configurator.agents)] if episode_numbers
 			else [a.name for a in self.configurator.agents])
 
-		plt.savefig(fname=os.path.join(self.configurator.get_folder(), filename))
+		plt.savefig(fname=os.path.join(self.configurator.get_folder(), filename), transparent=True)
 
 	def _create_statistics_plots(self, rewards: list, episode_numbers: list = None) -> None:
 		"""
@@ -289,7 +359,7 @@ class Evaluator():
 		plt.legend([f'{a.name}_episode_{episode_numbers[i]}' for i, a in enumerate(self.configurator.agents)] if episode_numbers
 			else [a.name for a in self.configurator.agents])
 		plt.grid(True)
-		plt.savefig(fname=os.path.join(self.configurator.get_folder(), 'statistics_plots', filename))
+		plt.savefig(fname=os.path.join(self.configurator.get_folder(), 'statistics_plots', filename), transparent=True)
 
 	def _create_violin_plot(self, all_rewards: 'list[list]', episode_numbers: 'list[int]', property_name: str):
 		"""
@@ -314,7 +384,9 @@ class Evaluator():
 			'episode_numbers must contain ints only'
 
 		plt.clf()
-		plt.violinplot(all_rewards, episode_numbers, showmeans=True, widths=450)
+		width = 4 * (episode_numbers[1] - episode_numbers[0]) / 5 if len(episode_numbers) > 1 else episode_numbers[0]
+		plt.violinplot(all_rewards, episode_numbers, showmeans=True, widths=width)
+		plt.plot(episode_numbers, [np.mean(rewards_on_training_stage) for rewards_on_training_stage in all_rewards], color='steelblue')
 		relevant_agent_name = ''
 
 		vendor_index: str = property_name.rsplit('_', 1)[-1:][0]
@@ -326,6 +398,7 @@ class Evaluator():
 			plt.plot(episode_numbers, [np.mean(rewards_on_training_stage) for rewards_on_training_stage in all_rewards], color='steelblue',
 				label=relevant_agent_name)
 			plt.legend()
+			relevant_agent_name = f'_{relevant_agent_name}'
 		else:
 			plt.plot(episode_numbers, [np.mean(rewards_on_training_stage) for rewards_on_training_stage in all_rewards], color='steelblue')
 
@@ -335,6 +408,7 @@ class Evaluator():
 		plt.ylabel('Reward Density')
 		savepath = os.path.join(self.configurator.get_folder(), 'violinplots',
 			f'{title.replace(" ", "_").replace("/", "_")}{relevant_agent_name}.svg')
+		plt.grid(True, linestyle='--')
 		plt.savefig(fname=savepath)
 
 

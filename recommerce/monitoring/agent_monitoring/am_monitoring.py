@@ -12,7 +12,9 @@ import recommerce.monitoring.agent_monitoring.am_evaluation as am_evaluation
 from recommerce.configuration.environment_config import AgentMonitoringEnvironmentConfig, EnvironmentConfigLoader
 from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader
 from recommerce.configuration.path_manager import PathManager
+from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPriceDuopoly
 from recommerce.monitoring.watcher import Watcher
+from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
 
 print('successfully imported torch: cuda?', torch.cuda.is_available())
 
@@ -24,8 +26,12 @@ class Monitor():
 	When the run is finished, diagrams will be created in the 'results/monitoring' folder by the Evaluator. \\
 	The Monitor() can be customized using its Configurator() with configurator.setup_monitoring().
 	"""
-	def __init__(self):
-		self.configurator = am_configuration.Configurator()
+	def __init__(
+			self,
+			config_market: AttrDict = HyperparameterConfigLoader.load('market_config', CircularEconomyRebuyPriceDuopoly),
+			config_rl: AttrDict = HyperparameterConfigLoader.load('q_learning_config', QLearningAgent),
+			name: str = 'plots'):
+		self.configurator = am_configuration.Configurator(config_market, config_rl, name)
 		self.evaluator = am_evaluation.Evaluator(self.configurator)
 		# Signal handler for e.g. KeyboardInterrupt
 		signal.signal(signal.SIGINT, self._signal_handler)
@@ -66,7 +72,8 @@ class Monitor():
 					# run marketplace for this agent
 					while not is_done:
 						action = self.configurator.agents[current_agent_index].policy(state)
-						state, _, is_done, info = self.configurator.marketplace.step(action)
+						state, reward, is_done, info = self.configurator.marketplace.step(action)
+						info['a/reward'] = reward
 						watchers[current_agent_index].add_info(info)
 
 			return [watcher.get_cumulative_properties() for watcher in watchers]
@@ -81,7 +88,8 @@ class Monitor():
 				# run marketplace for all agents
 				while not is_done:
 					action = self.configurator.agents[0].policy(state)
-					state, _, is_done, info = self.configurator.marketplace.step(action)
+					state, reward, is_done, info = self.configurator.marketplace.step(action)
+					info['a/reward'] = reward
 					watcher.add_info(info)
 
 			return watcher.get_cumulative_properties()
@@ -119,7 +127,9 @@ def main():  # pragma: no cover
 		marketplace=config_environment_am.marketplace,
 		agents=config_environment_am.agent,
 		separate_markets=config_environment_am.separate_markets,
-		config_market=config_market
+		competitors=config_environment_am.competitors,
+		config_market=config_market,
+		# TODO: Insert a check/variable in config for `support_continuous_action_space`
 	)
 	run_monitoring_session(monitor)
 
