@@ -12,6 +12,7 @@ from tqdm.auto import trange
 import recommerce.configuration.utils as ut
 from recommerce.configuration.path_manager import PathManager
 from recommerce.market.sim_market import SimMarket
+from recommerce.market.vendors import RuleBasedAgent
 from recommerce.monitoring.agent_monitoring.am_monitoring import Monitor
 from recommerce.monitoring.consecutive_model_analyzer import analyze_consecutive_models
 from recommerce.monitoring.training_progress_visualizer import save_progress_plots
@@ -30,7 +31,7 @@ class RecommerceCallback(BaseCallback):
 	def __init__(
 		self,
 		agent_class,
-		marketplace_class,
+		marketplace,
 		config_market: AttrDict,
 		config_rl: AttrDict,
 		training_steps: int = 10000,
@@ -40,7 +41,7 @@ class RecommerceCallback(BaseCallback):
 		analyze_after_training: bool = True):
 
 		assert issubclass(agent_class, ReinforcementLearningAgent)
-		assert issubclass(marketplace_class, SimMarket)
+		assert isinstance(marketplace, SimMarket)
 		assert isinstance(training_steps, int) and training_steps > 0
 		assert isinstance(iteration_length, int) and iteration_length > 0
 		super(RecommerceCallback, self).__init__(True)
@@ -52,7 +53,7 @@ class RecommerceCallback(BaseCallback):
 		self.best_mean_interim_reward = None
 		self.best_mean_overall_reward = None
 		self.agent_class = agent_class
-		self.marketplace_class = marketplace_class
+		self.marketplace = marketplace
 		self.iteration_length = iteration_length
 		self.file_ending = file_ending
 		self.signature = signature
@@ -161,20 +162,25 @@ class RecommerceCallback(BaseCallback):
 		monitor.configurator.get_folder()
 
 		# used for plot legend naming
-		competitor_names = [competitor.name for competitor in self.marketplace_class(config=self.config_market).competitors]
-		save_progress_plots(self.watcher, monitor.configurator.folder_path, self.agent_class.__name__, competitor_names, self.signature)
+		competitors = self.marketplace.competitors
+
+		save_progress_plots(self.watcher, monitor.configurator.folder_path, self.agent_class.__name__, competitors, self.signature)
 
 		if self.analyze_after_training:
+			# If there are RL-agents in the competitor_list, they will break the `deepcopy` in `run_marketplace`
+			if not all(isinstance(competitor, RuleBasedAgent) for competitor in competitors):
+				competitors = None
 			# The next line is a bit hacky. We have to provide if the marketplace is continuous or not.
 			# Only Stable Baselines agents use continuous actions at the moment. And only Stable Baselines agents have the attribute env.
 			# The correct way of doing this would be by checking for `isinstance(StableBaselinesAgent)`, but that would result in a circular import.
 			analyze_consecutive_models(
 				self.saved_parameter_paths,
 				monitor,
-				self.marketplace_class,
+				type(self.marketplace),
 				self.config_market,
 				self.agent_class,
-				hasattr(self.model, 'env')
+				hasattr(self.model, 'env'),
+				competitors
 			)
 
 	def save_parameters(self, finished_episodes: int):
