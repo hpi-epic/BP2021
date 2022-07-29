@@ -296,7 +296,7 @@ class AgentMonitoringEnvironmentConfig(EnvironmentConfig):
 				f'The number of competitors given is invalid: was {len(self.agent)-1} but should be {self.marketplace.get_num_competitors()}'
 
 		# It is possible to add custom competitors if separate_markets is True
-		if self.separate_markets and 'competitors' in config:
+		if self.separate_markets and 'competitors' in config and config['competitors'] is not None:
 			assert self.marketplace.get_num_competitors() == np.inf or len(config['competitors']) == self.marketplace.get_num_competitors(), \
 				f'The number of competitors given is invalid: was {len(config["competitors"])} but should be {self.marketplace.get_num_competitors()}'
 			self.competitors = [get_class(competitor) for competitor in config['competitors']]

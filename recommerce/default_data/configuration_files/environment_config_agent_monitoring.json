@@ -7,15 +7,12 @@
 	"marketplace": "recommerce.market.circular.circular_sim_market.CircularEconomyRebuyPriceDuopoly",
 	"agents": [
 		{
-			"name": "Rule_Based Agent",
-			"agent_class": "recommerce.market.circular.circular_vendors.RuleBasedCERebuyAgent",
-			"argument": ""
-		},
-		{
 			"name": "CE Rebuy Agent (QLearning)",
 			"agent_class": "recommerce.rl.q_learning.q_learning_agent.QLearningAgent",
 			"argument": "CircularEconomyRebuyPriceDuopoly_QLearningAgent.dat"
 		}
 	],
-	"competitors": null
+	"competitors": [
+		"recommerce.market.circular.circular_vendors.RuleBasedCERebuyAgent"
+	]
 }
