@@ -1,6 +1,7 @@
 import hashlib
 import logging
 import os
+import subprocess
 import time
 
 import uvicorn
@@ -25,9 +26,12 @@ path_to_log_files = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'lo
 if not os.path.isdir(path_to_log_files):
 	os.makedirs(path_to_log_files)
 
+should_run_monitoring = False
+container_health_checker_process = None
 logger = logging.getLogger('uvicorn.error')
-manager = DockerManager(logger)
+manager = DockerManager(logger, should_run_monitoring)
 app = FastAPI()
+is_webserver = True
 
 
 def is_invalid_status(status: str) -> bool:
@@ -61,13 +65,45 @@ def verify_token(request: Request) -> bool:
 	except KeyError:
 		logger.error('The request did not set an Authorization header')
 		return False
-	master_secret_as_int = sum(ord(c) for c in os.environ['AUTHORIZATION_TOKEN'])
-	current_time = int(time.time() / 3600)  # unix time in hours
-	# token, that is currently expected
-	expected_this_token = hashlib.sha256(str(master_secret_as_int + current_time).encode('utf-8')).hexdigest()
-	# token that was expected last hour
-	expected_last_token = hashlib.sha256(str(master_secret_as_int + (current_time - 3600)).encode('utf-8')). hexdigest()
-	return token == expected_this_token or token == expected_last_token
+
+	try:
+		with open('./.env.txt', 'r') as file:
+			secrets = file.readlines()
+	except FileNotFoundError:
+		logger.warning('could not find suitable `.env.txt`. Trying to use env variables instead')
+		try:
+			secrets = [os.environ['AUTHORIZATION_TOKEN_WEB'], os.environ['AUTHORIZATION_TOKEN']]
+		except KeyError:
+			logger.error('could not get environment variables.')
+			return False
+	last_webserver_token, this_webserver_token = _convert_secret_to_token(secrets[0].strip())
+	last_other_token, this_other_token = _convert_secret_to_token(secrets[1].strip())
+	global is_webserver
+	if token == last_webserver_token or this_webserver_token == token:
+		is_webserver = True
+		return True
+	if token == last_other_token or token == this_other_token:
+		is_webserver = False
+		return True
+	return False
+
+
+@app.on_event('startup')
+async def startup_event() -> None:
+	"""If monitoring is enabled, this will start a subprocess with the `container_health_checker.py` when the API is started.
+	"""
+	if should_run_monitoring:
+		global container_health_checker_process
+		container_health_checker_process = subprocess.Popen(['python3', 'container_health_checker.py'], stdout=subprocess.PIPE)
+
+
+@app.on_event('shutdown')
+async def shutdown_event() -> None:
+	"""If monitoring is enabled, this will kill the subprocess on API stop.
+	"""
+	global container_health_checker_process
+	if container_health_checker_process:
+		container_health_checker_process.kill()
 
 
 @app.post('/start')
@@ -85,7 +121,7 @@ async def start_container(num_experiments: int, config: Request, authorized: boo
 	"""
 	if not authorized:
 		return JSONResponse(status_code=401, content=vars(DockerInfo('', 'Not authorized')))
-	all_container_infos = manager.start(config=await config.json(), count=num_experiments)
+	all_container_infos = manager.start(config=await config.json(), count=num_experiments, is_webserver=is_webserver)
 
 	# check if all prerequisites were met
 	if type(all_container_infos) == DockerInfo:
@@ -205,6 +241,23 @@ async def get_tensorboard_link(id: str, authorized: bool = Depends(verify_token)
 		return JSONResponse(vars(container_info), status_code=200)
 
 
+@app.get('/data/statistics')
+async def get_statistical_csv_data(system: bool=False, authorized: bool = Depends(verify_token)) -> JSONResponse:
+	"""
+	This will return a csv file with the data collected when monitoring is enabled.
+	This csv file can either contain data about the system performance or data about running container.
+
+	Args:
+		system (bool, optional): Indecates if the data about the system performance is wanted. Defaults to False.
+
+	Returns:
+		JSONResponse: The wanted data as csv file.
+	"""
+	if not authorized:
+		return JSONResponse(status_code=401, content=vars(DockerInfo('', 'Not authorized')))
+	return JSONResponse(status_code=200, content=vars(manager.get_statistic_data(wants_system_data=system)))
+
+
 @app.get('/pause/')
 async def pause_container(id: str, authorized: bool = Depends(verify_token)) -> JSONResponse:
 	"""
@@ -280,6 +333,25 @@ async def check_if_api_is_available(authorized: bool = Depends(verify_token)) ->
 	docker_status = manager.ping()
 	status_code = 200 if docker_status else 404
 	return JSONResponse({'status': docker_status}, status_code=status_code)
+
+
+def _convert_secret_to_token(secret: str) -> tuple:
+	"""
+	Calculation for converting the secret to two valid tokens.
+
+	Args:
+		secret (str): the secret tat should be used for the calculation
+
+	Returns:
+		tuple: the token of last hour and token of current hour
+	"""
+	master_secret_as_int = sum(ord(c) for c in secret)
+	current_time = int(time.time() / 3600)  # unix time in hours
+	# token, that is currently expected
+	expected_this_token = hashlib.sha256(str(master_secret_as_int + current_time).encode('utf-8')).hexdigest()
+	# token that was expected last hour
+	expected_last_token = hashlib.sha256(str(master_secret_as_int + (current_time - 3600)).encode('utf-8')). hexdigest()
+	return expected_last_token, expected_this_token
 
 
 if __name__ == '__main__':

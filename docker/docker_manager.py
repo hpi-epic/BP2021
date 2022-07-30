@@ -3,9 +3,11 @@ import os
 import shutil
 import tarfile
 import time
+from datetime import datetime
 from itertools import count, filterfalse
 from types import GeneratorType
 
+from container_db_manager import MonitorDB
 from torch.cuda import is_available
 
 import docker
@@ -59,9 +61,11 @@ class DockerManager():
 	_allowed_commands = ['training', 'exampleprinter', 'agent_monitoring']
 	# dictionary of container_id:host-port pairs
 	_port_mapping = {}
+	_container_db = MonitorDB()
 	_logger = None
+	_should_run_monitoring = False
 
-	def __new__(cls, logger):
+	def __new__(cls, logger, should_run_monitoring=False):
 		"""
 		This function makes sure that the `DockerManager` is a singleton.
 
@@ -69,6 +73,7 @@ class DockerManager():
 			DockerManager: The DockerManager instance.
 		"""
 		cls._logger = logger
+		cls._should_run_monitoring = should_run_monitoring
 		if cls._instance is None:
 			cls._logger.info('A new instance of DockerManager is being initialized')
 			cls._instance = super(DockerManager, cls).__new__(cls)
@@ -79,13 +84,14 @@ class DockerManager():
 
 		return cls._instance
 
-	def start(self, config: dict, count: int) -> DockerInfo or list:
+	def start(self, config: dict, count: int, is_webserver: bool) -> DockerInfo or list:
 		"""
 		To be called by the REST API. Create and start a new docker container from the image of the specified command.
 
 		Args:
 			config (dict): The combined hyperparameter_config and environment_config_command dicts that should be sent to the container.
 			count (int): number of containers that should be started
+			is_webserver (bool): is the user who did the request the official webserver?
 
 		Returns:
 			DockerInfo or list: A JSON serializable object containing the error messages if the prerequisite were not met, or a list of
@@ -105,6 +111,7 @@ class DockerManager():
 		if not self._confirm_image_exists():
 			return DockerInfo(id='No container was started', status='Image build failed')
 
+		current_time = datetime.now()
 		all_container_infos = []
 		for _ in range(count):
 			# start a container for the image of the requested command
@@ -115,6 +122,8 @@ class DockerManager():
 				return container_info
 			# the container is fine, we can start the container now
 			all_container_infos += [self._start_container(container_info.id)]
+		if self._should_run_monitoring:
+			self._container_db.insert(all_container_infos, current_time, is_webserver, config)
 		return all_container_infos
 
 	def health(self, container_id: str) -> DockerInfo:
@@ -132,6 +141,8 @@ class DockerManager():
 		if not container:
 			return DockerInfo(container_id, status='Container not found')
 
+		if self._should_run_monitoring:
+			self._container_db.has_been_health_checked(container_id)
 		if container.status == 'exited':
 			return DockerInfo(container_id, status=f'exited ({docker.APIClient().inspect_container(container.id)["State"]["ExitCode"]})')
 
@@ -160,6 +171,8 @@ class DockerManager():
 			container.pause()
 			# Reload the attributes to get the correct status
 			container.reload()
+			if self._should_run_monitoring:
+				self._container_db.has_been_paused(container_id)
 			return DockerInfo(id=container_id, status=container.status)
 		except docker.errors.APIError as error:
 			return DockerInfo(container_id, status=f'APIError encountered while pausing container.\n{error}')
@@ -187,6 +200,8 @@ class DockerManager():
 			container.unpause()
 			# Reload the attributes to get the correct status
 			container.reload()
+			if self._should_run_monitoring:
+				self._container_db.has_been_unpaused(container_id)
 			return DockerInfo(id=container_id, status=container.status)
 		except docker.errors.APIError as error:
 			return DockerInfo(container_id, status=f'APIError encountered while unpausing container.\n{error}')
@@ -211,6 +226,8 @@ class DockerManager():
 		self._logger.info(f'Starting tensorboard for: {container_id}')
 		container.exec_run(cmd='tensorboard serve --host 0.0.0.0 --logdir ./results/runs', detach=True)
 		port = self._port_mapping[container.id]
+		if self._should_run_monitoring:
+			self._container_db.has_got_tensorboard(container_id)
 		return DockerInfo(container_id, status=container.status, data=str(port))
 
 	def get_container_logs(self, container_id: str, timestamps: bool, stream: bool, tail: int) -> DockerInfo:
@@ -235,6 +252,8 @@ class DockerManager():
 
 		logs = container.logs(stream=stream, timestamps=timestamps, tail=tail,
 			stderr=docker.APIClient().inspect_container(container.id)['State']['ExitCode'] != 0)
+		if self._should_run_monitoring:
+			self._container_db.has_got_logs(container_id)
 		if stream:
 			return DockerInfo(container_id, status=container.status, stream=logs)
 		else:
@@ -257,10 +276,15 @@ class DockerManager():
 			return DockerInfo(container_id, status='Container not found')
 		try:
 			bits, _ = container.get_archive(path=container_path)
+			if self._should_run_monitoring:
+				self._container_db.has_got_data(container_id)
 			return DockerInfo(container_id, status=container.status,
 				data=f'archive_{container_path.rpartition("/")[2]}_{time.strftime("%b%d_%H-%M-%S")}', stream=bits)
 		except docker.errors.NotFound:
 			return DockerInfo(container_id, status=f'The requested path does not exist on the container: {container_path}')
+
+	def get_statistic_data(self, wants_system_data: bool):
+		return DockerInfo(id='not given', status='success', data=self._container_db.get_csv_data(wants_system_data))
 
 	def remove_container(self, container_id: str) -> DockerInfo:
 		"""
@@ -283,7 +307,7 @@ class DockerManager():
 
 		self._logger.info(f'Removing container: {container_id}')
 		try:
-			exit_code = container.wait()['StatusCode']
+			exit_code = self._get_container_exit_code(container)
 			container.remove()
 			# update the local port mapping
 			self._update_port_mapping()
@@ -329,6 +353,28 @@ class DockerManager():
 			print(f'Got a DockerException: {e}')
 			cls._client = None
 		return cls._client
+
+	@classmethod
+	def check_health_of_all_container(cls) -> tuple:
+		"""
+		Checks health of all containers, and collects exited container and their status code as tuples in a Docker Info
+
+		Returns:
+			tuple: first value indecating, if a container has exited, second is a DockerInfo containing exited container
+		"""
+		exited_recommerce_containers = cls._list_containers(cls, {'label': IMAGE_NAME, 'status': 'exited'})
+		exited_container = []
+		for container in exited_recommerce_containers:
+			exited_container += [(container.id, docker.APIClient().inspect_container(container.id)['State']['ExitCode'])]
+		all_container_ids = ';'.join([str(container_id) for container_id, _ in exited_container])
+		all_container_status = ';'.join([str((container_id, exit_code)) for container_id, exit_code in exited_container])
+		return exited_recommerce_containers != [], DockerInfo(id=all_container_ids, status=all_container_status)
+
+	@classmethod
+	def check_for_running_recommerce_container(cls) -> list:
+		exited_recommerce_containers = cls._list_containers(cls, {'label': IMAGE_NAME, 'status': 'exited'})
+		all_recommerce_containers = cls._list_containers(cls, {'label': IMAGE_NAME})
+		return list(set(all_recommerce_containers) - set(exited_recommerce_containers))
 
 	def _confirm_image_exists(self, update: bool = False) -> str:
 		"""
@@ -443,6 +489,9 @@ class DockerManager():
 			self._logger.warning('Failed to upload configuration file!')
 		return upload_info
 
+	def _list_containers(self, filter_arguments: dict) -> list:
+		return list(self._get_client().containers.list(filters=filter_arguments))
+
 	def _start_container(self, container_id: str) -> DockerInfo:
 		"""
 		Start a container for the given image.
@@ -509,11 +558,14 @@ class DockerManager():
 		if not container:
 			return DockerInfo(container_id, status='Container not found.')
 
+		before_stop = container.status
 		self._logger.info(f'Stopping container: {container_id}')
 		try:
 			container.stop(timeout=10)
 			# Reload the attributes to get the correct status
 			container.reload()
+			if self._should_run_monitoring:
+				self._container_db.has_been_stopped(container_id, before_stop, container.status, self._get_container_exit_code(container))
 			return DockerInfo(id=container_id, status=container.status)
 		except docker.errors.APIError as error:
 			return DockerInfo(container_id, status=f'APIError encountered while stopping container.\n{error}')
@@ -578,7 +630,7 @@ class DockerManager():
 		"""
 		# Get all RUNNING containers with the IMAGE_NAME label
 		# we don't care about already exited containers, since we can't see the tensorboard anyways
-		running_recommerce_containers = list(cls._get_client().containers.list(filters={'label': IMAGE_NAME}))
+		running_recommerce_containers = cls._list_containers(cls, {'label': IMAGE_NAME})
 		# Get the port mapped to '6006/tcp' within the container
 		occupied_ports = [int(container.ports['6006/tcp'][0]['HostPort']) for container in running_recommerce_containers]
 		cls._port_mapping = dict(zip([container.id for container in running_recommerce_containers], occupied_ports))
