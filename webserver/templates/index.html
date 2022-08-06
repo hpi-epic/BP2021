@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Welcome{% endblock title %}
+{% block content %}
+    <h1>Hello {{ user.username|default:'Guest' }}, Welcome to the Recommerce simulation</i></h1>
+    <div class="row p-2">
+        <div class="col-6">
+            <div class="card" style="width: 100%">
+                <div class="card-body">
+                    <h5 class="card-title">Upload</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">upload your own Config files</h6>
+                    <p class="card-text"><i class="fa-solid fa-circle-trash"></i></p>
+                    <a href="/upload" class="btn  bc-outline-lightgreen">Check it out</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-6">
+            <div class="card" style="width: 100%">
+                <div class="card-body">
+                    <h5 class="card-title">Configuration</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">configure your experiment</h6>
+                    <p class="card-text"></p>
+                    <a href="/configurator" class="btn bc-outline-lightgreen">Check it out</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row p-2">
+        <div class="col-6">
+            <div class="card" style="width: 100%">
+                <div class="card-body">
+                    <h5 class="card-title">Observe</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">This is where you can observe your running container</h6>
+                    <p class="card-text"></p>
+                    <a href="/observe" class="btn bc-outline-lightgreen">Check it out</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-6">
+            <div class="card" style="width: 100%">
+                <div class="card-body">
+                    <h5 class="card-title">Download</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">You can download your data here and delete experiments permanetly</h6>
+                    <p class="card-text"></p>
+                    <a href="/download" class="btn bc-outline-lightgreen">Check it out</a>
+                </div>
+            </div>
+        </div>
+        <br>
+        {% if user.is_superuser %}
+            {% include "buttons/statistics_button.html" %}
+        {% endif %}
+    </div>
+{%endblock content%}

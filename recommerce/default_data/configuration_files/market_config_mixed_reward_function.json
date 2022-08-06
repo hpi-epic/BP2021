@@ -1,0 +1,13 @@
+{
+	"config_type": "sim_market",
+	"max_storage": 100,
+	"episode_length": 500,
+	"max_price": 10,
+	"max_quality": 50,
+	"number_of_customers": 20,
+	"production_price": 3,
+	"storage_cost_per_product": 0.1,
+	"opposite_own_state_visibility": true,
+	"common_state_visibility": true,
+	"reward_mixed_profit_and_difference": true
+}

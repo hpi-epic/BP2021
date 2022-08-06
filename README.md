@@ -1,64 +1,120 @@
 # Online Marketplace Simulation: A Testbed for Self-Learning Agents
 
-Working repository in context of the bachelorproject "Online Marketplace Simulation: A Testbed for Self-Learning Agents" at the research group Enterprise Platform and Integration Concepts.
+![CI](https://github.com/hpi-epic/BP2021/actions/workflows/CI.yml/badge.svg)
+![Coverage-Badge](/badges/coverage.svg)
+![Docstring-Coverage](/badges/docstring_coverage.svg)
+[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 
-The goal of the project is to develop a universal simulation platform for markets with varying numbers of merchants. Being able to run various market simulations is highly relevant for many firms such as SAP and its partners. As the platform is designed as a tool to support evaluation and research, aspects like configurability and ease of use are crucial. While the technology stack is left open for now, high compatibility to common simulation APIs (such as Gym, TF-Agents) is required.
-For more complex setups, communication protocols between different agents might have to be implemented as well.
+Working repository in context of the bachelor's project "*Online Marketplace Simulation: A Testbed for Self-Learning Agents*" at the *Enterprise Platform and Integration Concepts* ([@hpi-epic](https://github.com/hpi-epic), [epic.hpi.de](https://hpi.de/plattner/home.html)) research group of the Hasso Plattner Institute.
 
-The simulation should cover the interaction between customers and particularly competing merchants, including self-learning agents and their rule-based opponents. While the focus can be put on several different aspects, an adjustable customer behavior model (which determines each participant!s sales) has to be developed. The platform should generate sales and interaction data for each of the merchants, which can then in turn be fed to the self-learning agents. Monitoring tools are required to analyze each agent!s policy and their effects on the overall market. With the help of such simulations, we seek to study the competitiveness of self-adapting pricing tools and their long-term impact on market competitors and customers.
+During the project a simulation framework, *`recommerce`*, was built.
+The framework can be used to simulate online *recommerce* marketplaces, which are more complex than traditional linear economy models.
+Using these simulated marketplaces, various reinforcement learning algorithms can be used to train so-called *agents* to set prices that optimize profit on these markets.
+These agents can be trained against a multitude of pre-implemented rule based vendors, on a number of different marketplaces.
 
-## First Protoype for Marketplace Simulation and Deep Q-Learning
+After training, the produced models can be further monitored and analyzed using an extensive number of monitoring tools.
+For more information beyond installation and the Quick Start Guide contained in this `README`, please refer to our [wiki](https://github.com/hpi-epic/BP2021/wiki).
 
-The four Python files in this repository belong to a simple protoype for marketplace simulation. It is build to simulate a simple market with two vendors trying to maximize their profit. One vendor is part of the environment as a rule based competitor, the other one in a simulated agent. The customer behaviour depends on the price and the quality of the product. Furthermore, some random events make the customers less predictable.
+- [Quick Start Guide](#quick-start-guide)
+- [Installing dependencies](#installing-dependencies)
+- [Installing the `recommerce` package](#installing-the-recommerce-package)
 
-## Installing dependencies 
+## Quick Start Guide
 
-If you have not yet done so, install Anaconda and run the following command to create an environment and install the required packages:
-```console
-conda env create -f scripts/environment.yml -n your_venv_name
-```
-To activate your created environment use:
-```console
-conda activate your_venv_name
-```
+If you have not yet done so, first install the `recommerce` package by following [installing dependencies](#installing-dependencies) and [installing the `recommerce` package](#installing-the-recommerce-package).
 
-If you have a Nvidia GPU, consider installing cuda to get better training performance:
-```console
-conda install -c anaconda cudatoolkit
-```
+At any point after the installation has completed, use
 
-To update an existing environment with the needed packages run the following command:
-```console
-conda env update --name your_venv_name --file scripts/environment.yml
+```terminal
+recommerce --help
 ```
 
-## Installing Pre-commit
-We are using `pre-commit` to lint our files before committing. Pre-commit itself should already have been installed through the `environment.yml`. Initialize pre-commit using
-```console
-pre-commit install
-```
-To circumvent possible errors caused later on, run pre-commit with the following command:
-```console
-pre-commit run --all-files
-```
-which will install the environment needed.
+in your terminal to see the usage options of the package.
+The guide below will help you set up the framework and get started with a first experiment.
 
-### Pre-commit Troubleshooting
-If you get the following error:
+The `recommerce` package requires users to provide it with a datapath, which is where the package will look for configuration files and write output files, such as statistics and diagrams.
+During installation of the package, the datapath was set to the current working directory.
+If you want to modify the datapath, you can use the following command:
 
-```console
-Git: Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from Settings > Manage App Execution Aliases
+```terminal
+recommerce --datapath "<datapath>"
 ```
 
-while trying to commit, the cause is most likely `pre-commit` trying to access a Python version not in your venv.
+where <datapath> is a valid path from which `recommerce` will read and write data.
 
-Solution: Check the App execution Aliases, and if no Python version is present, install it from the Microsoft Store. You do not need to disable the alias.
+You should see the following message indicating your path is valid:
 
----
+```terminal
+Data will be read from and saved to "<datapath>"
+```
 
-If you get an error saying that the `_sqlite3`-module is missing, you are missing the `sqlite3.dll` and `sqlite3.def` files.
+You can check the currently set datapath at any point by running
 
-Solution: Go to https://www.sqlite.org/download.html to download the `sqlite3.dll` and `sqlite3.def` files and drop them into the following folder:
-```console
-C:\Users\your_username\anaconda3\envs\your_venv_name\DLLs
+```terminal
+recommerce --get-datapath
+```
+
+To start an experiment, `recommerce` requires you to provide configuration files, which contain the necessary information to set up the simulation.
+You can either write those files yourself or use the following command to have `recommerce` copy over default files which you can immediately use or modify as you wish:
+
+*WARNING*: By using the following command, any files with the same names as the default data will be overwritten, so use with caution!
+To get the data in a folder called `default_data` use the flag `--get-defaults` instead.
+
+```terminal
+recommerce --get-defaults-unpack
+```
+
+The `-unpack` part of the flag makes sure that the default files are not just stored in the `default_data` folder in your datapath, but unpacked in a way that `recommerce` can immediately find them, by storing configuration files and pre-trained models in the `configuration_files` and `data` directories respectively.
+
+Now you are ready to run your first exampleprinter session:
+
+```terminal
+recommerce -c exampleprinter
+```
+
+If you are using the default configuration files provided by `recommerce --get-defaults`, this exampleprinter run will also create an in-depth HTML-Slideshow of the run in the `results/exampleprinter` folder within your datapath.
+
+## Installing dependencies
+
+We are using both [pip](https://pip.pypa.io/en/stable/index.html) and [`anaconda`](https://www.anaconda.com/) to install our dependencies.
+The difference between the two is that we install all dependencies we need to run the core functionality of our project using `pip`, and all other dependencies (such as `pytest` or `django`) using `anaconda`.
+This allows us to have a clear distinction between the purposes of the different packages, while also keeping our docker containers small by only installing pip dependencies there.
+You can read up more about our usage of docker [in the wiki](https://github.com/hpi-epic/BP2021/wiki/Developer-guides-%E2%80%93-Docker-&-UI).
+
+For the purpose of staying user-centered, this Quick Start Guide will only include installation instructions for the `pip` dependencies, through the use of our `recommerce` package, described in the next section.
+If you plan on not only using the framework but also continue its development, please take a look at the installation instructions in the [developer guide](https://github.com/hpi-epic/BP2021/wiki/Developer-guides-%E2%80%93-Installation) first, to ensure that all dependencies are installed correctly using an `anaconda` virtual environment (though we recommend installing the `recommerce` package in a virtual environment in any case).
+
+## Installing the `recommerce` package
+
+*NOTE: If you want to continue development of the simulation framework, please read the installation instructions in the [developer guide](https://github.com/hpi-epic/BP2021/wiki/Developer-guides-%E2%80%93-Installation) **first**!*
+
+Before proceeding, please inform yourself on whether or not your device supports `cuda`.
+Take a look at [this](https://developer.nvidia.com/cuda-gpus) resource provided by NVIDIA for help on the topic.
+This decides if you should install our project with `cuda` support, or without, which comes down to the specific version of the *torch* dependency that will be installed.
+
+*Depending on your preferences, you may first want to create a dedicated virtual environment for the `recommerce` package (recommended).*
+
+If you want to continue development of the framework, meaning you plan on changing the code, insert the `-e` flag after `pip install` in the following commands to install the package in an editable state.
+This results in the packages not being directly written to where pip dependencies usually would, but only a "link" to you current working directory being created.
+
+If your device supports `cuda` and you want to utilize its capabilities, use the following command within the project directory:
+
+```terminal
+pip install .[gpu] -f https://download.pytorch.org/whl/torch_stable.html
+```
+
+Otherwise, to install without `cuda` support, use:
+
+```terminal
+pip install .[cpu]
+```
+
+This installs the `recommerce` project folder (and its subdirectories) as a local `pip` package (when using `anaconda`, this will be `Path/To/anaconda3/envs/your_venv_name/Lib/site-packages`).
+In order to install the package, we use `setuptools`, which uses the `setup.py`, `setup.cfg` and `pyproject.toml` files located in the root directory of the project.
+The `setup.cfg` file includes all necessary metadata needed to correctly install the project.
+
+You can confirm that the installation was successful by checking
+
+```terminal
+recommerce --version
 ```

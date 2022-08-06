@@ -1,0 +1,6 @@
+{
+	"learning_rate": 7e-4,
+	"n_steps": 5,
+	"gamma": 0.99,
+	"neurones_per_hidden_layer": 64
+}

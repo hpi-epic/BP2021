@@ -1,0 +1,20 @@
+<div class="accordion-item all-agents">
+    <h2 class="accordion-header">
+        {% load static %}
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAgentContainer" aria-expanded="false" aria-controls="collapseAgentContainer">
+            {% if error_dict %} <img src="{% static 'icons/warning.svg' %}" width="18px" title="{{error_dict}}"></img> {% endif %}
+            Agents
+        </button>
+    </h2>
+    <div id="collapseAgentContainer" class="accordion-collapse collapse">
+        <div class="accordion-body">
+            {% if prefill %}
+                {% for agent in prefill %}
+                    {% include "configuration_items/agent.html" with id=agent.id prefill=agent agent_selections=agent_selections name=agent.display_name%}
+                {% endfor %}
+            {% else %}
+                {% include "configuration_items/agent.html" with id=0  agent_selections=agent_selections name="Agent"%}
+            {% endif %}
+        </div>
+    </div>
+</div>

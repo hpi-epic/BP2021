@@ -1,15 +1,37 @@
 # from https://github.com/github/gitignore
 
-# To exclude marketplace files created by training the agent
-# args.env-best_*[0-9].*[0-9]_marketplace.dat
+# all files and subfolders that get created by executing `recommerce` should get ignored
+results
+data
+/configuration_files
 
-*.dat
-*.csv
-trainedModels/
-runs/
-test.py
-# to exclude some notes
+# results from the tests
+tests/test_results
+
+# all webserver and docker related directories
+webserver/.env.txt
+docker/.env.txt
+docker/*.db
+docker/log_files/*
+
+# file where the users data path is saved
+recommerce/configuration/user_path.txt
+
+# file for Johanns test runner
+tests.sh
+# Johanns VM debug skripts
+docker_debug_skript.sh
+docker_container_remove.sh
+
+# vscode settings
+.vscode/
+.DS_Store
+# to exclude notes and tests
 notes.txt
+test.py
+test.json
+# interrogate result (docstring lint rule)
+mit-covered-files
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -58,6 +80,7 @@ htmlcov/
 .cache
 nosetests.xml
 coverage.xml
+coverage.json
 *.cover
 *.py,cover
 .hypothesis/

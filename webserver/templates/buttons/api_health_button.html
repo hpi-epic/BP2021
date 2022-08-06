@@ -1,0 +1,9 @@
+<button class="btn btn-sm mt-1 bc-xs replace-me {% if api_success %}bc-outline-lightgreen{% elif api_docker_timeout %}bc-outline-orange{% elif api_timeout %}bc-outline-red{% else %}bc-outline-lightgray{% endif %}"
+    type="button"
+    data-url="/api_availability">
+    {% if api_success or api_docker_timeout or api_timeout %}
+        {{api_success}}{{api_docker_timeout}}{{api_timeout}}
+    {% else %}
+        unknown
+    {% endif %}
+</button>
