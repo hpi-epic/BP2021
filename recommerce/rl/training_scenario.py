@@ -1,3 +1,4 @@
+from recommerce.rl.stable_baselines.stable_baselines_model import StableBaselinesAgent
 import torch
 from attrdict import AttrDict
 
@@ -48,8 +49,8 @@ def run_training_session(
 
 	assert issubclass(marketplace, sim_market.SimMarket), \
 		f'the type of the passed marketplace must be a subclass of SimMarket: {marketplace}'
-	assert issubclass(agent, (q_learning_agent.QLearningAgent, actorcritic_agent.ActorCriticAgent)), \
-		f'the RL_agent_class passed must be a subclass of either QLearningAgent or ActorCriticAgent: {agent}'
+	assert issubclass(agent, (q_learning_agent.QLearningAgent, actorcritic_agent.ActorCriticAgent, StableBaselinesAgent)), \
+		f'the RL_agent_class passed must be a subclass of either QLearningAgent, StableBaselinesAgent or ActorCriticAgent: {agent}'
 	if issubclass(marketplace, circular_market.CircularEconomy):
 		assert issubclass(agent, CircularAgent), \
 			f'The marketplace ({marketplace}) is circular, so all agents need to be circular agents {agent}'
@@ -65,6 +66,12 @@ def run_training_session(
 			config_market=config_market,
 			config_rl=config_rl,
 			competitors=competitors).train_agent()
+	elif issubclass(agent, StableBaselinesAgent):
+		if issubclass(agent, StableBaselinesSAC):
+			StableBaselinesSAC(
+				config_market=config_market,
+				config_rl=config_rl,
+				marketplace=marketplace(config_market, True)).train_agent()
 	else:
 		ActorCriticTrainer(
 			marketplace_class=marketplace,
@@ -176,7 +183,7 @@ def train_from_config():
 	Use the `environment_config_training.json` file to decide on the training parameters.
 	"""
 	config_environment: TrainingEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_training')
-	config_rl: AttrDict = HyperparameterConfigLoader.load('q_learning_config', config_environment.agent[0]['agent_class'])
+	config_rl: AttrDict = HyperparameterConfigLoader.load('rl_config', config_environment.agent[0]['agent_class'])
 	config_market: AttrDict = HyperparameterConfigLoader.load('market_config', config_environment.marketplace)
 
 	competitor_list = []
@@ -192,6 +199,7 @@ def train_from_config():
 		marketplace=config_environment.marketplace,
 		config_market=config_market,
 		agent=config_environment.agent[0]['agent_class'],
+		config_market=config_market,
 		competitors=competitor_list)
 
 

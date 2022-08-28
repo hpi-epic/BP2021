@@ -166,8 +166,8 @@ class SimMarket(gym.Env, JSONConfigurable):
 			# the competitor, which turn it is, will update its pricing
 			if i < len(self.competitors):
 				action_competitor_i = self.competitors[i].policy(self._observation(i + 1))
-				if self.support_continuous_action_space:
-					action_competitor_i = np.array(action_competitor_i, dtype=np.float32)
+				# if self.support_continuous_action_space:
+					# action_competitor_i = np.array(action_competitor_i, dtype=np.float32)
 				assert self.action_space.contains(action_competitor_i), \
 					f'This vendor does not deliver a suitable action, action_space: {self.action_space}, action: {action_competitor_i}'
 				self.vendor_actions[i + 1] = action_competitor_i
