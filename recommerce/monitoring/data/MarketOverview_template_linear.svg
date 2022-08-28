@@ -1,0 +1,355 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="550"
+   height="399"
+   overflow="hidden"
+   version="1.1"
+   id="svg1996"
+   sodipodi:docname="MarketOverview_template_linear.svg"
+   inkscape:version="1.0.2-2 (e86c870879, 2021-01-15)">
+  <metadata
+     id="metadata2002">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs2000">
+    <rect
+       x="87.280352"
+       y="92.524246"
+       width="136.20636"
+       height="21.768139"
+       id="rect5298" />
+    <rect
+       x="87.28035"
+       y="92.524246"
+       width="297.91254"
+       height="20.524245"
+       id="rect5298-8" />
+    <rect
+       x="87.28035"
+       y="92.524246"
+       width="136.20636"
+       height="21.768139"
+       id="rect5357" />
+    <rect
+       x="87.28035"
+       y="92.524246"
+       width="297.91254"
+       height="20.524244"
+       id="rect5298-8-9" />
+    <rect
+       x="87.28035"
+       y="92.524246"
+       width="297.91254"
+       height="20.524244"
+       id="rect5395" />
+  </defs>
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="3440"
+     inkscape:window-height="1377"
+     id="namedview1998"
+     showgrid="false"
+     inkscape:zoom="6.431418"
+     inkscape:cx="327.3622"
+     inkscape:cy="284.89686"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="g1994"
+     inkscape:document-rotation="0"
+     inkscape:snap-text-baseline="false" />
+  <g
+     transform="translate(-68,-72)"
+     id="g1994">
+    <path
+       style="fill:#bdd7ee;fill-opacity:1;stroke:#007a9e;stroke-width:3;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 457.5,164.5 h 102 v 233 h -102 z"
+       id="path4542" />
+    <path
+       stroke="#007a9e"
+       stroke-width="2.667"
+       stroke-linejoin="round"
+       stroke-miterlimit="10"
+       fill="#ffffff"
+       d="m 81.5,172.5 h 87 v 55 h -87 z"
+       id="path1884" />
+    <text
+       fill="#323232"
+       font-family="Verdana, Verdana_MSFontService, sans-serif"
+       font-weight="700"
+       font-size="11px"
+       transform="translate(99.324,204)"
+       id="text1886">Supplier</text>
+    <path
+       stroke="#007a9e"
+       stroke-width="2.667"
+       stroke-linejoin="round"
+       stroke-miterlimit="10"
+       fill="#ffffff"
+       d="m 272.5,172.5 h 88 v 55 h -88 z"
+       id="path1888" />
+    <text
+       fill="#323232"
+       font-family="Verdana, Verdana_MSFontService, sans-serif"
+       font-weight="700"
+       font-size="11px"
+       transform="translate(284,195)"
+       id="text1894">a_competitor_name <tspan
+   font-style="italic"
+   font-size="8px"
+   x="0"
+   y="12"
+   id="tspan1890">Profit: a_profit</tspan></text>
+    <path
+       stroke="#007a9e"
+       stroke-width="2.667"
+       stroke-linejoin="round"
+       stroke-miterlimit="10"
+       fill="#ffffff"
+       d="m 464.5,172.5 h 88 v 55 h -88 z"
+       id="path1910" />
+    <text
+       fill="#323232"
+       font-family="Verdana, Verdana_MSFontService, sans-serif"
+       font-weight="700"
+       font-size="11px"
+       transform="translate(484.601,198)"
+       id="text1914">Market- <tspan
+   x="7.5869999"
+   y="12"
+   id="tspan1912">place</tspan></text>
+    <path
+       d="m 177.5,201.216 83.163,-0.049 -0.001,-1.333 -83.162,0.048 z m 75.501,4.531 8.984,-5.247 -8.99,-5.238 a 0.667,0.667 0 0 0 -0.671,1.152 l 8.003,4.662 v -1.151 l -7.998,4.671 a 0.667,0.667 0 0 0 0.672,1.151 z"
+       fill="#313131"
+       id="path1916" />
+    <text
+       fill="#323232"
+       font-family="Verdana, Verdana_MSFontService, sans-serif"
+       font-style="italic"
+       font-weight="700"
+       font-size="8px"
+       transform="translate(180.11,193)"
+       id="text1918">Resource cost: a_resource_cost</text>
+    <path
+       d="m 513.403,150.508 -5.056,9.093 -5.427,-8.877 a 0.667,0.667 0 0 1 1.138,-0.696 l 4.83,7.902 -1.151,0.024 4.501,-8.094 a 0.66654501,0.66654501 0 1 1 1.165,0.648 z"
+       id="path4562" />
+    <path
+       d="m 508.167,118.486 0.819,39.778 -1.333,0.028 -0.819,-39.778 z"
+       id="path4560" />
+    <path
+       stroke="#007a9e"
+       stroke-width="2.667"
+       stroke-linejoin="round"
+       stroke-miterlimit="10"
+       fill="#ffffff"
+       d="m 464.5,83.5 h 88 v 50 h -88 z"
+       id="path1928" />
+    <text
+       fill="#323232"
+       font-family="Verdana, Verdana_MSFontService, sans-serif"
+       font-weight="700"
+       font-size="11px"
+       transform="translate(478.02,101)"
+       id="text1930">Consumer</text>
+    <path
+       d="m 439.22727,209.31339 8.984,-5.247 -8.99,-5.238 a 0.667,0.667 0 0 0 -0.671,1.152 l 8.003,4.662 v -1.151 l -7.998,4.671 a 0.667,0.667 0 0 0 0.672,1.151 z"
+       id="path4546" />
+    <path
+       d="m 363.39027,204.69139 83.163,-0.049 -10e-4,-1.333 -83.162,0.048 z"
+       id="path1932" />
+    <path
+       stroke="#007a9e"
+       stroke-width="2.667"
+       stroke-linejoin="round"
+       stroke-miterlimit="10"
+       fill="#ffffff"
+       d="m 81.5,333.5 h 87 v 55 h -87 z"
+       id="path1956" />
+    <text
+       fill="#323232"
+       font-family="Verdana, Verdana_MSFontService, sans-serif"
+       font-weight="700"
+       font-size="11px"
+       transform="translate(99.324,365)"
+       id="text1958">Supplier</text>
+    <path
+       stroke="#007a9e"
+       stroke-width="2.667"
+       stroke-linejoin="round"
+       stroke-miterlimit="10"
+       fill="#ffffff"
+       d="m 272.5,333.5 h 88 v 55 h -88 z"
+       id="path1960" />
+    <text
+       fill="#323232"
+       font-family="Verdana, Verdana_MSFontService, sans-serif"
+       font-weight="700"
+       font-size="11px"
+       transform="translate(284,356)"
+       id="text1966">b_competitor_name <tspan
+   font-style="italic"
+   font-size="8px"
+   x="0"
+   y="12"
+   id="tspan1962">Profit: b_profit</tspan></text>
+    <path
+       stroke="#007a9e"
+       stroke-width="2.667"
+       stroke-linejoin="round"
+       stroke-miterlimit="10"
+       fill="#ffffff"
+       d="m 464.5,333.5 h 88 v 55 h -88 z"
+       id="path1968" />
+    <text
+       fill="#323232"
+       font-family="Verdana, Verdana_MSFontService, sans-serif"
+       font-weight="700"
+       font-size="11px"
+       transform="translate(484.601,359)"
+       id="text1972">Market- <tspan
+   x="7.5869999"
+   y="12"
+   id="tspan1970">place</tspan></text>
+    <path
+       d="m 177.5,362.216 83.163,-0.049 -0.001,-1.333 -83.162,0.048 z m 75.501,4.531 8.984,-5.247 -8.99,-5.238 a 0.667,0.667 0 0 0 -0.671,1.152 l 8.003,4.662 v -1.151 l -7.998,4.671 a 0.667,0.667 0 0 0 0.672,1.151 z"
+       fill="#313131"
+       id="path1974" />
+    <text
+       fill="#323232"
+       font-family="Verdana, Verdana_MSFontService, sans-serif"
+       font-style="italic"
+       font-weight="700"
+       font-size="8px"
+       transform="translate(180.11,354)"
+       id="text1976">Resource cost: b_resource_cost</text>
+    <path
+       d="m 438.37895,367.9841 8.984,-5.247 -8.99,-5.238 a 0.667,0.667 0 0 0 -0.671,1.152 l 8.003,4.662 v -1.151 l -7.998,4.671 a 0.667,0.667 0 0 0 0.672,1.151 z"
+       id="path4502" />
+    <path
+       d="m 362.54195,363.3621 83.163,-0.049 -10e-4,-1.333 -83.162,0.048 z"
+       id="path4500" />
+    <text
+       fill="#323232"
+       font-family="Verdana, Verdana_MSFontService, sans-serif"
+       font-weight="700"
+       font-size="11px"
+       id="text1894-8"
+       x="477.65384"
+       y="115.39809"
+       style="font-weight:700;font-size:11px;font-family:Verdana, Verdana_MSFontService, sans-serif;fill:#323232;"><tspan
+         sodipodi:role="line"
+         id="tspan4602"
+         x="477.65384"
+         y="115.39809"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:8px;font-family:Verdana, Verdana_MSFontService, sans-serif;-inkscape-font-specification:'Verdana, Verdana_MSFontService, sans-serif, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal">Arrivals: consumer_total_arrivals</tspan><tspan
+         sodipodi:role="line"
+         x="477.65384"
+         y="129.14809"
+         id="tspan4606"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:8px;font-family:Verdana, Verdana_MSFontService, sans-serif;-inkscape-font-specification:'Verdana, Verdana_MSFontService, sans-serif, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal">Sales: consumer_total_sales</tspan></text>
+    <text
+       fill="#323232"
+       font-family="Verdana, Verdana_MSFontService, sans-serif"
+       font-weight="700"
+       font-size="11px"
+       id="text1894-8-3"
+       x="369.79068"
+       y="217.44641"
+       style="font-weight:700;font-size:11px;font-family:Verdana, Verdana_MSFontService, sans-serif;fill:#323232"><tspan
+         sodipodi:role="line"
+         x="369.79068"
+         y="217.44641"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:8px;font-family:Verdana, Verdana_MSFontService, sans-serif;-inkscape-font-specification:'Verdana, Verdana_MSFontService, sans-serif, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal"
+         id="tspan4638">Price: a_price</tspan><tspan
+         sodipodi:role="line"
+         x="369.79068"
+         y="231.19641"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:8px;font-family:Verdana, Verdana_MSFontService, sans-serif;-inkscape-font-specification:'Verdana, Verdana_MSFontService, sans-serif, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal"
+         id="tspan4642">Quality: a_quality</tspan><tspan
+         sodipodi:role="line"
+         x="369.79068"
+         y="244.94641"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:8px;font-family:Verdana, Verdana_MSFontService, sans-serif;-inkscape-font-specification:'Verdana, Verdana_MSFontService, sans-serif, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal"
+         id="tspan6050">Sales: a_sales</tspan></text>
+    <text
+       fill="#323232"
+       font-family="Verdana, Verdana_MSFontService, sans-serif"
+       font-weight="700"
+       font-size="11px"
+       id="text1894-8-3-1"
+       x="369.51593"
+       y="376.06152"
+       style="font-weight:700;font-size:11px;font-family:Verdana, Verdana_MSFontService, sans-serif;fill:#323232"><tspan
+         sodipodi:role="line"
+         x="369.51593"
+         y="376.06152"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:8px;font-family:Verdana, Verdana_MSFontService, sans-serif;-inkscape-font-specification:'Verdana, Verdana_MSFontService, sans-serif, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal"
+         id="tspan4638-6">Price: b_price</tspan><tspan
+         sodipodi:role="line"
+         x="369.51593"
+         y="389.81152"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:8px;font-family:Verdana, Verdana_MSFontService, sans-serif;-inkscape-font-specification:'Verdana, Verdana_MSFontService, sans-serif, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal"
+         id="tspan4642-0">Quality: b_quality</tspan><tspan
+         sodipodi:role="line"
+         x="369.51593"
+         y="403.56152"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:8px;font-family:Verdana, Verdana_MSFontService, sans-serif;-inkscape-font-specification:'Verdana, Verdana_MSFontService, sans-serif, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal"
+         id="tspan6052">Sales: b_sales</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:40px;line-height:1.25;font-family:Pristina;-inkscape-font-specification:'Pristina, Normal'"
+       x="77.675224"
+       y="86.952614"
+       id="text5278"><tspan
+         sodipodi:role="line"
+         id="tspan5276"
+         x="77.675224"
+         y="86.952614" /></text>
+    <text
+       xml:space="preserve"
+       id="text5296"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;white-space:pre;shape-inside:url(#rect5298);"><tspan
+         x="87.28125"
+         y="103.4714"><tspan
+           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:12px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal">simulation_name</tspan></tspan></text>
+    <text
+       xml:space="preserve"
+       id="text5296-6"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;white-space:pre;shape-inside:url(#rect5298-8);"
+       transform="translate(0.07929192,20.573655)"><tspan
+         x="87.28125"
+         y="103.4714"><tspan
+           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:10.6667px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal">Episode length: simulation_episode_length</tspan></tspan></text>
+    <text
+       xml:space="preserve"
+       id="text5296-6-7"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;white-space:pre;shape-inside:url(#rect5298-8-9);"
+       transform="translate(0.27984721,39.893281)"><tspan
+         x="87.28125"
+         y="103.4714"><tspan
+           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:10.6667px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal">Time step: simulation_current_episode</tspan></tspan></text>
+  </g>
+</svg>

@@ -190,6 +190,7 @@ def train_from_config():
 	run_training_session(
 		config_rl=config_rl,
 		marketplace=config_environment.marketplace,
+		config_market=config_market,
 		agent=config_environment.agent[0]['agent_class'],
 		competitors=competitor_list)
 

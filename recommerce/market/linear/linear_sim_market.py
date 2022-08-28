@@ -81,7 +81,7 @@ class LinearEconomy(SimMarket, ABC):
 
 	def _initialize_output_dict(self):
 		self._ensure_output_dict_has('state/quality', [self.vendor_specific_state[i][0] for i in range(self._number_of_vendors)])
-
+		self._ensure_output_dict_has('actions/price', [self.vendor_actions[i] for i in range(self._number_of_vendors)])
 		self._ensure_output_dict_has('customer/purchases', [0] * self._number_of_vendors)
 
 	def get_n_actions(self):
