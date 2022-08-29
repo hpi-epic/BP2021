@@ -73,15 +73,15 @@ class ExamplePrinter():
         writer = SummaryWriter(log_dir=os.path.join(PathManager.results_path, 'runs', signature))
         os.makedirs(os.path.join(PathManager.results_path, 'exampleprinter', signature))
 
-        is_circular_doupoly = isinstance(self.marketplace, circular_market.CircularEconomyRebuyPriceDuopoly)
+        is_circular_rebuy_doupoly = isinstance(self.marketplace, circular_market.CircularEconomyRebuyPriceDuopoly)
         is_linear_doupoly = isinstance(self.marketplace, linear_market.LinearEconomyDuopoly)
 
-        if is_circular_doupoly or is_linear_doupoly:
+        if is_circular_rebuy_doupoly or is_linear_doupoly:
             svg_manipulator = SVGManipulator(signature, isinstance(self.marketplace, linear_market.LinearEconomyDuopoly))
 
         cumulative_dict = None
 
-        if is_circular_doupoly and save_lineplots:
+        if is_circular_rebuy_doupoly and save_lineplots:
             price_used = [[] for _ in range(self.marketplace._number_of_vendors)]
             price_news = [[] for _ in range(self.marketplace._number_of_vendors)]
             price_rebuy = [[] for _ in range(self.marketplace._number_of_vendors)]
@@ -101,13 +101,13 @@ class ExamplePrinter():
                 ut.write_dict_to_tensorboard(writer, logdict, counter)
                 ut.write_dict_to_tensorboard(writer, cumulative_dict, counter, is_cumulative=True,
                                              episode_length=self.config_market.episode_length)
-                if is_circular_doupoly or is_linear_doupoly:
+                if is_circular_rebuy_doupoly or is_linear_doupoly:
                     ut.write_content_of_dict_to_overview_svg(svg_manipulator, counter, logdict, cumulative_dict,
                                                              self.config_market, is_linear_doupoly)
 
                 our_profit += reward
                 counter += 1
-                if is_circular_doupoly and save_lineplots:
+                if is_circular_rebuy_doupoly and save_lineplots:
                     for i in range(self.marketplace._number_of_vendors):
                         price_used[i].append(logdict['actions/price_refurbished'][f'vendor_{i}'])
                         price_news[i].append(logdict['actions/price_new'][f'vendor_{i}'])
@@ -115,13 +115,13 @@ class ExamplePrinter():
                         in_storages[i].append(logdict['state/in_storage'][f'vendor_{i}'])
                     in_circulations.append(logdict['state/in_circulation'])
 
-                if is_circular_doupoly or is_linear_doupoly:
+                if is_circular_rebuy_doupoly or is_linear_doupoly:
                     svg_manipulator.save_overview_svg(filename=('MarketOverview_%.3d' % counter))
 
-        if is_circular_doupoly or is_linear_doupoly:
+        if is_circular_rebuy_doupoly or is_linear_doupoly:
             svg_manipulator.to_html()
 
-        if is_circular_doupoly and save_lineplots:
+        if is_circular_rebuy_doupoly and save_lineplots:
             self.save_step_diagrams(price_used, price_news, price_rebuy, in_storages, in_circulations, signature)
 
         return our_profit

@@ -227,7 +227,7 @@ testcases_write_dict_svg = [(
 		'profits/all': {'vendor_0': 3.5, 'vendor_1': 7.1},
 	},
 	{
-		'simulation_name': 'Market Simulation',
+		'simulation_name': 'Market Simulation Circular',
 		'simulation_episode_length': '50',
 		'simulation_current_episode': '1',
 		'consumer_total_arrivals': '20',

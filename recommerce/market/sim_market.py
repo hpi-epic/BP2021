@@ -98,6 +98,14 @@ class SimMarket(gym.Env, JSONConfigurable):
 		return self._observation()
 
 	@abstractmethod
+	def _convert_policy_value_into_action_space(self, probability_distribution) -> None:
+		"""
+		Convert the received action values into the appropriate format. This prevents conversations warnings
+		received from the gym environment
+		"""
+		raise NotImplementedError
+
+	@abstractmethod
 	def _is_probability_distribution_fitting_exactly(self, probability_distribution) -> None:
 		"""
 		The implementation of this function varies between economy types.
@@ -144,8 +152,8 @@ class SimMarket(gym.Env, JSONConfigurable):
 		"""
 		if isinstance(action, np.ndarray) and len(action) == 1:
 			action = action.item()
-		elif isinstance(action, np.ndarray):
-			action = np.array(action, dtype=np.float32)
+
+		action = self._convert_policy_value_into_action_space(action)
 		assert self.action_space.contains(action), f'{action} ({type(action)}) invalid'
 
 		self.vendor_actions[0] = action
@@ -165,9 +173,8 @@ class SimMarket(gym.Env, JSONConfigurable):
 
 			# the competitor, which turn it is, will update its pricing
 			if i < len(self.competitors):
-				action_competitor_i = self.competitors[i].policy(self._observation(i + 1))
-				# if self.support_continuous_action_space:
-					# action_competitor_i = np.array(action_competitor_i, dtype=np.float32)
+				action_competitor_i = self._convert_policy_value_into_action_space(
+					self.competitors[i].policy(self._observation(i + 1)))
 				assert self.action_space.contains(action_competitor_i), \
 					f'This vendor does not deliver a suitable action, action_space: {self.action_space}, action: {action_competitor_i}'
 				self.vendor_actions[i + 1] = action_competitor_i

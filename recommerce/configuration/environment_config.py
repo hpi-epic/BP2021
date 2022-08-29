@@ -177,8 +177,8 @@ class EnvironmentConfig(ABC):
 					assert isinstance(agent['argument'], int), \
 						f'The "argument" field of this agent ({agent["name"]}) must be a int but was ({type(agent["argument"])})'
 				if issubclass(agent['agent_class'], CircularAgent):
-					assert isinstance(agent['argument'], int), \
-						f'The "argument" field of this agent ({agent["name"]}) must be a int but was ({type(agent["argument"])})'
+					assert isinstance(agent['argument'], list), \
+						f'The "argument" field of this agent ({agent["name"]}) must be a list but was ({type(agent["argument"])})'
 					# Subclasses of FixedPriceAgent solely accept tuples
 					agent['argument'] = tuple(agent['argument'])
 
