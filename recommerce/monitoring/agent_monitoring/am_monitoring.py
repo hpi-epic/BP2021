@@ -29,7 +29,7 @@ class Monitor():
 	def __init__(
 			self,
 			config_market: AttrDict = HyperparameterConfigLoader.load('market_config', CircularEconomyRebuyPriceDuopoly),
-			config_rl: AttrDict = HyperparameterConfigLoader.load('q_learning_config', QLearningAgent),
+			config_rl: AttrDict = HyperparameterConfigLoader.load('rl_config.json', QLearningAgent),
 			name: str = 'plots'):
 		self.configurator = am_configuration.Configurator(config_market, config_rl, name)
 		self.evaluator = am_evaluation.Evaluator(self.configurator)

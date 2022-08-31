@@ -425,10 +425,10 @@ class DockerManager():
 		try:
 			# Using the low-level API to be able to get live-logs
 			logs = docker.APIClient().build(path=os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)),
-				tag=IMAGE_NAME, forcerm=True, network_mode='host', decode=True)
+				tag=IMAGE_NAME, forcerm=True, network_mode='host', decode=True, encoding='utf8')
 			for output in logs:
 				if 'stream' in output:
-					output_str = output['stream'].strip('\r\n').strip('\n')
+					output_str = output['stream'].strip('\r\n').strip('\n').encode('utf-8').decode('ascii', 'ignore')
 					self._logger.info(output_str)
 			img = self._get_client().images.get(IMAGE_NAME)
 		except docker.errors.BuildError or docker.errors.APIError as error:
@@ -597,7 +597,7 @@ class DockerManager():
 		# write dict to json
 		with open(os.path.join('configuration_files', 'market_config.json'), 'w') as config_json:
 			config_json.write(json.dumps(config_dict['hyperparameter']['sim_market']))
-		with open(os.path.join('configuration_files', 'q_learning_config.json'), 'w') as config_json:  # needs to be fixed
+		with open(os.path.join('configuration_files', 'rl_config.json'), 'w') as config_json: 
 			config_json.write(json.dumps(config_dict['hyperparameter']['rl']))
 		with open(os.path.join('configuration_files', f'environment_config_{command_id}.json'), 'w') as config_json:
 			config_json.write(json.dumps(config_dict['environment']))

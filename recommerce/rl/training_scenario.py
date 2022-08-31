@@ -45,7 +45,7 @@ def run_training_session(
     if config_market is None:
         config_market = HyperparameterConfigLoader.load('market_config', marketplace)
     if config_rl is None:
-        config_rl = HyperparameterConfigLoader.load('q_learning_config', agent)
+        config_rl = HyperparameterConfigLoader.load('rl_config.json', agent)
 
     assert issubclass(marketplace, sim_market.SimMarket), \
         f'the type of the passed marketplace must be a subclass of SimMarket: {marketplace}'
