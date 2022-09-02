@@ -436,7 +436,7 @@ class DockerManager():
 			return None
 		if old_img is not None and old_img.id != img.id:
 			self._logger.warning(f'\nA {IMAGE_NAME} image already exists, it will be overwritten')
-			self._get_client().images.remove(old_img.id[7:])
+			self._get_client().images.remove(old_img.id[7:], force=True)
 		# return id without the 'sha256:'-prefix
 		return img.id[7:]
 
