@@ -15,6 +15,8 @@ from recommerce.market.circular.circular_vendors import CircularAgent
 from recommerce.market.linear.linear_vendors import LinearAgent
 from recommerce.market.vendors import FixedPriceAgent
 from recommerce.rl.actorcritic.actorcritic_training import ActorCriticTrainer
+from recommerce.rl.actorcritic.actorcritic_agent import ActorCriticAgent
+
 from recommerce.rl.q_learning.q_learning_training import QLearningTrainer
 from recommerce.rl.stable_baselines.sb_a2c import StableBaselinesA2C
 from recommerce.rl.stable_baselines.sb_ddpg import StableBaselinesDDPG
@@ -77,7 +79,7 @@ def run_training_session(
         if issubclass(agent, StableBaselinesA2C): StableBaselinesA2C(**shared_args).train_agent(100000)  # noqa: E701
         if issubclass(agent, StableBaselinesPPO): StableBaselinesPPO(**shared_args).train_agent(1000000)  # noqa: E701
         if issubclass(agent, StableBaselinesSAC): StableBaselinesSAC(**shared_args).train_agent()  # noqa: E701
-    else:
+    elif issubclass(agent, ActorCriticAgent):
         config_rl.batch_size = 8
         ActorCriticTrainer(
             marketplace_class=marketplace,

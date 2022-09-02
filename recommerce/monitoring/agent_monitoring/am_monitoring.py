@@ -29,7 +29,7 @@ class Monitor():
 	def __init__(
 			self,
 			config_market: AttrDict = HyperparameterConfigLoader.load('market_config', CircularEconomyRebuyPriceDuopoly),
-			config_rl: AttrDict = HyperparameterConfigLoader.load('rl_config.json', QLearningAgent),
+			config_rl: AttrDict = HyperparameterConfigLoader.load('q_learning_config.json', QLearningAgent),
 			name: str = 'plots'):
 		self.configurator = am_configuration.Configurator(config_market, config_rl, name)
 		self.evaluator = am_evaluation.Evaluator(self.configurator)
@@ -114,7 +114,6 @@ def run_monitoring_session(monitor: Monitor) -> None:
 
 	monitor.evaluator.evaluate_session(rewards)
 
-
 def main():  # pragma: no cover
 	"""
 	Defines what is performed when the `agent_monitoring` command is chosen in `main.py`.
@@ -130,6 +129,7 @@ def main():  # pragma: no cover
 		separate_markets=config_environment_am.separate_markets,
 		competitors=config_environment_am.competitors,
 		config_market=config_market,
+		support_continuous_action_space=True
 		# TODO: Insert a check/variable in config for `support_continuous_action_space`
 	)
 	run_monitoring_session(monitor)
