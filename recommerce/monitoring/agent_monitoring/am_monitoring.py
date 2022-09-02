@@ -28,9 +28,14 @@ class Monitor():
 	"""
 	def __init__(
 			self,
-			config_market: AttrDict = HyperparameterConfigLoader.load('market_config', CircularEconomyRebuyPriceDuopoly),
-			config_rl: AttrDict = HyperparameterConfigLoader.load('q_learning_config.json', QLearningAgent),
+			config_market: AttrDict = None,
+			config_rl: AttrDict = None,
 			name: str = 'plots'):
+		if config_market is None:
+			config_market = HyperparameterConfigLoader.load('market_config', CircularEconomyRebuyPriceDuopoly)
+		if config_rl is None:
+			config_rl = HyperparameterConfigLoader.load('q_learning_config', QLearningAgent)
+
 		self.configurator = am_configuration.Configurator(config_market, config_rl, name)
 		self.evaluator = am_evaluation.Evaluator(self.configurator)
 		# Signal handler for e.g. KeyboardInterrupt

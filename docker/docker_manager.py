@@ -428,7 +428,7 @@ class DockerManager():
 				tag=IMAGE_NAME, forcerm=True, network_mode='host', decode=True, encoding='utf8')
 			for output in logs:
 				if 'stream' in output:
-					output_str = output['stream'].strip('\r\n').strip('\n').encode('utf-8').decode('ascii', 'ignore')
+					output_str = output['stream'].strip('\r\n').strip('\n')
 					self._logger.info(output_str)
 			img = self._get_client().images.get(IMAGE_NAME)
 		except docker.errors.BuildError or docker.errors.APIError as error:
