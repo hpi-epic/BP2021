@@ -7,7 +7,6 @@ def analyze_consecutive_models(
 		marketplace_class,
 		config_market,
 		agent_class,
-		continuous_action_space,
 		competitors):
 	agent_list = [(agent_class, [parameter_path]) for parameter_path in saved_parameter_paths]
 	monitor.configurator.setup_monitoring(
@@ -17,7 +16,6 @@ def analyze_consecutive_models(
 		agents=agent_list,
 		separate_markets=True,
 		competitors=competitors,
-		support_continuous_action_space=continuous_action_space,
 		config_market=config_market)
 	rewards = monitor.run_marketplace()
 	episode_numbers = [int(parameter_path[-9:][:5]) for parameter_path in saved_parameter_paths]

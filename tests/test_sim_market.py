@@ -75,7 +75,8 @@ def test_unique_output_dict(marketclass):
 @pytest.mark.parametrize('market_class, config_market, agent_class, config_agent, continuos_action_space',
 	market_initialization_and_steps_testcases)
 def test_market_initialization_and_steps(market_class, config_market, agent_class, config_agent, continuos_action_space):
-	market = market_class(config_market, support_continuous_action_space=continuos_action_space)
+	config_market["support_continuous_action_space"]=continuos_action_space
+	market = market_class(config_market)
 	config_rl = HyperparameterConfigLoader.load(config_agent, agent_class)
 	agent = agent_class(config_market=config_market, config_rl=config_rl, marketplace=market, name='test')
 	if isinstance(agent, QLearningAgent):

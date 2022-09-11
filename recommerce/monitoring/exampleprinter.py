@@ -21,6 +21,7 @@ from recommerce.market.sim_market import SimMarket
 from recommerce.market.vendors import Agent, FixedPriceAgent
 from recommerce.monitoring.svg_manipulation import SVGManipulator
 from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
+from recommerce.rl.stable_baselines.stable_baselines_model import StableBaselinesAgent
 
 
 class ExamplePrinter():
@@ -73,6 +74,10 @@ class ExamplePrinter():
         writer = SummaryWriter(log_dir=os.path.join(PathManager.results_path, 'runs', signature))
         os.makedirs(os.path.join(PathManager.results_path, 'exampleprinter', signature))
 
+        # is circular can be used for line plots (all types: monopoly, duopoly, oligopoly)
+        is_circular_rebuy = isinstance(self.marketplace, circular_market.CircularEconomyRebuyPrice)
+
+        # linear and circular can be used for example printer svg
         is_circular_rebuy_doupoly = isinstance(self.marketplace, circular_market.CircularEconomyRebuyPriceDuopoly)
         is_linear_doupoly = isinstance(self.marketplace, linear_market.LinearEconomyDuopoly)
 
@@ -81,12 +86,17 @@ class ExamplePrinter():
 
         cumulative_dict = None
 
-        if is_circular_rebuy_doupoly and save_lineplots:
+        if is_circular_rebuy and save_lineplots:
             price_used = [[] for _ in range(self.marketplace._number_of_vendors)]
             price_news = [[] for _ in range(self.marketplace._number_of_vendors)]
             price_rebuy = [[] for _ in range(self.marketplace._number_of_vendors)]
             in_storages = [[] for _ in range(self.marketplace._number_of_vendors)]
+            sales_new = [[] for _ in range(self.marketplace._number_of_vendors)]
+            sales_rebuy = [[] for _ in range(self.marketplace._number_of_vendors)]
+
+
         in_circulations = []
+        sales_no_buy = []
 
         with torch.no_grad():
             while not is_done:
@@ -107,13 +117,17 @@ class ExamplePrinter():
 
                 our_profit += reward
                 counter += 1
-                if is_circular_rebuy_doupoly and save_lineplots:
+                if is_circular_rebuy and save_lineplots:
                     for i in range(self.marketplace._number_of_vendors):
                         price_used[i].append(logdict['actions/price_refurbished'][f'vendor_{i}'])
                         price_news[i].append(logdict['actions/price_new'][f'vendor_{i}'])
                         price_rebuy[i].append(logdict['actions/price_rebuy'][f'vendor_{i}'])
                         in_storages[i].append(logdict['state/in_storage'][f'vendor_{i}'])
+                        sales_rebuy[i].append(logdict['customer/purchases_refurbished'][f'vendor_{i}'])
+                        sales_new[i].append(logdict['customer/purchases_new'][f'vendor_{i}'])
+
                     in_circulations.append(logdict['state/in_circulation'])
+                    sales_no_buy.append(logdict['customer/buy_nothing'])
 
                 if is_circular_rebuy_doupoly or is_linear_doupoly:
                     svg_manipulator.save_overview_svg(filename=('MarketOverview_%.3d' % counter))
@@ -121,12 +135,13 @@ class ExamplePrinter():
         if is_circular_rebuy_doupoly or is_linear_doupoly:
             svg_manipulator.to_html()
 
-        if is_circular_rebuy_doupoly and save_lineplots:
-            self.save_step_diagrams(price_used, price_news, price_rebuy, in_storages, in_circulations, signature)
+        if is_circular_rebuy and save_lineplots:
+            self.save_step_diagrams(price_used, price_news, price_rebuy, in_storages,
+                                    in_circulations, sales_rebuy, sales_new, sales_no_buy, signature)
 
         return our_profit
 
-    def save_step_diagrams(self, price_used, price_news, price_rebuy, in_storages, in_circulations, signature) -> None:
+    def save_step_diagrams(self, price_used, price_news, price_rebuy, in_storages, in_circulations, sales_rebuy, sales_new, sales_no_buy ,signature) -> None:
         x = np.array(range(1, self.config_market.episode_length + 1))
         plt.step(x, in_circulations)
         plt.savefig(os.path.join(PathManager.results_path, 'exampleprinter', signature, 'lineplot_in_circulations.svg'))
@@ -134,10 +149,30 @@ class ExamplePrinter():
         plt.savefig(os.path.join(PathManager.results_path, 'exampleprinter', signature, 'lineplot_in_circulations_xlim.svg'),
                     transparent=True)
         plt.clf()
+
+
+        plt.figure(figsize=(100, 6))
+        plt.step(x, sales_no_buy, label="# no buy")
+
+        for i in range(self.marketplace._number_of_vendors):
+            plt.step(x - (0.5 if i == 1 else 0),
+                     sales_rebuy[i], label=f"# rebuy customer {self.agent.name if i == 0 else self.marketplace.competitors[i - 1].name}")
+            plt.step(x - (0.5 if i == 1 else 0),
+                     sales_new[i],
+                     label=f"# new buy customer {self.agent.name if i == 0 else self.marketplace.competitors[i - 1].name}")
+        plt.legend()
+        plt.grid()
+
+        plt.savefig(os.path.join(PathManager.results_path, 'exampleprinter', signature, 'customer_behaviour.svg'))
+
+        plt.clf()
+        plt.figure(figsize=(plt.rcParamsDefault["figure.figsize"]))
+
         for data, name in [(price_used, 'price_refurbished'),
                            (price_news, 'price_new'),
                            (price_rebuy, 'price_rebuy'),
-                           (in_storages, 'in_storages')]:
+                           (in_storages, 'in_storages'),
+                           ]:
             for i in range(self.marketplace._number_of_vendors):
                 plt.step(x - (0.5 if i == 1 else 0),
                          data[i], label=(self.agent.name if i == 0 else self.marketplace.competitors[i - 1].name))
@@ -162,7 +197,7 @@ def main():  # pragma: no cover
     config_environment: ExampleprinterEnvironmentConfig = EnvironmentConfigLoader.load('environment_config_exampleprinter')
 
     config_market: AttrDict = HyperparameterConfigLoader.load('market_config', config_environment.marketplace)
-    config_rl: AttrDict = HyperparameterConfigLoader.load('q_learning_config', config_environment.agent[0]['agent_class'])
+    config_rl: AttrDict = HyperparameterConfigLoader.load('rl_config', config_environment.agent[0]['agent_class'])
     printer = ExamplePrinter(config_market=config_market)
 
     competitor_list = []
@@ -174,10 +209,10 @@ def main():  # pragma: no cover
             competitor_list.append(competitor['agent_class'](config_market=config_market, name=competitor['name']))
 
     # TODO: Theoretically, the name of the agent is saved in config_environment['name'], but we don't use it yet.
-    marketplace = config_environment.marketplace(config=config_market, competitors=competitor_list)
+    marketplace = config_environment.marketplace(config=config_market, competitors=competitor_list )
 
     # QLearningAgents need more initialization
-    if issubclass(config_environment.agent[0]['agent_class'], QLearningAgent):
+    if issubclass(config_environment.agent[0]['agent_class'], (QLearningAgent, StableBaselinesAgent)):
 
         agent = config_environment.agent[0]['agent_class'](
                 config_market=config_market,
@@ -191,7 +226,7 @@ def main():  # pragma: no cover
     else:
         printer.setup_exampleprinter(marketplace=marketplace, agent=config_environment.agent[0]['agent_class']())
 
-    print(f'The final profit was: {printer.run_example()}')
+    print(f'The final profit was: {printer.run_example(save_lineplots=True)}')
 
 
 if __name__ == '__main__':  # pragma: no cover

@@ -35,7 +35,8 @@ class CircularEconomy(SimMarket, ABC):
             ('storage_cost_per_product', (int, float), non_negative_rule),
             ('opposite_own_state_visibility', bool, None),
             ('common_state_visibility', bool, None),
-            ('reward_mixed_profit_and_difference', bool, None)
+            ('reward_mixed_profit_and_difference', bool, None),
+            ('support_continuous_action_space', bool, None)
         ]
 
     def _setup_action_observation_space(self, support_continuous_action_space: bool) -> None:

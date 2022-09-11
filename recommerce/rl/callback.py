@@ -179,7 +179,6 @@ class RecommerceCallback(BaseCallback):
 				type(self.marketplace),
 				self.config_market,
 				self.agent_class,
-				hasattr(self.model, 'env'),
 				competitors
 			)
 

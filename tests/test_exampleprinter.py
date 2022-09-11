@@ -15,7 +15,7 @@ from recommerce.rl.actorcritic.actorcritic_agent import ContinuousActorCriticAge
 from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
 
 # The load path for the agent modelfiles
-parameters_path = os.path.join('tests', 'test_data')
+parameters_path = os.path.join(PathManager.user_path)
 
 config_market: AttrDict = HyperparameterConfigLoader.load('market_config', circular_market.CircularEconomyRebuyPriceMonopoly)
 config_q_learning: AttrDict = HyperparameterConfigLoader.load('q_learning_config', QLearningAgent)

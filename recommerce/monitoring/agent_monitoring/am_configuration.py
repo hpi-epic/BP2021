@@ -170,7 +170,7 @@ class Configurator():
 		separate_markets: bool = False,
 		competitors: list = None,
 		config_market: AttrDict = None,
-		support_continuous_action_space: bool = False,) -> None:
+		) -> None:
 		"""
 		Configure the current monitoring session.
 
@@ -189,8 +189,6 @@ class Configurator():
 			separate_markets (bool, optional): Indicates if the passed agents should be trained on separate marketplaces. Defaults to False.
 			competitors (list same as agents): If separate_markets is True, competitors can be used to overwrite default competitors in the market.
 			config_market (AttrDict, optional): The config file for the marketplace. Defaults to None.
-			support_continuous_action_space(bool, optional): Needed when setting StableBaselinesAgents in order to ensure continuous pricing.
-				Defaults to False.
 		"""
 		if episodes is not None:
 			assert isinstance(episodes, int), 'episodes must be of type int'
@@ -221,7 +219,7 @@ class Configurator():
 					f'The number of competitors given is invalid: was {len(competitors)} but should be {marketplace.get_num_competitors()}'
 
 			self.marketplace = marketplace(
-				config=self.config_market, support_continuous_action_space=support_continuous_action_space, competitors=self.competitors)
+				config=self.config_market, competitors=self.competitors)
 
 			# If the agents have not been changed, we reuse the default agents
 			if(agents is None):

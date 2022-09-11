@@ -14,4 +14,4 @@ if __name__ == '__main__':
     path = 'ENTER YOUR PATH HERE'
     saved_parameter_paths = sorted(
         list(map(lambda x: os.path.join(path, x), filter(lambda filename: 'zip' in filename or 'dat' in filename, os.listdir(path)))))
-    analyze_consecutive_models(saved_parameter_paths, monitor, CircularEconomyRebuyPriceDuopoly, config_market, StableBaselinesPPO, True)
+    analyze_consecutive_models(saved_parameter_paths, monitor, CircularEconomyRebuyPriceDuopoly, config_market, StableBaselinesPPO)

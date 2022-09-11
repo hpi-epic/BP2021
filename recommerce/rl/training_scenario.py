@@ -78,7 +78,7 @@ def run_training_session(
         if issubclass(agent, StableBaselinesTD3): StableBaselinesTD3(**shared_args).train_agent()  # noqa: E701
         if issubclass(agent, StableBaselinesA2C): StableBaselinesA2C(**shared_args).train_agent(100000)  # noqa: E701
         if issubclass(agent, StableBaselinesPPO): StableBaselinesPPO(**shared_args).train_agent(1000000)  # noqa: E701
-        if issubclass(agent, StableBaselinesSAC): StableBaselinesSAC(**shared_args).train_agent()  # noqa: E701
+        if issubclass(agent, StableBaselinesSAC): StableBaselinesSAC(**shared_args).train_agent(1000000)  # noqa: E701
     elif issubclass(agent, ActorCriticAgent):
         config_rl.batch_size = 8
         ActorCriticTrainer(
@@ -158,7 +158,7 @@ def train_stable_baselines_ppo():
     StableBaselinesPPO(
         config_market=config_market,
         config_rl=config_rl,
-        marketplace=used_marketplace(config_market, True)).train_agent(1000000)
+        marketplace=used_marketplace(config_market)).train_agent(1000000)
 
 
 def train_stable_baselines_sac():
@@ -168,7 +168,7 @@ def train_stable_baselines_sac():
     StableBaselinesSAC(
         config_market=config_market,
         config_rl=config_rl,
-        marketplace=used_marketplace(config_market, True)).train_agent()
+        marketplace=used_marketplace(config_market)).train_agent()
 
 
 def train_rl_vs_rl():

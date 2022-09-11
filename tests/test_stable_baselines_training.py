@@ -15,57 +15,61 @@ config_market: AttrDict = HyperparameterConfigLoader.load('market_config', circu
 @pytest.mark.training
 @pytest.mark.slow
 def test_ddpg_training():
+	config_market["support_continuous_action_space"] = True
+
 	StableBaselinesDDPG(
 		config_market,
 		HyperparameterConfigLoader.load('sb_ddpg_config', StableBaselinesDDPG),
 		circular_market.CircularEconomyRebuyPriceDuopoly(
-			config=config_market,
-			support_continuous_action_space=True)
+			config=config_market)
 		).train_agent(1500, 30)
 
 
 @pytest.mark.training
 @pytest.mark.slow
 def test_td3_training():
+	config_market["support_continuous_action_space"] = True
 	StableBaselinesTD3(
 		config_market,
 		HyperparameterConfigLoader.load('sb_td3_config', StableBaselinesTD3),
-		circular_market.CircularEconomyRebuyPriceDuopoly(config=config_market,
-		support_continuous_action_space=True)
+		circular_market.CircularEconomyRebuyPriceDuopoly(config=config_market)
 	).train_agent(1500, 30)
 
 
 @pytest.mark.training
 @pytest.mark.slow
 def test_a2c_training():
+	config_market["support_continuous_action_space"] = True
+
 	StableBaselinesA2C(
 		config_market,
 		HyperparameterConfigLoader.load('sb_a2c_config', StableBaselinesA2C),
 		circular_market.CircularEconomyRebuyPriceDuopoly(
-			config=config_market,
-			support_continuous_action_space=True)
+			config=config_market)
 		).train_agent(1500, 30)
 
 
 @pytest.mark.training
 @pytest.mark.slow
 def test_ppo_training():
+	config_market["support_continuous_action_space"] = True
+
 	StableBaselinesPPO(
 		config_market,
 		HyperparameterConfigLoader.load('sb_ppo_config', StableBaselinesPPO),
 		marketplace=circular_market.CircularEconomyRebuyPriceDuopoly(
-			config=config_market,
-			support_continuous_action_space=True)
+			config=config_market)
 		).train_agent(1500, 30)
 
 
 @pytest.mark.training
 @pytest.mark.slow
 def test_sac_training():
+
+	config_market["support_continuous_action_space"] = True
 	StableBaselinesSAC(
 		config_market,
 		HyperparameterConfigLoader.load('sb_sac_config', StableBaselinesSAC),
 		marketplace=circular_market.CircularEconomyRebuyPriceDuopoly(
-			config=config_market,
-			support_continuous_action_space=True)
+			config=config_market)
 		).train_agent(1500, 30)

@@ -16,11 +16,11 @@ def train_rl_vs_rl(
 		config_rl2: AttrDict,
 		num_switches: int = 30,
 		num_steps_per_switch: int = 25000):
-	tmp_marketplace = CircularEconomyRebuyPriceDuopoly(config=config_market, support_continuous_action_space=True)
+	tmp_marketplace = CircularEconomyRebuyPriceDuopoly(config=config_market)
 	agent1 = StableBaselinesPPO(config_market=config_market, config_rl=config_rl1, marketplace=tmp_marketplace)
-	marketplace_for_agent2 = CircularEconomyRebuyPriceDuopoly(config=config_market, support_continuous_action_space=True, competitors=[agent1])
+	marketplace_for_agent2 = CircularEconomyRebuyPriceDuopoly(config=config_market, competitors=[agent1])
 	agent2 = StableBaselinesSAC(config_market=config_market, config_rl=config_rl2, marketplace=marketplace_for_agent2)
-	marketplace_for_agent1 = CircularEconomyRebuyPriceDuopoly(config=config_market, support_continuous_action_space=True, competitors=[agent2])
+	marketplace_for_agent1 = CircularEconomyRebuyPriceDuopoly(config=config_market, competitors=[agent2])
 	agent1.set_marketplace(marketplace_for_agent1)
 	agents = [agent1, agent2]
 	assert len(agents) == 2, 'This scenario is only for exactly two agents.'
