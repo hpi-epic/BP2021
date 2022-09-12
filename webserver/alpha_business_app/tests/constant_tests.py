@@ -25,8 +25,8 @@ EXAMPLE_POST_REQUEST_ARGUMENTS = {
 		'hyperparameter-sim_market-max_quality': ['50'],
 		'hyperparameter-sim_market-number_of_customers': ['20'],
 		'hyperparameter-sim_market-production_price': ['3'],
-		'hyperparameter-sim_market-storage_cost_per_product': ['0.1']
-	}
+		'hyperparameter-sim_market-storage_cost_per_product': ['0.1'],
+}
 
 EXAMPLE_HIERARCHY_DICT = {
 		'environment': {
@@ -63,7 +63,8 @@ EXAMPLE_HIERARCHY_DICT = {
 				'storage_cost_per_product': 0.1,
 				'opposite_own_state_visibility': False,
 				'common_state_visibility': False,
-				'reward_mixed_profit_and_difference': False
+				'reward_mixed_profit_and_difference': False,
+				'support_continuous_action_space': False
 			}
 		}
 	}
@@ -105,7 +106,8 @@ EXAMPLE_HIERARCHY_DICT2 = {
 				'max_quality': 50,
 				'number_of_customers': 6,
 				'production_price': 1,
-				'storage_cost_per_product': 0.7
+				'storage_cost_per_product': 0.7,
+				'support_continuous_action_space': False
 			}
 		}
 	}
@@ -149,7 +151,8 @@ EMPTY_STRUCTURE_CONFIG = {
 					'storage_cost_per_product': None,
 					'number_of_customers': None,
 					'reward_mixed_profit_and_difference': None,
-					'max_price': None
+					'max_price': None,
+					'support_continuous_action_space': None
 				}
 			}
 		}

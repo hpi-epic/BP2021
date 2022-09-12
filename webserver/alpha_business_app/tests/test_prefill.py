@@ -49,7 +49,7 @@ class ConfigMergerTest(TestCase):
 		expected_dict['hyperparameter']['sim_market']['common_state_visibility'] = False
 		expected_dict['hyperparameter']['sim_market']['opposite_own_state_visibility'] = False
 		expected_dict['hyperparameter']['sim_market']['reward_mixed_profit_and_difference'] = False
-
+		expected_dict['hyperparameter']['sim_market']['support_continuous_action_space'] = False
 		empty_config = Config.get_empty_structure_dict()
 		merger = ConfigMerger()
 		actual_config = merger.merge_config_into_base_config(empty_config, config_dict)
@@ -157,7 +157,8 @@ class ConfigMergerTest(TestCase):
 					'storage_cost_per_product': 0.7,
 					'common_state_visibility': False,
 					'opposite_own_state_visibility': False,
-					'reward_mixed_profit_and_difference': False
+					'reward_mixed_profit_and_difference': False,
+					'support_continuous_action_space': False
 				}
 			}
 		}
@@ -201,7 +202,8 @@ class ConfigMergerTest(TestCase):
 					'changed hyperparameter-sim_market storage_cost_per_product from 0.1 to 0.7',
 					'common_state_visibility': None,
 					'opposite_own_state_visibility': None,
-					'reward_mixed_profit_and_difference': None
+					'reward_mixed_profit_and_difference': None,
+					'support_continuous_action_space': None
 				}
 			}
 		}

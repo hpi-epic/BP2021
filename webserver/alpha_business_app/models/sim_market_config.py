@@ -19,3 +19,4 @@ class SimMarketConfig(AbstractConfig, models.Model):
 	production_price = models.IntegerField(null=True, default=None)
 	reward_mixed_profit_and_difference = models.BooleanField(null=True, default=False)
 	storage_cost_per_product = models.FloatField(null=True, default=None)
+	support_continuous_action_space = models.BooleanField(null=True, default=False)

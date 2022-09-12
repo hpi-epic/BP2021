@@ -131,6 +131,19 @@
                         min="0" step="any" value="{{prefill.storage_cost_per_product}}" name="hyperparameter-sim_market-storage_cost_per_product">
                 </div>
             </div>
+            <div class="row p-2" id="hyperparameter-sim_market-support_continuous_action_space">
+                <div class="col-6">
+                    {% if error_dict.support_continuous_action_space %}
+                        <img src="{% static 'icons/warning.svg' %}" width="18px" title="{{error_dict.support_continuous_action_space}}"></img>
+                    {% endif %}
+                    support continuous action space
+                </div>
+                <div class="col-6">
+                    <input type="checkbox" {% if prefill.support_continuous_action_space %}checked{% endif %}
+                        class="form-check-input {% if error_dict.support_continuous_action_space %} bc-error-field {% endif %}"
+                        name="hyperparameter-sim_market-support_continuous_action_space">
+                </div>
+            </div>
         </div>
     </div>
 </div>

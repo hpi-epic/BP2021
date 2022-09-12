@@ -101,7 +101,8 @@ class ConfigTest(TestCase):
 						'storage_cost_per_product': 0.1,
 						'opposite_own_state_visibility': False,
 						'common_state_visibility': False,
-						'reward_mixed_profit_and_difference': False
+						'reward_mixed_profit_and_difference': False,
+						'support_continuous_action_space': False
 					}
 				},
 				'environment': {

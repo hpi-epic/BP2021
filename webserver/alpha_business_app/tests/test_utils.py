@@ -26,7 +26,8 @@ class UtilsTest(TestCase):
 					'storage_cost_per_product': None,
 					'number_of_customers': None,
 					'reward_mixed_profit_and_difference': None,
-					'max_price': None
+					'max_price': None,
+					'support_continuous_action_space': None
 				},
 				'rl': {
 					'n_steps': None,
@@ -107,6 +108,7 @@ class UtilsTest(TestCase):
 			('max_price', int),
 			('episode_length', int),
 			('max_storage', int),
+			('support_continuous_action_space', bool),
 			('number_of_customers', int),
 			('opposite_own_state_visibility', bool),
 			('storage_cost_per_product', (int, float)),
@@ -115,6 +117,7 @@ class UtilsTest(TestCase):
 			('common_state_visibility', bool),
 			('reward_mixed_profit_and_difference', bool)
 		}
+
 		assert expected_parameter == get_all_possible_sim_market_hyperparameter()
 
 	def test_convert_to_django_type(self):
