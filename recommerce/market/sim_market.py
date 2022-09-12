@@ -57,7 +57,7 @@ class SimMarket(gym.Env, JSONConfigurable):
 			competitors (list, optional): If not None, this overwrites the default competitor list with a custom one.
 		"""
 		self.config = config
-		self.support_continuous_action_space = self.config["support_continuous_action_space"]
+		self.support_continuous_action_space = self.config['support_continuous_action_space']
 		self.competitors = self._get_competitor_list() if not competitors else competitors
 		# The agent's price does not belong to the observation_space any more because an agent should not depend on it
 		self._setup_action_observation_space(self.support_continuous_action_space)

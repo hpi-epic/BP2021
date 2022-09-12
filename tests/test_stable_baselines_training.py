@@ -15,7 +15,7 @@ config_market: AttrDict = HyperparameterConfigLoader.load('market_config', circu
 @pytest.mark.training
 @pytest.mark.slow
 def test_ddpg_training():
-	config_market["support_continuous_action_space"] = True
+	config_market['support_continuous_action_space'] = True
 
 	StableBaselinesDDPG(
 		config_market,
@@ -28,7 +28,7 @@ def test_ddpg_training():
 @pytest.mark.training
 @pytest.mark.slow
 def test_td3_training():
-	config_market["support_continuous_action_space"] = True
+	config_market['support_continuous_action_space'] = True
 	StableBaselinesTD3(
 		config_market,
 		HyperparameterConfigLoader.load('sb_td3_config', StableBaselinesTD3),
@@ -39,7 +39,7 @@ def test_td3_training():
 @pytest.mark.training
 @pytest.mark.slow
 def test_a2c_training():
-	config_market["support_continuous_action_space"] = True
+	config_market['support_continuous_action_space'] = True
 
 	StableBaselinesA2C(
 		config_market,
@@ -52,7 +52,7 @@ def test_a2c_training():
 @pytest.mark.training
 @pytest.mark.slow
 def test_ppo_training():
-	config_market["support_continuous_action_space"] = True
+	config_market['support_continuous_action_space'] = True
 
 	StableBaselinesPPO(
 		config_market,
@@ -66,7 +66,7 @@ def test_ppo_training():
 @pytest.mark.slow
 def test_sac_training():
 
-	config_market["support_continuous_action_space"] = True
+	config_market['support_continuous_action_space'] = True
 	StableBaselinesSAC(
 		config_market,
 		HyperparameterConfigLoader.load('sb_sac_config', StableBaselinesSAC),

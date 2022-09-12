@@ -14,9 +14,8 @@ from recommerce.configuration.path_manager import PathManager
 from recommerce.market.circular.circular_vendors import CircularAgent
 from recommerce.market.linear.linear_vendors import LinearAgent
 from recommerce.market.vendors import FixedPriceAgent
-from recommerce.rl.actorcritic.actorcritic_training import ActorCriticTrainer
 from recommerce.rl.actorcritic.actorcritic_agent import ActorCriticAgent
-
+from recommerce.rl.actorcritic.actorcritic_training import ActorCriticTrainer
 from recommerce.rl.q_learning.q_learning_training import QLearningTrainer
 from recommerce.rl.stable_baselines.sb_a2c import StableBaselinesA2C
 from recommerce.rl.stable_baselines.sb_ddpg import StableBaselinesDDPG
