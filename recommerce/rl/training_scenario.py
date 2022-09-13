@@ -71,7 +71,7 @@ def run_training_session(
         shared_args = {
             'config_market': config_market,
             'config_rl': config_rl,
-            'marketplace': marketplace(config_market, True)
+            'marketplace': marketplace(config_market)
         }
         if issubclass(agent, StableBaselinesDDPG): StableBaselinesDDPG(**shared_args).train_agent()  # noqa: E701
         if issubclass(agent, StableBaselinesTD3): StableBaselinesTD3(**shared_args).train_agent()  # noqa: E701
@@ -126,7 +126,7 @@ def train_stable_baselines_ddpg():
     StableBaselinesDDPG(
         config_market=config_market,
         config_rl=config_rl,
-        marketplace=circular_market.CircularEconomyRebuyPriceDuopoly(config_market, True)).train_agent()
+        marketplace=circular_market.CircularEconomyRebuyPriceDuopoly(config_market)).train_agent()
 
 
 def train_stable_baselines_td3():
@@ -136,7 +136,7 @@ def train_stable_baselines_td3():
     StableBaselinesTD3(
         config_market=config_market,
         config_rl=config_rl,
-        marketplace=circular_market.CircularEconomyRebuyPriceDuopoly(config_market, True)).train_agent()
+        marketplace=circular_market.CircularEconomyRebuyPriceDuopoly(config_market)).train_agent()
 
 
 def train_stable_baselines_a2c():
@@ -147,7 +147,7 @@ def train_stable_baselines_a2c():
     StableBaselinesA2C(
         config_market=config_market,
         config_rl=config_rl,
-        marketplace=circular_market.CircularEconomyRebuyPriceDuopoly(config_market, True)).train_agent(100000)
+        marketplace=circular_market.CircularEconomyRebuyPriceDuopoly(config_market)).train_agent(100000)
 
 
 def train_stable_baselines_ppo():

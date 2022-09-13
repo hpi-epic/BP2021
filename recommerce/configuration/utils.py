@@ -5,6 +5,7 @@ import re
 
 import numpy as np
 from attrdict import AttrDict
+from numpy import int64
 
 from recommerce.configuration.path_manager import PathManager
 from recommerce.monitoring.svg_manipulation import SVGManipulator
@@ -103,7 +104,8 @@ def divide_content_of_dict(dict1: dict, divisor) -> dict:
         if isinstance(dict1[key], dict):
             newdict[key] = divide_content_of_dict(dict1[key], divisor)
         else:
-            assert isinstance(dict1[key], (int, float, np.float32)), f'the dictionary should only contain numbers (int or float): {dict1}'
+            assert isinstance(dict1[key], (int, int64, float, np.float32)), f'the dictionary should only contain ' \
+                                                                            f'numbers (int or float): {dict1} '
             newdict[key] = dict1[key] / divisor
     return newdict
 
@@ -125,8 +127,8 @@ def add_content_of_two_dicts(dict1, dict2) -> dict:
         if isinstance(dict1[key], dict):
             newdict[key] = add_content_of_two_dicts(dict1[key], dict2[key])
         else:
-            assert isinstance(dict1[key], (int, float, np.float32)), f'dict1 should only contain numbers (int or float): {dict1}'
-            assert isinstance(dict2[key], (int, float, np.float32)), f'dict2 should only contain numbers (int or float): {dict2}'
+            assert isinstance(dict1[key], (int, int64, float, np.float32)), f'dict1 should only contain numbers (int or float): {dict1}'
+            assert isinstance(dict2[key], (int, int64, float, np.float32)), f'dict2 should only contain numbers (int or float): {dict2}'
             newdict[key] = dict1[key] + dict2[key]
     return newdict
 
