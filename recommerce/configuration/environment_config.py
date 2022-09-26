@@ -13,7 +13,7 @@ from recommerce.market.circular.circular_vendors import CircularAgent
 from recommerce.market.linear.linear_sim_market import LinearEconomy
 from recommerce.market.linear.linear_vendors import LinearAgent
 from recommerce.market.sim_market import SimMarket
-from recommerce.market.vendors import FixedPriceAgent
+from recommerce.market.vendors import FileBasedPriceAgent, FixedPriceAgent
 from recommerce.rl.reinforcement_learning_agent import ReinforcementLearningAgent
 
 
@@ -181,6 +181,11 @@ class EnvironmentConfig(ABC):
 						f'The "argument" field of this agent ({agent["name"]}) must be a list but was ({type(agent["argument"])})'
 					# Subclasses of FixedPriceAgent solely accept tuples
 					agent['argument'] = tuple(agent['argument'])
+			elif issubclass(agent['agent_class'], FileBasedPriceAgent):
+				assert isinstance(agent['argument'], str), \
+					f'The "argument" field of this agent ({agent["name"]}) must be a string but was ({type(agent["argument"])})'
+				full_path = os.path.abspath(os.path.join(PathManager.data_path, agent['argument']))
+				assert os.path.exists(full_path), f'the specified modelfile does not exist: {full_path}'
 
 			# check if some argument was provided even though an empty string should have been passed
 			else:
@@ -310,7 +315,7 @@ class AgentMonitoringEnvironmentConfig(EnvironmentConfig):
 		self.agent = []
 		for current_agent in passed_agents:
 			# with modelfile
-			if issubclass(current_agent['agent_class'], (ReinforcementLearningAgent, FixedPriceAgent)):
+			if issubclass(current_agent['agent_class'], (ReinforcementLearningAgent, FixedPriceAgent, FileBasedPriceAgent)):
 				self.agent.append((current_agent['agent_class'], [current_agent['argument'], current_agent['name']]))
 			# without modelfile
 			else:

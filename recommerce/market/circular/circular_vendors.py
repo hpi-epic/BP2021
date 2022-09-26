@@ -4,7 +4,7 @@ from statistics import median
 import numpy as np
 from attrdict import AttrDict
 
-from recommerce.market.vendors import Agent, FixedPriceAgent, HumanPlayer, RuleBasedAgent
+from recommerce.market.vendors import Agent, FileBasedPriceAgent, FixedPriceAgent, HumanPlayer, RuleBasedAgent
 
 
 class CircularAgent(Agent, ABC):
@@ -60,10 +60,12 @@ class FixedPriceCEAgent(CircularAgent, FixedPriceAgent):
     """
     This vendor's policy is trying to succeed by setting constant prices.
     """
+
     def __init__(self, config_market: AttrDict = None, fixed_price=(2, 4), name=''):
         assert isinstance(fixed_price, tuple), f'fixed_price must be a tuple: {fixed_price} ({type(fixed_price)})'
         assert len(fixed_price) == 2, f'fixed_price must contain two values: {fixed_price}'
-        assert all(isinstance(price, int) for price in fixed_price), f'the prices in fixed_price must be integers: {fixed_price}'
+        assert all(isinstance(price, int) for price in
+                   fixed_price), f'the prices in fixed_price must be integers: {fixed_price}'
         self.name = name if name != '' else type(self).__name__
         self.fixed_price = fixed_price
 
@@ -75,10 +77,12 @@ class FixedPriceCERebuyAgent(FixedPriceCEAgent):
     """
     This vendor's policy is the a version of the FixedPriceCEAgent with rebuy price.
     """
+
     def __init__(self, config_market: AttrDict = None, fixed_price=(3, 6, 2), name=''):
         assert isinstance(fixed_price, tuple), f'fixed_price must be a tuple: {fixed_price} ({type(fixed_price)})'
         assert len(fixed_price) == 3, f'fixed_price must contain three values: {fixed_price}'
-        assert all(isinstance(price, int) for price in fixed_price), f'the prices in fixed_price must be integers: {fixed_price}'
+        assert all(isinstance(price, int) for price in
+                   fixed_price), f'the prices in fixed_price must be integers: {fixed_price}'
         self.name = name if name != '' else type(self).__name__
         self.fixed_price = fixed_price
 
@@ -91,6 +95,7 @@ class RuleBasedCEAgent(RuleBasedAgent, CircularAgent):
     This vendor's policy does not consider the competitor's prices.
     It tries to succeed by taking its own storage costs into account.
     """
+
     def __init__(self, config_market: AttrDict, name='', continuous_action_space: bool = False):
         self.continuous_action_space = continuous_action_space
         self.name = name if name != '' else type(self).__name__
@@ -133,10 +138,30 @@ class RuleBasedCEAgent(RuleBasedAgent, CircularAgent):
         return self.convert_price_format(price_refurbished, price_new, rebuy_price)
 
 
+class MonopolyFileBasedPriceCERebuyAgent(FileBasedPriceAgent, CircularAgent):
+    """
+    This vendor can be used for following a specified policy from a file.
+    The policy needs to provider a action triple for each state mapping.
+    policy(state) = {price_new, price_used, rebuy_price}
+    """
+
+    def __init__(self, config_market: AttrDict, file, name=''):
+        self.name = name if name != '' else type(self).__name__
+        self.policyFct = np.load(file, allow_pickle=True)
+
+    def policy(self, observation, *_):
+        assert len(observation) == self.policyFct.ndim, 'passed policy does not seem fitting for current market scencario'
+        in_circ = observation[0]
+        warehouse = observation[1]
+        price_new, price_used, rebuy_price = self.policyFct[int(in_circ)][int(warehouse)]
+        return [price_used, price_new, rebuy_price]
+
+
 class RuleBasedCERebuyAgent(RuleBasedCEAgent):
     """
     This vendor's policy is a version of the RuleBasedCEAgent with rebuy price.
     """
+
     def convert_price_format(self, price_refurbished, price_new, rebuy_price):
         return (price_refurbished, price_new, rebuy_price)
 
@@ -145,6 +170,7 @@ class RuleBasedCERebuyAgentCompetitive(RuleBasedAgent, CircularAgent):
     """
     This vendor's policy is aiming to succeed by undercutting the competitor's prices.
     """
+
     def __init__(self, config_market: AttrDict, name='', continuous_action_space: bool = False):
         self.continuous_action_space = continuous_action_space
         self.name = name if name != '' else type(self).__name__
@@ -156,7 +182,8 @@ class RuleBasedCERebuyAgentCompetitive(RuleBasedAgent, CircularAgent):
 
         # in_circulation is ignored
         own_storage = observation[1].item() if self.config_market.common_state_visibility else observation[0].item()
-        competitors_refurbished_prices, competitors_new_prices, competitors_rebuy_prices = self._get_competitor_prices(observation, True)
+        competitors_refurbished_prices, competitors_new_prices, competitors_rebuy_prices = self._get_competitor_prices(
+            observation, True)
 
         price_new = max(min(competitors_new_prices) - 1, self.config_market.production_price + 1)
         # competitor's storage is ignored
@@ -180,6 +207,7 @@ class RuleBasedCERebuyAgentStorageMinimizer(RuleBasedAgent, CircularAgent):
     """
     This vendor's policy reacts to the competitors' prices and minimizes the usage of storage.
     """
+
     def __init__(self, config_market: AttrDict, name='', continuous_action_space: bool = False):
         self.continuous_action_space = continuous_action_space
         self.name = name if name != '' else type(self).__name__
@@ -191,7 +219,8 @@ class RuleBasedCERebuyAgentStorageMinimizer(RuleBasedAgent, CircularAgent):
 
         # in_circulation is ignored
         own_storage = observation[1].item() if self.config_market.common_state_visibility else observation[0].item()
-        competitors_refurbished_prices, competitors_new_prices, competitors_rebuy_prices = self._get_competitor_prices(observation, True)
+        competitors_refurbished_prices, competitors_new_prices, competitors_rebuy_prices = self._get_competitor_prices(
+            observation, True)
 
         price_new = max(median(competitors_new_prices) - 1, self.config_market.production_price + 1)
         # competitor's storage is ignored
