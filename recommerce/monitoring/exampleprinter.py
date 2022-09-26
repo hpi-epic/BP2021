@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 from attrdict import AttrDict
+from scipy.signal import savgol_filter
 from torch.utils.tensorboard import SummaryWriter
 
 import recommerce.configuration.utils as ut
@@ -153,20 +154,56 @@ class ExamplePrinter():
             transparent=True)
         plt.clf()
 
-        plt.figure(figsize=(100, 6))
-        plt.step(x, sales_no_buy, label='# no buy')
+        # create combined price and customer behaviour plot
+        fig, (ax1, ax2) = plt.subplots(2)
+        fig.suptitle('combined price and customer diagram')
+        fig.set_size_inches(100, 10)
+        major_ticks = np.arange(0, max(x) + 1, 20)
+        minor_ticks = np.arange(0, max(x) + 1, 1)
 
+        ax1.set_xticks(major_ticks)
+        ax1.set_xticks(minor_ticks, minor=True)
+        ax1.step(x, sales_no_buy, label='# no buy')
+
+        # customer behaviour
         for i in range(self.marketplace._number_of_vendors):
-            plt.step(x - (0.5 if i == 1 else 0),
+            ax1.step(x - (0.5 if i == 1 else 0),
                      sales_rebuy[i],
                      label=f'# rebuy customer {self.agent.name if i == 0 else self.marketplace.competitors[i - 1].name}')
-            plt.step(x - (0.5 if i == 1 else 0),
+            ax1.step(x - (0.5 if i == 1 else 0),
                      sales_new[i],
                      label=f'# new buy customer {self.agent.name if i == 0 else self.marketplace.competitors[i - 1].name}')
-        plt.legend()
-        plt.grid()
 
-        plt.savefig(os.path.join(PathManager.results_path, 'exampleprinter', signature, 'customer_behaviour.svg'))
+            newbuy_smooth = savgol_filter(sales_new[i], self.config_market.episode_length // 2 + 1,
+                                          3)  # window size 51, polynomial order 3
+            ax1.plot(x, newbuy_smooth, color='red')
+
+        ax1.legend(loc='upper left')
+        ax1.grid(which='both')
+
+        ax2.set_xticks(major_ticks)
+        ax2.set_xticks(minor_ticks, minor=True)
+
+        # pricing behaviour
+        for i in range(self.marketplace._number_of_vendors):
+            ax2.step(x - (0.5 if i == 1 else 0),
+                     price_rebuy[i],
+                     label=f'# rebuy price {self.agent.name if i == 0 else self.marketplace.competitors[i - 1].name}')
+            ax2.step(x - (0.5 if i == 1 else 0),
+                     price_news[i],
+                     label=f'# new price {self.agent.name if i == 0 else self.marketplace.competitors[i - 1].name}')
+            ax2.step(x - (0.5 if i == 1 else 0),
+                     price_used[i],
+                     label=f'# used price {self.agent.name if i == 0 else self.marketplace.competitors[i - 1].name}')
+
+            price_new = savgol_filter(price_news[i], self.config_market.episode_length // 2 + 1,
+                                      3)  # window size 51, polynomial order 3
+            ax2.plot(x, price_new, color='red')
+
+        ax2.legend(loc='upper left')
+        ax2.grid(which='both')
+
+        fig.savefig(os.path.join(PathManager.results_path, 'exampleprinter', signature, 'customer_behaviour.svg'))
 
         plt.clf()
         plt.figure(figsize=(plt.rcParamsDefault['figure.figsize']))
