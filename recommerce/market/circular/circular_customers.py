@@ -7,7 +7,7 @@ from recommerce.market.customer import Customer
 
 
 class CustomerCircular(Customer):
-	def generate_purchase_probabilities_from_offer(self, common_state, vendor_specific_state, vendor_actions, step_counter=0) -> np.array:
+	def generate_purchase_probabilities_from_offer(self, common_state, vendor_specific_state, vendor_actions) -> np.array:
 		"""
 		This method calculates the purchase probability for each vendor in a linear setup.
 		It is assumed that all vendors do have the same quality and same reputation.
@@ -22,7 +22,8 @@ class CustomerCircular(Customer):
 			'Both the vendor_specific_state and vendor_actions contain one element per vendor. So they must have the same length.'
 		assert len(vendor_specific_state) > 0, 'there must be at least one vendor.'
 
-		seasonal_interest = 2*(math.sin(step_counter * (math.pi / 2) * (1 / 50)))
+		step = common_state[1]
+		seasonal_interest = 5*(math.sin(step * (math.pi / 2) * (1 / 50)))
 
 		nothingpreference = 1
 		preferences = [nothingpreference]

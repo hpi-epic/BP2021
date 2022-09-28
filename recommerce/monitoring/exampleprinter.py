@@ -188,13 +188,13 @@ class ExamplePrinter():
         for i in range(self.marketplace._number_of_vendors):
             ax2.step(x - (0.5 if i == 1 else 0),
                      price_rebuy[i],
-                     label=f'# rebuy price {self.agent.name if i == 0 else self.marketplace.competitors[i - 1].name}')
+                     label=f'refurbished price {self.agent.name if i == 0 else self.marketplace.competitors[i - 1].name}')
             ax2.step(x - (0.5 if i == 1 else 0),
                      price_news[i],
-                     label=f'# new price {self.agent.name if i == 0 else self.marketplace.competitors[i - 1].name}')
+                     label=f'new price {self.agent.name if i == 0 else self.marketplace.competitors[i - 1].name}')
             ax2.step(x - (0.5 if i == 1 else 0),
                      price_used[i],
-                     label=f'# used price {self.agent.name if i == 0 else self.marketplace.competitors[i - 1].name}')
+                     label=f'rebuy price {self.agent.name if i == 0 else self.marketplace.competitors[i - 1].name}')
 
             price_new = savgol_filter(price_news[i], self.config_market.episode_length // 2 + 1,
                                       3)  # window size 51, polynomial order 3
@@ -204,6 +204,7 @@ class ExamplePrinter():
         ax2.grid(which='both')
 
         fig.savefig(os.path.join(PathManager.results_path, 'exampleprinter', signature, 'customer_behaviour.svg'))
+        plt.show()
 
         plt.clf()
         plt.figure(figsize=(plt.rcParamsDefault['figure.figsize']))
