@@ -1,8 +1,10 @@
 import copy
+import json
 import os
 import signal
 import sys
 import time
+from json import JSONEncoder
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -23,6 +25,12 @@ from recommerce.monitoring.svg_manipulation import SVGManipulator
 from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
 from recommerce.rl.stable_baselines.stable_baselines_model import StableBaselinesAgent
 
+
+class NumpyFloatValuesEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.float32):
+            return float(obj)
+        return JSONEncoder.default(self, obj)
 
 class ExamplePrinter():
 
@@ -89,12 +97,13 @@ class ExamplePrinter():
         cumulative_dict = None
 
         if is_circular_rebuy and save_lineplots:
-            price_used = [[] for _ in range(self.marketplace._number_of_vendors)]
+            profits = [[] for _ in range(self.marketplace._number_of_vendors)]
+            price_refurbished = [[] for _ in range(self.marketplace._number_of_vendors)]
             price_news = [[] for _ in range(self.marketplace._number_of_vendors)]
             price_rebuy = [[] for _ in range(self.marketplace._number_of_vendors)]
             in_storages = [[] for _ in range(self.marketplace._number_of_vendors)]
             sales_new = [[] for _ in range(self.marketplace._number_of_vendors)]
-            sales_rebuy = [[] for _ in range(self.marketplace._number_of_vendors)]
+            sales_refurbished = [[] for _ in range(self.marketplace._number_of_vendors)]
 
         in_circulations = []
         sales_no_buy = []
@@ -120,12 +129,13 @@ class ExamplePrinter():
                 counter += 1
                 if is_circular_rebuy and save_lineplots:
                     for i in range(self.marketplace._number_of_vendors):
-                        price_used[i].append(logdict['actions/price_refurbished'][f'vendor_{i}'])
+                        price_refurbished[i].append(logdict['actions/price_refurbished'][f'vendor_{i}'])
                         price_news[i].append(logdict['actions/price_new'][f'vendor_{i}'])
                         price_rebuy[i].append(logdict['actions/price_rebuy'][f'vendor_{i}'])
                         in_storages[i].append(logdict['state/in_storage'][f'vendor_{i}'])
-                        sales_rebuy[i].append(logdict['customer/purchases_refurbished'][f'vendor_{i}'])
+                        sales_refurbished[i].append(logdict['customer/purchases_refurbished'][f'vendor_{i}'])
                         sales_new[i].append(logdict['customer/purchases_new'][f'vendor_{i}'])
+                        profits[i].append(logdict['profits/all'][f'vendor_{i}'])
 
                     in_circulations.append(logdict['state/in_circulation'])
                     sales_no_buy.append(logdict['customer/buy_nothing'])
@@ -133,16 +143,36 @@ class ExamplePrinter():
                 if is_circular_rebuy_doupoly or is_linear_doupoly:
                     svg_manipulator.save_overview_svg(filename=('MarketOverview_%.3d' % counter))
 
+        raw_data = {
+            'vendors': self.marketplace._number_of_vendors,
+            'max_storage': self.marketplace.max_storage,
+            'price_new': price_news,
+            'price_refurbished': price_refurbished, #refurbished verkaufpreis
+            'price_rebuy': price_rebuy, #rueckkauf preis!
+            'sales_new': sales_new,
+            'sales_no_buy': sales_no_buy,
+            'sales_refurbished': sales_refurbished,
+            'in_circulation': in_circulations,
+            'in_storage': in_storages,
+            'profits': profits
+        }
+
+        with open(os.path.join(PathManager.results_path, 'exampleprinter', signature, 'raw_data.json'), 'w') as f:
+            json.dump(raw_data, f, cls=NumpyFloatValuesEncoder)
+
+
+
+
         if is_circular_rebuy_doupoly or is_linear_doupoly:
             svg_manipulator.to_html()
 
         if is_circular_rebuy and save_lineplots:
-            self.save_step_diagrams(price_used, price_news, price_rebuy, in_storages,
-                                    in_circulations, sales_rebuy, sales_new, sales_no_buy, signature)
+            self.save_step_diagrams(price_refurbished, price_news, price_rebuy, in_storages,
+                                    in_circulations, sales_refurbished, sales_new, sales_no_buy, signature)
 
         return our_profit
 
-    def save_step_diagrams(self, price_used, price_news, price_rebuy, in_storages, in_circulations, sales_rebuy,
+    def save_step_diagrams(self, price_refurbished, price_news, price_rebuy, in_storages, in_circulations, sales_refurbished,
                            sales_new, sales_no_buy, signature) -> None:
         x = np.array(range(1, self.config_market.episode_length + 1))
         plt.step(x, in_circulations)
@@ -158,7 +188,7 @@ class ExamplePrinter():
 
         for i in range(self.marketplace._number_of_vendors):
             plt.step(x - (0.5 if i == 1 else 0),
-                     sales_rebuy[i],
+                     sales_refurbished[i],
                      label=f'# rebuy customer {self.agent.name if i == 0 else self.marketplace.competitors[i - 1].name}')
             plt.step(x - (0.5 if i == 1 else 0),
                      sales_new[i],
@@ -171,7 +201,7 @@ class ExamplePrinter():
         plt.clf()
         plt.figure(figsize=(plt.rcParamsDefault['figure.figsize']))
 
-        for data, name in [(price_used, 'price_refurbished'),
+        for data, name in [(price_refurbished, 'price_refurbished'),
                            (price_news, 'price_new'),
                            (price_rebuy, 'price_rebuy'),
                            (in_storages, 'in_storages'),

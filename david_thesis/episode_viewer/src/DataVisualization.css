@@ -1,0 +1,6 @@
+.statistics_boxes > *{
+    margin-right: 1rem;
+}
+.statistics_boxes {
+    display: flex;
+}
