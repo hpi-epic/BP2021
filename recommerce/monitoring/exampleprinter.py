@@ -90,23 +90,30 @@ class ExamplePrinter():
         is_circular_rebuy_doupoly = isinstance(self.marketplace, circular_market.CircularEconomyRebuyPriceDuopoly)
         is_linear_doupoly = isinstance(self.marketplace, linear_market.LinearEconomyDuopoly)
 
+        is_circular = isinstance(self.marketplace, circular_market.CircularEconomy)
+
+        new_price_name = "price_new" if is_circular else "price"
+        new_purchases_name = "purchases_new" if is_circular else "purchases"
+
         if is_circular_rebuy_doupoly or is_linear_doupoly:
             svg_manipulator = SVGManipulator(signature,
                                              isinstance(self.marketplace, linear_market.LinearEconomyDuopoly))
 
         cumulative_dict = None
 
-        if is_circular_rebuy and save_lineplots:
-            profits = [[] for _ in range(self.marketplace._number_of_vendors)]
+        profits = [[] for _ in range(self.marketplace._number_of_vendors)]
+        price_news = [[] for _ in range(self.marketplace._number_of_vendors)]
+        sales_new = [[] for _ in range(self.marketplace._number_of_vendors)]
+        sales_no_buy = []
+
+        if is_circular and save_lineplots:
             price_refurbished = [[] for _ in range(self.marketplace._number_of_vendors)]
-            price_news = [[] for _ in range(self.marketplace._number_of_vendors)]
             price_rebuy = [[] for _ in range(self.marketplace._number_of_vendors)]
             in_storages = [[] for _ in range(self.marketplace._number_of_vendors)]
-            sales_new = [[] for _ in range(self.marketplace._number_of_vendors)]
             sales_refurbished = [[] for _ in range(self.marketplace._number_of_vendors)]
+            in_circulations = []
 
-        in_circulations = []
-        sales_no_buy = []
+
 
         with torch.no_grad():
             while not is_done:
@@ -127,35 +134,43 @@ class ExamplePrinter():
 
                 our_profit += reward
                 counter += 1
+
+                for i in range(self.marketplace._number_of_vendors):
+                    price_news[i].append(logdict[f"actions/{new_price_name}"][f'vendor_{i}'])
+                    sales_new[i].append(logdict[f"customer/{new_purchases_name}"][f'vendor_{i}'])
+                    profits[i].append(logdict['profits/all'][f'vendor_{i}'])
+
+                sales_no_buy.append(logdict['customer/buy_nothing'])
                 if is_circular_rebuy and save_lineplots:
                     for i in range(self.marketplace._number_of_vendors):
                         price_refurbished[i].append(logdict['actions/price_refurbished'][f'vendor_{i}'])
-                        price_news[i].append(logdict['actions/price_new'][f'vendor_{i}'])
                         price_rebuy[i].append(logdict['actions/price_rebuy'][f'vendor_{i}'])
                         in_storages[i].append(logdict['state/in_storage'][f'vendor_{i}'])
                         sales_refurbished[i].append(logdict['customer/purchases_refurbished'][f'vendor_{i}'])
-                        sales_new[i].append(logdict['customer/purchases_new'][f'vendor_{i}'])
-                        profits[i].append(logdict['profits/all'][f'vendor_{i}'])
 
                     in_circulations.append(logdict['state/in_circulation'])
-                    sales_no_buy.append(logdict['customer/buy_nothing'])
 
                 if is_circular_rebuy_doupoly or is_linear_doupoly:
                     svg_manipulator.save_overview_svg(filename=('MarketOverview_%.3d' % counter))
 
+
         raw_data = {
             'vendors': self.marketplace._number_of_vendors,
-            'max_storage': self.marketplace.max_storage,
+            'is_linear': not is_circular,
             'price_new': price_news,
-            'price_refurbished': price_refurbished, #refurbished verkaufpreis
-            'price_rebuy': price_rebuy, #rueckkauf preis!
             'sales_new': sales_new,
             'sales_no_buy': sales_no_buy,
-            'sales_refurbished': sales_refurbished,
-            'in_circulation': in_circulations,
-            'in_storage': in_storages,
             'profits': profits
         }
+
+        if is_circular:
+            raw_data['max_storage'] = self.marketplace.max_storage
+            raw_data['price_refurbished'] = price_refurbished  # refurbished verkaufpreis
+            raw_data['price_rebuy'] = price_rebuy  # rueckkauf preis!
+            raw_data['sales_refurbished'] = sales_refurbished
+            raw_data['in_circulation'] = in_circulations
+            raw_data['in_storage'] = in_storages
+
 
         with open(os.path.join(PathManager.results_path, 'exampleprinter', signature, 'raw_data.json'), 'w') as f:
             json.dump(raw_data, f, cls=NumpyFloatValuesEncoder)
