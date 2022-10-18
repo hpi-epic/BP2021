@@ -115,8 +115,9 @@ class SVGManipulator():
             list: List of svgs in this directory.
         """
         all_svg_files = [file for file in os.listdir(directory) if os.path.isfile(os.path.join(directory, file))]
-        assert all(file.endswith('.svg') for file in all_svg_files), \
-            f'all files in given directory must be svgs: {os.path.abspath(directory)}'
+        all_svg_files = filter( lambda file: file.endswith('.svg'), all_svg_files)
+        # assert all(file.endswith('.svg') for file in all_svg_files), \
+        #     f'all files in given directory must be svgs: {os.path.abspath(directory)}'
         return sorted(all_svg_files)
 
     def construct_slideshow_html(self, images: list, time: int = 1000) -> str:
