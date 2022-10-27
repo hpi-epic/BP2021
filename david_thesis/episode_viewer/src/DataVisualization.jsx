@@ -199,6 +199,7 @@ export const DataVisualization = ({ rawData }) => {
                 scales: {
                   y: {
                     max: 10,
+                    suggestedMin: 2,
                   },
                 },
               }}

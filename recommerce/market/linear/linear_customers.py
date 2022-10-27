@@ -21,6 +21,12 @@ class CustomerLinear(Customer):
 			'Both the vendor_specific_state and vendor_actions contain one element per vendor. So they must have the same length.'
 		assert len(vendor_specific_state) > 0, 'there must be at least one vendor.'
 
+		# hacky ...
+		for idx, element in enumerate(vendor_actions):
+			if len(element.shape) == 1:
+				vendor_actions[idx] = np.array(vendor_actions[idx][0])
+
+
 		nothingpreference = 1
 		ratios = [nothingpreference]
 		for vendor_idx in range(len(vendor_actions)):
