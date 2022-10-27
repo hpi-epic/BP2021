@@ -51,6 +51,7 @@ export const DataVisualization = ({ rawData }) => {
   const [profitGraph, setProfitGraph] = React.useState(null);
   const [activeVendor, setActiveVendor] = React.useState(0);
   const [accumulated, setAccumulated] = React.useState(false);
+  const [avgPrices, setAvgPrices] = React.useState([]);
 
   React.useEffect(() => {
     if (!rawData) return;
@@ -65,7 +66,7 @@ export const DataVisualization = ({ rawData }) => {
 
     if (accumulated) {
       rawData["profits"].forEach((vendor, idx) => {
-        console.log(idx);
+
         const cumulativeSum = (
           (sum) => (value) =>
             (sum += value)
@@ -83,6 +84,17 @@ export const DataVisualization = ({ rawData }) => {
     setProfitGraph(
       getProfitGraph(sliderValue, episodeLength, data, activeVendor)
     );
+
+
+    if(rawData['is_linear']) {
+      const all_new_prices = rawData['price_new'][0].concat(rawData['price_new'][1])
+      const all_new_sales = rawData['sales_new'][0].concat(rawData['sales_new'][1])
+      const avg_price_new = all_new_prices.map((price, idx) => price * all_new_sales[idx]).reduce((a,b) => a+b, 0) / all_new_sales.reduce((a,b) => a+b, 0)
+      setAvgPrices([avg_price_new])
+    }else {
+      // TODO
+    }
+
   }, [sliderValue, activeVendor, accumulated]);
 
   const handleRadioChange = (event) => {
@@ -307,6 +319,16 @@ export const DataVisualization = ({ rawData }) => {
               </>
             );
           })}
+        {rawData["is_linear"] && <Card>
+            <CardContent>
+              <Typography variant="h5">
+                <strong>Ø new buy price</strong>:{" "}
+                {Number(
+                  avgPrices[0]
+                ).toFixed(2)}
+              </Typography>
+            </CardContent>
+          </Card>}
       </Box>
       <Box
         sx={{
