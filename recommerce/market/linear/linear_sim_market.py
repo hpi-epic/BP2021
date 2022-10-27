@@ -4,7 +4,7 @@ import gym
 import numpy as np
 
 import recommerce.configuration.utils as ut
-from recommerce.configuration.common_rules import greater_zero_even_rule, greater_zero_rule, non_negative_rule
+from recommerce.configuration.common_rules import between_zero_one_rule, greater_zero_even_rule, greater_zero_rule, non_negative_rule
 from recommerce.market.customer import Customer
 from recommerce.market.linear.linear_customers import CustomerLinear
 from recommerce.market.linear.linear_vendors import Just2PlayersLEAgent, LERandomAgent, LinearRatio1LEAgent
@@ -31,7 +31,8 @@ class LinearEconomy(SimMarket, ABC):
             ('opposite_own_state_visibility', bool, None),
             ('common_state_visibility', bool, None),
             ('reward_mixed_profit_and_difference', bool, None),
-            ('support_continuous_action_space', bool, None)
+            ('support_continuous_action_space', bool, None),
+            ('fraction_of_strategic_customer', float, between_zero_one_rule)
         ]
 
     def _setup_action_observation_space(self, support_continuous_action_space: bool) -> None:
@@ -52,7 +53,7 @@ class LinearEconomy(SimMarket, ABC):
                      dtype=np.float32))
 
         if support_continuous_action_space:
-            self.action_space = gym.spaces.Box(np.array(0.0, dtype=np.float32), np.array(self.config.max_price, dtype=np.float32))
+            self.action_space = gym.spaces.Box(np.array([0], dtype=np.float32), np.array([self.config.max_price], dtype=np.float32))
         else:
             self.action_space = gym.spaces.Discrete(self.config.max_price)
 
@@ -78,6 +79,10 @@ class LinearEconomy(SimMarket, ABC):
         return self._convert_policy_value_into_action_space(self.config.production_price + 1)
 
     def _convert_policy_value_into_action_space(self, action_values):
+
+        if not isinstance(action_values, np.ndarray):
+            action_values = [action_values]
+
         if self.support_continuous_action_space:
             return np.array(action_values, dtype=np.float32)
         return action_values

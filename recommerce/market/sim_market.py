@@ -1,4 +1,6 @@
 from abc import abstractmethod
+from collections import deque
+from statistics import mean
 from typing import Tuple
 
 import gym
@@ -87,6 +89,8 @@ class SimMarket(gym.Env, JSONConfigurable):
 		"""
 		self.step_counter = 0
 
+		self.price_deque = deque([], maxlen=5)
+
 		self._reset_common_state()
 
 		self.vendor_specific_state = [self._reset_vendor_specific_state() for _ in range(self._number_of_vendors)]
@@ -130,6 +134,8 @@ class SimMarket(gym.Env, JSONConfigurable):
 		assert self._is_probability_distribution_fitting_exactly(probability_distribution)
 
 		customer_decisions = np.random.multinomial(number_of_customers, probability_distribution).tolist()
+
+
 		self._output_dict['customer/buy_nothing'] += customer_decisions[0]
 		for seller, frequency in enumerate(customer_decisions):
 			if seller == 0 or frequency == 0:
@@ -150,11 +156,12 @@ class SimMarket(gym.Env, JSONConfigurable):
 			the reward he made between these actions,
 			a flag indicating if the market closes and information about the market for logging purposes.
 		"""
-		if isinstance(action, np.ndarray) and len(action) == 1:
+		if isinstance(action, np.ndarray) and len(action) == 1 and not self.config.support_continuous_action_space:
 			action = action.item()
 
 		action = self._convert_policy_value_into_action_space(action)
 		assert self.action_space.contains(action), f'{action} ({type(action)}) invalid'
+
 
 		self.vendor_actions[0] = action
 
@@ -165,7 +172,15 @@ class SimMarket(gym.Env, JSONConfigurable):
 		self._output_dict = {'customer/buy_nothing': 0}
 		self._initialize_output_dict()
 
-		customers_per_vendor_iteration = self.config.number_of_customers // self._number_of_vendors
+		number_of_myopic_customer = self.config.number_of_customers * (1 - self.config.fraction_of_strategic_customer)
+		number_of_strategic_customer = self.config.number_of_customers - number_of_myopic_customer
+
+		# if we dont have enough oberservation, there wont be any strategic customers
+		if len(self.price_deque) < 5:
+			number_of_myopic_customer = self.config.number_of_customers
+			number_of_strategic_customer = 0
+
+		customers_per_vendor_iteration = number_of_myopic_customer // self._number_of_vendors
 		for i in range(self._number_of_vendors):
 			self._simulate_customers(profits, customers_per_vendor_iteration)
 			if self._owner is not None:
@@ -179,12 +194,35 @@ class SimMarket(gym.Env, JSONConfigurable):
 					f'This vendor does not deliver a suitable action, action_space: {self.action_space}, action: {action_competitor_i}'
 				self.vendor_actions[i + 1] = action_competitor_i
 
+		# smarter
+		self.price_deque.append(min(self.vendor_actions))
+
+		self._simulate_strategic_customer(profits, number_of_strategic_customer)
+
 		self._consider_storage_costs(profits)
 
 		self._ensure_output_dict_has('profits/all', profits)
 		is_done = self.step_counter >= self.config.episode_length
 		reward = profits[0] if not self.config.reward_mixed_profit_and_difference else 2 * profits[0] - np.max(profits[1:])
 		return self._observation(), float(reward), is_done, self._output_dict
+
+
+# wartezustand, kunden kommt zu x% wieder
+# jeder str. Kunde kommt zu x % wieder & neue state dimension die wartende hält
+# consumer surplus / durchschnittlicher verkaufspreis
+# wie oft kommt ein kunde typischerweise zurueck
+	def _simulate_strategic_customer(self, profits, number_of_strategic_customer):
+		if len(self.price_deque) < 5:
+			return
+
+		# wuerde kaufen bei mondpreisen... oder exponentiell
+		current_lowest_offer_price_vendor, current_lowest_offer_price = min(enumerate(self.vendor_actions), key=lambda x: x[1])
+		avg_price = sum(self.price_deque) / len(self.price_deque)
+		if current_lowest_offer_price < avg_price:
+			# print(f"[step {self.step_counter}] since the current offer ({current_lowest_offer_price}) price was cheaper than the avg of the last 5 offers ({avg_price}), buy!")
+			self._complete_purchase(profits, current_lowest_offer_price_vendor, number_of_strategic_customer)
+
+
 
 	def _observation(self, vendor_view=0) -> np.array:
 		"""

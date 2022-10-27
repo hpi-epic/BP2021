@@ -6,7 +6,7 @@ import numpy as np
 import recommerce.configuration.utils as ut
 import recommerce.market.circular.circular_vendors as circular_vendors
 import recommerce.market.owner as owner
-from recommerce.configuration.common_rules import greater_zero_even_rule, greater_zero_rule, non_negative_rule
+from recommerce.configuration.common_rules import between_zero_one_rule, greater_zero_even_rule, greater_zero_rule, non_negative_rule
 from recommerce.market.circular.circular_customers import CustomerCircular
 from recommerce.market.customer import Customer
 from recommerce.market.owner import Owner
@@ -36,7 +36,9 @@ class CircularEconomy(SimMarket, ABC):
             ('opposite_own_state_visibility', bool, None),
             ('common_state_visibility', bool, None),
             ('reward_mixed_profit_and_difference', bool, None),
-            ('support_continuous_action_space', bool, None)
+            ('support_continuous_action_space', bool, None),
+            ('fraction_of_strategic_customer', float, between_zero_one_rule)
+
         ]
 
     def _setup_action_observation_space(self, support_continuous_action_space: bool) -> None:
