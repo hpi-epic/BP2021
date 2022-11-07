@@ -1,3 +1,4 @@
+import math
 from abc import abstractmethod
 from collections import deque
 from statistics import mean
@@ -97,7 +98,6 @@ class SimMarket(gym.Env, JSONConfigurable):
             np.array: The initial observation of the market.
         """
         self.step_counter = 0
-
         self.price_deque = deque([], maxlen=5)
 
         self._reset_common_state()
@@ -163,6 +163,8 @@ class SimMarket(gym.Env, JSONConfigurable):
 
         self._simulate_strategic_customer(profits, number_of_strategic_customer)
 
+
+
     def step(self, action) -> Tuple[np.array, float, bool, dict]:
         """
         Simulate the market between actions by the agent.
@@ -206,32 +208,46 @@ class SimMarket(gym.Env, JSONConfigurable):
                     f'This vendor does not deliver a suitable action, action_space: {self.action_space}, action: {action_competitor_i}'
                 self.vendor_actions[i + 1] = action_competitor_i
 
-        # TODO: add all prices
+        # TODO halb periodisch umbauen
         self.price_deque.append(min(self.vendor_actions))
 
         self._consider_storage_costs(profits)
 
         self._ensure_output_dict_has('profits/all', profits)
+
+        self._output_dict['customers/waiting'] = self.waiting_customers
+
         is_done = self.step_counter >= self.config.episode_length
         reward = profits[0] if not self.config.reward_mixed_profit_and_difference else 2 * profits[0] - np.max(
             profits[1:])
+
+        # print(self.waiting_customers)
         return self._observation(), float(reward), is_done, self._output_dict
 
-    # wartezustand, kunden kommt zu x% wieder
-    # jeder str. Kunde kommt zu x % wieder & neue state dimension die wartende hält
-    # consumer surplus / durchschnittlicher verkaufspreis
-    # wie oft kommt ein kunde typischerweise zurueck
-    def _simulate_strategic_customer(self, profits, number_of_strategic_customer):
+    def _simulate_strategic_customer(self, profits, number_of_new_strategic_customer):
         if len(self.price_deque) < 5:
             return
 
-        # wuerde kaufen bei mondpreisen... oder exponentiell
+        number_of_reoccurring_strategic_customer = math.floor(self.waiting_customers * 0.3)
+        number_of_strategic_customer = number_of_reoccurring_strategic_customer + number_of_new_strategic_customer
+        self.waiting_customers = max(self.waiting_customers - number_of_reoccurring_strategic_customer, 0)
+
+        if number_of_strategic_customer == 0:
+            return
+
+        # wie verhindern wir den einkauf bei mondpreisen?
         current_lowest_offer_price_vendor, current_lowest_offer_price = min(enumerate(self.vendor_actions),
                                                                             key=lambda x: x[1])
         avg_price = sum(self.price_deque) / len(self.price_deque)
         if current_lowest_offer_price < avg_price:
-            # print(f"[step {self.step_counter}] since the current offer ({current_lowest_offer_price}) price was cheaper than the avg of the last 5 offers ({avg_price}), buy!")
             self._complete_purchase(profits, current_lowest_offer_price_vendor, number_of_strategic_customer)
+        else:
+            # half of the strategic customers who couldn't purchase will enter waiting state
+            if self.config.fraction_of_strategic_customer > 0:
+                self.waiting_customers = min(self.waiting_customers + (max(int(number_of_strategic_customer * 0.8), 1)), self.config.max_waiting_customers)
+
+
+    # todo fuer zukunftsdavid: - punishen für lazyness + den code hier laufen lassen (bc. strg. cust == 0 und dann diffen mit last recommerce run...)
 
     def _observation(self, vendor_view=0) -> np.array:
         """

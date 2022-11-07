@@ -21,3 +21,5 @@ class SimMarketConfig(AbstractConfig, models.Model):
 	storage_cost_per_product = models.FloatField(null=True, default=None)
 	support_continuous_action_space = models.BooleanField(null=True, default=False)
 	fraction_of_strategic_customer = models.FloatField(null=True, default=False)
+	max_waiting_customers = models.FloatField(null=True, default=False)
+

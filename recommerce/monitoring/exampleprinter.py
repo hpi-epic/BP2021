@@ -105,6 +105,7 @@ class ExamplePrinter():
         price_news = [[] for _ in range(self.marketplace._number_of_vendors)]
         sales_new = [[] for _ in range(self.marketplace._number_of_vendors)]
         sales_no_buy = []
+        customers_waiting = []
 
         if is_circular and save_lineplots:
             price_refurbished = [[] for _ in range(self.marketplace._number_of_vendors)]
@@ -141,6 +142,8 @@ class ExamplePrinter():
                     profits[i].append(logdict['profits/all'][f'vendor_{i}'])
 
                 sales_no_buy.append(logdict['customer/buy_nothing'])
+                customers_waiting.append(logdict['customers/waiting'])
+
                 if is_circular_rebuy and save_lineplots:
                     for i in range(self.marketplace._number_of_vendors):
                         price_refurbished[i].append(logdict['actions/price_refurbished'][f'vendor_{i}'])
@@ -160,7 +163,8 @@ class ExamplePrinter():
             'price_new': price_news,
             'sales_new': sales_new,
             'sales_no_buy': sales_no_buy,
-            'profits': profits
+            'profits': profits,
+            'customers_waiting': customers_waiting
         }
 
         if is_circular:

@@ -37,7 +37,8 @@ class CircularEconomy(SimMarket, ABC):
             ('common_state_visibility', bool, None),
             ('reward_mixed_profit_and_difference', bool, None),
             ('support_continuous_action_space', bool, None),
-            ('fraction_of_strategic_customer', float, between_zero_one_rule)
+            ('fraction_of_strategic_customer', float, between_zero_one_rule),
+            ('max_waiting_customers', int, non_negative_rule)
 
         ]
 

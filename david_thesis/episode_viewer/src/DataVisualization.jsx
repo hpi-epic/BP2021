@@ -49,6 +49,7 @@ export const DataVisualization = ({ rawData }) => {
   const [priceGraph, setPriceGraph] = React.useState(null);
   const [custBehaviourGraph, setCustBehaviourGraph] = React.useState(null);
   const [profitGraph, setProfitGraph] = React.useState(null);
+  const [waitingGraph, setWaitingGraph] = React.useState(null);
   const [activeVendor, setActiveVendor] = React.useState(0);
   const [accumulated, setAccumulated] = React.useState(false);
   const [avgPrices, setAvgPrices] = React.useState([]);
@@ -84,6 +85,10 @@ export const DataVisualization = ({ rawData }) => {
     setProfitGraph(
       getProfitGraph(sliderValue, episodeLength, data, activeVendor)
     );
+
+    if(rawData['customers_waiting']) {
+      setWaitingGraph(getWatingGraph(sliderValue, episodeLength, rawData, activeVendor));
+    }
 
 
     if(rawData['is_linear']) {
@@ -378,6 +383,44 @@ export const DataVisualization = ({ rawData }) => {
           </Box>
         )}
       </Box>
+       <Box sx={{ display: "flex", marginBottom: "2rem" }}>
+        {waitingGraph && (
+          <Box sx={{ flexGrow: "1" }}>
+            <Line
+              options={{
+                responsive: true,
+                plugins: {
+                  legend: {
+                    position: "top",
+                  },
+                  title: {
+                    display: true,
+                    text: "Waiting Customers",
+                  },
+                },
+                scales: {
+                  y: {
+                    suggestedMin: 0,
+                  },
+                },
+              }}
+              data={waitingGraph}
+            />
+          </Box>
+        )}
+      </Box>
+        <Box sx={{ width: 500 }}>
+          <Slider
+            aria-label="Temperature"
+            value={sliderValue}
+            onChange={(e) => setSliderValue(e.target.value)}
+            step={1}
+            valueLabelDisplay="on"
+            marks
+            min={0}
+            max={episodeLength - 1}
+          />
+        </Box>
     </Box>
   );
 };
@@ -471,7 +514,7 @@ export const getPriceData = (slidingPos, episodeLength, data, vendor) => {
       data: offsetData(data["price_new"][1].slice(lowerBound, upperBound), 1),
       stepped: true,
       spanGaps: true,
-      borderColor: "orangered",
+      borderColor: "purple",
     },
   ];
 
@@ -515,6 +558,32 @@ export const getPriceData = (slidingPos, episodeLength, data, vendor) => {
     datasets: datasets,
   };
 };
+
+export const getWatingGraph = (slidingPos,
+  episodeLength,
+  data,
+  vendor) => {
+
+    const datasets = [];
+    const { lowerBound, upperBound } = getBounds(slidingPos, episodeLength);
+    const labels = [];
+
+    for (let i = lowerBound; i < upperBound; i++) {
+      labels.push(`timestep ${i}`);
+    }
+
+    datasets.push({
+      label: "waiting customer",
+      data: data["customers_waiting"].slice(lowerBound, upperBound),
+      backgroundColor: "green",
+    });
+
+    return {
+      labels: labels,
+      datasets: datasets,
+    };
+
+}
 
 export const getCustomerBehaviour = (
   slidingPos,
@@ -565,7 +634,7 @@ export const getCustomerBehaviour = (
     {
       label: "buy new from 1",
       data: [data["sales_new"][1][slidingPos]],
-      backgroundColor: "orangered",
+      backgroundColor: "purple",
     },
   ];
 
@@ -591,7 +660,7 @@ export const getCustomerBehaviour = (
 };
 
 export const getProfitGraph = (slidingPos, episodeLength, data, vendor) => {
-  console.log(data);
+
   const { lowerBound, upperBound } = getBounds(slidingPos, episodeLength);
 
   const labels = [];

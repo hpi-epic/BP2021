@@ -14,7 +14,7 @@ class CustomerLinear(Customer):
 		Check the docstring in the superclass for interface description.
 		"""
 		assert isinstance(common_state, np.ndarray), 'common_state must be a np.ndarray'
-		assert len(common_state) == 0, 'common_state must be an empty array in our linear setup'
+		# assert len(common_state) == 1, 'common_state must be an empty array in our linear setup'
 		assert isinstance(vendor_specific_state, list), 'vendor_specific_state must be a list'
 		assert isinstance(vendor_actions, list), 'vendor_actions must be a list'
 		assert len(vendor_specific_state) == len(vendor_actions), \
@@ -32,6 +32,7 @@ class CustomerLinear(Customer):
 		for vendor_idx in range(len(vendor_actions)):
 			quality = vendor_specific_state[vendor_idx][0]
 			price = vendor_actions[vendor_idx] + 1
-			ratio = quality / price
+			# ratio = quality / price
+			ratio = 10 / price - np.exp(price - 8)
 			ratios.append(ratio)
 		return ut.softmax(np.array(ratios))
