@@ -197,6 +197,14 @@ class SimMarket(gym.Env, JSONConfigurable):
         customers_per_vendor_iteration = self.config.number_of_customers // self._number_of_vendors
         for i in range(self._number_of_vendors):
             self._simulate_customers(profits, customers_per_vendor_iteration)
+
+            if i == 0:
+                self.price_deque.append(self.vendor_actions[0])
+            else:
+                if self.price_deque[-1] > self.vendor_actions[i]:
+                    self.price_deque.pop()
+                    self.price_deque.append(self.vendor_actions[i])
+
             if self._owner is not None:
                 self._simulate_owners(profits)
 
@@ -208,8 +216,6 @@ class SimMarket(gym.Env, JSONConfigurable):
                     f'This vendor does not deliver a suitable action, action_space: {self.action_space}, action: {action_competitor_i}'
                 self.vendor_actions[i + 1] = action_competitor_i
 
-        # TODO halb periodisch umbauen
-        self.price_deque.append(min(self.vendor_actions))
 
         self._consider_storage_costs(profits)
 
