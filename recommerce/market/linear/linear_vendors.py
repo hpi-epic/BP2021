@@ -41,6 +41,7 @@ class LinearRatio1LEAgent(LinearAgent, RuleBasedAgent):
         ratios = []
         # we skip the first ratio, the ratio of the competitor itself
         max_competing_ratio = 0
+        state = state[1:]
         for i in range(math.floor(len(state) / 2)):
             quality_opponent = state[2 * i + 2]
             price_opponent = state[2 * i + 1] + 1

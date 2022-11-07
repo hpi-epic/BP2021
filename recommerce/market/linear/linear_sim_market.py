@@ -32,7 +32,8 @@ class LinearEconomy(SimMarket, ABC):
             ('common_state_visibility', bool, None),
             ('reward_mixed_profit_and_difference', bool, None),
             ('support_continuous_action_space', bool, None),
-            ('fraction_of_strategic_customer', float, between_zero_one_rule)
+            ('fraction_of_strategic_customer', float, between_zero_one_rule),
+            ('max_waiting_customers', int, non_negative_rule)
         ]
 
     def _setup_action_observation_space(self, support_continuous_action_space: bool) -> None:
@@ -48,8 +49,8 @@ class LinearEconomy(SimMarket, ABC):
         """
         assert self.config.opposite_own_state_visibility, 'This market does not make sense without a visibility of the competitors own states.'  # noqa: E501
         self.observation_space = gym.spaces.Box(
-            np.array([0.0] * (len(self.competitors) * 2 + 1), dtype=np.float32),
-            np.array([self.config.max_quality] + [self.config.max_price, self.config.max_quality] * len(self.competitors),
+            np.array([0.0] * (len(self.competitors) * 2 + 2), dtype=np.float32),
+            np.array([self.config.max_waiting_customers] + [self.config.max_quality] + [self.config.max_price, self.config.max_quality] * len(self.competitors),
                      dtype=np.float32))
 
         if support_continuous_action_space:
@@ -111,7 +112,10 @@ class LinearEconomy(SimMarket, ABC):
         return len(probability_distribution) == 1 + self._number_of_vendors
 
     def _get_common_state_array(self) -> np.array:
-        return np.array([])
+        return np.array([self.waiting_customers])
+
+    def _reset_common_state(self) -> None:
+        self.waiting_customers = 0
 
 
 class LinearEconomyMonopoly(LinearEconomy):
