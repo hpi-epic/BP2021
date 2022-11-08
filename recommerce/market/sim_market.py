@@ -11,7 +11,6 @@ from attrdict import AttrDict
 from recommerce.configuration.json_configurable import JSONConfigurable
 from recommerce.configuration.utils import filtered_class_str_from_dir
 
-
 # An offer is a market state that contains all prices and qualities
 
 # There are three kinds of state:
@@ -241,20 +240,15 @@ class SimMarket(gym.Env, JSONConfigurable):
         if number_of_strategic_customer == 0:
             return
 
-        # wie verhindern wir den einkauf bei mondpreisen?
         current_lowest_offer_price_vendor, current_lowest_offer_price = min(enumerate(self.vendor_actions),
                                                                             key=lambda x: x[1])
         avg_price = sum(self.price_deque) / len(self.price_deque)
-        if current_lowest_offer_price < avg_price:
+        if current_lowest_offer_price < min(self.price_deque):
             self._complete_purchase(profits, current_lowest_offer_price_vendor, number_of_strategic_customer)
         else:
-            # half of the strategic customers who couldn't purchase will enter waiting state
+            # 90% of the strategic customers who couldn't purchase will enter waiting state
             if self.config.fraction_of_strategic_customer > 0:
-                self.waiting_customers = min(self.waiting_customers + (max(int(number_of_strategic_customer * 0.8), 1)), self.config.max_waiting_customers)
-
-
-    # todo fuer zukunftsdavid: - punishen für lazyness + den code hier laufen lassen (bc. strg. cust == 0 und dann diffen mit last recommerce run...)
-
+                self.waiting_customers = min(self.waiting_customers + (max(int(number_of_strategic_customer * 0.9), 1)), self.config.max_waiting_customers)
     def _observation(self, vendor_view=0) -> np.array:
         """
         Create a different view of the market for every vendor.
