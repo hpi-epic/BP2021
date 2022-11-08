@@ -50,6 +50,7 @@ export const DataVisualization = ({ rawData }) => {
   const [custBehaviourGraph, setCustBehaviourGraph] = React.useState(null);
   const [profitGraph, setProfitGraph] = React.useState(null);
   const [waitingGraph, setWaitingGraph] = React.useState(null);
+  const [incomingGraph, setIncomingGraph] = React.useState(null);
   const [activeVendor, setActiveVendor] = React.useState(0);
   const [accumulated, setAccumulated] = React.useState(false);
   const [avgPrices, setAvgPrices] = React.useState([]);
@@ -88,6 +89,10 @@ export const DataVisualization = ({ rawData }) => {
 
     if(rawData['customers_waiting']) {
       setWaitingGraph(getWatingGraph(sliderValue, episodeLength, rawData, activeVendor));
+    }
+
+    if(rawData['incoming_customer']) {
+      setIncomingGraph(getIncomingGraph(sliderValue, episodeLength, rawData, activeVendor));
     }
 
 
@@ -420,9 +425,45 @@ export const DataVisualization = ({ rawData }) => {
                   y: {
                     suggestedMin: 0,
                   },
+                  x: {
+                    ticks: {
+                      maxTicksLimit: 10
+                    }
+                  }
                 },
               }}
               data={waitingGraph}
+            />
+          </Box>
+        )}
+      </Box>
+      <Box sx={{ display: "flex", marginBottom: "2rem" }}>
+        {incomingGraph && (
+          <Box sx={{ flexGrow: "1" }}>
+            <Line
+              options={{
+                responsive: true,
+                plugins: {
+                  legend: {
+                    position: "top",
+                  },
+                  title: {
+                    display: true,
+                    text: "Incoming Customers",
+                  },
+                },
+                scales: {
+                  y: {
+                    suggestedMin: 0,
+                  },
+                  x: {
+                    ticks: {
+                      maxTicksLimit: 10
+                    }
+                  }
+                },
+              }}
+              data={incomingGraph}
             />
           </Box>
         )}
@@ -582,7 +623,8 @@ export const getWatingGraph = (slidingPos,
   vendor) => {
 
     const datasets = [];
-    const { lowerBound, upperBound } = getBounds(slidingPos, episodeLength);
+     const lowerBound = 0;
+    const upperBound = data['customers_waiting'].length
     const labels = [];
 
     for (let i = lowerBound; i < upperBound; i++) {
@@ -592,6 +634,33 @@ export const getWatingGraph = (slidingPos,
     datasets.push({
       label: "waiting customer",
       data: data["customers_waiting"].slice(lowerBound, upperBound),
+      backgroundColor: "green",
+    });
+
+    return {
+      labels: labels,
+      datasets: datasets,
+    };
+
+}
+
+export const getIncomingGraph = (slidingPos,
+  episodeLength,
+  data,
+  vendor) => {
+
+    const datasets = [];
+    const lowerBound = 0;
+    const upperBound = data['incoming_customer'].length
+    const labels = [];
+
+    for (let i = lowerBound; i < upperBound; i++) {
+      labels.push(`timestep ${i}`);
+    }
+
+    datasets.push({
+      label: "incoming customer",
+      data: data["incoming_customer"],
       backgroundColor: "green",
     });
 
