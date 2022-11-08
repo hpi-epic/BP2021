@@ -92,8 +92,8 @@ class ExamplePrinter():
 
         is_circular = isinstance(self.marketplace, circular_market.CircularEconomy)
 
-        new_price_name = "price_new" if is_circular else "price"
-        new_purchases_name = "purchases_new" if is_circular else "purchases"
+        new_price_name = 'price_new' if is_circular else 'price'
+        new_purchases_name = 'purchases_new' if is_circular else 'purchases'
 
         if is_circular_rebuy_doupoly or is_linear_doupoly:
             svg_manipulator = SVGManipulator(signature,
@@ -106,6 +106,7 @@ class ExamplePrinter():
         sales_new = [[] for _ in range(self.marketplace._number_of_vendors)]
         sales_no_buy = []
         customers_waiting = []
+        incoming_customer = []
 
         if is_circular and save_lineplots:
             price_refurbished = [[] for _ in range(self.marketplace._number_of_vendors)]
@@ -137,12 +138,13 @@ class ExamplePrinter():
                 counter += 1
 
                 for i in range(self.marketplace._number_of_vendors):
-                    price_news[i].append(logdict[f"actions/{new_price_name}"][f'vendor_{i}'])
-                    sales_new[i].append(logdict[f"customer/{new_purchases_name}"][f'vendor_{i}'])
+                    price_news[i].append(logdict[f'actions/{new_price_name}'][f'vendor_{i}'])
+                    sales_new[i].append(logdict[f'customer/{new_purchases_name}'][f'vendor_{i}'])
                     profits[i].append(logdict['profits/all'][f'vendor_{i}'])
 
                 sales_no_buy.append(logdict['customer/buy_nothing'])
                 customers_waiting.append(logdict['customers/waiting'])
+                incoming_customer.append(logdict['customer/incoming'])
 
                 if is_circular_rebuy and save_lineplots:
                     for i in range(self.marketplace._number_of_vendors):
@@ -164,7 +166,8 @@ class ExamplePrinter():
             'sales_new': sales_new,
             'sales_no_buy': sales_no_buy,
             'profits': profits,
-            'customers_waiting': customers_waiting
+            'customers_waiting': customers_waiting,
+            'incoming_customer': incoming_customer
         }
 
         if is_circular:
