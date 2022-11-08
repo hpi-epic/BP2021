@@ -49,8 +49,9 @@ class LinearEconomy(SimMarket, ABC):
         """
         assert self.config.opposite_own_state_visibility, 'This market does not make sense without a visibility of the competitors own states.'  # noqa: E501
         self.observation_space = gym.spaces.Box(
-            np.array([0.0] * (len(self.competitors) * 2 + 2), dtype=np.float32),
-            np.array([self.config.max_waiting_customers] + [self.config.max_quality] + [self.config.max_price, self.config.max_quality] * len(self.competitors),
+            np.array(([0.0, 0.0] if self.config.common_state_visibility else [0.0]) + [0.0] * (len(self.competitors) * 2), dtype=np.float32),
+            np.array(([self.config.max_waiting_customers, self.config.max_quality] if self.config.common_state_visibility else [self.config.max_quality]) +
+                     [self.config.max_price, self.config.max_quality] * len(self.competitors),
                      dtype=np.float32))
 
         if support_continuous_action_space:

@@ -92,10 +92,18 @@ export const DataVisualization = ({ rawData }) => {
 
 
     if(rawData['is_linear']) {
-      const all_new_prices = rawData['price_new'][0].concat(rawData['price_new'][1])
-      const all_new_sales = rawData['sales_new'][0].concat(rawData['sales_new'][1])
-      const avg_price_new = all_new_prices.map((price, idx) => price * all_new_sales[idx]).reduce((a,b) => a+b, 0) / all_new_sales.reduce((a,b) => a+b, 0)
-      setAvgPrices([avg_price_new])
+
+      const avg_price = [];
+
+      for(let vendor = 0; vendor < rawData["vendors"]; vendor++) {
+        const prices = rawData['price_new'][vendor];
+        const sales = rawData['sales_new'][vendor];
+        const avg = prices.map((price, idx) => price * sales[idx]).reduce((a,b) => a+b, 0) / sales.reduce((a,b) => a+b, 0)
+        avg_price.push(avg);
+      }
+
+      setAvgPrices(avg_price);
+
     }else {
       // TODO
     }
@@ -324,12 +332,22 @@ export const DataVisualization = ({ rawData }) => {
               </>
             );
           })}
-        {rawData["is_linear"] && <Card>
+        {rawData["is_linear"] && activeVendor === -1 && Array.from(Array(rawData["vendors"]).keys()).map((i) => ( <Card key={i}>
             <CardContent>
               <Typography variant="h5">
-                <strong>Ø new buy price</strong>:{" "}
+                <strong>Ø new buy price - vendor {i}</strong>:{" "}
                 {Number(
-                  avgPrices[0]
+                  avgPrices[i]
+                ).toFixed(2)}
+              </Typography>
+            </CardContent>
+          </Card>))}
+         {rawData["is_linear"] && activeVendor !== -1 && <Card>
+            <CardContent>
+              <Typography variant="h5">
+                <strong>Ø new buy price - vendor {activeVendor}</strong>:{" "}
+                {Number(
+                  avgPrices[activeVendor]
                 ).toFixed(2)}
               </Typography>
             </CardContent>
@@ -504,7 +522,6 @@ export const getPriceData = (slidingPos, episodeLength, data, vendor) => {
     {
       label: "Price New from vendor 0",
       data: offsetData(data["price_new"][0].slice(lowerBound, upperBound)),
-      spanGaps: true,
       stepped: true,
       spanGaps: true,
       borderColor: "red",
