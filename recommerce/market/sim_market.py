@@ -11,6 +11,7 @@ from attrdict import AttrDict
 from recommerce.configuration.json_configurable import JSONConfigurable
 from recommerce.configuration.utils import filtered_class_str_from_dir
 
+
 # An offer is a market state that contains all prices and qualities
 
 # There are three kinds of state:
@@ -129,28 +130,44 @@ class SimMarket(gym.Env, JSONConfigurable):
 
     def _simulate_customers_level_1(self, profits, number_of_customers) -> None:
 
-        number_of_new_myopic_customer = number_of_customers
-        number_of_returning_myopic_customer = math.floor(self.waiting_customers * 0.3)
-        self.waiting_customers = max(0, self.waiting_customers - number_of_returning_myopic_customer)
+        # first split customer into myopic and recurring
+        p_recurr = 0.3
 
-        number_of_myopic_customer = number_of_new_myopic_customer + number_of_returning_myopic_customer
-        self._output_dict['customer/incoming'] += number_of_myopic_customer
+        number_of_recurring_customer = np.random.binomial(number_of_customers, p_recurr)
+        number_of_myopic_customer = number_of_customers - number_of_recurring_customer
 
+        # add recurring customer
+        number_of_returning_recurring_customer = math.floor(self.waiting_customers * 0.3)
+        self.waiting_customers = max(0, self.waiting_customers - number_of_returning_recurring_customer)
+        number_of_recurring_customer += number_of_returning_recurring_customer
+
+        # track incoming customer stream
+        self._output_dict['customer/incoming'] += number_of_recurring_customer + number_of_myopic_customer
+
+        # get probability distributions
         probability_distribution = self._customer.generate_purchase_probabilities_from_offer(
             self._get_common_state_array(), self.vendor_specific_state, self.vendor_actions)
         assert isinstance(probability_distribution,
                           np.ndarray), 'generate_purchase_probabilities_from_offer must return an np.ndarray'
         assert self._is_probability_distribution_fitting_exactly(probability_distribution)
 
-        customer_decisions = np.random.multinomial(number_of_myopic_customer, probability_distribution).tolist()
+        # simulate myopic customers
+        myopic_customer_decisions = np.random.multinomial(number_of_myopic_customer, probability_distribution).tolist()
+        self._output_dict['customer/buy_nothing'] += myopic_customer_decisions[0]
+        for seller, frequency in enumerate(myopic_customer_decisions):
+            if seller == 0 or frequency == 0:
+                continue
+            self._complete_purchase(profits, seller - 1, frequency)
 
-        # from the customers who decided to buy nothing --> let x% go to waiting state
-        dont_buy = customer_decisions[0]
+        # simulate recurring customers
+        recurring_customer_decision = np.random.multinomial(number_of_recurring_customer,
+                                                            probability_distribution).tolist()
+        dont_buy = recurring_customer_decision[0]
         enter_waiting = math.floor(dont_buy * 0.9)
         self.waiting_customers = min(self.waiting_customers + enter_waiting, self.config.max_waiting_customers)
-
         self._output_dict['customer/buy_nothing'] += (dont_buy - enter_waiting)
-        for seller, frequency in enumerate(customer_decisions):
+
+        for seller, frequency in enumerate(recurring_customer_decision):
             if seller == 0 or frequency == 0:
                 continue
             self._complete_purchase(profits, seller - 1, frequency)
@@ -262,7 +279,8 @@ class SimMarket(gym.Env, JSONConfigurable):
 
         number_of_reoccurring_strategic_customer = math.floor(self.waiting_customers * 0.3)
         number_of_strategic_customer = number_of_reoccurring_strategic_customer + number_of_new_strategic_customer
-        self._output_dict['customer/incoming'] += number_of_strategic_customer # this includes new + returning strategic customer
+        self._output_dict[
+            'customer/incoming'] += number_of_strategic_customer  # this includes new + returning strategic customer
         self.waiting_customers = max(self.waiting_customers - number_of_reoccurring_strategic_customer, 0)
 
         if number_of_strategic_customer == 0:
