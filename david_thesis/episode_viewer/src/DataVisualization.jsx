@@ -485,7 +485,7 @@ export const DataVisualization = ({ rawData }) => {
 };
 
 const getBounds = (slidingPos, episodeLength) => {
-  const window = 10;
+  const window = 100;
 
   let lowerBound = slidingPos;
   let upperBound = slidingPos + window;

@@ -271,7 +271,8 @@ class SimMarket(gym.Env, JSONConfigurable):
         current_lowest_offer_price_vendor, current_lowest_offer_price = min(enumerate(self.vendor_actions),
                                                                             key=lambda x: x[1])
         avg_price = sum(self.price_deque) / len(self.price_deque)
-        if current_lowest_offer_price < min(self.price_deque):
+
+        if current_lowest_offer_price < 0.85 * avg_price:
             self._complete_purchase(profits, current_lowest_offer_price_vendor, number_of_strategic_customer)
         else:
             # 90% of the strategic customers who couldn't purchase will enter waiting state
