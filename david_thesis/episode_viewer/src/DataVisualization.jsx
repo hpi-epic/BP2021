@@ -195,7 +195,7 @@ export const DataVisualization = ({rawData}) => {
                             step={1}
                             valueLabelDisplay="on"
                             marks
-                            min={5}
+                            min={0}
                             max={episodeLength - 1}
                         />
                     </Box>
