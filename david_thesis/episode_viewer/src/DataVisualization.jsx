@@ -89,11 +89,11 @@ export const DataVisualization = ({rawData}) => {
         );
 
         if (rawData['customers_waiting']) {
-            setWaitingGraph(getWatingGraph(sliderValue, episodeLength, rawData, activeVendor));
+            setWaitingGraph(getWatingGraph(sliderValue, episodeLength, rawData, activeVendor, windowValue));
         }
 
         if (rawData['incoming_customer']) {
-            setIncomingGraph(getIncomingGraph(sliderValue, episodeLength, rawData, activeVendor));
+            setIncomingGraph(getIncomingGraph(sliderValue, episodeLength, rawData, activeVendor, windowValue));
         }
 
 
@@ -640,11 +640,11 @@ export const getPriceData = (slidingPos, episodeLength, data, vendor, windowLeng
 export const getWatingGraph = (slidingPos,
                                episodeLength,
                                data,
-                               vendor) => {
+                               vendor,
+                               windowLength) => {
 
     const datasets = [];
-    const lowerBound = 0;
-    const upperBound = data['customers_waiting'].length
+    const {lowerBound, upperBound} = getBounds(slidingPos, episodeLength, windowLength);
     const labels = [];
 
     for (let i = lowerBound; i < upperBound; i++) {
@@ -667,11 +667,11 @@ export const getWatingGraph = (slidingPos,
 export const getIncomingGraph = (slidingPos,
                                  episodeLength,
                                  data,
-                                 vendor) => {
+                                 vendor,
+                                 windowLength) => {
 
     const datasets = [];
-    const lowerBound = 0;
-    const upperBound = data['incoming_customer'].length
+    const {lowerBound, upperBound} = getBounds(slidingPos, episodeLength, windowLength);
     const labels = [];
 
     for (let i = lowerBound; i < upperBound; i++) {
