@@ -1,5 +1,5 @@
 import numpy as np
-
+import math
 import recommerce.configuration.utils as ut
 from recommerce.market.customer import Customer
 
@@ -26,6 +26,11 @@ class CustomerLinear(Customer):
 			if len(element.shape) == 1:
 				vendor_actions[idx] = np.array(vendor_actions[idx][0])
 
+		step = common_state[1]
+		seasonal_interest = 7 * (math.sin(step * (math.pi / 2) * (1 / 50)))
+
+		# seasonal_interest = 0
+
 
 		nothingpreference = 1
 		ratios = [nothingpreference]
@@ -34,5 +39,6 @@ class CustomerLinear(Customer):
 			price = vendor_actions[vendor_idx] + 1
 			# ratio = quality / price
 			ratio = 10 / price - np.exp(price - 8)
+			ratio += seasonal_interest
 			ratios.append(ratio)
 		return ut.softmax(np.array(ratios))

@@ -51,12 +51,11 @@ class LinearEconomy(SimMarket, ABC):
         """
         assert self.config.opposite_own_state_visibility, 'This market does not make sense without a visibility of the competitors own states.'  # noqa: E501
 
-        # state = [waiting_customer, price_t-5, price_t-4, price_t-3, price_t-2, price_t-1, quality ]
+        # state = [waiting_customer, step_counter, quality ]
         self.observation_space = gym.spaces.Box(
-            np.array(([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0] if self.config.common_state_visibility else [0.0]) + [0.0] * (
+            np.array(([0.0, 0.0, 0.0] if self.config.common_state_visibility else [0.0]) + [0.0] * (
                         len(self.competitors) * 2), dtype=np.float32),
-            np.array(([self.config.max_waiting_customers, self.config.max_price, self.config.max_price,
-                       self.config.max_price, self.config.max_price, self.config.max_price,
+            np.array(([self.config.max_waiting_customers,  self.config.episode_length,
                        self.config.max_quality] if self.config.common_state_visibility else [self.config.max_quality]) +
                      [self.config.max_price, self.config.max_quality] * len(self.competitors),
                      dtype=np.float32))
@@ -123,12 +122,11 @@ class LinearEconomy(SimMarket, ABC):
         return len(probability_distribution) == 1 + self._number_of_vendors
 
     def _get_common_state_array(self) -> ndarray:
-        last_prices = list(self.price_deque)
-        last_prices = np.pad(last_prices, (5 - len(last_prices), 0), 'constant')
-        return np.array([self.waiting_customers, *last_prices])
+        return np.array([self.waiting_customers, self.step_counter])
 
     def _reset_common_state(self) -> None:
         self.waiting_customers = 0
+        self.step_counter = 0
 
 
 class LinearEconomyMonopoly(LinearEconomy):
