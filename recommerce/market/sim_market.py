@@ -146,7 +146,7 @@ class SimMarket(gym.Env, JSONConfigurable):
 
         # get probability distributions
         probability_distribution = self._customer.generate_purchase_probabilities_from_offer(
-            self._get_common_state_array(), self.vendor_specific_state, self.vendor_actions)
+            self.step_counter, self._get_common_state_array(), self.vendor_specific_state, self.vendor_actions)
         assert isinstance(probability_distribution,
                           np.ndarray), 'generate_purchase_probabilities_from_offer must return an np.ndarray'
         assert self._is_probability_distribution_fitting_exactly(probability_distribution)
@@ -193,7 +193,7 @@ class SimMarket(gym.Env, JSONConfigurable):
         self._output_dict['customer/incoming'] += number_of_myopic_customer
 
         probability_distribution = self._customer.generate_purchase_probabilities_from_offer(
-            self._get_common_state_array(), self.vendor_specific_state, self.vendor_actions)
+            self.step_counter, self._get_common_state_array(), self.vendor_specific_state, self.vendor_actions)
         assert isinstance(probability_distribution,
                           np.ndarray), 'generate_purchase_probabilities_from_offer must return an np.ndarray'
         assert self._is_probability_distribution_fitting_exactly(probability_distribution)
@@ -267,10 +267,12 @@ class SimMarket(gym.Env, JSONConfigurable):
         self._output_dict['customers/waiting'] = self.waiting_customers
 
         is_done = self.step_counter >= self.config.episode_length
-        reward = profits[0] if not self.config.reward_mixed_profit_and_difference else 2 * profits[0] - np.max(
-            profits[1:])
 
-        # print(self.waiting_customers)
+        if not self.config.reward_mixed_profit_and_difference:
+            reward = profits[0]
+        else:
+            reward = 2 * profits[0] - np.max(profits[1:])
+
         return self._observation(), float(reward), is_done, self._output_dict
 
     def _simulate_strategic_customer(self, profits, number_of_new_strategic_customer):

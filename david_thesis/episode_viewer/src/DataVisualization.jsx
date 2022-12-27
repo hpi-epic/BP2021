@@ -187,7 +187,7 @@ export const DataVisualization = ({rawData}) => {
                             max={episodeLength - 1}
                         />
                     </Box>
-                    <Box sx={{width: 500,  display: "flex", alignItems: "center"}}>
+                    <Box sx={{width: 500, display: "flex", alignItems: "center"}}>
                         <h3>window length</h3>
                         <Slider
                             value={windowValue}
@@ -428,80 +428,84 @@ export const DataVisualization = ({rawData}) => {
                     </Box>
                 )}
             </Box>
-            <Box sx={{display: "flex", marginBottom: "2rem"}}>
-                {waitingGraph && (
-                    <Box sx={{flexGrow: "1"}}>
-                        <Line
-                            options={{
-                                responsive: true,
-                                plugins: {
-                                    legend: {
-                                        position: "top",
+            <Box sx={{display: "flex", marginBottom: "2rem", height: "300px"} }>
+                <Box sx={{display: "flex", width: "50%", height: "100%"}}>
+                    {waitingGraph && (
+                        <Box sx={{flexGrow: "1", height: "100%"}}>
+                            <Line
+                                options={{
+                                    responsive: true,
+                                    plugins: {
+                                        legend: {
+                                            position: "top",
+                                        },
+                                        title: {
+                                            display: true,
+                                            text: "Waiting Customers",
+                                        },
                                     },
-                                    title: {
-                                        display: true,
-                                        text: "Waiting Customers",
-                                    },
-                                },
-                                scales: {
-                                    y: {
-                                        suggestedMin: 0,
-                                    },
-                                    x: {
-                                        ticks: {
-                                            maxTicksLimit: 10
+                                    scales: {
+                                        y: {
+                                            suggestedMin: 0,
+                                        },
+                                        x: {
+                                            ticks: {
+                                                maxTicksLimit: 10
+                                            }
                                         }
-                                    }
-                                },
-                            }}
-                            data={waitingGraph}
-                        />
-                    </Box>
-                )}
-            </Box>
-            <Box sx={{display: "flex", marginBottom: "2rem"}}>
-                {incomingGraph && (
-                    <Box sx={{flexGrow: "1"}}>
-                        <Line
-                            options={{
-                                responsive: true,
-                                plugins: {
-                                    legend: {
-                                        position: "top",
                                     },
-                                    title: {
-                                        display: true,
-                                        text: "Incoming Customers",
+                                    aspectRatio: 1.4
+                                }}
+                                data={waitingGraph}
+                            />
+                        </Box>
+                    )}
+                </Box>
+                <Box sx={{display: "flex", width: "50%", height: "100%"}}>
+                    {incomingGraph && (
+                        <Box sx={{flexGrow: "1", height: "100%"}}>
+                            <Line
+                                options={{
+                                    responsive: true,
+                                    plugins: {
+                                        legend: {
+                                            position: "top",
+                                        },
+                                        title: {
+                                            display: true,
+                                            text: "Incoming Customers",
+                                        },
                                     },
-                                },
-                                scales: {
-                                    y: {
-                                        suggestedMin: 0,
-                                    },
-                                    x: {
-                                        ticks: {
-                                            maxTicksLimit: 10
+                                    scales: {
+                                        y: {
+                                            suggestedMin: 0,
+                                        },
+                                        x: {
+                                            ticks: {
+                                                maxTicksLimit: 10
+                                            }
                                         }
-                                    }
-                                },
-                            }}
-                            data={incomingGraph}
-                        />
-                    </Box>
-                )}
+                                    },
+                                    aspectRatio: 1.4
+                                }}
+                                data={incomingGraph}
+                            />
+                        </Box>
+                    )}
+                </Box>
             </Box>
-            <Box sx={{width: 500}}>
-                <Slider
-                    aria-label="Temperature"
-                    value={sliderValue}
-                    onChange={(e) => setSliderValue(e.target.value)}
-                    step={1}
-                    valueLabelDisplay="on"
-                    marks
-                    min={0}
-                    max={episodeLength - 1}
-                />
-            </Box>
+            {/*<Box sx={{width: 500}}>*/}
+            {/*    <Slider*/}
+            {/*        aria-label="Temperature"*/}
+            {/*        value={sliderValue}*/}
+            {/*        onChange={(e) => setSliderValue(e.target.value)}*/}
+            {/*        step={1}*/}
+            {/*        valueLabelDisplay="on"*/}
+            {/*        marks*/}
+            {/*        min={0}*/}
+            {/*        max={episodeLength - 1}*/}
+            {/*    />*/}
+            {/*</Box>*/}
         </Box>
     );
 };

@@ -5,7 +5,8 @@ import numpy as np
 from numpy import ndarray
 
 import recommerce.configuration.utils as ut
-from recommerce.configuration.common_rules import between_zero_one_rule, greater_zero_even_rule, greater_zero_rule, non_negative_rule
+from recommerce.configuration.common_rules import between_zero_one_rule, greater_zero_even_rule, greater_zero_rule, \
+    non_negative_rule
 from recommerce.market.customer import Customer
 from recommerce.market.linear.linear_customers import CustomerLinear
 from recommerce.market.linear.linear_vendors import Just2PlayersLEAgent, LERandomAgent, LinearRatio1LEAgent
@@ -40,30 +41,39 @@ class LinearEconomy(SimMarket, ABC):
 
     def _setup_action_observation_space(self, support_continuous_action_space: bool) -> None:
         """
-        The observation array has the following format:
-        cell 0: quality of that vendor from whose perspective the observation is generated.
-        following odd cells: price of an other vendor
-        following even cells: quality of an other competitor
-        The action space is discrete with as many actions as prices.
+        Assume there are n vendors.
+        The observation array for vendor i ∈ [0, ..., n - 1] has the following format:
+        [ COMMON_STATE, PRICE_1, ... , PRICE_{n - 1}]
 
-                Args:
+        The action space is discrete/continuous with as many actions as prices.
+
+        Args:
             support_continuous_action_space (bool): If True, the action space will be continuous.
         """
+
         assert self.config.opposite_own_state_visibility, 'This market does not make sense without a visibility of the competitors own states.'  # noqa: E501
 
-        # state = [waiting_customer, price_t-5, price_t-4, price_t-3, price_t-2, price_t-1, quality ]
-        self.observation_space = gym.spaces.Box(
-            np.array(([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0] if self.config.common_state_visibility else [0.0]) + [0.0] * (
-                        len(self.competitors) * 2), dtype=np.float32),
-            np.array(([self.config.max_waiting_customers, self.config.max_price, self.config.max_price,
-                       self.config.max_price, self.config.max_price, self.config.max_price,
-                       self.config.max_quality] if self.config.common_state_visibility else [self.config.max_quality]) +
-                     [self.config.max_price, self.config.max_quality] * len(self.competitors),
-                     dtype=np.float32))
+        if self.config.common_state_visibility:
+            common_state_min = [
+                0,  # step counter
+                0.0,  # waiting customers
+            ]
+
+            common_state_max = [
+                self.config.episode_length,
+                self.config.max_waiting_customers,
+            ]
+
+            min_observation_space = np.array(common_state_min + [0.0] * len(self.competitors), dtype=np.float32)
+            max_observation_space = np.array(common_state_max + [self.config.max_price] * len(self.competitors), dtype=np.float32)
+        else:
+            min_observation_space = np.array([0.0] * len(self.competitors), dtype=np.float32)
+            max_observation_space = np.array([self.config.max_price] * len(self.competitors), dtype=np.float32)
+
+        self.observation_space = gym.spaces.Box(min_observation_space, max_observation_space)
 
         if support_continuous_action_space:
-            self.action_space = gym.spaces.Box(np.array([0], dtype=np.float32),
-                                               np.array([self.config.max_price], dtype=np.float32))
+            self.action_space = gym.spaces.Box(np.array([0], dtype=np.float32), np.array([self.config.max_price], dtype=np.float32))
         else:
             self.action_space = gym.spaces.Discrete(self.config.max_price)
 
@@ -75,7 +85,7 @@ class LinearEconomy(SimMarket, ABC):
         See also:
             `configuration.utils.shuffle_quality`
         """
-        return [ut.shuffle_quality(self.config)]
+        return []
 
     def _choose_customer(self) -> Customer:
         return CustomerLinear()
@@ -102,8 +112,6 @@ class LinearEconomy(SimMarket, ABC):
         self._output_dict['customer/purchases'][f'vendor_{chosen_vendor}'] += frequency
 
     def _initialize_output_dict(self):
-        self._ensure_output_dict_has('state/quality',
-                                     [self.vendor_specific_state[i][0] for i in range(self._number_of_vendors)])
         self._ensure_output_dict_has('customer/purchases', [0] * self._number_of_vendors)
         self._ensure_output_dict_has('actions/price',
                                      [self.vendor_actions[i].item(0) if isinstance(self.vendor_actions[i], np.ndarray)
@@ -125,7 +133,9 @@ class LinearEconomy(SimMarket, ABC):
     def _get_common_state_array(self) -> ndarray:
         last_prices = list(self.price_deque)
         last_prices = np.pad(last_prices, (5 - len(last_prices), 0), 'constant')
-        return np.array([self.waiting_customers, *last_prices])
+        last_prices = []
+
+        return np.array([self.step_counter, self.waiting_customers, *last_prices])
 
     def _reset_common_state(self) -> None:
         self.waiting_customers = 0
