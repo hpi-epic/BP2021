@@ -3,8 +3,6 @@ import * as React from "react";
 import {
     Box,
     Slider,
-    Button,
-    Container,
     Card,
     CardContent,
     Typography,
@@ -503,6 +501,7 @@ export const DataVisualization = ({rawData}) => {
             {/*        valueLabelDisplay="on"*/}
             {/*        marks*/}
             {/*        min={0}*/}
+
             {/*        max={episodeLength - 1}*/}
             {/*    />*/}
             {/*</Box>*/}
@@ -585,14 +584,14 @@ export const getPriceData = (slidingPos, episodeLength, data, vendor, windowLeng
 
     const datasets = [
         {
-            label: "Price New from vendor 0",
+            label: "price new - vendor 0",
             data: offsetData(data["price_new"][0].slice(lowerBound, upperBound)),
             stepped: true,
             spanGaps: true,
             borderColor: "red",
         },
         {
-            label: "Price New from vendor 1",
+            label: "price new - vendor 1",
             data: offsetData(data["price_new"][1].slice(lowerBound, upperBound), 1),
             stepped: true,
             spanGaps: true,

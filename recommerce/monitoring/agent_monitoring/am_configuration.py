@@ -209,17 +209,18 @@ class Configurator():
 			assert issubclass(marketplace, sim_market.SimMarket), 'the marketplace must be a subclass of SimMarket'
 			if competitors is not None:
 				# if we don't get the competitors from after training (= they are initialized) but from config, we need to initialize
-				for competitor in competitors:
+				for idx, competitor in enumerate(competitors):
 					if not isinstance(competitor, Agent):
-						competitor = competitor(config_market=config_market)
+						competitors[idx] = competitor(config_market=config_market)
 				assert separate_markets, 'competitors can only be provided if separate_markets is True'
 				assert all(isinstance(competitor, RuleBasedAgent) for competitor in competitors), \
 					'All competitors must be RuleBased, or `deepcopy` will fail'
-				assert marketplace.get_num_competitors() == np.inf or len(competitors) == marketplace.get_num_competitors(), \
+				assert marketplace.get_num_competitors() == np.inf or len(
+					competitors) == marketplace.get_num_competitors(), \
 					f'The number of competitors given is invalid: was {len(competitors)} but should be {marketplace.get_num_competitors()}'
 
 			self.marketplace = marketplace(
-				config=self.config_market, competitors=self.competitors)
+				config=self.config_market, competitors=competitors)
 
 			# If the agents have not been changed, we reuse the default agents
 			if(agents is None):

@@ -71,7 +71,7 @@ def run_training_session(
         shared_args = {
             'config_market': config_market,
             'config_rl': config_rl,
-            'marketplace': marketplace(config_market)
+            'marketplace': marketplace(config=config_market, competitors=competitors),
         }
         if issubclass(agent, StableBaselinesDDPG): StableBaselinesDDPG(**shared_args).train_agent()  # noqa: E701
         if issubclass(agent, StableBaselinesTD3): StableBaselinesTD3(**shared_args).train_agent()  # noqa: E701

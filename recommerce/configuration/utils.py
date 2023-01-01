@@ -202,13 +202,11 @@ def write_content_of_dict_to_overview_svg(
             'a_profit': '{0:.1f}'.format(cumulated_dictionary['profits/all']['vendor_0']),
             'a_price': str(episode_dictionary['actions/price']['vendor_0']),
             'a_resource_cost': str(config.production_price),
-            'a_quality': str(episode_dictionary['state/quality']['vendor_0']),
             'a_sales': str(episode_dictionary['customer/purchases']['vendor_0']),
             'b_competitor_name': 'vendor_1',
             'b_profit': '{0:.1f}'.format(cumulated_dictionary['profits/all']['vendor_1']),
             'b_price': str(episode_dictionary['actions/price']['vendor_1']),
             'b_resource_cost': str(config.production_price),
-            'b_quality': str(episode_dictionary['state/quality']['vendor_1']),
             'b_sales': str(episode_dictionary['customer/purchases']['vendor_1']),
         }
     else:

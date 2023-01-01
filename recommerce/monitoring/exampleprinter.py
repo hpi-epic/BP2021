@@ -178,6 +178,8 @@ class ExamplePrinter():
             raw_data['in_circulation'] = in_circulations
             raw_data['in_storage'] = in_storages
 
+        with open(os.path.join(PathManager.results_path, 'exampleprinter', signature, 'price_history.json'), 'w') as f:
+            json.dump(self.marketplace.price_buffer, f, cls=NumpyFloatValuesEncoder)
 
         with open(os.path.join(PathManager.results_path, 'exampleprinter', signature, 'raw_data.json'), 'w') as f:
             json.dump(raw_data, f, cls=NumpyFloatValuesEncoder)

@@ -135,7 +135,10 @@ class LinearEconomy(SimMarket, ABC):
         last_prices = np.pad(last_prices, (5 - len(last_prices), 0), 'constant')
         last_prices = []
 
-        return np.array([self.step_counter, self.waiting_customers, *last_prices])
+        return np.array([
+            self.step_counter % 100,
+            self.waiting_customers,
+            *last_prices])
 
     def _reset_common_state(self) -> None:
         self.waiting_customers = 0

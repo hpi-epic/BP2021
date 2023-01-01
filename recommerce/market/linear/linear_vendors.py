@@ -60,6 +60,12 @@ class LERandomAgent(LinearAgent, RuleBasedAgent):
         return random.randint(self.config_market.production_price + 1, self.config_market.max_price - 1)
 
 
+class UndercutLEAgent(LinearAgent, RuleBasedAgent):
+    def policy(self, state, *_):
+        price_new = max(min(state[2:]) - 1, self.config_market.production_price)
+        return price_new
+
+
 class Just2PlayersLEAgent(LinearAgent, RuleBasedAgent):
     def policy(self, state, epsilon=0) -> int:
         """

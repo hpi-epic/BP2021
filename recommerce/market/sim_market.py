@@ -1,15 +1,18 @@
 import math
 from abc import abstractmethod
 from collections import deque
+from operator import itemgetter
+import random
 from statistics import mean
 from typing import Tuple
-
 import gym
 import numpy as np
 from attrdict import AttrDict
-
+import scipy.stats
 from recommerce.configuration.json_configurable import JSONConfigurable
 from recommerce.configuration.utils import filtered_class_str_from_dir
+import numpy as np
+import math
 
 
 # An offer is a market state that contains all prices and qualities
@@ -68,6 +71,7 @@ class SimMarket(gym.Env, JSONConfigurable):
             support_continuous_action_space (bool, optional): If True, the action space will be continuous. Defaults to False.
             competitors (list, optional): If not None, this overwrites the default competitor list with a custom one.
         """
+        self.price_buffer = []
         self.config = config
         self.support_continuous_action_space = self.config['support_continuous_action_space']
         self.competitors = self._get_competitor_list() if not competitors else competitors
@@ -192,11 +196,20 @@ class SimMarket(gym.Env, JSONConfigurable):
 
         self._output_dict['customer/incoming'] += number_of_myopic_customer
 
+        self.price_buffer.append([self.vendor_actions[0].item(), self.vendor_actions[1].item()])
         probability_distribution = self._customer.generate_purchase_probabilities_from_offer(
             self.step_counter, self._get_common_state_array(), self.vendor_specific_state, self.vendor_actions)
         assert isinstance(probability_distribution,
                           np.ndarray), 'generate_purchase_probabilities_from_offer must return an np.ndarray'
         assert self._is_probability_distribution_fitting_exactly(probability_distribution)
+
+        # greedy customer behavior for edgeworth price cycles
+        # customer_decisions = [[0] for i in probability_distribution]
+        # if random.uniform(0, 1) < probability_distribution[0]:
+        #     customer_decisions[0] = number_of_myopic_customer
+        # else:
+        #     index, element = max(enumerate(probability_distribution[1:]), key=itemgetter(1))
+        #     customer_decisions[index+1] = number_of_myopic_customer
 
         customer_decisions = np.random.multinomial(number_of_myopic_customer, probability_distribution).tolist()
 
@@ -238,7 +251,14 @@ class SimMarket(gym.Env, JSONConfigurable):
 
         self._initialize_output_dict()
 
-        customers_per_vendor_iteration = self.config.number_of_customers // self._number_of_vendors
+        incoming_customers = self.config.number_of_customers
+
+        # normal = scipy.stats.norm(50, 6)
+        # seasonal_component = 50*normal.pdf(self.step_counter % 100)/normal.pdf(50)
+        # incoming_customers += seasonal_component
+
+        customers_per_vendor_iteration = incoming_customers // self._number_of_vendors
+
         for i in range(self._number_of_vendors):
             self._simulate_customers(profits, customers_per_vendor_iteration)
 
@@ -314,6 +334,9 @@ class SimMarket(gym.Env, JSONConfigurable):
         """
         # observatons is the array containing the global states. We add everything relevant to it, then return a concatenated version.
         observations = [self._get_common_state_array()] if self.config.common_state_visibility else []
+
+        # observations[0][0] = 0 # reset step_count to 0!
+
         if self.config.common_state_visibility:
             assert isinstance(observations[0], np.ndarray), '_get_common_state_array must return an np.ndarray'
 
