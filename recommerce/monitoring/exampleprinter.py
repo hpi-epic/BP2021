@@ -4,6 +4,7 @@ import os
 import signal
 import sys
 import time
+import csv
 from json import JSONEncoder
 
 import matplotlib.pyplot as plt
@@ -178,6 +179,10 @@ class ExamplePrinter():
             raw_data['in_circulation'] = in_circulations
             raw_data['in_storage'] = in_storages
 
+        with open(os.path.join(PathManager.results_path, 'exampleprinter', signature, 'price_data.csv'), 'w') as f:
+            wr = csv.writer(f, delimiter=',', quoting=csv.QUOTE_ALL)
+            wr.writerow(raw_data['price_new'][0])
+
         with open(os.path.join(PathManager.results_path, 'exampleprinter', signature, 'price_history.json'), 'w') as f:
             json.dump(self.marketplace.price_buffer, f, cls=NumpyFloatValuesEncoder)
 
@@ -288,11 +293,11 @@ def main():  # pragma: no cover
     else:
         printer.setup_exampleprinter(marketplace=marketplace, agent=config_environment.agent[0]['agent_class']())
 
-    print(f'The final profit was: {printer.run_example(save_lineplots=True)}')
+    profit = printer.run_example(save_lineplots=True)
+    print(f'The final profit was: {profit}')
 
 
 if __name__ == '__main__':  # pragma: no cover
     # Make sure a valid datapath is set
     PathManager.manage_user_path()
-
     main()
