@@ -1,4 +1,5 @@
 import math
+import time
 from abc import abstractmethod
 from collections import deque
 from operator import itemgetter
@@ -7,13 +8,21 @@ from statistics import mean
 from typing import Tuple
 import gym
 import numpy as np
+import os
 from attrdict import AttrDict
 import scipy.stats
 from recommerce.configuration.json_configurable import JSONConfigurable
 from recommerce.configuration.utils import filtered_class_str_from_dir
 import numpy as np
+import tensorflow as tf
 import math
+import matplotlib.pyplot as plt
 
+tf.config.set_visible_devices([], 'GPU')
+
+# constants
+INPUT_LENGTH = 80
+PREDICTION_LENGTH = 70
 
 # An offer is a market state that contains all prices and qualities
 
@@ -102,7 +111,9 @@ class SimMarket(gym.Env, JSONConfigurable):
             np.array: The initial observation of the market.
         """
         self.step_counter = 0
-        self.price_deque = deque([], maxlen=5)
+        self.price_deque = deque([], maxlen=self.config.episode_length)
+        self.price_model = tf.keras.models.load_model(
+            os.path.join(os.path.dirname(os.path.abspath(__file__)), 'models', 'prediction_model_shorter'))
 
         self._reset_common_state()
 
@@ -188,11 +199,6 @@ class SimMarket(gym.Env, JSONConfigurable):
 
         number_of_myopic_customer = number_of_customers * (1 - self.config.fraction_of_strategic_customer)
         number_of_strategic_customer = number_of_customers - number_of_myopic_customer
-
-        # if we don't have enough observations, there won't be any strategic customers
-        if len(self.price_deque) < 5:
-            number_of_myopic_customer = number_of_customers
-            number_of_strategic_customer = 0
 
         self._output_dict['customer/incoming'] += number_of_myopic_customer
 
@@ -296,13 +302,14 @@ class SimMarket(gym.Env, JSONConfigurable):
         return self._observation(), float(reward), is_done, self._output_dict
 
     def _simulate_strategic_customer(self, profits, number_of_new_strategic_customer):
-        if len(self.price_deque) < 5:
-            return
 
-        number_of_reoccurring_strategic_customer = math.floor(self.waiting_customers * 0.3)
+        number_of_reoccurring_strategic_customer = self.waiting_customers
+
         number_of_strategic_customer = number_of_reoccurring_strategic_customer + number_of_new_strategic_customer
+
         self._output_dict[
             'customer/incoming'] += number_of_strategic_customer  # this includes new + returning strategic customer
+
         self.waiting_customers = max(self.waiting_customers - number_of_reoccurring_strategic_customer, 0)
 
         if number_of_strategic_customer == 0:
@@ -310,15 +317,30 @@ class SimMarket(gym.Env, JSONConfigurable):
 
         current_lowest_offer_price_vendor, current_lowest_offer_price = min(enumerate(self.vendor_actions),
                                                                             key=lambda x: x[1])
-        avg_price = sum(self.price_deque) / len(self.price_deque)
 
-        if current_lowest_offer_price < 0.85 * avg_price:
-            self._complete_purchase(profits, current_lowest_offer_price_vendor, number_of_strategic_customer)
+        # pad the last prices
+        if len(self.price_deque) < INPUT_LENGTH:
+            last_prices = np.pad(self.price_deque, (INPUT_LENGTH - len(self.price_deque), 0), 'constant')
         else:
-            # 90% of the strategic customers who couldn't purchase will enter waiting state
-            if self.config.fraction_of_strategic_customer > 0:
-                self.waiting_customers = min(self.waiting_customers + (max(int(number_of_strategic_customer * 0.9), 1)),
-                                             self.config.max_waiting_customers)
+            last_prices = list(self.price_deque)[-INPUT_LENGTH:]
+
+        prediction = self.predict_price(last_prices)
+        plt.ion()
+
+        if len(self.price_deque) > 0:
+            plt.title(f'price forecast at step {self.step_counter}')
+            plt.ylim([0, 10])
+            plt.plot(range(1, self.step_counter), self.price_deque)
+            plt.plot(range(self.step_counter, self.step_counter + PREDICTION_LENGTH), prediction)
+            plt.draw()
+            plt.pause(0.0001)
+            plt.clf()
+
+        # if min(prediction) < 0.85 * current_lowest_offer_price:
+        #     self.waiting_customers = min(self.waiting_customers + number_of_strategic_customer,
+        #                                  self.config.max_waiting_customers)
+        # else:
+        #     self._complete_purchase(profits, current_lowest_offer_price_vendor, number_of_strategic_customer)
 
     def _observation(self, vendor_view=0) -> np.array:
         """
@@ -506,3 +528,8 @@ class SimMarket(gym.Env, JSONConfigurable):
             list: The list of (key, type, validation).
         """
         raise NotImplementedError
+
+    # TODO: extract into strategic customer class
+    def predict_price(self, history):
+        return self.price_model.predict(np.array(history).reshape((1, INPUT_LENGTH, 1)), verbose=0).squeeze()
+

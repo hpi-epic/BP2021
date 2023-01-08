@@ -132,7 +132,7 @@ class LinearEconomy(SimMarket, ABC):
 
     def _get_common_state_array(self) -> ndarray:
         last_prices = list(self.price_deque)
-        last_prices = np.pad(last_prices, (5 - len(last_prices), 0), 'constant')
+        # last_prices = np.pad(last_prices, (5 - len(last_prices), 0), 'constant')
         last_prices = []
 
         return np.array([
