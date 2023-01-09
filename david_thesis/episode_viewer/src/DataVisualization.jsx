@@ -53,20 +53,25 @@ export const DataVisualization = ({rawData}) => {
     const [activeVendor, setActiveVendor] = React.useState(0);
     const [accumulated, setAccumulated] = React.useState(false);
     const [avgPrices, setAvgPrices] = React.useState([]);
+    const [episodeCounter, setEpisodeCounter] = React.useState(-1);
+
 
     React.useEffect(() => {
-        if (!rawData) return;
+        if (episodeCounter === -1) return;
+
         setSliderValue(0);
-        setEpisodeLength(rawData["price_new"][0].length);
-    }, [rawData]);
+        setEpisodeLength(rawData[episodeCounter]["price_new"][0].length);
+
+    }, [episodeCounter]);
 
     React.useEffect(() => {
         if (!rawData) return;
+        if (episodeCounter === -1) return;
 
-        let data = JSON.parse(JSON.stringify(rawData["profits"]));
+        let data = JSON.parse(JSON.stringify(rawData[episodeCounter]["profits"]));
 
         if (accumulated) {
-            rawData["profits"].forEach((vendor, idx) => {
+            rawData[episodeCounter]["profits"].forEach((vendor, idx) => {
 
                 const cumulativeSum = (
                     (sum) => (value) =>
@@ -77,31 +82,31 @@ export const DataVisualization = ({rawData}) => {
         }
 
         setPriceGraph(
-            getPriceData(sliderValue, episodeLength, rawData, activeVendor, windowValue)
+            getPriceData(sliderValue, episodeLength, rawData[episodeCounter], activeVendor, windowValue)
         );
         setCustBehaviourGraph(
-            getCustomerBehaviour(sliderValue, episodeLength, rawData, activeVendor)
+            getCustomerBehaviour(sliderValue, episodeLength, rawData[episodeCounter], activeVendor)
         );
         setProfitGraph(
             getProfitGraph(sliderValue, episodeLength, data, activeVendor, windowValue)
         );
 
-        if (rawData['customers_waiting']) {
-            setWaitingGraph(getWatingGraph(sliderValue, episodeLength, rawData, activeVendor, windowValue));
+        if (rawData[episodeCounter]['customers_waiting']) {
+            setWaitingGraph(getWatingGraph(sliderValue, episodeLength, rawData[episodeCounter], activeVendor, windowValue));
         }
 
-        if (rawData['incoming_customer']) {
-            setIncomingGraph(getIncomingGraph(sliderValue, episodeLength, rawData, activeVendor, windowValue));
+        if (rawData[episodeCounter]['incoming_customer']) {
+            setIncomingGraph(getIncomingGraph(sliderValue, episodeLength, rawData[episodeCounter], activeVendor, windowValue));
         }
 
 
-        if (rawData['is_linear']) {
+        if (rawData[episodeCounter]['is_linear']) {
 
             const avg_price = [];
 
-            for (let vendor = 0; vendor < rawData["vendors"]; vendor++) {
-                const prices = rawData['price_new'][vendor];
-                const sales = rawData['sales_new'][vendor];
+            for (let vendor = 0; vendor < rawData[episodeCounter]["vendors"]; vendor++) {
+                const prices = rawData[episodeCounter]['price_new'][vendor];
+                const sales = rawData[episodeCounter]['sales_new'][vendor];
                 const avg = prices.map((price, idx) => price * sales[idx]).reduce((a, b) => a + b, 0) / sales.reduce((a, b) => a + b, 0)
                 avg_price.push(avg);
             }
@@ -112,11 +117,32 @@ export const DataVisualization = ({rawData}) => {
             // TODO
         }
 
-    }, [sliderValue, activeVendor, accumulated, windowValue]);
+    }, [sliderValue, activeVendor, accumulated, windowValue, episodeCounter]);
 
     const handleRadioChange = (event) => {
         setActiveVendor(parseInt(event.target.value));
     };
+
+    const EpisodeSelect = () => {
+        return <Box sx={{
+            display: "flex",
+            height: "100%",
+            width: "100%",
+            flexDirection: "column",
+        }}>
+            <h3>episode select</h3>
+            <Slider
+                value={episodeCounter}
+                onChange={(e) => setEpisodeCounter(e.target.value)}
+                step={1}
+                valueLabelDisplay="on"
+                marks
+                min={0}
+                max={rawData.length - 1}
+            />
+
+        </Box>
+    }
 
     if (rawData === null) {
         return (
@@ -134,6 +160,10 @@ export const DataVisualization = ({rawData}) => {
         );
     }
 
+    if (episodeCounter === -1) {
+        return EpisodeSelect()
+    }
+
     return (
         <Box
             sx={{
@@ -143,6 +173,7 @@ export const DataVisualization = ({rawData}) => {
                 flexDirection: "column",
             }}
         >
+            {EpisodeSelect()}
             <Box
                 sx={{
                     display: "flex",
@@ -154,7 +185,7 @@ export const DataVisualization = ({rawData}) => {
                     <Card>
                         <CardContent>
                             <Typography variant="h5">
-                                # vendors: {rawData["vendors"]}
+                                # vendors: {rawData[episodeCounter]["vendors"]}
                             </Typography>
                         </CardContent>
                     </Card>
@@ -200,7 +231,7 @@ export const DataVisualization = ({rawData}) => {
                 </Box>
 
             </Box>
-            {rawData && rawData["vendors"] > 1 && (
+            {rawData[episodeCounter] && rawData[episodeCounter]["vendors"] > 1 && (
                 <FormControl
                     sx={{
                         display: "flex",
@@ -216,7 +247,7 @@ export const DataVisualization = ({rawData}) => {
                         row={true}
                     >
                         {" "}
-                        {Array.from(Array(rawData["vendors"]).keys()).map((i) => {
+                        {Array.from(Array(rawData[episodeCounter]["vendors"]).keys()).map((i) => {
                             return (
                                 <FormControlLabel
                                     value={i}
@@ -289,35 +320,35 @@ export const DataVisualization = ({rawData}) => {
             </Box>
 
             <Box sx={{marginTop: "3rem"}} className={"statistics_boxes"}>
-                {!rawData["is_linear"] && (<Card>
+                {!rawData[episodeCounter]["is_linear"] && (<Card>
                     <CardContent>
                         <Typography variant="h5">
                             <strong>in circulation</strong>:{" "}
-                            {rawData["in_circulation"][sliderValue]}
+                            {rawData[episodeCounter]["in_circulation"][sliderValue]}
                         </Typography>
                     </CardContent>
                 </Card>)}
-                {activeVendor !== -1 && !rawData["is_linear"] && (
+                {activeVendor !== -1 && !rawData[episodeCounter]["is_linear"] && (
                     <Card>
                         <CardContent>
                             <Typography variant="h5">
                                 <strong>storage vendor {activeVendor}</strong>:{" "}
-                                {rawData["in_storage"][activeVendor][sliderValue]} /{" "}
-                                {rawData["max_storage"]}
+                                {rawData[episodeCounter]["in_storage"][activeVendor][sliderValue]} /{" "}
+                                {rawData[episodeCounter]["max_storage"]}
                             </Typography>
                         </CardContent>
                     </Card>
                 )}
-                {activeVendor === -1 && !rawData["is_linear"] &&
-                    Array.from(Array(rawData["vendors"]).keys()).map((i) => {
+                {activeVendor === -1 && !rawData[episodeCounter]["is_linear"] &&
+                    Array.from(Array(rawData[episodeCounter]["vendors"]).keys()).map((i) => {
                         return (
                             <>
                                 <Card>
                                     <CardContent>
                                         <Typography variant="h5">
                                             <strong>storage vendor {i}</strong>:{" "}
-                                            {rawData["in_storage"][i][sliderValue]} /{" "}
-                                            {rawData["max_storage"]}
+                                            {rawData[episodeCounter]["in_storage"][i][sliderValue]} /{" "}
+                                            {rawData[episodeCounter]["max_storage"]}
                                         </Typography>
                                     </CardContent>
                                 </Card>
@@ -330,7 +361,7 @@ export const DataVisualization = ({rawData}) => {
                             <Typography variant="h5">
                                 <strong>total profit vendor {activeVendor}</strong>:{" "}
                                 {Number(
-                                    rawData["profits"][activeVendor].reduce(
+                                    rawData[episodeCounter]["profits"][activeVendor].reduce(
                                         (pv, cv) => pv + cv,
                                         0
                                     )
@@ -340,7 +371,7 @@ export const DataVisualization = ({rawData}) => {
                     </Card>
                 )}
                 {activeVendor === -1 &&
-                    Array.from(Array(rawData["vendors"]).keys()).map((i) => {
+                    Array.from(Array(rawData[episodeCounter]["vendors"]).keys()).map((i) => {
                         return (
                             <>
                                 <Card>
@@ -348,7 +379,7 @@ export const DataVisualization = ({rawData}) => {
                                         <Typography variant="h5">
                                             <strong>total profit vendor {i}</strong>:{" "}
                                             {Number(
-                                                rawData["profits"][i].reduce((pv, cv) => pv + cv, 0)
+                                                rawData[episodeCounter]["profits"][i].reduce((pv, cv) => pv + cv, 0)
                                             ).toFixed(2)}
                                         </Typography>
                                     </CardContent>
@@ -356,7 +387,7 @@ export const DataVisualization = ({rawData}) => {
                             </>
                         );
                     })}
-                {rawData["is_linear"] && activeVendor === -1 && Array.from(Array(rawData["vendors"]).keys()).map((i) => (
+                {rawData[episodeCounter]["is_linear"] && activeVendor === -1 && Array.from(Array(rawData[episodeCounter]["vendors"]).keys()).map((i) => (
                     <Card key={i}>
                         <CardContent>
                             <Typography variant="h5">
@@ -367,7 +398,7 @@ export const DataVisualization = ({rawData}) => {
                             </Typography>
                         </CardContent>
                     </Card>))}
-                {rawData["is_linear"] && activeVendor !== -1 && <Card>
+                {rawData[episodeCounter]["is_linear"] && activeVendor !== -1 && <Card>
                     <CardContent>
                         <Typography variant="h5">
                             <strong>Ø new buy price - vendor {activeVendor}</strong>:{" "}
@@ -426,7 +457,7 @@ export const DataVisualization = ({rawData}) => {
                     </Box>
                 )}
             </Box>
-            <Box sx={{display: "flex", marginBottom: "2rem", height: "300px"} }>
+            <Box sx={{display: "flex", marginBottom: "2rem", height: "300px"}}>
                 <Box sx={{display: "flex", width: "50%", height: "100%"}}>
                     {waitingGraph && (
                         <Box sx={{flexGrow: "1", height: "100%"}}>
