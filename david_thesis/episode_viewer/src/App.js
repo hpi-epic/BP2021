@@ -9,14 +9,15 @@ import {DataVisualization} from "./DataVisualization";
 function App() {
 
     const [rawData, setRawData] = React.useState(null);
+    const [fileName, setFileName] = React.useState("");
 
 
     const handleChange = (event) => {
         if (event.target.files[0]) {
+            setFileName(event.target.files[0].name)
             const fileReader = new FileReader();
             fileReader.readAsText(event.target.files[0], "UTF-8");
             fileReader.onload = e => {
-                console.log("e.target.result", e.target.result);
                 setRawData(JSON.parse(e.target.result));
             };
         }
@@ -28,7 +29,7 @@ function App() {
             <CssBaseline/>
             <Container fixed sx={{height: "100vh", display: "flex", flexDirection: "column"}}>
                 <Box sx={{display: 'flex', justifyContent: "space-between", alignItems: "center"}}>
-                    <h2>Episode Viewer</h2>
+                    <h2>Episode Viewer - {fileName}</h2>
                     <Button
                         variant="contained"
                         sx={{height: "3rem"}}
@@ -44,7 +45,7 @@ function App() {
                     </Button>
                 </Box>
                 <Box sx={{display: 'flex', justifyContent: "center", alignItems: "center", flexGrow: 1}}>
-                    <DataVisualization rawData={rawData}/>
+                    <DataVisualization rawData={rawData} />
                 </Box>
             </Container>
         </div>

@@ -52,9 +52,18 @@ export const DataVisualization = ({rawData}) => {
     const [incomingGraph, setIncomingGraph] = React.useState(null);
     const [activeVendor, setActiveVendor] = React.useState(0);
     const [accumulated, setAccumulated] = React.useState(false);
-    const [avgPrices, setAvgPrices] = React.useState([]);
+    const [avgPrices, setAvgPrices] = React.useState({
+        myopic: [],
+        strategic: [],
+    });
     const [episodeCounter, setEpisodeCounter] = React.useState(-1);
 
+
+    React.useEffect(() => {
+        if (!rawData) return;
+
+        setEpisodeCounter(0);
+    }, [rawData])
 
     React.useEffect(() => {
         if (episodeCounter === -1) return;
@@ -111,7 +120,7 @@ export const DataVisualization = ({rawData}) => {
                 avg_price.push(avg);
             }
 
-            setAvgPrices(avg_price);
+            setAvgPrices({myopic: avg_price});
 
         } else {
             // TODO
@@ -393,7 +402,18 @@ export const DataVisualization = ({rawData}) => {
                             <Typography variant="h5">
                                 <strong>Ø new buy price - vendor {i}</strong>:{" "}
                                 {Number(
-                                    avgPrices[i]
+                                    avgPrices.myopic[i]
+                                ).toFixed(2)}
+                            </Typography>
+                        </CardContent>
+                    </Card>))}
+                {rawData[episodeCounter]["is_linear"] && activeVendor === -1 && Array.from(Array(rawData[episodeCounter]["vendors"]).keys()).map((i) => (
+                    <Card key={i}>
+                        <CardContent>
+                            <Typography variant="h5">
+                                <strong>Ø strategic buy price - vendor {i}</strong>:{" "}
+                                {Number(
+                                    avgPrices.myopic[i]
                                 ).toFixed(2)}
                             </Typography>
                         </CardContent>
@@ -403,7 +423,7 @@ export const DataVisualization = ({rawData}) => {
                         <Typography variant="h5">
                             <strong>Ø new buy price - vendor {activeVendor}</strong>:{" "}
                             {Number(
-                                avgPrices[activeVendor]
+                                avgPrices.myopic[activeVendor]
                             ).toFixed(2)}
                         </Typography>
                     </CardContent>
@@ -422,7 +442,6 @@ export const DataVisualization = ({rawData}) => {
                         <Switch
                             label="accumulated"
                             onChange={(e) => {
-                                console.log(e);
                                 setAccumulated(e.target.checked);
                             }}
                             value={accumulated}
