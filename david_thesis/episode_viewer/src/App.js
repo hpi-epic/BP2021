@@ -15,6 +15,7 @@ function App() {
     const handleChange = (event) => {
         if (event.target.files[0]) {
             setFileName(event.target.files[0].name)
+            document.title = event.target.files[0].name;
             const fileReader = new FileReader();
             fileReader.readAsText(event.target.files[0], "UTF-8");
             fileReader.onload = e => {

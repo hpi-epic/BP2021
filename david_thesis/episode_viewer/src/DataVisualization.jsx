@@ -111,16 +111,32 @@ export const DataVisualization = ({rawData}) => {
 
         if (rawData[episodeCounter]['is_linear']) {
 
-            const avg_price = [];
+            const avg_price_m = [];
+            const avg_price_s = [];
 
             for (let vendor = 0; vendor < rawData[episodeCounter]["vendors"]; vendor++) {
                 const prices = rawData[episodeCounter]['price_new'][vendor];
                 const sales = rawData[episodeCounter]['sales_new'][vendor];
                 const avg = prices.map((price, idx) => price * sales[idx]).reduce((a, b) => a + b, 0) / sales.reduce((a, b) => a + b, 0)
-                avg_price.push(avg);
+
+                if(isNaN(avg)) {
+                    avg_price_m.push(0);
+                    continue;
+                }
+
+                avg_price_m.push(avg);
             }
 
-            setAvgPrices({myopic: avg_price});
+            if (rawData[episodeCounter]['sales_strategic'] && rawData[episodeCounter]['sales_strategic'].flat().reduce((a, b) => a + b, 0) > 0) {
+                for (let vendor = 0; vendor < rawData[episodeCounter]["vendors"]; vendor++) {
+                    const prices = rawData[episodeCounter]['price_new'][vendor];
+                    const sales = rawData[episodeCounter]['sales_strategic'][vendor];
+                    const avg = prices.map((price, idx) => price * sales[idx]).reduce((a, b) => a + b, 0) / sales.reduce((a, b) => a + b, 0)
+                    avg_price_s.push(avg);
+                }
+            }
+
+            setAvgPrices({myopic: avg_price_m, strategic: avg_price_s});
 
         } else {
             // TODO
@@ -424,6 +440,16 @@ export const DataVisualization = ({rawData}) => {
                             <strong>Ø new buy price - vendor {activeVendor}</strong>:{" "}
                             {Number(
                                 avgPrices.myopic[activeVendor]
+                            ).toFixed(2)}
+                        </Typography>
+                    </CardContent>
+                </Card>}
+                {rawData[episodeCounter]["is_linear"] && activeVendor !== -1 && avgPrices.strategic.length > 0&& <Card>
+                    <CardContent>
+                        <Typography variant="h5">
+                            <strong>Ø new buy price - strategic - vendor {activeVendor}</strong>:{" "}
+                            {Number(
+                                avgPrices.strategic[activeVendor]
                             ).toFixed(2)}
                         </Typography>
                     </CardContent>
@@ -758,6 +784,11 @@ export const getCustomerBehaviour = (
                 label: "buy new",
                 data: [data["sales_new"][vendor][slidingPos]],
                 backgroundColor: "red",
+            },
+            {
+                label: "buy strategic",
+                data: [data["sales_strategic"][vendor][slidingPos]],
+                backgroundColor: "green",
             },
             {
                 label: "no buy",
