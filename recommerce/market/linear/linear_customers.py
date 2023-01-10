@@ -36,10 +36,10 @@ class CustomerLinear(Customer):
         low_demand_reference_price = 0.5 * MAX_PRICE
         high_demand_reference_price = 0.9 * MAX_PRICE
 
-        normal = scipy.stats.norm(50, 6)
-        current_demand = normal.pdf(step_counter % 100) / normal.pdf(50)
+        normal = scipy.stats.norm(5, 0.3)
+        current_demand = normal.pdf(step_counter % 7) / normal.pdf(5)
         x = [0, 1]
-        y = [low_demand_reference_price, high_demand_reference_price]
+        y = [high_demand_reference_price, low_demand_reference_price]
         reference_price = np.interp(current_demand, x, y)
 
         nothing_preference = 1
