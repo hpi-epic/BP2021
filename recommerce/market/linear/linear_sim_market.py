@@ -55,12 +55,12 @@ class LinearEconomy(SimMarket, ABC):
 
         if self.config.common_state_visibility:
             common_state_min = [
-                0.0, # step counter
-                0.0,  # waiting customers,
+                0,  # step counter
+                0.0,  # waiting customers
             ]
 
             common_state_max = [
-                25,
+                self.config.episode_length,
                 self.config.max_waiting_customers,
             ]
 
@@ -107,16 +107,12 @@ class LinearEconomy(SimMarket, ABC):
             return np.array(action_values, dtype=np.float32)
         return action_values
 
-    def _complete_purchase(self, profits, chosen_vendor, frequency, strategic=False) -> None:
+    def _complete_purchase(self, profits, chosen_vendor, frequency) -> None:
         profits[chosen_vendor] += frequency * (self.vendor_actions[chosen_vendor] - self.config.production_price)
-        if strategic:
-            self._output_dict[f'customer/purchases_strategic'][f'vendor_{chosen_vendor}'] += frequency
-        else:
-            self._output_dict[f'customer/purchases'][f'vendor_{chosen_vendor}'] += frequency
+        self._output_dict['customer/purchases'][f'vendor_{chosen_vendor}'] += frequency
 
     def _initialize_output_dict(self):
         self._ensure_output_dict_has('customer/purchases', [0] * self._number_of_vendors)
-        self._ensure_output_dict_has('customer/purchases_strategic', [0] * self._number_of_vendors)
         self._ensure_output_dict_has('actions/price',
                                      [self.vendor_actions[i].item(0) if isinstance(self.vendor_actions[i], np.ndarray)
                                       else self.vendor_actions[i] for i in range(self._number_of_vendors)])
@@ -140,9 +136,9 @@ class LinearEconomy(SimMarket, ABC):
         last_prices = []
 
         return np.array([
-            self.step_counter % 25,
+            self.step_counter % 100,
             self.waiting_customers,
-          ])
+            *last_prices])
 
     def _reset_common_state(self) -> None:
         self.waiting_customers = 0

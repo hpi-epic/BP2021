@@ -135,16 +135,13 @@ class SimMarket(gym.Env, JSONConfigurable):
     def _simulate_customers_level_1(self, profits, number_of_customers) -> None:
 
         # first split customer into myopic and recurring
-        p_recurr = 1
+        p_recurr = 0.3
 
         number_of_recurring_customer = np.random.binomial(number_of_customers, p_recurr)
         number_of_myopic_customer = number_of_customers - number_of_recurring_customer
 
-        self.price_buffer.append([self.vendor_actions[i].item() for i in range(len(self.vendor_actions))])
-
-
         # add recurring customer
-        number_of_returning_recurring_customer = np.random.binomial(self.waiting_customers, 0.3)
+        number_of_returning_recurring_customer = math.floor(self.waiting_customers * 0.3)
         self.waiting_customers = max(0, self.waiting_customers - number_of_returning_recurring_customer)
         number_of_recurring_customer += number_of_returning_recurring_customer
 
@@ -170,7 +167,7 @@ class SimMarket(gym.Env, JSONConfigurable):
         recurring_customer_decision = np.random.multinomial(number_of_recurring_customer,
                                                             probability_distribution).tolist()
         dont_buy = recurring_customer_decision[0]
-        enter_waiting = np.random.binomial(dont_buy, 0.9)
+        enter_waiting = math.floor(dont_buy * 0.9)
         self.waiting_customers = min(self.waiting_customers + enter_waiting, self.config.max_waiting_customers)
         self._output_dict['customer/buy_nothing'] += (dont_buy - enter_waiting)
 
@@ -189,22 +186,30 @@ class SimMarket(gym.Env, JSONConfigurable):
             number_of_customers (int): the number of customers eager to buy each step.
         """
 
-        number_of_strategic_customer = np.random.binomial(number_of_customers, self.config.fraction_of_strategic_customer)
-        number_of_myopic_customer = number_of_customers - number_of_strategic_customer
+        number_of_myopic_customer = number_of_customers * (1 - self.config.fraction_of_strategic_customer)
+        number_of_strategic_customer = number_of_customers - number_of_myopic_customer
 
         # if we don't have enough observations, there won't be any strategic customers
-        # if len(self.price_deque) < 5:
-            # number_of_myopic_customer = number_of_customers
-            # number_of_strategic_customer = 0
+        if len(self.price_deque) < 5:
+            number_of_myopic_customer = number_of_customers
+            number_of_strategic_customer = 0
 
         self._output_dict['customer/incoming'] += number_of_myopic_customer
 
-        self.price_buffer.append([self.vendor_actions[i].item() for i in range(len(self.vendor_actions))])
+        self.price_buffer.append([self.vendor_actions[0].item(), self.vendor_actions[1].item()])
         probability_distribution = self._customer.generate_purchase_probabilities_from_offer(
             self.step_counter, self._get_common_state_array(), self.vendor_specific_state, self.vendor_actions)
         assert isinstance(probability_distribution,
                           np.ndarray), 'generate_purchase_probabilities_from_offer must return an np.ndarray'
         assert self._is_probability_distribution_fitting_exactly(probability_distribution)
+
+        # greedy customer behavior for edgeworth price cycles
+        # customer_decisions = [[0] for i in probability_distribution]
+        # if random.uniform(0, 1) < probability_distribution[0]:
+        #     customer_decisions[0] = number_of_myopic_customer
+        # else:
+        #     index, element = max(enumerate(probability_distribution[1:]), key=itemgetter(1))
+        #     customer_decisions[index+1] = number_of_myopic_customer
 
         customer_decisions = np.random.multinomial(number_of_myopic_customer, probability_distribution).tolist()
 
@@ -248,19 +253,14 @@ class SimMarket(gym.Env, JSONConfigurable):
 
         incoming_customers = self.config.number_of_customers
 
-        # mu = 25
-        # variance2 = 3
-        # eta = 50
-        # max_peak = 50
-        #
-        # normal = scipy.stats.norm(mu, variance2)
-        # seasonal_component = max_peak*normal.pdf(self.step_counter % eta)/normal.pdf(mu)
+        # normal = scipy.stats.norm(50, 6)
+        # seasonal_component = 50*normal.pdf(self.step_counter % 100)/normal.pdf(50)
         # incoming_customers += seasonal_component
 
         customers_per_vendor_iteration = incoming_customers // self._number_of_vendors
 
         for i in range(self._number_of_vendors):
-            self._simulate_customers_level_1(profits, customers_per_vendor_iteration)
+            self._simulate_customers(profits, customers_per_vendor_iteration)
 
             if i == 0:
                 self.price_deque.append(self.vendor_actions[0])
@@ -297,8 +297,6 @@ class SimMarket(gym.Env, JSONConfigurable):
 
     def _simulate_strategic_customer(self, profits, number_of_new_strategic_customer):
         if len(self.price_deque) < 5:
-            self.waiting_customers = min(self.waiting_customers + (max(int(number_of_new_strategic_customer * 0.9), 1)),
-                                         self.config.max_waiting_customers)
             return
 
         number_of_reoccurring_strategic_customer = math.floor(self.waiting_customers * 0.3)
@@ -315,7 +313,7 @@ class SimMarket(gym.Env, JSONConfigurable):
         avg_price = sum(self.price_deque) / len(self.price_deque)
 
         if current_lowest_offer_price < 0.85 * avg_price:
-            self._complete_purchase(profits, current_lowest_offer_price_vendor, number_of_strategic_customer, strategic=True)
+            self._complete_purchase(profits, current_lowest_offer_price_vendor, number_of_strategic_customer)
         else:
             # 90% of the strategic customers who couldn't purchase will enter waiting state
             if self.config.fraction_of_strategic_customer > 0:
