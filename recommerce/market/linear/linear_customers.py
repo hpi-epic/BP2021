@@ -1,9 +1,9 @@
 import math
 
 import numpy as np
+import scipy.stats
 
 import recommerce.configuration.utils as ut
-import scipy.stats
 from recommerce.market.customer import Customer
 
 
@@ -30,22 +30,27 @@ class CustomerLinear(Customer):
             if len(element.shape) == 1:
                 vendor_actions[idx] = np.array(vendor_actions[idx][0])
 
+        # constants
 
-        MAX_PRICE = 10 # introduce config
-        mu = 4
-        low_demand_reference_price = 0.5 * MAX_PRICE
-        high_demand_reference_price = 0.9 * MAX_PRICE
+        MAX_PRICE = 10  # introduce config
+        lambda_ = 4
+        mu = 12
+        variance2 = 3
+        eta = 25
 
-        normal = scipy.stats.norm(50, 6)
-        current_demand = normal.pdf(step_counter % 100) / normal.pdf(50)
-        x = [0, 1]
-        y = [low_demand_reference_price, high_demand_reference_price]
-        reference_price = np.interp(current_demand, x, y)
+        # low_demand_reference_price = 0.5 * MAX_PRICE
+        # high_demand_reference_price = 0.9 * MAX_PRICE
+        #
+        # normal = scipy.stats.norm(mu, variance2)
+        # current_demand = normal.pdf(step_counter % eta) / normal.pdf(mu)
+        #
+        # reference_price = np.interp(current_demand, [0, 1], [low_demand_reference_price, high_demand_reference_price])
+        reference_price = 7
 
         nothing_preference = 1
         ratios = [nothing_preference]
         for vendor_idx in range(len(vendor_actions)):
             price = vendor_actions[vendor_idx]
-            ratio = mu * (-np.exp(price-reference_price) + reference_price) / reference_price
+            ratio = -1 * lambda_ * (np.exp(price - reference_price) / reference_price - 1 ) - (1/reference_price*price-1)
             ratios.append(ratio)
         return ut.softmax(np.array(ratios))
