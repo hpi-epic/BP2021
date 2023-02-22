@@ -37,10 +37,10 @@ class NumpyFloatValuesEncoder(json.JSONEncoder):
 
 class ExamplePrinter():
 
-    def __init__(self, config_market: AttrDict):
+    def __init__(self, config_market: AttrDict, marketplace):
         ut.ensure_results_folders_exist()
         self.config_market = config_market
-        self.marketplace = circular_market.CircularEconomyRebuyPriceDuopoly(config=self.config_market)
+        self.marketplace = marketplace
         self.agent = RuleBasedCERebuyAgent(config_market=self.config_market)
         # Signal handler for e.g. KeyboardInterrupt
         signal.signal(signal.SIGINT, self._signal_handler)
@@ -77,8 +77,8 @@ class ExamplePrinter():
         """
         print(
             f'Running exampleprinter on a {self.marketplace.__class__.__name__} market with a {self.agent.__class__.__name__} agent...')
-
-        signature = f'exampleprinter_{time.strftime("%b%d_%H-%M-%S")}'
+        timestr = time.strftime("%b%d_%H-%M-%S")
+        signature = f'exampleprinter_{timestr}'
         writer = SummaryWriter(log_dir=os.path.join(PathManager.results_path, 'runs', signature))
         os.makedirs(os.path.join(PathManager.results_path, 'exampleprinter', signature), exist_ok=True)
 
@@ -99,7 +99,6 @@ class ExamplePrinter():
                                              isinstance(self.marketplace, linear_market.LinearEconomyDuopoly))
         results = []
         overall_profits = []
-        price_data = []
 
         for runs in range(multiple_runs):
 
@@ -107,13 +106,14 @@ class ExamplePrinter():
             our_profit = 0
             is_done = False
             state = self.marketplace.reset()
-            self.marketplace.price_buffer = []
 
             cumulative_dict = None
 
             profits = [[] for _ in range(self.marketplace._number_of_vendors)]
             price_news = [[] for _ in range(self.marketplace._number_of_vendors)]
             sales_new = [[] for _ in range(self.marketplace._number_of_vendors)]
+            sales_strategic = [[] for _ in range(self.marketplace._number_of_vendors)]
+
             sales_no_buy = []
             customers_waiting = []
             incoming_customer = []
@@ -148,6 +148,8 @@ class ExamplePrinter():
                     for i in range(self.marketplace._number_of_vendors):
                         price_news[i].append(logdict[f'actions/{new_price_name}'][f'vendor_{i}'])
                         sales_new[i].append(logdict[f'customer/{new_purchases_name}'][f'vendor_{i}'])
+                        sales_strategic[i].append(logdict[f'customer/purchases_strategic'][f'vendor_{i}'])
+
                         profits[i].append(logdict['profits/all'][f'vendor_{i}'])
 
                     sales_no_buy.append(logdict['customer/buy_nothing'])
@@ -163,14 +165,15 @@ class ExamplePrinter():
 
                         in_circulations.append(logdict['state/in_circulation'])
 
-                    # if is_circular_rebuy_doupoly or is_linear_doupoly:
-                    #     svg_manipulator.save_overview_svg(filename=('MarketOverview_%.3d' % counter))
+                    if is_circular_rebuy_doupoly or is_linear_doupoly:
+                        svg_manipulator.save_overview_svg(filename=('MarketOverview_%.3d' % counter))
 
             raw_data = {
                 'vendors': self.marketplace._number_of_vendors,
                 'is_linear': not is_circular,
                 'price_new': price_news,
                 'sales_new': sales_new,
+                'sales_strategic': sales_strategic,
                 'sales_no_buy': sales_no_buy,
                 'profits': profits,
                 'customers_waiting': customers_waiting,
@@ -181,7 +184,7 @@ class ExamplePrinter():
                 raw_data['max_storage'] = self.marketplace.max_storage
                 raw_data['price_refurbished'] = price_refurbished  # refurbished verkaufpreis
                 raw_data['price_rebuy'] = price_rebuy  # rueckkauf preis!
-                raw_data['sales_refurbished'] = sales_refurbished
+                raw_data['sales_refurbishedsales_refurbished'] = sales_refurbished
                 raw_data['in_circulation'] = in_circulations
                 raw_data['in_storage'] = in_storages
 
@@ -191,7 +194,6 @@ class ExamplePrinter():
 
             results.append(raw_data)
             overall_profits.append(our_profit)
-            price_data.append(self.marketplace.price_buffer)
 
 
             if is_circular_rebuy_doupoly or is_linear_doupoly:
@@ -201,11 +203,11 @@ class ExamplePrinter():
                 self.save_step_diagrams(price_refurbished, price_news, price_rebuy, in_storages,
                                         in_circulations, sales_refurbished, sales_new, sales_no_buy, signature)
 
-        with open(os.path.join(PathManager.results_path, 'exampleprinter', signature, 'raw_data.json'), 'w') as f:
+        with open(os.path.join(PathManager.results_path, 'exampleprinter', signature, f'raw_data_{timestr}.json'), 'w') as f:
             json.dump(results, f, cls=NumpyFloatValuesEncoder)
 
         with open(os.path.join(PathManager.results_path, 'exampleprinter', signature, 'price_history.json'), 'w') as f:
-            json.dump(price_data, f, cls=NumpyFloatValuesEncoder)
+            json.dump(self.marketplace.price_buffer, f, cls=NumpyFloatValuesEncoder)
 
         return overall_profits
 
@@ -273,7 +275,6 @@ def main():  # pragma: no cover
 
     config_market: AttrDict = HyperparameterConfigLoader.load('market_config', config_environment.marketplace)
     config_rl: AttrDict = HyperparameterConfigLoader.load('rl_config', config_environment.agent[0]['agent_class'])
-    printer = ExamplePrinter(config_market=config_market)
 
     competitor_list = []
     for competitor in config_environment.agent[1:]:
@@ -286,6 +287,8 @@ def main():  # pragma: no cover
 
     # TODO: Theoretically, the name of the agent is saved in config_environment['name'], but we don't use it yet.
     marketplace = config_environment.marketplace(config=config_market, competitors=competitor_list)
+
+    printer = ExamplePrinter(config_market=config_market, marketplace=marketplace)
 
     # QLearningAgents need more initialization
     if issubclass(config_environment.agent[0]['agent_class'], (QLearningAgent, StableBaselinesAgent)):
@@ -302,7 +305,7 @@ def main():  # pragma: no cover
     else:
         printer.setup_exampleprinter(marketplace=marketplace, agent=config_environment.agent[0]['agent_class']())
 
-    profit = printer.run_example(save_lineplots=True, multiple_runs=30)
+    profit = printer.run_example(save_lineplots=True, multiple_runs=100)
     print(f'The final profit was: {profit}')
 
 

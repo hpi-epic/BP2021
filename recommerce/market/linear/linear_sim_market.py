@@ -56,12 +56,14 @@ class LinearEconomy(SimMarket, ABC):
         if self.config.common_state_visibility:
             common_state_min = [
                 0,  # step counter
-                0.0,  # waiting customers
+                0.0,  # waiting customers,
+                *[0.0 for i in range(5)],  # t-5, t-4, t-3, t-2, t-1
             ]
 
             common_state_max = [
                 self.config.episode_length,
                 self.config.max_waiting_customers,
+                *[self.config.max_price for i in range(5)],  # t-5, t-4, t-3, t-2, t-1
             ]
 
             min_observation_space = np.array(common_state_min + [0.0] * len(self.competitors), dtype=np.float32)
@@ -107,12 +109,16 @@ class LinearEconomy(SimMarket, ABC):
             return np.array(action_values, dtype=np.float32)
         return action_values
 
-    def _complete_purchase(self, profits, chosen_vendor, frequency) -> None:
-        profits[chosen_vendor] += frequency * (self.vendor_actions[chosen_vendor].item() - self.config.production_price)
-        self._output_dict['customer/purchases'][f'vendor_{chosen_vendor}'] += frequency
+    def _complete_purchase(self, profits, chosen_vendor, frequency, strategic=False) -> None:
+        profits[chosen_vendor] += frequency * (self.vendor_actions[chosen_vendor] - self.config.production_price)
+        if strategic:
+            self._output_dict[f'customer/purchases_strategic'][f'vendor_{chosen_vendor}'] += frequency
+        else:
+            self._output_dict[f'customer/purchases'][f'vendor_{chosen_vendor}'] += frequency
 
     def _initialize_output_dict(self):
         self._ensure_output_dict_has('customer/purchases', [0] * self._number_of_vendors)
+        self._ensure_output_dict_has('customer/purchases_strategic', [0] * self._number_of_vendors)
         self._ensure_output_dict_has('actions/price',
                                      [self.vendor_actions[i].item(0) if isinstance(self.vendor_actions[i], np.ndarray)
                                       else self.vendor_actions[i] for i in range(self._number_of_vendors)])
@@ -133,10 +139,9 @@ class LinearEconomy(SimMarket, ABC):
     def _get_common_state_array(self) -> ndarray:
         last_prices = list(self.price_deque)
         last_prices = np.pad(last_prices, (5 - len(last_prices), 0), 'constant')
-        last_prices = []
 
         return np.array([
-            self.step_counter % 50,
+            self.step_counter % 25,
             self.waiting_customers,
             *last_prices])
 

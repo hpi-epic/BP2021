@@ -131,7 +131,7 @@ class RecommerceCallback(BaseCallback):
                 self.histories['price_history'][idx2].append(prices[idx2])
 
         for idx, key in enumerate(info['actions/price'].keys()):
-            self.histories['purchase_count'][idx].append(info['customer/purchases'][key])
+            self.histories['purchase_count'][idx].append(info['customer/purchases'][key]+info['customer/purchases_strategic'][key])
             self.histories['profits'][idx].append(info['profits/all'][key])
 
         self.tqdm_instance.update()
