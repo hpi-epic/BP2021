@@ -136,7 +136,7 @@ class LinearEconomy(SimMarket, ABC):
         last_prices = []
 
         return np.array([
-            self.step_counter % 50,
+            self.step_counter % 25,
             self.waiting_customers,
             *last_prices])
 

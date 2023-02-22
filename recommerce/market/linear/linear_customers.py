@@ -38,14 +38,14 @@ class CustomerLinear(Customer):
         variance2 = 3
         eta = 25
 
-        # low_demand_reference_price = 0.5 * MAX_PRICE
-        # high_demand_reference_price = 0.9 * MAX_PRICE
-        #
-        # normal = scipy.stats.norm(mu, variance2)
-        # current_demand = normal.pdf(step_counter % eta) / normal.pdf(mu)
-        #
-        # reference_price = np.interp(current_demand, [0, 1], [low_demand_reference_price, high_demand_reference_price])
-        reference_price = 7
+        low_demand_reference_price = 0.5 * MAX_PRICE
+        high_demand_reference_price = 0.9 * MAX_PRICE
+
+        normal = scipy.stats.norm(mu, variance2)
+        current_demand = normal.pdf(step_counter % eta) / normal.pdf(mu)
+
+        reference_price = np.interp(current_demand, [0, 1], [low_demand_reference_price, high_demand_reference_price])
+        # reference_price = 7
 
         nothing_preference = 1
         ratios = [nothing_preference]
