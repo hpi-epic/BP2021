@@ -15,7 +15,9 @@ from recommerce.configuration.path_manager import PathManager
 from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPriceDuopoly
 from recommerce.monitoring.watcher import Watcher
 from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
+import tensorflow as tf
 
+tf.config.set_visible_devices([], 'GPU')
 print('successfully imported torch: cuda?', torch.cuda.is_available())
 
 

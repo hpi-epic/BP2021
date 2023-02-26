@@ -32,20 +32,23 @@ class CustomerLinear(Customer):
 
 
         MAX_PRICE = 10 # introduce config
-        mu = 4
+        eta = 25
+        mu = 12
+        variance2 = 3
+        lambda_ = 4
         low_demand_reference_price = 0.5 * MAX_PRICE
         high_demand_reference_price = 0.9 * MAX_PRICE
 
-        normal = scipy.stats.norm(5, 0.3)
-        current_demand = normal.pdf(step_counter % 7) / normal.pdf(5)
+        normal = scipy.stats.norm(mu, variance2)
+        current_demand = normal.pdf(step_counter % eta) / normal.pdf(mu)
         x = [0, 1]
-        y = [high_demand_reference_price, low_demand_reference_price]
+        y = [low_demand_reference_price, high_demand_reference_price]
         reference_price = np.interp(current_demand, x, y)
 
         nothing_preference = 1
         ratios = [nothing_preference]
         for vendor_idx in range(len(vendor_actions)):
             price = vendor_actions[vendor_idx]
-            ratio = mu * (-np.exp(price-reference_price) + reference_price) / reference_price
+            ratio = -1 * lambda_ * (np.exp(price - reference_price) / reference_price - 1) - (1/reference_price*price-1)
             ratios.append(ratio)
         return ut.softmax(np.array(ratios))

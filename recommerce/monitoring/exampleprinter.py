@@ -14,6 +14,8 @@ from attrdict import AttrDict
 from torch.utils.tensorboard import SummaryWriter
 from typing import List
 
+from tqdm import trange
+
 import recommerce.configuration.utils as ut
 import recommerce.market.circular.circular_sim_market as circular_market
 import recommerce.market.linear.linear_sim_market as linear_market
@@ -100,7 +102,7 @@ class ExamplePrinter():
         results = []
         overall_profits = []
 
-        for runs in range(multiple_runs):
+        for runs in trange(multiple_runs):
 
             counter = 0
             our_profit = 0
@@ -128,8 +130,8 @@ class ExamplePrinter():
             with torch.no_grad():
                 while not is_done:
                     action = self.agent.policy(state)
-                    print(state)
-                    print(action)
+                    # print(state)
+                    # print(action)
                     state, reward, is_done, logdict = self.marketplace.step(action)
                     if cumulative_dict is not None:
                         cumulative_dict = ut.add_content_of_two_dicts(cumulative_dict, logdict)
@@ -305,7 +307,7 @@ def main():  # pragma: no cover
     else:
         printer.setup_exampleprinter(marketplace=marketplace, agent=config_environment.agent[0]['agent_class']())
 
-    profit = printer.run_example(save_lineplots=True, multiple_runs=1)
+    profit = printer.run_example(save_lineplots=True, multiple_runs=50)
     print(f'The final profit was: {profit}')
 
 

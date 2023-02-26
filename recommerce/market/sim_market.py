@@ -17,6 +17,7 @@ import numpy as np
 import tensorflow as tf
 import math
 import matplotlib.pyplot as plt
+import tensorflow as tf
 
 tf.config.set_visible_devices([], 'GPU')
 
@@ -24,12 +25,27 @@ tf.config.set_visible_devices([], 'GPU')
 INPUT_LENGTH = 10
 PREDICTION_LENGTH = 7
 
+
 # An offer is a market state that contains all prices and qualities
 
 # There are three kinds of state:
 # First: a common state for all vendors
 # Second: a state specific to one vendor
 # Third: vendor's actions from the former round which needs to be saved and influence the other's decision e.g. prices
+
+class SingletonMLModel:
+    _instance = None
+
+    def __new__(cls, *args, **kwargs):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+            cls._instance.model = tf.keras.models.load_model(
+                os.path.join(os.path.dirname(os.path.abspath(__file__)), 'models',
+                             'test_model'))  # load your ML model here
+        return cls._instance
+
+    def __deepcopy__(self, memo):
+        return self
 
 
 class SimMarket(gym.Env, JSONConfigurable):
@@ -113,8 +129,7 @@ class SimMarket(gym.Env, JSONConfigurable):
         self.step_counter = 0
         self.all_prices = []
         self.price_deque = deque([], maxlen=INPUT_LENGTH)
-        self.price_model = tf.keras.models.load_model(
-            os.path.join(os.path.dirname(os.path.abspath(__file__)), 'models', 'prediction_model_7'))
+        self.price_model = SingletonMLModel()
 
         self._reset_common_state()
 
@@ -198,12 +213,12 @@ class SimMarket(gym.Env, JSONConfigurable):
             number_of_customers (int): the number of customers eager to buy each step.
         """
 
-        number_of_myopic_customer = number_of_customers * (1 - self.config.fraction_of_strategic_customer)
-        number_of_strategic_customer = number_of_customers - number_of_myopic_customer
+        number_of_strategic_customer = np.random.binomial(number_of_customers, self.config.fraction_of_strategic_customer)
+        number_of_myopic_customer = number_of_customers - number_of_strategic_customer
 
         self._output_dict['customer/incoming'] += number_of_myopic_customer
 
-        self.price_buffer.append([self.vendor_actions[0].item(), self.vendor_actions[1].item()])
+        # self.price_buffer.append([self.vendor_actions[0].item(), self.vendor_actions[1].item()])
         probability_distribution = self._customer.generate_purchase_probabilities_from_offer(
             self.step_counter, self._get_common_state_array(), self.vendor_specific_state, self.vendor_actions)
         assert isinstance(probability_distribution,
@@ -305,11 +320,12 @@ class SimMarket(gym.Env, JSONConfigurable):
 
     def _simulate_strategic_customer(self, profits, number_of_new_strategic_customer):
 
-        number_of_reoccurring_strategic_customer = self.waiting_customers
+        number_of_reoccurring_strategic_customer = math.floor(self.waiting_customers * 0.3)
 
         number_of_strategic_customer = number_of_reoccurring_strategic_customer + number_of_new_strategic_customer
 
-        self._output_dict['customer/incoming'] += number_of_strategic_customer  # this includes new + returning strategic customer
+        self._output_dict[
+            'customer/incoming'] += number_of_strategic_customer  # this includes new + returning strategic customer
 
         self.waiting_customers = max(self.waiting_customers - number_of_reoccurring_strategic_customer, 0)
 
@@ -321,29 +337,33 @@ class SimMarket(gym.Env, JSONConfigurable):
 
         # wait until enough observations are made
         if len(self.all_prices) < INPUT_LENGTH:
-            self.waiting_customers = min(self.waiting_customers + number_of_strategic_customer, self.config.max_waiting_customers)
+            self.waiting_customers = min(self.waiting_customers + (max(int(number_of_new_strategic_customer * 0.9), 1)),
+                                         self.config.max_waiting_customers)
             return
 
         last_prices = list(self.price_deque)[-INPUT_LENGTH:]
 
         prediction = self.predict_price(last_prices)
-        print(f"in step {self.step_counter} did i predict the lowest price in {np.argmin(prediction)} episodes!")
-        plt.ion()
-
-        if len(self.price_deque) > 0:
-            plt.title(f'price forecast at step {self.step_counter}')
-            plt.ylim([0, 10])
-            plt.plot(range(1, self.step_counter), self.all_prices)
-            plt.plot(range(self.step_counter, self.step_counter + PREDICTION_LENGTH), prediction)
-            plt.draw()
-            plt.pause(0.0001)
-            plt.clf()
+        # # print(f"in step {self.step_counter} did i predict the lowest price in {np.argmin(prediction)} episodes!")
+        # # plt.ion()
+        #
+        # if len(self.price_deque) > 0:
+        #     plt.title(f'price forecast at step {self.step_counter}')
+        #     plt.ylim([0, 10])
+        #     plt.plot(range(1, self.step_counter), self.all_prices)
+        #     plt.plot(range(self.step_counter, self.step_counter + PREDICTION_LENGTH), prediction)
+        #     plt.draw()
+        #     plt.pause(0.0001)
+        #     plt.clf()
 
         if min(prediction) < 0.85 * current_lowest_offer_price:
-            self.waiting_customers = min(self.waiting_customers + number_of_strategic_customer,
-                                         self.config.max_waiting_customers)
+            # 90% of the strategic customers who couldn't purchase will enter waiting state
+            if self.config.fraction_of_strategic_customer > 0:
+                self.waiting_customers = min(self.waiting_customers + (max(int(number_of_strategic_customer * 0.9), 1)),
+                                             self.config.max_waiting_customers)
         else:
-            self._complete_purchase(profits, current_lowest_offer_price_vendor, number_of_strategic_customer, strategic=True)
+            self._complete_purchase(profits, current_lowest_offer_price_vendor, number_of_strategic_customer,
+                                    strategic=True)
 
     def _observation(self, vendor_view=0) -> np.array:
         """
@@ -360,7 +380,7 @@ class SimMarket(gym.Env, JSONConfigurable):
         # observatons is the array containing the global states. We add everything relevant to it, then return a concatenated version.
         observations = [self._get_common_state_array()] if self.config.common_state_visibility else []
 
-        observations[0][1] = 0 # reset step_count to 0!
+        observations[0][1] = 0  # reset step_count to 0!
 
         if self.config.common_state_visibility:
             assert isinstance(observations[0], np.ndarray), '_get_common_state_array must return an np.ndarray'
@@ -534,5 +554,4 @@ class SimMarket(gym.Env, JSONConfigurable):
 
     # TODO: extract into strategic customer class
     def predict_price(self, history):
-        return self.price_model.predict(np.array(history).reshape((1, INPUT_LENGTH, 1)), verbose=0).squeeze()
-
+        return self.price_model.model.predict(np.array(history).reshape((1, INPUT_LENGTH, 1)), verbose=0).squeeze()
