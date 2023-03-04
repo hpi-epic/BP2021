@@ -77,7 +77,7 @@ def run_training_session(
         if issubclass(agent, StableBaselinesTD3): StableBaselinesTD3(**shared_args).train_agent()  # noqa: E701
         if issubclass(agent, StableBaselinesA2C): StableBaselinesA2C(**shared_args).train_agent(100000)  # noqa: E701
         if issubclass(agent, StableBaselinesPPO): StableBaselinesPPO(**shared_args).train_agent(100000*15)  # noqa: E701
-        if issubclass(agent, StableBaselinesSAC): StableBaselinesSAC(**shared_args).train_agent(1000000 // 10)  # noqa: E701
+        if issubclass(agent, StableBaselinesSAC): StableBaselinesSAC(**shared_args).train_agent(1000000 // 5)  # noqa: E701
     elif issubclass(agent, ActorCriticAgent):
         config_rl.batch_size = 8
         ActorCriticTrainer(

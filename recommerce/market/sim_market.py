@@ -380,7 +380,7 @@ class SimMarket(gym.Env, JSONConfigurable):
         # observatons is the array containing the global states. We add everything relevant to it, then return a concatenated version.
         observations = [self._get_common_state_array()] if self.config.common_state_visibility else []
 
-        observations[0][1] = 0  # reset step_count to 0!
+        # observations[0][1] = 0  # reset step_count to 0!
 
         if self.config.common_state_visibility:
             assert isinstance(observations[0], np.ndarray), '_get_common_state_array must return an np.ndarray'

@@ -307,7 +307,7 @@ def main():  # pragma: no cover
     else:
         printer.setup_exampleprinter(marketplace=marketplace, agent=config_environment.agent[0]['agent_class']())
 
-    profit = printer.run_example(save_lineplots=True, multiple_runs=50)
+    profit = printer.run_example(save_lineplots=True, multiple_runs=30)
     print(f'The final profit was: {profit}')
 
 
