@@ -135,13 +135,16 @@ class SimMarket(gym.Env, JSONConfigurable):
     def _simulate_customers_level_1(self, profits, number_of_customers) -> None:
 
         # first split customer into myopic and recurring
-        p_recurr = 0.3
+        p_recurr = 1
 
         number_of_recurring_customer = np.random.binomial(number_of_customers, p_recurr)
         number_of_myopic_customer = number_of_customers - number_of_recurring_customer
 
+        self.price_buffer.append([self.vendor_actions[i].item() for i in range(len(self.vendor_actions))])
+
+
         # add recurring customer
-        number_of_returning_recurring_customer = math.floor(self.waiting_customers * 0.3)
+        number_of_returning_recurring_customer = np.random.binomial(self.waiting_customers, 0.3)
         self.waiting_customers = max(0, self.waiting_customers - number_of_returning_recurring_customer)
         number_of_recurring_customer += number_of_returning_recurring_customer
 
@@ -167,7 +170,7 @@ class SimMarket(gym.Env, JSONConfigurable):
         recurring_customer_decision = np.random.multinomial(number_of_recurring_customer,
                                                             probability_distribution).tolist()
         dont_buy = recurring_customer_decision[0]
-        enter_waiting = math.floor(dont_buy * 0.9)
+        enter_waiting = np.random.binomial(dont_buy, 0.9)
         self.waiting_customers = min(self.waiting_customers + enter_waiting, self.config.max_waiting_customers)
         self._output_dict['customer/buy_nothing'] += (dont_buy - enter_waiting)
 
@@ -257,7 +260,7 @@ class SimMarket(gym.Env, JSONConfigurable):
         customers_per_vendor_iteration = incoming_customers // self._number_of_vendors
 
         for i in range(self._number_of_vendors):
-            self._simulate_customers(profits, customers_per_vendor_iteration)
+            self._simulate_customers_level_1(profits, customers_per_vendor_iteration)
 
             if i == 0:
                 self.price_deque.append(self.vendor_actions[0])

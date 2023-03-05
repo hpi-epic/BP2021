@@ -55,15 +55,13 @@ class LinearEconomy(SimMarket, ABC):
 
         if self.config.common_state_visibility:
             common_state_min = [
-                0,  # step counter
+                0.0, # step counter
                 0.0,  # waiting customers,
-                *[0.0 for i in range(5)],  # t-5, t-4, t-3, t-2, t-1
             ]
 
             common_state_max = [
-                self.config.episode_length,
+                25,
                 self.config.max_waiting_customers,
-                *[self.config.max_price for i in range(5)],  # t-5, t-4, t-3, t-2, t-1
             ]
 
             min_observation_space = np.array(common_state_min + [0.0] * len(self.competitors), dtype=np.float32)
@@ -139,11 +137,12 @@ class LinearEconomy(SimMarket, ABC):
     def _get_common_state_array(self) -> ndarray:
         last_prices = list(self.price_deque)
         last_prices = np.pad(last_prices, (5 - len(last_prices), 0), 'constant')
+        last_prices = []
 
         return np.array([
             self.step_counter % 25,
             self.waiting_customers,
-            *last_prices])
+          ])
 
     def _reset_common_state(self) -> None:
         self.waiting_customers = 0
