@@ -70,29 +70,29 @@ class Evaluator():
 		rewards = [analysis['profits/all'][0] for analysis in analyses]
 		self.create_histogram(rewards, True, 'Cumulative_rewards_per_episode.svg', episode_numbers)
 
-		# Create density plots
-		print('Creating density plots...')
-		for index, analysis in enumerate(analyses):
-			for property, samples in analysis.items():
-				prefix = f'episode_{episode_numbers[index]}' if episode_numbers is not None else f'{self.configurator.agents[index].name}'
-				self.create_density_plot(samples if isinstance(samples[0], list) else [samples], f'{prefix}_{property}',
-					episode_numbers[index] if episode_numbers else None)
+		# # Create density plots
+		# print('Creating density plots...')
+		# for index, analysis in enumerate(analyses):
+		# 	for property, samples in analysis.items():
+		# 		prefix = f'episode_{episode_numbers[index]}' if episode_numbers is not None else f'{self.configurator.agents[index].name}'
+		# 		self.create_density_plot(samples if isinstance(samples[0], list) else [samples], f'{prefix}_{property}',
+		# 			episode_numbers[index] if episode_numbers else None)
 
-		print('Creating statistics plots...')
-		rewards = [agent['profits/all'][0] for agent in analyses]
-		self._create_statistics_plots(rewards, episode_numbers)
-
-		if episode_numbers is not None:
-			print('Writing written results to disk...')
-			with open(os.path.join(self.configurator.get_folder(), 'written_analyses.txt'), 'w') as file:
-				file.write(analysis_string)
-			print('Creating monitoring-based line plots...')
-			self.create_monitoring_based_line_plots(analyses, episode_numbers)
-			print('Creating violin plots...')
-			for property_name in ut.unroll_dict_with_list(analyses[0]).keys():
-				samples = [ut.unroll_dict_with_list(analysis)[property_name] for analysis in analyses]
-				self._create_violin_plot(samples, episode_numbers, property_name)
-		print(f'All plots were saved to {os.path.abspath(self.configurator.folder_path)}')
+		# print('Creating statistics plots...')
+		# rewards = [agent['profits/all'][0] for agent in analyses]
+		# self._create_statistics_plots(rewards, episode_numbers)
+		#
+		# if episode_numbers is not None:
+		# 	print('Writing written results to disk...')
+		# 	with open(os.path.join(self.configurator.get_folder(), 'written_analyses.txt'), 'w') as file:
+		# 		file.write(analysis_string)
+		# 	print('Creating monitoring-based line plots...')
+		# 	self.create_monitoring_based_line_plots(analyses, episode_numbers)
+		# 	print('Creating violin plots...')
+		# 	for property_name in ut.unroll_dict_with_list(analyses[0]).keys():
+		# 		samples = [ut.unroll_dict_with_list(analysis)[property_name] for analysis in analyses]
+		# 		self._create_violin_plot(samples, episode_numbers, property_name)
+		# print(f'All plots were saved to {os.path.abspath(self.configurator.folder_path)}')
 
 	def evaluate_joined_session(self, analyses: dict) -> None:
 		"""
@@ -108,7 +108,7 @@ class Evaluator():
 		for property, samples in analyses.items():
 			if(type(samples[0]) != list):
 				print('%40s: %7.2f (mean), %7.2f (median), %7.2f (std), %7.2f (min), %7.2f (max)' % (
-					property, np.mean(samples), np.median(samples), np.std(samples), np.min(samples), np.max(samples)))
+					property, np.mean(samples[np.isfinite(samples)]), np.median(samples[np.isfinite(samples)]), np.std(samples[np.isfinite(samples)]), np.min(samples[np.isfinite(samples)]), np.max(samples[np.isfinite(samples)])))
 
 		for agent_index in range(len(self.configurator.agents)):
 			print(f'\nStatistics for agent: {self.configurator.agents[agent_index].name}')
@@ -117,21 +117,21 @@ class Evaluator():
 				if(type(samples[0]) == list):
 					agent_sample = samples[agent_index]
 					print('%40s: %7.2f (mean), %7.2f (median), %7.2f (std), %7.2f (min), %7.2f (max)' % (
-						property, np.mean(agent_sample), np.median(agent_sample), np.std(agent_sample), np.min(agent_sample), np.max(agent_sample)))
+						property, np.mean(agent_sample[np.isfinite(agent_sample)]), np.median(agent_sample[np.isfinite(agent_sample)]), np.std(agent_sample[np.isfinite(agent_sample)]), np.min(agent_sample[np.isfinite(agent_sample)]), np.max(agent_sample[np.isfinite(agent_sample)])))
 
 		print()
 		# Create histogram
-		print('Creating cumulative rewards histogram...')
-		self.create_histogram(analyses['profits/all'], True, 'Cumulative_rewards_per_episode.svg')
+		# print('Creating cumulative rewards histogram...')
+		# self.create_histogram(analyses['profits/all'], True, 'Cumulative_rewards_per_episode.svg')
 
 		# Create density plots
 		print('Creating density plots...')
-		for property, samples in analyses.items():
-			self.create_density_plot(samples if isinstance(samples[0], list) else [samples], f'{property}')
+		# for property, samples in analyses.items():
+		# 	self.create_density_plot(samples if isinstance(samples[0], list) else [samples], f'{property}')
 
-		print('Creating statistics plots...')
-		rewards = analyses['profits/all']
-		self._create_statistics_plots(rewards)
+		# print('Creating statistics plots...')
+		# rewards = analyses['profits/all']
+		# self._create_statistics_plots(rewards)
 		print(f'All plots were saved to {os.path.abspath(self.configurator.folder_path)}')
 
 	def create_monitoring_based_line_plots(self, analyses, episode_numbers: 'list[int]'):

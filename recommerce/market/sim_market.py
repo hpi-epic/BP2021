@@ -41,7 +41,7 @@ class SingletonMLModel:
             cls._instance = super().__new__(cls)
             cls._instance.model = tf.keras.models.load_model(
                 os.path.join(os.path.dirname(os.path.abspath(__file__)), 'models',
-                             'test_model'))  # load your ML model here
+                             'edgeworth_test_model'))  # load your ML model here
         return cls._instance
 
     def __deepcopy__(self, memo):
@@ -218,22 +218,22 @@ class SimMarket(gym.Env, JSONConfigurable):
 
         self._output_dict['customer/incoming'] += number_of_myopic_customer
 
-        # self.price_buffer.append([self.vendor_actions[0].item(), self.vendor_actions[1].item()])
-        probability_distribution = self._customer.generate_purchase_probabilities_from_offer(
-            self.step_counter, self._get_common_state_array(), self.vendor_specific_state, self.vendor_actions)
-        assert isinstance(probability_distribution,
-                          np.ndarray), 'generate_purchase_probabilities_from_offer must return an np.ndarray'
-        assert self._is_probability_distribution_fitting_exactly(probability_distribution)
+        # # self.price_buffer.append([self.vendor_actions[0].item(), self.vendor_actions[1].item()])
+        # probability_distribution = self._customer.generate_purchase_probabilities_from_offer(
+        #     self.step_counter, self._get_common_state_array(), self.vendor_specific_state, self.vendor_actions)
+        # assert isinstance(probability_distribution,
+        #                   np.ndarray), 'generate_purchase_probabilities_from_offer must return an np.ndarray'
+        # assert self._is_probability_distribution_fitting_exactly(probability_distribution)
 
         # greedy customer behavior for edgeworth price cycles
-        # customer_decisions = [[0] for i in probability_distribution]
-        # if random.uniform(0, 1) < probability_distribution[0]:
-        #     customer_decisions[0] = number_of_myopic_customer
-        # else:
-        #     index, element = max(enumerate(probability_distribution[1:]), key=itemgetter(1))
-        #     customer_decisions[index+1] = number_of_myopic_customer
+        customer_decisions = [0 for i in range(len(self.vendor_actions) + 1)]
+        if min(self.vendor_actions) > 9:
+            customer_decisions[0] = int(number_of_myopic_customer)
+        else:
+            index, element = min(enumerate(self.vendor_actions), key=itemgetter(1))
+            customer_decisions[index + 1] = int(number_of_myopic_customer)
 
-        customer_decisions = np.random.multinomial(number_of_myopic_customer, probability_distribution).tolist()
+        # customer_decisions = np.random.multinomial(number_of_myopic_customer, probability_distribution).tolist()
 
         self._output_dict['customer/buy_nothing'] += customer_decisions[0]
         for seller, frequency in enumerate(customer_decisions):
@@ -269,7 +269,7 @@ class SimMarket(gym.Env, JSONConfigurable):
 
         profits = [0] * self._number_of_vendors
 
-        self._output_dict = {'customer/buy_nothing': 0, 'customer/incoming': 0}
+        self._output_dict = {'customer/buy_nothing': 0, 'customer/incoming': 0, 'customer/purchases_strategic_x_price': 0, 'customer/purchases_x_price': 0}
 
         self._initialize_output_dict()
 

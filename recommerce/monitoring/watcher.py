@@ -128,6 +128,11 @@ class Watcher:
 				else:
 					output_dict[key] = [value / self.config_market.episode_length for value in output_dict[key]]
 
+		# fix output dict for avg price #HACKY :D
+		output_dict['avg_price_myopic'] = np.array(output_dict['customer/purchases_x_price'])/(np.array(output_dict['customer/purchases']).sum(axis=0))
+		output_dict['avg_price_strategic'] = np.array(output_dict['customer/purchases_strategic_x_price'])/(np.array(output_dict['customer/purchases_strategic']).sum(axis=0))
+		del output_dict['customer/purchases_x_price']
+		del output_dict['customer/purchases_strategic_x_price']
 		return output_dict
 
 	def get_progress_values_of_property(self, property_name: str, vendor: int or None = None, look_back: int = 100) -> list:
