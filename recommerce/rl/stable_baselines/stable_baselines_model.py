@@ -3,6 +3,8 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 from attrdict import AttrDict
+from stable_baselines3.common.callbacks import EvalCallback
+from stable_baselines3.common.monitor import Monitor
 
 from recommerce.configuration.path_manager import PathManager
 from recommerce.market.circular.circular_vendors import CircularAgent
@@ -57,6 +59,14 @@ class StableBaselinesAgent(ReinforcementLearningAgent, LinearAgent, CircularAgen
 			signature=self.name, analyze_after_training=analyze_after_training)
 		self.model.learn(training_steps, callback=callback)
 		return callback.watcher
+
+	def train_with_default_eval(self, training_steps=100001):
+		save_path = os.path.join(PathManager.results_path, 'best_model', f'{self.name}')
+		log_path = os.path.join(PathManager.results_path, 'logs', f'{self.name}')
+		os.makedirs(log_path, exist_ok=True)
+		callback = EvalCallback(Monitor(self.marketplace, filename=log_path), best_model_save_path=save_path, log_path=log_path, render=False)
+		self.model.learn(training_steps, callback=callback)
+		return save_path
 
 	@staticmethod
 	def get_configurable_fields() -> list:

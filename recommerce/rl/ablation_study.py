@@ -1,18 +1,85 @@
 # This is the script describing the ablation study for the paper.
 # It does not contain new framework features, but it stays in the repo to keep the experiments reproducible.
 
+import os
 import time
 from multiprocessing import Pipe, Process
 
+import numpy as np
+import pandas as pd
+
 from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader
+from recommerce.configuration.path_manager import PathManager
 from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPriceDuopoly
+from recommerce.monitoring.exampleprinter import ExamplePrinter
 from recommerce.rl.stable_baselines.sb_ppo import StableBaselinesPPO
+
+
+def create_relevant_dataframe(descriptions, info_sequences_list):
+    parameters = [
+        ('profit', lambda info_sequence: np.mean(info_sequence['profits/all/vendor_0'])),
+        ('new sales', lambda info_sequence: np.mean(info_sequence['customer/purchases_new/vendor_0'])),
+        ('refurbished sales', lambda info_sequence: np.mean(info_sequence['customer/purchases_refurbished/vendor_0'])),
+        ('rebuys', lambda info_sequence: np.mean(info_sequence['owner/rebuys/vendor_0'])),
+        ('offer price new', lambda info_sequence: np.mean(info_sequence['actions/price_new/vendor_0'])),
+        ('offer price refurbished', lambda info_sequence: np.mean(info_sequence['actions/price_refurbished/vendor_0'])),
+        ('offer price rebuy', lambda info_sequence: np.mean(info_sequence['actions/price_rebuy/vendor_0'])),
+        ('sales price new',
+            lambda info_sequence: np.sum(np.array(info_sequence['actions/price_new/vendor_0']) *
+            np.array(info_sequence['customer/purchases_new/vendor_0'])) /
+            np.sum(info_sequence['customer/purchases_new/vendor_0'])),
+        ('sales price refurbished',
+            lambda info_sequence: np.sum(np.array(info_sequence['actions/price_refurbished/vendor_0']) *
+            np.array(info_sequence['customer/purchases_refurbished/vendor_0'])) /
+            np.sum(info_sequence['customer/purchases_refurbished/vendor_0'])),
+        ('sales price rebuy',
+            lambda info_sequence: np.sum(np.array(info_sequence['actions/price_rebuy/vendor_0']) *
+            np.array(info_sequence['owner/rebuys/vendor_0'])) /
+            np.sum(info_sequence['owner/rebuys/vendor_0'])),
+        ('inventory level', lambda info_sequence: np.mean(info_sequence['state/in_storage/vendor_0'])),
+        ('profit competitor', lambda info_sequence: np.mean(info_sequence['profits/all/vendor_1'])),
+        ('new sales competitor', lambda info_sequence: np.mean(info_sequence['customer/purchases_new/vendor_1'])),
+        ('refurbished sales competitor', lambda info_sequence: np.mean(info_sequence['customer/purchases_refurbished/vendor_1'])),
+        ('rebuys competitor', lambda info_sequence: np.mean(info_sequence['owner/rebuys/vendor_1'])),
+        ('offer price new competitor', lambda info_sequence: np.mean(info_sequence['actions/price_new/vendor_1'])),
+        ('offer price refurbished competitor', lambda info_sequence: np.mean(info_sequence['actions/price_refurbished/vendor_1'])),
+        ('offer price rebuy competitor', lambda info_sequence: np.mean(info_sequence['actions/price_rebuy/vendor_1'])),
+        ('sales price new competitor',
+            lambda info_sequence: np.sum(np.array(info_sequence['actions/price_new/vendor_1']) *
+            np.array(info_sequence['customer/purchases_new/vendor_1'])) /
+            np.sum(info_sequence['customer/purchases_new/vendor_1'])),
+        ('sales price refurbished competitor',
+            lambda info_sequence: np.sum(np.array(info_sequence['actions/price_refurbished/vendor_1']) *
+            np.array(info_sequence['customer/purchases_refurbished/vendor_1'])) /
+            np.sum(info_sequence['customer/purchases_refurbished/vendor_1'])),
+        ('sales price rebuy competitor',
+            lambda info_sequence: np.sum(np.array(info_sequence['actions/price_rebuy/vendor_1']) *
+            np.array(info_sequence['owner/rebuys/vendor_1'])) /
+            np.sum(info_sequence['owner/rebuys/vendor_1'])),
+        ('inventory level competitor', lambda info_sequence: np.mean(info_sequence['state/in_storage/vendor_1'])),
+        ('resources in use', lambda info_sequence: np.mean(info_sequence['state/in_circulation'])),
+        ('throw away', lambda info_sequence: np.mean(info_sequence['owner/throw_away']))
+    ]
+
+    dataframe_columns = ['market configuration'] + [parameter_name for parameter_name, _ in parameters]
+
+    dataframe = pd.DataFrame(columns=dataframe_columns)
+    for description, info_sequences in zip(descriptions, info_sequences_list):
+        row = [description]
+        for parameter_name, parameter_function in parameters:
+            row.append(parameter_function(info_sequences))
+        dataframe.loc[len(dataframe)] = row
+    return dataframe
 
 
 def run_training_session(market_class, config_market, agent_class, config_rl, training_steps, number, pipe_to_parent):
     agent = agent_class(config_market, config_rl, market_class(config_market, support_continuous_action_space=True), name=f'Train{number}')
-    watcher = agent.train_agent(training_steps)
-    pipe_to_parent.send(watcher)
+    agent.train_with_default_eval(training_steps)
+    exampleprinter = ExamplePrinter(config_market)
+    marketplace = market_class(config_market, support_continuous_action_space=True)
+    exampleprinter.setup_exampleprinter(marketplace, agent)
+    profit, info_sequences = exampleprinter.run_example(save_lineplots=True)
+    pipe_to_parent.send(info_sequences)
 
 
 def run_group(market_configs, market_descriptions, training_steps, target_function=run_training_session):
@@ -29,12 +96,12 @@ def run_group(market_configs, market_descriptions, training_steps, target_functi
         time.sleep(10)
         p.start()
     print('Now I wait for the results')
-    watchers = [output.recv() for output, _ in pipes]
+    info_sequences = [output.recv() for output, _ in pipes]
     print('Now I have the results')
     for p in processes:
         p.join()
     print('All threads joined')
-    return market_descriptions, [watcher.get_progress_values_of_property('profits/all', 0) for watcher in watchers]
+    return create_relevant_dataframe(market_descriptions, info_sequences)
 
 
 def get_different_market_configs(parameter_name, values):
@@ -48,5 +115,6 @@ def get_different_market_configs(parameter_name, values):
 
 
 if __name__ == '__main__':
-    results = run_group(*get_different_market_configs('max_storage', [20, 50, 100, 200]), training_steps=100000)
-    print(results)
+    result_df = run_group(*get_different_market_configs('max_storage', [20, 50, 100, 200]), training_steps=100000)
+    print(result_df)
+    result_df.to_excel(os.path.join(PathManager.results_path, 'storage.xlsx'), index=False)

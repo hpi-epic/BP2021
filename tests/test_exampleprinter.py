@@ -56,7 +56,7 @@ full_episode_testcases_rule_based = [
 def test_full_episode_rule_based(marketplace, agent):
 	printer = ExamplePrinter(config_market=config_market)
 	printer.setup_exampleprinter(marketplace, agent)
-	assert printer.run_example(True) >= -5000
+	assert printer.run_example(True)[0] >= -5000
 	shutil.rmtree(PathManager.results_path)
 
 
@@ -85,7 +85,7 @@ def test_full_episode_rl_agents(marketplace, agent_class, parameters_file, confi
 		load_path=os.path.join(parameters_path, parameters_file))
 	printer = ExamplePrinter(config_market=config_market)
 	printer.setup_exampleprinter(marketplace, agent)
-	assert printer.run_example(True) >= -5000
+	assert printer.run_example(True)[0] >= -5000
 	shutil.rmtree(PathManager.results_path)
 
 
