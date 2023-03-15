@@ -115,6 +115,23 @@ def get_different_market_configs(parameter_name, values):
 
 
 if __name__ == '__main__':
-    result_df = run_group(*get_different_market_configs('max_storage', [20, 50, 100, 200]), training_steps=100000)
-    print(result_df)
-    result_df.to_excel(os.path.join(PathManager.results_path, 'storage.xlsx'), index=False)
+    storage_df = run_group(*get_different_market_configs('max_storage', [20, 50, 100, 200]), training_steps=100000)
+    print(storage_df)
+    storage_df.to_excel(os.path.join(PathManager.results_path, 'storage.xlsx'), index=False)
+    production_price_df = run_group(*get_different_market_configs('production_price', [2, 3, 4]), training_steps=100000)
+    print(production_price_df)
+    production_price_df.to_excel(os.path.join(PathManager.results_path, 'production_price.xlsx'), index=False)
+    number_of_customers_df = run_group(*get_different_market_configs('number_of_customers', [10, 20, 30]), training_steps=100000)
+    print(number_of_customers_df)
+    number_of_customers_df.to_excel(os.path.join(PathManager.results_path, 'number_of_customers.xlsx'), index=False)
+    storage_cost_df = run_group(*get_different_market_configs('storage_cost', [0.01, 0.05, 0.1, 0.2]), training_steps=100000)
+    print(storage_cost_df)
+    storage_cost_df.to_excel(os.path.join(PathManager.results_path, 'storage_cost.xlsx'), index=False)
+
+    # merge all dataframes
+    all_dataframes = [storage_df, production_price_df, number_of_customers_df, storage_cost_df]
+    all_dataframes = [df.set_index('market configuration') for df in all_dataframes]
+    merged_df = pd.concat(all_dataframes, axis=1)
+
+    # save merged dataframe to excel
+    merged_df.to_excel(os.path.join(PathManager.results_path, 'merged.xlsx'))

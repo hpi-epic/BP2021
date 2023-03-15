@@ -91,5 +91,5 @@ def test_full_episode_rl_agents(marketplace, agent_class, parameters_file, confi
 
 @pytest.mark.slow
 def test_exampleprinter_with_tensorboard():
-	assert ExamplePrinter(config_market=config_market).run_example(True) >= -5000
+	assert ExamplePrinter(config_market=config_market).run_example(True)[0] >= -5000
 	shutil.rmtree(PathManager.results_path)
