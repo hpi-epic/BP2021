@@ -117,7 +117,7 @@ class SimMarket(gym.Env, JSONConfigurable):
 			number_of_customers (int): the number of customers eager to buy each step.
 		"""
 		probability_distribution = self._customer.generate_purchase_probabilities_from_offer(
-			self._get_common_state_array(), self.vendor_specific_state, self.vendor_actions)
+			self.config, self._get_common_state_array(), self.vendor_specific_state, self.vendor_actions)
 		assert isinstance(probability_distribution, np.ndarray), 'generate_purchase_probabilities_from_offer must return an np.ndarray'
 		assert self._is_probability_distribution_fitting_exactly(probability_distribution)
 

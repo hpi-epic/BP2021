@@ -5,7 +5,8 @@ import numpy as np
 
 class Customer(ABC):
 	@abstractmethod
-	def generate_purchase_probabilities_from_offer(self, common_state, vendor_specific_state, vendor_actions) -> np.array:  # pragma: no cover
+	def generate_purchase_probabilities_from_offer(self, market_config, common_state,
+						vendor_specific_state, vendor_actions) -> np.array:  # pragma: no cover
 		"""
 		This method receives the state of the market and uses it as a list of offers.
 		It returns the purchase probability for all vendors.

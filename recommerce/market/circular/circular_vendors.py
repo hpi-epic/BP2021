@@ -160,11 +160,11 @@ class RuleBasedCERebuyAgentCompetitive(RuleBasedAgent, CircularAgent):
 
 		price_new = max(min(competitors_new_prices) - 1, self.config_market.production_price + 1)
 		# competitor's storage is ignored
-		if own_storage < self.config_market.max_storage / 15:
+		if own_storage < self.config_market.competitor_lowest_storage_level:
 			# fill up the storage immediately
 			price_refurbished = min(competitors_refurbished_prices) + 1
 			rebuy_price = max(min(competitors_rebuy_prices) + 1, 2)
-		elif own_storage < self.config_market.max_storage / 8:
+		elif own_storage < self.config_market.competitor_ok_storage_level:
 			# storage content is ok
 			rebuy_price = max(min(competitors_rebuy_prices) - 1, 0.25)
 			price_refurbished = max(min(competitors_refurbished_prices) - 1, rebuy_price + 1)

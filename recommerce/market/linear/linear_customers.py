@@ -5,7 +5,7 @@ from recommerce.market.customer import Customer
 
 
 class CustomerLinear(Customer):
-	def generate_purchase_probabilities_from_offer(self, common_state, vendor_specific_state, vendor_actions) -> np.array:
+	def generate_purchase_probabilities_from_offer(self, market_config, common_state, vendor_specific_state, vendor_actions) -> np.array:
 		"""
 		This method calculates the purchase probability for each vendor in a linear setup.
 		Quality values are used to calculate a ratio.

@@ -5,7 +5,7 @@ from recommerce.market.customer import Customer
 
 
 class CustomerCircular(Customer):
-	def generate_purchase_probabilities_from_offer(self, common_state, vendor_specific_state, vendor_actions) -> np.array:
+	def generate_purchase_probabilities_from_offer(self, market_config, common_state, vendor_specific_state, vendor_actions) -> np.array:
 		"""
 		This method calculates the purchase probability for each vendor in a linear setup.
 		It is assumed that all vendors do have the same quality and same reputation.
@@ -27,8 +27,8 @@ class CustomerCircular(Customer):
 			price_new = vendor_actions[vendor_idx][1] + 1
 			assert price_refurbished >= 1 and price_new >= 1, 'price_refurbished and price_new need to be >= 1'
 
-			ratio_old = 5.5 / price_refurbished - np.exp(price_refurbished - 5)
-			ratio_new = 10 / price_new - np.exp(price_new - 8)
+			ratio_old = market_config.compared_value_old * 10 / price_refurbished - np.exp(price_refurbished - market_config.upper_tolerance_old)
+			ratio_new = 10 / price_new - np.exp(price_new - market_config.upper_tolerance_new)
 			preferences += [ratio_old, ratio_new]
 
 		return ut.softmax(np.array(preferences))

@@ -8,5 +8,11 @@
 	"storage_cost_per_product": 0.1,
 	"opposite_own_state_visibility": true,
 	"common_state_visibility": true,
-	"reward_mixed_profit_and_difference": false
+	"reward_mixed_profit_and_difference": false,
+    "compared_value_old": 0.55,
+    "upper_tolerance_old": 5.0,
+    "upper_tolerance_new": 8.0,
+    "share_interested_owners": 0.05,
+    "competitor_lowest_storage_level": 6.5,
+    "competitor_ok_storage_level": 12.5
 }

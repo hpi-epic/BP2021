@@ -6,7 +6,7 @@ import numpy as np
 import recommerce.configuration.utils as ut
 import recommerce.market.circular.circular_vendors as circular_vendors
 import recommerce.market.owner as owner
-from recommerce.configuration.common_rules import greater_zero_even_rule, greater_zero_rule, non_negative_rule
+from recommerce.configuration.common_rules import between_zero_one_rule, greater_zero_even_rule, greater_zero_rule, non_negative_rule
 from recommerce.market.circular.circular_customers import CustomerCircular
 from recommerce.market.customer import Customer
 from recommerce.market.owner import Owner
@@ -32,7 +32,13 @@ class CircularEconomy(SimMarket, ABC):
 			('storage_cost_per_product', (int, float), non_negative_rule),
 			('opposite_own_state_visibility', bool, None),
 			('common_state_visibility', bool, None),
-			('reward_mixed_profit_and_difference', bool, None)
+			('reward_mixed_profit_and_difference', bool, None),
+			('compared_value_old', float, greater_zero_rule),
+			('upper_tolerance_old', float, greater_zero_rule),
+			('upper_tolerance_new', float, greater_zero_rule),
+			('share_interested_owners', float, between_zero_one_rule),
+			('competitor_lowest_storage_level', float, greater_zero_rule),
+			('competitor_ok_storage_level', float, greater_zero_rule)
 		]
 
 	def _setup_action_observation_space(self, support_continuous_action_space: bool) -> None:
@@ -123,7 +129,7 @@ class CircularEconomy(SimMarket, ABC):
 		assert len(return_probabilities) == 2 + self._number_of_vendors, \
 			'the length of return_probabilities must be the number of vendors plus 2'
 
-		number_of_owners = int(0.05 * self.in_circulation / self._number_of_vendors)
+		number_of_owners = int(self.config.share_interested_owners * self.in_circulation / self._number_of_vendors)
 		owner_decisions = np.random.multinomial(number_of_owners, return_probabilities).tolist()
 
 		# owner decisions can be as follows:
