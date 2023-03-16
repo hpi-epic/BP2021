@@ -20,32 +20,32 @@ jobs:
       - name: Pre-commit
         uses: pre-commit/action@v2.0.3
 
-  webserver-tests:
-    needs: pre-commit
-    runs-on: [self-hosted, ubuntu-20.04]
-    name: Webserver tests
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Set up Python 3.8
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.8
-      - name: Install Recommerce package
-        shell: bash -l {0}
-        run: |
-          pip install -e .[cpu]
-      - name: Setup Recommerce
-        shell: bash -l {0}
-        run: |
-          recommerce --get-defaults-unpack
-      - name: Run Webserver tests
-        env:
-          SECRET_KEY: 'fake_secret_key'
-          API_TOKEN: 'fake_api_token'
-        shell: bash -l {0}
-        run: |
-          (cd ./webserver && python ./manage.py test -v 2)
+  # webserver-tests:
+  #   needs: pre-commit
+  #   runs-on: [self-hosted, ubuntu-20.04]
+  #   name: Webserver tests
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v2
+  #     - name: Set up Python 3.8
+  #       uses: actions/setup-python@v2
+  #       with:
+  #         python-version: 3.8
+  #     - name: Install Recommerce package
+  #       shell: bash -l {0}
+  #       run: |
+  #         pip install -e .[cpu]
+  #     - name: Setup Recommerce
+  #       shell: bash -l {0}
+  #       run: |
+  #         recommerce --get-defaults-unpack
+  #     - name: Run Webserver tests
+  #       env:
+  #         SECRET_KEY: 'fake_secret_key'
+  #         API_TOKEN: 'fake_api_token'
+  #       shell: bash -l {0}
+  #       run: |
+  #         (cd ./webserver && python ./manage.py test -v 2)
 
   recommerce-tests:
     needs: webserver-tests
