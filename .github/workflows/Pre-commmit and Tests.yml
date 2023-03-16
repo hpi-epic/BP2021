@@ -48,7 +48,7 @@ jobs:
   #         (cd ./webserver && python ./manage.py test -v 2)
 
   recommerce-tests:
-    needs: webserver-tests
+    needs: pre-commit
     runs-on: [self-hosted, ubuntu-20.04]
     name: Recommerce tests
     timeout-minutes: 30
