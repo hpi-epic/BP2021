@@ -123,14 +123,19 @@ class CircularEconomy(SimMarket, ABC):
 			profits (np.array(int)): The profits of the vendor.
 		"""
 		assert self._owner is not None, 'an owner must be set'
+		common_state_array = self._get_common_state_array()
 		return_probabilities = self._owner.generate_return_probabilities_from_offer(
-			self._get_common_state_array(), self.vendor_specific_state, self.vendor_actions)
+			common_state_array, self.vendor_specific_state, self.vendor_actions)
 		assert isinstance(return_probabilities, np.ndarray), 'return_probabilities must be an np.ndarray'
 		assert len(return_probabilities) == 2 + self._number_of_vendors, \
 			'the length of return_probabilities must be the number of vendors plus 2'
 
 		number_of_owners = int(self.config.share_interested_owners * self.in_circulation / self._number_of_vendors)
 		owner_decisions = np.random.multinomial(number_of_owners, return_probabilities).tolist()
+
+		if self.document_for_regression:
+			new_row = self._observation(1)[2:5].tolist() + self._observation(0)[2:5].tolist() + owner_decisions
+			self.owners_dataframe.loc[len(self.owners_dataframe)] = new_row
 
 		# owner decisions can be as follows:
 		# 0: Hold/Do nothing

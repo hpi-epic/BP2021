@@ -3,6 +3,8 @@ import os
 import signal
 import sys
 import time
+# turn all warnings into errors
+import warnings
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -20,6 +22,8 @@ from recommerce.market.sim_market import SimMarket
 from recommerce.market.vendors import Agent
 from recommerce.monitoring.svg_manipulation import SVGManipulator
 from recommerce.rl.q_learning.q_learning_agent import QLearningAgent
+
+warnings.filterwarnings('error')
 
 
 class ExamplePrinter():
@@ -71,12 +75,12 @@ class ExamplePrinter():
 				info_dict[key].append(info[key])
 		return info_dict
 
-	def run_example(self, save_lineplots=False, evaluation_left_bound=450, evaluation_right_bound=500) -> int:
+	def run_example(self, save_diagrams=True, evaluation_left_bound=450, evaluation_right_bound=500) -> int:
 		"""
 		Run a specified marketplace with a (pre-trained, if RL) agent and record various statistics using TensorBoard.
 
 		Args:
-			save_lineplots (bool, optional): Whether to save lineplots of the market's performance.
+			save_diagrams (bool, optional): Whether to save lineplots of the market's performance.
 
 		Returns:
 			int: The profit made.
@@ -91,11 +95,11 @@ class ExamplePrinter():
 		writer = SummaryWriter(log_dir=os.path.join(PathManager.results_path, 'runs', signature))
 		os.makedirs(os.path.join(PathManager.results_path, 'exampleprinter', signature))
 
-		if isinstance(self.marketplace, circular_market.CircularEconomyRebuyPriceDuopoly):
+		if isinstance(self.marketplace, circular_market.CircularEconomyRebuyPriceDuopoly) and save_diagrams:
 			svg_manipulator = SVGManipulator(signature)
 		cumulative_dict = None
 
-		if isinstance(self.marketplace, circular_market.CircularEconomyRebuyPrice) and save_lineplots:
+		if isinstance(self.marketplace, circular_market.CircularEconomyRebuyPrice) and save_diagrams:
 			price_used = [[] for _ in range(self.marketplace._number_of_vendors)]
 			price_news = [[] for _ in range(self.marketplace._number_of_vendors)]
 			price_rebuy = [[] for _ in range(self.marketplace._number_of_vendors)]
@@ -107,8 +111,8 @@ class ExamplePrinter():
 		with torch.no_grad():
 			while not is_done:
 				action = self.agent.policy(state)
-				print(state)
-				print(action)
+				# print(state)
+				# print(action)
 				state, reward, is_done, logdict = self.marketplace.step(action)
 				info_dicts.append(logdict)
 				if cumulative_dict is not None:
@@ -118,24 +122,24 @@ class ExamplePrinter():
 				ut.write_dict_to_tensorboard(writer, logdict, counter)
 				ut.write_dict_to_tensorboard(writer, cumulative_dict, counter, is_cumulative=True,
 					episode_length=self.config_market.episode_length)
-				if isinstance(self.marketplace, circular_market.CircularEconomyRebuyPriceDuopoly):
+				if isinstance(self.marketplace, circular_market.CircularEconomyRebuyPriceDuopoly) and save_diagrams:
 					ut.write_content_of_dict_to_overview_svg(svg_manipulator, counter, logdict, cumulative_dict, self.config_market)
 				our_profit += reward
 				counter += 1
-				if isinstance(self.marketplace, circular_market.CircularEconomyRebuyPrice) and save_lineplots:
+				if isinstance(self.marketplace, circular_market.CircularEconomyRebuyPrice) and save_diagrams:
 					for i in range(self.marketplace._number_of_vendors):
 						price_used[i].append(logdict['actions/price_refurbished'][f'vendor_{i}'])
 						price_news[i].append(logdict['actions/price_new'][f'vendor_{i}'])
 						price_rebuy[i].append(logdict['actions/price_rebuy'][f'vendor_{i}'])
 						in_storages[i].append(logdict['state/in_storage'][f'vendor_{i}'])
 					in_circulations.append(logdict['state/in_circulation'])
-				if isinstance(self.marketplace, circular_market.CircularEconomyRebuyPriceDuopoly):
+				if isinstance(self.marketplace, circular_market.CircularEconomyRebuyPriceDuopoly) and save_diagrams:
 					svg_manipulator.save_overview_svg(filename=('MarketOverview_%.3d' % counter))
 
-		if isinstance(self.marketplace, circular_market.CircularEconomyRebuyPriceDuopoly):
+		if isinstance(self.marketplace, circular_market.CircularEconomyRebuyPriceDuopoly) and save_diagrams:
 			svg_manipulator.to_html()
 
-		if isinstance(self.marketplace, circular_market.CircularEconomyRebuyPrice) and save_lineplots:
+		if isinstance(self.marketplace, circular_market.CircularEconomyRebuyPrice) and save_diagrams:
 			self.save_step_diagrams(price_used, price_news, price_rebuy, in_storages, in_circulations, signature,
 				evaluation_left_bound, evaluation_right_bound)
 

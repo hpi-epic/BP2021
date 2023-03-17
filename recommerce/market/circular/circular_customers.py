@@ -1,6 +1,11 @@
+import os
+
 import numpy as np
+import pandas as pd
+from sklearn.linear_model import LinearRegression
 
 import recommerce.configuration.utils as ut
+from recommerce.configuration.path_manager import PathManager
 from recommerce.market.customer import Customer
 
 
@@ -32,3 +37,41 @@ class CustomerCircular(Customer):
 			preferences += [ratio_old, ratio_new]
 
 		return ut.softmax(np.array(preferences))
+
+
+class LinearRegressionCustomer(Customer):
+	def __init__(self) -> None:
+		customers_dataframe = pd.read_excel(os.path.join(PathManager.data_path, 'customers_dataframe.xlsx'))
+		customers_dataframe = customers_dataframe.iloc[-50000:, :]
+		print('Dataset read')
+		X = customers_dataframe.iloc[:, 0:6].values
+		X_dash_list = []
+		print('Now I start to construct the binary features')
+		for price_threshhold in range(10):
+			# iterate throw the columns
+			for i_feature, column in enumerate(X.T):
+				column_values = np.where(column > price_threshhold, 1, 0)
+				# append the new column to X
+				X_dash_list.append(column_values.reshape(-1, 1))
+		X_dash = np.concatenate(X_dash_list, axis=1)
+		X = np.concatenate((X, X_dash), axis=1)
+		Y = customers_dataframe.iloc[:, 6:11].values
+		self.regressor = LinearRegression()
+		self.regressor.fit(X, Y)
+		print(f'LinearRegressionCustomer: R^2 = {self.regressor.score(X, Y)}')
+
+		prediction = self.regressor.predict(X)
+		print(f'LinearRegressionCustomer: prediction = {prediction}')
+		customers_dataframe['buy nothing predicted'] = prediction[:, 0]
+		customers_dataframe['buy new agent predicted'] = prediction[:, 1]
+		customers_dataframe['buy refurbished agent predicted'] = prediction[:, 2]
+		customers_dataframe['buy new competitor predicted'] = prediction[:, 3]
+		customers_dataframe['buy refurbished competitor predicted'] = prediction[:, 4]
+		customers_dataframe.to_excel(os.path.join(PathManager.data_path, 'customers_dataframe_predicted.xlsx'), index=False)
+
+	def generate_purchase_probabilities_from_offer(self, market_config, common_state, vendor_specific_state, vendor_actions) -> np.array:
+		return np.array([0, 0, 0, 0])
+
+
+if __name__ == '__main__':
+	LinearRegressionCustomer()

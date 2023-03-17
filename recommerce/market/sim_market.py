@@ -3,6 +3,7 @@ from typing import Tuple
 
 import gym
 import numpy as np
+import pandas as pd
 from attrdict import AttrDict
 
 from recommerce.configuration.json_configurable import JSONConfigurable
@@ -45,7 +46,12 @@ class SimMarket(gym.Env, JSONConfigurable):
 	def get_competitor_classes() -> list:
 		raise NotImplementedError
 
-	def __init__(self, config: AttrDict, support_continuous_action_space: bool = False, competitors: list = None) -> None:
+	def __init__(
+			self,
+			config: AttrDict,
+			support_continuous_action_space: bool = False,
+			competitors: list = None,
+			document_for_regression: bool = False) -> None:
 		"""
 		Initialize a SimMarket instance.
 		Set up needed values such as competitors and action/observation-space and reset the environment.
@@ -69,6 +75,33 @@ class SimMarket(gym.Env, JSONConfigurable):
 		assert not self.config.reward_mixed_profit_and_difference or self._number_of_vendors > 1, \
 			'You cannot use the mixed profit and difference reward in a monopoly market'
 		self.reset()
+
+		self.document_for_regression = document_for_regression
+		if self.document_for_regression:
+			pandas_state_columns = [
+				'own price refurbished',
+				'own price new',
+				'own rebuy price',
+				'competitor price refurbished',
+				'competitor price new',
+				'competitor rebuy price',
+			]
+			purchases_pandas_state_columns = [
+				'buy nothing',
+				'buy new agent',
+				'buy refurbished agent',
+				'buy new competitor',
+				'buy refurbished competitor',
+			]
+			owner_pandas_state_columns = [
+				'product holding',
+				'product throw away',
+				'rebuy agent',
+				'rebuy competitor',
+			]
+			self.customers_dataframe = pd.DataFrame(columns=pandas_state_columns + purchases_pandas_state_columns)
+			self.owners_dataframe = pd.DataFrame(columns=pandas_state_columns + owner_pandas_state_columns)
+			self.competitor_reaction_dataframe = pd.DataFrame(columns=pandas_state_columns)
 
 	def _get_number_of_vendors(self) -> int:
 		"""
@@ -122,6 +155,9 @@ class SimMarket(gym.Env, JSONConfigurable):
 		assert self._is_probability_distribution_fitting_exactly(probability_distribution)
 
 		customer_decisions = np.random.multinomial(number_of_customers, probability_distribution).tolist()
+		if self.document_for_regression:
+			new_row = self._observation(1)[2:5].tolist() + self._observation(0)[2:5].tolist() + customer_decisions
+			self.customers_dataframe.loc[len(self.customers_dataframe)] = new_row
 		self._output_dict['customer/buy_nothing'] += customer_decisions[0]
 		for seller, frequency in enumerate(customer_decisions):
 			if seller == 0 or frequency == 0:
@@ -171,6 +207,10 @@ class SimMarket(gym.Env, JSONConfigurable):
 				assert self.action_space.contains(action_competitor_i), \
 					f'This vendor does not deliver a suitable action, action_space: {self.action_space}, action: {action_competitor_i}'
 				self.vendor_actions[i + 1] = action_competitor_i
+
+		if self.document_for_regression:
+			self.competitor_reaction_dataframe.loc[len(self.competitor_reaction_dataframe)] = \
+				self._observation(1)[2:5].tolist() + self._observation(0)[2:5].tolist()
 
 		self._consider_storage_costs(profits)
 

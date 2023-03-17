@@ -55,17 +55,26 @@ class StableBaselinesAgent(ReinforcementLearningAgent, LinearAgent, CircularAgen
 
 	def train_agent(self, training_steps=100001, iteration_length=500, analyze_after_training=True):
 		callback = RecommerceCallback(
-			type(self), self.marketplace, self.config_market, self.config_rl, training_steps=training_steps, iteration_length=iteration_length,
-			signature=self.name, analyze_after_training=analyze_after_training)
+			type(self), self.marketplace, self.config_market, self.config_rl, training_steps=training_steps,
+			iteration_length=iteration_length, signature=self.name, analyze_after_training=analyze_after_training)
 		self.model.learn(training_steps, callback=callback)
+		self.marketplace.customers_dataframe.to_excel(os.path.join(PathManager.results_path, f'customers_dataframe_{self.name}.xlsx'))
+		self.marketplace.owners_dataframe.to_excel(os.path.join(PathManager.results_path, f'owners_dataframe_{self.name}.xlsx'))
+		self.marketplace.competitor_reaction_dataframe.to_excel(
+			os.path.join(PathManager.results_path, f'competitor_reaction_dataframe_{self.name}.xlsx'))
 		return callback.watcher
 
 	def train_with_default_eval(self, training_steps=100001):
 		save_path = os.path.join(PathManager.results_path, 'best_model', f'{self.name}')
 		log_path = os.path.join(PathManager.results_path, 'logs', f'{self.name}')
 		os.makedirs(log_path, exist_ok=True)
-		callback = EvalCallback(Monitor(self.marketplace, filename=log_path), best_model_save_path=save_path, log_path=log_path, render=False)
+		callback = EvalCallback(Monitor(self.marketplace, filename=log_path),
+			best_model_save_path=save_path, log_path=log_path, render=False)
 		self.model.learn(training_steps, callback=callback)
+		self.marketplace.customers_dataframe.to_excel(os.path.join(PathManager.results_path, f'customers_dataframe_{self.name}.xlsx'))
+		self.marketplace.owners_dataframe.to_excel(os.path.join(PathManager.results_path, f'owners_dataframe_{self.name}.xlsx'))
+		self.marketplace.competitor_reaction_dataframe.to_excel(
+			os.path.join(PathManager.results_path, f'competitor_reaction_dataframe_{self.name}.xlsx'))
 		return save_path
 
 	@staticmethod

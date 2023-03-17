@@ -78,7 +78,7 @@ def run_training_session(market_class, config_market, agent_class, config_rl, tr
     exampleprinter = ExamplePrinter(config_market)
     marketplace = market_class(config_market, support_continuous_action_space=True)
     exampleprinter.setup_exampleprinter(marketplace, agent)
-    profit, info_sequences = exampleprinter.run_example(save_lineplots=True)
+    profit, info_sequences = exampleprinter.run_example(save_diagrams=True)
     pipe_to_parent.send(info_sequences)
 
 
