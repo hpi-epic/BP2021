@@ -7,7 +7,7 @@ import recommerce.configuration.utils as ut
 import recommerce.market.circular.circular_vendors as circular_vendors
 import recommerce.market.owner as owner
 from recommerce.configuration.common_rules import between_zero_one_rule, greater_zero_even_rule, greater_zero_rule, non_negative_rule
-from recommerce.market.circular.circular_customers import CustomerCircular
+from recommerce.market.circular.circular_customers import LinearRegressionCustomer
 from recommerce.market.customer import Customer
 from recommerce.market.owner import Owner
 from recommerce.market.sim_market import SimMarket
@@ -83,7 +83,7 @@ class CircularEconomy(SimMarket, ABC):
 		return (self.config.production_price, self.config.production_price + 1)
 
 	def _choose_customer(self) -> Customer:
-		return CustomerCircular()
+		return LinearRegressionCustomer()
 
 	def _choose_owner(self) -> Owner:
 		return owner.UniformDistributionOwner()
