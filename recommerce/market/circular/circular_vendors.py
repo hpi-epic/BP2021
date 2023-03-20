@@ -223,40 +223,46 @@ class LinearRegressionCERebuyAgent(RuleBasedAgent, CircularAgent):
 	"""
 	This vendor's policy is aiming to succeed by undercutting the competitor's prices.
 	"""
-	def __init__(self, config_market: AttrDict, name='', continuous_action_space: bool = False):
-		self.continuous_action_space = continuous_action_space
-		self.name = name if name != '' else type(self).__name__
-		competitor_dataframe = pd.read_excel(os.path.join(PathManager.data_path, 'competitor_reaction_dataframe.xlsx'))[:-5000]
-		X = competitor_dataframe.iloc[:, 0:3].values
+	def create_x_with_binary_features(self, X):
 		X_dash_list = []
-		print('Now I start to construct the binary features')
 		for price_threshhold in range(10):
 			# iterate throw the columns
 			for i_feature, column in tqdm(enumerate(X.T)):
 				column_values = np.where(column > price_threshhold, 1, 0)
 				# append the new column to X
 				X_dash_list.append(column_values.reshape(-1, 1))
-
 		X_dash = np.concatenate(X_dash_list, axis=1)
-		X = np.concatenate((X, X_dash), axis=1)
-		print(X)
-		print(X.shape)
-		# define Y as the last 3 columns
-		Y = competitor_dataframe.iloc[:, 3:6].values
-		self.regressor = LinearRegression()
-		self.regressor.fit(X, Y)
-		print(f'LinearRegressionCERebuyAgent: {self.regressor.score(X, Y)}')
+		return np.concatenate((X, X_dash), axis=1)
 
-		predictions = self.regressor.predict(X)
-		print(predictions)
-		print(predictions.shape)
-		competitor_dataframe['predicted_refurbished_price'] = predictions[:, 0]
-		competitor_dataframe['predicted_new_price'] = predictions[:, 1]
-		competitor_dataframe['predicted_rebuy_price'] = predictions[:, 2]
-		competitor_dataframe.to_excel(os.path.join(PathManager.data_path, 'competitor_reaction_dataframe_predicted.xlsx'), index=False)
+	def __init__(self, config_market: AttrDict, name='', continuous_action_space: bool = False):
+		self.continuous_action_space = continuous_action_space
+		self.name = name if name != '' else type(self).__name__
+		if not hasattr(LinearRegressionCERebuyAgent, 'regressor'):
+			competitor_dataframe = pd.read_excel(os.path.join(PathManager.data_path, 'competitor_reaction_dataframe.xlsx'))[:-5000]
+			X = competitor_dataframe.iloc[:, 0:3].values
+
+			X = self.create_x_with_binary_features(X)
+			# define Y as the last 3 columns
+			Y = competitor_dataframe.iloc[:, 3:6].values
+			LinearRegressionCERebuyAgent.regressor = LinearRegression()
+			LinearRegressionCERebuyAgent.regressor.fit(X, Y)
+			print(f'LinearRegressionCERebuyAgent: {LinearRegressionCERebuyAgent.regressor.score(X, Y)}')
+
+			# predictions = self.regressor.predict(X)
+			# print(predictions)
+			# print(predictions.shape)
+			# competitor_dataframe['predicted_refurbished_price'] = predictions[:, 0]
+			# competitor_dataframe['predicted_new_price'] = predictions[:, 1]
+			# competitor_dataframe['predicted_rebuy_price'] = predictions[:, 2]
+			# competitor_dataframe.to_excel(os.path.join(PathManager.data_path, 'competitor_reaction_dataframe_predicted.xlsx'), index=False)
 
 	def policy(self, observation, *_) -> tuple:
 		assert isinstance(observation, np.ndarray), 'observation must be a np.ndarray'
+		observation = self.create_x_with_binary_features(observation[2:5].reshape(1, -1))
+		prediction = LinearRegressionCERebuyAgent.regressor.predict(observation)
+		# clamp all values of prediction between 0 and 10
+		prediction = np.clip(prediction, 0, 10)
+		return prediction[0]
 
 
 class RuleBasedCERebuyAgentStorageMinimizer(RuleBasedAgent, CircularAgent):

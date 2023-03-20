@@ -61,19 +61,18 @@ class LinearRegressionCustomer(Customer):
 			# Concatenate X and X_swapped to X
 			X = np.concatenate((X, X_swapped), axis=0)
 			X = self.create_x_with_binary_features(X)
+			print(X.shape)
 			Y = customers_dataframe.iloc[:, 6:11].values
 			# Swap columns 1, 2 and 3, 4. Write it to Y_swapped
 			Y_swapped = np.concatenate((Y[:, 0].reshape(-1, 1), Y[:, 1:3], Y[:, 3:5]), axis=1)
 			# Concatenate Y and Y_swapped to Y
 			Y = np.concatenate((Y, Y_swapped), axis=0)
-			print(X.shape)
-			print(Y.shape)
 			LinearRegressionCustomer.regressor = LinearRegression()
 			LinearRegressionCustomer.regressor.fit(X, Y)
 			print(f'LinearRegressionCustomer: R^2 = {self.regressor.score(X, Y)}')
 
-			prediction = LinearRegressionCustomer.regressor.predict(X)
-			print(f'LinearRegressionCustomer: prediction = {prediction}')
+			# prediction = LinearRegressionCustomer.regressor.predict(X)
+			# print(f'LinearRegressionCustomer: prediction = {prediction}')
 			# customers_dataframe['buy nothing predicted'] = prediction[:, 0]
 			# customers_dataframe['buy new agent predicted'] = prediction[:, 1]
 			# customers_dataframe['buy refurbished agent predicted'] = prediction[:, 2]
@@ -91,6 +90,7 @@ class LinearRegressionCustomer(Customer):
 
 		input_array = list(vendor_actions[0]) + list(vendor_actions[1])
 		input_array = self.create_x_with_binary_features(np.array(input_array).reshape(1, -1))
+		# input_array = np.concatenate((np.array(input_array).reshape(1, -1), input_binary), axis=1)
 		# print(input_array)
 		prediction = LinearRegressionCustomer.regressor.predict(input_array)[0]
 		prediction = np.where(prediction < 0, 0, prediction)

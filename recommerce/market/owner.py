@@ -116,11 +116,8 @@ class OwnerRebuy(Owner):
 
 
 class LinearRegressionOwner(Owner):
-	def __init__(self):
-		owner_dataframe = pd.read_excel(os.path.join(PathManager.data_path, 'owners_dataframe.xlsx'))
-		X = owner_dataframe.iloc[:, 0:6].values
+	def create_x_with_binary_features(self, X):
 		X_dash_list = []
-		print('Now I start to construct the binary features')
 		for price_threshhold in range(10):
 			# iterate throw the columns
 			for i_feature, column in enumerate(X.T):
@@ -128,23 +125,45 @@ class LinearRegressionOwner(Owner):
 				# append the new column to X
 				X_dash_list.append(column_values.reshape(-1, 1))
 		X_dash = np.concatenate(X_dash_list, axis=1)
-		X = np.concatenate((X, X_dash), axis=1)
-		Y = owner_dataframe.iloc[:, 6:10].values
-		self.regressor = LinearRegression()
-		self.regressor.fit(X, Y)
-		print(f'LinearRegressionOwner: R^2 = {self.regressor.score(X, Y)}')
+		return np.concatenate((X, X_dash), axis=1)
 
-		# create a new dataframe with predictions and prediction in the column
-		predictions = self.regressor.predict(X)
-		owner_dataframe['predicted holding'] = predictions[:, 0]
-		owner_dataframe['predicted throw away'] = predictions[:, 1]
-		owner_dataframe['predicted agent rebuy'] = predictions[:, 2]
-		owner_dataframe['predicted competitor rebuy'] = predictions[:, 3]
-		# save the dataframe to a new excel file
-		owner_dataframe.to_excel(os.path.join(PathManager.data_path, 'owners_dataframe_predicted.xlsx'), index=False)
+	def __init__(self):
+		if not hasattr(LinearRegressionOwner, 'regressor'):
+			owner_dataframe = pd.read_excel(os.path.join(PathManager.data_path, 'owners_dataframe.xlsx'))
+			X = owner_dataframe.iloc[:, 0:6].values
+			X_swapped = np.concatenate((X[:, 3:6], X[:, 0:3]), axis=1)
+			X = np.concatenate((X, X_swapped), axis=0)
+			X = self.create_x_with_binary_features(X)
+			Y = owner_dataframe.iloc[:, 6:10].values
+			Y_swapped = np.concatenate((Y[:, 0:2], Y[:, 3].reshape(-1, 1), Y[:, 2].reshape(-1, 1)), axis=1)
+			Y = np.concatenate((Y, Y_swapped), axis=0)
+			LinearRegressionOwner.regressor = LinearRegression()
+			LinearRegressionOwner.regressor.fit(X, Y)
+			print(f'LinearRegressionOwner: R^2 = {self.regressor.score(X, Y)}')
+
+			# create a new dataframe with predictions and prediction in the column
+			# predictions = self.regressor.predict(X)
+			# owner_dataframe['predicted holding'] = predictions[:, 0]
+			# owner_dataframe['predicted throw away'] = predictions[:, 1]
+			# owner_dataframe['predicted agent rebuy'] = predictions[:, 2]
+			# owner_dataframe['predicted competitor rebuy'] = predictions[:, 3]
+			# # save the dataframe to a new excel file
+			# owner_dataframe.to_excel(os.path.join(PathManager.data_path, 'owners_dataframe_predicted.xlsx'), index=False)
 
 	def generate_return_probabilities_from_offer(self, common_state, vendor_specific_state, vendor_actions) -> np.array:
-		return np.array([0, 0, 0, 0])
+		assert isinstance(common_state, np.ndarray), 'offers needs to be a ndarray'
+		assert isinstance(vendor_specific_state, list), 'vendor_specific_state must be a list'
+		assert isinstance(vendor_actions, list), 'vendor_actions must be a list'
+		assert len(vendor_specific_state) == len(vendor_actions), \
+			'Both the vendor_specific_state and vendor_actions contain one element per vendor. So they must have the same length.'
+		assert len(vendor_specific_state) > 0, 'there must be at least one vendor.'
+
+		input_array = list(vendor_actions[0]) + list(vendor_actions[1])
+		input_array = self.create_x_with_binary_features(np.array(input_array).reshape(1, -1))
+		prediction = LinearRegressionOwner.regressor.predict(input_array)[0]
+		prediction = np.where(prediction < 0, 0, prediction)
+		prediction = prediction / np.sum(prediction)
+		return prediction
 
 
 if __name__ == '__main__':

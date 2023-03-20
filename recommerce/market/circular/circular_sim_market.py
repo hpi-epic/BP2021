@@ -318,7 +318,7 @@ class CircularEconomyRebuyPrice(CircularEconomy, ABC):
 		return (self.config.production_price, self.config.production_price + 1, 1)
 
 	def _choose_owner(self) -> Owner:
-		return owner.OwnerRebuy()
+		return owner.LinearRegressionOwner()
 
 	def _initialize_output_dict(self) -> None:
 		"""
@@ -359,7 +359,7 @@ class CircularEconomyRebuyPriceDuopoly(CircularEconomyRebuyPrice):
 		return 1
 
 	def _get_competitor_list(self) -> list:
-		return [circular_vendors.RuleBasedCERebuyAgentCompetitive(config_market=self.config,
+		return [circular_vendors.LinearRegressionCERebuyAgent(config_market=self.config,
 			continuous_action_space=self.support_continuous_action_space)]
 
 
