@@ -1,5 +1,3 @@
-import math
-
 import numpy as np
 
 import recommerce.configuration.utils as ut
@@ -22,9 +20,6 @@ class CustomerCircular(Customer):
 			'Both the vendor_specific_state and vendor_actions contain one element per vendor. So they must have the same length.'
 		assert len(vendor_specific_state) > 0, 'there must be at least one vendor.'
 
-		step = common_state[1]
-		seasonal_interest = 5*(math.sin(step * (math.pi / 2) * (1 / 50)))
-
 		nothingpreference = 1
 		preferences = [nothingpreference]
 		for vendor_idx in range(len(vendor_actions)):
@@ -33,9 +28,7 @@ class CustomerCircular(Customer):
 			assert price_refurbished >= 1 and price_new >= 1, 'price_refurbished and price_new need to be >= 1'
 
 			ratio_old = 5.5 / price_refurbished - np.exp(price_refurbished - 5)
-			ratio_old += seasonal_interest
 			ratio_new = 10 / price_new - np.exp(price_new - 8)
-			ratio_new += seasonal_interest
 			preferences += [ratio_old, ratio_new]
 
 		return ut.softmax(np.array(preferences))

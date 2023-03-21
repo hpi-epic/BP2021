@@ -45,21 +45,17 @@ class CircularEconomy(SimMarket, ABC):
         self.max_circulation = 10 * self.max_storage
         self.observation_space = gym.spaces.Box(
             np.array(([0.0, 0.0] if self.config.common_state_visibility else [0.0]) +
-                     ([0.0] * (3 if self.config.opposite_own_state_visibility else 2)) * len(self.competitors),
-                     dtype=np.float32),
-            np.array(([self.max_circulation, self.max_storage] if self.config.common_state_visibility else [
-                self.max_storage]) +
+                     ([0.0] * (3 if self.config.opposite_own_state_visibility else 2)) * len(self.competitors), dtype=np.float32),
+            np.array(([self.max_circulation, self.max_storage] if self.config.common_state_visibility else [self.max_storage]) +
                      ([self.config.max_price, self.config.max_price] +
-                      ([self.max_storage] if self.config.opposite_own_state_visibility else [])) *
+                     ([self.max_storage] if self.config.opposite_own_state_visibility else [])) *
                      len(self.competitors), dtype=np.float32)
         )
 
         if support_continuous_action_space:
-            self.action_space = gym.spaces.Box(np.array([0] * 2, dtype=np.float32),
-                                               np.array([self.config.max_price] * 2, dtype=np.float32))
+            self.action_space = gym.spaces.Box(np.array([0] * 2, dtype=np.float32), np.array([self.config.max_price] * 2, dtype=np.float32))
         else:
-            self.action_space = gym.spaces.Tuple(
-                (gym.spaces.Discrete(self.config.max_price), gym.spaces.Discrete(self.config.max_price)))
+            self.action_space = gym.spaces.Tuple((gym.spaces.Discrete(self.config.max_price), gym.spaces.Discrete(self.config.max_price)))
 
     def _reset_vendor_specific_state(self) -> list:
         """
@@ -79,7 +75,7 @@ class CircularEconomy(SimMarket, ABC):
         return action_values
 
     def _get_common_state_array(self) -> np.array:
-        return np.array([self.in_circulation, self.step_counter])
+        return np.array([self.in_circulation])
 
     def _reset_vendor_actions(self) -> tuple:
         """
@@ -211,12 +207,11 @@ class CircularEconomy(SimMarket, ABC):
         """
         self._output_dict['state/in_circulation'] = self.in_circulation
         self._ensure_output_dict_has('state/in_storage',
-                                     [self.vendor_specific_state[vendor][0] for vendor in
-                                      range(self._number_of_vendors)])
+            [self.vendor_specific_state[vendor][0] for vendor in range(self._number_of_vendors)])
         self._ensure_output_dict_has('actions/price_refurbished',
-                                     [self.vendor_actions[vendor][0] for vendor in range(self._number_of_vendors)])
+            [self.vendor_actions[vendor][0] for vendor in range(self._number_of_vendors)])
         self._ensure_output_dict_has('actions/price_new',
-                                     [self.vendor_actions[vendor][1] for vendor in range(self._number_of_vendors)])
+            [self.vendor_actions[vendor][1] for vendor in range(self._number_of_vendors)])
 
         self._ensure_output_dict_has('owner/throw_away')
         self._ensure_output_dict_has('owner/rebuys', [0] * self._number_of_vendors)
@@ -251,7 +246,6 @@ class CircularEconomyMonopoly(CircularEconomy):
     """
     This is a circular economy with only one vendor having the monopoly.
     """
-
     @staticmethod
     def get_num_competitors() -> int:
         return 0
@@ -264,7 +258,6 @@ class CircularEconomyDuopoly(CircularEconomy):
     """
     This is a circular economy with two vendors (one agent and one competitor) playing against each other.
     """
-
     @staticmethod
     def get_num_competitors() -> int:
         return 1
@@ -277,7 +270,6 @@ class CircularEconomyOligopoly(CircularEconomy):
     """
     This is a circular economy with multiple vendors.
     """
-
     @staticmethod
     def get_num_competitors() -> int:
         return np.inf
@@ -288,38 +280,33 @@ class CircularEconomyOligopoly(CircularEconomy):
             circular_vendors.RuleBasedCEAgent(config_market=self.config),
             circular_vendors.FixedPriceCEAgent(config_market=self.config, fixed_price=(3, 5)),
             circular_vendors.FixedPriceCEAgent(config_market=self.config, fixed_price=(2, 6))
-        ]
+            ]
 
 
 class CircularEconomyRebuyPrice(CircularEconomy, ABC):
     @staticmethod
     def get_competitor_classes() -> list:
         import recommerce.market.circular.circular_vendors as c_vendors
-        return sorted(ut.filtered_class_str_from_dir('recommerce.market.circular.circular_vendors', dir(c_vendors),
-                                                     '.*CERebuy.*Agent.*'))
+        return sorted(ut.filtered_class_str_from_dir('recommerce.market.circular.circular_vendors', dir(c_vendors), '.*CERebuy.*Agent.*'))
 
     def _setup_action_observation_space(self, support_continuous_action_space: bool) -> None:
         super()._setup_action_observation_space(support_continuous_action_space)
         self.observation_space = gym.spaces.Box(
-            np.array(([0.0, 0.0, 0.0] if self.config.common_state_visibility else [0.0, 0.0]) +
-                     ([0.0] * (4 if self.config.opposite_own_state_visibility else 3)) * len(self.competitors),
-                     dtype=np.float32),
-            np.array(([self.max_circulation, self.config.episode_length,
-                       self.max_storage] if self.config.common_state_visibility else [self.config.episode_length,
-                                                                                      self.max_storage]) +
+            np.array(([0.0, 0.0] if self.config.common_state_visibility else [0.0]) +
+                     ([0.0] * (4 if self.config.opposite_own_state_visibility else 3)) * len(self.competitors), dtype=np.float32),
+            np.array(([self.max_circulation, self.max_storage] if self.config.common_state_visibility else [self.max_storage]) +
                      ([self.config.max_price, self.config.max_price, self.config.max_price] +
-                      ([self.max_storage] if self.config.opposite_own_state_visibility else [])) *
+                     ([self.max_storage] if self.config.opposite_own_state_visibility else [])) *
                      len(self.competitors), dtype=np.float32)
-        )
+            )
 
         if support_continuous_action_space:
-            self.action_space = gym.spaces.Box(np.array([0] * 3, dtype=np.float32),
-                                               np.array([self.config.max_price] * 3, dtype=np.float32))
+            self.action_space = gym.spaces.Box(np.array([0] * 3, dtype=np.float32), np.array([self.config.max_price] * 3, dtype=np.float32))
         else:
             self.action_space = gym.spaces.Tuple((
-                gym.spaces.Discrete(self.config.max_price),
-                gym.spaces.Discrete(self.config.max_price),
-                gym.spaces.Discrete(self.config.max_price)))
+                 gym.spaces.Discrete(self.config.max_price),
+                 gym.spaces.Discrete(self.config.max_price),
+                 gym.spaces.Discrete(self.config.max_price)))
 
     def _reset_vendor_actions(self) -> tuple:
         """
@@ -339,8 +326,7 @@ class CircularEconomyRebuyPrice(CircularEconomy, ABC):
         Also extend the the _output_dict initialized by the superclass with entries concerning the rebuy price and cost.
         """
         super()._initialize_output_dict()
-        self._ensure_output_dict_has('actions/price_rebuy',
-                                     [self.vendor_actions[vendor][2] for vendor in range(self._number_of_vendors)])
+        self._ensure_output_dict_has('actions/price_rebuy', [self.vendor_actions[vendor][2] for vendor in range(self._number_of_vendors)])
 
         self._ensure_output_dict_has('profits/rebuy_cost', [0] * self._number_of_vendors)
 
@@ -354,7 +340,6 @@ class CircularEconomyRebuyPriceMonopoly(CircularEconomyRebuyPrice):
 
     There is only one vendor.
     """
-
     @staticmethod
     def get_num_competitors() -> int:
         return 0
@@ -368,14 +353,13 @@ class CircularEconomyRebuyPriceDuopoly(CircularEconomyRebuyPrice):
     This is a circular economy with rebuy price, so the vendors buy back their products from the customers.
     There are two vendors.
     """
-
     @staticmethod
     def get_num_competitors() -> int:
         return 1
 
     def _get_competitor_list(self) -> list:
         return [circular_vendors.RuleBasedCERebuyAgentCompetitive(config_market=self.config,
-                                                                  continuous_action_space=self.support_continuous_action_space)]
+                continuous_action_space=self.support_continuous_action_space)]
 
 
 class CircularEconomyRebuyPriceOligopoly(CircularEconomyRebuyPrice):
@@ -383,7 +367,6 @@ class CircularEconomyRebuyPriceOligopoly(CircularEconomyRebuyPrice):
     This is a circular economy with rebuy price, so the vendors buy back their products from the customers.
     There are multiple vendors.
     """
-
     @staticmethod
     def get_num_competitors() -> int:
         return np.inf
@@ -401,4 +384,4 @@ class CircularEconomyRebuyPriceOligopoly(CircularEconomyRebuyPrice):
             circular_vendors.RuleBasedCERebuyAgentStorageMinimizer(
                 config_market=self.config,
                 continuous_action_space=self.support_continuous_action_space),
-        ]
+            ]
