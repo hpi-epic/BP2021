@@ -1,4 +1,3 @@
-import itertools
 import os
 import signal
 import sys
@@ -24,7 +23,7 @@ from recommerce.rl.reinforcement_learning_agent import ReinforcementLearningAgen
 import matplotlib.pyplot as plt
 import numpy as np
 
-plt.rcParams["figure.figsize"] = (16, 7)
+plt.rcParams["figure.figsize"] = (16, 4)
 
 
 class RecommerceCallback(BaseCallback):
@@ -69,10 +68,7 @@ class RecommerceCallback(BaseCallback):
         self.last_finished_episode = 0
         self.analyze_after_training = analyze_after_training
         self.histories = {"price_history": [[] for i in range(len(self.marketplace.competitors) + 1)],
-                          "purchase_count": [[] for i in range(len(self.marketplace.competitors) + 1)],
-                          "profits": [[] for i in range(len(self.marketplace.competitors) + 1)]
-                          }
-
+                          "purchase_count": [[] for i in range(len(self.marketplace.competitors) + 1)]}
         signal.signal(signal.SIGINT, self._signal_handler)
 
         self.initialize_io_related()
@@ -125,14 +121,9 @@ class RecommerceCallback(BaseCallback):
         # 	1) collect every price of episode 2) after #episode-length steps generate graph .bof price
 
         self.watcher.add_info(info)
-
-        for prices in self.marketplace.price_buffer[-(len(self.marketplace.competitors) + 1):]:
-            for idx2, key2 in enumerate(info['actions/price'].keys()):
-                self.histories['price_history'][idx2].append(prices[idx2])
-
         for idx, key in enumerate(info['actions/price'].keys()):
+            self.histories['price_history'][idx].append(info['actions/price'][key])
             self.histories['purchase_count'][idx].append(info['customer/purchases'][key])
-            self.histories['profits'][idx].append(info['profits/all'][key])
 
         self.tqdm_instance.update()
         assert isinstance(finished_episodes, int)
@@ -148,16 +139,16 @@ class RecommerceCallback(BaseCallback):
 
         if finished_episodes % 50 == 0:
 
-            fig, axs = plt.subplots(3)
-            fig.tight_layout(h_pad=5)
+            fig, axs = plt.subplots(2)
+            plt.subplots_adjust(hspace=0.6)
 
+            # introduce sub fix to show pricing and purchase counts...BUT purchase count also depends on price 0.o
             x = np.arange(0, len(self.histories['price_history'][0]))
             for idx, key in enumerate(info['actions/price'].keys()):
-                axs[0].step(x, self.histories['price_history'][idx])
+                axs[0].plot(x, self.histories['price_history'][idx])
             axs[0].set(xlabel='step', ylabel='price')
             axs[0].title.set_text(f"price distribution - #episode {finished_episodes}")
 
-            x = np.arange(0, len(self.histories['purchase_count'][0]))
             bottom = np.zeros(len(self.histories['purchase_count'][0]))
             for idx, key in enumerate(info['actions/price'].keys()):
                 axs[1].bar(x, self.histories['purchase_count'][idx], width=1.0, bottom=bottom)
@@ -165,21 +156,10 @@ class RecommerceCallback(BaseCallback):
             axs[1].set(xlabel='step', ylabel='#buys', )
             axs[1].title.set_text(f"purchase decision - #episode {finished_episodes}")
 
-
-            for idx, key in enumerate(info['actions/price'].keys()):
-                profit = list(itertools.accumulate(self.histories['profits'][idx]))
-                axs[2].plot(x, profit)
-
-            axs[2].set(xlabel='step', ylabel='acc. profit', )
-            axs[2].title.set_text(f"profit - #episode {finished_episodes}")
-
-
             plt.show()
 
         self.histories = {"price_history": [[] for i in range(len(self.marketplace.competitors) + 1)],
-                          "purchase_count": [[] for i in range(len(self.marketplace.competitors) + 1)],
-                          "profits": [[] for i in range(len(self.marketplace.competitors) + 1)]
-                          }
+                          "purchase_count": [[] for i in range(len(self.marketplace.competitors) + 1)]}
 
         self.last_finished_episode = finished_episodes
         mean_return = self.watcher.get_average_dict()['profits/all']['vendor_0']

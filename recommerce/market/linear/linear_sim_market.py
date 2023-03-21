@@ -108,7 +108,7 @@ class LinearEconomy(SimMarket, ABC):
         return action_values
 
     def _complete_purchase(self, profits, chosen_vendor, frequency) -> None:
-        profits[chosen_vendor] += frequency * (self.vendor_actions[chosen_vendor].item() - self.config.production_price)
+        profits[chosen_vendor] += frequency * (self.vendor_actions[chosen_vendor] - self.config.production_price)
         self._output_dict['customer/purchases'][f'vendor_{chosen_vendor}'] += frequency
 
     def _initialize_output_dict(self):
@@ -136,7 +136,7 @@ class LinearEconomy(SimMarket, ABC):
         last_prices = []
 
         return np.array([
-            self.step_counter % 25,
+            self.step_counter % 100,
             self.waiting_customers,
             *last_prices])
 
