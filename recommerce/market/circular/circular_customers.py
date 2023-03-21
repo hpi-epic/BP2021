@@ -61,7 +61,6 @@ class LinearRegressionCustomer(Customer):
 			# Concatenate X and X_swapped to X
 			X = np.concatenate((X, X_swapped), axis=0)
 			X = self.create_x_with_binary_features(X)
-			print(X.shape)
 			Y = customers_dataframe.iloc[:, 6:11].values
 			# Swap columns 1, 2 and 3, 4. Write it to Y_swapped
 			Y_swapped = np.concatenate((Y[:, 0].reshape(-1, 1), Y[:, 1:3], Y[:, 3:5]), axis=1)

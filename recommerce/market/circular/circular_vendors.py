@@ -7,7 +7,6 @@ import numpy as np
 import pandas as pd
 from attrdict import AttrDict
 from sklearn.linear_model import LinearRegression
-from tqdm import tqdm
 
 from recommerce.configuration.path_manager import PathManager
 from recommerce.market.vendors import Agent, FixedPriceAgent, HumanPlayer, RuleBasedAgent
@@ -227,7 +226,7 @@ class LinearRegressionCERebuyAgent(RuleBasedAgent, CircularAgent):
 		X_dash_list = []
 		for price_threshhold in range(10):
 			# iterate throw the columns
-			for i_feature, column in tqdm(enumerate(X.T)):
+			for i_feature, column in enumerate(X.T):
 				column_values = np.where(column > price_threshhold, 1, 0)
 				# append the new column to X
 				X_dash_list.append(column_values.reshape(-1, 1))

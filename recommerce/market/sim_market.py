@@ -88,10 +88,10 @@ class SimMarket(gym.Env, JSONConfigurable):
 			]
 			purchases_pandas_state_columns = [
 				'buy nothing',
-				'buy new agent',
 				'buy refurbished agent',
-				'buy new competitor',
+				'buy new agent',
 				'buy refurbished competitor',
+				'buy new competitor',
 			]
 			owner_pandas_state_columns = [
 				'product holding',

@@ -133,17 +133,17 @@ def train_stable_baselines_a2c():
 	StableBaselinesA2C(
 		config_market=config_market,
 		config_rl=config_rl,
-		marketplace=circular_market.CircularEconomyRebuyPriceDuopoly(config_market, True)).train_agent(200000)
+		marketplace=circular_market.CircularEconomyRebuyPriceDuopoly(config_market, True)).train_agent(500000)
 
 
 def train_stable_baselines_ppo():
-	used_marketplace = circular_market.CircularEconomyRebuyPriceDuopoly
+	used_marketplace = circular_market.CircularEconomyRebuyPriceDuopolyFitted
 	config_market: AttrDict = HyperparameterConfigLoader.load('market_config', used_marketplace)
 	config_rl: AttrDict = HyperparameterConfigLoader.load('sb_ppo_config', StableBaselinesPPO)
 	StableBaselinesPPO(
 		config_market=config_market,
 		config_rl=config_rl,
-		marketplace=used_marketplace(config_market, True)).train_agent(200000)
+		marketplace=used_marketplace(config_market, True)).train_agent(500000)
 
 
 def train_stable_baselines_sac():

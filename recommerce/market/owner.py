@@ -159,10 +159,13 @@ class LinearRegressionOwner(Owner):
 		assert len(vendor_specific_state) > 0, 'there must be at least one vendor.'
 
 		input_array = list(vendor_actions[0]) + list(vendor_actions[1])
+		print(input_array)
 		input_array = self.create_x_with_binary_features(np.array(input_array).reshape(1, -1))
 		prediction = LinearRegressionOwner.regressor.predict(input_array)[0]
+		print(prediction)
 		prediction = np.where(prediction < 0, 0, prediction)
 		prediction = prediction / np.sum(prediction)
+		print(prediction)
 		return prediction
 
 

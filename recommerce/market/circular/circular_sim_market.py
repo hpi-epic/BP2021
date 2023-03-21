@@ -7,7 +7,7 @@ import recommerce.configuration.utils as ut
 import recommerce.market.circular.circular_vendors as circular_vendors
 import recommerce.market.owner as owner
 from recommerce.configuration.common_rules import between_zero_one_rule, greater_zero_even_rule, greater_zero_rule, non_negative_rule
-from recommerce.market.circular.circular_customers import LinearRegressionCustomer
+from recommerce.market.circular.circular_customers import CustomerCircular, LinearRegressionCustomer
 from recommerce.market.customer import Customer
 from recommerce.market.owner import Owner
 from recommerce.market.sim_market import SimMarket
@@ -83,7 +83,7 @@ class CircularEconomy(SimMarket, ABC):
 		return (self.config.production_price, self.config.production_price + 1)
 
 	def _choose_customer(self) -> Customer:
-		return LinearRegressionCustomer()
+		return CustomerCircular()
 
 	def _choose_owner(self) -> Owner:
 		return owner.UniformDistributionOwner()
@@ -318,7 +318,7 @@ class CircularEconomyRebuyPrice(CircularEconomy, ABC):
 		return (self.config.production_price, self.config.production_price + 1, 1)
 
 	def _choose_owner(self) -> Owner:
-		return owner.LinearRegressionOwner()
+		return owner.OwnerRebuy()
 
 	def _initialize_output_dict(self) -> None:
 		"""
@@ -359,8 +359,28 @@ class CircularEconomyRebuyPriceDuopoly(CircularEconomyRebuyPrice):
 		return 1
 
 	def _get_competitor_list(self) -> list:
-		return [circular_vendors.LinearRegressionCERebuyAgent(config_market=self.config,
+		return [circular_vendors.RuleBasedCERebuyAgentCompetitive(config_market=self.config,
 			continuous_action_space=self.support_continuous_action_space)]
+
+
+class CircularEconomyRebuyPriceDuopolyFitted(CircularEconomyRebuyPrice):
+	"""
+	This is a circular economy with rebuy price, so the vendors buy back their products from the customers.
+	There are two vendors.
+	"""
+	@staticmethod
+	def get_num_competitors() -> int:
+		return 1
+
+	def _get_competitor_list(self) -> list:
+		return [circular_vendors.RuleBasedCERebuyAgentCompetitive(config_market=self.config,
+			continuous_action_space=self.support_continuous_action_space)]
+
+	def _choose_customer(self) -> Customer:
+		return LinearRegressionCustomer()
+
+	# def _choose_owner(self) -> Owner:
+	# 	return owner.LinearRegressionOwner()
 
 
 class CircularEconomyRebuyPriceOligopoly(CircularEconomyRebuyPrice):
