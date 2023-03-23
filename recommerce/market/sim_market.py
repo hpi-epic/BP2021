@@ -62,6 +62,7 @@ class SimMarket(gym.Env, JSONConfigurable):
 			support_continuous_action_space (bool, optional): If True, the action space will be continuous. Defaults to False.
 			competitors (list, optional): If not None, this overwrites the default competitor list with a custom one.
 		"""
+		print(f'I initialize {type(self)} as market')
 		self.config = config
 		self.support_continuous_action_space = support_continuous_action_space
 		self.competitors = self._get_competitor_list() if not competitors else competitors
@@ -100,7 +101,7 @@ class SimMarket(gym.Env, JSONConfigurable):
 				'rebuy competitor',
 			]
 			self.customers_dataframe = pd.DataFrame(columns=pandas_state_columns + purchases_pandas_state_columns)
-			self.owners_dataframe = pd.DataFrame(columns=pandas_state_columns + owner_pandas_state_columns)
+			self.owners_dataframe = pd.DataFrame(columns=['in circulation'] + pandas_state_columns + owner_pandas_state_columns)
 			self.competitor_reaction_dataframe = pd.DataFrame(columns=pandas_state_columns)
 
 	def _get_number_of_vendors(self) -> int:
@@ -154,7 +155,15 @@ class SimMarket(gym.Env, JSONConfigurable):
 		assert isinstance(probability_distribution, np.ndarray), 'generate_purchase_probabilities_from_offer must return an np.ndarray'
 		assert self._is_probability_distribution_fitting_exactly(probability_distribution)
 
-		customer_decisions = np.random.multinomial(number_of_customers, probability_distribution).tolist()
+		if np.abs(np.sum(probability_distribution) - 1) < 0.001:
+			customer_decisions = np.random.multinomial(number_of_customers, probability_distribution).tolist()
+		else:
+			# Warning: This is not a probability distribution. This should be refactored.
+			customer_decisions = [0] * len(probability_distribution)
+			for i, prediction in enumerate(probability_distribution):
+				customer_decisions[i] = np.ceil(prediction) if np.random.random() < prediction - np.floor(prediction) else np.floor(prediction)
+			customer_decisions = [int(x) for x in customer_decisions]
+
 		if self.document_for_regression:
 			new_row = self._observation(1)[2:5].tolist() + self._observation(0)[2:5].tolist() + customer_decisions
 			self.customers_dataframe.loc[len(self.customers_dataframe)] = new_row

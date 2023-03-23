@@ -56,28 +56,12 @@ class LinearRegressionCustomer(Customer):
 			customers_dataframe = pd.read_excel(os.path.join(PathManager.data_path, 'customers_dataframe.xlsx'))
 			print('Dataset read')
 			X = customers_dataframe.iloc[:, 0:6].values
-			# Swap the first three columns and the last three columns. Write it to X_swapped
-			X_swapped = np.concatenate((X[:, 3:6], X[:, 0:3]), axis=1)
-			# Concatenate X and X_swapped to X
-			X = np.concatenate((X, X_swapped), axis=0)
-			X = self.create_x_with_binary_features(X)
-			Y = customers_dataframe.iloc[:, 6:11].values
-			# Swap columns 1, 2 and 3, 4. Write it to Y_swapped
-			Y_swapped = np.concatenate((Y[:, 0].reshape(-1, 1), Y[:, 1:3], Y[:, 3:5]), axis=1)
-			# Concatenate Y and Y_swapped to Y
-			Y = np.concatenate((Y, Y_swapped), axis=0)
+			# X = self.create_x_with_binary_features(X)
+			Y = customers_dataframe.iloc[:, 6:9].values
+
 			LinearRegressionCustomer.regressor = LinearRegression()
 			LinearRegressionCustomer.regressor.fit(X, Y)
 			print(f'LinearRegressionCustomer: R^2 = {self.regressor.score(X, Y)}')
-
-			# prediction = LinearRegressionCustomer.regressor.predict(X)
-			# print(f'LinearRegressionCustomer: prediction = {prediction}')
-			# customers_dataframe['buy nothing predicted'] = prediction[:, 0]
-			# customers_dataframe['buy new agent predicted'] = prediction[:, 1]
-			# customers_dataframe['buy refurbished agent predicted'] = prediction[:, 2]
-			# customers_dataframe['buy new competitor predicted'] = prediction[:, 3]
-			# customers_dataframe['buy refurbished competitor predicted'] = prediction[:, 4]
-			# customers_dataframe.to_excel(os.path.join(PathManager.data_path, 'customers_dataframe_predicted.xlsx'), index=False)
 
 	def generate_purchase_probabilities_from_offer(self, market_config, common_state, vendor_specific_state, vendor_actions) -> np.array:
 		assert isinstance(common_state, np.ndarray), 'common_state must be a np.ndarray'
@@ -87,14 +71,18 @@ class LinearRegressionCustomer(Customer):
 			'Both the vendor_specific_state and vendor_actions contain one element per vendor. So they must have the same length.'
 		assert len(vendor_specific_state) > 0, 'there must be at least one vendor.'
 
-		input_array = list(vendor_actions[0]) + list(vendor_actions[1])
-		input_array = self.create_x_with_binary_features(np.array(input_array).reshape(1, -1))
-		# input_array = np.concatenate((np.array(input_array).reshape(1, -1), input_binary), axis=1)
-		# print(input_array)
-		prediction = LinearRegressionCustomer.regressor.predict(input_array)[0]
+		input_array_customer = np.array(list(vendor_actions[0]) + list(vendor_actions[1])).reshape(1, -1)
+		# input_array_customer = self.create_x_with_binary_features(input_array_customer)
+		prediction_for_customer = LinearRegressionCustomer.regressor.predict(input_array_customer)[0]
+
+		input_array_competitor = np.array(list(vendor_actions[1]) + list(vendor_actions[0])).reshape(1, -1)
+		# input_array_competitor = self.create_x_with_binary_features(input_array_competitor)
+		prediction_for_competitor = LinearRegressionCustomer.regressor.predict(input_array_competitor)[0]
+
+		prediction = np.concatenate((prediction_for_customer, prediction_for_competitor[1:3]))
+
 		prediction = np.where(prediction < 0, 0, prediction)
-		prediction = prediction / np.sum(prediction)
-		# print(prediction)
+
 		return prediction
 
 

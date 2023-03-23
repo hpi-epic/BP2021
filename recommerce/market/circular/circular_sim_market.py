@@ -130,11 +130,17 @@ class CircularEconomy(SimMarket, ABC):
 		assert len(return_probabilities) == 2 + self._number_of_vendors, \
 			'the length of return_probabilities must be the number of vendors plus 2'
 
-		number_of_owners = int(self.config.share_interested_owners * self.in_circulation / self._number_of_vendors)
-		owner_decisions = np.random.multinomial(number_of_owners, return_probabilities).tolist()
+		if np.abs(np.sum(return_probabilities) - 1) < 0.001:
+			number_of_owners = int(self.config.share_interested_owners * self.in_circulation / self._number_of_vendors)
+			owner_decisions = np.random.multinomial(number_of_owners, return_probabilities).tolist()
+		else:
+			owner_decisions = [0] * len(return_probabilities)
+			for i, prediction in enumerate(return_probabilities):
+				owner_decisions[i] = np.ceil(prediction) if np.random.random() < prediction - np.floor(prediction) else np.floor(prediction)
+			owner_decisions = [int(x) for x in owner_decisions]
 
 		if self.document_for_regression:
-			new_row = self._observation(1)[2:5].tolist() + self._observation(0)[2:5].tolist() + owner_decisions
+			new_row = self._observation(0)[0:1].tolist() + self._observation(1)[2:5].tolist() + self._observation(0)[2:5].tolist() + owner_decisions
 			self.owners_dataframe.loc[len(self.owners_dataframe)] = new_row
 
 		# owner decisions can be as follows:
@@ -379,8 +385,8 @@ class CircularEconomyRebuyPriceDuopolyFitted(CircularEconomyRebuyPrice):
 	def _choose_customer(self) -> Customer:
 		return LinearRegressionCustomer()
 
-	# def _choose_owner(self) -> Owner:
-	# 	return owner.LinearRegressionOwner()
+	def _choose_owner(self) -> Owner:
+		return owner.LinearRegressionOwner()
 
 
 class CircularEconomyRebuyPriceOligopoly(CircularEconomyRebuyPrice):

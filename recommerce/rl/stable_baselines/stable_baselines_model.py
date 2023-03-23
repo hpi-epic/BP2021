@@ -58,10 +58,6 @@ class StableBaselinesAgent(ReinforcementLearningAgent, LinearAgent, CircularAgen
 			type(self), self.marketplace, self.config_market, self.config_rl, training_steps=training_steps,
 			iteration_length=iteration_length, signature=self.name, analyze_after_training=analyze_after_training)
 		self.model.learn(training_steps, callback=callback)
-		self.marketplace.customers_dataframe.to_excel(os.path.join(PathManager.results_path, f'customers_dataframe_{self.name}.xlsx'))
-		self.marketplace.owners_dataframe.to_excel(os.path.join(PathManager.results_path, f'owners_dataframe_{self.name}.xlsx'))
-		self.marketplace.competitor_reaction_dataframe.to_excel(
-			os.path.join(PathManager.results_path, f'competitor_reaction_dataframe_{self.name}.xlsx'))
 		return callback.watcher
 
 	def train_with_default_eval(self, training_steps=100001):

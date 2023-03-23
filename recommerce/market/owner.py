@@ -130,25 +130,12 @@ class LinearRegressionOwner(Owner):
 	def __init__(self):
 		if not hasattr(LinearRegressionOwner, 'regressor'):
 			owner_dataframe = pd.read_excel(os.path.join(PathManager.data_path, 'owners_dataframe.xlsx'))
-			X = owner_dataframe.iloc[:, 0:6].values
-			X_swapped = np.concatenate((X[:, 3:6], X[:, 0:3]), axis=1)
-			X = np.concatenate((X, X_swapped), axis=0)
-			X = self.create_x_with_binary_features(X)
-			Y = owner_dataframe.iloc[:, 6:10].values
-			Y_swapped = np.concatenate((Y[:, 0:2], Y[:, 3].reshape(-1, 1), Y[:, 2].reshape(-1, 1)), axis=1)
-			Y = np.concatenate((Y, Y_swapped), axis=0)
+			X = owner_dataframe.iloc[:, 0:7].values
+			# X = self.create_x_with_binary_features(X)
+			Y = owner_dataframe.iloc[:, 7:10].values
 			LinearRegressionOwner.regressor = LinearRegression()
 			LinearRegressionOwner.regressor.fit(X, Y)
 			print(f'LinearRegressionOwner: R^2 = {self.regressor.score(X, Y)}')
-
-			# create a new dataframe with predictions and prediction in the column
-			# predictions = self.regressor.predict(X)
-			# owner_dataframe['predicted holding'] = predictions[:, 0]
-			# owner_dataframe['predicted throw away'] = predictions[:, 1]
-			# owner_dataframe['predicted agent rebuy'] = predictions[:, 2]
-			# owner_dataframe['predicted competitor rebuy'] = predictions[:, 3]
-			# # save the dataframe to a new excel file
-			# owner_dataframe.to_excel(os.path.join(PathManager.data_path, 'owners_dataframe_predicted.xlsx'), index=False)
 
 	def generate_return_probabilities_from_offer(self, common_state, vendor_specific_state, vendor_actions) -> np.array:
 		assert isinstance(common_state, np.ndarray), 'offers needs to be a ndarray'
@@ -158,14 +145,18 @@ class LinearRegressionOwner(Owner):
 			'Both the vendor_specific_state and vendor_actions contain one element per vendor. So they must have the same length.'
 		assert len(vendor_specific_state) > 0, 'there must be at least one vendor.'
 
-		input_array = list(vendor_actions[0]) + list(vendor_actions[1])
-		print(input_array)
-		input_array = self.create_x_with_binary_features(np.array(input_array).reshape(1, -1))
-		prediction = LinearRegressionOwner.regressor.predict(input_array)[0]
-		print(prediction)
+		input_array_customer = np.array(common_state.tolist() + list(vendor_actions[0]) + list(vendor_actions[1])).reshape(1, -1)
+		# input_array_customer = self.create_x_with_binary_features(input_array_customer)
+		prediction_for_customer = LinearRegressionOwner.regressor.predict(input_array_customer)[0]
+
+		input_array_competitor = np.array(common_state.tolist() + list(vendor_actions[1]) + list(vendor_actions[0])).reshape(1, -1)
+		# input_array_competitor = self.create_x_with_binary_features(input_array_competitor)
+		prediction_for_competitor = LinearRegressionOwner.regressor.predict(input_array_competitor)[0]
+
+		prediction = np.concatenate((prediction_for_customer, prediction_for_competitor[2:3]))
+
 		prediction = np.where(prediction < 0, 0, prediction)
-		prediction = prediction / np.sum(prediction)
-		print(prediction)
+
 		return prediction
 
 
