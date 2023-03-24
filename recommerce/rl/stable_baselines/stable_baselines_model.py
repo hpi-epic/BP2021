@@ -67,10 +67,11 @@ class StableBaselinesAgent(ReinforcementLearningAgent, LinearAgent, CircularAgen
 		callback = EvalCallback(Monitor(self.marketplace, filename=log_path),
 			best_model_save_path=save_path, log_path=log_path, render=False)
 		self.model.learn(training_steps, callback=callback)
-		self.marketplace.customers_dataframe.to_excel(os.path.join(PathManager.results_path, f'customers_dataframe_{self.name}.xlsx'))
-		self.marketplace.owners_dataframe.to_excel(os.path.join(PathManager.results_path, f'owners_dataframe_{self.name}.xlsx'))
-		self.marketplace.competitor_reaction_dataframe.to_excel(
-			os.path.join(PathManager.results_path, f'competitor_reaction_dataframe_{self.name}.xlsx'))
+		if self.marketplace.document_for_regression:
+			self.marketplace.customers_dataframe.to_excel(os.path.join(PathManager.results_path, f'customers_dataframe_{self.name}.xlsx'))
+			self.marketplace.owners_dataframe.to_excel(os.path.join(PathManager.results_path, f'owners_dataframe_{self.name}.xlsx'))
+			self.marketplace.competitor_reaction_dataframe.to_excel(
+				os.path.join(PathManager.results_path, f'competitor_reaction_dataframe_{self.name}.xlsx'))
 		return save_path
 
 	@staticmethod

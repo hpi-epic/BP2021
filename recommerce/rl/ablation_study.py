@@ -78,7 +78,7 @@ def run_training_session(market_class, config_market, agent_class, config_rl, tr
     exampleprinter = ExamplePrinter(config_market)
     marketplace = market_class(config_market, support_continuous_action_space=True)
     exampleprinter.setup_exampleprinter(marketplace, agent)
-    profit, info_sequences = exampleprinter.run_example(save_diagrams=True)
+    profit, info_sequences = exampleprinter.run_example(save_diagrams=False)
     pipe_to_parent.send(info_sequences)
 
 
@@ -93,7 +93,7 @@ def run_group(market_configs, market_descriptions, training_steps, target_functi
         for config_market, description, (_, pipe_entry) in zip(market_configs, market_descriptions, pipes)]
     print('Now I start the processes')
     for p in processes:
-        time.sleep(10)
+        time.sleep(2)
         p.start()
     print('Now I wait for the results')
     info_sequences = [output.recv() for output, _ in pipes]
@@ -115,45 +115,33 @@ def get_different_market_configs(parameter_name, values):
 
 
 if __name__ == '__main__':
-    storage_df = run_group(*get_different_market_configs('max_storage', [20, 50, 100, 200]), training_steps=100000)
-    print(storage_df)
-    storage_df.to_excel(os.path.join(PathManager.results_path, 'storage.xlsx'), index=False)
-    production_price_df = run_group(*get_different_market_configs('production_price', [2, 3, 4]), training_steps=100000)
-    print(production_price_df)
-    production_price_df.to_excel(os.path.join(PathManager.results_path, 'production_price.xlsx'), index=False)
-    number_of_customers_df = run_group(*get_different_market_configs('number_of_customers', [10, 20, 30]), training_steps=100000)
-    print(number_of_customers_df)
-    number_of_customers_df.to_excel(os.path.join(PathManager.results_path, 'number_of_customers.xlsx'), index=False)
-    storage_cost_df = run_group(*get_different_market_configs('storage_cost', [0.01, 0.05, 0.1, 0.2]), training_steps=100000)
-    print(storage_cost_df)
-    storage_cost_df.to_excel(os.path.join(PathManager.results_path, 'storage_cost.xlsx'), index=False)
-    compared_value_old_df = run_group(*get_different_market_configs('compared_value_old', [0.4, 0.55, 0.6]), training_steps=100000)
-    print(compared_value_old_df)
-    compared_value_old_df.to_excel(os.path.join(PathManager.results_path, 'compared_value_old.xlsx'), index=False)
-    upper_tolerance_old_df = run_group(*get_different_market_configs('upper_tolerance_old', [4.0, 5.0, 6.0]), training_steps=100000)
-    print(upper_tolerance_old_df)
-    upper_tolerance_old_df.to_excel(os.path.join(PathManager.results_path, 'upper_tolerance_old.xlsx'), index=False)
-    upper_tolerance_new_df = run_group(*get_different_market_configs('upper_tolerance_new', [7.0, 8.0, 9.0]), training_steps=100000)
-    print(upper_tolerance_new_df)
-    upper_tolerance_new_df.to_excel(os.path.join(PathManager.results_path, 'upper_tolerance_new.xlsx'), index=False)
-    share_interested_owners_df = run_group(*get_different_market_configs('share_interested_owners', [0.025, 0.05, 0.075]),
-                                           training_steps=100000)
-    print(share_interested_owners_df)
-    share_interested_owners_df.to_excel(os.path.join(PathManager.results_path, 'share_interested_owners.xlsx'), index=False)
-    competitor_lowest_storage_level_df = run_group(*get_different_market_configs('competitor_lowest_storage_level', [4.5, 6.5, 8.5]),
-                                                   training_steps=100000)
-    print(competitor_lowest_storage_level_df)
-    competitor_lowest_storage_level_df.to_excel(os.path.join(PathManager.results_path, 'competitor_lowest_storage_level.xlsx'),
-                                                index=False)
-    competitor_ok_storage_level_df = run_group(*get_different_market_configs('competitor_ok_storage_level', [9.5, 12.5, 15.5]),
-                                               training_steps=100000)
+    experiments = [('max_storage', [20, 50, 200]),
+        ('production_price', [2, 4]),
+        ('number_of_customers', [10, 30]),
+        ('storage_cost', [0.01, 0.1, 0.2]),
+        ('compared_value_old', [0.4, 0.6]),
+        ('upper_tolerance_old', [4.0, 6.0]),
+        ('upper_tolerance_new', [7.0, 9.0]),
+        ('share_interested_owners', [0.025, 0.075]),
+        ('competitor_lowest_storage_level', [4.5, 8.5]),
+        ('competitor_ok_storage_level', [9.5, 15.5])
+    ]
+    market_configs, descriptions = [], []
+    for experiment in experiments:
+        print(experiment)
+        single_configs, single_descriptions = get_different_market_configs(*experiment)
+        market_configs += single_configs
+        descriptions += single_descriptions
 
-    # merge all dataframes
-    all_dataframes = [storage_df, production_price_df, number_of_customers_df, storage_cost_df, compared_value_old_df,
-                    upper_tolerance_old_df, upper_tolerance_new_df, share_interested_owners_df,
-                    competitor_lowest_storage_level_df, competitor_ok_storage_level_df]
-    all_dataframes = [df.set_index('market configuration') for df in all_dataframes]
-    merged_df = pd.concat(all_dataframes, axis=1)
-
-    # save merged dataframe to excel
-    merged_df.to_excel(os.path.join(PathManager.results_path, 'merged.xlsx'))
+    print(f'Now I start the experiments. There are {len(market_configs)} experiments in total.')
+    dataframes = []
+    for i in range(0, len(market_configs), 8):
+        print(f'Now I start the experiments {i}-{i+8}')
+        tmp_dataframe = run_group(market_configs[i:i+8], descriptions[i:i+8], 1000000)
+        dataframes.append(tmp_dataframe)
+        print(f'Saving dataframe {i}-{i+8}')
+        tmp_dataframe.to_excel(os.path.join(PathManager.results_path, f'dataframe{i}-{i+8}.xlsx'), index=False)
+    dataframe = pd.concat(dataframes)
+    print('Now I have the dataframe. I save it...')
+    dataframe.to_excel(os.path.join(PathManager.results_path, 'dataframe.xlsx'), index=False)
+    print('Done')
