@@ -218,6 +218,38 @@ class RuleBasedCERebuyAgentSampleCollector(RuleBasedAgent, CircularAgent):
 			if random.random() < 0.8 else (random.randint(0, 10), random.randint(0, 10), random.randint(0, 10)))
 
 
+class RuleBasedCERebuyAgentSSCurve(RuleBasedAgent, CircularAgent):
+	"""
+	This vendor's policy is aiming to succeed by undercutting the competitor's prices.
+	"""
+	def __init__(self, config_market: AttrDict, name='', continuous_action_space: bool = False):
+		self.continuous_action_space = continuous_action_space
+		self.name = name if name != '' else type(self).__name__
+		self.config_market = config_market
+
+	def policy(self, observation, *_) -> tuple:
+		lower_bound_new = 4
+		upper_bound_new = 9
+		lower_bound_refurbished = 1
+		upper_bound_refurbished = 7
+		step_size = 1
+		competitors_refurbished_prices, competitors_new_prices, competitors_rebuy_prices = self._get_competitor_prices(observation, True)
+
+		new_price = upper_bound_new if competitors_new_prices < lower_bound_new else competitors_new_prices - step_size
+		refurbished_price = upper_bound_refurbished if competitors_refurbished_prices < lower_bound_refurbished else \
+			competitors_refurbished_prices - step_size
+
+		own_storage = observation[1].item() if self.config_market.common_state_visibility else observation[0].item()
+		if own_storage < self.config_market.competitor_lowest_storage_level:
+			rebuy_price = max(competitors_rebuy_prices + 1, 2)
+		elif own_storage < self.config_market.competitor_ok_storage_level:
+			rebuy_price = max(min(competitors_rebuy_prices, 0.25), 2)
+		else:
+			rebuy_price = max(min(competitors_rebuy_prices - 1), 2)
+
+		return np.array((self._clamp_price(refurbished_price), self._clamp_price(new_price), self._clamp_price(rebuy_price)))
+
+
 class LinearRegressionCERebuyAgent(RuleBasedAgent, CircularAgent):
 	"""
 	This vendor's policy is aiming to succeed by undercutting the competitor's prices.
