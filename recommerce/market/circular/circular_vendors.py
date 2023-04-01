@@ -235,19 +235,20 @@ class RuleBasedCERebuyAgentSSCurve(RuleBasedAgent, CircularAgent):
 		step_size = 1
 		competitors_refurbished_prices, competitors_new_prices, competitors_rebuy_prices = self._get_competitor_prices(observation, True)
 
-		new_price = upper_bound_new if competitors_new_prices < lower_bound_new else competitors_new_prices - step_size
-		refurbished_price = upper_bound_refurbished if competitors_refurbished_prices < lower_bound_refurbished else \
-			competitors_refurbished_prices - step_size
+		new_price = upper_bound_new if competitors_new_prices[0] < lower_bound_new else competitors_new_prices[0] - step_size
+		refurbished_price = upper_bound_refurbished if competitors_refurbished_prices[0] < lower_bound_refurbished else \
+			competitors_refurbished_prices[0] - step_size
 
 		own_storage = observation[1].item() if self.config_market.common_state_visibility else observation[0].item()
 		if own_storage < self.config_market.competitor_lowest_storage_level:
-			rebuy_price = max(competitors_rebuy_prices + 1, 2)
+			rebuy_price = max(min(competitors_rebuy_prices) + 1, 2)
 		elif own_storage < self.config_market.competitor_ok_storage_level:
-			rebuy_price = max(min(competitors_rebuy_prices, 0.25), 2)
+			rebuy_price = max(min(competitors_rebuy_prices), 2)
 		else:
-			rebuy_price = max(min(competitors_rebuy_prices - 1), 2)
+			rebuy_price = max(min(competitors_rebuy_prices) - 1, 2)
 
-		return np.array((self._clamp_price(refurbished_price), self._clamp_price(new_price), self._clamp_price(rebuy_price)))
+		return np.array((self._clamp_price(refurbished_price), self._clamp_price(new_price), self._clamp_price(rebuy_price))
+			if random.random() < 0.8 else (random.randint(0, 10), random.randint(0, 10), random.randint(0, 10)))
 
 
 class LinearRegressionCERebuyAgent(RuleBasedAgent, CircularAgent):
@@ -269,7 +270,7 @@ class LinearRegressionCERebuyAgent(RuleBasedAgent, CircularAgent):
 		self.continuous_action_space = continuous_action_space
 		self.name = name if name != '' else type(self).__name__
 		if not hasattr(LinearRegressionCERebuyAgent, 'regressor'):
-			competitor_dataframe = pd.read_excel(os.path.join(PathManager.data_path, 'competitor_reaction_dataframe.xlsx'))[:-5000]
+			competitor_dataframe = pd.read_excel(os.path.join(PathManager.results_path, 'competitor_reaction_dataframe.xlsx'))[:-5000]
 			X = competitor_dataframe.iloc[:, 0:3].values
 
 			X = self.create_x_with_binary_features(X)
@@ -285,7 +286,7 @@ class LinearRegressionCERebuyAgent(RuleBasedAgent, CircularAgent):
 			# competitor_dataframe['predicted_refurbished_price'] = predictions[:, 0]
 			# competitor_dataframe['predicted_new_price'] = predictions[:, 1]
 			# competitor_dataframe['predicted_rebuy_price'] = predictions[:, 2]
-			# competitor_dataframe.to_excel(os.path.join(PathManager.data_path, 'competitor_reaction_dataframe_predicted.xlsx'), index=False)
+			# competitor_dataframe.to_excel(os.path.join(PathManager.results_path, 'competitor_reaction_dataframe_predicted.xlsx'), index=False)
 
 	def policy(self, observation, *_) -> tuple:
 		assert isinstance(observation, np.ndarray), 'observation must be a np.ndarray'

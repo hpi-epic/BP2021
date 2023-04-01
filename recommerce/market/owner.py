@@ -129,7 +129,7 @@ class LinearRegressionOwner(Owner):
 
 	def __init__(self):
 		if not hasattr(LinearRegressionOwner, 'regressor'):
-			owner_dataframe = pd.read_excel(os.path.join(PathManager.data_path, 'owners_dataframe.xlsx'))
+			owner_dataframe = pd.read_excel(os.path.join(PathManager.results_path, 'owners_dataframe.xlsx'))
 			X = owner_dataframe.iloc[:, 0:7].values
 			# X = self.create_x_with_binary_features(X)
 			Y = owner_dataframe.iloc[:, 7:10].values
