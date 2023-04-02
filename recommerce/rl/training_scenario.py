@@ -143,7 +143,7 @@ def train_stable_baselines_ppo():
 	StableBaselinesPPO(
 		config_market=config_market,
 		config_rl=config_rl,
-		marketplace=used_marketplace(config_market, True)).train_agent(500000)
+		marketplace=used_marketplace(config_market, True)).train_with_default_eval(50000)
 
 
 def train_stable_baselines_sac():
