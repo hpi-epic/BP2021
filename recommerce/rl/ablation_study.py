@@ -135,12 +135,13 @@ if __name__ == '__main__':
 
     print(f'Now I start the experiments. There are {len(market_configs)} experiments in total.')
     dataframes = []
-    for i in range(0, len(market_configs), 8):
-        print(f'Now I start the experiments {i}-{i+8}')
-        tmp_dataframe = run_group(market_configs[i:i+8], descriptions[i:i+8], 1000000)
+    parallel_runs = 4
+    for i in range(0, len(market_configs), parallel_runs):
+        print(f'Now I start the experiments {i}-{i+parallel_runs}')
+        tmp_dataframe = run_group(market_configs[i:i+parallel_runs], descriptions[i:i+parallel_runs], 1000000)
         dataframes.append(tmp_dataframe)
-        print(f'Saving dataframe {i}-{i+8}')
-        tmp_dataframe.to_excel(os.path.join(PathManager.results_path, f'dataframe{i}-{i+8}.xlsx'), index=False)
+        print(f'Saving dataframe {i}-{i+parallel_runs}')
+        tmp_dataframe.to_excel(os.path.join(PathManager.results_path, f'dataframe{i}-{i+parallel_runs}.xlsx'), index=False)
     dataframe = pd.concat(dataframes)
     print('Now I have the dataframe. I save it...')
     dataframe.to_excel(os.path.join(PathManager.results_path, 'dataframe.xlsx'), index=False)
