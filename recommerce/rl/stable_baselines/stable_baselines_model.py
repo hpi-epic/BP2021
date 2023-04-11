@@ -3,11 +3,12 @@ import time
 from abc import ABC, abstractmethod
 
 import numpy as np
+import pandas as pd
 from attrdict import AttrDict
 from stable_baselines3.common.callbacks import CheckpointCallback
 
 from recommerce.configuration.path_manager import PathManager
-from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPriceDuopoly
+from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPriceDuopoly, CircularEconomyRebuyPriceDuopolyFitted
 from recommerce.market.circular.circular_vendors import CircularAgent
 from recommerce.market.linear.linear_vendors import LinearAgent
 from recommerce.market.sim_market import SimMarket
@@ -63,8 +64,9 @@ class StableBaselinesAgent(ReinforcementLearningAgent, LinearAgent, CircularAgen
 		return callback.watcher
 
 	def train_with_default_eval(self, training_steps=100001):
-		save_path = os.path.join(PathManager.results_path, f'model_files_{time.strftime("%b%d_%H-%M-%S")}', f'{self.name}')
-		log_path = os.path.join(PathManager.results_path, 'logs', f'{self.name}')
+		token = time.strftime('%b%d_%H-%M-%S')
+		save_path = os.path.join(PathManager.results_path, f'model_files_{token}', f'{self.name}')
+		log_path = os.path.join(PathManager.results_path, 'logs', f'{token}')
 		os.makedirs(log_path, exist_ok=True)
 		step_size = 25000
 		callback = CheckpointCallback(step_size, save_path=save_path)
@@ -76,19 +78,36 @@ class StableBaselinesAgent(ReinforcementLearningAgent, LinearAgent, CircularAgen
 				os.path.join(PathManager.results_path, f'competitor_reaction_dataframe_{self.name}.xlsx'))
 
 		best_profit = -np.inf
+		profits = []
+		fitted_profits = []
 		# iterate through the saved models and evaluate them by running the exampleprinter
-		for model_file in os.listdir(save_path):
+		modelfiles = sorted(os.listdir(save_path))
+		for model_file in modelfiles:
+			print('I analyze the model: ', model_file)
 			agent = type(self)(self.config_market, self.config_rl, self.marketplace, load_path=os.path.join(save_path, model_file))
 			exampleprinter = ExamplePrinter(self.config_market)
 			marketplace = CircularEconomyRebuyPriceDuopoly(self.config_market, support_continuous_action_space=True)
 			exampleprinter.setup_exampleprinter(marketplace, agent)
 			_, info_sequence = exampleprinter.run_example()
 			profit = np.mean(info_sequence['profits/all/vendor_0'])
+			profits.append(profit)
 			print(f'profit per step of {model_file}: {profit}')
 			if profit > best_profit:
 				best_profit = profit
 				best_model = model_file
+
+			# evaluate on the fitted market
+			exampleprinter_fitted = ExamplePrinter(self.config_market)
+			marketplace = CircularEconomyRebuyPriceDuopolyFitted(self.config_market, support_continuous_action_space=True)
+			exampleprinter_fitted.setup_exampleprinter(marketplace, agent)
+			_, info_sequence = exampleprinter_fitted.run_example()
+			profit = np.mean(info_sequence['profits/all/vendor_0'])
+			fitted_profits.append(profit)
 		print(f'best model: {best_model} with profit {best_profit}')
+		print('Saving the results of the evaluation in the following path: ', log_path)
+		dataframe = pd.DataFrame.from_dict({'model': modelfiles, 'profit': profits, 'fitted_profit': fitted_profits})
+		dataframe.to_excel(os.path.join(log_path, f'evaluation_{time.strftime("%b%d_%H-%M-%S")}.xlsx'))
+		print('Done!')
 		return save_path
 
 	@staticmethod

@@ -155,7 +155,7 @@ class SimMarket(gym.Env, JSONConfigurable):
 		assert isinstance(probability_distribution, np.ndarray), 'generate_purchase_probabilities_from_offer must return an np.ndarray'
 		assert self._is_probability_distribution_fitting_exactly(probability_distribution)
 
-		if np.abs(np.sum(probability_distribution) - 1) < 0.001:
+		if np.abs(np.sum(probability_distribution) - 1) < 0.0001:
 			customer_decisions = np.random.multinomial(number_of_customers, probability_distribution).tolist()
 		else:
 			# Warning: This is not a probability distribution. This should be refactored.

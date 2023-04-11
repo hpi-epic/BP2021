@@ -130,7 +130,7 @@ class CircularEconomy(SimMarket, ABC):
 		assert len(return_probabilities) == 2 + self._number_of_vendors, \
 			'the length of return_probabilities must be the number of vendors plus 2'
 
-		if np.abs(np.sum(return_probabilities) - 1) < 0.001:
+		if np.abs(np.sum(return_probabilities) - 1) < 0.0001:
 			number_of_owners = int(self.config.share_interested_owners * self.in_circulation / self._number_of_vendors)
 			owner_decisions = np.random.multinomial(number_of_owners, return_probabilities).tolist()
 		else:
@@ -379,7 +379,7 @@ class CircularEconomyRebuyPriceDuopolyFitted(CircularEconomyRebuyPrice):
 		return 1
 
 	def _get_competitor_list(self) -> list:
-		return [circular_vendors.RuleBasedCERebuyAgentCompetitive(config_market=self.config,
+		return [circular_vendors.LinearRegressionCERebuyAgent(config_market=self.config,
 			continuous_action_space=self.support_continuous_action_space)]
 
 	def _choose_customer(self) -> Customer:

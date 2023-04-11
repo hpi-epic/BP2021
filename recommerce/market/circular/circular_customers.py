@@ -54,7 +54,6 @@ class LinearRegressionCustomer(Customer):
 	def __init__(self) -> None:
 		if not hasattr(LinearRegressionCustomer, 'regressor'):
 			customers_dataframe = pd.read_excel(os.path.join(PathManager.results_path, 'customers_dataframe.xlsx'))
-			print('Dataset read')
 			X = customers_dataframe.iloc[:, 0:6].values
 			# X = self.create_x_with_binary_features(X)
 			Y = customers_dataframe.iloc[:, 6:9].values
