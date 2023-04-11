@@ -137,7 +137,7 @@ def train_stable_baselines_a2c():
 
 
 def train_stable_baselines_ppo():
-	used_marketplace = circular_market.CircularEconomyRebuyPriceDuopoly
+	used_marketplace = circular_market.CircularEconomyRebuyPriceDuopolyFitted
 	config_market: AttrDict = HyperparameterConfigLoader.load('market_config', used_marketplace)
 	config_rl: AttrDict = HyperparameterConfigLoader.load('sb_ppo_config', StableBaselinesPPO)
 	StableBaselinesPPO(

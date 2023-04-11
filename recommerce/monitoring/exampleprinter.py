@@ -93,7 +93,7 @@ class ExamplePrinter():
 
 		signature = f'exampleprinter_{time.strftime("%b%d_%H-%M-%S")}'
 		writer = SummaryWriter(log_dir=os.path.join(PathManager.results_path, 'runs', signature))
-		os.makedirs(os.path.join(PathManager.results_path, 'exampleprinter', signature))
+		os.makedirs(os.path.join(PathManager.results_path, 'exampleprinter', signature), exist_ok=True)
 
 		if isinstance(self.marketplace, circular_market.CircularEconomyRebuyPriceDuopoly) and save_diagrams:
 			svg_manipulator = SVGManipulator(signature)
