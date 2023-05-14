@@ -14,5 +14,6 @@
     "upper_tolerance_new": 8.0,
     "share_interested_owners": 0.05,
     "competitor_lowest_storage_level": 6.5,
-    "competitor_ok_storage_level": 12.5
+    "competitor_ok_storage_level": 12.5,
+    "price_step_size": 1.0
 }

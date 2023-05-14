@@ -75,7 +75,7 @@ class ExamplePrinter():
 				info_dict[key].append(info[key])
 		return info_dict
 
-	def run_example(self, save_diagrams=True, evaluation_left_bound=450, evaluation_right_bound=500) -> int:
+	def run_example(self, save_diagrams=False, evaluation_left_bound=450, evaluation_right_bound=500) -> int:
 		"""
 		Run a specified marketplace with a (pre-trained, if RL) agent and record various statistics using TensorBoard.
 

@@ -5,13 +5,13 @@ from tqdm import tqdm
 from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader
 from recommerce.configuration.path_manager import PathManager
 from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPriceDuopoly
-from recommerce.market.circular.circular_vendors import RuleBasedCERebuyAgentSSCurve
+from recommerce.market.circular.circular_vendors import RuleBasedCERebuyAgentSampleCollector
 from recommerce.monitoring.exampleprinter import ExamplePrinter
 
 if __name__ == '__main__':
 	config_market = HyperparameterConfigLoader.load('market_config', CircularEconomyRebuyPriceDuopoly)
 	exampleprinter = ExamplePrinter(config_market)
-	agent = RuleBasedCERebuyAgentSSCurve(config_market, 'Sample Collector', True)
+	agent = RuleBasedCERebuyAgentSampleCollector(config_market, 'Sample Collector', True)
 	marketplace = CircularEconomyRebuyPriceDuopoly(config_market, True, document_for_regression=True)
 	exampleprinter.setup_exampleprinter(marketplace, agent)
 	for _ in tqdm(range(20)):

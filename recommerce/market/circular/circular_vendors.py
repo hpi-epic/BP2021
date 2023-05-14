@@ -198,7 +198,7 @@ class RuleBasedCERebuyAgentSampleCollector(RuleBasedAgent, CircularAgent):
 		own_storage = observation[1].item() if self.config_market.common_state_visibility else observation[0].item()
 		competitors_refurbished_prices, competitors_new_prices, competitors_rebuy_prices = self._get_competitor_prices(observation, True)
 
-		price_new = max(min(competitors_new_prices) - 1, self.config_market.production_price + 1)
+		price_new = max(min(competitors_new_prices) - self.config_market.price_step_size, self.config_market.production_price + 1)
 		# competitor's storage is ignored
 		if own_storage < self.config_market.competitor_lowest_storage_level + random.randint(-3, 3):
 			# fill up the storage immediately
@@ -232,7 +232,7 @@ class RuleBasedCERebuyAgentSSCurve(RuleBasedAgent, CircularAgent):
 		upper_bound_new = 9
 		lower_bound_refurbished = 1
 		upper_bound_refurbished = 7
-		step_size = 1
+		step_size = self.config_market.price_step_size
 		competitors_refurbished_prices, competitors_new_prices, competitors_rebuy_prices = self._get_competitor_prices(observation, True)
 
 		new_price = upper_bound_new if competitors_new_prices[0] < lower_bound_new else competitors_new_prices[0] - step_size
@@ -247,8 +247,7 @@ class RuleBasedCERebuyAgentSSCurve(RuleBasedAgent, CircularAgent):
 		else:
 			rebuy_price = max(min(competitors_rebuy_prices) - 1, 2)
 
-		return np.array((self._clamp_price(refurbished_price), self._clamp_price(new_price), self._clamp_price(rebuy_price))
-			if random.random() < 0.8 else (random.randint(0, 10), random.randint(0, 10), random.randint(0, 10)))
+		return np.array((self._clamp_price(refurbished_price), self._clamp_price(new_price), self._clamp_price(rebuy_price)))
 
 
 class LinearRegressionCERebuyAgent(RuleBasedAgent, CircularAgent):

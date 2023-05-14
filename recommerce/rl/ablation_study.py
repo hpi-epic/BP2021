@@ -10,7 +10,7 @@ import pandas as pd
 
 from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader
 from recommerce.configuration.path_manager import PathManager
-from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPriceDuopoly
+from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPriceDuopoly, CircularEconomyRebuyPriceDuopolyFitted
 from recommerce.monitoring.exampleprinter import ExamplePrinter
 from recommerce.rl.stable_baselines.sb_ppo import StableBaselinesPPO
 
@@ -51,11 +51,11 @@ def create_relevant_dataframe(descriptions, info_sequences_list):
         ('sales price refurbished competitor',
             lambda info_sequence: np.sum(np.array(info_sequence['actions/price_refurbished/vendor_1']) *
             np.array(info_sequence['customer/purchases_refurbished/vendor_1'])) /
-            np.sum(info_sequence['customer/purchases_refurbished/vendor_1'])),
+            (np.sum(info_sequence['customer/purchases_refurbished/vendor_1']) + 1e-10)),
         ('sales price rebuy competitor',
             lambda info_sequence: np.sum(np.array(info_sequence['actions/price_rebuy/vendor_1']) *
             np.array(info_sequence['owner/rebuys/vendor_1'])) /
-            np.sum(info_sequence['owner/rebuys/vendor_1'])),
+            (np.sum(info_sequence['owner/rebuys/vendor_1']) + 1e-10)),
         ('inventory level competitor', lambda info_sequence: np.mean(info_sequence['state/in_storage/vendor_1'])),
         ('resources in use', lambda info_sequence: np.mean(info_sequence['state/in_circulation'])),
         ('throw away', lambda info_sequence: np.mean(info_sequence['owner/throw_away']))
@@ -115,17 +115,18 @@ def get_different_market_configs(parameter_name, values):
 
 
 if __name__ == '__main__':
-    experiments = [('max_storage', [20, 50, 200]),
-        ('production_price', [2, 4]),
-        ('number_of_customers', [10, 30]),
-        ('storage_cost', [0.01, 0.1, 0.2]),
-        ('compared_value_old', [0.4, 0.6]),
-        ('upper_tolerance_old', [4.0, 6.0]),
-        ('upper_tolerance_new', [7.0, 9.0]),
-        ('share_interested_owners', [0.025, 0.075]),
-        ('competitor_lowest_storage_level', [4.5, 8.5]),
-        ('competitor_ok_storage_level', [9.5, 15.5])
-    ]
+    experiments = [('price_step_size', [1.5, 1, 0.5, 0.25])]
+    # experiments = [('max_storage', [20, 50, 200]),
+    #     ('production_price', [2, 4]),
+    #     ('number_of_customers', [10, 30]),
+    #     ('storage_cost', [0.01, 0.1, 0.2]),
+    #     ('compared_value_old', [0.4, 0.6]),
+    #     ('upper_tolerance_old', [4.0, 6.0]),
+    #     ('upper_tolerance_new', [7.0, 9.0]),
+    #     ('share_interested_owners', [0.025, 0.075]),
+    #     ('competitor_lowest_storage_level', [4.5, 8.5]),
+    #     ('competitor_ok_storage_level', [9.5, 15.5])
+    # ]
     market_configs, descriptions = [], []
     for experiment in experiments:
         print(experiment)
@@ -146,3 +147,16 @@ if __name__ == '__main__':
     print('Now I have the dataframe. I save it...')
     dataframe.to_excel(os.path.join(PathManager.results_path, 'dataframe.xlsx'), index=False)
     print('Done')
+
+    # market_config = HyperparameterConfigLoader.load('market_config', CircularEconomyRebuyPriceDuopoly)
+    # rl_config = HyperparameterConfigLoader.load('sb_ppo_config', StableBaselinesPPO)
+    # load_path = os.path.join(PathManager.data_path, 'rl_model_700000_steps.zip')
+    # agent = StableBaselinesPPO(market_config, rl_config, CircularEconomyRebuyPriceDuopoly(market_config, support_continuous_action_space=True), name='PPO on fitted market', load_path=load_path)
+    # exampleprinter_real = ExamplePrinter(market_config)
+    # exampleprinter_real.setup_exampleprinter(CircularEconomyRebuyPriceDuopoly(market_config, support_continuous_action_space=True), agent)
+    # _, info_sequences = exampleprinter_real.run_example(save_diagrams=False)
+    # exampleprinter_fitted = ExamplePrinter(market_config)
+    # exampleprinter_fitted.setup_exampleprinter(CircularEconomyRebuyPriceDuopolyFitted(market_config, support_continuous_action_space=True), agent)
+    # _, info_sequences_fitted = exampleprinter_fitted.run_example(save_diagrams=False)
+    # dataframe = create_relevant_dataframe(['Values on real market', 'Values on fitted market'], [info_sequences, info_sequences_fitted])
+    # dataframe.to_excel(os.path.join(PathManager.results_path, 'dataframe_fitted_vs_real.xlsx'), index=False)
