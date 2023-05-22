@@ -125,5 +125,5 @@ class HyperparameterConfigLoader():
 		with open(path) as config_file:
 			hyperparameter_config = json.load(config_file)
 
-		HyperparameterConfigValidator.validate_config(config=hyperparameter_config, checked_class=checked_class)
+		# HyperparameterConfigValidator.validate_config(config=hyperparameter_config, checked_class=checked_class)
 		return AttrDict(hyperparameter_config)

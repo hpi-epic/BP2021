@@ -6,8 +6,8 @@ import numpy as np
 import recommerce.configuration.utils as ut
 import recommerce.market.circular.circular_vendors as circular_vendors
 import recommerce.market.owner as owner
-from recommerce.configuration.common_rules import greater_zero_even_rule, greater_zero_rule, non_negative_rule
-from recommerce.market.circular.circular_customers import CustomerCircular
+from recommerce.configuration.common_rules import between_zero_one_rule, greater_zero_even_rule, greater_zero_rule, non_negative_rule
+from recommerce.market.circular.circular_customers import CustomerCircular, LinearRegressionCustomer
 from recommerce.market.customer import Customer
 from recommerce.market.owner import Owner
 from recommerce.market.sim_market import SimMarket
@@ -32,7 +32,13 @@ class CircularEconomy(SimMarket, ABC):
 			('storage_cost_per_product', (int, float), non_negative_rule),
 			('opposite_own_state_visibility', bool, None),
 			('common_state_visibility', bool, None),
-			('reward_mixed_profit_and_difference', bool, None)
+			('reward_mixed_profit_and_difference', bool, None),
+			('compared_value_old', float, greater_zero_rule),
+			('upper_tolerance_old', float, greater_zero_rule),
+			('upper_tolerance_new', float, greater_zero_rule),
+			('share_interested_owners', float, between_zero_one_rule),
+			('competitor_lowest_storage_level', float, greater_zero_rule),
+			('competitor_ok_storage_level', float, greater_zero_rule)
 		]
 
 	def _setup_action_observation_space(self, support_continuous_action_space: bool) -> None:
@@ -117,14 +123,25 @@ class CircularEconomy(SimMarket, ABC):
 			profits (np.array(int)): The profits of the vendor.
 		"""
 		assert self._owner is not None, 'an owner must be set'
+		common_state_array = self._get_common_state_array()
 		return_probabilities = self._owner.generate_return_probabilities_from_offer(
-			self._get_common_state_array(), self.vendor_specific_state, self.vendor_actions)
+			common_state_array, self.vendor_specific_state, self.vendor_actions)
 		assert isinstance(return_probabilities, np.ndarray), 'return_probabilities must be an np.ndarray'
 		assert len(return_probabilities) == 2 + self._number_of_vendors, \
 			'the length of return_probabilities must be the number of vendors plus 2'
 
-		number_of_owners = int(0.05 * self.in_circulation / self._number_of_vendors)
-		owner_decisions = np.random.multinomial(number_of_owners, return_probabilities).tolist()
+		if np.abs(np.sum(return_probabilities) - 1) < 0.0001:
+			number_of_owners = int(self.config.share_interested_owners * self.in_circulation / self._number_of_vendors)
+			owner_decisions = np.random.multinomial(number_of_owners, return_probabilities).tolist()
+		else:
+			owner_decisions = [0] * len(return_probabilities)
+			for i, prediction in enumerate(return_probabilities):
+				owner_decisions[i] = np.ceil(prediction) if np.random.random() < prediction - np.floor(prediction) else np.floor(prediction)
+			owner_decisions = [int(x) for x in owner_decisions]
+
+		if self.document_for_regression:
+			new_row = self._observation(0)[0:1].tolist() + self._observation(1)[2:5].tolist() + self._observation(0)[2:5].tolist() + owner_decisions
+			self.owners_dataframe.loc[len(self.owners_dataframe)] = new_row
 
 		# owner decisions can be as follows:
 		# 0: Hold/Do nothing
@@ -352,6 +369,26 @@ class CircularEconomyRebuyPriceDuopoly(CircularEconomyRebuyPrice):
 			continuous_action_space=self.support_continuous_action_space)]
 
 
+class CircularEconomyRebuyPriceDuopolyFitted(CircularEconomyRebuyPrice):
+	"""
+	This is a circular economy with rebuy price, so the vendors buy back their products from the customers.
+	There are two vendors.
+	"""
+	@staticmethod
+	def get_num_competitors() -> int:
+		return 1
+
+	def _get_competitor_list(self) -> list:
+		return [circular_vendors.LinearRegressionCERebuyAgent(config_market=self.config,
+			continuous_action_space=self.support_continuous_action_space)]
+
+	def _choose_customer(self) -> Customer:
+		return LinearRegressionCustomer()
+
+	def _choose_owner(self) -> Owner:
+		return owner.LinearRegressionOwner()
+
+
 class CircularEconomyRebuyPriceOligopoly(CircularEconomyRebuyPrice):
 	"""
 	This is a circular economy with rebuy price, so the vendors buy back their products from the customers.
@@ -370,4 +407,4 @@ class CircularEconomyRebuyPriceOligopoly(CircularEconomyRebuyPrice):
 			circular_vendors.FixedPriceCERebuyAgent(config_market=self.config, fixed_price=(3, 6, 2)),
 			circular_vendors.RuleBasedCERebuyAgentStorageMinimizer(config_market=self.config,
 				continuous_action_space=self.support_continuous_action_space),
-			]
+			][0:self.config.oligopol_competitors]

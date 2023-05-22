@@ -169,6 +169,27 @@ def unroll_dict_with_list(input_dict: dict) -> dict:
 	return newdict
 
 
+def flatten_dict(input_dict: dict) -> dict:
+	"""
+	This function takes a nested dictionary and recursively flattens it.
+
+	Args:
+		input_dict (dict): the dictionary you would like to flatten
+
+	Returns:
+		dict: the flattened dictionary
+	"""
+	newdict = {}
+	for key in input_dict:
+		if isinstance(input_dict[key], dict):
+			interim_dict = flatten_dict(input_dict[key])
+			for interim_key, value in interim_dict.items():
+				newdict[f'{key}/{interim_key}'] = value
+		else:
+			newdict[key] = input_dict[key]
+	return newdict
+
+
 def write_content_of_dict_to_overview_svg(
 		manipulator: SVGManipulator,
 		episode: int,

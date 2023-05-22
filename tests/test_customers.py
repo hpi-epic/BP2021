@@ -16,7 +16,8 @@ config_market: AttrDict = HyperparameterConfigLoader.load('market_config', circu
 # Test the Customer parent class, i.e. make sure it cannot be used
 def test_customer_parent_class():
 	with pytest.raises(NotImplementedError) as assertion_message:
-		customer.Customer.generate_purchase_probabilities_from_offer(CustomerLinear, *random_offer(linear_market.LinearEconomyDuopoly))
+		customer.Customer.generate_purchase_probabilities_from_offer(CustomerLinear, config_market,
+			*random_offer(linear_market.LinearEconomyDuopoly))
 	assert 'This method is abstract. Use a subclass' in str(assertion_message.value)
 
 
@@ -42,7 +43,7 @@ generate_purchase_probabilities_from_offer_testcases = [
 	generate_purchase_probabilities_from_offer_testcases)
 def test_generate_purchase_probabilities_from_offer(customer, common_state, vendor_specific_state, vendor_actions, expected_message):
 	with pytest.raises(AssertionError) as assertion_message:
-		customer.generate_purchase_probabilities_from_offer(customer, common_state, vendor_specific_state, vendor_actions)
+		customer.generate_purchase_probabilities_from_offer(customer, config_market, common_state, vendor_specific_state, vendor_actions)
 	assert expected_message in str(assertion_message.value)
 
 
@@ -58,7 +59,7 @@ customer_action_range_testcases = [
 @pytest.mark.parametrize('customer, market', customer_action_range_testcases)
 def test_customer_action_range(customer, market):
 	offers = random_offer(market)
-	probability_distribution = customer.generate_purchase_probabilities_from_offer(customer, *offers)
+	probability_distribution = customer.generate_purchase_probabilities_from_offer(customer, config_market, *offers)
 	assert len(probability_distribution) == market(config=config_market)._get_number_of_vendors() * \
 		(1 if issubclass(market, linear_market.LinearEconomy) else 2) + 1
 
@@ -66,14 +67,14 @@ def test_customer_action_range(customer, market):
 def test_linear_higher_price_lower_purchase_probability():
 	common_state, vendor_specific_state, vendor_actions = np.array([]), [[12], [12]], [3, 5]
 	probability_distribution = CustomerLinear.generate_purchase_probabilities_from_offer(
-		CustomerLinear, common_state, vendor_specific_state, vendor_actions)
+		CustomerLinear, config_market, common_state, vendor_specific_state, vendor_actions)
 	assert probability_distribution[1] > probability_distribution[2]
 
 
 def test_linear_higher_quality_higher_purchase_probability():
 	common_state, vendor_specific_state, vendor_actions = np.array([]), [[13], [12]], [3, 3]
 	probability_distribution = CustomerLinear.generate_purchase_probabilities_from_offer(
-		CustomerLinear, common_state, vendor_specific_state, vendor_actions)
+		CustomerLinear, config_market, common_state, vendor_specific_state, vendor_actions)
 	assert probability_distribution[1] > probability_distribution[2]
 
 
@@ -81,17 +82,17 @@ def test_equal_ratio_equal_purchase_probability():
 	# In the following line: [3, 1] means prices [4, 2]
 	common_state, vendor_specific_state, vendor_actions = np.array([]), [[16], [8]], [3, 1]
 	probability_distribution = CustomerLinear.generate_purchase_probabilities_from_offer(
-		CustomerLinear, common_state, vendor_specific_state, vendor_actions)
+		CustomerLinear, config_market, common_state, vendor_specific_state, vendor_actions)
 	assert probability_distribution[1] == probability_distribution[2]
 
 
 def test_linear_lower_overall_price_lower_nothing_probability():
 	common_state1, vendor_specific_state1, vendor_actions1 = np.array([]), [[15], [15]], [3, 3]
 	probability_distribution1 = CustomerLinear.generate_purchase_probabilities_from_offer(
-		CustomerLinear, common_state1, vendor_specific_state1, vendor_actions1)
+		CustomerLinear, config_market, common_state1, vendor_specific_state1, vendor_actions1)
 	common_state2, vendor_specific_state2, vendor_actions2 = np.array([]), [[15], [15]], [4, 4]
 	probability_distribution2 = CustomerLinear.generate_purchase_probabilities_from_offer(
-		CustomerLinear, common_state2, vendor_specific_state2, vendor_actions2)
+		CustomerLinear, config_market, common_state2, vendor_specific_state2, vendor_actions2)
 	print(probability_distribution1)
 	print(probability_distribution2)
 	assert probability_distribution1[0] < probability_distribution2[0]
@@ -102,7 +103,7 @@ def test_linear_lower_overall_price_lower_nothing_probability():
 def test_circular_higher_price_lower_purchase_probability():
 	common_state, vendor_specific_state, vendor_actions = np.array([]), [[17], [23]], [[3, 6], [4, 5]]
 	probability_distribution = CustomerCircular.generate_purchase_probabilities_from_offer(
-		CustomerCircular, common_state, vendor_specific_state, vendor_actions)
+		CustomerCircular, config_market, common_state, vendor_specific_state, vendor_actions)
 	assert probability_distribution[1] > probability_distribution[3]
 	assert probability_distribution[2] < probability_distribution[4]
 

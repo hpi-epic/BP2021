@@ -1,9 +1,14 @@
+import os
+import random
 from abc import ABC
 from statistics import median
 
 import numpy as np
+import pandas as pd
 from attrdict import AttrDict
+from sklearn.linear_model import LinearRegression
 
+from recommerce.configuration.path_manager import PathManager
 from recommerce.market.vendors import Agent, FixedPriceAgent, HumanPlayer, RuleBasedAgent
 
 
@@ -160,11 +165,11 @@ class RuleBasedCERebuyAgentCompetitive(RuleBasedAgent, CircularAgent):
 
 		price_new = max(min(competitors_new_prices) - 1, self.config_market.production_price + 1)
 		# competitor's storage is ignored
-		if own_storage < self.config_market.max_storage / 15:
+		if own_storage < self.config_market.competitor_lowest_storage_level:
 			# fill up the storage immediately
 			price_refurbished = min(competitors_refurbished_prices) + 1
 			rebuy_price = max(min(competitors_rebuy_prices) + 1, 2)
-		elif own_storage < self.config_market.max_storage / 8:
+		elif own_storage < self.config_market.competitor_ok_storage_level:
 			# storage content is ok
 			rebuy_price = max(min(competitors_rebuy_prices) - 1, 0.25)
 			price_refurbished = max(min(competitors_refurbished_prices) - 1, rebuy_price + 1)
@@ -174,6 +179,124 @@ class RuleBasedCERebuyAgentCompetitive(RuleBasedAgent, CircularAgent):
 			price_refurbished = max(round(np.quantile(competitors_refurbished_prices, 0.75)) - 2, rebuy_price + 1)
 
 		return (self._clamp_price(price_refurbished), self._clamp_price(price_new), self._clamp_price(rebuy_price))
+
+
+class RuleBasedCERebuyAgentSampleCollector(RuleBasedAgent, CircularAgent):
+	"""
+	This vendor's policy is aiming to succeed by undercutting the competitor's prices.
+	"""
+	def __init__(self, config_market: AttrDict, name='', continuous_action_space: bool = False):
+		self.continuous_action_space = continuous_action_space
+		self.name = name if name != '' else type(self).__name__
+		self.config_market = config_market
+
+	def policy(self, observation, *_) -> tuple:
+		assert isinstance(observation, np.ndarray), 'observation must be a np.ndarray'
+		# TODO: find a proper way asserting the length of observation (as implemented in AC & QLearning via passing marketplace)
+
+		# in_circulation is ignored
+		own_storage = observation[1].item() if self.config_market.common_state_visibility else observation[0].item()
+		competitors_refurbished_prices, competitors_new_prices, competitors_rebuy_prices = self._get_competitor_prices(observation, True)
+
+		price_new = max(min(competitors_new_prices) - self.config_market.price_step_size, self.config_market.production_price + 1)
+		# competitor's storage is ignored
+		if own_storage < self.config_market.competitor_lowest_storage_level + random.randint(-3, 3):
+			# fill up the storage immediately
+			price_refurbished = min(competitors_refurbished_prices) + random.randint(0, 3)
+			rebuy_price = max(min(competitors_rebuy_prices) + random.randint(0, 3), 2 if random.random() < 0.8 else 0)
+		elif own_storage < self.config_market.competitor_ok_storage_level + random.randint(-3, 3):
+			# storage content is ok
+			rebuy_price = max(min(competitors_rebuy_prices) - random.randint(0, 2), 0.25)
+			price_refurbished = max(min(competitors_refurbished_prices) - random.randint(0, 2), rebuy_price + random.randint(0, 2))
+		else:
+			# storage too full, we need to get rid of some refurbished products
+			rebuy_price = max(min(competitors_rebuy_prices) - random.randint(1, 4), 0)
+			price_refurbished = max(round(np.quantile(competitors_refurbished_prices, 0.75)) - random.randint(1, 4),
+				rebuy_price + random.randint(0, 3))
+
+		return np.array((self._clamp_price(price_refurbished), self._clamp_price(price_new), self._clamp_price(rebuy_price))
+			if random.random() < 0.8 else (random.randint(0, 10), random.randint(0, 10), random.randint(0, 10)))
+
+
+class RuleBasedCERebuyAgentSSCurve(RuleBasedAgent, CircularAgent):
+	"""
+	This vendor's policy is aiming to succeed by undercutting the competitor's prices.
+	"""
+	def __init__(self, config_market: AttrDict, name='', continuous_action_space: bool = False):
+		self.continuous_action_space = continuous_action_space
+		self.name = name if name != '' else type(self).__name__
+		self.config_market = config_market
+
+	def policy(self, observation, *_) -> tuple:
+		lower_bound_new = 4
+		upper_bound_new = 9
+		lower_bound_refurbished = 1
+		upper_bound_refurbished = 7
+		step_size = self.config_market.price_step_size
+		competitors_refurbished_prices, competitors_new_prices, competitors_rebuy_prices = self._get_competitor_prices(observation, True)
+
+		new_price = upper_bound_new if competitors_new_prices[0] < lower_bound_new else competitors_new_prices[0] - step_size
+		refurbished_price = upper_bound_refurbished if competitors_refurbished_prices[0] < lower_bound_refurbished else \
+			competitors_refurbished_prices[0] - step_size
+
+		own_storage = observation[1].item() if self.config_market.common_state_visibility else observation[0].item()
+		if own_storage < self.config_market.competitor_lowest_storage_level:
+			rebuy_price = max(min(competitors_rebuy_prices) + 1, 2)
+		elif own_storage < self.config_market.competitor_ok_storage_level:
+			rebuy_price = max(min(competitors_rebuy_prices), 2)
+		else:
+			rebuy_price = max(min(competitors_rebuy_prices) - 1, 2)
+
+		return np.array((self._clamp_price(refurbished_price), self._clamp_price(new_price), self._clamp_price(rebuy_price)))
+
+
+class LinearRegressionCERebuyAgent(RuleBasedAgent, CircularAgent):
+	"""
+	This vendor's policy is aiming to succeed by undercutting the competitor's prices.
+	"""
+	def create_x_with_additional_features(self, X):
+		spike_points = [(0.0, 2.0), (2.0, 2.0), (4.0, 2.0), (7.0, 3.0)]
+		X_dash_list = []
+		for mid, plusminus in spike_points:
+			# iterate throw the columns
+			for i_feature, column in enumerate(X.T):
+				tmp = np.ones_like(column)
+				inner = tmp - np.abs(column - mid * tmp) / (plusminus * tmp)
+				column_values = np.maximum(inner, 0 * tmp)
+				# append the new column to X
+				X_dash_list.append(column_values.reshape(-1, 1))
+		X_dash = np.concatenate(X_dash_list, axis=1)
+		return np.concatenate((X, X_dash), axis=1)
+
+	def __init__(self, config_market: AttrDict, name='', continuous_action_space: bool = False):
+		self.continuous_action_space = continuous_action_space
+		self.name = name if name != '' else type(self).__name__
+		if not hasattr(LinearRegressionCERebuyAgent, 'regressor'):
+			competitor_dataframe = pd.read_excel(os.path.join(PathManager.results_path, 'competitor_reaction_dataframe.xlsx'))[:-5000]
+			X = competitor_dataframe.iloc[:, 0:3].values
+
+			X = self.create_x_with_additional_features(X)
+			# define Y as the last 3 columns
+			Y = competitor_dataframe.iloc[:, 3:6].values
+			LinearRegressionCERebuyAgent.regressor = LinearRegression()
+			LinearRegressionCERebuyAgent.regressor.fit(X, Y)
+			print(f'LinearRegressionCERebuyAgent: {LinearRegressionCERebuyAgent.regressor.score(X, Y)}')
+
+			# predictions = self.regressor.predict(X)
+			# print(predictions)
+			# print(predictions.shape)
+			# competitor_dataframe['predicted_refurbished_price'] = predictions[:, 0]
+			# competitor_dataframe['predicted_new_price'] = predictions[:, 1]
+			# competitor_dataframe['predicted_rebuy_price'] = predictions[:, 2]
+			# competitor_dataframe.to_excel(os.path.join(PathManager.results_path, 'competitor_reaction_dataframe_predicted.xlsx'), index=False)
+
+	def policy(self, observation, *_) -> tuple:
+		assert isinstance(observation, np.ndarray), 'observation must be a np.ndarray'
+		observation = self.create_x_with_additional_features(observation[2:5].reshape(1, -1))
+		prediction = LinearRegressionCERebuyAgent.regressor.predict(observation)
+		# clamp all values of prediction between 0 and 10
+		prediction = np.clip(prediction, 0, 10)
+		return prediction[0]
 
 
 class RuleBasedCERebuyAgentStorageMinimizer(RuleBasedAgent, CircularAgent):
@@ -206,3 +329,7 @@ class RuleBasedCERebuyAgentStorageMinimizer(RuleBasedAgent, CircularAgent):
 			price_refurbished = int(np.quantile(competitors_refurbished_prices, 0.25))
 
 		return (self._clamp_price(price_refurbished), self._clamp_price(price_new), self._clamp_price(rebuy_price))
+
+
+if __name__ == '__main__':
+	LinearRegressionCERebuyAgent(None)

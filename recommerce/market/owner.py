@@ -1,8 +1,12 @@
+import os
 from abc import ABC, abstractmethod
 
 import numpy as np
+import pandas as pd
+from sklearn.linear_model import LinearRegression
 
 import recommerce.configuration.utils as ut
+from recommerce.configuration.path_manager import PathManager
 
 
 class Owner(ABC):
@@ -109,3 +113,52 @@ class OwnerRebuy(Owner):
 		discard_preference = lowest_purchase_offer - best_rebuy_price
 
 		return ut.softmax(np.array([holding_preference, discard_preference] + return_preferences))
+
+
+class LinearRegressionOwner(Owner):
+	def create_x_with_binary_features(self, X):
+		X_dash_list = []
+		for price_threshhold in range(10):
+			# iterate throw the columns
+			for i_feature, column in enumerate(X.T):
+				column_values = np.where(column > price_threshhold, 1, 0)
+				# append the new column to X
+				X_dash_list.append(column_values.reshape(-1, 1))
+		X_dash = np.concatenate(X_dash_list, axis=1)
+		return np.concatenate((X, X_dash), axis=1)
+
+	def __init__(self):
+		if not hasattr(LinearRegressionOwner, 'regressor'):
+			owner_dataframe = pd.read_excel(os.path.join(PathManager.results_path, 'owners_dataframe.xlsx'))
+			X = owner_dataframe.iloc[:, 0:7].values
+			# X = self.create_x_with_binary_features(X)
+			Y = owner_dataframe.iloc[:, 7:10].values
+			LinearRegressionOwner.regressor = LinearRegression()
+			LinearRegressionOwner.regressor.fit(X, Y)
+			print(f'LinearRegressionOwner: R^2 = {self.regressor.score(X, Y)}')
+
+	def generate_return_probabilities_from_offer(self, common_state, vendor_specific_state, vendor_actions) -> np.array:
+		assert isinstance(common_state, np.ndarray), 'offers needs to be a ndarray'
+		assert isinstance(vendor_specific_state, list), 'vendor_specific_state must be a list'
+		assert isinstance(vendor_actions, list), 'vendor_actions must be a list'
+		assert len(vendor_specific_state) == len(vendor_actions), \
+			'Both the vendor_specific_state and vendor_actions contain one element per vendor. So they must have the same length.'
+		assert len(vendor_specific_state) > 0, 'there must be at least one vendor.'
+
+		input_array_customer = np.array(common_state.tolist() + list(vendor_actions[0]) + list(vendor_actions[1])).reshape(1, -1)
+		# input_array_customer = self.create_x_with_binary_features(input_array_customer)
+		prediction_for_customer = LinearRegressionOwner.regressor.predict(input_array_customer)[0]
+
+		input_array_competitor = np.array(common_state.tolist() + list(vendor_actions[1]) + list(vendor_actions[0])).reshape(1, -1)
+		# input_array_competitor = self.create_x_with_binary_features(input_array_competitor)
+		prediction_for_competitor = LinearRegressionOwner.regressor.predict(input_array_competitor)[0]
+
+		prediction = np.concatenate((prediction_for_customer, prediction_for_competitor[2:3]))
+
+		prediction = np.where(prediction < 0, 0, prediction)
+
+		return prediction
+
+
+if __name__ == '__main__':
+	LinearRegressionOwner()

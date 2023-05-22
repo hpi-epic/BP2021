@@ -11,6 +11,7 @@ from tqdm.auto import trange
 
 import recommerce.configuration.utils as ut
 from recommerce.configuration.path_manager import PathManager
+from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPriceDuopoly, CircularEconomyRebuyPriceDuopolyFitted
 from recommerce.market.sim_market import SimMarket
 from recommerce.market.vendors import RuleBasedAgent
 from recommerce.monitoring.agent_monitoring.am_monitoring import Monitor
@@ -176,7 +177,7 @@ class RecommerceCallback(BaseCallback):
 			analyze_consecutive_models(
 				self.saved_parameter_paths,
 				monitor,
-				type(self.marketplace),
+				CircularEconomyRebuyPriceDuopoly if isinstance(self.marketplace, CircularEconomyRebuyPriceDuopolyFitted) else type(self.marketplace),
 				self.config_market,
 				self.agent_class,
 				hasattr(self.model, 'env'),
