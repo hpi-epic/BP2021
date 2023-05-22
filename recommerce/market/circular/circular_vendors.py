@@ -254,12 +254,15 @@ class LinearRegressionCERebuyAgent(RuleBasedAgent, CircularAgent):
 	"""
 	This vendor's policy is aiming to succeed by undercutting the competitor's prices.
 	"""
-	def create_x_with_binary_features(self, X):
+	def create_x_with_additional_features(self, X):
+		spike_points = [(0.0, 2.0), (2.0, 2.0), (4.0, 2.0), (7.0, 3.0)]
 		X_dash_list = []
-		for price_threshhold in range(10):
+		for mid, plusminus in spike_points:
 			# iterate throw the columns
 			for i_feature, column in enumerate(X.T):
-				column_values = np.where(column > price_threshhold, 1, 0)
+				tmp = np.ones_like(column)
+				inner = tmp - np.abs(column - mid * tmp) / (plusminus * tmp)
+				column_values = np.maximum(inner, 0 * tmp)
 				# append the new column to X
 				X_dash_list.append(column_values.reshape(-1, 1))
 		X_dash = np.concatenate(X_dash_list, axis=1)
@@ -272,7 +275,7 @@ class LinearRegressionCERebuyAgent(RuleBasedAgent, CircularAgent):
 			competitor_dataframe = pd.read_excel(os.path.join(PathManager.results_path, 'competitor_reaction_dataframe.xlsx'))[:-5000]
 			X = competitor_dataframe.iloc[:, 0:3].values
 
-			X = self.create_x_with_binary_features(X)
+			X = self.create_x_with_additional_features(X)
 			# define Y as the last 3 columns
 			Y = competitor_dataframe.iloc[:, 3:6].values
 			LinearRegressionCERebuyAgent.regressor = LinearRegression()
@@ -289,7 +292,7 @@ class LinearRegressionCERebuyAgent(RuleBasedAgent, CircularAgent):
 
 	def policy(self, observation, *_) -> tuple:
 		assert isinstance(observation, np.ndarray), 'observation must be a np.ndarray'
-		observation = self.create_x_with_binary_features(observation[2:5].reshape(1, -1))
+		observation = self.create_x_with_additional_features(observation[2:5].reshape(1, -1))
 		prediction = LinearRegressionCERebuyAgent.regressor.predict(observation)
 		# clamp all values of prediction between 0 and 10
 		prediction = np.clip(prediction, 0, 10)

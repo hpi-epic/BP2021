@@ -10,7 +10,7 @@ import pandas as pd
 
 from recommerce.configuration.hyperparameter_config import HyperparameterConfigLoader
 from recommerce.configuration.path_manager import PathManager
-from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPriceDuopoly, CircularEconomyRebuyPriceDuopolyFitted
+from recommerce.market.circular.circular_sim_market import CircularEconomyRebuyPriceDuopoly, CircularEconomyRebuyPriceDuopolyFitted, CircularEconomyRebuyPriceOligopoly
 from recommerce.monitoring.exampleprinter import ExamplePrinter
 from recommerce.rl.stable_baselines.sb_ppo import StableBaselinesPPO
 
@@ -83,13 +83,15 @@ def run_training_session(market_class, config_market, agent_class, config_rl, tr
 
 
 def run_group(market_configs, market_descriptions, training_steps, target_function=run_training_session):
-    market_class = CircularEconomyRebuyPriceDuopoly
+    market_class = CircularEconomyRebuyPriceDuopoly if \
+        'oligopol_competitors' not in market_configs[0].keys() else CircularEconomyRebuyPriceOligopoly
     rl_config = HyperparameterConfigLoader.load('sb_ppo_config', StableBaselinesPPO)
     pipes = []
     for _ in market_configs:
         pipes.append(Pipe(False))
+    print(market_configs)
     processes = [Process(target=target_function,
-                         args=(market_class, config_market, StableBaselinesPPO, rl_config, training_steps, description, pipe_entry))
+                         args=(CircularEconomyRebuyPriceDuopoly if 'oligopol_competitors' not in config_market.keys() else CircularEconomyRebuyPriceOligopoly, config_market, StableBaselinesPPO, rl_config, training_steps, description, pipe_entry))
         for config_market, description, (_, pipe_entry) in zip(market_configs, market_descriptions, pipes)]
     print('Now I start the processes')
     for p in processes:
@@ -115,7 +117,7 @@ def get_different_market_configs(parameter_name, values):
 
 
 if __name__ == '__main__':
-    experiments = [('price_step_size', [1.5, 1, 0.5, 0.25])]
+    # experiments = [('price_step_size', [1.5, 1, 0.5, 0.25])]
     # experiments = [('max_storage', [20, 50, 200]),
     #     ('production_price', [2, 4]),
     #     ('number_of_customers', [10, 30]),
@@ -127,6 +129,8 @@ if __name__ == '__main__':
     #     ('competitor_lowest_storage_level', [4.5, 8.5]),
     #     ('competitor_ok_storage_level', [9.5, 15.5])
     # ]
+    experiments = [('storage_cost', [0.01, 0.1, 0.25, 0.5]),
+                   ('oligopol_competitors', [1, 2, 3, 4])]
     market_configs, descriptions = [], []
     for experiment in experiments:
         print(experiment)
@@ -150,7 +154,7 @@ if __name__ == '__main__':
 
     # market_config = HyperparameterConfigLoader.load('market_config', CircularEconomyRebuyPriceDuopoly)
     # rl_config = HyperparameterConfigLoader.load('sb_ppo_config', StableBaselinesPPO)
-    # load_path = os.path.join(PathManager.data_path, 'rl_model_700000_steps.zip')
+    # load_path = os.path.join(PathManager.data_path, 'rl_model_300000_steps.zip')
     # agent = StableBaselinesPPO(market_config, rl_config, CircularEconomyRebuyPriceDuopoly(market_config, support_continuous_action_space=True), name='PPO on fitted market', load_path=load_path)
     # exampleprinter_real = ExamplePrinter(market_config)
     # exampleprinter_real.setup_exampleprinter(CircularEconomyRebuyPriceDuopoly(market_config, support_continuous_action_space=True), agent)

@@ -407,4 +407,4 @@ class CircularEconomyRebuyPriceOligopoly(CircularEconomyRebuyPrice):
 			circular_vendors.FixedPriceCERebuyAgent(config_market=self.config, fixed_price=(3, 6, 2)),
 			circular_vendors.RuleBasedCERebuyAgentStorageMinimizer(config_market=self.config,
 				continuous_action_space=self.support_continuous_action_space),
-			]
+			][0:self.config.oligopol_competitors]

@@ -79,14 +79,14 @@ class StableBaselinesAgent(ReinforcementLearningAgent, LinearAgent, CircularAgen
 
 		best_profit = -np.inf
 		profits = []
-		fitted_profits = []
+		# fitted_profits = []
 		# iterate through the saved models and evaluate them by running the exampleprinter
 		modelfiles = sorted(os.listdir(save_path))
 		for model_file in modelfiles:
 			print('I analyze the model: ', model_file)
 			agent = type(self)(self.config_market, self.config_rl, self.marketplace, load_path=os.path.join(save_path, model_file))
 			exampleprinter = ExamplePrinter(self.config_market)
-			marketplace = CircularEconomyRebuyPriceDuopoly(self.config_market, support_continuous_action_space=True)
+			marketplace = type(self.marketplace)(self.config_market, support_continuous_action_space=True)
 			exampleprinter.setup_exampleprinter(marketplace, agent)
 			_, info_sequence = exampleprinter.run_example()
 			profit = np.mean(info_sequence['profits/all/vendor_0'])
@@ -97,15 +97,15 @@ class StableBaselinesAgent(ReinforcementLearningAgent, LinearAgent, CircularAgen
 				best_model = model_file
 
 			# evaluate on the fitted market
-			exampleprinter_fitted = ExamplePrinter(self.config_market)
-			marketplace = CircularEconomyRebuyPriceDuopolyFitted(self.config_market, support_continuous_action_space=True)
-			exampleprinter_fitted.setup_exampleprinter(marketplace, agent)
-			_, info_sequence = exampleprinter_fitted.run_example()
-			profit = np.mean(info_sequence['profits/all/vendor_0'])
-			fitted_profits.append(profit)
+			# exampleprinter_fitted = ExamplePrinter(self.config_market)
+			# marketplace = CircularEconomyRebuyPriceDuopolyFitted(self.config_market, support_continuous_action_space=True)
+			# exampleprinter_fitted.setup_exampleprinter(marketplace, agent)
+			# _, info_sequence = exampleprinter_fitted.run_example()
+			# profit = np.mean(info_sequence['profits/all/vendor_0'])
+			# fitted_profits.append(profit)
 		print(f'best model: {best_model} with profit {best_profit}')
 		print('Saving the results of the evaluation in the following path: ', log_path)
-		dataframe = pd.DataFrame.from_dict({'model': modelfiles, 'profit': profits, 'fitted_profit': fitted_profits})
+		dataframe = pd.DataFrame.from_dict({'model': modelfiles, 'profit': profits})
 		dataframe.to_excel(os.path.join(log_path, f'evaluation_{time.strftime("%b%d_%H-%M-%S")}.xlsx'))
 		print('Done!')
 		return save_path
